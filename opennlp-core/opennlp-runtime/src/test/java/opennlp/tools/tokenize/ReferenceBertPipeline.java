@@ -21,9 +21,9 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * The reference BERT basic-tokenization stage feeding {@link WordpieceTokenizer}, kept
- * test-only as the frozen differential baseline for {@link WordpieceEncoderTest}: the
- * encoder's piece sequence must match this pipeline exactly.
+ * The reference BERT basic-tokenization stage feeding {@link WordpieceTokenizer}, serving as
+ * the differential baseline for {@link WordpieceEncoderTest}: the encoder's piece sequence
+ * must match this pipeline exactly.
  */
 final class ReferenceBertPipeline {
 

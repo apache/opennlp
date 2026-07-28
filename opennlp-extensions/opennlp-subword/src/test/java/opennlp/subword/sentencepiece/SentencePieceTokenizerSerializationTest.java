@@ -27,7 +27,7 @@ import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -52,10 +52,9 @@ class SentencePieceTokenizerSerializationTest {
   };
 
   @ParameterizedTest
-  @ValueSource(strings = {"tiny-unigram", "tiny-unigram-bytefb", "tiny-bpe",
-      "tiny-unigram-identity", "tiny-unigram-suffix"})
+  @MethodSource("opennlp.subword.sentencepiece.SentencePieceFixtures#models")
   void testRoundTripPreservesEncoding(String model) throws IOException, ClassNotFoundException {
-    final SentencePieceTokenizer original = SentencePieceParityTest.tokenizer(model);
+    final SentencePieceTokenizer original = SentencePieceFixtures.tokenizer(model);
 
     final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
@@ -79,23 +78,23 @@ class SentencePieceTokenizerSerializationTest {
 
   /**
    * Serializes the tokenizer of the given fixture model through
-   * {@link SentencePieceTokenizer#serialize(OutputStream)}.
+   * {@link SentencePieceTokenizer#serialize(java.io.OutputStream)}.
    *
    * @param model The fixture model name.
    * @return The serialized bytes.
+   * @throws IOException Thrown if the model cannot be read or serialized.
    */
   private static byte[] serialized(String model) throws IOException {
     final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    SentencePieceParityTest.tokenizer(model).serialize(bytes);
+    SentencePieceFixtures.tokenizer(model).serialize(bytes);
     return bytes.toByteArray();
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"tiny-unigram", "tiny-unigram-bytefb", "tiny-bpe",
-      "tiny-unigram-identity", "tiny-unigram-suffix"})
+  @MethodSource("opennlp.subword.sentencepiece.SentencePieceFixtures#models")
   void testGuardedDeserializePreservesEncoding(String model)
       throws IOException, ClassNotFoundException {
-    final SentencePieceTokenizer original = SentencePieceParityTest.tokenizer(model);
+    final SentencePieceTokenizer original = SentencePieceFixtures.tokenizer(model);
     final SentencePieceTokenizer copy =
         SentencePieceTokenizer.deserialize(new ByteArrayInputStream(serialized(model)));
 
@@ -141,7 +140,7 @@ class SentencePieceTokenizerSerializationTest {
    */
   @Test
   void testNullArgumentsAreRejected() throws IOException {
-    final SentencePieceTokenizer tokenizer = SentencePieceParityTest.tokenizer("tiny-unigram");
+    final SentencePieceTokenizer tokenizer = SentencePieceFixtures.tokenizer("tiny-unigram");
     assertThrows(IllegalArgumentException.class, () -> tokenizer.serialize(null));
     assertThrows(IllegalArgumentException.class, () ->
         SentencePieceTokenizer.deserialize(null));

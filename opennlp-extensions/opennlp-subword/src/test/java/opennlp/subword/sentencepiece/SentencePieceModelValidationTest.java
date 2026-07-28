@@ -36,6 +36,7 @@ import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -89,7 +90,7 @@ class SentencePieceModelValidationTest {
 
   @Test
   void testConcurrentEncodingIsConsistent() throws Exception {
-    final SentencePieceTokenizer tokenizer = SentencePieceParityTest.tokenizer("tiny-unigram");
+    final SentencePieceTokenizer tokenizer = SentencePieceFixtures.tokenizer("tiny-unigram");
     final String[] inputs = {
         "The quick brown fox jumps over the lazy dog.",
         "tokenization and segmentation",
@@ -125,7 +126,7 @@ class SentencePieceModelValidationTest {
 
   @Test
   void testVocabularyAccessors() {
-    final SentencePieceTokenizer tokenizer = SentencePieceParityTest.tokenizer("tiny-unigram");
+    final SentencePieceTokenizer tokenizer = SentencePieceFixtures.tokenizer("tiny-unigram");
     assertEquals(300, tokenizer.vocabularySize());
     assertEquals(SentencePieceTokenizer.Algorithm.UNIGRAM, tokenizer.algorithm());
     for (int id = 0; id < tokenizer.vocabularySize(); id++) {
@@ -139,6 +140,38 @@ class SentencePieceModelValidationTest {
     assertThrows(IllegalArgumentException.class,
         () -> tokenizer.idToPiece(tokenizer.vocabularySize()));
     assertThrows(IllegalArgumentException.class, () -> tokenizer.pieceToId(null));
+  }
+
+  @Test
+  void testScoresAreFiniteAndRangeChecked() {
+    final SentencePieceTokenizer tokenizer = SentencePieceFixtures.tokenizer("tiny-unigram");
+    for (int id = 0; id < tokenizer.vocabularySize(); id++) {
+      assertTrue(Float.isFinite(tokenizer.score(id)), "score of piece " + id);
+    }
+    assertThrows(IllegalArgumentException.class, () -> tokenizer.score(-1));
+    assertThrows(IllegalArgumentException.class,
+        () -> tokenizer.score(tokenizer.vocabularySize()));
+  }
+
+  @Test
+  void testBytePiecesExistOnlyInByteFallbackModels() {
+    final SentencePieceTokenizer byteFallback =
+        SentencePieceFixtures.tokenizer("tiny-unigram-bytefb");
+    int bytePieces = 0;
+    for (int id = 0; id < byteFallback.vocabularySize(); id++) {
+      if (byteFallback.isByte(id)) {
+        bytePieces++;
+        assertTrue(byteFallback.idToPiece(id).startsWith("<0x"),
+            "byte piece " + id + " is " + byteFallback.idToPiece(id));
+      }
+    }
+    assertEquals(256, bytePieces, "byte fallback defines one piece per byte value");
+
+    final SentencePieceTokenizer plain = SentencePieceFixtures.tokenizer("tiny-unigram");
+    for (int id = 0; id < plain.vocabularySize(); id++) {
+      assertFalse(plain.isByte(id), "piece " + id + " must not be a byte piece");
+    }
+    assertThrows(IllegalArgumentException.class, () -> plain.isByte(-1));
   }
 
   private static byte[] readModel() throws IOException {

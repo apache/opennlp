@@ -84,7 +84,7 @@ final class BpeEncoder implements Serializable {
    */
   List<Segment> encode(byte[] normalized, int size) {
     if (normalized == null) {
-      throw new IllegalArgumentException("The normalized buffer must not be null.");
+      throw new IllegalArgumentException("normalized must not be null");
     }
     if (size == 0) {
       return List.of();

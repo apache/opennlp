@@ -35,8 +35,7 @@ import opennlp.tools.util.Span;
  * no accent stripping, no control character removal. Text that does not match
  * the vocabulary's casing - for uncased models that includes every capitalized
  * word - is mapped to the unknown token. Use {@link WordpieceEncoder} for the
- * full BERT tokenization pipeline; it subsumes the {@code BertTokenizer}
- * class shipped in the 3.0.0 milestone builds.
+ * full BERT tokenization pipeline.
  * <p>
  * As of OpenNLP 3.0.0 the behavior matches the reference BERT wordpiece
  * implementation in three respects that differ from earlier releases:
