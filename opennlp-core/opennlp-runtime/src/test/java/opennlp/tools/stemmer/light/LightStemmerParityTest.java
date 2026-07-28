@@ -33,6 +33,7 @@ import opennlp.tools.stemmer.StemmerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -79,6 +80,7 @@ class LightStemmerParityTest {
       while ((line = reader.readLine()) != null) {
         pairs++;
         final int tab = line.indexOf('\t');
+        assertTrue(tab > 0, fixture + ".tsv line " + pairs + " is not a word/stem pair: " + line);
         final String word = line.substring(0, tab);
         final String expected = line.substring(tab + 1);
         assertEquals(expected, stemmer.stem(word).toString(),
@@ -92,7 +94,7 @@ class LightStemmerParityTest {
   @MethodSource("fixtures")
   void testStemmerIsItsOwnFactory(String fixture, Stemmer stemmer) {
     final StemmerFactory factory = (StemmerFactory) stemmer;
-    assertEquals(stemmer, factory.newStemmer(),
-        "the stemmer returns itself from newStemmer()");
+    assertSame(stemmer, factory.newStemmer(),
+        "newStemmer() must return the same instance");
   }
 }

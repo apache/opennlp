@@ -75,7 +75,11 @@ import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 @ThreadSafe
 public final class FrenchLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
+   */
   @Override
   public Stemmer newStemmer() {
     return this;

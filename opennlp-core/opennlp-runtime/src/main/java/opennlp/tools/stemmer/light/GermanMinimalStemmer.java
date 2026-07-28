@@ -70,7 +70,11 @@ import opennlp.tools.stemmer.StemmerFactory;
 @ThreadSafe
 public final class GermanMinimalStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
+   */
   @Override
   public Stemmer newStemmer() {
     return this;

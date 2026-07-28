@@ -51,6 +51,8 @@
 
 package opennlp.tools.stemmer.light;
 
+import java.util.Set;
+
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
@@ -85,26 +87,16 @@ public final class NorwegianLightStemmer extends AbstractCharArrayStemmer
    *         or {@code more} contains null.
    */
   public NorwegianLightStemmer(NorwegianVariety first, NorwegianVariety... more) {
-    if (first == null) {
-      throw new IllegalArgumentException("first must not be null");
-    }
-    if (more == null) {
-      throw new IllegalArgumentException("more must not be null");
-    }
-    boolean bokmaal = first == NorwegianVariety.BOKMAAL;
-    boolean nynorsk = first == NorwegianVariety.NYNORSK;
-    for (final NorwegianVariety variety : more) {
-      if (variety == null) {
-        throw new IllegalArgumentException("more must not contain null");
-      }
-      bokmaal |= variety == NorwegianVariety.BOKMAAL;
-      nynorsk |= variety == NorwegianVariety.NYNORSK;
-    }
-    useBokmaal = bokmaal;
-    useNynorsk = nynorsk;
+    final Set<NorwegianVariety> varieties = NorwegianVariety.toSet(first, more);
+    useBokmaal = varieties.contains(NorwegianVariety.BOKMAAL);
+    useNynorsk = varieties.contains(NorwegianVariety.NYNORSK);
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
+   */
   @Override
   public Stemmer newStemmer() {
     return this;
