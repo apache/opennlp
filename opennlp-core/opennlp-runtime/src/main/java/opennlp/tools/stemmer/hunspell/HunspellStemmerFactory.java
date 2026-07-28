@@ -46,8 +46,10 @@ public class HunspellStemmerFactory implements StemmerFactory {
   }
 
   /**
-   * {@return a new {@link HunspellStemmer} over the shared dictionary} Every call
-   * creates a fresh instance; all instances read the same immutable dictionary.
+   * {@inheritDoc}
+   *
+   * <p>Every call creates a fresh {@link HunspellStemmer} over the same immutable
+   * dictionary.</p>
    */
   @Override
   public Stemmer newStemmer() {

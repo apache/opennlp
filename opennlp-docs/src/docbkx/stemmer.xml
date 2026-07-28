@@ -82,16 +82,17 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 			<code>HunspellManualExampleTest</code> asserts the behavior shown here.
 			<programlisting language="java"><![CDATA[
 HunspellDictionary dictionary = HunspellDictionary.load(
-    Path.of("en_US.aff"), Path.of("en_US.dic"));
+    Path.of("dictionary.aff"), Path.of("dictionary.dic"));
 Stemmer stemmer = new HunspellStemmerFactory(dictionary).newStemmer();
 
 stemmer.stem("workers");   // "work"
 stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			</programlisting>
-			The in-tree test uses a project-authored miniature dictionary instead of a
-			published one, and asserts the same stems for <code>workers</code> and
-			<code>worker</code>. Acquisition helpers and the supported affix feature
-			set live in
+			The stems above are those of the project-authored miniature dictionary the
+			test loads, which lists <code>work</code> with an agentive and a plural
+			suffix; the test asserts the same stem for <code>worker</code>. Which stem a
+			published dictionary yields for a given form is decided by that dictionary.
+			Acquisition helpers and the supported affix feature set live in
 			<code>dev/README-hunspell-dictionaries.md</code>.
 		</para>
 	</section>

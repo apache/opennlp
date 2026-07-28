@@ -59,6 +59,12 @@ public class HunspellRealDictionaryTest {
     return new HunspellStemmer(HunspellDictionary.load(affix, words));
   }
 
+  /**
+   * Checks everyday English inflections against {@code en_US}, plus the identity
+   * fallback on vocabulary no dictionary lists.
+   *
+   * @throws IOException Thrown if a present dictionary pair fails to load.
+   */
   @Test
   void testEnglishInflections() throws IOException {
     final HunspellStemmer stemmer = loadOrSkip("en_US");
@@ -71,6 +77,12 @@ public class HunspellRealDictionaryTest {
     Assertions.assertEquals("zyzzyvax", stemmer.stem("zyzzyvax").toString());
   }
 
+  /**
+   * Checks everyday German inflections against {@code de_DE_frami}: a plural, an
+   * umlauted plural, and a superlative.
+   *
+   * @throws IOException Thrown if a present dictionary pair fails to load.
+   */
   @Test
   void testGermanInflections() throws IOException {
     final HunspellStemmer stemmer = loadOrSkip("de_DE_frami");
@@ -80,17 +92,28 @@ public class HunspellRealDictionaryTest {
     Assertions.assertEquals("schnell", stemmer.stem("schnellsten").toString());
   }
 
+  /**
+   * Checks that ordinary German compounds decompose against {@code de_DE_frami}. Only
+   * the part count is asserted: the exact part spellings follow the dictionary's own
+   * entries and may shift between its revisions.
+   *
+   * @throws IOException Thrown if a present dictionary pair fails to load.
+   */
   @Test
   void testGermanCompoundsDecompose() throws IOException {
     final HunspellStemmer stemmer = loadOrSkip("de_DE_frami");
-    // the exact part spellings follow the dictionary's own entries and may shift
-    // between revisions; that ordinary compounds decompose at all must not
     // Haustuer, written with u-umlaut, is Haus + Tuer
     Assertions.assertTrue(stemmer.stemAll("Haust\u00FCr").size() >= 2);
     Assertions.assertTrue(stemmer.stemAll("Kinderzimmer").size() >= 2);
     Assertions.assertTrue(stemmer.stemAll("Abbildungsverzeichnis").size() >= 2);
   }
 
+  /**
+   * Checks everyday Hungarian inflections against {@code hu_HU}: a plural and two
+   * case-suffixed forms.
+   *
+   * @throws IOException Thrown if a present dictionary pair fails to load.
+   */
   @Test
   void testHungarianInflections() throws IOException {
     final HunspellStemmer stemmer = loadOrSkip("hu_HU");
