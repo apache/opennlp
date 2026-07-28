@@ -19,12 +19,17 @@ package opennlp.tools.depparse;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnalyzer;
+import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 
@@ -33,11 +38,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Pins down the boundary behavior of {@link DependencyAnnotator}: the exact exception and
- * message for empty and misaligned input layers, the immutability rule that a second
- * annotation pass is rejected, and the exact {@code requires()} and {@code provides()}
- * declarations the pipeline validation relies on.
+ * message for absent, empty, and misaligned input layers, the immutability rule that a
+ * second annotation pass is rejected, and the exact {@code requires()} and
+ * {@code provides()} declarations the pipeline validation relies on.
  */
 public class DependencyAnnotatorEdgeCaseTest {
+
+  /** The rejection message for a token that no sentence encloses. */
+  private static final String STRAY_TOKEN = "token at [3..5) lies outside every sentence";
+
+  /** The rejection message for a tag layer that does not have one tag per token. */
+  private static final String MISALIGNED =
+      "document needs aligned opennlp:tokens<String> and opennlp:pos<String> layers";
 
   /**
    * A parser stub that returns a fixed two-token graph regardless of its input, so the
@@ -46,6 +58,18 @@ public class DependencyAnnotatorEdgeCaseTest {
   private static final DependencyParser FIXED = (tokens, tags) ->
       DependencyGraph.of(new int[] {DependencyArc.ROOT_HEAD, 0},
           new String[] {"root", "obj"});
+
+  /**
+   * A parser stub that accepts only one-token sentences and returns their single root
+   * arc, so a sentence slice of any other length fails the test loudly.
+   */
+  private static final DependencyParser ONE_TOKEN_ROOT = (tokens, tags) -> {
+    if (tokens.length != 1) {
+      throw new IllegalStateException("expected one-token sentences, got " + tokens.length);
+    }
+    return DependencyGraph.of(new int[] {DependencyArc.ROOT_HEAD},
+        new String[] {"root"});
+  };
 
   /**
    * A parser stub that returns a flat tree of the requested size, for assertions that
@@ -80,22 +104,67 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(3, 5), "NN")));
   }
 
+  /**
+   * Supplies one document per required layer, each missing exactly that layer, together
+   * with the key the rejection message must name.
+   *
+   * @return The documents and the expected layer key. Never {@code null}.
+   */
+  private static Stream<Arguments> documentsMissingOneLayer() {
+    final List<Annotation<String>> sentence =
+        List.of(new Annotation<>(new Span(0, 5), "ab cd"));
+    final List<Annotation<String>> tokens = List.of(
+        new Annotation<>(new Span(0, 2), "ab"),
+        new Annotation<>(new Span(3, 5), "cd"));
+    final List<Annotation<String>> tags = List.of(
+        new Annotation<>(new Span(0, 2), "VB"),
+        new Annotation<>(new Span(3, 5), "NN"));
+    return Stream.of(
+        Arguments.of(Document.of("ab cd")
+            .with(Layers.TOKENS, tokens).with(Layers.POS_TAGS, tags), Layers.SENTENCES),
+        Arguments.of(Document.of("ab cd")
+            .with(Layers.SENTENCES, sentence).with(Layers.POS_TAGS, tags), Layers.TOKENS),
+        Arguments.of(Document.of("ab cd")
+            .with(Layers.SENTENCES, sentence).with(Layers.TOKENS, tokens), Layers.POS_TAGS));
+  }
+
+  @ParameterizedTest
+  @MethodSource("documentsMissingOneLayer")
+  void testAbsentRequiredLayerIsNamed(Document document, LayerKey<String> missing) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new DependencyAnnotator(FIXED).annotate(document));
+    assertEquals("document lacks the required layer " + missing, e.getMessage());
+  }
+
   @Test
-  void testEmptyTokenAndTagLayersAreRejected() {
-    // a document with zero sentences has zero tokens; the annotator refuses to parse it
+  void testNullDocumentIsRejected() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new DependencyAnnotator(FIXED).annotate(null));
+    assertEquals("document must not be null", e.getMessage());
+  }
+
+  /**
+   * Verifies the empty-versus-absent distinction of the annotator contract: present but
+   * empty required layers are valid input and yield a present-but-empty arc layer, so a
+   * pipeline does not fail on a document without content.
+   */
+  @Test
+  void testEmptyRequiredLayersYieldAnEmptyArcLayer() {
     final Document empty = Document.of("")
+        .with(Layers.SENTENCES, List.of())
         .with(Layers.TOKENS, List.of())
         .with(Layers.POS_TAGS, List.of());
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> new DependencyAnnotator(FIXED).annotate(empty));
-    assertEquals("document needs aligned opennlp:tokens<String> and opennlp:pos<String> layers",
-        e.getMessage());
+    final Document annotated = new DependencyAnnotator(FIXED).annotate(empty);
+    assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS,
+        DependencyAnnotator.DEPENDENCIES), annotated.layers());
+    assertEquals(List.of(), annotated.get(DependencyAnnotator.DEPENDENCIES));
   }
 
   @Test
   void testMisalignedTagLayerIsRejected() {
     // two tokens but only one tag: the layers are present yet not aligned by position
     final Document misaligned = Document.of("ab cd")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 5), "ab cd")))
         .with(Layers.TOKENS, List.of(
             new Annotation<>(new Span(0, 2), "ab"),
             new Annotation<>(new Span(3, 5), "cd")))
@@ -103,8 +172,7 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(0, 2), "VB")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new DependencyAnnotator(FIXED).annotate(misaligned));
-    assertEquals("document needs aligned opennlp:tokens<String> and opennlp:pos<String> layers",
-        e.getMessage());
+    assertEquals(MISALIGNED, e.getMessage());
   }
 
   @Test
@@ -134,14 +202,6 @@ public class DependencyAnnotatorEdgeCaseTest {
    */
   @Test
   void testEachSentenceGetsItsOwnTree() {
-    final DependencyParser oneTokenRoot = (tokens, tags) -> {
-      if (tokens.length != 1) {
-        throw new IllegalStateException("expected one-token sentences, got "
-            + tokens.length);
-      }
-      return DependencyGraph.of(new int[] {DependencyArc.ROOT_HEAD},
-          new String[] {"root"});
-    };
     final Document document = Document.of("ab. cd.")
         .with(Layers.SENTENCES, List.of(
             new Annotation<>(new Span(0, 3), "ab."),
@@ -154,7 +214,7 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(4, 6), "VB")));
 
     final List<Annotation<DependencyArc>> arcs =
-        new DependencyAnnotator(oneTokenRoot).annotate(document)
+        new DependencyAnnotator(ONE_TOKEN_ROOT).annotate(document)
             .get(DependencyAnnotator.DEPENDENCIES);
     assertEquals(2, arcs.size());
     assertEquals(new DependencyArc(DependencyArc.ROOT_HEAD, 0, "root"),
@@ -166,24 +226,11 @@ public class DependencyAnnotatorEdgeCaseTest {
   }
 
   /**
-   * Verifies the sentence-layer requirements fail loud: a token-bearing document
-   * without a sentence layer is rejected, and so is a token lying outside every
-   * sentence.
+   * Verifies a token that no sentence encloses is reported instead of being parsed
+   * outside of any sentence.
    */
   @Test
-  void testSentenceLayerProblemsAreRejected() {
-    final Document noSentences = Document.of("ab cd")
-        .with(Layers.TOKENS, List.of(
-            new Annotation<>(new Span(0, 2), "ab"),
-            new Annotation<>(new Span(3, 5), "cd")))
-        .with(Layers.POS_TAGS, List.of(
-            new Annotation<>(new Span(0, 2), "VB"),
-            new Annotation<>(new Span(3, 5), "NN")));
-    final IllegalArgumentException missing = assertThrows(IllegalArgumentException.class,
-        () -> new DependencyAnnotator(FIXED).annotate(noSentences));
-    assertEquals("document needs a non-empty opennlp:sentences<String> layer",
-        missing.getMessage());
-
+  void testTokenOutsideEverySentenceIsRejected() {
     final Document strayToken = Document.of("ab cd")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 2), "ab")))
         .with(Layers.TOKENS, List.of(
@@ -194,7 +241,7 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(3, 5), "NN")));
     final IllegalArgumentException stray = assertThrows(IllegalArgumentException.class,
         () -> new DependencyAnnotator(SIZE_MATCHING).annotate(strayToken));
-    assertEquals("token at [3..5) lies outside every sentence", stray.getMessage());
+    assertEquals(STRAY_TOKEN, stray.getMessage());
   }
 
   @Test
@@ -213,14 +260,6 @@ public class DependencyAnnotatorEdgeCaseTest {
    */
   @Test
   void testEmptySentenceContributesNoArcsAndKeepsTheIndexShift() {
-    final DependencyParser oneTokenRoot = (tokens, tags) -> {
-      if (tokens.length != 1) {
-        throw new IllegalStateException("expected one-token sentences, got "
-            + tokens.length);
-      }
-      return DependencyGraph.of(new int[] {DependencyArc.ROOT_HEAD},
-          new String[] {"root"});
-    };
     final Document document = Document.of("ab. ??? cd.")
         .with(Layers.SENTENCES, List.of(
             new Annotation<>(new Span(0, 3), "ab."),
@@ -234,7 +273,7 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(8, 10), "VB")));
 
     final List<Annotation<DependencyArc>> arcs =
-        new DependencyAnnotator(oneTokenRoot).annotate(document)
+        new DependencyAnnotator(ONE_TOKEN_ROOT).annotate(document)
             .get(DependencyAnnotator.DEPENDENCIES);
     assertEquals(2, arcs.size());
     assertEquals(new DependencyArc(DependencyArc.ROOT_HEAD, 1, "root"),
@@ -265,7 +304,7 @@ public class DependencyAnnotatorEdgeCaseTest {
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new DependencyAnnotator(SIZE_MATCHING).annotate(document));
-    assertEquals("token at [3..5) lies outside every sentence", e.getMessage());
+    assertEquals(STRAY_TOKEN, e.getMessage());
   }
 
   /**
@@ -290,7 +329,7 @@ public class DependencyAnnotatorEdgeCaseTest {
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new DependencyAnnotator(SIZE_MATCHING).annotate(document));
-    assertEquals("token at [3..5) lies outside every sentence", e.getMessage());
+    assertEquals(STRAY_TOKEN, e.getMessage());
   }
 
   /**
