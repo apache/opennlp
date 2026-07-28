@@ -18,6 +18,7 @@ package opennlp.embeddings;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,6 +27,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Fetches the files a distillation needs from a Hugging Face model repository into a local cache
@@ -35,22 +39,55 @@ import java.time.Duration;
  */
 final class HuggingFaceModelCache {
 
-  /** The hub's file-download endpoint pattern: {@code BASE}/{id}/resolve/main/{file}. */
-  private static final String RESOLVE_BASE = "https://huggingface.co/";
+  /** The hub's host, the prefix of every download URL. */
+  private static final String HUB_BASE = "https://huggingface.co/";
 
-  /** The ONNX graph of a hub transformer, relative to the repository root. */
-  private static final String ONNX_MODEL = "onnx/model.onnx";
+  /** The hub's download path between the model id and the repository-relative file name. */
+  private static final String RESOLVE_PATH = "/resolve/main/";
+
+  /** A hub model id: an organization and a model name, both of word characters, dots, or dashes. */
+  private static final Pattern MODEL_ID_PATTERN = Pattern.compile("[\\w.-]+/[\\w.-]+");
+
+  /** The directory the cache lives in, below the user's home directory. */
+  private static final String CACHE_DIRECTORY = ".cache";
+
+  /** The cache's own directory, below {@link #CACHE_DIRECTORY}. */
+  private static final String CACHE_NAME = "opennlp-embeddings";
+
+  /** The suffix of the temporary file a download streams into before it is moved into place. */
+  private static final String DOWNLOAD_SUFFIX = ".download";
+
+  /** The HTTP status a served file answers with; anything else means the file is not there. */
+  private static final int HTTP_OK = 200;
+
+  /** How long the client waits for a connection to the hub. */
+  private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(30);
+
+  /** How long a single file download may take; an ONNX graph can be gigabytes. */
+  private static final Duration DOWNLOAD_TIMEOUT = Duration.ofHours(1);
 
   /** The files a distillation needs, relative to the repository root. */
-  private static final String[] REQUIRED_FILES = {"tokenizer.json", ONNX_MODEL};
+  private static final List<String> REQUIRED_FILES =
+      List.of(ModelFileNames.TOKENIZER_JSON, ModelFileNames.ONNX_MODEL);
 
-  /** The files used when present: the pad-token config, the SentencePiece model, and the
-   * external weights of an ONNX export that splits them out (as bge-m3 does). */
-  private static final String[] OPTIONAL_FILES = {"tokenizer_config.json",
-      "sentencepiece.bpe.model", "onnx/model.onnx_data"};
+  /**
+   * The files used when present: the pad-token config, the trained SentencePiece model under any
+   * of the names a repository may ship it as, and the external weights of an ONNX export that
+   * splits them out (as bge-m3 does).
+   */
+  private static final List<String> OPTIONAL_FILES = optionalFiles();
 
   /** Not instantiable. */
   private HuggingFaceModelCache() {
+  }
+
+  /** {@return the repository-relative names of the files downloaded when the repository has them} */
+  private static List<String> optionalFiles() {
+    final List<String> files = new ArrayList<>();
+    files.add(ModelFileNames.TOKENIZER_CONFIG);
+    files.addAll(ModelFileNames.SENTENCEPIECE_MODELS);
+    files.add(ModelFileNames.ONNX_MODEL_DATA);
+    return List.copyOf(files);
   }
 
   /**
@@ -58,8 +95,8 @@ final class HuggingFaceModelCache {
    *
    * @param teacher  A local directory, used as-is, or a Hugging Face model id
    *                 ({@code org/model}), downloaded into
-   *                 {@code ~/.cache/opennlp-embeddings/<org--model>} on first use. Must not be
-   *                 {@code null}.
+   *                 {@code ~/.cache/opennlp-embeddings/org-model} on first use (the slash becomes
+   *                 a dash and dots become underscores). Must not be {@code null}.
    * @param listener Receives one progress line per download; may be {@code null}.
    * @return The local teacher directory.
    * @throws IllegalArgumentException Thrown if {@code teacher} is {@code null}, a local path
@@ -73,15 +110,18 @@ final class HuggingFaceModelCache {
     if (Files.isDirectory(local)) {
       return local;
     }
-    if (!teacher.matches("[\\w.-]+/[\\w.-]+")) {
+    if (!MODEL_ID_PATTERN.matcher(teacher).matches()) {
       throw new IllegalArgumentException("Teacher '" + teacher + "' is neither a local "
           + "directory nor a Hugging Face model id (expected 'org/model')");
     }
-    final Path cache = Path.of(System.getProperty("user.home"), ".cache", "opennlp-embeddings",
-        teacher.replace('/', '-').replace(".", "_"));
+    final Path cache = Path.of(System.getProperty("user.home"), CACHE_DIRECTORY, CACHE_NAME,
+        teacher.replace('/', '-').replace('.', '_'));
+    // A client built through the builder has no proxy selector unless one is set, so the
+    // http.proxyHost / https.proxyHost system properties would otherwise be ignored.
     final HttpClient client = HttpClient.newBuilder()
         .followRedirects(HttpClient.Redirect.NORMAL)
-        .connectTimeout(Duration.ofSeconds(30))
+        .proxy(ProxySelector.getDefault())
+        .connectTimeout(CONNECT_TIMEOUT)
         .build();
     for (final String file : REQUIRED_FILES) {
       download(client, teacher, file, cache, true, listener);
@@ -110,8 +150,8 @@ final class HuggingFaceModelCache {
       return;
     }
     final HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(RESOLVE_BASE + modelId + "/resolve/main/" + file))
-        .timeout(Duration.ofHours(1))
+        .uri(URI.create(HUB_BASE + modelId + RESOLVE_PATH + file))
+        .timeout(DOWNLOAD_TIMEOUT)
         .GET()
         .build();
     final HttpResponse<InputStream> response;
@@ -125,26 +165,47 @@ final class HuggingFaceModelCache {
       throw new IllegalArgumentException("Interrupted while downloading " + file + " of "
           + modelId, e);
     }
-    if (response.statusCode() != 200) {
-      if (required) {
-        throw new IllegalArgumentException("Failed to download " + file + " of " + modelId
-            + ": HTTP " + response.statusCode() + "; the distillation needs this file");
+    Path temporary = null;
+    try (InputStream body = response.body()) {
+      if (response.statusCode() != HTTP_OK) {
+        if (required) {
+          throw new IllegalArgumentException("Failed to download " + file + " of " + modelId
+              + ": HTTP " + response.statusCode() + "; the distillation needs this file");
+        }
+        return;
       }
-      return;
-    }
-    try {
       if (listener != null) {
         listener.progress("Downloading " + modelId + "/" + file + " ...");
       }
       Files.createDirectories(target.getParent());
-      final Path temporary = target.resolveSibling(target.getFileName() + ".download");
-      try (InputStream body = response.body()) {
-        Files.copy(body, temporary, StandardCopyOption.REPLACE_EXISTING);
-      }
+      // A temporary name unique per download: two processes sharing one cache directory must not
+      // stream two copies of the same file into one partial file and publish the interleaving.
+      temporary = Files.createTempFile(target.getParent(), target.getFileName().toString(),
+          DOWNLOAD_SUFFIX);
+      Files.copy(body, temporary, StandardCopyOption.REPLACE_EXISTING);
       Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
+      temporary = null;
     } catch (IOException e) {
       throw new IllegalArgumentException("Failed to store " + file + " of " + modelId + " at "
           + target + ": " + e.getMessage(), e);
+    } finally {
+      deleteIfPresent(temporary);
+    }
+  }
+
+  /**
+   * Deletes a partial download, if there is one, without reporting a failure to do so.
+   *
+   * @param file The file to delete; may be {@code null}.
+   */
+  private static void deleteIfPresent(Path file) {
+    if (file == null) {
+      return;
+    }
+    try {
+      Files.deleteIfExists(file);
+    } catch (IOException e) {
+      // A leftover partial download costs disk space; the next attempt writes a fresh file.
     }
   }
 }

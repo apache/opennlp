@@ -29,6 +29,6 @@ interface AssembleModelParams {
    * {@return the distilled model directory to assemble in place and verify}
    */
   @ParameterDescription(valueName = "dir",
-      description = "the distilled model directory to complete in place and verify")
+      description = "The distilled model directory to complete in place and verify.")
   File getModelDir();
 }

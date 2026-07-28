@@ -21,8 +21,10 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ai.onnxruntime.NodeInfo;
+import ai.onnxruntime.OnnxJavaType;
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OnnxValue;
 import ai.onnxruntime.OrtEnvironment;
@@ -35,18 +37,32 @@ import ai.onnxruntime.TensorInfo;
  * hidden states, the forward pass Model2Vec's distillation performs per vocabulary token. The
  * graph is fed exactly the inputs it declares: {@code input_ids} and {@code attention_mask} for
  * every model, plus a zero {@code token_type_ids} for the BERT-family graphs that ask for one.
- * The pooled output is the mask-weighted mean of the single rank-3 float output (the
- * {@code last_hidden_state}), over the non-padding positions only.
+ * The pooled output is the mean of the single rank-3 float output (the
+ * {@code last_hidden_state}) over all of a sequence's positions; the attention mask is all ones,
+ * because a batch is never padded (see {@link #encodeBatch(long[][])}).
  *
  * <p>Not thread-safe; a distillation drives one instance from a single thread. Close it to
  * release the native session.</p>
  */
 final class OnnxTeacherEncoder implements AutoCloseable {
 
+  /** The id-sequence input every transformer encoder graph declares. */
+  private static final String INPUT_IDS = "input_ids";
+
+  /** The attention-mask input every transformer encoder graph declares. */
+  private static final String ATTENTION_MASK = "attention_mask";
+
+  /** The segment input the BERT-family graphs declare; fed all zeros. */
+  private static final String TOKEN_TYPE_IDS = "token_type_ids";
+
+  /** The rank of the last-hidden-state output: batch, position, hidden dimension. */
+  private static final int HIDDEN_STATE_RANK = 3;
+
   private final OrtEnvironment environment;
   private final OrtSession session;
   private final boolean wantsTokenTypeIds;
   private final String hiddenStateOutput;
+  private final AtomicBoolean closed = new AtomicBoolean();
 
   /** Holds the open session; created by {@link #load(Path)}. */
   private OnnxTeacherEncoder(OrtEnvironment environment, OrtSession session,
@@ -61,11 +77,12 @@ final class OnnxTeacherEncoder implements AutoCloseable {
    * Loads a teacher's ONNX graph.
    *
    * @param onnxFile The ONNX file. Must not be {@code null} and must exist, must declare an
-   *                 {@code input_ids} input, and must produce exactly the rank-3 float
-   *                 last-hidden-state output this encoder pools.
+   *                 {@code input_ids} input, and must produce a rank-3 float tensor output; the
+   *                 first such output is taken as the last hidden state and pooled.
    * @return The encoder.
    * @throws IllegalArgumentException Thrown if the file is missing, the graph has no
-   *     {@code input_ids} input or no rank-3 float output, or the runtime rejects the graph.
+   *     {@code input_ids} input or no rank-3 float tensor output, or the runtime rejects the
+   *     graph.
    */
   static OnnxTeacherEncoder load(Path onnxFile) {
     if (onnxFile == null) {
@@ -75,35 +92,61 @@ final class OnnxTeacherEncoder implements AutoCloseable {
       throw new IllegalArgumentException("File does not exist or is not a regular file: "
           + onnxFile);
     }
+    final OrtEnvironment environment = OrtEnvironment.getEnvironment();
+    final OrtSession session;
+    try (OrtSession.SessionOptions options = new OrtSession.SessionOptions()) {
+      session = environment.createSession(onnxFile.toString(), options);
+    } catch (OrtException e) {
+      throw new IllegalArgumentException("Failed to load ONNX graph " + onnxFile + ": "
+          + e.getMessage(), e);
+    }
+    // The session is open from here on, so every exit below closes it: an inspection that
+    // rejects the graph, or that fails outright, must not leak the native handle.
     try {
-      final OrtEnvironment environment = OrtEnvironment.getEnvironment();
-      final OrtSession session = environment.createSession(onnxFile.toString(),
-          new OrtSession.SessionOptions());
-      if (!session.getInputNames().contains("input_ids")) {
-        session.close();
-        throw new IllegalArgumentException("ONNX graph " + onnxFile + " has no 'input_ids' "
-            + "input; it does not look like a transformer encoder (inputs: "
+      if (!session.getInputNames().contains(INPUT_IDS)) {
+        throw new IllegalArgumentException("ONNX graph " + onnxFile + " has no '" + INPUT_IDS
+            + "' input; it does not look like a transformer encoder (inputs: "
             + session.getInputNames() + ")");
       }
-      final boolean wantsTokenTypeIds = session.getInputNames().contains("token_type_ids");
+      final boolean wantsTokenTypeIds = session.getInputNames().contains(TOKEN_TYPE_IDS);
       String hiddenStateOutput = null;
       for (final Map.Entry<String, NodeInfo> output : session.getOutputInfo().entrySet()) {
         if (output.getValue().getInfo() instanceof TensorInfo tensorInfo
-            && tensorInfo.getShape().length == 3) {
+            && tensorInfo.type == OnnxJavaType.FLOAT
+            && tensorInfo.getShape().length == HIDDEN_STATE_RANK) {
           hiddenStateOutput = output.getKey();
           break;
         }
       }
       if (hiddenStateOutput == null) {
-        session.close();
-        throw new IllegalArgumentException("ONNX graph " + onnxFile + " has no rank-3 tensor "
-            + "output (a last hidden state) to pool (outputs: "
+        throw new IllegalArgumentException("ONNX graph " + onnxFile + " has no rank-3 float "
+            + "tensor output (a last hidden state) to pool (outputs: "
             + session.getOutputInfo().keySet() + ")");
       }
       return new OnnxTeacherEncoder(environment, session, wantsTokenTypeIds, hiddenStateOutput);
     } catch (OrtException e) {
-      throw new IllegalArgumentException("Failed to load ONNX graph " + onnxFile + ": "
-          + e.getMessage(), e);
+      final IllegalArgumentException failure = new IllegalArgumentException(
+          "Failed to inspect ONNX graph " + onnxFile + ": " + e.getMessage(), e);
+      closeAfterFailure(session, failure);
+      throw failure;
+    } catch (RuntimeException e) {
+      closeAfterFailure(session, e);
+      throw e;
+    }
+  }
+
+  /**
+   * Closes a session on a failing load path, reporting a close failure as a suppressed exception
+   * of the failure being thrown rather than in place of it.
+   *
+   * @param session The session to close.
+   * @param failure The exception the caller is about to throw.
+   */
+  private static void closeAfterFailure(OrtSession session, RuntimeException failure) {
+    try {
+      session.close();
+    } catch (OrtException e) {
+      failure.addSuppressed(e);
     }
   }
 
@@ -137,12 +180,12 @@ final class OnnxTeacherEncoder implements AutoCloseable {
       OnnxTensor tokenTypeIds = null;
       try (OnnxTensor inputIds = OnnxTensor.createTensor(environment, batch);
            OnnxTensor mask = OnnxTensor.createTensor(environment, attentionMask)) {
-        inputs.put("input_ids", inputIds);
-        inputs.put("attention_mask", mask);
+        inputs.put(INPUT_IDS, inputIds);
+        inputs.put(ATTENTION_MASK, mask);
         if (wantsTokenTypeIds) {
           tokenTypeIds = OnnxTensor.createTensor(environment,
               new long[batch.length][sequenceLength]);
-          inputs.put("token_type_ids", tokenTypeIds);
+          inputs.put(TOKEN_TYPE_IDS, tokenTypeIds);
         }
         try (OrtSession.Result result = session.run(inputs)) {
           final OnnxValue value = result.get(hiddenStateOutput)
@@ -178,14 +221,22 @@ final class OnnxTeacherEncoder implements AutoCloseable {
     }
   }
 
-  /** Closes the native session. */
+  /**
+   * Closes the native session; calling this more than once is a no-op after the first call.
+   *
+   * <p>The {@link OrtEnvironment} is deliberately not closed: {@link
+   * OrtEnvironment#getEnvironment()} returns a process-wide singleton shared with every other
+   * ONNX component in the JVM, so closing it here would tear down an environment they still use.
+   * {@link OrtSession#close()} rejects a second call, hence the guard.</p>
+   */
   @Override
   public void close() {
-    try {
-      session.close();
-      environment.close();
-    } catch (OrtException e) {
-      // Closing a native resource must not mask a distillation result.
+    if (closed.compareAndSet(false, true)) {
+      try {
+        session.close();
+      } catch (OrtException e) {
+        // Closing a native resource must not mask a distillation result.
+      }
     }
   }
 }

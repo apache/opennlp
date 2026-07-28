@@ -53,6 +53,12 @@ final class TeacherTokenizer {
   /** Model2Vec's default token removal pattern; matched from the start, like Python re.match. */
   private static final Pattern UNUSED_TOKEN_PATTERN = Pattern.compile("\\[unused\\d+\\]");
 
+  /** Separates the items of a string post-processor template such as {@code "[CLS] $A [SEP]"}. */
+  private static final Pattern TEMPLATE_ITEM_SEPARATOR = Pattern.compile("\\s+");
+
+  /** Marks a template item as the sequence placeholder rather than a special token. */
+  private static final String SEQUENCE_PLACEHOLDER_PREFIX = "$";
+
   /** The WordPiece {@code model.type} of a BERT-family teacher. */
   static final String WORDPIECE = "WordPiece";
 
@@ -301,9 +307,13 @@ final class TeacherTokenizer {
    * every other field copied byte for byte from the teacher's file.
    *
    * @param file The file to write. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null}.
    * @throws IOException Thrown if writing fails.
    */
   void writeCleaned(Path file) throws IOException {
+    if (file == null) {
+      throw new IllegalArgumentException("File must not be null");
+    }
     final Map<Integer, Integer> newIdByOriginal = new HashMap<>(keptOriginalIds.length * 2);
     for (int row = 0; row < keptOriginalIds.length; row++) {
       newIdByOriginal.put(keptOriginalIds[row], row);
@@ -856,11 +866,11 @@ final class TeacherTokenizer {
     if (cursor.peek() == '"') {
       final String template = cursor.parseString();
       List<String> current = bos;
-      for (final String part : template.split(" ")) {
+      for (final String part : TEMPLATE_ITEM_SEPARATOR.split(template)) {
         if (part.isEmpty()) {
           continue;
         }
-        if (part.startsWith("$")) {
+        if (part.startsWith(SEQUENCE_PLACEHOLDER_PREFIX)) {
           current = eos;
         } else {
           current.add(part);

@@ -26,6 +26,10 @@ import java.util.List;
  * {@link #SAFETENSORS}, {@link #CONFIG}, {@link #VOCABULARY}, and {@link #TOKENIZER_CONFIG}; a
  * SentencePiece directory holds {@link #SAFETENSORS}, {@link #CONFIG}, {@link #TOKENIZER_JSON},
  * and one of {@link #SENTENCEPIECE_MODELS}.
+ *
+ * <p>{@link #ONNX_MODEL} and {@link #ONNX_MODEL_DATA} name files of a <em>teacher</em> directory
+ * rather than of a model directory; {@link ModelDistiller} and {@link HuggingFaceModelCache} share
+ * them.</p>
  */
 final class ModelFileNames {
 
@@ -48,6 +52,16 @@ final class ModelFileNames {
   static final List<String> SENTENCEPIECE_MODELS =
       List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");
 
+  /** The ONNX graph of a teacher, relative to the teacher directory's root. */
+  static final String ONNX_MODEL = "onnx/model.onnx";
+
+  /** The external weights an ONNX export splits out of {@link #ONNX_MODEL}, if it splits them. */
+  static final String ONNX_MODEL_DATA = "onnx/model.onnx_data";
+
+  /** Not instantiable. */
+  private ModelFileNames() {
+  }
+
   /**
    * {@return the first of the given file names that exists as a regular file in the directory,
    * or {@code null} when none does}
@@ -63,9 +77,5 @@ final class ModelFileNames {
       }
     }
     return null;
-  }
-
-  /** Not instantiable. */
-  private ModelFileNames() {
   }
 }

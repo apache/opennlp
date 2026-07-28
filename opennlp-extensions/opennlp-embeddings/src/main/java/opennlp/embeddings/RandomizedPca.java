@@ -24,9 +24,9 @@ import java.util.stream.IntStream;
  * Principal component analysis by randomized SVD (Halko, Martinsson, Tropp), the approximation
  * Model2Vec's distillation performs with a dense LAPACK SVD through scikit-learn. A dense SVD of
  * a vocabulary-size matrix (250k rows for a multilingual teacher) is not practical in pure Java,
- * so the top components are found with a random range finder and two power iterations, which for
- * the fast-decaying spectrum of transformer token embeddings recovers the same subspace as the
- * exact decomposition.
+ * so the top components are found with a random range finder and {@value #POWER_ITERATIONS} power
+ * iterations, which for the fast-decaying spectrum of transformer token embeddings recovers the
+ * same subspace as the exact decomposition.
  *
  * <p>The column mean is subtracted before decomposition (the data matrix is modified in place),
  * and the signs of the components are fixed the way scikit-learn's full solver fixes them
@@ -54,6 +54,18 @@ final class RandomizedPca {
   /** Jacobi eigensolver sweep cap; convergence arrives long before this. */
   private static final int JACOBI_MAX_SWEEPS = 100;
 
+  /** Floor on a squared singular value, so a rank-deficient direction divides by a non-zero. */
+  private static final double MIN_SQUARED_SINGULAR_VALUE = 1e-12;
+
+  /** CholeskyQR diagonal jitter, relative to the Gram matrix's average diagonal element. */
+  private static final double JITTER_RATIO = 1e-12;
+
+  /** Factor the jitter grows by after a failed factorization. */
+  private static final double JITTER_ESCALATION = 1000;
+
+  /** Number of jitter values tried before the factorization is given up on. */
+  private static final int JITTER_ATTEMPTS = 5;
+
   /** Not instantiable. */
   private RandomizedPca() {
   }
@@ -74,7 +86,8 @@ final class RandomizedPca {
    *                   deterministic.
    * @return The projected row-major {@code rows x components} matrix and the ratio of total
    *     variance it explains.
-   * @throws IllegalArgumentException Thrown if the arguments are inconsistent.
+   * @throws IllegalArgumentException Thrown if the arguments are inconsistent, or if the data has
+   *     no variance to decompose (every row is identical, or a value is not finite).
    */
   static Result fitTransform(float[] data, int rows, int cols, int components, long seed) {
     if (data == null) {
@@ -90,6 +103,11 @@ final class RandomizedPca {
     }
     final double[] mean = columnMean(data, rows, cols);
     subtractMean(data, rows, cols, mean);
+    final double totalVariance = totalVariance(data, rows, cols);
+    if (!Double.isFinite(totalVariance) || totalVariance <= 0) {
+      throw new IllegalArgumentException("Data has a total variance of " + totalVariance
+          + "; there is no subspace to find. Every row is identical, or a value is not finite.");
+    }
     final int sampleDimensions = Math.min(components + OVERSAMPLING, cols);
     final double[] omega = new double[cols * sampleDimensions];
     final Random random = new Random(seed);
@@ -126,7 +144,7 @@ final class RandomizedPca {
     // mapped back through B and normalized by its singular value.
     final double[] componentsMajor = new double[components * cols];
     for (int j = 0; j < components; j++) {
-      final double singularValue = Math.sqrt(Math.max(eigenvalues[j], JACOBI_EPSILON));
+      final double singularValue = Math.sqrt(Math.max(eigenvalues[j], MIN_SQUARED_SINGULAR_VALUE));
       for (int c = 0; c < cols; c++) {
         double sum = 0;
         for (int a = 0; a < sampleDimensions; a++) {
@@ -141,7 +159,7 @@ final class RandomizedPca {
     for (int j = 0; j < components; j++) {
       keptVariance += eigenvalues[j];
     }
-    return new Result(transformed, keptVariance / totalVariance(data, rows, cols));
+    return new Result(transformed, keptVariance / totalVariance);
   }
 
   /**
@@ -209,16 +227,13 @@ final class RandomizedPca {
    * @param mean The per-column means.
    */
   private static void subtractMean(float[] data, int rows, int cols, double[] mean) {
-    final float[] meanFloat = new float[cols];
-    for (int c = 0; c < cols; c++) {
-      meanFloat[c] = (float) mean[c];
-    }
     forBlocks(rows, block -> {
       final int start = blockStart(rows, block);
       final int end = blockStart(rows, block + 1);
       for (int i = start; i < end; i++) {
         for (int c = 0; c < cols; c++) {
-          data[i * cols + c] -= meanFloat[c];
+          final int index = i * cols + c;
+          data[index] = (float) (data[index] - mean[c]);
         }
       }
     });
@@ -436,11 +451,13 @@ final class RandomizedPca {
     for (int a = 0; a < width; a++) {
       trace += gram[a * width + a];
     }
-    double jitter = Math.max(trace / width, 1) * 1e-12;
+    // Relative to the average diagonal element, so the factorization is unchanged when the whole
+    // matrix is rescaled; an absolute jitter would swamp a Gram matrix of small magnitude.
+    double jitter = trace / width * JITTER_RATIO;
     double[] lower = null;
-    for (int attempt = 0; attempt < 5 && lower == null; attempt++) {
+    for (int attempt = 0; attempt < JITTER_ATTEMPTS && lower == null; attempt++) {
       lower = cholesky(gram, width, jitter);
-      jitter *= 1000;
+      jitter *= JITTER_ESCALATION;
     }
     if (lower == null) {
       throw new IllegalStateException("Gram matrix is not positive definite even with jitter; "

@@ -17,8 +17,12 @@
 package opennlp.embeddings;
 
 import java.util.Random;
+import java.util.concurrent.ForkJoinPool;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +40,9 @@ class RandomizedPcaTest {
   private static final int ROWS = 400;
   private static final int COLS = 48;
   private static final int RANK = 6;
+
+  /** Small enough that a fixed absolute regularization would swamp the rescaled matrix. */
+  private static final float SMALL_SCALE = 1e-6f;
 
   /**
    * {@return an exactly rank-{@link #RANK} matrix: a random factor times a random loading
@@ -119,6 +126,57 @@ class RandomizedPcaTest {
     assertArrayEquals(first, second);
   }
 
+  /**
+   * The decomposition is equivariant under a rescaling of the whole matrix: the projected
+   * coordinates scale with the input and the explained variance ratio, being a ratio, does not
+   * move. Any absolute (rather than relative) tolerance inside the pipeline breaks this.
+   */
+  @Test
+  void testIsUnchangedByRescalingTheWholeMatrix() {
+    final RandomizedPca.Result unscaled =
+        RandomizedPca.fitTransform(lowRankData(), ROWS, COLS, RANK, 42);
+    final float[] scaledData = lowRankData();
+    for (int i = 0; i < scaledData.length; i++) {
+      scaledData[i] *= SMALL_SCALE;
+    }
+
+    final RandomizedPca.Result scaled =
+        RandomizedPca.fitTransform(scaledData, ROWS, COLS, RANK, 42);
+
+    assertEquals(unscaled.explainedVarianceRatio(), scaled.explainedVarianceRatio(), 1e-6,
+        "the explained variance ratio must not depend on the magnitude of the input");
+    double largest = 0;
+    for (final float value : unscaled.transformed()) {
+      largest = Math.max(largest, Math.abs(value));
+    }
+    final double tolerance = 1e-4 * largest * SMALL_SCALE;
+    for (int i = 0; i < unscaled.transformed().length; i++) {
+      assertEquals(unscaled.transformed()[i] * (double) SMALL_SCALE, scaled.transformed()[i],
+          tolerance, "projected coordinate " + i);
+    }
+  }
+
+  /**
+   * The parallel loops reduce per-block partial sums in a fixed block order, so the result does not
+   * depend on how many threads the fork/join pool runs the blocks on.
+   */
+  @ParameterizedTest
+  @ValueSource(ints = {1, 2, 7})
+  void testDeterministicAcrossThreadCounts(int parallelism) throws Exception {
+    final float[] expected =
+        RandomizedPca.fitTransform(lowRankData(), ROWS, COLS, RANK, 42).transformed();
+    final ForkJoinPool pool = new ForkJoinPool(parallelism);
+
+    try {
+      final float[] actual = pool.submit(
+          () -> RandomizedPca.fitTransform(lowRankData(), ROWS, COLS, RANK, 42).transformed())
+          .get();
+      assertArrayEquals(expected, actual);
+    } finally {
+      pool.shutdown();
+    }
+  }
+
   @Test
   void testCentersTheDataInPlace() {
     final float[] data = lowRankData();
@@ -133,17 +191,71 @@ class RandomizedPcaTest {
   }
 
   @Test
-  void testRejectsInconsistentArguments() {
+  void testRejectsNullData() {
+    assertEquals("Data must not be null", assertThrows(IllegalArgumentException.class,
+        () -> RandomizedPca.fitTransform(null, 3, 4, 2, 42)).getMessage());
+  }
+
+  /**
+   * The shape must describe the array exactly: a wrong column count, a non-positive dimension, or
+   * a length that is not {@code rows * cols} is rejected rather than silently reinterpreted.
+   */
+  @ParameterizedTest
+  @CsvSource({"3, 5, 2", "3, 3, 2", "0, 4, 2", "3, 0, 2", "-1, 4, 2", "4, 4, 2", "2, 4, 1"})
+  void testRejectsAShapeThatDoesNotDescribeTheData(int rows, int cols, int components) {
     final float[] data = new float[12];
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> RandomizedPca.fitTransform(data, rows, cols, components, 42));
+    assertTrue(e.getMessage().startsWith("Data has 12 elements, not " + rows + " x " + cols),
+        e.getMessage());
+  }
+
+  /**
+   * The component count must be a genuine reduction: at least one, no more than the column count,
+   * and strictly fewer than the row count (the randomized range finder has no subspace to find
+   * otherwise).
+   */
+  @ParameterizedTest
+  @CsvSource({"0", "-1", "5", "3", "4"})
+  void testRejectsAComponentCountThatIsNotAReduction(int components) {
+    final float[] data = new float[12];
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> RandomizedPca.fitTransform(data, 3, 4, components, 42));
+    assertTrue(e.getMessage().startsWith("Components must be in [1, 2], got " + components),
+        e.getMessage());
+  }
+
+  /**
+   * Data whose rows are all identical centers to exactly zero, so there is no subspace and the
+   * explained-variance ratio would be 0/0. That must fail loudly rather than return NaN.
+   */
+  @Test
+  void testRejectsDataWithoutVariance() {
+    final float[] data = new float[ROWS * COLS];
+    for (int i = 0; i < ROWS; i++) {
+      for (int c = 0; c < COLS; c++) {
+        data[i * COLS + c] = c;
+      }
+    }
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> RandomizedPca.fitTransform(data, ROWS, COLS, RANK, 42));
+    assertTrue(e.getMessage().contains("total variance"), e.getMessage());
+  }
+
+  /**
+   * A non-finite value poisons the column mean, so every centered value becomes NaN and the total
+   * variance is NaN. The check must reject that too, not let NaN through into the table.
+   */
+  @ParameterizedTest
+  @ValueSource(floats = {Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY})
+  void testRejectsNonFiniteData(float value) {
+    final float[] data = lowRankData();
+    data[0] = value;
+
     assertThrows(IllegalArgumentException.class,
-        () -> RandomizedPca.fitTransform(null, 3, 4, 2, 42));
-    assertThrows(IllegalArgumentException.class,
-        () -> RandomizedPca.fitTransform(data, 3, 5, 2, 42));
-    assertThrows(IllegalArgumentException.class,
-        () -> RandomizedPca.fitTransform(data, 3, 4, 0, 42));
-    assertThrows(IllegalArgumentException.class,
-        () -> RandomizedPca.fitTransform(data, 3, 4, 5, 42));
-    assertThrows(IllegalArgumentException.class,
-        () -> RandomizedPca.fitTransform(data, 3, 4, 3, 42));
+        () -> RandomizedPca.fitTransform(data, ROWS, COLS, RANK, 42));
   }
 }
