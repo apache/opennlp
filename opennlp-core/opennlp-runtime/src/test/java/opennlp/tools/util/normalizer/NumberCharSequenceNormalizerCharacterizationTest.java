@@ -39,6 +39,9 @@ public class NumberCharSequenceNormalizerCharacterizationTest {
   private static final NumberCharSequenceNormalizer NORMALIZER =
       NumberCharSequenceNormalizer.getInstance();
 
+  /** Former digit-run regex used for differential characterization. */
+  private static final Pattern FORMER_DIGIT_REGEX = Pattern.compile("\\d+");
+
   private static void check(String input, String expected) {
     assertEquals(expected, NORMALIZER.normalize(input).toString());
   }
@@ -89,13 +92,12 @@ public class NumberCharSequenceNormalizerCharacterizationTest {
 
   @Test
   void matchesTheFormerRegexOnRandomizedInputs() {
-    final Pattern formerRegex = Pattern.compile("\\d+");
     final String[] pool = {"a", "Z", " ", "0", "1", "23", "007", ".", ",", "-", "+",
         "\u0661", "\u2460", "\uD835\uDFCF", "\uD83D\uDE00", "\uD83D", "\uDE00"};
     final Random random = new Random(42);
     for (int i = 0; i < 5000; i++) {
       final String input = CharacterizationInputs.randomInput(random, pool);
-      assertEquals(formerRegex.matcher(input).replaceAll(" "),
+      assertEquals(FORMER_DIGIT_REGEX.matcher(input).replaceAll(" "),
           NORMALIZER.normalize(input).toString(), () -> "Input: " + CharacterizationInputs.escape(input));
     }
   }

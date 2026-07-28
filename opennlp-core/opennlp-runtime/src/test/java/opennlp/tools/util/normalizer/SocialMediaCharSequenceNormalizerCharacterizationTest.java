@@ -52,6 +52,14 @@ public class SocialMediaCharSequenceNormalizerCharacterizationTest {
   private static final SocialMediaCharSequenceNormalizer NORMALIZER =
       SocialMediaCharSequenceNormalizer.getInstance();
 
+  private static final Pattern FORMER_HASH_USER_REGEX = Pattern.compile("[#@]\\S+");
+  private static final Pattern FORMER_RT_REGEX =
+      Pattern.compile("\\b(rt[ :])+", Pattern.CASE_INSENSITIVE);
+  private static final Pattern FORMER_FACE_REGEX =
+      Pattern.compile("[:;x]-?[()dop]", Pattern.CASE_INSENSITIVE);
+  private static final Pattern FORMER_LAUGH_REGEX =
+      Pattern.compile("([hj])+([aieou])+(\\1+\\2+)+", Pattern.CASE_INSENSITIVE);
+
   private static void check(String input, String expected) {
     assertEquals(expected, NORMALIZER.normalize(input).toString());
   }
@@ -168,11 +176,6 @@ public class SocialMediaCharSequenceNormalizerCharacterizationTest {
 
   @Test
   void matchesTheFormerRegexesOnRandomizedInputs() {
-    final Pattern hashUserRegex = Pattern.compile("[#@]\\S+");
-    final Pattern rtRegex = Pattern.compile("\\b(rt[ :])+", Pattern.CASE_INSENSITIVE);
-    final Pattern faceRegex = Pattern.compile("[:;x]-?[()dop]", Pattern.CASE_INSENSITIVE);
-    final Pattern laughRegex =
-        Pattern.compile("([hj])+([aieou])+(\\1+\\2+)+", Pattern.CASE_INSENSITIVE);
     final String[] pool = {"a", "A", "e", "h", "H", "j", "J", "o", "u", "y", "x", "X", "d", "p",
         "P", ")", "(", "-", ":", ";", " ", "  ", "\t", "\n", "#", "@", "_", "1", "rt", "RT",
         "rt:", "Rt ", "t", "r", "ha", "Ha", "ah", "hh", "aa", "jj", "\u00E9", "\u0301", "\uD800\uDDFD",
@@ -180,10 +183,10 @@ public class SocialMediaCharSequenceNormalizerCharacterizationTest {
     final Random random = new Random(42);
     for (int i = 0; i < 5000; i++) {
       final String input = CharacterizationInputs.randomInput(random, pool);
-      String expected = hashUserRegex.matcher(input).replaceAll(" ");
-      expected = rtRegex.matcher(expected).replaceAll(" ");
-      expected = faceRegex.matcher(expected).replaceAll(" ");
-      expected = laughRegex.matcher(expected).replaceAll("$1$2$1$2");
+      String expected = FORMER_HASH_USER_REGEX.matcher(input).replaceAll(" ");
+      expected = FORMER_RT_REGEX.matcher(expected).replaceAll(" ");
+      expected = FORMER_FACE_REGEX.matcher(expected).replaceAll(" ");
+      expected = FORMER_LAUGH_REGEX.matcher(expected).replaceAll("$1$2$1$2");
       assertEquals(expected, NORMALIZER.normalize(input).toString(),
           () -> "Input: " + CharacterizationInputs.escape(input));
     }

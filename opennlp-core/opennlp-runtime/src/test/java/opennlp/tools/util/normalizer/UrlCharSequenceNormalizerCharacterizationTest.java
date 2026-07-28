@@ -18,9 +18,12 @@ package opennlp.tools.util.normalizer;
 
 import java.util.Random;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,6 +51,14 @@ public class UrlCharSequenceNormalizerCharacterizationTest {
 
   private static final UrlCharSequenceNormalizer NORMALIZER =
       UrlCharSequenceNormalizer.getInstance();
+
+  /** Former URL regex used for differential characterization. */
+  private static final Pattern FORMER_URL_REGEX =
+      Pattern.compile("https?://[-_.?&~;+=/#0-9A-Za-z]+");
+
+  /** Former mail regex used for differential characterization. */
+  private static final Pattern FORMER_MAIL_REGEX =
+      Pattern.compile("(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+");
 
   private static void check(String input, String expected) {
     assertEquals(expected, NORMALIZER.normalize(input).toString());
@@ -138,38 +149,34 @@ public class UrlCharSequenceNormalizerCharacterizationTest {
 
   @Test
   void matchesTheFormerRegexesOnRandomizedInputs() {
-    final Pattern urlRegex = Pattern.compile("https?://[-_.?&~;+=/#0-9A-Za-z]+");
-    final Pattern mailRegex =
-        Pattern.compile("(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+");
     final String[] pool = {"a", "b", "Z", "1", " ", ".", ",", "-", "+", "_", "@", ":", "/", "%",
         "~", ";", "=", "&", "?", "#", "http", "https", "ttp", "://", "http://", "s", "x.com",
         "co", ".com", "a@b", "@b.co", "\u00E9", "\uD83D\uDE00", "\uD83D", "\uDE00"};
     final Random random = new Random(42);
     for (int i = 0; i < 5000; i++) {
       final String input = CharacterizationInputs.randomInput(random, pool);
-      final String expected = mailRegex
-          .matcher(urlRegex.matcher(input).replaceAll(" "))
+      final String expected = FORMER_MAIL_REGEX
+          .matcher(FORMER_URL_REGEX.matcher(input).replaceAll(" "))
           .replaceAll(" ");
       assertEquals(expected, NORMALIZER.normalize(input).toString(),
           () -> "Input: " + CharacterizationInputs.escape(input));
     }
   }
+
   @Test
   void noMatchInputIsReturnedUncopied() {
     final String plain = "no links in this sentence at all";
     Assertions.assertSame(plain, NORMALIZER.normalize(plain));
   }
 
-  @Test
-  void weirdUrlsMatchTheFormerRegexExactly() {
-    // Adversarial shapes in the spirit of the web-platform-tests URL suite: userinfo, ports,
-    // percent escapes, IPv6 brackets, backslashes, IDN and punycode hosts, stray schemes and
-    // separators. Each input runs differentially through the two former patterns, so the
-    // accept/reject boundary is pinned by construction rather than by hand.
-    final Pattern urls = Pattern.compile("https?://[-_.?&~;+=/#0-9A-Za-z]+");
-    final Pattern mails =
-        Pattern.compile("(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+");
-    final String[] inputs = {
+  /**
+   * Adversarial shapes in the spirit of the web-platform-tests URL suite: userinfo, ports,
+   * percent escapes, IPv6 brackets, backslashes, IDN and punycode hosts, stray schemes and
+   * separators. Each input runs differentially through the two former patterns, so the
+   * accept/reject boundary is pinned by construction rather than by hand.
+   */
+  static Stream<String> weirdUrls() {
+    return Stream.of(
         "http://user:pass@example.com/path",
         "https://example.com:8080/x",
         "http://example.com/foo%20bar",
@@ -193,12 +200,15 @@ public class UrlCharSequenceNormalizerCharacterizationTest {
         "http://example.com/a b http://second.example/c",
         "http:///triple-slash",
         "http//missing-colon.example",
-        "https://.leading.dot",
-    };
-    for (final String input : inputs) {
-      final String viaRegexes =
-          mails.matcher(urls.matcher(input).replaceAll(" ")).replaceAll(" ");
-      assertEquals(viaRegexes, NORMALIZER.normalize(input).toString(), input);
-    }
+        "https://.leading.dot");
+  }
+
+  @ParameterizedTest
+  @MethodSource("weirdUrls")
+  void weirdUrlsMatchTheFormerRegexExactly(String input) {
+    final String viaRegexes = FORMER_MAIL_REGEX
+        .matcher(FORMER_URL_REGEX.matcher(input).replaceAll(" "))
+        .replaceAll(" ");
+    assertEquals(viaRegexes, NORMALIZER.normalize(input).toString(), input);
   }
 }

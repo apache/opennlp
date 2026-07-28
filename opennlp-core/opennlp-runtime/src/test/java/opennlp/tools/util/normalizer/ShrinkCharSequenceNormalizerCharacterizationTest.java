@@ -47,6 +47,11 @@ public class ShrinkCharSequenceNormalizerCharacterizationTest {
   private static final ShrinkCharSequenceNormalizer NORMALIZER =
       ShrinkCharSequenceNormalizer.getInstance();
 
+  private static final Pattern FORMER_SPACE_REGEX =
+      Pattern.compile("\\s{2,}", Pattern.CASE_INSENSITIVE);
+  private static final Pattern FORMER_REPEATED_CHAR_REGEX =
+      Pattern.compile("(.)\\1{2,}", Pattern.CASE_INSENSITIVE);
+
   private static void check(String input, String expected) {
     assertEquals(expected, NORMALIZER.normalize(input).toString());
   }
@@ -142,16 +147,14 @@ public class ShrinkCharSequenceNormalizerCharacterizationTest {
 
   @Test
   void matchesTheFormerRegexOnRandomizedInputs() {
-    final Pattern spaceRegex = Pattern.compile("\\s{2,}", Pattern.CASE_INSENSITIVE);
-    final Pattern repeatedCharRegex = Pattern.compile("(.)\\1{2,}", Pattern.CASE_INSENSITIVE);
     final String[] pool = {"a", "aa", "aaa", "A", "b", "Z", "!", "!!", ".", "-", " ", "  ",
         "\t", "\n", "\r", "\u0001", "\u0085", "\u2028", "\u00A0", "\u00E9", "\u00C9",
         "\uD83D\uDE00", "\uD83D", "\uDE00"};
     final Random random = new Random(42);
     for (int i = 0; i < 5000; i++) {
       final String input = CharacterizationInputs.randomInput(random, pool);
-      final String expected = repeatedCharRegex
-          .matcher(spaceRegex.matcher(input).replaceAll(" "))
+      final String expected = FORMER_REPEATED_CHAR_REGEX
+          .matcher(FORMER_SPACE_REGEX.matcher(input).replaceAll(" "))
           .replaceAll("$1$1").trim();
       assertEquals(expected, NORMALIZER.normalize(input).toString(),
           () -> "Input: " + CharacterizationInputs.escape(input));

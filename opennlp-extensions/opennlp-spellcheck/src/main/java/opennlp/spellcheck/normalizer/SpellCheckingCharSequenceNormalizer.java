@@ -179,7 +179,12 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
         .build();
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException if {@code text} is {@code null}
+   * @throws IllegalStateException if no {@link SpellChecker} is attached
+   */
   @Override
   public CharSequence normalize(CharSequence text) {
     if (spellChecker == null) {
@@ -454,6 +459,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     /**
      * @param value tokens shorter than this are left untouched; must be {@code >= 1}
      * @return this builder
+     * @throws IllegalArgumentException if {@code value} is less than {@code 1}
      */
     public Builder minTokenLength(int value) {
       if (value < 1) {
@@ -466,6 +472,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     /**
      * @param value the maximum edit distance considered per token; must be {@code >= 0}
      * @return this builder
+     * @throws IllegalArgumentException if {@code value} is negative
      */
     public Builder maxEditDistance(int value) {
       if (value < 0) {
