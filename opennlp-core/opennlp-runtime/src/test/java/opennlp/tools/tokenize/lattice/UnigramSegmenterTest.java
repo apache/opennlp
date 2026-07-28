@@ -19,11 +19,15 @@ package opennlp.tools.tokenize.lattice;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -153,26 +157,28 @@ public class UnigramSegmenterTest {
         segmenter.tokenizePos(text));
   }
 
-  @Test
-  void testMalformedLexiconsFailLoud() {
+  @ParameterizedTest(name = "lexicon content \"{0}\"")
+  @ValueSource(strings = {"word\n", "word abc\n", "word 0\n", "\n\n"})
+  void testMalformedLexiconsFailLoud(String lexicon) {
     Assertions.assertThrows(IOException.class, () -> UnigramSegmenter.load(
-        new ByteArrayInputStream("word\n".getBytes(StandardCharsets.UTF_8)),
-        StandardCharsets.UTF_8));
-    Assertions.assertThrows(IOException.class, () -> UnigramSegmenter.load(
-        new ByteArrayInputStream("word abc\n".getBytes(StandardCharsets.UTF_8)),
-        StandardCharsets.UTF_8));
-    Assertions.assertThrows(IOException.class, () -> UnigramSegmenter.load(
-        new ByteArrayInputStream("word 0\n".getBytes(StandardCharsets.UTF_8)),
-        StandardCharsets.UTF_8));
-    Assertions.assertThrows(IOException.class, () -> UnigramSegmenter.load(
-        new ByteArrayInputStream("\n\n".getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
         StandardCharsets.UTF_8));
   }
 
   @Test
   void testInvalidArguments() {
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> UnigramSegmenter.load((java.nio.file.Path) null));
+        () -> UnigramSegmenter.load((Path) null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> UnigramSegmenter.load((Path) null, StandardCharsets.UTF_8));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> UnigramSegmenter.load(Path.of("words.txt"), null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> UnigramSegmenter.load((InputStream) null, StandardCharsets.UTF_8));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> UnigramSegmenter.load(new ByteArrayInputStream(new byte[0]), null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> segmenter.tokenize(null));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> segmenter.tokenizePos(null));
   }

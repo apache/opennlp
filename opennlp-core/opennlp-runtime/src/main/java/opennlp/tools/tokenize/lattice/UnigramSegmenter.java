@@ -183,14 +183,14 @@ public class UnigramSegmenter implements Tokenizer {
    *
    * <p>Reports the segmented surfaces, whitespace omitted.</p>
    *
-   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   @Override
-  public String[] tokenize(String s) {
-    final Span[] spans = tokenizePos(s);
+  public String[] tokenize(String text) {
+    final Span[] spans = tokenizePos(text);
     final String[] tokens = new String[spans.length];
     for (int i = 0; i < tokens.length; i++) {
-      tokens[i] = s.substring(spans[i].getStart(), spans[i].getEnd());
+      tokens[i] = text.substring(spans[i].getStart(), spans[i].getEnd());
     }
     return tokens;
   }
@@ -200,31 +200,39 @@ public class UnigramSegmenter implements Tokenizer {
    *
    * <p>Reports the segmented spans in original text coordinates, whitespace omitted.</p>
    *
-   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   @Override
-  public Span[] tokenizePos(String s) {
-    if (s == null) {
+  public Span[] tokenizePos(String text) {
+    if (text == null) {
       throw new IllegalArgumentException("text must not be null");
     }
     final List<Span> spans = new ArrayList<>();
     int start = 0;
-    while (start < s.length()) {
-      if (StringUtil.isWhitespace(s.charAt(start))) {
+    while (start < text.length()) {
+      if (StringUtil.isWhitespace(text.charAt(start))) {
         start++;
         continue;
       }
       int end = start;
-      while (end < s.length() && !StringUtil.isWhitespace(s.charAt(end))) {
+      while (end < text.length() && !StringUtil.isWhitespace(text.charAt(end))) {
         end++;
       }
-      decode(s, start, end, spans);
+      decode(text, start, end, spans);
       start = end;
     }
     return spans.toArray(new Span[0]);
   }
 
-  /** Viterbi over word log-probabilities within one whitespace-free stretch. */
+  /**
+   * Viterbi over word log-probabilities within one whitespace-free stretch.
+   *
+   * @param text The text being segmented.
+   * @param from The stretch start.
+   * @param to The exclusive stretch end.
+   * @param spans Receives the best path's spans, in text order and in original text
+   *              coordinates.
+   */
   private void decode(String text, int from, int to, List<Span> spans) {
     final int length = to - from;
     final double[] best = new double[length + 1];

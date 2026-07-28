@@ -49,11 +49,46 @@ import opennlp.tools.util.StringUtil;
  */
 public final class MecabDictionary {
 
-  /** One lexicon or unknown-word entry. */
+  /**
+   * The category name every {@code char.def} must define; unmapped code points and
+   * unknown-word handling fall back to it.
+   */
+  static final String DEFAULT_CATEGORY = "DEFAULT";
+
+  private static final String MATRIX_DEF = "matrix.def";
+  private static final String CHAR_DEF = "char.def";
+  private static final String UNK_DEF = "unk.def";
+
+  /** The prefix a {@code char.def} code point field carries, in either letter case. */
+  private static final String HEX_PREFIX = "0x";
+
+  /** The separator between the two ends of a {@code char.def} code point range. */
+  private static final String RANGE_SEPARATOR = "..";
+
+  /** The {@code char.def} field value that turns a category flag on. */
+  private static final String FLAG_ON = "1";
+
+  /**
+   * One lexicon or unknown-word entry.
+   *
+   * @param leftId The left context id, an index into the connection matrix.
+   * @param rightId The right context id, an index into the connection matrix.
+   * @param cost The entry's own cost.
+   * @param features The entry's feature columns, in file order.
+   */
   record WordEntry(int leftId, int rightId, int cost, List<String> features) {
   }
 
-  /** One character category's unknown-word behavior from {@code char.def}. */
+  /**
+   * One character category's unknown-word behavior from {@code char.def}.
+   *
+   * @param name The category name.
+   * @param invoke Whether unknown-word candidates are generated even where the lexicon
+   *               matched.
+   * @param group Whether a whole run of same-category characters is offered as one
+   *              candidate.
+   * @param length How many leading characters of the run are offered as candidates.
+   */
   record Category(String name, boolean invoke, boolean group, int length) {
   }
 
@@ -236,6 +271,10 @@ public final class MecabDictionary {
        * Finds the lowest base at which every label lands on a free slot. Labels
        * arrive in surface-character order, not numeric order, so the smallest and
        * largest label are computed rather than assumed positional.
+       *
+       * @param labels The child labels to place.
+       * @param labelCount How many leading elements of {@code labels} are in use.
+       * @return The base offset every label fits at.
        */
       private int findBase(int[] labels, int labelCount) {
         int smallest = labels[0];
@@ -261,6 +300,11 @@ public final class MecabDictionary {
         }
       }
 
+      /**
+       * Grows the base and check arrays until a slot is addressable.
+       *
+       * @param slot The highest slot index that has to be writable.
+       */
       private void ensureCapacity(int slot) {
         if (slot >= check.length) {
           int capacity = check.length;
@@ -358,7 +402,10 @@ public final class MecabDictionary {
     /**
      * Folds the recorded mappings into their lookup table.
      *
+     * @param categories The categories the {@code char.def} category section defined,
+     *                   keyed by name.
      * @return The table. Never {@code null}.
+     * @throws IOException Thrown if a mapping names a category that was never defined.
      */
     private CategoryTable build(Map<String, Category> categories) throws IOException {
       // Cut the supplementary ranges at every boundary they introduce, so that each
@@ -412,13 +459,19 @@ public final class MecabDictionary {
      * Resolves a mapped category name against the defined categories, so a mapping to
      * a name the {@code char.def} category section never defined fails at load with
      * the offending code point instead of falling back silently at lookup time.
+     *
+     * @param name The category name a mapping line gave.
+     * @param categories The defined categories, keyed by name.
+     * @param codePoint A code point the mapping covers, for the error message.
+     * @return The resolved category. Never {@code null}.
+     * @throws IOException Thrown if no category of that name was defined.
      */
-    private static Category resolve(String name, Map<String, Category> categories,
+    private Category resolve(String name, Map<String, Category> categories,
         int codePoint) throws IOException {
       final Category category = categories.get(name);
       if (category == null) {
         throw new IOException(String.format(
-            "char.def maps U+%04X to the undefined category %s", codePoint, name));
+            CHAR_DEF + " maps U+%04X to the undefined category %s", codePoint, name));
       }
       return category;
     }
@@ -455,7 +508,6 @@ public final class MecabDictionary {
   private final DoubleArrayLexicon lexicon;
   private final short[] connectionCosts;
   private final int rightSize;
-  private final Map<String, Category> categories;
   private final CategoryTable categoryTable;
   private final Category defaultCategory;
   private final Map<String, List<WordEntry>> unknownEntries;
@@ -466,9 +518,8 @@ public final class MecabDictionary {
     this.lexicon = lexicon;
     this.connectionCosts = connectionCosts;
     this.rightSize = rightSize;
-    this.categories = categories;
     this.categoryTable = categoryTable;
-    this.defaultCategory = categories.get("DEFAULT");
+    this.defaultCategory = categories.get(DEFAULT_CATEGORY);
     this.unknownEntries = unknownEntries;
   }
 
@@ -507,23 +558,24 @@ public final class MecabDictionary {
     }
     // The connection matrix is read first because its dimensions are what every
     // lexicon entry's context ids have to be inside of.
-    final List<String> matrixLines = readLines(directory.resolve("matrix.def"), charset);
-    if (matrixLines.isEmpty()) {
-      throw new IOException("empty matrix.def under " + directory);
+    final List<String> matrixLines = readLines(directory.resolve(MATRIX_DEF), charset);
+    final String headerLine = StringUtil.trimUnicodeWhitespace(matrixLines.get(0));
+    if (headerLine.isEmpty()) {
+      throw new IOException("empty " + MATRIX_DEF + " under " + directory);
     }
-    final String[] header = splitWhitespace(matrixLines.get(0));
+    final String[] header = splitWhitespace(headerLine);
     if (header.length != 2) {
-      throw new IOException("malformed matrix.def header: " + matrixLines.get(0));
+      throw new IOException("malformed " + MATRIX_DEF + " header: " + headerLine);
     }
-    final int leftSize = parseInt(header[0], "matrix.def", 1);
-    final int rightSize = parseInt(header[1], "matrix.def", 1);
+    final int leftSize = parseInt(header[0], MATRIX_DEF, 1);
+    final int rightSize = parseInt(header[1], MATRIX_DEF, 1);
     if (leftSize < 1 || rightSize < 1) {
-      throw new IOException("matrix.def dimensions must be positive, got "
+      throw new IOException(MATRIX_DEF + " dimensions must be positive, got "
           + leftSize + " " + rightSize);
     }
     final long cells = (long) leftSize * rightSize;
     if (cells > Integer.MAX_VALUE) {
-      throw new IOException("matrix.def dimensions " + leftSize + " x " + rightSize
+      throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
           + " overflow the addressable connection matrix");
     }
     final short[] costs = new short[(int) cells];
@@ -534,18 +586,18 @@ public final class MecabDictionary {
       }
       final String[] fields = splitWhitespace(line);
       if (fields.length != 3) {
-        throw new IOException("malformed matrix.def line " + (i + 1));
+        throw new IOException("malformed " + MATRIX_DEF + " line " + (i + 1));
       }
-      final int right = parseInt(fields[0], "matrix.def", i + 1);
-      final int left = parseInt(fields[1], "matrix.def", i + 1);
+      final int right = parseInt(fields[0], MATRIX_DEF, i + 1);
+      final int left = parseInt(fields[1], MATRIX_DEF, i + 1);
       if (right < 0 || right >= leftSize || left < 0 || left >= rightSize) {
-        throw new IOException("malformed matrix.def line " + (i + 1)
+        throw new IOException("malformed " + MATRIX_DEF + " line " + (i + 1)
             + ": context ids " + right + " " + left
             + " are outside the declared dimensions " + leftSize + " " + rightSize);
       }
-      final int cost = parseInt(fields[2], "matrix.def", i + 1);
+      final int cost = parseInt(fields[2], MATRIX_DEF, i + 1);
       if (cost < Short.MIN_VALUE || cost > Short.MAX_VALUE) {
-        throw new IOException("malformed matrix.def line " + (i + 1)
+        throw new IOException("malformed " + MATRIX_DEF + " line " + (i + 1)
             + ": connection cost " + cost + " is outside the 16-bit range the"
             + " format defines");
       }
@@ -564,10 +616,10 @@ public final class MecabDictionary {
 
     final Map<String, Category> categories = new HashMap<>();
     final CategoryTableBuilder categoryTable = new CategoryTableBuilder();
-    readCharacterDefinition(directory.resolve("char.def"), charset, categories,
+    readCharacterDefinition(directory.resolve(CHAR_DEF), charset, categories,
         categoryTable);
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
-    readLexicon(directory.resolve("unk.def"), charset, unknown, leftSize, rightSize);
+    readLexicon(directory.resolve(UNK_DEF), charset, unknown, leftSize, rightSize);
 
     return new MecabDictionary(DoubleArrayLexicon.build(lexicon), costs,
         rightSize, categories, categoryTable.build(categories), unknown);
@@ -608,12 +660,12 @@ public final class MecabDictionary {
       final int rightId = parseInt(fields.get(2), file.toString(), lineNumber);
       if (leftId < 0 || leftId >= rightSize) {
         throw new IOException("malformed entry at " + file + " line " + lineNumber
-            + ": left context id " + leftId + " is outside the matrix.def dimensions "
+            + ": left context id " + leftId + " is outside the " + MATRIX_DEF + " dimensions "
             + leftSize + " " + rightSize);
       }
       if (rightId < 0 || rightId >= leftSize) {
         throw new IOException("malformed entry at " + file + " line " + lineNumber
-            + ": right context id " + rightId + " is outside the matrix.def dimensions "
+            + ": right context id " + rightId + " is outside the " + MATRIX_DEF + " dimensions "
             + leftSize + " " + rightSize);
       }
       final WordEntry entry = new WordEntry(leftId, rightId,
@@ -623,7 +675,18 @@ public final class MecabDictionary {
     }
   }
 
-  /** Reads char.def: category behavior lines and code point mapping lines. */
+  /**
+   * Reads {@code char.def}: the category behavior lines and the code point mapping
+   * lines, in file order, so that a later mapping wins over an earlier one.
+   *
+   * @param file The file to read.
+   * @param charset The encoding to decode with.
+   * @param categories Receives the defined categories, keyed by name.
+   * @param categoryTable Receives the code point to category name mappings.
+   * @throws IOException Thrown if the file is missing, a line is malformed, a code
+   *         point is outside the Unicode range, a range descends, or the file defines
+   *         no {@code DEFAULT} category.
+   */
   private static void readCharacterDefinition(Path file, Charset charset,
       Map<String, Category> categories, CategoryTableBuilder categoryTable)
       throws IOException {
@@ -635,13 +698,14 @@ public final class MecabDictionary {
         continue;
       }
       final String[] fields = splitWhitespace(line);
-      if (fields[0].startsWith("0x") || fields[0].startsWith("0X")) {
-        final int rangeSeparator = fields[0].indexOf("..");
+      if (fields[0].regionMatches(true, 0, HEX_PREFIX, 0, HEX_PREFIX.length())) {
+        final int rangeSeparator = fields[0].indexOf(RANGE_SEPARATOR);
         final int from;
         final int to;
         if (rangeSeparator >= 0) {
           from = parseCodePoint(fields[0].substring(0, rangeSeparator), file, lineNumber);
-          to = parseCodePoint(fields[0].substring(rangeSeparator + 2), file, lineNumber);
+          to = parseCodePoint(
+              fields[0].substring(rangeSeparator + RANGE_SEPARATOR.length()), file, lineNumber);
         } else {
           from = parseCodePoint(fields[0], file, lineNumber);
           to = from;
@@ -659,12 +723,12 @@ public final class MecabDictionary {
           throw new IOException("malformed category at " + file + " line " + lineNumber);
         }
         categories.put(fields[0], new Category(fields[0],
-            "1".equals(fields[1]), "1".equals(fields[2]),
+            FLAG_ON.equals(fields[1]), FLAG_ON.equals(fields[2]),
             parseInt(fields[3], file.toString(), lineNumber)));
       }
     }
-    if (!categories.containsKey("DEFAULT")) {
-      throw new IOException("char.def defines no DEFAULT category: " + file);
+    if (!categories.containsKey(DEFAULT_CATEGORY)) {
+      throw new IOException(CHAR_DEF + " defines no " + DEFAULT_CATEGORY + " category: " + file);
     }
   }
 
@@ -721,7 +785,8 @@ public final class MecabDictionary {
    *
    * @param file The file to read.
    * @param charset The encoding to decode with.
-   * @return The lines without their line terminators. Never {@code null}.
+   * @return The lines without their line terminators. Never {@code null} and never
+   *         empty: an empty file reads as one empty line.
    * @throws IOException Thrown if the file is missing or reading fails.
    */
   private static List<String> readLines(Path file, Charset charset) throws IOException {
@@ -822,14 +887,15 @@ public final class MecabDictionary {
    * @param file The file being read, for the error message.
    * @param lineNumber The line being read, for the error message.
    * @return The parsed code point, which may be in a supplementary plane.
-   * @throws IOException Thrown if the field is not a valid hexadecimal code point or
-   *         names a value no Unicode code point has.
+   * @throws IOException Thrown if the field is shorter than the prefix, is not a valid
+   *         hexadecimal number, or names a value no Unicode code point has.
    */
   private static int parseCodePoint(String text, Path file, int lineNumber)
       throws IOException {
     final int codePoint;
     try {
-      codePoint = Integer.parseInt(StringUtil.trimUnicodeWhitespace(text).substring(2), 16);
+      codePoint = Integer.parseInt(
+          StringUtil.trimUnicodeWhitespace(text).substring(HEX_PREFIX.length()), 16);
     } catch (RuntimeException e) {
       throw new IOException("malformed code point in " + file + " line " + lineNumber, e);
     }

@@ -246,7 +246,15 @@ public final class MecabDictionaryInstaller {
     }
   }
 
-  /** Wraps the tar stream so exactly one entry's bytes are readable. */
+  /**
+   * Wraps the tar stream so exactly one entry's bytes are readable.
+   *
+   * @param in The tar stream, positioned at the entry's first byte.
+   * @param size The entry size in bytes.
+   * @return A stream reporting end of stream after that many bytes, and failing if the
+   *         tar stream ends first. Never {@code null}; closing it leaves {@code in}
+   *         open and positioned after the entry content.
+   */
   private static InputStream boundedStream(InputStream in, long size) {
     return new InputStream() {
       private long remaining = size;

@@ -28,6 +28,21 @@ import java.util.zip.GZIPOutputStream;
  */
 final class TarGzArchives {
 
+  /** The tar block size; headers, content, and padding are all whole blocks. */
+  private static final int BLOCK = 512;
+
+  /** The header field offsets and lengths this builder writes, in bytes. */
+  private static final int NAME_LENGTH = 100;
+  private static final int MODE_OFFSET = 100;
+  private static final int SIZE_OFFSET = 124;
+  private static final int SIZE_LENGTH = 12;
+  private static final int CHECKSUM_OFFSET = 148;
+  private static final int CHECKSUM_LENGTH = 8;
+  private static final int TYPE_OFFSET = 156;
+
+  /** The type flag of a regular file entry. */
+  private static final char REGULAR_FILE = '0';
+
   private TarGzArchives() {
   }
 
@@ -45,7 +60,8 @@ final class TarGzArchives {
     for (final String[] entry : entries) {
       tarEntry(tar, entry[0], entry[1].getBytes(StandardCharsets.UTF_8));
     }
-    tar.write(new byte[1024]);
+    // Two zero blocks end a tar archive.
+    tar.write(new byte[2 * BLOCK]);
     final ByteArrayOutputStream compressed = new ByteArrayOutputStream();
     try (GZIPOutputStream gzip = new GZIPOutputStream(compressed)) {
       gzip.write(tar.toByteArray());
@@ -67,31 +83,35 @@ final class TarGzArchives {
   private static void tarEntry(ByteArrayOutputStream tar, String name, byte[] content)
       throws IOException {
     final byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-    if (nameBytes.length == 0 || nameBytes.length > 100) {
+    if (nameBytes.length == 0 || nameBytes.length > NAME_LENGTH) {
       throw new IllegalArgumentException(
-          "entry name must be 1..100 bytes, got " + nameBytes.length);
+          "entry name must be 1.." + NAME_LENGTH + " bytes, got " + nameBytes.length);
     }
-    final byte[] header = new byte[512];
+    final byte[] header = new byte[BLOCK];
     System.arraycopy(nameBytes, 0, header, 0, nameBytes.length);
     final byte[] mode = "0000644".getBytes(StandardCharsets.US_ASCII);
-    System.arraycopy(mode, 0, header, 100, mode.length);
-    final String size = String.format("%011o", content.length);
-    System.arraycopy(size.getBytes(StandardCharsets.US_ASCII), 0, header, 124, 11);
-    header[156] = '0';
-    for (int i = 148; i < 156; i++) {
+    System.arraycopy(mode, 0, header, MODE_OFFSET, mode.length);
+    // Both numeric fields hold octal digits followed by one terminator byte.
+    final byte[] size = String.format("%0" + (SIZE_LENGTH - 1) + "o", content.length)
+        .getBytes(StandardCharsets.US_ASCII);
+    System.arraycopy(size, 0, header, SIZE_OFFSET, size.length);
+    header[TYPE_OFFSET] = REGULAR_FILE;
+    // The checksum is computed with its own field read as spaces.
+    for (int i = CHECKSUM_OFFSET; i < CHECKSUM_OFFSET + CHECKSUM_LENGTH; i++) {
       header[i] = ' ';
     }
     int checksum = 0;
     for (final byte b : header) {
       checksum += b & 0xFF;
     }
-    final String checksumText = String.format("%06o", checksum);
-    System.arraycopy(checksumText.getBytes(StandardCharsets.US_ASCII), 0, header, 148, 6);
-    header[154] = 0;
-    header[155] = ' ';
+    final byte[] checksumText = String.format("%0" + (CHECKSUM_LENGTH - 2) + "o", checksum)
+        .getBytes(StandardCharsets.US_ASCII);
+    System.arraycopy(checksumText, 0, header, CHECKSUM_OFFSET, checksumText.length);
+    header[CHECKSUM_OFFSET + CHECKSUM_LENGTH - 2] = 0;
+    header[CHECKSUM_OFFSET + CHECKSUM_LENGTH - 1] = ' ';
     tar.write(header);
     tar.write(content);
-    final int padding = (512 - content.length % 512) % 512;
+    final int padding = (BLOCK - content.length % BLOCK) % BLOCK;
     tar.write(new byte[padding]);
   }
 }
