@@ -54,14 +54,14 @@ public class GeoResolutionTest {
   void testRejectsNullMention() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new GeoResolution(null, TOKYO, 0.5));
-    assertTrue(e.getMessage().startsWith("Mention must not be null"), e.getMessage());
+    assertTrue(e.getMessage().startsWith("mention must not be null"), e.getMessage());
   }
 
   @Test
   void testRejectsNullEntry() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new GeoResolution(new Span(0, 1), null, 0.5));
-    assertTrue(e.getMessage().startsWith("Entry must not be null"), e.getMessage());
+    assertTrue(e.getMessage().startsWith("entry must not be null"), e.getMessage());
   }
 
   @ParameterizedTest
@@ -69,6 +69,6 @@ public class GeoResolutionTest {
   void testRejectsOutOfRangeConfidence(double confidence) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new GeoResolution(new Span(0, 1), TOKYO, confidence));
-    assertTrue(e.getMessage().startsWith("Confidence must be in [0, 1]"), e.getMessage());
+    assertTrue(e.getMessage().startsWith("confidence must be in [0, 1]"), e.getMessage());
   }
 }

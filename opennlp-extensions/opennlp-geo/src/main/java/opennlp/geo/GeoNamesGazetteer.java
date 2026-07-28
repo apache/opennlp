@@ -116,7 +116,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
       lineNumber++;
-      if (StringUtil.isBlank(line)) {
+      if (StringUtil.isUnicodeBlank(line)) {
         continue;
       }
       index.add(parseRow(line, lineNumber));

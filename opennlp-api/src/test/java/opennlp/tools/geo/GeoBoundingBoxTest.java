@@ -68,7 +68,7 @@ public class GeoBoundingBoxTest {
   void testRejectsInvertedLatitudes() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new GeoBoundingBox(0.0, 10.0, 1.0, 9.0));
-    assertEquals("South must not be greater than north, got: 10.0 > 9.0", e.getMessage());
+    assertEquals("south must not be greater than north, got: 10.0 > 9.0", e.getMessage());
   }
 
   @Test
@@ -114,6 +114,6 @@ public class GeoBoundingBoxTest {
     final GeoBoundingBox box = new GeoBoundingBox(0.0, 0.0, 1.0, 1.0);
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> box.contains(null));
-    assertEquals("Point must not be null", e.getMessage());
+    assertEquals("point must not be null", e.getMessage());
   }
 }

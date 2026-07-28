@@ -32,8 +32,8 @@ import opennlp.tools.geo.GazetteerEntry;
 /**
  * A {@link Gazetteer} composing a base gazetteer with user-supplied changes: additions from a
  * second gazetteer, and {@link Suppression} rules hiding base entries. Consumers see one merged
- * view, so every component downstream of the gazetteer seam picks the changes up without knowing
- * they exist.
+ * view through the {@link Gazetteer} interface, so every component downstream picks the changes
+ * up without knowing they exist.
  *
  * <p>The additions side is any {@link Gazetteer} implementation: a {@link UserGazetteer} loaded
  * from a file, an entry set ingested from a database, or a remote service client. Additions rank
@@ -44,8 +44,7 @@ import opennlp.tools.geo.GazetteerEntry;
  * with the same name replaces a base entry. A suppressed entry is hidden from every query,
  * including {@link #byId(String, String)} and {@link #byRegion(String)}.</p>
  *
- * <p>Instances are immutable and as thread-safe as the composed gazetteers, which the
- * {@link Gazetteer} contract requires to be thread-safe themselves.</p>
+ * <p>Instances are immutable and thread-safe when the composed gazetteers are.</p>
  */
 @ThreadSafe
 public final class OverlayGazetteer implements Gazetteer {
@@ -140,8 +139,8 @@ public final class OverlayGazetteer implements Gazetteer {
    *
    * <p>The representative is the more populous of the two sides' representatives, the additions
    * winning ties. When the base's representative is suppressed the base contributes no candidate
-   * at all, because the seam offers no second choice; the additions' representative, when there
-   * is one, then stands alone.</p>
+   * at all, because {@link Gazetteer#byRegion(String)} offers no second choice; the additions'
+   * representative, when there is one, then stands alone.</p>
    */
   @Override
   public Optional<GazetteerEntry> byRegion(String isoCountryCode) throws IOException {

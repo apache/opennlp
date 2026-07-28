@@ -41,7 +41,12 @@ final class GazetteerIndex {
   private final Map<String, GazetteerEntry> byId = new HashMap<>();
   private final Map<String, GazetteerEntry> byCountry = new HashMap<>();
 
-  /** Indexes one entry under its canonical and alternate names. */
+  /**
+   * Indexes one entry under its canonical and alternate names, its record id, and, when it
+   * carries a country code, as that country's candidate representative.
+   *
+   * @param entry The entry to index.
+   */
   void add(GazetteerEntry entry) {
     index(entry.name(), entry);
     for (final String alternate : entry.alternateNames()) {
@@ -66,13 +71,23 @@ final class GazetteerIndex {
     return byId.isEmpty();
   }
 
-  /** Finds candidates for a name, ranked; empty when nothing matches. */
+  /**
+   * Finds the candidates indexed under a name.
+   *
+   * @param name The name to look up, matched after lower-casing. Must not be {@code null}.
+   * @return The candidates in {@link #freeze()} order; empty when nothing matches.
+   */
   List<GazetteerEntry> lookup(CharSequence name) {
     final List<GazetteerEntry> found = byName.get(name.toString().toLowerCase(Locale.ROOT));
     return found == null ? List.of() : Collections.unmodifiableList(found);
   }
 
-  /** Finds the entry with a record id. */
+  /**
+   * Finds the entry with a record id.
+   *
+   * @param recordId The record id to look up.
+   * @return The entry, or empty when no entry carries that id.
+   */
   Optional<GazetteerEntry> byId(String recordId) {
     return Optional.ofNullable(byId.get(recordId));
   }
@@ -101,12 +116,12 @@ final class GazetteerIndex {
    */
   static String normalizeRegionCode(String isoCountryCode) {
     if (isoCountryCode == null) {
-      throw new IllegalArgumentException("IsoCountryCode must not be null");
+      throw new IllegalArgumentException("isoCountryCode must not be null");
     }
     if (isoCountryCode.length() != 2
         || !isAsciiLetter(isoCountryCode.charAt(0)) || !isAsciiLetter(isoCountryCode.charAt(1))) {
       throw new IllegalArgumentException(
-          "IsoCountryCode must be an ISO 3166-1 alpha-2 code (two ASCII letters), got: "
+          "isoCountryCode must be an ISO 3166-1 alpha-2 code (two ASCII letters), got: "
               + isoCountryCode);
     }
     return new String(new char[] {upperAscii(isoCountryCode.charAt(0)),
@@ -116,6 +131,9 @@ final class GazetteerIndex {
   /**
    * Indexes {@code entry} under the lower-cased form of {@code name}, listing it once even when
    * several of its names fold to the same key.
+   *
+   * @param name  The name variant to index under.
+   * @param entry The entry to list under it.
    */
   private void index(String name, GazetteerEntry entry) {
     final List<GazetteerEntry> entries =

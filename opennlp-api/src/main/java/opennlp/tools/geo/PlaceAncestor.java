@@ -38,13 +38,13 @@ public record PlaceAncestor(String id, String name, String type) {
    * @throws IllegalArgumentException Thrown if a component is {@code null} or blank.
    */
   public PlaceAncestor {
-    if (id == null || StringUtil.isBlank(id)) {
+    if (StringUtil.isUnicodeBlank(id)) {
       throw new IllegalArgumentException("id must not be null or blank");
     }
-    if (name == null || StringUtil.isBlank(name)) {
+    if (StringUtil.isUnicodeBlank(name)) {
       throw new IllegalArgumentException("name must not be null or blank");
     }
-    if (type == null || StringUtil.isBlank(type)) {
+    if (StringUtil.isUnicodeBlank(type)) {
       throw new IllegalArgumentException("type must not be null or blank");
     }
   }

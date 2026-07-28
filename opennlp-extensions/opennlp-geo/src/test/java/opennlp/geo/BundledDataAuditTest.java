@@ -241,9 +241,9 @@ public class BundledDataAuditTest {
   @ParameterizedTest
   @ValueSource(strings = {"US", "DE", "FR", "JP", "GB", "BR", "IN", "CN"})
   void testByRegionServesTheRegionJoinKeyShape(String code) {
-    // ISO 3166-1 alpha-2 codes are the region join key of the seam (a flag emoji decodes to
-    // the same code, for example). byRegion must answer for them, and the returned entry must
-    // carry the very code it was asked for.
+    // ISO 3166-1 alpha-2 codes are the region join key of the Gazetteer interface (a flag emoji
+    // decodes to the same code, for example). byRegion must answer for them, and the returned
+    // entry must carry the very code it was asked for.
     final GazetteerEntry entry = BundledGazetteer.getInstance().byRegion(code).orElseThrow(
         () -> new AssertionError("No entry for region " + code));
     assertEquals(code, entry.countryCode());

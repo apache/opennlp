@@ -43,15 +43,15 @@ final class GeocoderInput {
    */
   static void validateResolveArguments(CharSequence text, List<Span> locationMentions) {
     if (text == null) {
-      throw new IllegalArgumentException("Text must not be null");
+      throw new IllegalArgumentException("text must not be null");
     }
     if (locationMentions == null) {
-      throw new IllegalArgumentException("LocationMentions must not be null");
+      throw new IllegalArgumentException("locationMentions must not be null");
     }
     for (final Span mention : locationMentions) {
       if (mention == null) {
         throw new IllegalArgumentException(
-            "LocationMentions must not contain a null element, got: " + locationMentions);
+            "locationMentions must not contain a null element, got: " + locationMentions);
       }
       if (mention.getEnd() > text.length()) {
         throw new IllegalArgumentException("Mention " + mention

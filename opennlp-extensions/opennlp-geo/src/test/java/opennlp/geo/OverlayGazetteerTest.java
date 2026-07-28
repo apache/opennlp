@@ -127,7 +127,7 @@ public class OverlayGazetteerTest {
 
   /**
    * When every base candidate of a region is suppressed the base contributes nothing, because
-   * the seam offers no second choice; the additions' representative stands alone.
+   * {@code byRegion} offers no second choice; the additions' representative stands alone.
    */
   @Test
   void testSuppressedRegionRepresentativeFallsBackToAdditions() throws IOException {

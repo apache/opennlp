@@ -29,7 +29,7 @@ import opennlp.tools.geo.GazetteerEntry;
 
 /**
  * The manual's reference example of bringing your own {@link Gazetteer}: a minimal, correct
- * implementation over an application-internal store. Two maps are enough to join the seam, and
+ * implementation over an application-internal store. Two maps are enough to implement it, and
  * there is no registration anywhere; the instance is handed to whatever consumes the interface.
  * The geo chapter of the manual shows this implementation, and
  * {@link CustomGazetteerExampleTest} asserts the behavior the chapter states.

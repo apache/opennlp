@@ -21,8 +21,8 @@
 		<title>Overview</title>
 		<para>
 			A gazetteer maps place names to place records. The
-			<code>opennlp.tools.geo.Gazetteer</code> interface is the one seam every
-			lookup goes through: a bundled table, a downloaded dataset, an ingested
+			<code>opennlp.tools.geo.Gazetteer</code> interface is what every lookup
+			goes through: a bundled table, a downloaded dataset, an ingested
 			database, and a remote service client are all implementations of this
 			one interface, and any of them can be handed to the components that
 			consume it. Each record is a <code>GazetteerEntry</code> carrying the
@@ -32,13 +32,14 @@
 			attributes.
 		</para>
 		<para>
-			The <code>opennlp-geo</code> module ships three file-backed
+			The <code>opennlp-geo</code> module ships four file-backed
 			implementations: <code>BundledGazetteer</code> over the bundled Natural
 			Earth populated-places table, <code>GeoNamesGazetteer</code> over a
-			user-downloaded GeoNames extract, and <code>OvertureGazetteer</code>
-			over an Overture divisions export. All implementations are immutable
-			and thread-safe after loading, so one instance can be shared across
-			threads.
+			user-downloaded GeoNames extract, <code>OvertureGazetteer</code> over an
+			Overture divisions export, and <code>UserGazetteer</code> over a
+			user-authored file, described in the next section. All four are
+			immutable and thread-safe after loading, so one instance can be shared
+			across threads.
 		</para>
 	</section>
 
@@ -123,15 +124,16 @@ gazetteer.lookup("Tokyo");     // unaffected base entries stay visible]]>
 	<section xml:id="tools.geo.custom">
 		<title>Bringing your own implementation</title>
 		<para>
-			The seam is registry-free: implementing the four methods of
-			<code>Gazetteer</code> is all it takes, there is nothing to declare or
-			register anywhere, and the instance is handed to whatever consumes the
-			interface, typically as the additions side of an
-			<code>OverlayGazetteer</code>. An implementation must be immutable and
-			thread-safe after construction and must document its own name-matching
-			semantics. Because the contract is one plain constructor-built object,
-			an implementation also drops directly into any dependency-injection
-			container as a bean, with no framework types anywhere in OpenNLP.
+			The interface is registry-free: implementing its four methods is all it
+			takes, there is nothing to declare or register anywhere, and the
+			instance is handed to whatever consumes the interface, typically as the
+			additions side of an <code>OverlayGazetteer</code>. An implementation
+			must document its own name-matching semantics and its thread-safety
+			guarantees; the implementations shipped here are immutable and safe to
+			share between threads. Because the contract is one plain
+			constructor-built object, an implementation also drops directly into any
+			dependency-injection container as a bean, with no framework types
+			anywhere in OpenNLP.
 		</para>
 		<para>
 			The following complete implementation serves an application-internal
@@ -172,8 +174,11 @@ final class CrmGazetteer implements Gazetteer {
 
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
-    if (source == null || recordId == null) {
-      throw new IllegalArgumentException("source and recordId must not be null");
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (recordId == null) {
+      throw new IllegalArgumentException("recordId must not be null");
     }
     return SOURCE.equals(source) ? Optional.ofNullable(byId.get(recordId)) : Optional.empty();
   }

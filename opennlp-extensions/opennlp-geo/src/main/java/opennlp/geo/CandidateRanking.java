@@ -43,7 +43,7 @@ final class CandidateRanking {
    * {@return the sort rank of a feature class} CITY before ADMIN before POI before anything else,
    * including unknown.
    */
-  static int featureClassRank(String featureClass) {
+  private static int featureClassRank(String featureClass) {
     if (GazetteerEntry.FEATURE_CLASS_CITY.equals(featureClass)) {
       return 0;
     }

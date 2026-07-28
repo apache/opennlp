@@ -185,7 +185,7 @@ public class BundledGazetteerTest {
   void testLookupNullFailsLoud() {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> fixture().lookup(null));
-    assertTrue(e.getMessage().startsWith("Name must not be null"), e.getMessage());
+    assertTrue(e.getMessage().startsWith("name must not be null"), e.getMessage());
   }
 
   @Test
@@ -230,7 +230,7 @@ public class BundledGazetteerTest {
     final BundledGazetteer gazetteer = fixture();
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> gazetteer.byRegion(malformed));
-    assertTrue(e.getMessage().startsWith("IsoCountryCode must be an ISO 3166-1 alpha-2 code"),
+    assertTrue(e.getMessage().startsWith("isoCountryCode must be an ISO 3166-1 alpha-2 code"),
         e.getMessage());
   }
 

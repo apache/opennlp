@@ -114,87 +114,87 @@ public class GazetteerEntryTest {
 
   @Test
   void testRejectsNullOrEmptySource() {
-    assertMessage("Source must not be null or empty", () -> entry(null, "1", "n", List.of(),
+    assertMessage("source must not be null or empty", () -> entry(null, "1", "n", List.of(),
         TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("Source must not be null or empty", () -> entry("", "1", "n", List.of(),
+    assertMessage("source must not be null or empty", () -> entry("", "1", "n", List.of(),
         TOKYO, null, List.of(), 0L, null, Map.of()));
   }
 
   @Test
   void testRejectsNullOrEmptyRecordId() {
-    assertMessage("RecordId must not be null or empty", () -> entry("s", null, "n", List.of(),
+    assertMessage("recordId must not be null or empty", () -> entry("s", null, "n", List.of(),
         TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("RecordId must not be null or empty", () -> entry("s", "", "n", List.of(),
+    assertMessage("recordId must not be null or empty", () -> entry("s", "", "n", List.of(),
         TOKYO, null, List.of(), 0L, null, Map.of()));
   }
 
   @Test
   void testRejectsNullOrEmptyName() {
-    assertMessage("Name must not be null or empty", () -> entry("s", "1", null, List.of(),
+    assertMessage("name must not be null or empty", () -> entry("s", "1", null, List.of(),
         TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("Name must not be null or empty", () -> entry("s", "1", "", List.of(),
+    assertMessage("name must not be null or empty", () -> entry("s", "1", "", List.of(),
         TOKYO, null, List.of(), 0L, null, Map.of()));
   }
 
   @Test
   void testRejectsBadAlternateNames() {
-    assertMessage("AlternateNames must not be null", () -> entry("s", "1", "n", null,
+    assertMessage("alternateNames must not be null", () -> entry("s", "1", "n", null,
         TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("AlternateNames must not contain a null or empty element",
+    assertMessage("alternateNames must not contain a null or empty element",
         () -> entry("s", "1", "n", Arrays.asList("ok", null), TOKYO, null, List.of(), 0L, null,
             Map.of()));
-    assertMessage("AlternateNames must not contain a null or empty element",
+    assertMessage("alternateNames must not contain a null or empty element",
         () -> entry("s", "1", "n", Arrays.asList("ok", ""), TOKYO, null, List.of(), 0L, null,
             Map.of()));
   }
 
   @Test
   void testRejectsNullLocation() {
-    assertMessage("Location must not be null", () -> entry("s", "1", "n", List.of(), null, null,
+    assertMessage("location must not be null", () -> entry("s", "1", "n", List.of(), null, null,
         List.of(), 0L, null, Map.of()));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"", "J", "JPN", "jp", "J1", "-9"})
   void testRejectsMalformedCountryCode(String countryCode) {
-    assertMessage("CountryCode must be an ISO 3166-1 alpha-2 code", () -> entry("s", "1", "n",
+    assertMessage("countryCode must be an ISO 3166-1 alpha-2 code", () -> entry("s", "1", "n",
         List.of(), TOKYO, countryCode, List.of(), 0L, null, Map.of()));
   }
 
   @Test
   void testRejectsBadContainment() {
-    assertMessage("Containment must not be null", () -> entry("s", "1", "n", List.of(), TOKYO,
+    assertMessage("containment must not be null", () -> entry("s", "1", "n", List.of(), TOKYO,
         null, null, 0L, null, Map.of()));
-    assertMessage("Containment must not contain a null or empty element",
+    assertMessage("containment must not contain a null or empty element",
         () -> entry("s", "1", "n", List.of(), TOKYO, null, Arrays.asList("ok", null), 0L, null,
             Map.of()));
-    assertMessage("Containment must not contain a null or empty element",
+    assertMessage("containment must not contain a null or empty element",
         () -> entry("s", "1", "n", List.of(), TOKYO, null, Arrays.asList(""), 0L, null, Map.of()));
   }
 
   @Test
   void testRejectsNegativePopulation() {
-    assertMessage("Population must not be negative", () -> entry("s", "1", "n", List.of(), TOKYO,
+    assertMessage("population must not be negative", () -> entry("s", "1", "n", List.of(), TOKYO,
         null, List.of(), -1L, null, Map.of()));
   }
 
   @Test
   void testRejectsEmptyFeatureClass() {
-    assertMessage("FeatureClass must be null when unknown, not empty", () -> entry("s", "1", "n",
+    assertMessage("featureClass must be null when unknown, not empty", () -> entry("s", "1", "n",
         List.of(), TOKYO, null, List.of(), 0L, "", Map.of()));
   }
 
   @Test
   void testRejectsBadAttributes() {
-    assertMessage("Attributes must not be null", () -> entry("s", "1", "n", List.of(), TOKYO,
+    assertMessage("attributes must not be null", () -> entry("s", "1", "n", List.of(), TOKYO,
         null, List.of(), 0L, null, null));
     final Map<String, AttributeValue> nullValue = new HashMap<>();
     nullValue.put("key", null);
-    assertMessage("Attributes must not contain a null or empty key or a null value",
+    assertMessage("attributes must not contain a null or empty key or a null value",
         () -> entry("s", "1", "n", List.of(), TOKYO, null, List.of(), 0L, null, nullValue));
     final Map<String, AttributeValue> emptyKey = new HashMap<>();
     emptyKey.put("", new AttributeValue("v", "s", ""));
-    assertMessage("Attributes must not contain a null or empty key or a null value",
+    assertMessage("attributes must not contain a null or empty key or a null value",
         () -> entry("s", "1", "n", List.of(), TOKYO, null, List.of(), 0L, null, emptyKey));
   }
 

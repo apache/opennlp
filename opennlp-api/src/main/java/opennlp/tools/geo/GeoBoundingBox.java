@@ -49,20 +49,20 @@ public record GeoBoundingBox(double west, double south, double east, double nort
    */
   public GeoBoundingBox {
     if (!(west >= -180.0 && west <= 180.0)) {
-      throw new IllegalArgumentException("West must be in [-180, 180], got: " + west);
+      throw new IllegalArgumentException("west must be in [-180, 180], got: " + west);
     }
     if (!(east >= -180.0 && east <= 180.0)) {
-      throw new IllegalArgumentException("East must be in [-180, 180], got: " + east);
+      throw new IllegalArgumentException("east must be in [-180, 180], got: " + east);
     }
     if (!(south >= -90.0 && south <= 90.0)) {
-      throw new IllegalArgumentException("South must be in [-90, 90], got: " + south);
+      throw new IllegalArgumentException("south must be in [-90, 90], got: " + south);
     }
     if (!(north >= -90.0 && north <= 90.0)) {
-      throw new IllegalArgumentException("North must be in [-90, 90], got: " + north);
+      throw new IllegalArgumentException("north must be in [-90, 90], got: " + north);
     }
     if (south > north) {
       throw new IllegalArgumentException(
-          "South must not be greater than north, got: " + south + " > " + north);
+          "south must not be greater than north, got: " + south + " > " + north);
     }
   }
 
@@ -76,7 +76,7 @@ public record GeoBoundingBox(double west, double south, double east, double nort
    */
   public boolean contains(GeoPoint point) {
     if (point == null) {
-      throw new IllegalArgumentException("Point must not be null");
+      throw new IllegalArgumentException("point must not be null");
     }
     if (point.latitude() < south || point.latitude() > north) {
       return false;

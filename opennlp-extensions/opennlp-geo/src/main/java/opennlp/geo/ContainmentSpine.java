@@ -64,6 +64,13 @@ public final class ContainmentSpine implements PlaceHierarchy {
    */
   private static final int MAX_DEPTH = 64;
 
+  /**
+   * The empty-pushback marker of the CSV reader, distinct from the {@code -1} a
+   * {@link Reader} returns at end of input.
+   */
+  private static final int NO_PENDING = -2;
+
+  /** One indexed place: its parent identifier ({@code null} for a root), name, and type. */
   private record Node(String parentId, String name, String type) {
   }
 
@@ -143,13 +150,13 @@ public final class ContainmentSpine implements PlaceHierarchy {
      *         blank.
      */
     public Builder add(String id, String parentId, String name, String type) {
-      if (id == null || StringUtil.isBlank(id)) {
+      if (StringUtil.isUnicodeBlank(id)) {
         throw new IllegalArgumentException("id must not be null or blank");
       }
-      if (name == null || StringUtil.isBlank(name)) {
+      if (StringUtil.isUnicodeBlank(name)) {
         throw new IllegalArgumentException("name must not be null or blank");
       }
-      if (type == null || StringUtil.isBlank(type)) {
+      if (StringUtil.isUnicodeBlank(type)) {
         throw new IllegalArgumentException("type must not be null or blank");
       }
       places.put(id, new Node(parentId, name, type));
@@ -181,9 +188,10 @@ public final class ContainmentSpine implements PlaceHierarchy {
           throw new IOException("malformed containment line " + lineNumber
               + " in " + table);
         }
-        final String parent = stripped(fields.get(1));
-        add(stripped(fields.get(0)), parent.isEmpty() ? null : parent,
-            stripped(fields.get(2)), stripped(fields.get(3)));
+        final String parent = StringUtil.trimUnicodeWhitespace(fields.get(1));
+        add(StringUtil.trimUnicodeWhitespace(fields.get(0)), parent.isEmpty() ? null : parent,
+            StringUtil.trimUnicodeWhitespace(fields.get(2)),
+            StringUtil.trimUnicodeWhitespace(fields.get(3)));
       }
       return this;
     }
@@ -236,6 +244,13 @@ public final class ContainmentSpine implements PlaceHierarchy {
       return new ContainmentSpine(Map.copyOf(places));
     }
 
+    /**
+     * Reads a Who's On First parent identifier, where a non-positive value means the
+     * row has no usable parent.
+     *
+     * @param parent The parent column, already trimmed.
+     * @return The identifier, or {@code null} when the row is a root.
+     */
     private static String positiveOrNull(String parent) {
       if (parent.isEmpty() || parent.startsWith("-") || "0".equals(parent)) {
         return null;
@@ -244,6 +259,13 @@ public final class ContainmentSpine implements PlaceHierarchy {
     }
   }
 
+  /**
+   * Reads a file as UTF-8 lines, ending a line on {@code LF} or {@code CRLF}.
+   *
+   * @param file The file to read.
+   * @return The lines without their terminators.
+   * @throws IOException Thrown if reading fails.
+   */
   private static List<String> readLines(Path file) throws IOException {
     final String content;
     try (InputStream in = Files.newInputStream(file)) {
@@ -264,6 +286,13 @@ public final class ContainmentSpine implements PlaceHierarchy {
     return lines;
   }
 
+  /**
+   * Splits a line on a separator character, keeping empty fields.
+   *
+   * @param line      The line to split.
+   * @param separator The field separator.
+   * @return The fields, one more than the number of separators found.
+   */
   private static List<String> splitOn(String line, char separator) {
     final List<String> fields = new ArrayList<>();
     int start = 0;
@@ -278,6 +307,14 @@ public final class ContainmentSpine implements PlaceHierarchy {
 
   /** Consumes CSV rows as the parser completes them, with the row's starting line. */
   private interface CsvRows {
+
+    /**
+     * Accepts one completed row.
+     *
+     * @param line   The line the row starts on, counted from {@code 1}.
+     * @param fields The row's fields, unquoted and in column order.
+     * @throws IOException Thrown if the row cannot be accepted.
+     */
     void row(int line, List<String> fields) throws IOException;
   }
 
@@ -321,9 +358,9 @@ public final class ContainmentSpine implements PlaceHierarchy {
       if (fields.size() <= lastColumn) {
         throw new IOException("short row at line " + line + " in " + file);
       }
-      final String id = stripped(fields.get(idColumn));
-      final String name = stripped(fields.get(nameColumn));
-      final String type = stripped(fields.get(typeColumn));
+      final String id = StringUtil.trimUnicodeWhitespace(fields.get(idColumn));
+      final String name = StringUtil.trimUnicodeWhitespace(fields.get(nameColumn));
+      final String type = StringUtil.trimUnicodeWhitespace(fields.get(typeColumn));
       if (id.isEmpty()) {
         throw new IOException("empty id column at line " + line + " in " + file);
       }
@@ -335,7 +372,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
         throw new IOException("empty placetype column at line " + line + " in "
             + file + ": id " + id);
       }
-      final String parent = stripped(fields.get(parentColumn));
+      final String parent = StringUtil.trimUnicodeWhitespace(fields.get(parentColumn));
       builder.add(id, Builder.positiveOrNull(parent), name, type);
     }
   }
@@ -373,12 +410,11 @@ public final class ContainmentSpine implements PlaceHierarchy {
       int rowLine = 1;
       int quoteLine = 1;
       // One character of pushback covers the two lookahead cases, the CRLF pair and
-      // the doubled quote; NONE marks an empty pushback slot.
-      final int none = -2;
-      int pending = none;
+      // the doubled quote.
+      int pending = NO_PENDING;
       while (true) {
-        final int read = pending != none ? pending : in.read();
-        pending = none;
+        final int read = pending != NO_PENDING ? pending : in.read();
+        pending = NO_PENDING;
         if (read < 0) {
           break;
         }
@@ -453,30 +489,5 @@ public final class ContainmentSpine implements PlaceHierarchy {
       return;
     }
     consumer.row(line, List.copyOf(fields));
-  }
-
-
-  /**
-   * Strips leading and trailing whitespace under the project whitespace definition, so
-   * cells padded with no-break spaces read like cells padded with spaces.
-   */
-  private static String stripped(String value) {
-    int start = 0;
-    int end = value.length();
-    while (start < end) {
-      final int cp = value.codePointAt(start);
-      if (!StringUtil.isWhitespace(cp)) {
-        break;
-      }
-      start += Character.charCount(cp);
-    }
-    while (end > start) {
-      final int cp = value.codePointBefore(end);
-      if (!StringUtil.isWhitespace(cp)) {
-        break;
-      }
-      end -= Character.charCount(cp);
-    }
-    return value.substring(start, end);
   }
 }
