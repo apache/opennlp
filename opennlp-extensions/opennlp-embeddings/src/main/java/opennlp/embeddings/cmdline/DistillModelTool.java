@@ -52,22 +52,16 @@ public class DistillModelTool extends BasicCmdLineTool {
 
   @Override
   public void run(String[] args) {
+    // -teacher and -out are mandatory parameters, so validateAndParseParams has already
+    // rejected the invocation if either is absent.
     final Params params = validateAndParseParams(args, Params.class);
-    if (params.getTeacher() == null) {
-      throw new TerminateToolException(1, "The -teacher parameter is required: a Hugging Face "
-          + "model id (org/model) or a local teacher directory");
-    }
-    if (params.getOut() == null) {
-      throw new TerminateToolException(1, "The -out parameter is required: the model directory "
-          + "to write");
-    }
     final ModelDistiller.ProgressListener listener = System.out::println;
     final ModelDistiller.Result result;
     try {
       result = ModelDistiller.distill(params.getTeacher(), Path.of(params.getOut()),
           params.getPcaDims(), listener);
     } catch (IllegalArgumentException e) {
-      throw new TerminateToolException(1, e.getMessage());
+      throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,
           "IO error while distilling: " + e.getMessage(), e);

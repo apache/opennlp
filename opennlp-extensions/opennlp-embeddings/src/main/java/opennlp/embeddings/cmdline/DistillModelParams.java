@@ -28,22 +28,22 @@ interface DistillModelParams {
    * {@return the teacher to distill: a local directory or a Hugging Face model id}
    */
   @ParameterDescription(valueName = "hf-id-or-path",
-      description = "the sentence-transformer teacher: a Hugging Face model id (org/model) or a "
-          + "local directory holding tokenizer.json and onnx/model.onnx")
+      description = "The sentence-transformer teacher: a Hugging Face model id (org/model) or a "
+          + "local directory holding tokenizer.json and onnx/model.onnx.")
   String getTeacher();
 
   /**
    * {@return the model directory to write}
    */
   @ParameterDescription(valueName = "dir",
-      description = "the output directory for the distilled static embedding model")
+      description = "The output directory for the distilled static embedding model.")
   String getOut();
 
   /**
    * {@return the number of PCA dimensions to keep}
    */
   @OptionalParameter(defaultValue = "256")
-  @ParameterDescription(valueName = "n",
-      description = "the number of principal components to keep (default: 256)")
+  @ParameterDescription(valueName = "num",
+      description = "The number of principal components to keep, default is 256.")
   Integer getPcaDims();
 }
