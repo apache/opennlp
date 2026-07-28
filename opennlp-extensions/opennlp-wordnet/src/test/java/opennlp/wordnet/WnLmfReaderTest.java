@@ -42,6 +42,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WnLmfReaderTest {
 
+  /**
+   * Loads the miniature WN-LMF document from the test classpath into a lexicon.
+   *
+   * @return The loaded fixture lexicon.
+   */
   static LexicalKnowledgeBase fixture() {
     try (InputStream in = WnLmfReaderTest.class.getResourceAsStream("mini-wn-lmf.xml")) {
       assertNotNull(in, "Fixture mini-wn-lmf.xml must be on the test classpath");
