@@ -39,23 +39,23 @@ public class AttributeValueTest {
 
   @Test
   void testRejectsNullOrEmptyValue() {
-    assertMessage("Value must not be null or empty",
+    assertMessage("value must not be null or empty",
         assertThrows(IllegalArgumentException.class, () -> new AttributeValue(null, "s", "")));
-    assertMessage("Value must not be null or empty",
+    assertMessage("value must not be null or empty",
         assertThrows(IllegalArgumentException.class, () -> new AttributeValue("", "s", "")));
   }
 
   @Test
   void testRejectsNullOrEmptySource() {
-    assertMessage("Source must not be null or empty",
+    assertMessage("source must not be null or empty",
         assertThrows(IllegalArgumentException.class, () -> new AttributeValue("v", null, "")));
-    assertMessage("Source must not be null or empty",
+    assertMessage("source must not be null or empty",
         assertThrows(IllegalArgumentException.class, () -> new AttributeValue("v", "", "")));
   }
 
   @Test
   void testRejectsNullNotes() {
-    assertMessage("Notes must not be null",
+    assertMessage("notes must not be null",
         assertThrows(IllegalArgumentException.class, () -> new AttributeValue("v", "s", null)));
   }
 

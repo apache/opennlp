@@ -28,8 +28,7 @@ import opennlp.tools.util.Span;
  * {@code LOCATION} spans produced by a name finder. The whole document text is passed alongside
  * them so an implementation may use co-occurring mentions for disambiguation.</p>
  *
- * <p>Implementations must be immutable and thread-safe after construction, so one geocoder can
- * serve concurrent documents.</p>
+ * <p>Thread safety is implementation specific.</p>
  */
 public interface Geocoder {
 

@@ -124,7 +124,7 @@ public final class OvertureGazetteer implements Gazetteer {
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
       lineNumber++;
-      if (StringUtil.isBlank(line) || line.charAt(0) == '#') {
+      if (StringUtil.isUnicodeBlank(line) || line.charAt(0) == '#') {
         continue;
       }
       index.add(parseRow(line, lineNumber));

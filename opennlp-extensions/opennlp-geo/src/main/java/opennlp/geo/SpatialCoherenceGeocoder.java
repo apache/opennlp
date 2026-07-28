@@ -73,7 +73,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
    */
   public SpatialCoherenceGeocoder(Gazetteer gazetteer) {
     if (gazetteer == null) {
-      throw new IllegalArgumentException("Gazetteer must not be null");
+      throw new IllegalArgumentException("gazetteer must not be null");
     }
     this.gazetteer = gazetteer;
   }

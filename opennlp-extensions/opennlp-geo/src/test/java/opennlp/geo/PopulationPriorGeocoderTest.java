@@ -279,7 +279,7 @@ public class PopulationPriorGeocoderTest {
   void testConstructorRejectsNullGazetteer() {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> new PopulationPriorGeocoder(null));
-    assertTrue(e.getMessage().startsWith("Gazetteer must not be null"), e.getMessage());
+    assertTrue(e.getMessage().startsWith("gazetteer must not be null"), e.getMessage());
   }
 
   @Test
@@ -287,16 +287,16 @@ public class PopulationPriorGeocoderTest {
     final PopulationPriorGeocoder geocoder = geocoder();
     final IllegalArgumentException nullText = assertThrows(IllegalArgumentException.class,
         () -> geocoder.resolve(null, List.of()));
-    assertTrue(nullText.getMessage().startsWith("Text must not be null"), nullText.getMessage());
+    assertTrue(nullText.getMessage().startsWith("text must not be null"), nullText.getMessage());
 
     final IllegalArgumentException nullMentions = assertThrows(IllegalArgumentException.class,
         () -> geocoder.resolve("text", null));
-    assertTrue(nullMentions.getMessage().startsWith("LocationMentions must not be null"),
+    assertTrue(nullMentions.getMessage().startsWith("locationMentions must not be null"),
         nullMentions.getMessage());
 
     final IllegalArgumentException nullElement = assertThrows(IllegalArgumentException.class,
         () -> geocoder.resolve("text", Arrays.asList(new Span(0, 1), null)));
-    assertTrue(nullElement.getMessage().startsWith("LocationMentions must not contain a null"),
+    assertTrue(nullElement.getMessage().startsWith("locationMentions must not contain a null"),
         nullElement.getMessage());
 
     final IllegalArgumentException outOfBounds = assertThrows(IllegalArgumentException.class,

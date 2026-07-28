@@ -43,13 +43,13 @@ public record GeoResolution(Span mention, GazetteerEntry entry, double confidenc
    */
   public GeoResolution {
     if (mention == null) {
-      throw new IllegalArgumentException("Mention must not be null");
+      throw new IllegalArgumentException("mention must not be null");
     }
     if (entry == null) {
-      throw new IllegalArgumentException("Entry must not be null");
+      throw new IllegalArgumentException("entry must not be null");
     }
     if (!(confidence >= 0.0 && confidence <= 1.0)) {
-      throw new IllegalArgumentException("Confidence must be in [0, 1], got: " + confidence);
+      throw new IllegalArgumentException("confidence must be in [0, 1], got: " + confidence);
     }
   }
 }

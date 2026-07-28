@@ -44,13 +44,13 @@ public record AttributeValue(String value, String source, String notes) {
    */
   public AttributeValue {
     if (value == null || value.isEmpty()) {
-      throw new IllegalArgumentException("Value must not be null or empty");
+      throw new IllegalArgumentException("value must not be null or empty");
     }
     if (source == null || source.isEmpty()) {
-      throw new IllegalArgumentException("Source must not be null or empty");
+      throw new IllegalArgumentException("source must not be null or empty");
     }
     if (notes == null) {
-      throw new IllegalArgumentException("Notes must not be null");
+      throw new IllegalArgumentException("notes must not be null");
     }
   }
 }

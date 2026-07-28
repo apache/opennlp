@@ -113,53 +113,53 @@ public record GazetteerEntry(
    */
   public GazetteerEntry {
     if (source == null || source.isEmpty()) {
-      throw new IllegalArgumentException("Source must not be null or empty");
+      throw new IllegalArgumentException("source must not be null or empty");
     }
     if (recordId == null || recordId.isEmpty()) {
-      throw new IllegalArgumentException("RecordId must not be null or empty");
+      throw new IllegalArgumentException("recordId must not be null or empty");
     }
     if (name == null || name.isEmpty()) {
-      throw new IllegalArgumentException("Name must not be null or empty");
+      throw new IllegalArgumentException("name must not be null or empty");
     }
     if (alternateNames == null) {
-      throw new IllegalArgumentException("AlternateNames must not be null");
+      throw new IllegalArgumentException("alternateNames must not be null");
     }
     for (final String alternateName : alternateNames) {
       if (alternateName == null || alternateName.isEmpty()) {
         throw new IllegalArgumentException(
-            "AlternateNames must not contain a null or empty element, got: " + alternateNames);
+            "alternateNames must not contain a null or empty element, got: " + alternateNames);
       }
     }
     if (location == null) {
-      throw new IllegalArgumentException("Location must not be null");
+      throw new IllegalArgumentException("location must not be null");
     }
     if (countryCode != null && !isAlpha2(countryCode)) {
       throw new IllegalArgumentException(
-          "CountryCode must be an ISO 3166-1 alpha-2 code (two ASCII capital letters) or null, got: "
+          "countryCode must be an ISO 3166-1 alpha-2 code (two ASCII capital letters) or null, got: "
               + countryCode);
     }
     if (containment == null) {
-      throw new IllegalArgumentException("Containment must not be null");
+      throw new IllegalArgumentException("containment must not be null");
     }
     for (final String level : containment) {
       if (level == null || level.isEmpty()) {
         throw new IllegalArgumentException(
-            "Containment must not contain a null or empty element, got: " + containment);
+            "containment must not contain a null or empty element, got: " + containment);
       }
     }
     if (population < 0) {
-      throw new IllegalArgumentException("Population must not be negative, got: " + population);
+      throw new IllegalArgumentException("population must not be negative, got: " + population);
     }
     if (featureClass != null && featureClass.isEmpty()) {
-      throw new IllegalArgumentException("FeatureClass must be null when unknown, not empty");
+      throw new IllegalArgumentException("featureClass must be null when unknown, not empty");
     }
     if (attributes == null) {
-      throw new IllegalArgumentException("Attributes must not be null");
+      throw new IllegalArgumentException("attributes must not be null");
     }
     for (final Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
       if (entry.getKey() == null || entry.getKey().isEmpty() || entry.getValue() == null) {
         throw new IllegalArgumentException(
-            "Attributes must not contain a null or empty key or a null value, got: " + attributes);
+            "attributes must not contain a null or empty key or a null value, got: " + attributes);
       }
     }
     alternateNames = List.copyOf(alternateNames);

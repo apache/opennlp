@@ -17,8 +17,6 @@
 
 package opennlp.geo;
 
-import java.util.Locale;
-
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.util.StringUtil;
@@ -56,14 +54,14 @@ public record Suppression(String name, String countryCode, String featureClass) 
    *     present but blank.
    */
   public Suppression {
-    if (name == null || StringUtil.isBlank(name)) {
-      throw new IllegalArgumentException("Name must not be null or blank");
+    if (StringUtil.isUnicodeBlank(name)) {
+      throw new IllegalArgumentException("name must not be null or blank");
     }
     if (countryCode != null) {
       countryCode = GazetteerIndex.normalizeRegionCode(countryCode);
     }
-    if (featureClass != null && StringUtil.isBlank(featureClass)) {
-      throw new IllegalArgumentException("FeatureClass must be null when absent, not blank");
+    if (featureClass != null && StringUtil.isUnicodeBlank(featureClass)) {
+      throw new IllegalArgumentException("featureClass must be null when absent, not blank");
     }
   }
 
@@ -86,7 +84,7 @@ public record Suppression(String name, String countryCode, String featureClass) 
    */
   public boolean matches(GazetteerEntry entry) {
     if (entry == null) {
-      throw new IllegalArgumentException("Entry must not be null");
+      throw new IllegalArgumentException("entry must not be null");
     }
     if (countryCode != null && !countryCode.equals(entry.countryCode())) {
       return false;
@@ -95,12 +93,11 @@ public record Suppression(String name, String countryCode, String featureClass) 
         && (entry.featureClass() == null || !featureClass.equalsIgnoreCase(entry.featureClass()))) {
       return false;
     }
-    final String folded = name.toLowerCase(Locale.ROOT);
-    if (folded.equals(entry.name().toLowerCase(Locale.ROOT))) {
+    if (name.equalsIgnoreCase(entry.name())) {
       return true;
     }
     for (final String alternate : entry.alternateNames()) {
-      if (folded.equals(alternate.toLowerCase(Locale.ROOT))) {
+      if (name.equalsIgnoreCase(alternate)) {
         return true;
       }
     }

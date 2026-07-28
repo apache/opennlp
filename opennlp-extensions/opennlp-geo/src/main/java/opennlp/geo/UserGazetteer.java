@@ -140,7 +140,7 @@ public final class UserGazetteer implements Gazetteer {
     if (in == null) {
       throw new IllegalArgumentException("in must not be null");
     }
-    if (source == null || StringUtil.isBlank(source)) {
+    if (StringUtil.isUnicodeBlank(source)) {
       throw new IllegalArgumentException("source must not be null or blank");
     }
     final GazetteerIndex index = new GazetteerIndex();
@@ -151,7 +151,7 @@ public final class UserGazetteer implements Gazetteer {
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
       lineNumber++;
-      if (StringUtil.isBlank(line) || line.charAt(0) == '#') {
+      if (StringUtil.isUnicodeBlank(line) || line.charAt(0) == '#') {
         continue;
       }
       final GazetteerEntry entry = parseRow(line, lineNumber, source);
@@ -211,7 +211,7 @@ public final class UserGazetteer implements Gazetteer {
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
       lineNumber++;
-      if (StringUtil.isBlank(line) || line.charAt(0) == '#') {
+      if (StringUtil.isUnicodeBlank(line) || line.charAt(0) == '#') {
         continue;
       }
       final String[] fields = line.split(FIELD_SEPARATOR, -1);

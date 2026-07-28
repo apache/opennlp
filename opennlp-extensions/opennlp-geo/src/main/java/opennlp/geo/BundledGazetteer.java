@@ -90,7 +90,7 @@ public final class BundledGazetteer implements Gazetteer {
    */
   BundledGazetteer(List<GazetteerEntry> entries) {
     if (entries == null) {
-      throw new IllegalArgumentException("Entries must not be null");
+      throw new IllegalArgumentException("entries must not be null");
     }
     final Map<IdKey, GazetteerEntry> byId = new HashMap<>(entries.size() * 2);
     final Map<String, List<GazetteerEntry>> byName = new HashMap<>(entries.size() * 2);
@@ -98,7 +98,7 @@ public final class BundledGazetteer implements Gazetteer {
     final Set<String> sourceIds = new HashSet<>();
     for (final GazetteerEntry entry : entries) {
       if (entry == null) {
-        throw new IllegalArgumentException("Entries must not contain a null element");
+        throw new IllegalArgumentException("entries must not contain a null element");
       }
       final IdKey key = new IdKey(entry.source(), entry.recordId());
       if (byId.putIfAbsent(key, entry) != null) {
@@ -158,7 +158,7 @@ public final class BundledGazetteer implements Gazetteer {
   @Override
   public List<GazetteerEntry> lookup(CharSequence name) {
     if (name == null) {
-      throw new IllegalArgumentException("Name must not be null");
+      throw new IllegalArgumentException("name must not be null");
     }
     final String key = foldKey(name);
     if (key.isEmpty()) {
@@ -172,10 +172,10 @@ public final class BundledGazetteer implements Gazetteer {
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
     if (source == null) {
-      throw new IllegalArgumentException("Source must not be null");
+      throw new IllegalArgumentException("source must not be null");
     }
     if (recordId == null) {
-      throw new IllegalArgumentException("RecordId must not be null");
+      throw new IllegalArgumentException("recordId must not be null");
     }
     return Optional.ofNullable(idIndex.get(new IdKey(source, recordId)));
   }
@@ -226,6 +226,10 @@ public final class BundledGazetteer implements Gazetteer {
    * starting with {@code #} is a comment; blank lines are skipped; data rows carry no inline
    * comments.</p>
    *
+   * @param in           The table content, read fully as UTF-8 and closed.
+   * @param resourceName The name to report in error messages.
+   * @return The parsed entries in file order, never {@code null}.
+   * @throws IOException Thrown if reading fails.
    * @throws IllegalArgumentException Thrown for any malformed row; the message names
    *     {@code resourceName} and the line number.
    */

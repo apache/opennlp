@@ -39,10 +39,10 @@ public record GeoPoint(double latitude, double longitude) {
    */
   public GeoPoint {
     if (!(latitude >= -90.0 && latitude <= 90.0)) {
-      throw new IllegalArgumentException("Latitude must be in [-90, 90], got: " + latitude);
+      throw new IllegalArgumentException("latitude must be in [-90, 90], got: " + latitude);
     }
     if (!(longitude >= -180.0 && longitude <= 180.0)) {
-      throw new IllegalArgumentException("Longitude must be in [-180, 180], got: " + longitude);
+      throw new IllegalArgumentException("longitude must be in [-180, 180], got: " + longitude);
     }
   }
 }

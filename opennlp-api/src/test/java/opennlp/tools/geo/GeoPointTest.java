@@ -46,7 +46,7 @@ public class GeoPointTest {
   void testRejectsOutOfRangeLatitude(double latitude) {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> new GeoPoint(latitude, 0.0));
-    assertTrue(e.getMessage().startsWith("Latitude must be in [-90, 90]"), e.getMessage());
+    assertTrue(e.getMessage().startsWith("latitude must be in [-90, 90]"), e.getMessage());
   }
 
   @ParameterizedTest
@@ -54,6 +54,6 @@ public class GeoPointTest {
   void testRejectsOutOfRangeLongitude(double longitude) {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> new GeoPoint(0.0, longitude));
-    assertTrue(e.getMessage().startsWith("Longitude must be in [-180, 180]"), e.getMessage());
+    assertTrue(e.getMessage().startsWith("longitude must be in [-180, 180]"), e.getMessage());
   }
 }

@@ -22,16 +22,12 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The gazetteer seam: name, identifier, and region lookup over a set of place records. A bundled
- * table, a downloaded dataset, an ingested database, and a remote service client are all
- * implementations of this one interface; each record's {@link GazetteerEntry#source() source} tag
- * says where it came from.
+ * Name, identifier, and region lookup over a set of place records. A bundled table, a downloaded
+ * dataset, an ingested database, and a remote service client are all implementations of this one
+ * interface; each record's {@link GazetteerEntry#source() source} tag says where it came from.
  *
- * <p>Name matching semantics (case and accent folding, tokenization) are the implementation's
- * concern and must be documented by the implementation.</p>
- *
- * <p>Implementations must be immutable and thread-safe after construction, so one instance can be
- * shared across threads for concurrent lookups.</p>
+ * <p>Name matching semantics (case and accent folding, tokenization) are not fixed here and must
+ * be documented by the implementation. Thread safety is implementation specific.</p>
  */
 public interface Gazetteer {
 
