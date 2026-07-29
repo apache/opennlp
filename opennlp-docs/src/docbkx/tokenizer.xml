@@ -612,7 +612,11 @@ int[] ids = encoder.encodeToIds("OpenNLP encodes text for BERT models.");]]>
 				spans at the text's boundaries, and words the vocabulary cannot cover become the
 				unknown piece. Models with other special tokens or with non-contiguous ids are
 				supported through the constructors taking explicit special tokens or a piece-to-id
-				map.
+				map. The older <code>BertTokenizer</code> is deprecated and scheduled for removal:
+				its <code>tokenize</code> method returns the same piece sequence that
+				<code>encodeToPieces</code> returns. Migrating means passing the vocabulary as a
+				<code>List</code> or a piece-to-id map instead of a <code>Set</code>; the output
+				is unchanged.
 			</para>
 		</section>
 	</section>

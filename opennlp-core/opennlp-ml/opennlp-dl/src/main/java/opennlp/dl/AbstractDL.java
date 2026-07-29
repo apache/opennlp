@@ -36,8 +36,8 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -238,20 +238,22 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Creates a {@link Tokenizer} that performs the full BERT tokenization
-   * pipeline: basic tokenization (text normalization) followed by wordpiece,
-   * backed by a {@link WordpieceEncoder}. The special tokens are selected
-   * based on the vocabulary: if it contains RoBERTa-style tokens, those are
-   * used, otherwise the BERT defaults.
+   * Creates a {@link BertTokenizer} that performs the full BERT tokenization
+   * pipeline: basic tokenization (text normalization) followed by wordpiece.
+   * The special tokens are selected based on the vocabulary: if it contains
+   * RoBERTa-style tokens, those are used, otherwise the BERT defaults.
    *
    * @param vocab The vocabulary map.
    * @param lowerCase {@code true} for uncased models (lower casing and accent
    *     stripping), {@code false} for cased models.
-   * @return A configured {@link Tokenizer}.
+   * @return A configured {@link BertTokenizer}.
    * @throws IllegalArgumentException Thrown if the selected special tokens
    *     are not all present in the vocabulary.
    */
-  protected Tokenizer createTokenizer(
+  // The deprecated BertTokenizer stays the return type until its removal in 3.1, so that
+  // already-compiled subclasses overriding this method keep overriding it.
+  @SuppressWarnings("removal")
+  protected BertTokenizer createTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
 
     return createPipelineTokenizer(vocab, lowerCase);
@@ -263,29 +265,26 @@ public abstract class AbstractDL implements AutoCloseable {
    *
    * @param vocab     The vocabulary map.
    * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
-   * @return A configured {@link Tokenizer}.
+   * @return A configured {@link BertTokenizer}.
    * @throws IllegalArgumentException Thrown if the selected special tokens are not all present in
    *     the vocabulary.
    */
-  static Tokenizer createPipelineTokenizer(
+  // BertTokenizer is deprecated for removal in 3.1; built here until then.
+  @SuppressWarnings("removal")
+  static BertTokenizer createPipelineTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
     if (vocab.containsKey(
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
             WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      return new EncoderTokenizer(new WordpieceEncoder(
-          vocab,
+      return new BertTokenizer(
+          vocab.keySet(),
           lowerCase,
           WordpieceTokenizer.ROBERTA_CLS_TOKEN,
           WordpieceTokenizer.ROBERTA_SEP_TOKEN,
-          resolveUnknownToken(vocab)));
+          resolveUnknownToken(vocab));
     }
-    return new EncoderTokenizer(new WordpieceEncoder(
-        vocab,
-        lowerCase,
-        WordpieceTokenizer.BERT_CLS_TOKEN,
-        WordpieceTokenizer.BERT_SEP_TOKEN,
-        WordpieceTokenizer.BERT_UNK_TOKEN));
+    return new BertTokenizer(vocab.keySet(), lowerCase);
   }
 
   /**
