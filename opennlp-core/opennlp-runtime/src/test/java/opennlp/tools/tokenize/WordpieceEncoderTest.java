@@ -35,8 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The encoder held against {@link ReferenceBertPipeline} for piece-sequence parity (the encoder's
- * contract is "the same pipeline, plus ids and spans"), plus exact hand-computed span
+ * The encoder held against the deprecated {@link BertTokenizer} for piece-sequence parity (the
+ * shim's contract is "the encoder's piece sequence, nothing more"), plus exact hand-computed span
  * assertions through every normalization step that changes, inserts, or removes characters.
  */
 class WordpieceEncoderTest {
@@ -95,21 +95,22 @@ class WordpieceEncoderTest {
 
   @ParameterizedTest
   @MethodSource("curatedInputs")
-  void testPieceSequenceMatchesTheReferencePipelineOnCuratedInputs(String input) {
-    final ReferenceBertPipeline reference = new ReferenceBertPipeline(new HashSet<>(VOCAB), true);
+  @SuppressWarnings("removal") // BertTokenizer is pinned to the encoder until its removal in 3.1.
+  void testPieceSequenceMatchesBertTokenizerOnCuratedInputs(String input) {
+    final BertTokenizer bertTokenizer = new BertTokenizer(new HashSet<>(VOCAB), true);
     final WordpieceEncoder encoder = uncased();
-    assertArrayEquals(reference.tokenize(input), encoder.encodeToPieces(input),
+    assertArrayEquals(bertTokenizer.tokenize(input), encoder.encodeToPieces(input),
         "parity broke on: " + input);
   }
 
   @Test
-  void testPieceSequenceMatchesTheReferencePipelineOnRandomInputs() {
+  @SuppressWarnings("removal") // BertTokenizer is pinned to the encoder until its removal in 3.1.
+  void testPieceSequenceMatchesBertTokenizerOnRandomInputs() {
     final int[] pool = {'a', 'b', 'A', 'B', 'z', ' ', ' ', '\t', 0x00A0, '.', '!', ',',
         0x0301, 0x00E9, 0x0130, 0x03A3, 0x03C3, 0x03BF, 0x4E2D, 0xFFFD, 0x200B, 0x1F600, 0};
     final Random random = new Random(42);
     for (final boolean lowerCase : new boolean[] {true, false}) {
-      final ReferenceBertPipeline reference =
-          new ReferenceBertPipeline(new HashSet<>(VOCAB), lowerCase);
+      final BertTokenizer bertTokenizer = new BertTokenizer(new HashSet<>(VOCAB), lowerCase);
       final WordpieceEncoder encoder = new WordpieceEncoder(VOCAB, lowerCase);
       for (int round = 0; round < 400; round++) {
         final StringBuilder text = new StringBuilder();
@@ -118,7 +119,7 @@ class WordpieceEncoderTest {
           text.appendCodePoint(pool[random.nextInt(pool.length)]);
         }
         final String input = text.toString();
-        assertArrayEquals(reference.tokenize(input), encoder.encodeToPieces(input),
+        assertArrayEquals(bertTokenizer.tokenize(input), encoder.encodeToPieces(input),
             "parity broke on: " + input);
 
         // Span invariants: within bounds and never moving backwards.
@@ -171,6 +172,18 @@ class WordpieceEncoderTest {
   }
 
   @Test
+  void testLineAndParagraphSeparatorsSplitWords() {
+    // Zl and Zp are not whitespace in the BERT _is_whitespace sense, but the reference
+    // pipeline's whitespace_tokenize (Python's str.split()) breaks words on them, as did the
+    // previous OpenNLP pipeline via WhitespaceTokenizer.
+    final List<SubwordPiece> pieces = uncased().encode("hello\u2028world\u2029hello");
+    assertEquals(5, pieces.size());
+    assertPiece(pieces.get(1), "hello", 4, 0, 5);
+    assertPiece(pieces.get(2), "world", 5, 6, 11);
+    assertPiece(pieces.get(3), "hello", 4, 12, 17);
+  }
+
+  @Test
   void testUnknownWordCoversItsWholeSurfaceIncludingRemovedChars() {
     // NUL and the zero-width space are removed by cleaning, so one word "abc" remains; it is
     // not representable and becomes the unknown piece spanning the full original surface.
@@ -182,8 +195,8 @@ class WordpieceEncoderTest {
   @Test
   void testContextualCaseMappingFallsBackToWordWideSpans() {
     // Greek final sigma is a contextual mapping the per-char rerun cannot reproduce, so the
-    // word's pieces fall back to spanning the whole word; content parity is asserted in the
-    // differential tests above.
+    // word's pieces fall back to spanning the whole word; the piece content is asserted
+    // exactly below.
     final List<SubwordPiece> pieces =
         uncased().encode("\u03A3\u039F\u03A6\u039F\u03A3");
     assertEquals(3, pieces.size());

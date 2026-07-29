@@ -363,7 +363,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
         i += width;
         continue;
       }
-      if (BertNormalization.isWhitespace(codePoint)) {
+      if (BertNormalization.isWhitespace(codePoint) || isLineOrParagraphSeparator(codePoint)) {
         out.add(' ', i, i + width);
       } else if (BertNormalization.isCjk(codePoint)) {
         out.add(' ', i, i);
@@ -379,6 +379,20 @@ public final class WordpieceEncoder implements SubwordTokenizer {
       i += width;
     }
     return out;
+  }
+
+  /**
+   * A Unicode line or paragraph separator ({@code Zl}, {@code Zp}). These are not whitespace in
+   * the BERT {@code _is_whitespace} sense, but the reference pipeline's
+   * {@code whitespace_tokenize} (Python's {@code str.split()}) still breaks words on them, so
+   * they must become word boundaries here as well.
+   *
+   * @param codePoint The code point to classify.
+   * @return True if the code point is a line or paragraph separator.
+   */
+  private static boolean isLineOrParagraphSeparator(int codePoint) {
+    final int type = Character.getType(codePoint);
+    return type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR;
   }
 
   /**
