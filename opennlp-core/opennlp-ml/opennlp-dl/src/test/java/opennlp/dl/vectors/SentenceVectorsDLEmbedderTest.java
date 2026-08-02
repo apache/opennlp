@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -84,7 +85,7 @@ class SentenceVectorsDLEmbedderTest {
       assertArrayEquals(CLS_VECTOR, embedder.embed("hello world"), 1e-5f);
       assertArrayEquals(CLS_VECTOR, embedder.embed(new StringBuilder("hello world")), 1e-5f);
 
-      // The inherited default batch method returns one vector per input, in input order;
+      // The batch method returns one vector per input, in input order;
       // this model's [CLS]-position output is input-independent by construction.
       final float[][] batch = embedder.embedAll(List.of("hello world", "hello"));
       assertEquals(2, batch.length);
@@ -93,6 +94,38 @@ class SentenceVectorsDLEmbedderTest {
 
       assertThrows(IllegalArgumentException.class, () -> embedder.embed(null));
       assertThrows(IllegalArgumentException.class, () -> embedder.embedAll(null));
+    }
+  }
+
+  /**
+   * Drives the batched path over inputs of mixed tokenized lengths ("hello" encodes one
+   * token shorter than "hello world") and asserts every row reproduces its single-input
+   * vector exactly: the length-grouped batch never pads, so the computation per row is
+   * the computation the single call performs.
+   */
+  @Test
+  void testEmbedAllMatchesSingleEmbedsExactly(@TempDir Path dir) throws Exception {
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir))) {
+      final List<String> texts = List.of("hello", "hello world", "world", "hello world",
+          "hello");
+      final float[][] batch = vectors.embedAll(texts);
+      assertEquals(texts.size(), batch.length);
+      for (int i = 0; i < texts.size(); i++) {
+        assertArrayEquals(vectors.embed(texts.get(i)), batch[i]);
+      }
+    }
+  }
+
+  /**
+   * Asserts the batch contract edges: an empty input yields an empty batch, and a
+   * {@code null} element is rejected rather than failing later inside the session.
+   */
+  @Test
+  void testEmbedAllEdges(@TempDir Path dir) throws Exception {
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir))) {
+      assertEquals(0, vectors.embedAll(List.of()).length);
+      assertThrows(IllegalArgumentException.class,
+          () -> vectors.embedAll(Arrays.asList("hello", null)));
     }
   }
 }
