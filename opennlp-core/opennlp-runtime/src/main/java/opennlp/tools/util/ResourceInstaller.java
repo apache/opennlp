@@ -43,7 +43,9 @@ import opennlp.tools.util.archive.TarStream;
  * name: gzip-compressed tar archives and zip archives are unpacked with their relative
  * structure, entries that would escape the target directory are rejected, plain gzip
  * files are decompressed, and anything else is stored as a file under its source
- * name.</p>
+ * name. One name rule overrides byte detection: a {@code *.bin} source is always
+ * stored packed, because an OpenNLP model file is itself a zip archive that its
+ * consumers load packed.</p>
  *
  * @see DownloadUtil
  * @since 3.0.0
@@ -52,6 +54,9 @@ public final class ResourceInstaller {
 
   private static final String SHA_256 = "SHA-256";
   private static final String GZIP_SUFFIX = ".gz";
+
+  /** OpenNLP model files are packed zip archives; install them packed. */
+  private static final String MODEL_SUFFIX = ".bin";
   private static final String DEFAULT_RESOURCE_NAME = "resource";
   private static final int BUFFER_SIZE = 8192;
   private static final int MAGIC_LENGTH = 2;
@@ -151,6 +156,11 @@ public final class ResourceInstaller {
 
   /**
    * Detects the content format from its leading bytes and unpacks accordingly.
+   * One exception: a source named {@code *.bin} is stored verbatim even when its
+   * bytes are a zip archive, because that is exactly what an OpenNLP model file
+   * is — a zipped artifact that consumers load packed. Unpacking it would
+   * deliver its innards ({@code manifest.properties}, {@code *.model}) where
+   * the operator asked for the model.
    *
    * @param downloaded The fetched file.
    * @param name The file name derived from the source location.
@@ -164,7 +174,9 @@ public final class ResourceInstaller {
       final int first = raw.read();
       final int second = raw.read();
       raw.reset();
-      if (first == GZIP_MAGIC_FIRST && second == GZIP_MAGIC_SECOND) {
+      if (name.endsWith(MODEL_SUFFIX)) {
+        Files.copy(raw, safeChild(target, name), StandardCopyOption.REPLACE_EXISTING);
+      } else if (first == GZIP_MAGIC_FIRST && second == GZIP_MAGIC_SECOND) {
         unpackGzip(raw, name, target);
       } else if (first == ZIP_MAGIC_FIRST && second == ZIP_MAGIC_SECOND) {
         unpackZip(raw, target);

@@ -298,6 +298,31 @@ public class ResourceInstallerTest {
         Files.readString(target.resolve("lexicon/words.txt")));
   }
 
+  /**
+   * Proves the OpenNLP model convention: a source named {@code *.bin} is stored
+   * verbatim even though every OpenNLP model file is itself a zip archive, so
+   * the install delivers the packed model a {@code *Model} loader expects, not
+   * its unpacked innards.
+   */
+  @Test
+  void testModelBinIsStoredPacked(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+      zip.putNextEntry(new ZipEntry("manifest.properties"));
+      zip.write("OpenNLP-Version: 0.0.0\n".getBytes(StandardCharsets.UTF_8));
+      zip.closeEntry();
+    }
+    final Path file = source.resolve("en-ner-person.bin");
+    Files.write(file, out.toByteArray());
+
+    ResourceInstaller.install(file.toUri(), target);
+
+    Assertions.assertEquals(List.of("en-ner-person.bin"), installedFiles(target));
+    Assertions.assertArrayEquals(out.toByteArray(),
+        Files.readAllBytes(target.resolve("en-ner-person.bin")));
+  }
+
   @Test
   void testPlainGzipDecompressesToTheSourceName(@TempDir Path source,
       @TempDir Path target) throws Exception {
