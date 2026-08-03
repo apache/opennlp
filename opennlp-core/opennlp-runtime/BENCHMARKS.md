@@ -15,6 +15,7 @@ variance reporting.
 | `POSTaggerMEBenchmark` | POSTaggerME | 3 approaches x 2 cache configs |
 | `SnowballStemmerBenchmark` | SnowballStemmer | 3 approaches (incl. plain-field baseline) |
 | `CachingStemmerBenchmark` | CachingStemmer | cached vs uncached x 2 workloads |
+| `BeamSearchBenchmark` | BeamSearch | 3 sequence lengths x 2 cache configs, 1 vs max threads |
 
 ### Approaches measured
 
@@ -120,6 +121,52 @@ The `POSTaggerMEBenchmark` uses `@Param({"0", "3"})` for cache
 size, producing a matrix of 3 approaches x 2 cache configs = 6
 benchmark runs. This quantifies whether the context generator
 cache provides measurable benefit.
+
+### BeamSearch results
+
+`BeamSearchBenchmark` decodes synthetic token sequences with a shared
+`BeamSearch` (beam size 3, deterministic hash-seeded model, accept-all
+validator). One op = one `bestSequence` call; invocations rotate through a
+pool of 64 seeded inputs. The `sequenceLength` param (8/64/256) is the key
+axis: the O(n^2) per-candidate outcome-list copying that the chain-node
+refactor eliminated only shows up on long sequences (NER chunks run 200+
+tokens). The `cacheSize` param (0/64) toggles the contexts cache. To produce
+the pre-refactor baseline, swap the pre-refactor `opennlp-ml-commons` jar
+onto the classpath ahead of the freshly built classes — the benchmark only
+uses the unchanged public API — and rerun.
+
+Results (Linux, JDK 25, 24 pinned cores of a 32-core box, 2 forks x 10
+iterations; ops/s = decoded sequences per second):
+
+| Method | sequenceLength | cacheSize | 1 thread | 24 threads | scaling |
+|--------|---------------:|----------:|---------:|-----------:|--------:|
+| pre-refactor  | 8   | 0  | 226,337 ± 4,164  | 1,404,404 ± 67,614 | 6.2x |
+| pre-refactor  | 64  | 0  | 17,802 ± 43      | 67,482 ± 817       | 3.8x |
+| pre-refactor  | 256 | 0  | 2,236 ± 38       | 5,491 ± 26         | 2.5x |
+| pre-refactor  | 8   | 64 | 234,592 ± 705    | 1,382,812 ± 72,577 | 5.9x |
+| pre-refactor  | 64  | 64 | 17,968 ± 92      | 61,639 ± 2,726     | 3.4x |
+| pre-refactor  | 256 | 64 | 2,224 ± 20       | 5,260 ± 92         | 2.4x |
+| post-refactor | 8   | 0  | 450,384 ± 3,306  | 3,162,724 ± 495,301 | 7.0x |
+| post-refactor | 64  | 0  | 33,936 ± 482     | 297,001 ± 13,049   | 8.8x |
+| post-refactor | 256 | 0  | 4,357 ± 168      | 50,176 ± 307       | 11.5x |
+| post-refactor | 8   | 64 | 488,155 ± 8,095  | 3,512,519 ± 7,541  | 7.2x |
+| post-refactor | 64  | 64 | 34,818 ± 232     | 347,266 ± 942      | 10.0x |
+| post-refactor | 256 | 64 | 4,308 ± 27       | 50,203 ± 230       | 11.7x |
+
+Two readings. First, the refactor's win grows with sequence length —
+~2x single-thread at every length, and at 24 threads 2.3x (len 8),
+4.4x (len 64), and 9.1x (len 256) — the signature of an O(n^2) copy
+cost being removed. Second, the pre-refactor scaling collapses as
+sequences lengthen (6.2x down to 2.5x on 24 threads: memory-write
+saturation from per-candidate list copying), while post-refactor
+scaling grows with length (7.0x up to 11.5x).
+
+Note the synthetic model's `eval` is a cheap hash, so this isolates
+the sequence-mechanics cost the refactor targets; with a real maxent
+model the eval compute is shared by both versions and the relative
+single-thread win is smaller (~1.3x on ARM, roughly neutral on x86),
+while the concurrent scaling gap is preserved (measured 5.8x -> 13.3x
+at saturation on 24 pinned cores with a real NER model).
 
 ## JUnit Correctness Test
 
