@@ -75,14 +75,14 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
   }
 
   /**
-   * Immutable chain node used only inside
+   * Immutable node in a backward-linked chain of outcome candidates, used only inside
    * {@link #bestSequences(int, Object[], Object[], double, BeamSearchContextGenerator, SequenceValidator)}.
-   * Each child links to its parent instead of copying the parent's outcome/probability lists,
-   * so expanding a candidate is O(1); the outcome array is materialized lazily and cached.
-   * Score accumulation ({@code parent.score + StrictMath.log(prob)}) mirrors
-   * {@link Sequence#Sequence(Sequence, String, double)} bit-for-bit, and {@link #compareTo}
-   * mirrors {@link Sequence#compareTo}, so the search is behavior-identical to running the
-   * queues over {@link Sequence} directly.
+   * A node stores its own outcome plus a parent link, so extending a candidate is O(1);
+   * the full outcome array is materialized only when a candidate is expanded.
+   * Score accumulation ({@code parent.score + StrictMath.log(prob)}) and
+   * {@link #compareTo(SearchNode)} must stay in lockstep with
+   * {@link Sequence#Sequence(Sequence, String, double)} and {@link Sequence#compareTo(Sequence)}
+   * to keep search results bit-identical to a search over {@link Sequence} instances.
    */
   private static final class SearchNode implements Comparable<SearchNode> {
     private final SearchNode parent;
@@ -90,8 +90,10 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
     private final double prob;
     private final double score;
     private final int size;
-    private String[] outcomesCache; // lazily built; nodes are never mutated, so the cache stays valid
 
+    /**
+     * Creates the root node: the empty candidate with score {@code 0}.
+     */
     private SearchNode() {
       this.parent = null;
       this.outcome = null;
@@ -100,6 +102,13 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
       this.size = 0;
     }
 
+    /**
+     * Creates a candidate extending {@code parent} by one outcome.
+     *
+     * @param parent The candidate to extend. Must not be {@code null}.
+     * @param outcome The outcome to append.
+     * @param prob The probability of {@code outcome}.
+     */
     private SearchNode(SearchNode parent, String outcome, double prob) {
       this.parent = parent;
       this.outcome = outcome;
@@ -108,20 +117,22 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
       this.size = parent.size + 1;
     }
 
+    /**
+     * @return The outcomes on the path from the root to this node, in sequence order.
+     */
     private String[] outcomes() {
-      String[] cached = outcomesCache;
-      if (cached == null) {
-        cached = new String[size];
-        SearchNode node = this;
-        for (int i = size - 1; i >= 0; i--) {
-          cached[i] = node.outcome;
-          node = node.parent;
-        }
-        outcomesCache = cached;
+      final String[] outcomes = new String[size];
+      SearchNode node = this;
+      for (int i = size - 1; i >= 0; i--) {
+        outcomes[i] = node.outcome;
+        node = node.parent;
       }
-      return cached;
+      return outcomes;
     }
 
+    /**
+     * Orders nodes by descending score, mirroring {@link Sequence#compareTo(Sequence)}.
+     */
     @Override
     public int compareTo(SearchNode other) {
       return Double.compare(other.score, this.score);
@@ -250,8 +261,8 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
         probs[j] = node.prob;
         node = node.parent;
       }
-      // Sequence.add accumulates score += StrictMath.log(p) in the same order as the chain,
-      // so the rebuilt Sequence is bit-identical to one built directly during the search.
+      // Sequence.add accumulates score += StrictMath.log(p) per element, so rebuilding in
+      // chain order yields a score bit-identical to the node's accumulated score.
       final Sequence seq = new Sequence();
       for (int j = 0; j < outs.length; j++) {
         seq.add(outs[j], probs[j]);

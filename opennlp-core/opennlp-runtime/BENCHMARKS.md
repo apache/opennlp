@@ -129,11 +129,12 @@ cache provides measurable benefit.
 validator). One op = one `bestSequence` call; invocations rotate through a
 pool of 64 seeded inputs. The `sequenceLength` param (8/64/256) is the key
 axis: the O(n^2) per-candidate outcome-list copying that the chain-node
-refactor eliminated only shows up on long sequences (NER chunks run 200+
-tokens). The `cacheSize` param (0/64) toggles the contexts cache. To produce
-the pre-refactor baseline, swap the pre-refactor `opennlp-ml-commons` jar
-onto the classpath ahead of the freshly built classes — the benchmark only
-uses the unchanged public API — and rerun.
+refactor (OPENNLP-1903) eliminated only shows up on long sequences (NER
+chunks run 200+ tokens). The `cacheSize` param (0/64) toggles the contexts
+cache. To produce the pre-refactor baseline, place an `opennlp-ml-commons`
+jar built before OPENNLP-1903 on the classpath ahead of the freshly built
+classes and rerun; the benchmark only uses public API that predates the
+refactor.
 
 Results (Linux, JDK 25, 24 pinned cores of a 32-core box, 2 forks x 10
 iterations; ops/s = decoded sequences per second):
@@ -153,9 +154,9 @@ iterations; ops/s = decoded sequences per second):
 | post-refactor | 64  | 64 | 34,818 ± 232     | 347,266 ± 942      | 10.0x |
 | post-refactor | 256 | 64 | 4,308 ± 27       | 50,203 ± 230       | 11.7x |
 
-Two readings. First, the refactor's win grows with sequence length —
+Two readings. First, the refactor's win grows with sequence length:
 ~2x single-thread at every length, and at 24 threads 2.3x (len 8),
-4.4x (len 64), and 9.1x (len 256) — the signature of an O(n^2) copy
+4.4x (len 64), and 9.1x (len 256), the signature of an O(n^2) copy
 cost being removed. Second, the pre-refactor scaling collapses as
 sequences lengthen (6.2x down to 2.5x on 24 threads: memory-write
 saturation from per-candidate list copying), while post-refactor
@@ -166,7 +167,8 @@ the sequence-mechanics cost the refactor targets; with a real maxent
 model the eval compute is shared by both versions and the relative
 single-thread win is smaller (~1.3x on ARM, roughly neutral on x86),
 while the concurrent scaling gap is preserved (measured 5.8x -> 13.3x
-at saturation on 24 pinned cores with a real NER model).
+at saturation on 24 pinned cores with the SourceForge-era 1.5 English
+`en-ner-person.bin` model).
 
 ## JUnit Correctness Test
 

@@ -28,9 +28,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BeamSearchContextGenerator;
@@ -39,122 +44,52 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
 /**
- * Equivalence tests for the {@code BeamSearch.bestSequences} refactor that replaced
- * per-candidate {@link Sequence} copies with internal chain nodes ({@code SearchNode}).
+ * Equivalence tests for the {@code BeamSearch.bestSequences} chain-node implementation
+ * introduced with OPENNLP-1903.
  * <p>
  * Every test runs the current {@link BeamSearch} side by side with
- * {@link #referenceBestSequences}, a faithful port of the pre-refactor implementation
- * (as of {@code HEAD~1}), and demands identical output: same number of sequences,
- * identical outcome lists (order-sensitive), and bit-identical scores and
- * per-position probabilities.
+ * {@link #referenceBestSequences}, a faithful port of the per-candidate
+ * {@link Sequence}-copying implementation that OPENNLP-1903 replaced, and demands
+ * identical output: same number of sequences, identical outcome lists
+ * (order-sensitive), and bit-identical scores and per-position probabilities.
  */
 public class BeamSearchEquivalenceTest {
 
   /** Mirror of the private {@code BeamSearch.ZERO_LOG} default threshold. */
   private static final double ZERO_LOG = -100000;
 
-  private static final int NUM_OUTCOMES = 4;
+  private static final String[] OUTCOMES = {"o0", "o1", "o2", "o3"};
   private static final long MODEL_SEED = 0x5eedL;
 
-  private static final int[] BEAM_SIZES = {1, 2, 3, 5, 10}; // 10 > NUM_OUTCOMES on purpose
+  private static final int[] BEAM_SIZES = {1, 2, 3, 5, 10}; // 10 > OUTCOMES.length on purpose
   private static final int[] INPUT_LENGTHS = {0, 1, 2, 7, 33, 128};
   private static final int[] CACHE_SIZES = {0, 64};
 
   private static final SequenceValidator<String> ACCEPT_ALL =
       (i, input, outcomes, outcome) -> true;
 
-  // ---------------------------------------------------------------------------
-  // Seeded pseudo-random model
-  // ---------------------------------------------------------------------------
-
-  /**
-   * A {@link MaxentModel} whose probabilities are a deterministic pseudo-random
-   * function of the joined context strings and the outcome index. Repeated evals of
-   * the same context therefore return identical values. Values lie in (0, 1] and are
-   * intentionally not normalized. The {@code eval(context, probs)} buffer contract is
-   * honored: values are written into the passed array and that same array is returned.
-   */
-  static final class SeededModel implements MaxentModel {
-
-    private final String[] outcomes;
-    private final long seed;
-
-    SeededModel(int numOutcomes, long seed) {
-      this.outcomes = new String[numOutcomes];
-      for (int i = 0; i < numOutcomes; i++) {
-        this.outcomes[i] = "o" + i;
-      }
-      this.seed = seed;
-    }
-
-    private double prob(String[] context, int outcomeIndex) {
-      long h = seed;
-      for (String c : context) {
-        h = mix(h, c.hashCode());
-      }
-      h = mix(h, outcomeIndex);
-      // splitmix64 finalizer for avalanche
-      h ^= h >>> 30;
-      h *= 0xBF58476D1CE4E5B9L;
-      h ^= h >>> 27;
-      h *= 0x94D049BB133111EBL;
-      h ^= h >>> 31;
-      double u = (h >>> 11) * (1.0 / (1L << 53)); // [0, 1)
-      return 0.01 + 0.98 * u; // (0.01, 0.99]
-    }
-
-    private static long mix(long h, long v) {
-      return (h ^ (v + 0x9E3779B97F4A7C15L)) * 0x100000001B3L;
-    }
-
+  /** A {@link SequenceValidator} paired with a stable name for test display. */
+  record NamedValidator(String name, SequenceValidator<String> validator) {
     @Override
-    public double[] eval(String[] context) {
-      return eval(context, new double[outcomes.length]);
-    }
-
-    @Override
-    public double[] eval(String[] context, double[] probs) {
-      for (int i = 0; i < outcomes.length; i++) {
-        probs[i] = prob(context, i);
-      }
-      return probs; // buffer contract: write into the passed array AND return it
-    }
-
-    @Override
-    public double[] eval(String[] context, float[] values) {
-      return eval(context);
-    }
-
-    @Override
-    public String getOutcome(int i) {
-      return outcomes[i];
-    }
-
-    @Override
-    public int getNumOutcomes() {
-      return outcomes.length;
-    }
-
-    @Override
-    public String getAllOutcomes(double[] outcomes) {
-      return null;
-    }
-
-    @Override
-    public String getBestOutcome(double[] outcomes) {
-      return null;
-    }
-
-    @Override
-    public int getIndex(String outcome) {
-      for (int i = 0; i < outcomes.length; i++) {
-        if (outcomes[i].equals(outcome)) {
-          return i;
-        }
-      }
-      return -1;
+    public String toString() {
+      return name;
     }
   }
+
+  private static final List<NamedValidator> VALIDATORS = List.of(
+      new NamedValidator("rejectOneOutcome",
+          (i, input, outcomes, outcome) -> !"o2".equals(outcome)),
+      // Rejects every outcome at position 2: at that position the threshold loop adds
+      // nothing, so the next.isEmpty() fallback runs (and also rejects everything,
+      // killing the search for inputs longer than 2).
+      new NamedValidator("rejectAllAtPosition2",
+          (i, input, outcomes, outcome) -> i != 2),
+      // Rejects everything except "o3" at position 2: the fallback actually populates
+      // next with the sub-threshold "o3" candidate whenever "o3" fell below the min.
+      new NamedValidator("onlyO3AtPosition2",
+          (i, input, outcomes, outcome) -> i != 2 || "o3".equals(outcome)),
+      new NamedValidator("rejectEverything",
+          (i, input, outcomes, outcome) -> false));
 
   // ---------------------------------------------------------------------------
   // Context generator
@@ -184,23 +119,27 @@ public class BeamSearchEquivalenceTest {
       return existing != null ? existing : ctx;
     }
 
+    /**
+     * @return The number of {@link #getContext} invocations so far.
+     */
     int callCount() {
       return callCount.get();
     }
   }
 
   // ---------------------------------------------------------------------------
-  // Reference implementation: faithful port of the pre-refactor bestSequences
-  // (git show HEAD~1:.../opennlp/tools/ml/BeamSearch.java)
+  // Reference implementation: faithful port of the bestSequences implementation
+  // prior to OPENNLP-1903
   // ---------------------------------------------------------------------------
 
   /**
-   * Port of the OLD {@code BeamSearch.bestSequences} control flow: PriorityQueue over
-   * {@link Sequence}, per-candidate {@code new Sequence(top, out, scores[p])} copies,
-   * tempScores sort/min, the {@code next.isEmpty()} advance-all-valid fallback, the
-   * queue swap, and the winner removal order. The cache path (a
-   * {@code Cache<String[], double[]>} exactly like the old per-thread one) is used
-   * when {@code cacheSize > 0}; otherwise the uncached eval path is taken.
+   * Port of the {@code BeamSearch.bestSequences} control flow prior to OPENNLP-1903:
+   * PriorityQueue over {@link Sequence}, per-candidate
+   * {@code new Sequence(top, out, scores[p])} copies, tempScores sort/min, the
+   * {@code next.isEmpty()} advance-all-valid fallback, the queue swap, and the winner
+   * removal order. The cache path (a {@code Cache<String[], double[]>} exactly like the
+   * per-thread one in {@link BeamSearch}) is used when {@code cacheSize > 0}; otherwise
+   * the uncached eval path is taken.
    */
   static <T> Sequence[] referenceBestSequences(
       final int numSequences, final T[] sequence, final Object[] additionalContext,
@@ -208,7 +147,7 @@ public class BeamSearchEquivalenceTest {
       final SequenceValidator<T> validator, final MaxentModel model,
       final int beamSize, final int cacheSize) {
 
-    // Local equivalents of the old per-thread CacheState.
+    // Local equivalents of the per-thread CacheState in BeamSearch.
     final double[] probs = new double[model.getNumOutcomes()];
     final double[] tempScores = new double[model.getNumOutcomes()];
     final Cache<String[], double[]> cache = cacheSize > 0 ? new Cache<>(cacheSize) : null;
@@ -303,6 +242,16 @@ public class BeamSearchEquivalenceTest {
   // Helpers
   // ---------------------------------------------------------------------------
 
+  /**
+   * @return A new model over {@link #OUTCOMES} seeded with {@link #MODEL_SEED}.
+   */
+  private static MaxentModel model() {
+    return new SeededMaxentModel(OUTCOMES, MODEL_SEED);
+  }
+
+  /**
+   * @return A seeded pseudo-random token sequence of {@code length} tokens.
+   */
   private static String[] randomInput(int length, long seed) {
     Random rnd = new Random(seed);
     String[] input = new String[length];
@@ -349,32 +298,85 @@ public class BeamSearchEquivalenceTest {
   }
 
   // ---------------------------------------------------------------------------
+  // Parameter sources
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @return The cartesian product of {@link #BEAM_SIZES}, {@link #INPUT_LENGTHS}
+   *         and {@link #CACHE_SIZES}.
+   */
+  static Stream<Arguments> beamLengthCacheMatrix() {
+    Stream.Builder<Arguments> cases = Stream.builder();
+    for (int beam : BEAM_SIZES) {
+      for (int length : INPUT_LENGTHS) {
+        for (int cache : CACHE_SIZES) {
+          cases.add(Arguments.of(beam, length, cache));
+        }
+      }
+    }
+    return cases.build();
+  }
+
+  /**
+   * @return The cartesian product of {@link #VALIDATORS}, {@link #BEAM_SIZES},
+   *         {@link #INPUT_LENGTHS} and {@link #CACHE_SIZES}.
+   */
+  static Stream<Arguments> validatorBeamLengthCacheMatrix() {
+    Stream.Builder<Arguments> cases = Stream.builder();
+    for (NamedValidator nv : VALIDATORS) {
+      for (int beam : BEAM_SIZES) {
+        for (int length : INPUT_LENGTHS) {
+          for (int cache : CACHE_SIZES) {
+            cases.add(Arguments.of(nv, beam, length, cache));
+          }
+        }
+      }
+    }
+    return cases.build();
+  }
+
+  /**
+   * @return The cartesian product of {@link #INPUT_LENGTHS} and {@link #CACHE_SIZES}.
+   */
+  static Stream<Arguments> lengthCacheMatrix() {
+    Stream.Builder<Arguments> cases = Stream.builder();
+    for (int length : INPUT_LENGTHS) {
+      for (int cache : CACHE_SIZES) {
+        cases.add(Arguments.of(length, cache));
+      }
+    }
+    return cases.build();
+  }
+
+  /**
+   * @return All values of {@link #CACHE_SIZES}.
+   */
+  static IntStream cacheSizes() {
+    return IntStream.of(CACHE_SIZES);
+  }
+
+  // ---------------------------------------------------------------------------
   // 1. Equivalence matrix: beam sizes x input lengths x cache sizes,
   //    default (ZERO_LOG) threshold via the two-arg overload, accept-all validator
   // ---------------------------------------------------------------------------
 
-  @Test
-  void equivalenceAcrossBeamSizesLengthsAndCaches() {
-    MaxentModel model = new SeededModel(NUM_OUTCOMES, MODEL_SEED);
-    for (int beam : BEAM_SIZES) {
-      for (int length : INPUT_LENGTHS) {
-        String[] input = randomInput(length, 1000L + length);
-        for (int cache : CACHE_SIZES) {
-          String desc = caseDesc("matrix", beam, length, cache);
-          SeededContextGenerator cg = new SeededContextGenerator();
+  @ParameterizedTest(name = "beam={0}, len={1}, cache={2}")
+  @MethodSource("beamLengthCacheMatrix")
+  void equivalenceAcrossBeamSizesLengthsAndCaches(int beam, int length, int cache) {
+    MaxentModel model = model();
+    String[] input = randomInput(length, 1000L + length);
+    String desc = caseDesc("matrix", beam, length, cache);
+    SeededContextGenerator cg = new SeededContextGenerator();
 
-          Sequence[] expected = referenceBestSequences(1, input, null, cg, ACCEPT_ALL,
-              model, beam, cache);
-          Sequence[] actual = new BeamSearch(beam, model, cache)
-              .bestSequences(1, input, null, cg, ACCEPT_ALL);
+    Sequence[] expected = referenceBestSequences(1, input, null, cg, ACCEPT_ALL,
+        model, beam, cache);
+    Sequence[] actual = new BeamSearch(beam, model, cache)
+        .bestSequences(1, input, null, cg, ACCEPT_ALL);
 
-          assertSequencesEqual(expected, actual, desc);
-          if (length == 0) {
-            Assertions.assertEquals(0, cg.callCount(),
-                desc + ": context generator must not be called for empty input");
-          }
-        }
-      }
+    assertSequencesEqual(expected, actual, desc);
+    if (length == 0) {
+      Assertions.assertEquals(0, cg.callCount(),
+          desc + ": context generator must not be called for empty input");
     }
   }
 
@@ -382,39 +384,34 @@ public class BeamSearchEquivalenceTest {
   // 2. Equivalence with a tight minSequenceScore that actually filters candidates
   // ---------------------------------------------------------------------------
 
-  @Test
-  void equivalenceWithTightMinSequenceScore() {
-    MaxentModel model = new SeededModel(NUM_OUTCOMES, MODEL_SEED);
-    for (int beam : BEAM_SIZES) {
-      for (int length : INPUT_LENGTHS) {
-        String[] input = randomInput(length, 2000L + length);
-        for (int cache : CACHE_SIZES) {
-          String desc = caseDesc("threshold", beam, length, cache);
+  @ParameterizedTest(name = "beam={0}, len={1}, cache={2}")
+  @MethodSource("beamLengthCacheMatrix")
+  void equivalenceWithTightMinSequenceScore(int beam, int length, int cache) {
+    MaxentModel model = model();
+    String[] input = randomInput(length, 2000L + length);
+    String desc = caseDesc("threshold", beam, length, cache);
 
-          // Derive a threshold that bites: run uncapped, then cut between the best
-          // and worst candidate scores (or just above the best when only one exists).
-          Sequence[] uncapped = referenceBestSequences(beam, input, null,
-              new SeededContextGenerator(), ACCEPT_ALL, model, beam, cache);
-          final double threshold;
-          if (uncapped.length == 0) {
-            threshold = 0;
-          } else {
-            double best = uncapped[0].getScore();
-            double worst = uncapped[uncapped.length - 1].getScore();
-            threshold = (uncapped.length > 1 && worst < best)
-                ? (best + worst) / 2.0 : best + 0.5;
-          }
-
-          Sequence[] expected = referenceBestSequences(1, input, null, threshold,
-              new SeededContextGenerator(), ACCEPT_ALL, model, beam, cache);
-          Sequence[] actual = new BeamSearch(beam, model, cache)
-              .bestSequences(1, input, null, threshold, new SeededContextGenerator(),
-                  ACCEPT_ALL);
-
-          assertSequencesEqual(expected, actual, desc + ", threshold=" + threshold);
-        }
-      }
+    // Derive a threshold that bites: run uncapped, then cut between the best
+    // and worst candidate scores (or just above the best when only one exists).
+    Sequence[] uncapped = referenceBestSequences(beam, input, null,
+        new SeededContextGenerator(), ACCEPT_ALL, model, beam, cache);
+    final double threshold;
+    if (uncapped.length == 0) {
+      threshold = 0;
+    } else {
+      double best = uncapped[0].getScore();
+      double worst = uncapped[uncapped.length - 1].getScore();
+      threshold = (uncapped.length > 1 && worst < best)
+          ? (best + worst) / 2.0 : best + 0.5;
     }
+
+    Sequence[] expected = referenceBestSequences(1, input, null, threshold,
+        new SeededContextGenerator(), ACCEPT_ALL, model, beam, cache);
+    Sequence[] actual = new BeamSearch(beam, model, cache)
+        .bestSequences(1, input, null, threshold, new SeededContextGenerator(),
+            ACCEPT_ALL);
+
+    assertSequencesEqual(expected, actual, desc + ", threshold=" + threshold);
   }
 
   // ---------------------------------------------------------------------------
@@ -422,54 +419,26 @@ public class BeamSearchEquivalenceTest {
   //    advance-all-valid fallback and the reject-everything empty-result path
   // ---------------------------------------------------------------------------
 
-  @Test
-  void equivalenceWithRestrictiveValidators() {
-    MaxentModel model = new SeededModel(NUM_OUTCOMES, MODEL_SEED);
+  @ParameterizedTest(name = "{0}, beam={1}, len={2}, cache={3}")
+  @MethodSource("validatorBeamLengthCacheMatrix")
+  void equivalenceWithRestrictiveValidators(NamedValidator nv, int beam, int length,
+                                            int cache) {
+    MaxentModel model = model();
+    String[] input = randomInput(length, 3000L + length);
+    String desc = caseDesc("validator-" + nv.name(), beam, length, cache);
 
-    SequenceValidator<String> rejectOneOutcome =
-        (i, input, outcomes, outcome) -> !"o2".equals(outcome);
-    // Rejects every outcome at position 2: at that position the threshold loop adds
-    // nothing, so the next.isEmpty() fallback runs (and also rejects everything,
-    // killing the search for inputs longer than 2).
-    SequenceValidator<String> rejectAllAtPosition2 =
-        (i, input, outcomes, outcome) -> i != 2;
-    // Rejects everything except "o3" at position 2: the fallback actually populates
-    // next with the sub-threshold "o3" candidate whenever "o3" fell below the min.
-    SequenceValidator<String> onlyO3AtPosition2 =
-        (i, input, outcomes, outcome) -> i != 2 || "o3".equals(outcome);
-    SequenceValidator<String> rejectEverything =
-        (i, input, outcomes, outcome) -> false;
+    Sequence[] expected = referenceBestSequences(1, input, null,
+        new SeededContextGenerator(), nv.validator(), model, beam, cache);
+    Sequence[] actual = new BeamSearch(beam, model, cache)
+        .bestSequences(1, input, null, new SeededContextGenerator(),
+            nv.validator());
 
-    record NamedValidator(String name, SequenceValidator<String> validator) {}
-    List<NamedValidator> validators = List.of(
-        new NamedValidator("rejectOneOutcome", rejectOneOutcome),
-        new NamedValidator("rejectAllAtPosition2", rejectAllAtPosition2),
-        new NamedValidator("onlyO3AtPosition2", onlyO3AtPosition2),
-        new NamedValidator("rejectEverything", rejectEverything));
-
-    for (NamedValidator nv : validators) {
-      for (int beam : BEAM_SIZES) {
-        for (int length : INPUT_LENGTHS) {
-          String[] input = randomInput(length, 3000L + length);
-          for (int cache : CACHE_SIZES) {
-            String desc = caseDesc("validator-" + nv.name(), beam, length, cache);
-
-            Sequence[] expected = referenceBestSequences(1, input, null,
-                new SeededContextGenerator(), nv.validator(), model, beam, cache);
-            Sequence[] actual = new BeamSearch(beam, model, cache)
-                .bestSequences(1, input, null, new SeededContextGenerator(),
-                    nv.validator());
-
-            assertSequencesEqual(expected, actual, desc);
-            if ("rejectEverything".equals(nv.name()) && length > 0) {
-              Assertions.assertEquals(0, actual.length,
-                  desc + ": reject-everything must yield an empty (non-null) array");
-              Assertions.assertEquals(0, expected.length,
-                  desc + ": reference reject-everything must also be empty");
-            }
-          }
-        }
-      }
+    assertSequencesEqual(expected, actual, desc);
+    if ("rejectEverything".equals(nv.name()) && length > 0) {
+      Assertions.assertEquals(0, actual.length,
+          desc + ": reject-everything must yield an empty (non-null) array");
+      Assertions.assertEquals(0, expected.length,
+          desc + ": reference reject-everything must also be empty");
     }
   }
 
@@ -477,34 +446,31 @@ public class BeamSearchEquivalenceTest {
   // 4. numSequences > 1: winner order and scores match the reference exactly
   // ---------------------------------------------------------------------------
 
-  @Test
-  void multiWinnerOrderingMatchesReference() {
-    MaxentModel model = new SeededModel(NUM_OUTCOMES, MODEL_SEED);
+  @ParameterizedTest(name = "len={0}, cache={1}")
+  @MethodSource("lengthCacheMatrix")
+  void multiWinnerOrderingMatchesReference(int length, int cache) {
+    MaxentModel model = model();
     int beam = 5;
     int numSequences = 3;
     Object[] additionalContext = {"ac-ctx"};
-    for (int length : INPUT_LENGTHS) {
-      String[] input = randomInput(length, 4000L + length);
-      for (int cache : CACHE_SIZES) {
-        String desc = caseDesc("multiWinner[k=3]", beam, length, cache);
+    String[] input = randomInput(length, 4000L + length);
+    String desc = caseDesc("multiWinner[k=3]", beam, length, cache);
 
-        Sequence[] expected = referenceBestSequences(numSequences, input,
-            additionalContext, new SeededContextGenerator(), ACCEPT_ALL,
-            model, beam, cache);
-        Sequence[] actual = new BeamSearch(beam, model, cache)
-            .bestSequences(numSequences, input, additionalContext,
-                new SeededContextGenerator(), ACCEPT_ALL);
+    Sequence[] expected = referenceBestSequences(numSequences, input,
+        additionalContext, new SeededContextGenerator(), ACCEPT_ALL,
+        model, beam, cache);
+    Sequence[] actual = new BeamSearch(beam, model, cache)
+        .bestSequences(numSequences, input, additionalContext,
+            new SeededContextGenerator(), ACCEPT_ALL);
 
-        assertSequencesEqual(expected, actual, desc);
-        if (length > 0) {
-          Assertions.assertEquals(numSequences, actual.length,
-              desc + ": expected a full k-best list");
-          // Winners must come out in non-increasing score order.
-          for (int s = 1; s < actual.length; s++) {
-            Assertions.assertTrue(actual[s - 1].getScore() >= actual[s].getScore(),
-                desc + ": winner order not non-increasing at index " + s);
-          }
-        }
+    assertSequencesEqual(expected, actual, desc);
+    if (length > 0) {
+      Assertions.assertEquals(numSequences, actual.length,
+          desc + ": expected a full k-best list");
+      // Winners must come out in non-increasing score order.
+      for (int s = 1; s < actual.length; s++) {
+        Assertions.assertTrue(actual[s - 1].getScore() >= actual[s].getScore(),
+            desc + ": winner order not non-increasing at index " + s);
       }
     }
   }
@@ -521,7 +487,7 @@ public class BeamSearchEquivalenceTest {
     final int beam = 3;
     final int cache = 64;
 
-    MaxentModel model = new SeededModel(NUM_OUTCOMES, MODEL_SEED);
+    MaxentModel model = model();
     BeamSearch shared = new BeamSearch(beam, model, cache);
 
     String[][] inputs = new String[numInputs][];
@@ -603,45 +569,44 @@ public class BeamSearchEquivalenceTest {
   //    winning Sequence are consistent with the model's eval outputs
   // ---------------------------------------------------------------------------
 
-  @Test
-  void winnerMaterializationMatchesModelOutputs() {
-    MaxentModel model = new SeededModel(NUM_OUTCOMES, MODEL_SEED);
+  @ParameterizedTest(name = "cache={0}")
+  @MethodSource("cacheSizes")
+  void winnerMaterializationMatchesModelOutputs(int cache) {
+    MaxentModel model = model();
     String[] input = randomInput(7, 6000L);
     int beam = 3;
 
-    for (int cache : CACHE_SIZES) {
-      String desc = "materialization[cache=" + cache + "]";
-      BeamSearch bs = new BeamSearch(beam, model, cache);
-      Sequence winner = bs.bestSequence(input, null, new SeededContextGenerator(),
-          ACCEPT_ALL);
-      Assertions.assertNotNull(winner, desc);
-      Assertions.assertEquals(input.length, winner.getSize(), desc + ": size");
+    String desc = "materialization[cache=" + cache + "]";
+    BeamSearch bs = new BeamSearch(beam, model, cache);
+    Sequence winner = bs.bestSequence(input, null, new SeededContextGenerator(),
+        ACCEPT_ALL);
+    Assertions.assertNotNull(winner, desc);
+    Assertions.assertEquals(input.length, winner.getSize(), desc + ": size");
 
-      // The winner must equal the reference winner.
-      Sequence refWinner = referenceBestSequences(1, input, null,
-          new SeededContextGenerator(), ACCEPT_ALL, model, beam, cache)[0];
-      Assertions.assertEquals(refWinner.getOutcomes(), winner.getOutcomes(),
-          desc + ": outcomes vs reference");
+    // The winner must equal the reference winner.
+    Sequence refWinner = referenceBestSequences(1, input, null,
+        new SeededContextGenerator(), ACCEPT_ALL, model, beam, cache)[0];
+    Assertions.assertEquals(refWinner.getOutcomes(), winner.getOutcomes(),
+        desc + ": outcomes vs reference");
 
-      // Walk the winning path and recompute the expected probs/score independently.
-      List<String> outcomes = winner.getOutcomes();
-      double[] probs = winner.getProbs();
-      double expectedScore = 0d;
-      SeededContextGenerator cg = new SeededContextGenerator();
-      for (int i = 0; i < outcomes.size(); i++) {
-        String[] prefix = outcomes.subList(0, i).toArray(new String[0]);
-        String[] contexts = cg.getContext(i, input, prefix, new Object[0]);
-        double[] eval = model.eval(contexts);
-        int outcomeIndex = model.getIndex(outcomes.get(i));
-        Assertions.assertTrue(outcomeIndex >= 0, desc + ": outcome known to model");
-        double expectedProb = eval[outcomeIndex];
+    // Walk the winning path and recompute the expected probs/score independently.
+    List<String> outcomes = winner.getOutcomes();
+    double[] probs = winner.getProbs();
+    double expectedScore = 0d;
+    SeededContextGenerator cg = new SeededContextGenerator();
+    for (int i = 0; i < outcomes.size(); i++) {
+      String[] prefix = outcomes.subList(0, i).toArray(new String[0]);
+      String[] contexts = cg.getContext(i, input, prefix, new Object[0]);
+      double[] eval = model.eval(contexts);
+      int outcomeIndex = model.getIndex(outcomes.get(i));
+      Assertions.assertTrue(outcomeIndex >= 0, desc + ": outcome known to model");
+      double expectedProb = eval[outcomeIndex];
 
-        assertBitIdentical(expectedProb, probs[i], desc + ": getProbs()[" + i + "]");
-        assertBitIdentical(expectedProb, winner.getProb(i),
-            desc + ": getProb(" + i + ")");
-        expectedScore += StrictMath.log(expectedProb);
-      }
-      assertBitIdentical(expectedScore, winner.getScore(), desc + ": score");
+      assertBitIdentical(expectedProb, probs[i], desc + ": getProbs()[" + i + "]");
+      assertBitIdentical(expectedProb, winner.getProb(i),
+          desc + ": getProb(" + i + ")");
+      expectedScore += StrictMath.log(expectedProb);
     }
+    assertBitIdentical(expectedScore, winner.getScore(), desc + ": score");
   }
 }

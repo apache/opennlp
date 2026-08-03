@@ -41,7 +41,6 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
-import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BeamSearchContextGenerator;
 import opennlp.tools.util.SequenceValidator;
 
@@ -49,15 +48,15 @@ import opennlp.tools.util.SequenceValidator;
  * JMH benchmark for {@link BeamSearch} on long input sequences.
  * <p>
  * One op = one {@code bestSequence} call on a synthetic token sequence of
- * {@code sequenceLength} tokens. Long sequences are what expose the O(n^2)
- * per-candidate outcome-list copying that the chain-node refactor eliminated;
- * the 5-10 token sentences used by the ME benchmarks would show nothing.
- * Only the pre-refactor public API is used
+ * {@code sequenceLength} tokens. Long sequences are what expose the quadratic
+ * per-candidate outcome-list copying removed with OPENNLP-1903; sentences of
+ * 5-10 tokens, as used by the ME benchmarks, show no measurable difference.
+ * Only public API that predates OPENNLP-1903 is used
  * ({@code BeamSearch(int, MaxentModel, int)} and
  * {@code bestSequence(T[], Object[], BeamSearchContextGenerator, SequenceValidator)}),
- * so the same compiled class exercises both implementations: to produce the
- * baseline, swap the pre-refactor {@code opennlp-ml-commons} jar onto the
- * classpath ahead of the freshly built classes and rerun.
+ * so the same compiled class exercises both implementations: to produce a
+ * baseline, place an {@code opennlp-ml-commons} jar built before OPENNLP-1903
+ * on the classpath ahead of the freshly built classes and rerun.
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
@@ -69,7 +68,9 @@ public class BeamSearchBenchmark {
   private static final int BEAM_SIZE = 3;
   private static final int NUM_INPUTS = 64;
   private static final int VOCAB_SIZE = 17;
-  private static final long INPUT_SEED = 0x5eedL;
+  /** Seed for both the input generator and the {@link SeededMaxentModel}. */
+  private static final long SEED = 0x5eedL;
+  private static final String[] MODEL_OUTCOMES = {"start", "cont", "other"};
 
   private static final SequenceValidator<String> ACCEPT_ALL =
       (i, input, outcomes, outcome) -> true;
@@ -90,10 +91,11 @@ public class BeamSearchBenchmark {
 
     @Setup(Level.Trial)
     public void create() {
-      beamSearch = new BeamSearch(BEAM_SIZE, new SeededModel(), cacheSize);
+      beamSearch = new BeamSearch(BEAM_SIZE,
+          new SeededMaxentModel(MODEL_OUTCOMES, SEED), cacheSize);
       contextGenerator = new TokenContextGenerator();
       inputs = new String[NUM_INPUTS][];
-      Random rnd = new Random(INPUT_SEED);
+      Random rnd = new Random(SEED);
       for (int n = 0; n < NUM_INPUTS; n++) {
         String[] input = new String[sequenceLength];
         for (int i = 0; i < sequenceLength; i++) {
@@ -107,87 +109,6 @@ public class BeamSearchBenchmark {
       // Rotate through the input pool so repeated invocations decode different
       // sequences instead of hammering one fully cache-warm input.
       return inputs[Math.floorMod(cursor.getAndIncrement(), NUM_INPUTS)];
-    }
-  }
-
-  /**
-   * A deterministic pseudo-random {@link MaxentModel}: the probability for an
-   * outcome is derived from a hash of the joined context strings with
-   * splitmix64-style mixing, so repeated evals of the same context return
-   * identical values in (0.01, 0.99]. Values are intentionally not normalized.
-   * The buffer contract is honored: {@code eval(context, probs)} writes into
-   * the passed array and returns that same array.
-   */
-  static final class SeededModel implements MaxentModel {
-
-    private final String[] outcomes = {"start", "cont", "other"};
-
-    private double prob(String[] context, int outcomeIndex) {
-      long h = 0x5eedL;
-      for (String c : context) {
-        h = mix(h, c.hashCode());
-      }
-      h = mix(h, outcomeIndex);
-      // splitmix64 finalizer for avalanche
-      h ^= h >>> 30;
-      h *= 0xBF58476D1CE4E5B9L;
-      h ^= h >>> 27;
-      h *= 0x94D049BB133111EBL;
-      h ^= h >>> 31;
-      double u = (h >>> 11) * (1.0 / (1L << 53)); // [0, 1)
-      return 0.01 + 0.98 * u; // (0.01, 0.99]
-    }
-
-    private static long mix(long h, long v) {
-      return (h ^ (v + 0x9E3779B97F4A7C15L)) * 0x100000001B3L;
-    }
-
-    @Override
-    public double[] eval(String[] context) {
-      return eval(context, new double[outcomes.length]);
-    }
-
-    @Override
-    public double[] eval(String[] context, double[] probs) {
-      for (int i = 0; i < outcomes.length; i++) {
-        probs[i] = prob(context, i);
-      }
-      return probs; // buffer contract: write into the passed array AND return it
-    }
-
-    @Override
-    public double[] eval(String[] context, float[] values) {
-      return eval(context);
-    }
-
-    @Override
-    public String getOutcome(int i) {
-      return outcomes[i];
-    }
-
-    @Override
-    public int getNumOutcomes() {
-      return outcomes.length;
-    }
-
-    @Override
-    public String getAllOutcomes(double[] outcomes) {
-      return null;
-    }
-
-    @Override
-    public String getBestOutcome(double[] outcomes) {
-      return null;
-    }
-
-    @Override
-    public int getIndex(String outcome) {
-      for (int i = 0; i < outcomes.length; i++) {
-        if (outcomes[i].equals(outcome)) {
-          return i;
-        }
-      }
-      return -1;
     }
   }
 
