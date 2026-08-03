@@ -18,7 +18,6 @@
 package opennlp.tools.ml;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -76,6 +75,60 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
   }
 
   /**
+   * Immutable chain node used only inside
+   * {@link #bestSequences(int, Object[], Object[], double, BeamSearchContextGenerator, SequenceValidator)}.
+   * Each child links to its parent instead of copying the parent's outcome/probability lists,
+   * so expanding a candidate is O(1); the outcome array is materialized lazily and cached.
+   * Score accumulation ({@code parent.score + StrictMath.log(prob)}) mirrors
+   * {@link Sequence#Sequence(Sequence, String, double)} bit-for-bit, and {@link #compareTo}
+   * mirrors {@link Sequence#compareTo}, so the search is behavior-identical to running the
+   * queues over {@link Sequence} directly.
+   */
+  private static final class SearchNode implements Comparable<SearchNode> {
+    private final SearchNode parent;
+    private final String outcome; // null on the root
+    private final double prob;
+    private final double score;
+    private final int size;
+    private String[] outcomesCache; // lazily built; nodes are never mutated, so the cache stays valid
+
+    private SearchNode() {
+      this.parent = null;
+      this.outcome = null;
+      this.prob = 0d;
+      this.score = 0d;
+      this.size = 0;
+    }
+
+    private SearchNode(SearchNode parent, String outcome, double prob) {
+      this.parent = parent;
+      this.outcome = outcome;
+      this.prob = prob;
+      this.score = parent.score + StrictMath.log(prob);
+      this.size = parent.size + 1;
+    }
+
+    private String[] outcomes() {
+      String[] cached = outcomesCache;
+      if (cached == null) {
+        cached = new String[size];
+        SearchNode node = this;
+        for (int i = size - 1; i >= 0; i--) {
+          cached[i] = node.outcome;
+          node = node.parent;
+        }
+        outcomesCache = cached;
+      }
+      return cached;
+    }
+
+    @Override
+    public int compareTo(SearchNode other) {
+      return Double.compare(other.score, this.score);
+    }
+  }
+
+  /**
    * Initializes a {@link BeamSearch} instance.
    *
    * @param size The size of the beam (k).
@@ -113,10 +166,10 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
 
     final CacheState state = threadState.get();
 
-    Queue<Sequence> prev = new PriorityQueue<>(size);
-    Queue<Sequence> next = new PriorityQueue<>(size);
-    Queue<Sequence> tmp;
-    prev.add(new Sequence());
+    Queue<SearchNode> prev = new PriorityQueue<>(size);
+    Queue<SearchNode> next = new PriorityQueue<>(size);
+    Queue<SearchNode> tmp;
+    prev.add(new SearchNode());
 
     Object[] context = additionalContext;
     if (context == null) {
@@ -127,9 +180,8 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
       final int sz = StrictMath.min(size, prev.size());
 
       for (int sc = 0; prev.size() > 0 && sc < sz; sc++) {
-        final Sequence top = prev.remove();
-        final List<String> tmpOutcomes = top.getOutcomes();
-        final String[] outcomes = tmpOutcomes.toArray(new String[0]);
+        final SearchNode top = prev.remove();
+        final String[] outcomes = top.outcomes();
         final String[] contexts = cg.getContext(i, sequence, outcomes, context);
         final double[] scores;
         if (state.cache != null) {
@@ -157,8 +209,8 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
           if (scores[p] >= min) {
             final String out = model.getOutcome(p);
             if (validator.validSequence(i, sequence, outcomes, out)) {
-              final Sequence ns = new Sequence(top, out, scores[p]);
-              if (ns.getScore() > minSequenceScore) {
+              final SearchNode ns = new SearchNode(top, out, scores[p]);
+              if (ns.score > minSequenceScore) {
                 next.add(ns);
               }
             }
@@ -169,8 +221,8 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
           for (int p = 0; p < scores.length; p++) {
             final String out = model.getOutcome(p);
             if (validator.validSequence(i, sequence, outcomes, out)) {
-              final Sequence ns = new Sequence(top, out, scores[p]);
-              if (ns.getScore() > minSequenceScore) {
+              final SearchNode ns = new SearchNode(top, out, scores[p]);
+              if (ns.score > minSequenceScore) {
                 next.add(ns);
               }
             }
@@ -189,7 +241,22 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
     final Sequence[] topSequences = new Sequence[numSeq];
 
     for (int seqIndex = 0; seqIndex < numSeq; seqIndex++) {
-      topSequences[seqIndex] = prev.remove();
+      final SearchNode winner = prev.remove();
+      final String[] outs = new String[winner.size];
+      final double[] probs = new double[winner.size];
+      SearchNode node = winner;
+      for (int j = winner.size - 1; j >= 0; j--) {
+        outs[j] = node.outcome;
+        probs[j] = node.prob;
+        node = node.parent;
+      }
+      // Sequence.add accumulates score += StrictMath.log(p) in the same order as the chain,
+      // so the rebuilt Sequence is bit-identical to one built directly during the search.
+      final Sequence seq = new Sequence();
+      for (int j = 0; j < outs.length; j++) {
+        seq.add(outs[j], probs[j]);
+      }
+      topSequences[seqIndex] = seq;
     }
 
     return topSequences;
