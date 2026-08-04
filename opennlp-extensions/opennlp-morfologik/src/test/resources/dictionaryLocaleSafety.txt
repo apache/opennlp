@@ -1,0 +1,2 @@
+Illinois,illinois,PROP
+index,indices,NOUN

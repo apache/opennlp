@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -63,7 +64,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
   }
 
   private List<String> lemmatize(String word, String postag) {
-    List<WordData> dictMap = new DictionaryLookup(dictionary).lookup(word.toLowerCase());
+    List<WordData> dictMap = new DictionaryLookup(dictionary).lookup(word.toLowerCase(Locale.ROOT));
     Set<String> lemmas = new HashSet<>();
     for (WordData wordData : dictMap) {
       if (Objects.equals(postag, asString(wordData.getTag()))) {
