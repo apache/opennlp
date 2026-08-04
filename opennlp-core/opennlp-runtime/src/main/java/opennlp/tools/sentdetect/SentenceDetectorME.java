@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
@@ -94,9 +97,11 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
           s -> s.sentProbs = new ArrayList<>());
 
   /**
-   * The {@link Dictionary abbreviation dictionary} if available (may be {@code null}).
+   * The lookup structure over the {@link Dictionary abbreviation dictionary} that backs
+   * {@link #isAcceptableBreak(CharSequence, int, int)}. It is {@code null} if no abbreviation
+   * dictionary is available for the underlying model.
    */
-  private final Dictionary abbDict;
+  private final AbbreviationVeto abbVeto;
 
   protected final boolean useTokenEnd;
 
@@ -124,10 +129,12 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    *
    * @param model The {@link SentenceModel} to be used.
    * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
+   *     Its entries are read once, here; later changes to the {@code abbDict} instance do not
+   *     affect this detector.
    */
   public SentenceDetectorME(SentenceModel model, Dictionary abbDict) {
     this.model = model.getMaxentModel();
-    this.abbDict = abbDict;
+    this.abbVeto = AbbreviationVeto.of(abbDict);
     SentenceDetectorFactory sdFactory = model.getFactory();
     cgen = sdFactory.getSDContextGenerator();
     scanner = sdFactory.getEndOfSentenceScanner();
@@ -152,7 +159,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
           getAbbreviations(model.getAbbreviations()), customEOSCharacters);
       scanner = factory.createEndOfSentenceScanner(customEOSCharacters);
     }
-    abbDict = model.getAbbreviations();
+    abbVeto = AbbreviationVeto.of(model.getAbbreviations());
     useTokenEnd = model.useTokenEnd();
   }
 
@@ -387,47 +394,188 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    * <p>Note: The implementation always returns {@code true} if no
    * abbreviation dictionary is available for the underlying model.</p>
    *
+   * <p>Only a bounded region of {@code s} is consulted. An abbreviation occurrence starting at
+   * {@code p} with length {@code L} can veto the break only when it starts at or before the
+   * candidate and reaches it, that is when
+   * {@code candidateIndex - L <= p <= candidateIndex}. Positions outside that window are
+   * irrelevant by construction, so the decision costs time proportional to the longest
+   * dictionary entry rather than to the length of {@code s}.</p>
+   *
+   * <p>A {@code candidateIndex} that is not an index into {@code s} cannot carry an
+   * abbreviation, so it is accepted rather than raising an
+   * {@link IndexOutOfBoundsException}.</p>
+   *
    * @param s the {@link CharSequence} in which the break occurred.
    * @param fromIndex the start of the segment currently being evaluated.
-   * @param candidateIndex the index of the candidate sentence ending.
+   * @param candidateIndex the index of the candidate sentence ending. Must be greater than or
+   *     equal to {@code fromIndex} and a valid index into {@code s}.
    * @return {@code true} if the break is acceptable, {@code false} otherwise.
    */
   protected boolean isAcceptableBreak(CharSequence s, int fromIndex, int candidateIndex) {
-    if (abbDict == null)
+    if (abbVeto == null) {
       return true;
+    }
+    return !abbVeto.vetoes(s, fromIndex, candidateIndex);
+  }
 
-    final String text = s.toString();
-    final boolean caseSensitive = abbDict.isCaseSensitive();
-    final String searchText = caseSensitive ? text : StringUtil.toLowerCase(text);
-    for (StringList abb : abbDict) {
-      final String abbToken = caseSensitive ? abb.getToken(0)
-          : StringUtil.toLowerCase(abb.getToken(0));
-      final int tokenLength = abbToken.length();
-      int tokenStartPos = searchText.indexOf(abbToken, fromIndex);
-      while (tokenStartPos != -1) {
-        if (tokenStartPos > candidateIndex) {
-          break; // past candidate position, no point searching further
-        }
-        if (tokenStartPos == fromIndex
-            && searchText.substring(tokenStartPos, candidateIndex + 1).equals(abbToken)) {
-          return false; // full abbreviation match at segment start -> no acceptable break
-        }
-        final char prevChar = s.charAt(tokenStartPos == fromIndex ? tokenStartPos : tokenStartPos - 1);
-        if (tokenStartPos + tokenLength >= candidateIndex
+  /**
+   * An immutable, length-bucketed view of an abbreviation {@link Dictionary}. It answers the
+   * abbreviation veto of {@link #isAcceptableBreak(CharSequence, int, int)} by enumerating the
+   * few text positions that can carry a relevant abbreviation and asking a hash set what is
+   * there, instead of searching the whole text once per dictionary entry.
+   */
+  private static final class AbbreviationVeto {
+
+    /**
+     * The dictionary entries, folded to lower case unless the dictionary is case-sensitive.
+     * Only the first token of a multi-token entry participates, as before.
+     */
+    private final Set<String> entries;
+
+    /**
+     * The distinct entry lengths, ascending. These are the only window sizes worth probing.
+     */
+    private final int[] entryLengths;
+
+    /**
+     * The longest entry length, that is how far past a candidate a relevant match can reach.
+     */
+    private final int maxEntryLength;
+
+    /**
+     * Whether the dictionary matches case-sensitively.
+     */
+    private final boolean caseSensitive;
+
+    /**
+     * @param abbDict The {@link Dictionary} to index, may be {@code null}.
+     * @return A veto over {@code abbDict}, or {@code null} if {@code abbDict} is {@code null}.
+     */
+    static AbbreviationVeto of(Dictionary abbDict) {
+      return abbDict == null ? null : new AbbreviationVeto(abbDict);
+    }
+
+    /**
+     * Reads {@code abbDict} once, so this instance is immutable and safe to share.
+     *
+     * @param abbDict The {@link Dictionary} to index. Must not be {@code null}.
+     */
+    private AbbreviationVeto(Dictionary abbDict) {
+      caseSensitive = abbDict.isCaseSensitive();
+      final Set<String> tokens = new HashSet<>();
+      final SortedSet<Integer> lengths = new TreeSet<>();
+      for (StringList abb : abbDict) {
+        final String token = caseSensitive ? abb.getToken(0)
+            : StringUtil.toLowerCase(abb.getToken(0));
+        tokens.add(token);
+        lengths.add(token.length());
+      }
+      entries = Set.copyOf(tokens);
+      entryLengths = lengths.stream().mapToInt(Integer::intValue).toArray();
+      maxEntryLength = entryLengths.length == 0 ? 0 : entryLengths[entryLengths.length - 1];
+    }
+
+    /**
+     * @param s The text in which the break occurred.
+     * @param fromIndex The start of the segment currently being evaluated.
+     * @param candidateIndex The index of the candidate sentence ending.
+     * @return {@code true} if an abbreviation forbids a break at {@code candidateIndex}.
+     */
+    boolean vetoes(CharSequence s, int fromIndex, int candidateIndex) {
+      final int textLength = s.length();
+      if (entryLengths.length == 0 || candidateIndex < fromIndex || candidateIndex < 0
+          || candidateIndex >= textLength) {
+        return false;
+      }
+      // Occurrences before the segment start do not participate.
+      final int scanStart = StrictMath.max(0, fromIndex);
+      // The window holds every position a relevant occurrence can start at, plus the longest
+      // entry so that the text of an occurrence starting at the candidate is covered too.
+      final int windowStart = codePointStart(s,
+          StrictMath.max(scanStart, candidateIndex - maxEntryLength));
+      final int windowEnd = codePointEnd(s,
+          StrictMath.min(textLength, candidateIndex + maxEntryLength));
+      // Case folding is applied to the window only. It is per code point, so it preserves
+      // indices and yields exactly the characters a folding of the whole text would.
+      final String window = caseSensitive
+          ? s.subSequence(windowStart, windowEnd).toString()
+          : toLowerCase(s, windowStart, windowEnd);
+
+      for (final int tokenLength : entryLengths) {
+        for (int pos = StrictMath.max(scanStart, candidateIndex - tokenLength);
+             pos <= candidateIndex; pos++) {
+          final int endPos = pos + tokenLength;
+          if (endPos > textLength) {
+            break; // the entry no longer fits, and it fits even less further right
+          }
+          if (!entries.contains(window.substring(pos - windowStart, endPos - windowStart))) {
+            continue;
+          }
+          if (pos == fromIndex && endPos == candidateIndex + 1) {
+            return true; // full abbreviation match at segment start -> no acceptable break
+          }
+          final char prevChar = s.charAt(pos == fromIndex ? pos : pos - 1);
           /*
            * Note:
            * Skip abbreviation candidate if regular characters exist directly before it,
            * That is, any letter or digit except: a whitespace, an apostrophe, or an opening round bracket.
            * This prevents mismatches from overlaps close to an actual sentence end.
            */
-            && (Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
-          return false; // in case of a valid abbreviation: the (sentence) break is not accepted
+          if (Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(') {
+            return true; // in case of a valid abbreviation: the (sentence) break is not accepted
+          }
         }
-        // Try next occurrence of this abbreviation in the text
-        tokenStartPos = searchText.indexOf(abbToken, tokenStartPos + 1);
       }
+      return false; // no abbreviation(s) at given positions: valid sentence boundary
     }
-    return true; // no abbreviation(s) at given positions: valid sentence boundary
+
+    /**
+     * Lower-cases {@code [from, to)} exactly as {@link StringUtil#toLowerCase(CharSequence)}
+     * lower-cases a whole text: per code point, and therefore without changing any index.
+     *
+     * @param s The text to read from.
+     * @param from The first index to fold, at a code point boundary.
+     * @param to The index to stop at, at a code point boundary.
+     * @return The folded characters of {@code [from, to)}.
+     */
+    private String toLowerCase(CharSequence s, int from, int to) {
+      final StringBuilder folded = new StringBuilder(to - from);
+      int i = from;
+      while (i < to) {
+        final int cp = Character.codePointAt(s, i);
+        folded.appendCodePoint(Character.toLowerCase(cp));
+        i += Character.charCount(cp);
+      }
+      return folded.toString();
+    }
+
+    /**
+     * @param s The text {@code index} refers to.
+     * @param index The index to align.
+     * @return {@code index}, moved one character left if it points at the trailing half of a
+     *     surrogate pair, which is the only index a code point walk cannot start at.
+     */
+    private int codePointStart(CharSequence s, int index) {
+      if (index > 0 && index < s.length() && Character.isLowSurrogate(s.charAt(index))
+          && Character.isHighSurrogate(s.charAt(index - 1))) {
+        return index - 1;
+      }
+      return index;
+    }
+
+    /**
+     * @param s The text {@code index} refers to.
+     * @param index The index to align.
+     * @return {@code index}, moved one character right if it splits a surrogate pair, which is
+     *     the only index a code point walk cannot stop at.
+     */
+    private int codePointEnd(CharSequence s, int index) {
+      if (index > 0 && index < s.length() && Character.isHighSurrogate(s.charAt(index - 1))
+          && Character.isLowSurrogate(s.charAt(index))) {
+        return index + 1;
+      }
+      return index;
+    }
   }
 
   /**
