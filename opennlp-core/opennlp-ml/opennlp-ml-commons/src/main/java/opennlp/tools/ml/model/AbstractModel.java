@@ -18,8 +18,10 @@
 package opennlp.tools.ml.model;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -31,7 +33,8 @@ import opennlp.tools.ml.ArrayMath;
  */
 public abstract class AbstractModel implements MaxentModel {
 
-  private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000");
+  private static final DecimalFormat DECIMAL_FORMAT =
+      new DecimalFormat("0.0000", DecimalFormatSymbols.getInstance(Locale.ROOT));
 
   /** Mapping between predicates/contexts and an integer representing them. */
   protected Map<String, Context> pmap;
