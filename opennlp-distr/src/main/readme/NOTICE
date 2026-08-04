@@ -61,10 +61,10 @@ List of third-party dependencies grouped by their license type.
 
     MIT License
 
-        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime_gpu:1.27.0 - https://microsoft.github.io/onnxruntime/)
-        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime:1.27.0 - https://microsoft.github.io/onnxruntime/)
+        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime_gpu:1.28.0 - https://microsoft.github.io/onnxruntime/)
+        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime:1.28.0 - https://microsoft.github.io/onnxruntime/)
         * SLF4J API Module (org.slf4j:slf4j-api:2.0.18 - http://www.slf4j.org)
 
     The MIT License (MIT)
 
-        * ClassGraph (io.github.classgraph:classgraph:4.8.184 - https://github.com/classgraph/classgraph)
+        * ClassGraph (io.github.classgraph:classgraph:4.8.186 - https://github.com/classgraph/classgraph)
