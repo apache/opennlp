@@ -179,6 +179,15 @@ mvn install
 
 - Building and integrating [Snowball Stemmer](dev/Snowball-Stemmer.md) for OpenNLP.
 
+## Security
+
+Please do not report security issues through GitHub or the mailing lists.
+Report them privately to [security@apache.org](mailto:security@apache.org).
+
+See [SECURITY.md](SECURITY.md) for the reporting process and for the project's
+security model, which describes what Apache OpenNLP treats as trusted and
+untrusted input.
+
 ## Contributing
 
 The Apache OpenNLP project is developed by volunteers and is always looking for new contributors to work on all parts of the project. 
