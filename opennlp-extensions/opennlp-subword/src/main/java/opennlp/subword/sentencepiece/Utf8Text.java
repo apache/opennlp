@@ -22,7 +22,8 @@ package opennlp.subword.sentencepiece;
  *
  * <p>The pipeline runs in UTF-8 byte space, but the spans reported to the caller must be UTF-16
  * offsets into the original {@code CharSequence}; this map converts them. An unpaired surrogate,
- * which UTF-8 cannot represent, is encoded as U+FFFD.</p>
+ * which UTF-8 cannot represent, is encoded as U+FFFD. Callers see those offsets only through
+ * {@link opennlp.tools.tokenize.SubwordPiece} spans.</p>
  */
 final class Utf8Text {
 
