@@ -109,6 +109,7 @@ under the License.
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./postagger.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./lemmatizer.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./stemmer.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./wordnet.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./spellcheck.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./chunker.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./parser.xml" />
