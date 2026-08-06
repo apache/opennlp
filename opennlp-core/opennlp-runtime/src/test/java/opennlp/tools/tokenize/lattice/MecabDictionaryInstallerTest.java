@@ -19,6 +19,7 @@ package opennlp.tools.tokenize.lattice;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -26,6 +27,9 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import opennlp.tools.util.DigestTestUtil;
+import opennlp.tools.util.DownloadUtil;
 
 /**
  * Tests the installer against project-authored, in-memory archives; no external
@@ -71,6 +75,49 @@ public class MecabDictionaryInstallerTest {
 
     Assertions.assertEquals(2, extracted);
     Assertions.assertTrue(Files.exists(target.resolve("words.csv")));
+  }
+
+  @Test
+  void testRemoteInstallWithoutDigestFailsLoud(@TempDir Path target) {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MecabDictionaryInstaller.install(
+            URI.create("https://example.invalid/dict.tar.gz"), target));
+  }
+
+  @Test
+  void testInstallVerifiesDigest(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
+        {"d/words.csv", "cat,0,0,100,noun\n"},
+        {"d/matrix.def", "1 1\n0 0 0\n"}});
+    final Path archiveFile = source.resolve("dict.tar.gz");
+    Files.write(archiveFile, archive);
+
+    final int extracted = MecabDictionaryInstaller.install(
+        archiveFile.toUri(), target, DigestTestUtil.sha512(archive));
+    Assertions.assertEquals(2, extracted);
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionaryInstaller.install(archiveFile.toUri(),
+            target.resolve("other"), DigestTestUtil.sha512(new byte[] {1})));
+    Assertions.assertTrue(e.getMessage().contains("SHA512 checksum validation failed"));
+  }
+
+  @Test
+  void testInstallFromCatalogRequiresRemoteProperty(@TempDir Path target) {
+    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    try {
+      final IOException e = Assertions.assertThrows(IOException.class,
+          () -> MecabDictionaryInstaller.installFromCatalog("mecab.ipadic", target));
+      Assertions.assertTrue(e.getMessage().contains(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY));
+    } finally {
+      if (previous == null) {
+        System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+      } else {
+        System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, previous);
+      }
+    }
   }
 
   @Test

@@ -546,7 +546,10 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				emits the cheapest segmentation with spans in original text coordinates.
 				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
 				Install a dictionary archive with <code>MecabDictionaryInstaller</code>, load it
-				as a <code>MecabDictionary</code>, and tokenize.
+				as a <code>MecabDictionary</code>, and tokenize. Remote archives require an
+				expected SHA-512 digest; the opt-in catalog
+				(<code>installFromCatalog</code>) also needs
+				<code>-Dopennlp.download.remote=true</code>.
 				<code>matrix.def</code> must list a cost for every declared cell, and matrix
 				dimensions plus lexicon size are bounded by the shared
 				<code>ResourceLimits.MAX_ENTRIES</code> limit.
@@ -556,7 +559,7 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and
 				lexicon flows shown here.
 				<programlisting language="java">
-<![CDATA[MecabDictionaryInstaller.install(archiveUri, dictionaryDirectory);
+<![CDATA[MecabDictionaryInstaller.install(archiveUri, dictionaryDirectory, sha512);
 LatticeTokenizer tokenizer =
     new LatticeTokenizer(MecabDictionary.load(dictionaryDirectory));
 
