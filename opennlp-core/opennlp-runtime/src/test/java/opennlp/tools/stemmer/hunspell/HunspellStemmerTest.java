@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -1235,6 +1236,122 @@ public class HunspellStemmerTest {
         () -> load(line + "\n", "0\n"));
     Assertions.assertEquals("unsupported affix directive '" + name + "' at line 1",
         e.getMessage());
+  }
+
+  /**
+   * Verifies that {@link HunspellDictionary#load(InputStream, InputStream)} rejects an
+   * affix stream larger than {@link HunspellDictionary#MAX_STREAM_BYTES}.
+   */
+  @Test
+  void testLoadRejectsOversizedAffixStream() {
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> HunspellDictionary.load(
+            filledStream(HunspellDictionary.MAX_STREAM_BYTES + 1),
+            new ByteArrayInputStream("1\nlock\n".getBytes(StandardCharsets.UTF_8))));
+    Assertions.assertEquals(
+        "affix stream size exceeds safe limit of " + HunspellDictionary.MAX_STREAM_BYTES,
+        e.getMessage());
+  }
+
+  /**
+   * Verifies that {@link HunspellDictionary#load(InputStream, InputStream)} rejects a
+   * dictionary stream larger than {@link HunspellDictionary#MAX_STREAM_BYTES}.
+   */
+  @Test
+  void testLoadRejectsOversizedDictionaryStream() {
+    final byte[] affix = "SET UTF-8\n".getBytes(StandardCharsets.UTF_8);
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> HunspellDictionary.load(
+            new ByteArrayInputStream(affix),
+            filledStream(HunspellDictionary.MAX_STREAM_BYTES + 1)));
+    Assertions.assertEquals(
+        "dictionary stream size exceeds safe limit of "
+            + HunspellDictionary.MAX_STREAM_BYTES,
+        e.getMessage());
+  }
+
+  /**
+   * Pins the inclusive stream-byte ceiling: a stream of exactly {@code limit} bytes
+   * succeeds, and {@code limit + 1} fails. Uses a small limit so the test does not
+   * allocate the production ceiling.
+   *
+   * @throws IOException Thrown if reading the in-bound stream fails.
+   */
+  @Test
+  void testBoundedReadCeilingIsInclusive() throws IOException {
+    final int limit = 64;
+    final byte[] bytes = HunspellDictionary.readBounded(filledStream(limit), limit,
+        "affix stream");
+    Assertions.assertEquals(limit, bytes.length);
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> HunspellDictionary.readBounded(filledStream(limit + 1), limit,
+            "affix stream"));
+    Assertions.assertEquals(
+        "affix stream size exceeds safe limit of " + limit, e.getMessage());
+  }
+
+  /**
+   * Pins affix conditions and boundary bucketing to code points, matching FLAG UTF-8:
+   * a condition of two dots needs two code points, so a stem that is one supplementary
+   * character must not match, while a one-dot condition and a supplementary affix
+   * character still analyze.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testAffixConditionAndBoundaryUseCodePoints() throws IOException {
+    final HunspellStemmer twoDots = new HunspellStemmer(load(
+        "SFX X Y 1\nSFX X 0 s ..\n",
+        "1\n\uD83D\uDE00/X\n"));
+    Assertions.assertEquals("\uD83D\uDE00s", twoDots.stem("\uD83D\uDE00s").toString());
+
+    final HunspellStemmer oneDot = new HunspellStemmer(load(
+        "SFX X Y 1\nSFX X 0 s .\n",
+        "1\n\uD83D\uDE00/X\n"));
+    Assertions.assertEquals("\uD83D\uDE00", oneDot.stem("\uD83D\uDE00s").toString());
+
+    final HunspellStemmer emojiSuffix = new HunspellStemmer(load(
+        "SFX X Y 1\nSFX X 0 \uD83D\uDE00 .\n",
+        "1\nwalk/X\n"));
+    Assertions.assertEquals("walk", emojiSuffix.stem("walk\uD83D\uDE00").toString());
+
+    final HunspellStemmer classCondition = new HunspellStemmer(load(
+        "SFX X Y 1\nSFX X 0 s [\uD83D\uDE00]\n",
+        "1\nwalk\uD83D\uDE00/X\n"));
+    Assertions.assertEquals("walk\uD83D\uDE00",
+        classCondition.stem("walk\uD83D\uDE00s").toString());
+  }
+
+  /**
+   * Returns a stream of {@code size} zero bytes.
+   *
+   * @param size The number of bytes the stream yields.
+   * @return The stream. Never {@code null}.
+   */
+  private static InputStream filledStream(int size) {
+    return new InputStream() {
+      private int remaining = size;
+
+      @Override
+      public int read() {
+        if (remaining <= 0) {
+          return -1;
+        }
+        remaining--;
+        return 0;
+      }
+
+      @Override
+      public int read(byte[] buffer, int offset, int length) {
+        if (remaining <= 0) {
+          return -1;
+        }
+        final int n = Math.min(length, remaining);
+        Arrays.fill(buffer, offset, offset + n, (byte) 0);
+        remaining -= n;
+        return n;
+      }
+    };
   }
 
   /**
