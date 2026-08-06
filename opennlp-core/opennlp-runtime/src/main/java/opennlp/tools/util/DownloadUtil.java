@@ -21,11 +21,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,6 +42,7 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -51,7 +56,9 @@ import opennlp.tools.models.ModelType;
 import opennlp.tools.util.model.BaseModel;
 
 /**
- * This class facilitates the downloading of pretrained OpenNLP models.
+ * Downloads remote resources into a local path: pretrained OpenNLP models, and any
+ * other file fetched through {@link #download(URI, Path, String)} with an expected
+ * SHA-512 digest.
  */
 public class DownloadUtil {
 
@@ -63,6 +70,22 @@ public class DownloadUtil {
       System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.3/");
   private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
   private static final String CHECKSUM_EXTENSION = ".sha512";
+
+  /**
+   * System property that must be {@code true} before a
+   * {@link DictionaryCatalog} entry may be fetched. Explicit
+   * {@link #download(URI, Path, String)} calls do not require it: the caller already
+   * supplied the URI and digest.
+   */
+  public static final String REMOTE_DOWNLOAD_PROPERTY = "opennlp.download.remote";
+
+  /** Inclusive ceiling on bytes buffered for one {@link #download(URI, Path, String)}. */
+  public static final long MAX_DOWNLOAD_BYTES = 512L * 1024 * 1024;
+
+  private static final int CONNECT_TIMEOUT_MS = 30_000;
+  private static final int READ_TIMEOUT_MS = 300_000;
+  private static final int SHA512_HEX_LENGTH = 128;
+  private static final String DOWNLOAD_SUFFIX = ".download";
 
   private static Map<String, Map<ModelType, URL>> availableModels;
 
@@ -172,6 +195,151 @@ public class DownloadUtil {
       return type.getConstructor(Path.class).newInstance(localFile);
     } catch (Exception e) {
       throw new IOException("Could not initialize Model of type " + type.getTypeName(), e);
+    }
+  }
+
+  /**
+   * Downloads {@code source} into {@code target} and requires the SHA-512 digest of the
+   * stored bytes to equal {@code expectedSha512}. The download is written to a sibling
+   * temporary file and moved into place only after the digest matches. The transfer is
+   * capped at {@link #MAX_DOWNLOAD_BYTES}; remote {@code http} and {@code https} URIs
+   * additionally use connect and read timeouts.
+   *
+   * @param source The absolute URI to fetch. Must not be {@code null}.
+   * @param target The local file to create or replace. Must not be {@code null}.
+   * @param expectedSha512 The expected SHA-512 digest as 128 lowercase or uppercase hex
+   *                       digits. Must not be {@code null}.
+   * @throws IOException Thrown if fetching fails, the size ceiling is exceeded, or the
+   *         digest does not match.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null}, {@code source}
+   *         is not absolute, or {@code expectedSha512} is not 128 hex digits.
+   */
+  public static void download(URI source, Path target, String expectedSha512)
+      throws IOException {
+    download(source, target, expectedSha512, MAX_DOWNLOAD_BYTES);
+  }
+
+  /**
+   * Downloads {@code source} into {@code target} under a caller-supplied byte ceiling.
+   *
+   * @param source The absolute URI to fetch. Must not be {@code null}.
+   * @param target The local file to create or replace. Must not be {@code null}.
+   * @param expectedSha512 The expected SHA-512 digest as 128 hex digits. Must not be
+   *                       {@code null}.
+   * @param maxBytes The inclusive ceiling on bytes read from {@code source}.
+   * @throws IOException Thrown if fetching fails, {@code maxBytes} is exceeded, or the
+   *         digest does not match.
+   * @throws IllegalArgumentException Thrown if a parameter is invalid, see
+   *         {@link #download(URI, Path, String)}.
+   */
+  static void download(URI source, Path target, String expectedSha512, long maxBytes)
+      throws IOException {
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (target == null) {
+      throw new IllegalArgumentException("target must not be null");
+    }
+    if (expectedSha512 == null) {
+      throw new IllegalArgumentException("expectedSha512 must not be null");
+    }
+    if (!source.isAbsolute()) {
+      throw new IllegalArgumentException("source must be an absolute URI");
+    }
+    final String normalized = normalizeSha512(expectedSha512);
+    final Path parent = target.getParent();
+    if (parent != null) {
+      Files.createDirectories(parent);
+    }
+    final Path partial = target.resolveSibling(target.getFileName() + DOWNLOAD_SUFFIX);
+    Files.deleteIfExists(partial);
+    try {
+      long size = 0L;
+      final MessageDigest digest = sha512Digest();
+      final URLConnection connection = open(source);
+      try (InputStream in = connection.getInputStream();
+           DigestInputStream digester = new DigestInputStream(in, digest);
+           OutputStream out = Files.newOutputStream(partial)) {
+        final byte[] buffer = new byte[8192];
+        int n;
+        while ((n = digester.read(buffer)) >= 0) {
+          size += n;
+          if (size > maxBytes) {
+            throw new IOException("download size exceeds safe limit of " + maxBytes);
+          }
+          out.write(buffer, 0, n);
+        }
+      } finally {
+        if (connection instanceof HttpURLConnection http) {
+          http.disconnect();
+        }
+      }
+      final String actual = byteArrayToHexString(digest.digest());
+      if (!actual.equals(normalized)) {
+        throw new IOException("SHA512 checksum validation failed for " + target.getFileName()
+            + ". Expected: " + normalized + ", but got: " + actual);
+      }
+      try {
+        Files.move(partial, target, StandardCopyOption.REPLACE_EXISTING,
+            StandardCopyOption.ATOMIC_MOVE);
+      } catch (AtomicMoveNotSupportedException e) {
+        Files.move(partial, target, StandardCopyOption.REPLACE_EXISTING);
+      }
+    } catch (IOException e) {
+      Files.deleteIfExists(partial);
+      throw e;
+    }
+  }
+
+  /**
+   * {@return {@code true} when {@link #REMOTE_DOWNLOAD_PROPERTY} is the string
+   * {@code true}, ignoring case}
+   */
+  public static boolean isRemoteDownloadEnabled() {
+    return Boolean.parseBoolean(System.getProperty(REMOTE_DOWNLOAD_PROPERTY));
+  }
+
+  /**
+   * Opens a connection to {@code source} with connect and read timeouts applied.
+   *
+   * @param source The absolute URI to connect to.
+   * @return The configured, not yet connected, connection.
+   * @throws IOException Thrown if no connection can be created for {@code source}.
+   */
+  private static URLConnection open(URI source) throws IOException {
+    final URLConnection connection = source.toURL().openConnection();
+    connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+    connection.setReadTimeout(READ_TIMEOUT_MS);
+    return connection;
+  }
+
+  /**
+   * Trims and lowercases a SHA-512 hex digest.
+   *
+   * @param expectedSha512 The digest to normalize.
+   * @return The digest as 128 lowercase hex digits.
+   * @throws IllegalArgumentException Thrown if the digest is not 128 hex digits.
+   */
+  private static String normalizeSha512(String expectedSha512) {
+    final String hex = expectedSha512.trim().toLowerCase(Locale.ROOT);
+    if (hex.length() != SHA512_HEX_LENGTH || !hex.chars().allMatch(
+        c -> c >= '0' && c <= '9' || c >= 'a' && c <= 'f')) {
+      throw new IllegalArgumentException(
+          "expectedSha512 must be 128 hexadecimal digits");
+    }
+    return hex;
+  }
+
+  /**
+   * {@return a fresh SHA-512 {@link MessageDigest}}
+   *
+   * @throws IOException Thrown if the JVM does not provide the algorithm.
+   */
+  private static MessageDigest sha512Digest() throws IOException {
+    try {
+      return MessageDigest.getInstance("SHA-512");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IOException("SHA-512 algorithm not found", e);
     }
   }
 

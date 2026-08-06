@@ -21,38 +21,57 @@ The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and K
 
 ## Known mecab-format dictionary projects
 
-| Dictionary | Language | Archive to download | Encoding of the files |
+| Catalog id | Dictionary | Language | Encoding |
 |---|---|---|---|
-| IPADIC 2.7.0 | Japanese | `mecab-ipadic-2.7.0-20070801.tar.gz` from the MeCab project's SourceForge file area (`sourceforge.net/projects/mecab/files/mecab-ipadic/2.7.0-20070801/`) | EUC-JP |
-| mecab-ko-dic 2.1.1 | Korean | `mecab-ko-dic-2.1.1-20180720.tar.gz` from the project's Bitbucket downloads page (`bitbucket.org/eunjeon/mecab-ko-dic/downloads/`) | UTF-8 |
+| `mecab.ipadic` | IPADIC 2.7.0 | Japanese | EUC-JP |
+| `mecab.ko-dic` | mecab-ko-dic 2.1.1 | Korean | UTF-8 |
 
-Both archives are gzip-compressed tars, the format `MecabDictionaryInstaller` reads. The encoding column matters: `MecabDictionary.load(Path)` assumes UTF-8, and a dictionary in any other encoding is loaded with the two-argument overload, for example `MecabDictionary.load(dir, Charset.forName("EUC-JP"))` for IPADIC.
+Pinned download URLs and SHA-512 digests for those ids live in
+`opennlp/tools/util/dictionary-catalog.properties`. Both archives are
+gzip-compressed ustar tars, the format `MecabDictionaryInstaller` reads.
 
-## Step 1: download the archive
+The installer extracts only the dictionary payload: the `*.csv` and `*.def` files a
+`MecabDictionary` reads, plus the `dicrc` configuration file the distributions ship
+alongside them. It flattens the entries into the target directory, and by the same
+flattening makes it impossible for an archive path to escape that directory. The
+returned count is the number of dictionary files extracted.
 
-Either fetch the archive with any tool you like, or use the helper next to this file, which adds checksum verification:
+## Option A: opt-in catalog install
 
-```
-./download-mecab-dictionary.sh <archive-url> ipadic.tar.gz [expected-sha256]
-```
-
-On the first run without a checksum the script prints the SHA-256 it computed; record it and pass it on later runs so a changed or corrupted download fails loudly instead of being installed.
-
-## Step 2: unpack with the installer
-
-The installer extracts only the dictionary payload: the `*.csv` and `*.def` files a `MecabDictionary` reads, plus the `dicrc` configuration file the distributions ship alongside them. It flattens the entries into the target directory, and by the same flattening makes it impossible for an archive path to escape that directory:
+Catalog URLs stay inactive until you set `-Dopennlp.download.remote=true` (or the
+equivalent system property in code). That flag is the explicit user action that
+enables the built-in URLs; OpenNLP never fetches them by default.
 
 ```java
 import java.nio.file.Path;
 import opennlp.tools.tokenize.lattice.MecabDictionaryInstaller;
 
-int files = MecabDictionaryInstaller.install(
-    Path.of("ipadic.tar.gz").toUri(), Path.of("ipadic"));
+// JVM flag: -Dopennlp.download.remote=true
+int files = MecabDictionaryInstaller.installFromCatalog(
+    "mecab.ipadic", Path.of("ipadic"));
 ```
 
-The returned count is the number of dictionary files extracted. A remote URI works in the same call if you prefer to skip step 1 entirely and let the installer stream the download.
+## Option B: your own URL and digest
 
-## Step 3: load and tokenize
+```java
+import java.net.URI;
+import java.nio.file.Path;
+import opennlp.tools.tokenize.lattice.MecabDictionaryInstaller;
+
+String expectedSha512 = "..."; // the 128-hex SHA-512 of the archive
+int files = MecabDictionaryInstaller.install(
+    URI.create("https://example.example/dict.tar.gz"),
+    Path.of("dict"),
+    expectedSha512);
+```
+
+A local `file:` URI may omit the digest:
+`MecabDictionaryInstaller.install(localArchive.toUri(), targetDirectory)`.
+Any other URI scheme requires the digest.
+
+## Load and tokenize
+
+`MecabDictionary.load(Path)` assumes UTF-8. IPADIC needs the two-argument overload:
 
 ```java
 import java.nio.charset.Charset;
@@ -67,11 +86,15 @@ LatticeTokenizer tokenizer = new LatticeTokenizer(dictionary);
 String[] tokens = tokenizer.tokenize("\u6771\u4EAC\u90FD\u306B\u884C\u304F");
 ```
 
-For a UTF-8 dictionary such as mecab-ko-dic, `MecabDictionary.load(Path.of("ko-dic"))` is enough. Loaded dictionaries and tokenizers are immutable and safe to share between threads, so load once and reuse.
+For a UTF-8 dictionary such as mecab-ko-dic, `MecabDictionary.load(Path.of("ko-dic"))`
+is enough. Loaded dictionaries and tokenizers are immutable and safe to share between
+threads, so load once and reuse.
 
 ## Chinese: the unigram segmenter needs only a frequency lexicon
 
-`opennlp.tools.tokenize.lattice.UnigramSegmenter` does not use mecab dictionaries. It loads a plain text lexicon, one entry per line: the word, its count, and optionally a tag, separated by whitespace. Any word-frequency list you have the rights to use works:
+`opennlp.tools.tokenize.lattice.UnigramSegmenter` does not use mecab dictionaries. It
+loads a plain text lexicon, one entry per line: the word, its count, and optionally a
+tag, separated by whitespace. Any word-frequency list you have the rights to use works:
 
 ```java
 import java.nio.file.Path;

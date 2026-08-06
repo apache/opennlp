@@ -27,13 +27,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.zip.GZIPInputStream;
 
+import opennlp.tools.util.DictionaryCatalog;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
  * Fetches and unpacks a mecab-format dictionary archive into a local directory, so the
  * dictionary is acquired by the user at install time and never ships with this library.
- * The archive location is user-supplied; no dictionary data is bundled and no download
- * location is built in.
+ * No dictionary data is bundled. Any non-{@code file:} archive is downloaded through
+ * {@link DownloadUtil#download(URI, Path, String)} and requires an expected SHA-512
+ * digest. Built-in catalog URLs are opt-in via {@link #installFromCatalog(String, Path)}.
  *
  * <p>The installer reads gzip-compressed ustar archives (POSIX.1-1988), the format the
  * common distributions use. GNU long-name ({@code L}) and PAX ({@code x}/{@code g})
@@ -78,28 +81,110 @@ public final class MecabDictionaryInstaller {
   }
 
   /**
-   * Downloads a dictionary archive and unpacks it.
+   * Unpacks a local {@code file:} archive URI. Any other scheme requires
+   * {@link #install(URI, Path, String)} with an expected SHA-512 digest.
    *
    * @param archive The archive location, a gzip-compressed ustar tar. Must not be
    *                {@code null}.
    * @param targetDirectory The directory to unpack into; created when absent. Must not
    *                        be {@code null}.
    * @return The number of dictionary files extracted.
-   * @throws IOException Thrown if fetching, reading, or writing fails, the archive
-   *         contains no dictionary file, or an extraction budget is exceeded.
-   * @throws IllegalArgumentException Thrown if a parameter is {@code null} or
-   *         {@code archive} is not an absolute URI.
+   * @throws IOException Thrown if reading or writing fails, the archive contains no
+   *         dictionary file, or an extraction budget is exceeded.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null},
+   *         {@code archive} is not an absolute URI, or {@code archive} is not a
+   *         {@code file:} URI.
    */
   public static int install(URI archive, Path targetDirectory) throws IOException {
+    return install(archive, targetDirectory, null);
+  }
+
+  /**
+   * Downloads a dictionary archive when needed, verifies its SHA-512 digest through
+   * {@link DownloadUtil#download(URI, Path, String)}, and unpacks it. A {@code file:}
+   * URI may omit the digest and is then opened without verification.
+   *
+   * @param archive The archive location, a gzip-compressed ustar tar. Must not be
+   *                {@code null}.
+   * @param targetDirectory The directory to unpack into; created when absent. Must not
+   *                        be {@code null}.
+   * @param expectedSha512 The expected SHA-512 hex digest. Required for any
+   *                       non-{@code file:} URI; optional for {@code file:} URIs.
+   * @return The number of dictionary files extracted.
+   * @throws IOException Thrown if fetching, verification, reading, or writing fails,
+   *         the archive contains no dictionary file, or an extraction budget is exceeded.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null},
+   *         {@code archive} is not an absolute URI, or a non-{@code file:} URI omits
+   *         the digest.
+   */
+  public static int install(URI archive, Path targetDirectory, String expectedSha512)
+      throws IOException {
     if (archive == null) {
       throw new IllegalArgumentException("archive must not be null");
     }
     if (targetDirectory == null) {
       throw new IllegalArgumentException("targetDirectory must not be null");
     }
-    try (InputStream in = archive.toURL().openStream()) {
-      return extract(in, targetDirectory);
+    if (!archive.isAbsolute()) {
+      throw new IllegalArgumentException("archive must be an absolute URI");
     }
+    if (expectedSha512 == null) {
+      if (!isLocalFile(archive)) {
+        throw new IllegalArgumentException("a non-file archive requires an expected "
+            + "SHA-512 digest; use install(URI, Path, String)");
+      }
+      try (InputStream in = archive.toURL().openStream()) {
+        return extract(in, targetDirectory);
+      }
+    }
+    final Path downloaded = Files.createTempFile("mecab-dict-", ".tar.gz");
+    try {
+      DownloadUtil.download(archive, downloaded, expectedSha512);
+      try (InputStream in = Files.newInputStream(downloaded)) {
+        return extract(in, targetDirectory);
+      }
+    } finally {
+      Files.deleteIfExists(downloaded);
+    }
+  }
+
+  /**
+   * Downloads a dictionary named in {@link DictionaryCatalog} and unpacks it. Requires
+   * {@code -Dopennlp.download.remote=true}.
+   *
+   * @param dictionaryId The catalog id, for example {@code mecab.ipadic} or
+   *                     {@code mecab.ko-dic}. Must not be {@code null}.
+   * @param targetDirectory The directory to unpack into; created when absent. Must not
+   *                        be {@code null}.
+   * @return The number of dictionary files extracted.
+   * @throws IOException Thrown if the catalog entry is missing, remote downloads are
+   *         disabled, or install fails.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
+   */
+  public static int installFromCatalog(String dictionaryId, Path targetDirectory)
+      throws IOException {
+    if (dictionaryId == null) {
+      throw new IllegalArgumentException("dictionaryId must not be null");
+    }
+    if (targetDirectory == null) {
+      throw new IllegalArgumentException("targetDirectory must not be null");
+    }
+    final Path downloaded = Files.createTempFile("mecab-dict-", ".tar.gz");
+    try {
+      DictionaryCatalog.loadDefault().download(dictionaryId, downloaded);
+      return install(downloaded.toUri(), targetDirectory);
+    } finally {
+      Files.deleteIfExists(downloaded);
+    }
+  }
+
+  /**
+   * {@return {@code true} when {@code archive} uses the {@code file} scheme}
+   *
+   * @param archive The absolute archive URI.
+   */
+  private static boolean isLocalFile(URI archive) {
+    return "file".equalsIgnoreCase(archive.getScheme());
   }
 
   /**
