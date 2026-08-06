@@ -97,11 +97,10 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
           s -> s.sentProbs = new ArrayList<>());
 
   /**
-   * The lookup structure over the {@link Dictionary abbreviation dictionary} that backs
-   * {@link #isAcceptableBreak(CharSequence, int, int)}. It is {@code null} if no abbreviation
-   * dictionary is available for the underlying model.
+   * The abbreviation dictionary index that backs {@link #isAcceptableBreak(CharSequence, int, int)}.
+   * It is {@code null} if no abbreviation dictionary is available for the underlying model.
    */
-  private final AbbreviationVeto abbVeto;
+  private final AbbreviationIndex abbIndex;
 
   protected final boolean useTokenEnd;
 
@@ -134,7 +133,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    */
   public SentenceDetectorME(SentenceModel model, Dictionary abbDict) {
     this.model = model.getMaxentModel();
-    this.abbVeto = AbbreviationVeto.of(abbDict);
+    this.abbIndex = AbbreviationIndex.of(abbDict);
     SentenceDetectorFactory sdFactory = model.getFactory();
     cgen = sdFactory.getSDContextGenerator();
     scanner = sdFactory.getEndOfSentenceScanner();
@@ -159,7 +158,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
           getAbbreviations(model.getAbbreviations()), customEOSCharacters);
       scanner = factory.createEndOfSentenceScanner(customEOSCharacters);
     }
-    abbVeto = AbbreviationVeto.of(model.getAbbreviations());
+    abbIndex = AbbreviationIndex.of(model.getAbbreviations());
     useTokenEnd = model.useTokenEnd();
   }
 
@@ -401,9 +400,11 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    * irrelevant by construction, so the decision costs time proportional to the longest
    * dictionary entry rather than to the length of {@code s}.</p>
    *
-   * <p>A {@code candidateIndex} that is not an index into {@code s} cannot carry an
-   * abbreviation, so it is accepted rather than raising an
-   * {@link IndexOutOfBoundsException}.</p>
+   * <p>A {@code candidateIndex} past the end of {@code s} cannot carry an abbreviation, so it
+   * is accepted rather than raising an {@link IndexOutOfBoundsException}. At
+   * {@code candidateIndex == s.length()}, the decision matches the previous implementation when
+   * the match is not at {@code fromIndex}; only the match-at-{@code fromIndex} case is an
+   * accept-instead-of-throw relaxation.</p>
    *
    * @param s the {@link CharSequence} in which the break occurred.
    * @param fromIndex the start of the segment currently being evaluated.
@@ -412,19 +413,16 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    * @return {@code true} if the break is acceptable, {@code false} otherwise.
    */
   protected boolean isAcceptableBreak(CharSequence s, int fromIndex, int candidateIndex) {
-    if (abbVeto == null) {
-      return true;
-    }
-    return !abbVeto.vetoes(s, fromIndex, candidateIndex);
+    return abbIndex == null || abbIndex.allowsBreak(s, fromIndex, candidateIndex);
   }
 
   /**
-   * An immutable, length-bucketed view of an abbreviation {@link Dictionary}. It answers the
-   * abbreviation veto of {@link #isAcceptableBreak(CharSequence, int, int)} by enumerating the
-   * few text positions that can carry a relevant abbreviation and asking a hash set what is
-   * there, instead of searching the whole text once per dictionary entry.
+   * An immutable, length-bucketed index over an abbreviation {@link Dictionary}. It answers
+   * {@link #isAcceptableBreak(CharSequence, int, int)} by enumerating the few text positions
+   * that can carry a relevant abbreviation and asking a hash set what is there, instead of
+   * searching the whole text once per dictionary entry.
    */
-  private static final class AbbreviationVeto {
+  private static final class AbbreviationIndex {
 
     /**
      * The dictionary entries, folded to lower case unless the dictionary is case-sensitive.
@@ -449,10 +447,10 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
     /**
      * @param abbDict The {@link Dictionary} to index, may be {@code null}.
-     * @return A veto over {@code abbDict}, or {@code null} if {@code abbDict} is {@code null}.
+     * @return An index over {@code abbDict}, or {@code null} if {@code abbDict} is {@code null}.
      */
-    static AbbreviationVeto of(Dictionary abbDict) {
-      return abbDict == null ? null : new AbbreviationVeto(abbDict);
+    static AbbreviationIndex of(Dictionary abbDict) {
+      return abbDict == null ? null : new AbbreviationIndex(abbDict);
     }
 
     /**
@@ -460,7 +458,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
      *
      * @param abbDict The {@link Dictionary} to index. Must not be {@code null}.
      */
-    private AbbreviationVeto(Dictionary abbDict) {
+    private AbbreviationIndex(Dictionary abbDict) {
       caseSensitive = abbDict.isCaseSensitive();
       final Set<String> tokens = new HashSet<>();
       final SortedSet<Integer> lengths = new TreeSet<>();
@@ -470,7 +468,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
         tokens.add(token);
         lengths.add(token.length());
       }
-      entries = Set.copyOf(tokens);
+      entries = tokens;
       entryLengths = lengths.stream().mapToInt(Integer::intValue).toArray();
       maxEntryLength = entryLengths.length == 0 ? 0 : entryLengths[entryLengths.length - 1];
     }
@@ -479,13 +477,13 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
      * @param s The text in which the break occurred.
      * @param fromIndex The start of the segment currently being evaluated.
      * @param candidateIndex The index of the candidate sentence ending.
-     * @return {@code true} if an abbreviation forbids a break at {@code candidateIndex}.
+     * @return {@code true} if a break at {@code candidateIndex} is allowed.
      */
-    boolean vetoes(CharSequence s, int fromIndex, int candidateIndex) {
+    boolean allowsBreak(CharSequence s, int fromIndex, int candidateIndex) {
       final int textLength = s.length();
       if (entryLengths.length == 0 || candidateIndex < fromIndex || candidateIndex < 0
-          || candidateIndex >= textLength) {
-        return false;
+          || candidateIndex > textLength) {
+        return true;
       }
       // Occurrences before the segment start do not participate.
       final int scanStart = StrictMath.max(0, fromIndex);
@@ -512,7 +510,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
             continue;
           }
           if (pos == fromIndex && endPos == candidateIndex + 1) {
-            return true; // full abbreviation match at segment start -> no acceptable break
+            return false; // full abbreviation match at segment start -> no acceptable break
           }
           final char prevChar = s.charAt(pos == fromIndex ? pos : pos - 1);
           /*
@@ -522,23 +520,28 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
            * This prevents mismatches from overlaps close to an actual sentence end.
            */
           if (Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(') {
-            return true; // in case of a valid abbreviation: the (sentence) break is not accepted
+            return false; // in case of a valid abbreviation: the (sentence) break is not accepted
           }
         }
       }
-      return false; // no abbreviation(s) at given positions: valid sentence boundary
+      return true; // no abbreviation(s) at given positions: valid sentence boundary
     }
 
     /**
      * Lower-cases {@code [from, to)} exactly as {@link StringUtil#toLowerCase(CharSequence)}
-     * lower-cases a whole text: per code point, and therefore without changing any index.
+     * lower-cases a whole text: per code point via {@link Character#toLowerCase(int)}.
+     *
+     * <p>Folding only the window is correct only because that mapping is 1:1 in {@code char}
+     * count, so {@code pos - windowStart} taken from the unfolded text still indexes the folded
+     * window. {@link String#toLowerCase()} must not be used here: full case mapping can expand
+     * a code point (for example {@code İ} / U+0130) and would corrupt every offset in the window.</p>
      *
      * @param s The text to read from.
      * @param from The first index to fold, at a code point boundary.
      * @param to The index to stop at, at a code point boundary.
      * @return The folded characters of {@code [from, to)}.
      */
-    private String toLowerCase(CharSequence s, int from, int to) {
+    private static String toLowerCase(CharSequence s, int from, int to) {
       final StringBuilder folded = new StringBuilder(to - from);
       int i = from;
       while (i < to) {
@@ -555,7 +558,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
      * @return {@code index}, moved one character left if it points at the trailing half of a
      *     surrogate pair, which is the only index a code point walk cannot start at.
      */
-    private int codePointStart(CharSequence s, int index) {
+    private static int codePointStart(CharSequence s, int index) {
       if (index > 0 && index < s.length() && Character.isLowSurrogate(s.charAt(index))
           && Character.isHighSurrogate(s.charAt(index - 1))) {
         return index - 1;
@@ -569,7 +572,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
      * @return {@code index}, moved one character right if it splits a surrogate pair, which is
      *     the only index a code point walk cannot stop at.
      */
-    private int codePointEnd(CharSequence s, int index) {
+    private static int codePointEnd(CharSequence s, int index) {
       if (index > 0 && index < s.length() && Character.isHighSurrogate(s.charAt(index - 1))
           && Character.isLowSurrogate(s.charAt(index))) {
         return index + 1;

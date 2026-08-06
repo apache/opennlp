@@ -318,11 +318,16 @@ public class SentenceDetectorMEAbbreviationEquivalenceTest extends AbstractSente
    * ------------------------------------------------------------------------------------------
    */
 
+  /**
+   * Differential check of {@link SentenceDetectorME#sentPosDetect(CharSequence)} against the
+   * legacy veto. The English sentence model is paired with each shipped abbreviation dictionary
+   * (including the German one); this is not German-language coverage.
+   */
   @Test
   void testSentPosDetectAgreesOnCorpus() throws IOException {
     for (Locale locale : new Locale[] {Locale.ENGLISH, Locale.GERMAN}) {
       assertCorpusRunsAgree(loadAbbDictionary(locale),
-          "the shipped abbreviation dictionary of " + locale);
+          "the shipped abbreviation dictionary of " + locale + " on the English model");
     }
   }
 
@@ -392,14 +397,26 @@ public class SentenceDetectorMEAbbreviationEquivalenceTest extends AbstractSente
 
   @Test
   void testCandidateIndexOutsideTextNoLongerThrows() {
-    final Dictionary dict = dictionaryOf(true, "Mr.");
+    final Dictionary dict = dictionaryOf(false, "Mr.", "etc.");
     final SentenceDetectorME detector = new SentenceDetectorME(sentdetectModel, dict);
-    final String text = "Mr. x";
-    // The previous implementation indexed past the end of the text here.
+
+    // Match at fromIndex with candidateIndex == length: legacy clause A substring-throws;
+    // the bounded window accepts instead.
+    final String matchAtFromIndex = "Mr. x";
     Assertions.assertThrows(IndexOutOfBoundsException.class,
-        () -> legacyIsAcceptableBreak(dict, text, 0, text.length()));
-    Assertions.assertTrue(detector.isAcceptableBreak(text, 0, text.length()));
-    Assertions.assertTrue(detector.isAcceptableBreak(text, 0, text.length() + 100));
+        () -> legacyIsAcceptableBreak(dict, matchAtFromIndex, 0, matchAtFromIndex.length()));
+    Assertions.assertTrue(detector.isAcceptableBreak(matchAtFromIndex, 0, matchAtFromIndex.length()));
+
+    // Match elsewhere with candidateIndex == length: legacy short-circuits clause A and
+    // clause B rejects the break. The bounded window must agree (not silently accept).
+    final String matchElsewhere = "Bring apples, pears, etc.";
+    Assertions.assertFalse(legacyIsAcceptableBreak(dict, matchElsewhere, 0, matchElsewhere.length()));
+    Assertions.assertFalse(detector.isAcceptableBreak(matchElsewhere, 0, matchElsewhere.length()));
+
+    // Past the end of the text cannot carry an abbreviation; both accept, and the new path
+    // must not throw.
+    Assertions.assertTrue(detector.isAcceptableBreak(matchAtFromIndex, 0,
+        matchAtFromIndex.length() + 100));
   }
 
   @Test

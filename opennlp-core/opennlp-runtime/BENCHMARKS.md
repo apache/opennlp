@@ -15,7 +15,6 @@ variance reporting.
 | `POSTaggerMEBenchmark` | POSTaggerME | 3 approaches x 2 cache configs |
 | `SnowballStemmerBenchmark` | SnowballStemmer | 3 approaches (incl. plain-field baseline) |
 | `CachingStemmerBenchmark` | CachingStemmer | cached vs uncached x 2 workloads |
-| `SentenceDetectorMEAbbreviationBenchmark` | SentenceDetectorME abbreviation veto | 3 veto implementations x 4 document sizes x 2 dictionary sizes |
 
 ### Approaches measured
 
@@ -114,86 +113,6 @@ a virtual-thread-per-task executor every task starts with an empty
 cache, so the multiplier only applies to repeats within one task;
 workloads that stem a handful of words per task should expect
 uncached-level throughput there.
-
-### SentenceDetectorME abbreviation veto results
-
-`SentenceDetectorMEAbbreviationBenchmark` measures the abbreviation veto
-of `SentenceDetectorME.isAcceptableBreak`. One op is one `sentPosDetect`
-call over a document of `documentChars` characters. Three variants run
-over the same input and the same model, so only the veto differs:
-
-| Variant | Description |
-|---------|-------------|
-| `noDictionary` | No abbreviation dictionary, so the veto is never entered. The floor: scanning plus one maxent evaluation per candidate. |
-| `legacyVeto` | The implementation before the bounded window, restored by overriding the method. |
-| `boundedWindowVeto` | The current implementation. |
-
-**This path is gated on an abbreviation dictionary being configured, and
-no sentence model published by the project carries one.** A stock model
-is the `noDictionary` column, which is why a quadratic veto could sit in
-the library unnoticed. It is entered the moment a user supplies a
-dictionary, which is the normal thing to do for acceptable segmentation
-on domain text.
-
-Results (Linux, JDK 25 GraalVM CE, 8 pinned cores of a 32-core box,
-2 forks x 10 iterations x 3 s, 3 warmup iterations x 2 s, 1 thread;
-lower is better):
-
-| dictionaryEntries | documentChars | `noDictionary` | `legacyVeto` | `boundedWindowVeto` | legacy / bounded |
-|---:|---:|---:|---:|---:|---:|
-| 10 | 12 500 | 0.120 ± 0.006 | 5.045 ± 0.069 | 0.163 ± 0.001 | 31x |
-| 10 | 25 000 | 0.227 ± 0.003 | 18.876 ± 1.148 | 0.341 ± 0.009 | 55x |
-| 10 | 50 000 | 0.455 ± 0.011 | 75.119 ± 2.169 | 0.640 ± 0.011 | 117x |
-| 10 | 100 000 | 0.902 ± 0.010 | 278.811 ± 3.664 | 1.263 ± 0.009 | 221x |
-| 200 | 12 500 | 0.114 ± 0.002 | 10.582 ± 0.415 | 0.212 ± 0.002 | 50x |
-| 200 | 25 000 | 0.235 ± 0.012 | 38.968 ± 0.661 | 0.410 ± 0.004 | 95x |
-| 200 | 50 000 | 0.453 ± 0.004 | 145.631 ± 1.307 | 0.821 ± 0.016 | 177x |
-| 200 | 100 000 | 0.930 ± 0.023 | 546.487 ± 15.571 | 1.611 ± 0.028 | 339x |
-
-All numbers are ms/op.
-
-The growth rate is the point, not the ratio. Per doubling of
-`documentChars`:
-
-| Variant | 10 entries | 200 entries |
-|---------|------------|-------------|
-| `noDictionary` | 1.89x, 2.00x, 1.98x | 2.06x, 1.93x, 2.05x |
-| `legacyVeto` | 3.74x, 3.98x, 3.71x | 3.68x, 3.74x, 3.75x |
-| `boundedWindowVeto` | 2.09x, 1.88x, 1.97x | 1.93x, 2.00x, 1.96x |
-
-Four times the work for twice the input is the signature of a quadratic
-algorithm: the previous implementation searched the whole text once per
-dictionary entry for every end-of-sentence candidate, and for a
-case-insensitive dictionary (all the shipped ones are) it also
-lower-cased the whole text on every one of those calls. The bounded
-window tracks the `noDictionary` floor instead, so the ratio in the last
-column above is not a constant speedup, it keeps growing with document
-size.
-
-The residual cost of the veto over the floor is roughly 40% at 10
-entries and 80% at 200 entries, flat in document size. That is the
-per-candidate window probing, and it is linear.
-
-Beyond the matrix, at 200 dictionary entries (1 fork x 3 iterations
-x 20 s, same box):
-
-| documentChars | `legacyVeto` | `boundedWindowVeto` |
-|---:|---:|---:|
-| 200 000 | 2 066.219 ± 103.210 | 3.513 ± 0.165 |
-| 400 000 | 8 221.748 ± 955.911 | 6.800 ± 0.154 |
-
-The quadratic law holds over the whole measured range: 546 ms, 2 066 ms
-and 8 222 ms for 100 000, 200 000 and 400 000 characters is 3.78x then
-3.98x per doubling, while the bounded window goes 1.611 ms, 3.513 ms,
-6.800 ms, that is 2.18x then 1.94x. Extending the fitted curves one more
-decade, a 4 MB document costs the previous implementation about 14
-minutes and the current one about 70 ms. Only the 4 MB figures are
-extrapolated; everything in the tables above was measured.
-
-```bash
-java -cp "$CP" org.openjdk.jmh.Main SentenceDetectorMEAbbreviationBenchmark \
-    -f 2 -wi 3 -w 2s -i 10 -r 3s
-```
 
 ### POSTagger cache impact
 
