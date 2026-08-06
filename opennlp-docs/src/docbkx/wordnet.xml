@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.wordnet">
+
+	<title>WordNet</title>
+
+	<section xml:id="tools.wordnet.introduction">
+		<title>Introduction</title>
+		<para>
+			The <code>opennlp-wordnet</code> module loads a WordNet-style lexicon into
+			a <code>LexicalKnowledgeBase</code> and looks up synsets by lemma and part
+			of speech. Two readers are provided: <code>WnLmfReader</code> for the
+			Global WordNet Association WN-LMF XML interchange format, and
+			<code>WndbReader</code> for the classic Princeton WordNet database file
+			layout. Both return an immutable, thread-safe knowledge base. On top of
+			lookup, the module can Morphy-lemmatize, expand a term through synonym and
+			hypernym links, and score synset similarity on the hypernym graph.
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.load">
+		<title>Loading a lexicon</title>
+		<para>
+			WN-LMF is the usual choice for Open English WordNet and other GWA
+			wordnets. WNDB remains available for a local Princeton-style
+			<code>dict</code> directory. The examples below use the miniature
+			fixtures from the module's tests; replace the paths with a full lexicon
+			in application code. <code>WordNetUsageExampleTest</code> asserts the
+			behavior shown here.
+			<programlisting language="java"><![CDATA[
+LexicalKnowledgeBase lexicon = WnLmfReader.read(Path.of("en-wordnet.xml"));
+// or: LexicalKnowledgeBase lexicon = WndbReader.read(Path.of("dict"));]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.lookup">
+		<title>Lookup</title>
+		<para>
+			Lookups are scoped by part of speech and fold case and underscores the
+			same way the readers index lemmas. Against the miniature WN-LMF fixture,
+			the noun <code>dog</code> has one sense:
+			<programlisting language="java"><![CDATA[
+List<Synset> senses = lexicon.lookup("dog", WordNetPOS.NOUN);
+// senses.size() = 1
+// senses.get(0).id() = "mini-n1"
+// senses.get(0).lemmas() = ["dog", "domestic dog"]
+// senses.get(0).gloss() = "a domesticated canid"]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.morphy">
+		<title>Morphy lemmatization</title>
+		<para>
+			<code>MorphyLemmatizer</code> implements the Morphy algorithm against a
+			loaded lexicon and the irregular-form exception lists
+			(<code>noun.exc</code>, <code>verb.exc</code>, <code>adj.exc</code>,
+			<code>adv.exc</code>). Exception hits are returned first; regular
+			detachments are kept only when the candidate is in the lexicon. Unknown
+			forms yield the marker <code>O</code>.
+			<programlisting language="java"><![CDATA[
+MorphyExceptions exceptions = MorphyExceptions.load(Path.of("dict"));
+MorphyLemmatizer lemmatizer = new MorphyLemmatizer(lexicon, exceptions);
+
+lemmatizer.lemmatize(new String[] {"mice"}, new String[] {"NNS"})[0];  // "mouse"
+lemmatizer.lemmatize(new String[] {"dogs"}, new String[] {"NNS"})[0];  // "dog"]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.expansion">
+		<title>Lexical expansion</title>
+		<para>
+			<code>LexicalExpander</code> turns a term into related terms from the
+			knowledge base: synonyms sharing its synsets, hypernym ancestors up to a
+			configured depth, and optionally direct hyponyms. Each
+			<code>Expansion</code> carries a heuristic weight in
+			<code>(0, 1]</code>: the first sense starts at <code>1.0</code>, later
+			senses multiply by the sense decay, and each hypernym or hyponym step
+			multiplies by the depth decay. The input term itself is never returned.
+			Defaults use depth <code>1</code>, sense decay <code>0.5</code>, and
+			depth decay <code>0.5</code>.
+			<code>LexicalExpansionUsageExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java"><![CDATA[
+List<Expansion> expansions = LexicalExpander.builder(lexicon)
+    .build()
+    .expand("dog", WordNetPOS.NOUN);
+
+// "domestic dog": SYNONYM, senseRank 0, weight 1.0
+// "canid":        HYPERNYM, depth 1, weight 0.5
+// "frank":        SYNONYM, senseRank 1, weight 0.5]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.similarity">
+		<title>Synset similarity</title>
+		<para>
+			<code>SynsetSimilarity</code> scores two synset identifiers on the
+			hypernym graph. Path similarity is <code>1 / (1 + d)</code> for the
+			shortest distance <code>d</code> through a common ancestor. Wu-Palmer
+			similarity relates the depth of the deepest common ancestor to the depths
+			of both synsets. Unrelated synsets score <code>0</code>.
+			<code>LexicalExpansionUsageExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java"><![CDATA[
+SynsetSimilarity similarity = new SynsetSimilarity(lexicon);
+
+similarity.path("n6", "n5");       // 0.5   (chemist to scientist)
+similarity.wuPalmer("n5", "n6");   // 8.0/9.0]]>
+			</programlisting>
+		</para>
+	</section>
+</chapter>
