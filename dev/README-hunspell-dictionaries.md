@@ -23,13 +23,26 @@ The Hunspell stemmer (`opennlp.tools.stemmer.hunspell`) implements the documente
 
 The LibreOffice project maintains a large collection of Hunspell dictionaries, one directory per language, at `github.com/LibreOffice/dictionaries`. Licenses differ per dictionary, which is why nothing is bundled: for example, the `en_US` dictionary derives from SCOWL and states its terms in `README_en_US.txt` in the same directory. Many other sources work too; the engine only cares that the pair follows the Hunspell format.
 
-The helper next to this file fetches a pair together with its readme files:
+Pinned URLs and SHA-512 digests for the cataloged `en_US` pair live in
+`opennlp/tools/util/dictionary-catalog.properties` (LibreOffice commit `208a9fd8`).
 
-```
-./download-hunspell-dictionary.sh en en_US /tmp/hunspell-en_US
+## Option A: opt-in catalog download
+
+Catalog URLs stay inactive until you set `-Dopennlp.download.remote=true`. That flag
+is the explicit user action that enables the built-in URLs.
+
+```java
+import java.nio.file.Path;
+import opennlp.tools.stemmer.hunspell.HunspellDictionaryDownload;
+
+// JVM flag: -Dopennlp.download.remote=true
+HunspellDictionaryDownload.downloadFromCatalog("en_US", Path.of("/tmp/hunspell-en_US"));
 ```
 
-## Loading and stemming
+## Option B: your own files
+
+Fetch `.aff` / `.dic` (and the license readme) with any tool, or with
+`DownloadUtil.download(uri, path, sha512)`, then load them:
 
 ```java
 import java.nio.file.Path;
@@ -61,4 +74,4 @@ The in-tree tests run against project-authored fixtures only. An opt-in test cla
 
 ## What the engine supports
 
-Supported affix features: `PFX` and `SFX` rules with strip strings, character-class conditions, cross-product combination of one prefix with one suffix, twofold suffixes through continuation classes, `FLAG` modes `char`, `UTF-8`, `long`, and `num`, the `AF` flag alias table, the `SET` encoding declaration, compound decomposition under `COMPOUNDFLAG`, the positional `COMPOUNDBEGIN`/`COMPOUNDMIDDLE`/`COMPOUNDEND` flags, `COMPOUNDMIN`, `COMPOUNDWORDMAX`, `COMPOUNDPERMITFLAG`, `COMPOUNDFORBIDFLAG`, and the `CHECKCOMPOUNDDUP`/`CHECKCOMPOUNDCASE`/`CHECKCOMPOUNDTRIPLE` declarations (compound parts stand on their entries alone or on an entry plus one affix, the zero and dash suffixes dictionaries position linking forms with included), the blocking flags `NEEDAFFIX` (alias `PSEUDOROOT`), `ONLYINCOMPOUND`, and `FORBIDDENWORD`, which keep virtual stems, compound-only parts, and forbidden words out of the reported analyses, and `CIRCUMFIX`, which binds marked prefix and suffix halves to one another as in the German `ge...t` participle. Directives that would change stems when ignored (`ICONV`, `OCONV`, `COMPLEXPREFIXES`) fail at load time. Cosmetic tables such as `REP`, `MAP`, and `KEY` are skipped, so analyses that would need them are missed rather than invented. A malformed `.aff` file fails loudly at load time with the offending line number in the message.
+Supported affix features: `PFX` and `SFX` rules with strip strings, character-class conditions, cross-product combination of one prefix with one suffix, twofold suffixes through continuation classes, `FLAG` modes `char`, `UTF-8`, `long`, and `num`, the `AF` flag alias table, the `SET` encoding declaration, compound decomposition under `COMPOUNDFLAG`, the positional `COMPOUNDBEGIN`/`COMPOUNDMIDDLE`/`COMPOUNDEND` flags, `COMPOUNDMIN`, `COMPOUNDWORDMAX`, `COMPOUNDPERMITFLAG`, `COMPOUNDFORBIDFLAG`, and the `CHECKCOMPOUNDDUP`/`CHECKCOMPOUNDCASE`/`CHECKCOMPOUNDTRIPLE` declarations (compound parts stand on their entries alone or on an entry plus one affix, the zero and dash suffixes dictionaries position linking forms with included), the blocking flags `NEEDAFFIX` (alias `PSEUDOROOT`), `ONLYINCOMPOUND`, and `FORBIDDENWORD`, which keep virtual stems, compound-only parts, and forbidden words out of the reported analyses, and `CIRCUMFIX`, which binds marked prefix and suffix halves to one another as in the German `ge...t` participle. Directives that would change stems when ignored (`ICONV`, `OCONV`, `COMPLEXPREFIXES`) fail at load time. Cosmetic tables such as `REP`, `MAP`, and `KEY` are skipped, so analyses that would need them are missed rather than invented. A malformed `.aff` file fails loudly at load time with the offending line number in the message. Each affix or dictionary stream is rejected when it exceeds `HunspellDictionary.MAX_STREAM_BYTES` (64 MiB).
