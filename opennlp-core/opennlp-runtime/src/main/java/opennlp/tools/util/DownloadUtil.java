@@ -79,8 +79,20 @@ public class DownloadUtil {
    */
   public static final String REMOTE_DOWNLOAD_PROPERTY = "opennlp.download.remote";
 
-  /** Inclusive ceiling on bytes buffered for one {@link #download(URI, Path, String)}. */
-  public static final long MAX_DOWNLOAD_BYTES = 512L * 1024 * 1024;
+  /**
+   * System property for overriding {@link #MAX_DOWNLOAD_BYTES}. Set at JVM startup,
+   * e.g. {@code -Dopennlp.download.max.bytes=2147483648} for dictionaries larger than
+   * the default ceiling. Falls back to the default if absent, non-numeric, or not
+   * positive.
+   */
+  public static final String MAX_DOWNLOAD_BYTES_PROPERTY = "opennlp.download.max.bytes";
+
+  /**
+   * Inclusive ceiling on bytes buffered for one {@link #download(URI, Path, String)},
+   * 512 MiB unless overridden via {@link #MAX_DOWNLOAD_BYTES_PROPERTY}.
+   */
+  public static final long MAX_DOWNLOAD_BYTES =
+      configuredLimit(MAX_DOWNLOAD_BYTES_PROPERTY, 512L * 1024 * 1024);
 
   private static final int CONNECT_TIMEOUT_MS = 30_000;
   private static final int READ_TIMEOUT_MS = 300_000;
@@ -297,6 +309,30 @@ public class DownloadUtil {
    */
   public static boolean isRemoteDownloadEnabled() {
     return Boolean.parseBoolean(System.getProperty(REMOTE_DOWNLOAD_PROPERTY));
+  }
+
+  /**
+   * Reads a byte-budget override from a system property. Budget constants are
+   * initialized from it once at class load, so overrides must be set at JVM startup.
+   *
+   * @param property The system property name to read.
+   * @param fallback The value to use when the property is absent or invalid.
+   * @return The property's value when it parses as a positive {@code long}, otherwise
+   *     {@code fallback}.
+   */
+  public static long configuredLimit(String property, long fallback) {
+    final String value = System.getProperty(property, "").trim();
+    if (!value.isEmpty()) {
+      try {
+        final long parsed = Long.parseLong(value);
+        if (parsed > 0) {
+          return parsed;
+        }
+      } catch (NumberFormatException ignore) {
+        // Fall through to the default.
+      }
+    }
+    return fallback;
   }
 
   /**

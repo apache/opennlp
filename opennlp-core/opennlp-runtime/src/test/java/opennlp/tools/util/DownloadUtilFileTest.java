@@ -97,4 +97,40 @@ public class DownloadUtilFileTest {
 
     Assertions.assertArrayEquals(PAYLOAD, Files.readAllBytes(target));
   }
+
+  @Test
+  void testConfiguredLimitOverridesFromProperty() {
+    final String property = "opennlp.test.limit.override";
+    System.setProperty(property, "1024");
+    try {
+      Assertions.assertEquals(1024L, DownloadUtil.configuredLimit(property, 7L));
+    } finally {
+      System.clearProperty(property);
+    }
+  }
+
+  @Test
+  void testConfiguredLimitFallsBackWhenAbsent() {
+    Assertions.assertEquals(7L,
+        DownloadUtil.configuredLimit("opennlp.test.limit.absent", 7L));
+  }
+
+  @Test
+  void testConfiguredLimitRejectsInvalidValues() {
+    final String property = "opennlp.test.limit.invalid";
+    for (final String invalid : new String[] {"", "  ", "abc", "-1", "0"}) {
+      System.setProperty(property, invalid);
+      try {
+        Assertions.assertEquals(7L, DownloadUtil.configuredLimit(property, 7L),
+            "value <" + invalid + "> must fall back");
+      } finally {
+        System.clearProperty(property);
+      }
+    }
+  }
+
+  @Test
+  void testDefaultBudgetsWithoutOverrides() {
+    Assertions.assertEquals(512L * 1024 * 1024, DownloadUtil.MAX_DOWNLOAD_BYTES);
+  }
 }
