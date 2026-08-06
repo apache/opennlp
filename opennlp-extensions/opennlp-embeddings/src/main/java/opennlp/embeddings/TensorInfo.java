@@ -18,9 +18,13 @@ package opennlp.embeddings;
 
 import java.util.Arrays;
 
+import opennlp.tools.util.java.Experimental;
+
 /**
  * Header metadata for one tensor in a safetensors file, as declared by the file's own JSON
  * header. Carries no data; {@link SafetensorsFile#readFloats(String)} resolves the bytes.
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  *
  * @param name             The tensor's name, the key it was declared under. Never {@code null}.
  * @param dtype            The declared element type (e.g. {@code "F32"}, {@code "F16"},
@@ -31,6 +35,7 @@ import java.util.Arrays;
  *                         of the header, not the start of the file).
  * @param dataOffsetEnd    End byte offset (exclusive) into the data section.
  */
+@Experimental
 public record TensorInfo(String name, String dtype, int[] shape, long dataOffsetBegin,
                           long dataOffsetEnd) {
 

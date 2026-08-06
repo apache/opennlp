@@ -49,6 +49,12 @@
 			No model is bundled with the module. Callers point it at a model directory they
 			downloaded; the table's own license applies to the table.
 		</para>
+		<para>
+			The public API of this module
+			(<code>StaticEmbeddingModel</code>, <code>SafetensorsFile</code>,
+			<code>TensorInfo</code>, and <code>Neighbor</code>) is experimental and may change
+			in a later release.
+		</para>
 	</section>
 
 	<section xml:id="tools.embeddings.api">
