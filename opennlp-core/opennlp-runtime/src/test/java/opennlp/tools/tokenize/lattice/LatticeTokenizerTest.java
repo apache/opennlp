@@ -403,7 +403,10 @@ public class LatticeTokenizerTest {
       DEFAULT_CATEGORY_LINE + "\n0x0110..0x0100 LATIN\n",
       DEFAULT_CATEGORY_LINE + "\n0x110000 LATIN\n",
       DEFAULT_CATEGORY_LINE + "\n0xZZ LATIN\n",
-      "DEFAULT 0 1\n"})
+      "DEFAULT 0 1\n",
+      "DEFAULT 2 1 0\n",
+      "DEFAULT 0 true 0\n",
+      "DEFAULT 0 1 -1\n"})
   void testMalformedCharDefFailsLoud(String charDef, @TempDir Path broken)
       throws IOException {
     write(broken, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
@@ -411,6 +414,42 @@ public class LatticeTokenizerTest {
     write(broken, CHAR_DEF, charDef);
     write(broken, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
+  }
+
+  /**
+   * Verifies that a MeCab-style quoted CSV field may contain a comma, with {@code ""}
+   * escaping a literal quote, and that the loaded features keep both intact.
+   */
+  @Test
+  void testQuotedCsvFieldWithCommaLoads(@TempDir Path quoted) throws IOException {
+    write(quoted, LEXICON_CSV,
+        "\u6771,0,0,3000,\"noun,common\",\"say \"\"hi\"\"\"\n");
+    write(quoted, MATRIX_DEF, UNIT_MATRIX);
+    write(quoted, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\n");
+    write(quoted, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+
+    final List<Morpheme> morphemes =
+        new LatticeTokenizer(MecabDictionary.load(quoted)).analyze("\u6771");
+    Assertions.assertEquals(1, morphemes.size());
+    Assertions.assertEquals(List.of("noun,common", "say \"hi\""),
+        morphemes.get(0).features());
+  }
+
+  /**
+   * Verifies that an {@code unk.def} template naming a category {@code char.def} never
+   * defined fails at load with {@link IOException}.
+   */
+  @Test
+  void testUnkDefUndefinedCategoryFailsLoud(@TempDir Path ghost) throws IOException {
+    write(ghost, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(ghost, MATRIX_DEF, UNIT_MATRIX);
+    write(ghost, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\n");
+    write(ghost, UNK_DEF, "GHOST,0,0,8000,noun\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(ghost));
+    Assertions.assertEquals("unk.def names the undefined category GHOST: "
+        + ghost.resolve(UNK_DEF), e.getMessage());
   }
 
   /**
