@@ -49,7 +49,10 @@ import opennlp.tools.util.model.UncloseableInputStream;
  *
  * <p>Extraction is bounded: each entry's declared size, the total bytes written, the
  * number of extracted dictionary files, and the gzip expansion ratio each have an
- * explicit ceiling so a crafted archive cannot fill the disk.</p>
+ * explicit ceiling so a crafted archive cannot fill the disk. The byte ceilings can be
+ * raised at JVM startup via {@link #MAX_ENTRY_BYTES_PROPERTY} and
+ * {@link #MAX_TOTAL_EXTRACTED_BYTES_PROPERTY} for dictionaries larger than the
+ * defaults, such as UniDic.</p>
  *
  * @since 3.0.0
  */
@@ -61,11 +64,36 @@ public final class MecabDictionaryInstaller {
   private static final int TAR_SIZE_LENGTH = 12;
   private static final int TAR_TYPE_OFFSET = 156;
 
-  /** Inclusive ceiling on one tar entry's declared size, in bytes. */
-  static final long MAX_ENTRY_BYTES = 512L * 1024 * 1024;
+  /**
+   * System property for overriding {@link #MAX_ENTRY_BYTES}. Set at JVM startup,
+   * e.g. {@code -Dopennlp.install.max.entry.bytes=2147483648} for dictionaries whose
+   * lexicon files exceed the default ceiling. Falls back to the default if absent,
+   * non-numeric, or not positive.
+   */
+  public static final String MAX_ENTRY_BYTES_PROPERTY = "opennlp.install.max.entry.bytes";
 
-  /** Inclusive ceiling on the sum of extracted dictionary file sizes, in bytes. */
-  static final long MAX_TOTAL_EXTRACTED_BYTES = 2L * 1024 * 1024 * 1024;
+  /**
+   * System property for overriding {@link #MAX_TOTAL_EXTRACTED_BYTES}. Set at JVM
+   * startup, e.g. {@code -Dopennlp.install.max.total.bytes=8589934592}. Falls back to
+   * the default if absent, non-numeric, or not positive.
+   */
+  public static final String MAX_TOTAL_EXTRACTED_BYTES_PROPERTY =
+      "opennlp.install.max.total.bytes";
+
+  /**
+   * Inclusive ceiling on one tar entry's declared size, in bytes: 512 MiB unless
+   * overridden via {@link #MAX_ENTRY_BYTES_PROPERTY}.
+   */
+  static final long MAX_ENTRY_BYTES =
+      DownloadUtil.configuredLimit(MAX_ENTRY_BYTES_PROPERTY, 512L * 1024 * 1024);
+
+  /**
+   * Inclusive ceiling on the sum of extracted dictionary file sizes, in bytes: 2 GiB
+   * unless overridden via {@link #MAX_TOTAL_EXTRACTED_BYTES_PROPERTY}.
+   */
+  static final long MAX_TOTAL_EXTRACTED_BYTES =
+      DownloadUtil.configuredLimit(MAX_TOTAL_EXTRACTED_BYTES_PROPERTY,
+          2L * 1024 * 1024 * 1024);
 
   /** Inclusive ceiling on the number of dictionary files extracted from one archive. */
   static final int MAX_EXTRACTED_ENTRIES = 10_000;

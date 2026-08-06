@@ -69,6 +69,22 @@ A local `file:` URI may omit the digest:
 `MecabDictionaryInstaller.install(localArchive.toUri(), targetDirectory)`.
 Any other URI scheme requires the digest.
 
+## Size budgets for larger dictionaries
+
+Downloads and extraction are bounded so a crafted archive cannot fill the disk: by
+default one download is capped at 512 MiB, one extracted tar entry at 512 MiB, and
+the total extracted payload at 2 GiB. IPADIC and mecab-ko-dic fit comfortably. For
+larger dictionaries, such as UniDic, raise the ceilings at JVM startup:
+
+```bash
+-Dopennlp.download.max.bytes=4294967296 \
+-Dopennlp.install.max.entry.bytes=4294967296 \
+-Dopennlp.install.max.total.bytes=8589934592
+```
+
+Values must be positive byte counts; anything absent or invalid falls back to the
+default.
+
 ## Load and tokenize
 
 `MecabDictionary.load(Path)` assumes UTF-8. IPADIC needs the two-argument overload:

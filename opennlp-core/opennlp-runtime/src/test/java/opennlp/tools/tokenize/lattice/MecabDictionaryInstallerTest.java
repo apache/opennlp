@@ -211,4 +211,11 @@ public class MecabDictionaryInstallerTest {
         () -> MecabDictionaryInstaller.extract(
             new ByteArrayInputStream(new byte[0]), null));
   }
+
+  @Test
+  void testDefaultBudgetsWithoutOverrides() {
+    Assertions.assertEquals(512L * 1024 * 1024, MecabDictionaryInstaller.MAX_ENTRY_BYTES);
+    Assertions.assertEquals(2L * 1024 * 1024 * 1024,
+        MecabDictionaryInstaller.MAX_TOTAL_EXTRACTED_BYTES);
+  }
 }
