@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.java.Experimental;
 
 /**
  * Reads a <a href="https://github.com/huggingface/safetensors">safetensors</a> file: an 8-byte
@@ -47,7 +48,10 @@ import opennlp.tools.commons.ThreadSafe;
  *
  * <p>Instances are immutable and safe for concurrent use: every {@link #readFloats(String)}
  * call opens its own channel and decodes into a fresh array the caller owns.</p>
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
+@Experimental
 @ThreadSafe
 public final class SafetensorsFile {
 

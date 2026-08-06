@@ -16,13 +16,18 @@
  */
 package opennlp.embeddings;
 
+import opennlp.tools.util.java.Experimental;
+
 /**
  * One vocabulary token found near a query vector by {@link StaticEmbeddingModel#mostSimilar}
  * or {@link StaticEmbeddingModel#analogy}, most similar first.
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  *
  * @param token      The vocabulary token: one subword piece of the model's tokenizer, which is
  *                   not necessarily a whole word.
  * @param similarity Cosine similarity to the query vector, in {@code [-1, 1]}.
  */
+@Experimental
 public record Neighbor(String token, double similarity) {
 }

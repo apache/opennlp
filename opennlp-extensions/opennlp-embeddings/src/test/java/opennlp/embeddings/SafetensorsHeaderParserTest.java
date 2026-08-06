@@ -173,6 +173,14 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
+  void testLoneMinusInSkippedFieldFailsLoudly() {
+    // A bare "-" is not a JSON number; the skip path must reject it rather than treating it as one.
+    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[0,4],\"unknown\":-}}";
+    assertThrows(IllegalArgumentException.class, () -> SafetensorsHeaderParser.parse(header));
+  }
+
+  @Test
   void testWellFormedNumbersInSkippedFieldsAreAccepted() {
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
         + "\"data_offsets\":[0,4],\"a\":-1.5e+10,\"b\":0.25,\"c\":3}}";
