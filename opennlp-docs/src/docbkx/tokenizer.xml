@@ -550,6 +550,9 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				<code>matrix.def</code> must list a cost for every declared cell, and matrix
 				dimensions plus lexicon size are bounded by the shared
 				<code>ResourceLimits.MAX_ENTRIES</code> limit.
+				Extraction caps per-entry size, total bytes, entry count, and gzip expansion.
+				Load also rejects an <code>unk.def</code> template for a category
+				<code>char.def</code> never defined, and accepts MeCab-quoted CSV fields.
 				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and
 				lexicon flows shown here.
 				<programlisting language="java">

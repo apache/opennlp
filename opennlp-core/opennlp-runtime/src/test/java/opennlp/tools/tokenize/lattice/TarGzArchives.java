@@ -47,6 +47,56 @@ final class TarGzArchives {
   }
 
   /**
+   * One archive entry: a path name, the bytes stored after the header, and the size
+   * field written into the header (which may differ from the stored content length so
+   * budget checks can be exercised without allocating the declared payload).
+   *
+   * @param name The entry name including any directory prefix.
+   * @param content The bytes written after the header; may be shorter than
+   *                {@code declaredSize}.
+   * @param declaredSize The octal size field stored in the header.
+   */
+  record Entry(String name, byte[] content, long declaredSize) {
+
+    /**
+     * Builds an entry whose declared size matches its UTF-8 content length.
+     *
+     * @param name The entry name.
+     * @param content The entry text.
+     * @return The entry. Never {@code null}.
+     */
+    static Entry of(String name, String content) {
+      final byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+      return new Entry(name, bytes, bytes.length);
+    }
+
+    /**
+     * Builds an entry whose declared size matches its content length.
+     *
+     * @param name The entry name.
+     * @param content The entry bytes.
+     * @return The entry. Never {@code null}.
+     */
+    static Entry of(String name, byte[] content) {
+      return new Entry(name, content, content.length);
+    }
+
+    /**
+     * Builds an entry whose header size field is set independently of the stored
+     * content, for oversized-entry budget tests.
+     *
+     * @param name The entry name.
+     * @param content The bytes stored after the header; typically empty for header-only
+     *                oversized cases.
+     * @param declaredSize The size field written into the header.
+     * @return The entry. Never {@code null}.
+     */
+    static Entry withDeclaredSize(String name, byte[] content, long declaredSize) {
+      return new Entry(name, content, declaredSize);
+    }
+  }
+
+  /**
    * Builds a gzip-compressed tar archive from name and content pairs, the layout a
    * dictionary distribution ships in.
    *
@@ -56,9 +106,24 @@ final class TarGzArchives {
    * @throws IOException Thrown if writing to the in-memory streams fails.
    */
   static byte[] gzippedTar(String[][] entries) throws IOException {
+    final Entry[] typed = new Entry[entries.length];
+    for (int i = 0; i < entries.length; i++) {
+      typed[i] = Entry.of(entries[i][0], entries[i][1]);
+    }
+    return gzippedTar(typed);
+  }
+
+  /**
+   * Builds a gzip-compressed tar archive from typed entries.
+   *
+   * @param entries The entries to store. Must not be {@code null}.
+   * @return The compressed archive bytes. Never {@code null}.
+   * @throws IOException Thrown if writing to the in-memory streams fails.
+   */
+  static byte[] gzippedTar(Entry... entries) throws IOException {
     final ByteArrayOutputStream tar = new ByteArrayOutputStream();
-    for (final String[] entry : entries) {
-      tarEntry(tar, entry[0], entry[1].getBytes(StandardCharsets.UTF_8));
+    for (final Entry entry : entries) {
+      tarEntry(tar, entry);
     }
     // Two zero blocks end a tar archive.
     tar.write(new byte[2 * BLOCK]);
@@ -71,28 +136,30 @@ final class TarGzArchives {
 
   /**
    * Appends one ustar file entry to a growing tar image: a 512-byte header block
-   * followed by the content padded to a block boundary.
+   * followed by the stored content padded to a block boundary of the declared size
+   * when content is present, or the header alone when the test supplies no payload.
    *
    * @param tar The tar image under construction. Must not be {@code null}.
-   * @param name The entry name including any directory prefix. Must not be
-   *             {@code null}, empty, or longer than the 100-byte header name field.
-   * @param content The entry content bytes. Must not be {@code null}.
+   * @param entry The entry to append. Must not be {@code null}.
    * @throws IOException Thrown if writing to the in-memory stream fails.
-   * @throws IllegalArgumentException Thrown if {@code name} does not fit the header.
+   * @throws IllegalArgumentException Thrown if {@code name} does not fit the header or
+   *         {@code declaredSize} is negative.
    */
-  private static void tarEntry(ByteArrayOutputStream tar, String name, byte[] content)
-      throws IOException {
-    final byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
+  private static void tarEntry(ByteArrayOutputStream tar, Entry entry) throws IOException {
+    final byte[] nameBytes = entry.name().getBytes(StandardCharsets.UTF_8);
     if (nameBytes.length == 0 || nameBytes.length > NAME_LENGTH) {
       throw new IllegalArgumentException(
           "entry name must be 1.." + NAME_LENGTH + " bytes, got " + nameBytes.length);
+    }
+    if (entry.declaredSize() < 0) {
+      throw new IllegalArgumentException("declaredSize must not be negative");
     }
     final byte[] header = new byte[BLOCK];
     System.arraycopy(nameBytes, 0, header, 0, nameBytes.length);
     final byte[] mode = "0000644".getBytes(StandardCharsets.US_ASCII);
     System.arraycopy(mode, 0, header, MODE_OFFSET, mode.length);
     // Both numeric fields hold octal digits followed by one terminator byte.
-    final byte[] size = String.format("%0" + (SIZE_LENGTH - 1) + "o", content.length)
+    final byte[] size = String.format("%0" + (SIZE_LENGTH - 1) + "o", entry.declaredSize())
         .getBytes(StandardCharsets.US_ASCII);
     System.arraycopy(size, 0, header, SIZE_OFFSET, size.length);
     header[TYPE_OFFSET] = REGULAR_FILE;
@@ -110,8 +177,37 @@ final class TarGzArchives {
     header[CHECKSUM_OFFSET + CHECKSUM_LENGTH - 2] = 0;
     header[CHECKSUM_OFFSET + CHECKSUM_LENGTH - 1] = ' ';
     tar.write(header);
-    tar.write(content);
-    final int padding = (BLOCK - content.length % BLOCK) % BLOCK;
+    if (entry.declaredSize() == 0) {
+      return;
+    }
+    if (entry.content().length == 0) {
+      // Header-only oversized fixtures: the extractor rejects on the size field before
+      // reading a payload, so the declared bytes are not materialised here.
+      return;
+    }
+    tar.write(entry.content());
+    final long missing = Math.max(0, entry.declaredSize() - entry.content().length);
+    if (missing > 0) {
+      writeZeros(tar, missing);
+    }
+    final int padding = (BLOCK - (int) (entry.declaredSize() % BLOCK)) % BLOCK;
     tar.write(new byte[padding]);
+  }
+
+  /**
+   * Writes {@code count} zero bytes to the stream.
+   *
+   * @param out The stream to write to.
+   * @param count The number of zero bytes.
+   * @throws IOException Thrown if writing fails.
+   */
+  private static void writeZeros(ByteArrayOutputStream out, long count) throws IOException {
+    final byte[] zeros = new byte[8192];
+    long remaining = count;
+    while (remaining > 0) {
+      final int chunk = (int) Math.min(zeros.length, remaining);
+      out.write(zeros, 0, chunk);
+      remaining -= chunk;
+    }
   }
 }

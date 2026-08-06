@@ -17,6 +17,7 @@
 
 package opennlp.tools.tokenize.lattice;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +51,9 @@ import opennlp.tools.util.StringUtil;
  * read in sorted path order so tie-breaking is stable across file systems. Connection
  * costs must cover every declared matrix cell; missing pairs are rejected rather than
  * treated as cost zero. Matrix dimensions, the cell count, and the lexicon entry count
- * are each bounded by {@link ResourceLimits#MAX_ENTRIES}.</p>
+ * are each bounded by {@link ResourceLimits#MAX_ENTRIES}. Lexicon CSV fields may be
+ * MeCab-quoted with {@code ""} escapes. An {@code unk.def} template must name a
+ * category {@code char.def} defined.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -77,6 +80,9 @@ public final class MecabDictionary {
 
   /** The {@code char.def} field value that turns a category flag on. */
   private static final String FLAG_ON = "1";
+
+  /** The {@code char.def} field value that turns a category flag off. */
+  private static final String FLAG_OFF = "0";
 
   /**
    * One lexicon or unknown-word entry.
@@ -466,9 +472,9 @@ public final class MecabDictionary {
     }
 
     /**
-     * Resolves a mapped category name against the defined categories, so a mapping to
-     * a name the {@code char.def} category section never defined fails at load with
-     * the offending code point instead of falling back silently at lookup time.
+     * Resolves a mapped category name against the defined categories. A mapping to a
+     * name the {@code char.def} category section never defined fails at load and names
+     * the offending code point.
      *
      * @param name The category name a mapping line gave.
      * @param categories The defined categories, keyed by name.
@@ -530,7 +536,11 @@ public final class MecabDictionary {
     this.rightSize = rightSize;
     this.categoryTable = categoryTable;
     this.defaultCategory = categories.get(DEFAULT_CATEGORY);
-    this.unknownEntries = unknownEntries;
+    final Map<String, List<WordEntry>> copy = new HashMap<>(unknownEntries.size());
+    for (final Map.Entry<String, List<WordEntry>> entry : unknownEntries.entrySet()) {
+      copy.put(entry.getKey(), List.copyOf(entry.getValue()));
+    }
+    this.unknownEntries = Map.copyOf(copy);
   }
 
   /**
@@ -568,69 +578,86 @@ public final class MecabDictionary {
     }
     // The connection matrix is read first because its dimensions are what every
     // lexicon entry's context ids have to be inside of.
-    final List<String> matrixLines = readLines(directory.resolve(MATRIX_DEF), charset);
-    final String headerLine = StringUtil.trimUnicodeWhitespace(matrixLines.get(0));
-    if (headerLine.isEmpty()) {
-      throw new IOException("empty " + MATRIX_DEF + " under " + directory);
+    final Path matrixFile = directory.resolve(MATRIX_DEF);
+    if (!Files.exists(matrixFile)) {
+      throw new IOException("required dictionary file is missing: " + matrixFile);
     }
-    final String[] header = splitWhitespace(headerLine);
-    if (header.length != 2) {
-      throw new IOException("malformed " + MATRIX_DEF + " header: " + headerLine);
-    }
-    final int leftSize = parseInt(header[0], MATRIX_DEF, 1);
-    final int rightSize = parseInt(header[1], MATRIX_DEF, 1);
-    if (leftSize < 1 || rightSize < 1) {
-      throw new IOException(MATRIX_DEF + " dimensions must be positive, got "
-          + leftSize + " " + rightSize);
-    }
-    if (leftSize > ResourceLimits.MAX_ENTRIES
-        || rightSize > ResourceLimits.MAX_ENTRIES) {
-      throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
-          + " exceed safe limit of " + ResourceLimits.MAX_ENTRIES);
-    }
-    final long cells = (long) leftSize * rightSize;
-    if (cells > Integer.MAX_VALUE) {
-      throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
-          + " overflow the addressable connection matrix");
-    }
-    if (cells > ResourceLimits.MAX_ENTRIES) {
-      throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
-          + " exceed safe limit of " + ResourceLimits.MAX_ENTRIES);
-    }
-    final int cellCount = (int) cells;
-    final short[] costs = new short[cellCount];
-    // leftSize bounds right-context ids and rightSize bounds left-context ids, matching
-    // MeCab's connector.h layout (the names read transposed against the id names).
-    final BitSet filled = new BitSet(cellCount);
-    for (int i = 1; i < matrixLines.size(); i++) {
-      final String line = StringUtil.trimUnicodeWhitespace(matrixLines.get(i));
-      if (line.isEmpty()) {
-        continue;
+    final int leftSize;
+    final int rightSize;
+    final short[] costs;
+    final int cellCount;
+    try (BufferedReader reader = Files.newBufferedReader(matrixFile, charset)) {
+      final String rawHeader = reader.readLine();
+      if (rawHeader == null) {
+        throw new IOException("empty " + MATRIX_DEF + " under " + directory);
       }
-      final String[] fields = splitWhitespace(line);
-      if (fields.length != 3) {
-        throw new IOException("malformed " + MATRIX_DEF + " line " + (i + 1));
+      final String headerLine = StringUtil.trimUnicodeWhitespace(rawHeader);
+      if (headerLine.isEmpty()) {
+        throw new IOException("empty " + MATRIX_DEF + " under " + directory);
       }
-      final int right = parseInt(fields[0], MATRIX_DEF, i + 1);
-      final int left = parseInt(fields[1], MATRIX_DEF, i + 1);
-      if (right < 0 || right >= leftSize || left < 0 || left >= rightSize) {
-        throw new IOException("malformed " + MATRIX_DEF + " line " + (i + 1)
-            + ": context ids " + right + " " + left
-            + " are outside the declared dimensions " + leftSize + " " + rightSize);
+      final String[] header = splitWhitespace(headerLine);
+      if (header.length != 2) {
+        throw new IOException("malformed " + MATRIX_DEF + " header: " + headerLine);
       }
-      final int cost = parseInt(fields[2], MATRIX_DEF, i + 1);
-      if (cost < Short.MIN_VALUE || cost > Short.MAX_VALUE) {
-        throw new IOException("malformed " + MATRIX_DEF + " line " + (i + 1)
-            + ": connection cost " + cost + " is outside the 16-bit range the"
-            + " format defines");
+      leftSize = parseInt(header[0], MATRIX_DEF, 1);
+      rightSize = parseInt(header[1], MATRIX_DEF, 1);
+      if (leftSize < 1 || rightSize < 1) {
+        throw new IOException(MATRIX_DEF + " dimensions must be positive, got "
+            + leftSize + " " + rightSize);
       }
-      final int index = right * rightSize + left;
-      costs[index] = (short) cost;
-      filled.set(index);
-    }
-    if (filled.cardinality() != cellCount) {
-      throw new IOException(MATRIX_DEF + " declares " + leftSize + " x " + rightSize
-          + " connection costs but only " + filled.cardinality() + " pairs are listed");
+      if (leftSize > ResourceLimits.MAX_ENTRIES
+          || rightSize > ResourceLimits.MAX_ENTRIES) {
+        throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
+            + " exceed safe limit of " + ResourceLimits.MAX_ENTRIES);
+      }
+      final long cells = (long) leftSize * rightSize;
+      if (cells > Integer.MAX_VALUE) {
+        throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
+            + " overflow the addressable connection matrix");
+      }
+      if (cells > ResourceLimits.MAX_ENTRIES) {
+        throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
+            + " exceed safe limit of " + ResourceLimits.MAX_ENTRIES);
+      }
+      cellCount = (int) cells;
+      costs = new short[cellCount];
+      // leftSize bounds right-context ids and rightSize bounds left-context ids, matching
+      // MeCab's connector.h layout (the names read transposed against the id names).
+      final BitSet filled = new BitSet(cellCount);
+      int lineNumber = 1;
+      String raw;
+      while ((raw = reader.readLine()) != null) {
+        lineNumber++;
+        final String line = StringUtil.trimUnicodeWhitespace(raw);
+        if (line.isEmpty()) {
+          continue;
+        }
+        final String[] fields = splitWhitespace(line);
+        if (fields.length != 3) {
+          throw new IOException("malformed " + MATRIX_DEF + " line " + lineNumber);
+        }
+        final int right = parseInt(fields[0], MATRIX_DEF, lineNumber);
+        final int left = parseInt(fields[1], MATRIX_DEF, lineNumber);
+        if (right < 0 || right >= leftSize || left < 0 || left >= rightSize) {
+          throw new IOException("malformed " + MATRIX_DEF + " line " + lineNumber
+              + ": context ids " + right + " " + left
+              + " are outside the declared dimensions " + leftSize + " " + rightSize);
+        }
+        final int cost = parseInt(fields[2], MATRIX_DEF, lineNumber);
+        if (cost < Short.MIN_VALUE || cost > Short.MAX_VALUE) {
+          throw new IOException("malformed " + MATRIX_DEF + " line " + lineNumber
+              + ": connection cost " + cost + " is outside the 16-bit range the"
+              + " format defines");
+        }
+        final int index = right * rightSize + left;
+        costs[index] = (short) cost;
+        filled.set(index);
+      }
+      if (filled.cardinality() != cellCount) {
+        throw new IOException(MATRIX_DEF + " declares " + leftSize + " x " + rightSize
+            + " connection costs but only " + filled.cardinality()
+            + " pairs are listed");
+      }
     }
 
     final Map<String, List<WordEntry>> lexicon = new HashMap<>();
@@ -654,8 +681,14 @@ public final class MecabDictionary {
     readCharacterDefinition(directory.resolve(CHAR_DEF), charset, categories,
         categoryTable);
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
-    readLexicon(directory.resolve(UNK_DEF), charset, unknown, leftSize, rightSize,
-        new int[] {0});
+    final Path unkFile = directory.resolve(UNK_DEF);
+    readLexicon(unkFile, charset, unknown, leftSize, rightSize, new int[] {0});
+    for (final String category : unknown.keySet()) {
+      if (!categories.containsKey(category)) {
+        throw new IOException(
+            UNK_DEF + " names the undefined category " + category + ": " + unkFile);
+      }
+    }
 
     return new MecabDictionary(DoubleArrayLexicon.build(lexicon), costs,
         rightSize, categories, categoryTable.build(categories), unknown);
@@ -678,41 +711,47 @@ public final class MecabDictionary {
   private static void readLexicon(Path file, Charset charset,
       Map<String, List<WordEntry>> target, int leftSize, int rightSize, int[] entryCount)
       throws IOException {
+    if (!Files.exists(file)) {
+      throw new IOException("required dictionary file is missing: " + file);
+    }
     int lineNumber = 0;
-    for (final String line : readLines(file, charset)) {
-      lineNumber++;
-      if (line.isEmpty()) {
-        continue;
+    try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        lineNumber++;
+        if (line.isEmpty()) {
+          continue;
+        }
+        final List<String> fields = splitCsv(line);
+        if (fields.size() < 4) {
+          throw new IOException("malformed entry at " + file + " line " + lineNumber);
+        }
+        final String surface = fields.get(0);
+        if (surface.isEmpty()) {
+          continue;
+        }
+        final int leftId = parseInt(fields.get(1), file.toString(), lineNumber);
+        final int rightId = parseInt(fields.get(2), file.toString(), lineNumber);
+        if (leftId < 0 || leftId >= rightSize) {
+          throw new IOException("malformed entry at " + file + " line " + lineNumber
+              + ": left context id " + leftId + " is outside the " + MATRIX_DEF
+              + " dimensions " + leftSize + " " + rightSize);
+        }
+        if (rightId < 0 || rightId >= leftSize) {
+          throw new IOException("malformed entry at " + file + " line " + lineNumber
+              + ": right context id " + rightId + " is outside the " + MATRIX_DEF
+              + " dimensions " + leftSize + " " + rightSize);
+        }
+        if (entryCount[0] >= ResourceLimits.MAX_ENTRIES) {
+          throw new IOException("lexicon entry count exceeds safe limit of "
+              + ResourceLimits.MAX_ENTRIES);
+        }
+        entryCount[0]++;
+        final WordEntry entry = new WordEntry(leftId, rightId,
+            parseInt(fields.get(3), file.toString(), lineNumber),
+            List.copyOf(fields.subList(4, fields.size())));
+        target.computeIfAbsent(surface, key -> new ArrayList<>(1)).add(entry);
       }
-      final List<String> fields = splitCsv(line);
-      if (fields.size() < 4) {
-        throw new IOException("malformed entry at " + file + " line " + lineNumber);
-      }
-      final String surface = fields.get(0);
-      if (surface.isEmpty()) {
-        continue;
-      }
-      final int leftId = parseInt(fields.get(1), file.toString(), lineNumber);
-      final int rightId = parseInt(fields.get(2), file.toString(), lineNumber);
-      if (leftId < 0 || leftId >= rightSize) {
-        throw new IOException("malformed entry at " + file + " line " + lineNumber
-            + ": left context id " + leftId + " is outside the " + MATRIX_DEF + " dimensions "
-            + leftSize + " " + rightSize);
-      }
-      if (rightId < 0 || rightId >= leftSize) {
-        throw new IOException("malformed entry at " + file + " line " + lineNumber
-            + ": right context id " + rightId + " is outside the " + MATRIX_DEF + " dimensions "
-            + leftSize + " " + rightSize);
-      }
-      if (entryCount[0] >= ResourceLimits.MAX_ENTRIES) {
-        throw new IOException("lexicon entry count exceeds safe limit of "
-            + ResourceLimits.MAX_ENTRIES);
-      }
-      entryCount[0]++;
-      final WordEntry entry = new WordEntry(leftId, rightId,
-          parseInt(fields.get(3), file.toString(), lineNumber),
-          List.copyOf(fields.subList(4, fields.size())));
-      target.computeIfAbsent(surface, key -> new ArrayList<>(1)).add(entry);
     }
   }
 
@@ -731,45 +770,65 @@ public final class MecabDictionary {
   private static void readCharacterDefinition(Path file, Charset charset,
       Map<String, Category> categories, CategoryTableBuilder categoryTable)
       throws IOException {
+    if (!Files.exists(file)) {
+      throw new IOException("required dictionary file is missing: " + file);
+    }
     int lineNumber = 0;
-    for (final String raw : readLines(file, charset)) {
-      lineNumber++;
-      final String line = StringUtil.trimUnicodeWhitespace(stripComment(raw));
-      if (line.isEmpty()) {
-        continue;
-      }
-      final String[] fields = splitWhitespace(line);
-      if (fields[0].regionMatches(true, 0, HEX_PREFIX, 0, HEX_PREFIX.length())) {
-        final int rangeSeparator = fields[0].indexOf(RANGE_SEPARATOR);
-        final int from;
-        final int to;
-        if (rangeSeparator >= 0) {
-          from = parseCodePoint(fields[0].substring(0, rangeSeparator), file, lineNumber);
-          to = parseCodePoint(
-              fields[0].substring(rangeSeparator + RANGE_SEPARATOR.length()), file, lineNumber);
+    try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
+      String raw;
+      while ((raw = reader.readLine()) != null) {
+        lineNumber++;
+        final String line = StringUtil.trimUnicodeWhitespace(stripComment(raw));
+        if (line.isEmpty()) {
+          continue;
+        }
+        final String[] fields = splitWhitespace(line);
+        if (fields[0].regionMatches(true, 0, HEX_PREFIX, 0, HEX_PREFIX.length())) {
+          final int rangeSeparator = fields[0].indexOf(RANGE_SEPARATOR);
+          final int from;
+          final int to;
+          if (rangeSeparator >= 0) {
+            from = parseCodePoint(fields[0].substring(0, rangeSeparator), file,
+                lineNumber);
+            to = parseCodePoint(
+                fields[0].substring(rangeSeparator + RANGE_SEPARATOR.length()), file,
+                lineNumber);
+          } else {
+            from = parseCodePoint(fields[0], file, lineNumber);
+            to = from;
+          }
+          if (fields.length < 2) {
+            throw new IOException(
+                "mapping without category at " + file + " line " + lineNumber);
+          }
+          if (from > to) {
+            throw new IOException("code point range descends at " + file + " line "
+                + lineNumber);
+          }
+          categoryTable.map(from, to, fields[1]);
         } else {
-          from = parseCodePoint(fields[0], file, lineNumber);
-          to = from;
+          if (fields.length < 4) {
+            throw new IOException(
+                "malformed category at " + file + " line " + lineNumber);
+          }
+          if (!isFlag(fields[1]) || !isFlag(fields[2])) {
+            throw new IOException(
+                "malformed category flag at " + file + " line " + lineNumber);
+          }
+          final int length = parseInt(fields[3], file.toString(), lineNumber);
+          if (length < 0) {
+            throw new IOException(
+                "category LENGTH must not be negative at " + file + " line "
+                    + lineNumber);
+          }
+          categories.put(fields[0], new Category(fields[0],
+              FLAG_ON.equals(fields[1]), FLAG_ON.equals(fields[2]), length));
         }
-        if (fields.length < 2) {
-          throw new IOException("mapping without category at " + file + " line " + lineNumber);
-        }
-        if (from > to) {
-          throw new IOException("code point range descends at " + file + " line "
-              + lineNumber);
-        }
-        categoryTable.map(from, to, fields[1]);
-      } else {
-        if (fields.length < 4) {
-          throw new IOException("malformed category at " + file + " line " + lineNumber);
-        }
-        categories.put(fields[0], new Category(fields[0],
-            FLAG_ON.equals(fields[1]), FLAG_ON.equals(fields[2]),
-            parseInt(fields[3], file.toString(), lineNumber)));
       }
     }
     if (!categories.containsKey(DEFAULT_CATEGORY)) {
-      throw new IOException(CHAR_DEF + " defines no " + DEFAULT_CATEGORY + " category: " + file);
+      throw new IOException(
+          CHAR_DEF + " defines no " + DEFAULT_CATEGORY + " category: " + file);
     }
   }
 
@@ -822,35 +881,6 @@ public final class MecabDictionary {
   }
 
   /**
-   * Reads a required dictionary file into its lines, accepting LF and CRLF endings.
-   *
-   * @param file The file to read.
-   * @param charset The encoding to decode with.
-   * @return The lines without their line terminators. Never {@code null} and never
-   *         empty: an empty file reads as one empty line.
-   * @throws IOException Thrown if the file is missing or reading fails.
-   */
-  private static List<String> readLines(Path file, Charset charset) throws IOException {
-    if (!Files.exists(file)) {
-      throw new IOException("required dictionary file is missing: " + file);
-    }
-    final String content = new String(Files.readAllBytes(file), charset);
-    final List<String> lines = new ArrayList<>();
-    int start = 0;
-    for (int i = 0; i <= content.length(); i++) {
-      if (i == content.length() || content.charAt(i) == '\n') {
-        int end = i;
-        if (end > start && content.charAt(end - 1) == '\r') {
-          end--;
-        }
-        lines.add(content.substring(start, end));
-        start = i + 1;
-      }
-    }
-    return lines;
-  }
-
-  /**
    * Removes a trailing {@code #} comment from a {@code char.def} line.
    *
    * @param line The raw line.
@@ -863,21 +893,50 @@ public final class MecabDictionary {
   }
 
   /**
-   * Splits a lexicon line at every comma. Surfaces containing commas are not
-   * representable, matching the plain-text lexicon format.
+   * Reports whether a {@code char.def} category flag field is exactly {@code 0} or
+   * {@code 1}.
+   *
+   * @param field The flag field text.
+   * @return {@code true} when the field is a recognized flag value.
+   */
+  private static boolean isFlag(String field) {
+    return FLAG_ON.equals(field) || FLAG_OFF.equals(field);
+  }
+
+  /**
+   * Splits a lexicon line on commas, honoring MeCab-style {@code "..."} quoting with
+   * {@code ""} escapes inside a quoted field.
    *
    * @param line The line to split.
    * @return The fields in order, empty fields included. Never {@code null}.
    */
   private static List<String> splitCsv(String line) {
     final List<String> fields = new ArrayList<>();
-    int start = 0;
-    for (int i = 0; i <= line.length(); i++) {
-      if (i == line.length() || line.charAt(i) == ',') {
-        fields.add(line.substring(start, i));
-        start = i + 1;
+    final StringBuilder field = new StringBuilder();
+    boolean inQuotes = false;
+    for (int i = 0; i < line.length(); i++) {
+      final char c = line.charAt(i);
+      if (inQuotes) {
+        if (c == '"') {
+          if (i + 1 < line.length() && line.charAt(i + 1) == '"') {
+            field.append('"');
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          field.append(c);
+        }
+      } else if (c == '"') {
+        inQuotes = true;
+      } else if (c == ',') {
+        fields.add(field.toString());
+        field.setLength(0);
+      } else {
+        field.append(c);
       }
     }
+    fields.add(field.toString());
     return fields;
   }
 
