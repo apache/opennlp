@@ -34,6 +34,7 @@ import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.java.Experimental;
 
 /**
  * A static (non-contextual) sentence embedding model: a per-token vector table plus subword
@@ -55,7 +56,10 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  * zero vector.</p>
  *
  * <p>Instances are immutable and safe for concurrent use after construction.</p>
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
+@Experimental
 @ThreadSafe
 public final class StaticEmbeddingModel implements TextEmbedder {
 
