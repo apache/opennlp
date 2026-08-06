@@ -28,7 +28,19 @@ import java.io.Serializable;
  * state. Out-of-range unit references, which a well-formed trie never produces, fail loudly
  * rather than reading arbitrary memory.</p>
  *
+ * <p>This class is an independent re-implementation of the reader side of that format, written
+ * against the published double-array literature: the trie itself is Aoe's double-array, the unit
+ * encoding is the compact static variant of Yata et al., and the bit-9 offset extension is the
+ * two-kinds-of-offset scheme described by Kanda et al. Darts-clone, by the same Yata, is the
+ * reference implementation of the format.</p>
+ *
  * @see <a href="https://github.com/s-yata/darts-clone">Darts-clone</a>
+ * @see <a href="https://doi.org/10.1109/32.31365">Aoe (1989): An Efficient Digital Search
+ *     Algorithm by Using a Double-Array Structure</a>
+ * @see <a href="https://doi.org/10.1016/j.ipm.2006.04.004">Yata et al. (2007): A compact static
+ *     double-array keeping character codes</a>
+ * @see <a href="https://doi.org/10.1002/spe.3190">Kanda et al. (2023): Engineering faster
+ *     double-array Aho-Corasick automata</a>
  */
 final class DoubleArrayTrie implements Serializable {
 
@@ -127,13 +139,12 @@ final class DoubleArrayTrie implements Serializable {
   /**
    * Returns the offset from a unit to its children, as encoded by Darts-clone: bits 10 to 30 hold
    * the raw offset, and bit 9 is an extension flag that scales it by 256 for far-away children.
-   * The expression {@code (unit & (1 << 9)) >>> 6} evaluates to 8 exactly when bit 9 is set, so
-   * the raw offset is shifted left by either 0 or 8 bits.
    *
    * @param unit The unit word.
    * @return The child offset.
    */
   private static int offset(int unit) {
-    return (unit >>> 10) << ((unit & (1 << 9)) >>> 6);
+    final int raw = unit >>> 10;
+    return (unit & 1 << 9) == 0 ? raw : raw << 8;
   }
 }
