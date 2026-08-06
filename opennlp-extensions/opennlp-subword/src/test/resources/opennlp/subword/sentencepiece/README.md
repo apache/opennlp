@@ -23,6 +23,10 @@ pretrained models: they are generated in-tree from `corpus.txt` plus a short
 multilingual add-on list in `gen_fixtures.py`, using the reference
 [sentencepiece](https://github.com/google/sentencepiece) Python package.
 
+The expected outputs in the TSVs come from the reference implementation, not
+from the Java code under test, so the parity tests stay independent of the
+implementation they check.
+
 ## Regenerating the tiny models
 
 From this directory (or any directory; pass absolute paths as needed):
@@ -44,6 +48,31 @@ That trains each model listed in `MODELS` inside `gen_fixtures.py`
 
 Pin the `sentencepiece` package version you used if regenerating for a PR, so
 reviewers can reproduce the same bytes.
+
+## Validating the Java implementation
+
+To verify parity end to end, regenerate the fixtures as above, then run the
+test suite from the repository root:
+
+```bash
+./mvnw -pl opennlp-extensions/opennlp-subword -am test
+```
+
+`SentencePieceParityTest` asserts every fixture line piece for piece, span
+for span, against `SentencePieceTokenizer`, for each bundled tiny model.
+
+To additionally validate against real published models, generate fixtures for
+a directory of pre-trained `*.model` files and point the eval test at it:
+
+```bash
+source .venv/bin/activate
+python gen_real_fixtures.py /path/to/models
+./mvnw -pl opennlp-extensions/opennlp-subword -am test \
+    -Dopennlp.subword.eval.dir=/path/to/models
+```
+
+`SentencePieceRealModelEvalTest` is skipped unless
+`opennlp.subword.eval.dir` is set.
 
 ## Real-model fixtures (optional, not bundled)
 
