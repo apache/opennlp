@@ -25,10 +25,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -41,6 +44,13 @@ import opennlp.tools.util.StringUtil;
  * <p>The same format serves multiple languages: the Japanese IPADIC and UniDic
  * distributions and the Korean mecab-ko-dic all load through this one reader, with the
  * feature columns passed through untouched because their schemas differ.</p>
+ *
+ * <p>Each instance keeps about 0.75 MB of category tables keyed by the 16-bit code-unit
+ * space, so load once and share. Lexicon CSV files under the dictionary directory are
+ * read in sorted path order so tie-breaking is stable across file systems. Connection
+ * costs must cover every declared matrix cell; missing pairs are rejected rather than
+ * treated as cost zero. Matrix dimensions, the cell count, and the lexicon entry count
+ * are each bounded by {@link ResourceLimits#MAX_ENTRIES}.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -573,12 +583,25 @@ public final class MecabDictionary {
       throw new IOException(MATRIX_DEF + " dimensions must be positive, got "
           + leftSize + " " + rightSize);
     }
+    if (leftSize > ResourceLimits.MAX_ENTRIES
+        || rightSize > ResourceLimits.MAX_ENTRIES) {
+      throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
+          + " exceed safe limit of " + ResourceLimits.MAX_ENTRIES);
+    }
     final long cells = (long) leftSize * rightSize;
     if (cells > Integer.MAX_VALUE) {
       throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
           + " overflow the addressable connection matrix");
     }
-    final short[] costs = new short[(int) cells];
+    if (cells > ResourceLimits.MAX_ENTRIES) {
+      throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
+          + " exceed safe limit of " + ResourceLimits.MAX_ENTRIES);
+    }
+    final int cellCount = (int) cells;
+    final short[] costs = new short[cellCount];
+    // leftSize bounds right-context ids and rightSize bounds left-context ids, matching
+    // MeCab's connector.h layout (the names read transposed against the id names).
+    final BitSet filled = new BitSet(cellCount);
     for (int i = 1; i < matrixLines.size(); i++) {
       final String line = StringUtil.trimUnicodeWhitespace(matrixLines.get(i));
       if (line.isEmpty()) {
@@ -601,14 +624,26 @@ public final class MecabDictionary {
             + ": connection cost " + cost + " is outside the 16-bit range the"
             + " format defines");
       }
-      costs[right * rightSize + left] = (short) cost;
+      final int index = right * rightSize + left;
+      costs[index] = (short) cost;
+      filled.set(index);
+    }
+    if (filled.cardinality() != cellCount) {
+      throw new IOException(MATRIX_DEF + " declares " + leftSize + " x " + rightSize
+          + " connection costs but only " + filled.cardinality() + " pairs are listed");
     }
 
     final Map<String, List<WordEntry>> lexicon = new HashMap<>();
-    try (DirectoryStream<Path> csvFiles = Files.newDirectoryStream(directory, "*.csv")) {
-      for (final Path csv : csvFiles) {
-        readLexicon(csv, charset, lexicon, leftSize, rightSize);
+    final List<Path> csvFiles = new ArrayList<>();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, "*.csv")) {
+      for (final Path csv : stream) {
+        csvFiles.add(csv);
       }
+    }
+    Collections.sort(csvFiles);
+    final int[] entryCount = {0};
+    for (final Path csv : csvFiles) {
+      readLexicon(csv, charset, lexicon, leftSize, rightSize, entryCount);
     }
     if (lexicon.isEmpty()) {
       throw new IOException("no lexicon entries found under " + directory);
@@ -619,7 +654,8 @@ public final class MecabDictionary {
     readCharacterDefinition(directory.resolve(CHAR_DEF), charset, categories,
         categoryTable);
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
-    readLexicon(directory.resolve(UNK_DEF), charset, unknown, leftSize, rightSize);
+    readLexicon(directory.resolve(UNK_DEF), charset, unknown, leftSize, rightSize,
+        new int[] {0});
 
     return new MecabDictionary(DoubleArrayLexicon.build(lexicon), costs,
         rightSize, categories, categoryTable.build(categories), unknown);
@@ -640,7 +676,7 @@ public final class MecabDictionary {
    *         entry's context id is outside the matrix dimensions.
    */
   private static void readLexicon(Path file, Charset charset,
-      Map<String, List<WordEntry>> target, int leftSize, int rightSize)
+      Map<String, List<WordEntry>> target, int leftSize, int rightSize, int[] entryCount)
       throws IOException {
     int lineNumber = 0;
     for (final String line : readLines(file, charset)) {
@@ -668,6 +704,11 @@ public final class MecabDictionary {
             + ": right context id " + rightId + " is outside the " + MATRIX_DEF + " dimensions "
             + leftSize + " " + rightSize);
       }
+      if (entryCount[0] >= ResourceLimits.MAX_ENTRIES) {
+        throw new IOException("lexicon entry count exceeds safe limit of "
+            + ResourceLimits.MAX_ENTRIES);
+      }
+      entryCount[0]++;
       final WordEntry entry = new WordEntry(leftId, rightId,
           parseInt(fields.get(3), file.toString(), lineNumber),
           List.copyOf(fields.subList(4, fields.size())));
