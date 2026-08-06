@@ -31,14 +31,26 @@ import opennlp.morfologik.builder.MorfologikDictionaryBuilder;
 public abstract class AbstractMorfologikTest {
 
   protected static Path createMorfologikDictionary() throws Exception {
+    return createMorfologikDictionary("dictionaryWithLemma");
+  }
+
+  /**
+   * Builds a Morfologik FSA dictionary from the {@code .txt} and {@code .info} test
+   * resources sharing the given base name.
+   *
+   * @param resourceBaseName The base name of the tab separated dictionary resource pair.
+   *
+   * @return The {@link Path} of the built FSA dictionary.
+   */
+  protected static Path createMorfologikDictionary(String resourceBaseName) throws Exception {
     Path tabFilePath = File.createTempFile(AbstractMorfologikTest.class.getName(), ".txt").toPath();
     tabFilePath.toFile().deleteOnExit();
     Path infoFilePath = DictionaryMetadata.getExpectedMetadataLocation(tabFilePath);
     infoFilePath.toFile().deleteOnExit();
 
-    Files.copy(getResourceStream("/dictionaryWithLemma.txt"), tabFilePath,
+    Files.copy(getResourceStream("/" + resourceBaseName + ".txt"), tabFilePath,
             StandardCopyOption.REPLACE_EXISTING);
-    Files.copy(getResourceStream("/dictionaryWithLemma.info"), infoFilePath,
+    Files.copy(getResourceStream("/" + resourceBaseName + ".info"), infoFilePath,
             StandardCopyOption.REPLACE_EXISTING);
 
     MorfologikDictionaryBuilder builder = new MorfologikDictionaryBuilder();
