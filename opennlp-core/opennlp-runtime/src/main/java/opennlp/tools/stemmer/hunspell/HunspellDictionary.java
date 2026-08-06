@@ -56,9 +56,10 @@ import opennlp.tools.util.StringUtil;
  * {@code ONLYINCOMPOUND}, and {@code FORBIDDENWORD}, which suppress analyses the
  * dictionary marks as virtual stems, compound-only parts, or forbidden words; and
  * {@code CIRCUMFIX}, which binds marked prefix and suffix halves to one another.
- * Conversion tables and the remaining compound machinery are not interpreted in this
- * version; rules using them simply do not fire, so unsupported analyses are missed
- * rather than invented.</p>
+ * Directives that would change stems when ignored ({@code ICONV}, {@code OCONV},
+ * {@code COMPLEXPREFIXES}) are rejected at load time. Cosmetic tables such as
+ * {@code REP}, {@code MAP}, and {@code KEY} are skipped, so analyses that would need
+ * them are missed rather than invented.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -256,7 +257,15 @@ public final class HunspellDictionary {
    * @return The flag sets of all matching entries, or {@code null} when absent.
    */
   List<int[]> lookup(String word) {
-    return entries.get(word);
+    final List<int[]> found = entries.get(word);
+    if (found == null) {
+      return null;
+    }
+    final List<int[]> copy = new ArrayList<>(found.size());
+    for (final int[] flags : found) {
+      copy.add(flags.clone());
+    }
+    return copy;
   }
 
   /**
@@ -633,13 +642,13 @@ public final class HunspellDictionary {
   /**
    * Parses the affix file: the {@code FLAG} declaration, the {@code AF} flag alias
    * table, the compound and blocking flag declarations, and the {@code PFX} and
-   * {@code SFX} blocks. Directives outside the supported set (conversion tables,
-   * suggestion options, the remaining compound machinery, ...) are skipped, so their
-   * rules never fire and unsupported analyses are missed rather than invented.
+   * {@code SFX} blocks. Result-altering unsupported directives fail loud;
+   * cosmetic ones are skipped.
    *
    * @param content The decoded affix file content.
    * @return The parsed rules and flag mode. Never {@code null}.
-   * @throws IOException Thrown if a supported directive is malformed.
+   * @throws IOException Thrown if a supported directive is malformed, or if
+   *     {@code ICONV}, {@code OCONV}, or {@code COMPLEXPREFIXES} appears.
    */
   private static AffixFile parseAffix(String content) throws IOException {
     final AffixFile result = new AffixFile();
@@ -733,6 +742,11 @@ public final class HunspellDictionary {
         case SUFFIX_TAG:
           i = parseAffixBlock(lines, i, fields, result);
           break;
+        case "ICONV":
+        case "OCONV":
+        case "COMPLEXPREFIXES":
+          throw new IOException("unsupported affix directive '" + fields[0]
+              + "' at line " + (i + 1));
         default:
           i++;
           break;

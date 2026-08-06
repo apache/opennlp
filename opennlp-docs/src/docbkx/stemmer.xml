@@ -94,6 +94,9 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			published dictionary yields for a given form is decided by that dictionary.
 			Acquisition helpers and the supported affix feature set live in
 			<code>dev/README-hunspell-dictionaries.md</code>.
+			Directives that would change stems when ignored
+			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>)
+			fail at load time; cosmetic tables such as <code>REP</code> are skipped.
 		</para>
 	</section>
 </chapter>
