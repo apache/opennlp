@@ -19,14 +19,28 @@ package opennlp.tools.util;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.EventTrainer;
 
 public class TrainingParametersTest {
+
+  /**
+   * Turkish folds {@code 'I'} to the dotless {@code 'ı'} (U+0131) instead of {@code 'i'}.
+   */
+  private static final Locale TURKISH = Locale.of("tr", "TR");
+
+  private final Locale defaultLocale = Locale.getDefault();
+
+  @AfterEach
+  void restoreDefaultLocale() {
+    Locale.setDefault(defaultLocale);
+  }
 
   @Test
   void testConstructors() throws Exception {
@@ -117,6 +131,28 @@ public class TrainingParametersTest {
 
     Assertions.assertEquals("MAXENT" , tr.algorithm());
     Assertions.assertEquals(100 ,
+        tr.getIntParameter(Parameters.ITERATIONS_PARAM ,
+            Parameters.ITERATIONS_DEFAULT_VALUE));
+    Assertions.assertEquals(10 ,
+        tr.getIntParameter(Parameters.CUTOFF_PARAM ,
+            Parameters.CUTOFF_DEFAULT_VALUE));
+  }
+
+  /**
+   * The switch names are derived by folding the parameter constants, which start with a
+   * capital {@code 'I'} respectively {@code 'C'}. Folding them with the default locale makes
+   * a Turkish JVM look for {@code "-\u0131terations"} and silently train with the defaults.
+   */
+  @Test
+  public void testSetParamsIsIndependentOfDefaultLocale() {
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" , "-iterations" , "50" };
+
+    Locale.setDefault(TURKISH);
+    TrainingParameters tr = TrainingParameters.setParams(args);
+
+    Assertions.assertEquals(50 ,
         tr.getIntParameter(Parameters.ITERATIONS_PARAM ,
             Parameters.ITERATIONS_DEFAULT_VALUE));
     Assertions.assertEquals(10 ,

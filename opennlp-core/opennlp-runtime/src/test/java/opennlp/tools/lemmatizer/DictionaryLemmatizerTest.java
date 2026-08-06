@@ -17,13 +17,25 @@
 
 package opennlp.tools.lemmatizer;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class DictionaryLemmatizerTest {
 
+  /**
+   * Turkish folds {@code 'I'} to the dotless {@code 'ı'} (U+0131) instead of {@code 'i'}.
+   */
+  private static final Locale TURKISH = Locale.of("tr", "TR");
+
   private static DictionaryLemmatizer dictionaryLemmatizer;
+
+  private final Locale defaultLocale = Locale.getDefault();
 
   @BeforeAll
   static void loadDictionary() throws Exception {
@@ -47,6 +59,27 @@ public class DictionaryLemmatizerTest {
         Assertions.assertEquals(expectedLemma[i], actualLemma[i]);
       }
     }
+  }
+
+  @AfterEach
+  void restoreDefaultLocale() {
+    Locale.setDefault(defaultLocale);
+  }
+
+  /**
+   * The dictionary is read verbatim but looked up folded, so the fold has to match the
+   * casing of the dictionary file rather than whatever locale the JVM happens to run in.
+   */
+  @Test
+  void testLookupIsIndependentOfDefaultLocale() throws Exception {
+    final String entries = "illinois\tNNP\tIllinois\n" + "indices\tNNS\tindex\n";
+    final DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(
+        new ByteArrayInputStream(entries.getBytes(StandardCharsets.UTF_8)));
+
+    Locale.setDefault(TURKISH);
+
+    Assertions.assertArrayEquals(new String[] {"Illinois", "index"},
+        lemmatizer.lemmatize(new String[] {"Illinois", "INDICES"}, new String[] {"NNP", "NNS"}));
   }
 
 }

@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -163,6 +164,19 @@ public abstract class FineGrainedReportListener {
     return stats.getConfusionMatrixTagset(token);
   }
 
+  /**
+   * Applies a {@link MessageFormat} number pattern using {@link Locale#ROOT}, so that the
+   * figures in a report stay identical regardless of the JVM's default {@link Locale}.
+   *
+   * @param pattern The {@link MessageFormat} pattern to apply.
+   * @param value The value to format.
+   *
+   * @return The formatted value.
+   */
+  private static String formatNumber(String pattern, Object value) {
+    return new MessageFormat(pattern, Locale.ROOT).format(new Object[] {value});
+  }
+
   private double[][] getConfusionMatrix() {
     return stats.getConfusionMatrix();
   }
@@ -187,7 +201,7 @@ public abstract class FineGrainedReportListener {
           minColumnSize = matrix[i][j].length();
         }
       }
-      matrix[i][j] = MessageFormat.format("{0,number,#.##%}", data[i][j]);
+      matrix[i][j] = formatNumber("{0,number,#.##%}", data[i][j]);
       if (data[i][j] == 1 && filter) {
         initialIndex = i + 1;
       }
@@ -229,12 +243,12 @@ public abstract class FineGrainedReportListener {
         String.format("%21s: %6s", "Max sentence size", getMaxSentenceSize())).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Average sentence size",
-            MessageFormat.format("{0,number,#.##}", getAverageSentenceSize()))).append("\n");
+            formatNumber("{0,number,#.##}", getAverageSentenceSize()))).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Tags count", getNumberOfTags())).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Accuracy",
-            MessageFormat.format("{0,number,#.##%}", getAccuracy()))).append("\n");
+            formatNumber("{0,number,#.##%}", getAccuracy()))).append("\n");
     printFooter("Evaluation Corpus Statistics");
   }
 
@@ -308,7 +322,7 @@ public abstract class FineGrainedReportListener {
       String tok = tokIterator.next();
       int ocurrencies = getTokenFrequency(tok);
       int errors = getTokenErrors(tok);
-      String rate = MessageFormat.format("{0,number,#.##%}", (double) errors
+      String rate = formatNumber("{0,number,#.##%}", (double) errors
           / ocurrencies);
 
       printStream.append(String.format(format, tok, errors, ocurrencies, rate)
@@ -347,7 +361,7 @@ public abstract class FineGrainedReportListener {
     for (String tag : tags) {
       int ocurrencies = getTagFrequency(tag);
       int errors = getTagErrors(tag);
-      String rate = MessageFormat.format("{0,number,#.###}", (double) errors
+      String rate = formatNumber("{0,number,#.###}", (double) errors
           / ocurrencies);
 
       double p = getTagPrecision(tag);
@@ -355,9 +369,9 @@ public abstract class FineGrainedReportListener {
       double f = getTagFMeasure(tag);
 
       printStream.append(String.format(format, tag, errors, ocurrencies, rate,
-          MessageFormat.format("{0,number,#.###}", p > 0 ? p : 0),
-          MessageFormat.format("{0,number,#.###}", r > 0 ? r : 0),
-          MessageFormat.format("{0,number,#.###}", f > 0 ? f : 0))
+          formatNumber("{0,number,#.###}", p > 0 ? p : 0),
+          formatNumber("{0,number,#.###}", r > 0 ? r : 0),
+          formatNumber("{0,number,#.###}", f > 0 ? f : 0))
 
       );
     }
@@ -405,7 +419,7 @@ public abstract class FineGrainedReportListener {
             .append("]\n")
             .append(
                 String.format("%12s: %-8s", "Accuracy",
-                    MessageFormat.format("{0,number,#.##%}", acc)))
+                    formatNumber("{0,number,#.##%}", acc)))
             .append("\n");
         printStream.append(
             String.format("%12s: %-8s", "Ocurrencies",
