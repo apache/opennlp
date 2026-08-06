@@ -31,6 +31,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.Span;
 
 /**
@@ -702,6 +703,51 @@ public class LatticeTokenizerTest {
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("matrix.def dimensions 70000 x 70000 overflow the"
         + " addressable connection matrix", e.getMessage());
+  }
+
+  /**
+   * Verifies that a single matrix dimension above {@link ResourceLimits#MAX_ENTRIES}
+   * is rejected before the connection-cost array is allocated.
+   */
+  @Test
+  void testMatrixDimensionAboveMaxEntriesFailsLoud(@TempDir Path broken) throws IOException {
+    writeUnitMatrixDictionary(broken);
+    final int over = ResourceLimits.MAX_ENTRIES + 1;
+    write(broken, MATRIX_DEF, over + " 1\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertTrue(e.getMessage().contains("exceed safe limit of "
+        + ResourceLimits.MAX_ENTRIES), e.getMessage());
+  }
+
+  /**
+   * Verifies that a matrix whose cell count is above {@link ResourceLimits#MAX_ENTRIES}
+   * but still below {@link Integer#MAX_VALUE} is rejected. Without that bound, a header
+   * such as {@code 46340 46340} would allocate about 4 GiB of shorts.
+   */
+  @Test
+  void testMatrixCellCountAboveMaxEntriesFailsLoud(@TempDir Path broken) throws IOException {
+    writeUnitMatrixDictionary(broken);
+    // 5000 x 5000 = 25_000_000 cells, above the default MAX_ENTRIES of 10_000_000.
+    write(broken, MATRIX_DEF, "5000 5000\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("matrix.def dimensions 5000 x 5000 exceed safe limit of "
+        + ResourceLimits.MAX_ENTRIES, e.getMessage());
+  }
+
+  /**
+   * Verifies that a truncated {@code matrix.def} fails loud. Unlisted pairs must not
+   * keep the short-array default of cost zero, the cheapest connection.
+   */
+  @Test
+  void testIncompleteMatrixFailsLoud(@TempDir Path broken) throws IOException {
+    writeUnitMatrixDictionary(broken);
+    write(broken, MATRIX_DEF, "2 2\n0 0 1\n0 1 2\n1 0 3\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("matrix.def declares 2 x 2 connection costs but only 3"
+        + " pairs are listed", e.getMessage());
   }
 
   /**

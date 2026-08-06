@@ -547,6 +547,9 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
 				Install a dictionary archive with <code>MecabDictionaryInstaller</code>, load it
 				as a <code>MecabDictionary</code>, and tokenize.
+				<code>matrix.def</code> must list a cost for every declared cell, and matrix
+				dimensions plus lexicon size are bounded by the shared
+				<code>ResourceLimits.MAX_ENTRIES</code> limit.
 				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and
 				lexicon flows shown here.
 				<programlisting language="java">
