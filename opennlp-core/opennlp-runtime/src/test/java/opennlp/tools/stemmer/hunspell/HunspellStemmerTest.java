@@ -1218,4 +1218,34 @@ public class HunspellStemmerTest {
     Assertions.assertEquals(List.of("doghouse"), stemmer.stemAll("doghouse"));
     Assertions.assertEquals(List.of("cat", "house"), stemmer.stemAll("cathouse"));
   }
+
+  /**
+   * Verifies that result-altering unsupported affix directives fail at load time.
+   * Ignoring {@code ICONV}, {@code OCONV}, or {@code COMPLEXPREFIXES} would change
+   * stems with no signal.
+   */
+  @ParameterizedTest
+  @CsvSource({
+      "ICONV, ICONV 1",
+      "OCONV, OCONV 1",
+      "COMPLEXPREFIXES, COMPLEXPREFIXES"
+  })
+  void testResultAlteringUnsupportedDirectiveFailsLoud(String name, String line) {
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> load(line + "\n", "0\n"));
+    Assertions.assertEquals("unsupported affix directive '" + name + "' at line 1",
+        e.getMessage());
+  }
+
+  /**
+   * Verifies that a cosmetic unsupported directive such as {@code REP} is skipped so
+   * the dictionary still loads.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
+  @Test
+  void testCosmeticUnsupportedDirectiveIsSkipped() throws IOException {
+    final HunspellDictionary dictionary = load("REP 1\nREP alot a lot\n", "1\nlock\n");
+    Assertions.assertNotNull(dictionary.lookup("lock"));
+  }
 }

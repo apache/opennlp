@@ -42,12 +42,14 @@ import opennlp.tools.util.StringUtil;
  * parts ({@code ONLYINCOMPOUND}), or forbidden words ({@code FORBIDDENWORD}) never
  * count as standalone analyses, matching how hunspell reads those flags.</p>
  *
- * <p>The {@link Stemmer} interface leaves thread safety to the implementation. This
- * implementation reads only the immutable dictionary state, so a single instance is
- * safe to share between threads.</p>
+ * <p>Compound part search is capped at 2048 part-licensing attempts per input word;
+ * beyond that budget further compound analyses are skipped. The {@link Stemmer}
+ * interface leaves thread safety to the implementation. This implementation reads only
+ * the immutable dictionary state, so a single instance is safe to share between
+ * threads.</p>
  */
 @ThreadSafe
-public class HunspellStemmer implements Stemmer {
+public final class HunspellStemmer implements Stemmer {
 
   /**
    * The most part-licensing attempts one decomposition search may spend. Compounding
