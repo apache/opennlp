@@ -97,6 +97,8 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			Directives that would change stems when ignored
 			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>)
 			fail at load time; cosmetic tables such as <code>REP</code> are skipped.
+			Each affix or dictionary stream is rejected when it exceeds
+			<code>HunspellDictionary.MAX_STREAM_BYTES</code> (64&nbsp;MiB).
 		</para>
 	</section>
 </chapter>
