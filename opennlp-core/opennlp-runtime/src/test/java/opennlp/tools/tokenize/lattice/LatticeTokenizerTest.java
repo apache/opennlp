@@ -619,16 +619,16 @@ public class LatticeTokenizerTest {
   void testMorphemeRejectsInvalidArguments() {
     final Span span = new Span(0, 1);
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new Morpheme(null, "東", List.of("noun"), false));
+        () -> new Morpheme(null, "\u6771", List.of("noun"), false));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new Morpheme(span, null, List.of("noun"), false));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new Morpheme(span, "", List.of("noun"), false));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new Morpheme(span, "東", null, false));
+        () -> new Morpheme(span, "\u6771", null, false));
 
     final List<String> features = new ArrayList<>(List.of("noun"));
-    final Morpheme morpheme = new Morpheme(span, "東", features, false);
+    final Morpheme morpheme = new Morpheme(span, "\u6771", features, false);
     features.add("proper");
     Assertions.assertEquals(List.of("noun"), morpheme.features());
   }

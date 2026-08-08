@@ -36,15 +36,19 @@ import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.StringUtil;
 
 /**
- * An immutable, in-memory dictionary in the mecab directory format: lexicon entries
+ * An immutable, in-memory dictionary in the
+ * <a href="https://taku910.github.io/mecab/">MeCab</a> directory format: lexicon entries
  * from the {@code *.csv} files, connection costs from {@code matrix.def}, character
  * categories from {@code char.def}, and unknown-word templates from {@code unk.def},
  * loaded from a user-supplied dictionary directory. No dictionary data is bundled or
  * downloaded by this class.
  *
- * <p>The same format serves multiple languages: the Japanese IPADIC and UniDic
- * distributions and the Korean mecab-ko-dic all load through this one reader, with the
- * feature columns passed through untouched because their schemas differ.</p>
+ * <p>The same format serves multiple languages: the Japanese
+ * <a href="https://sourceforge.net/projects/mecab/">IPADIC</a> and
+ * <a href="https://clrd.ninjal.ac.jp/unidic/">UniDic</a> distributions and the Korean
+ * <a href="https://bitbucket.org/eunjeon/mecab-ko-dic">mecab-ko-dic</a> all load
+ * through this one reader, with the feature columns passed through untouched because
+ * their schemas differ.</p>
  *
  * <p>Each instance keeps about 0.75 MB of category tables keyed by the 16-bit code-unit
  * space, so load once and share. Lexicon CSV files under the dictionary directory are
@@ -705,8 +709,11 @@ public final class MecabDictionary {
    *                 ids.
    * @param rightSize The second {@code matrix.def} dimension, which bounds left context
    *                  ids.
-   * @throws IOException Thrown if the file is missing, an entry is malformed, or an
-   *         entry's context id is outside the matrix dimensions.
+   * @param entryCount A one-element running total of entries read so far, shared across
+   *                   the lexicon files of one load.
+   * @throws IOException Thrown if the file is missing, an entry is malformed, an
+   *         entry's context id is outside the matrix dimensions, or the running entry
+   *         count exceeds {@link ResourceLimits#MAX_ENTRIES}.
    */
   private static void readLexicon(Path file, Charset charset,
       Map<String, List<WordEntry>> target, int leftSize, int rightSize, int[] entryCount)

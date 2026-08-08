@@ -25,6 +25,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Pins {@link DownloadUtil#download(java.net.URI, Path, String)} against local file URIs
@@ -115,17 +117,15 @@ public class DownloadUtilFileTest {
         DownloadUtil.configuredLimit("opennlp.test.limit.absent", 7L));
   }
 
-  @Test
-  void testConfiguredLimitRejectsInvalidValues() {
+  @ParameterizedTest(name = "value \"{0}\" falls back")
+  @ValueSource(strings = {"", "  ", "abc", "-1", "0"})
+  void testConfiguredLimitRejectsInvalidValues(String invalid) {
     final String property = "opennlp.test.limit.invalid";
-    for (final String invalid : new String[] {"", "  ", "abc", "-1", "0"}) {
-      System.setProperty(property, invalid);
-      try {
-        Assertions.assertEquals(7L, DownloadUtil.configuredLimit(property, 7L),
-            "value <" + invalid + "> must fall back");
-      } finally {
-        System.clearProperty(property);
-      }
+    System.setProperty(property, invalid);
+    try {
+      Assertions.assertEquals(7L, DownloadUtil.configuredLimit(property, 7L));
+    } finally {
+      System.clearProperty(property);
     }
   }
 
