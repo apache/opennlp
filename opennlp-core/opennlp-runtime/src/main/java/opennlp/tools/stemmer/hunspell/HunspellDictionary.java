@@ -75,7 +75,7 @@ public final class HunspellDictionary {
    * during {@link #load(InputStream, InputStream)}. Larger streams fail with
    * {@link IOException}.
    */
-  static final int MAX_STREAM_BYTES = 64 * 1024 * 1024;
+  public static final int MAX_STREAM_BYTES = 64 * 1024 * 1024;
 
   /**
    * One parsed affix rule of a {@code PFX} or {@code SFX} block.
@@ -129,9 +129,9 @@ public final class HunspellDictionary {
   private static final String NO_MATERIAL = "0";
 
   private final Map<String, List<int[]>> entries;
-  private final Map<Integer, List<Affix>> suffixesByLast;
+  private final BoundaryIndex suffixesByLast;
   private final List<Affix> suffixesWithoutMaterial;
-  private final Map<Integer, List<Affix>> prefixesByFirst;
+  private final BoundaryIndex prefixesByFirst;
   private final List<Affix> prefixesWithoutMaterial;
   private final int compoundFlag;
   private final int compoundBegin;
@@ -175,10 +175,54 @@ public final class HunspellDictionary {
     // A material-bearing rule can only be undone from a word whose boundary
     // character matches its affix material, so bucketing by that character
     // narrows each scan to one bucket plus the strip-only rules.
-    this.suffixesWithoutMaterial = new ArrayList<>();
-    this.suffixesByLast = bucketByBoundary(affix.suffixes, true, suffixesWithoutMaterial);
-    this.prefixesWithoutMaterial = new ArrayList<>();
-    this.prefixesByFirst = bucketByBoundary(affix.prefixes, false, prefixesWithoutMaterial);
+    final List<Affix> suffixesWithout = new ArrayList<>();
+    this.suffixesByLast = bucketByBoundary(affix.suffixes, true, suffixesWithout);
+    this.suffixesWithoutMaterial = List.copyOf(suffixesWithout);
+    final List<Affix> prefixesWithout = new ArrayList<>();
+    this.prefixesByFirst = bucketByBoundary(affix.prefixes, false, prefixesWithout);
+    this.prefixesWithoutMaterial = List.copyOf(prefixesWithout);
+  }
+
+  /**
+   * An immutable index of affix rules keyed by the boundary code point of their affix
+   * material, answering each lookup by binary search so the per-word scans in
+   * {@link HunspellStemmer} allocate nothing.
+   */
+  private static final class BoundaryIndex {
+
+    /** The boundary code points, sorted ascending. */
+    private final int[] boundaries;
+    /** The rule bucket for each boundary, aligned with {@link #boundaries}. */
+    private final List<List<Affix>> buckets;
+
+    /**
+     * Initializes the index from mutable buckets, freezing each one.
+     *
+     * @param byBoundary The rule buckets keyed by boundary code point.
+     */
+    private BoundaryIndex(Map<Integer, List<Affix>> byBoundary) {
+      this.boundaries = new int[byBoundary.size()];
+      int b = 0;
+      for (final Integer boundary : byBoundary.keySet()) {
+        boundaries[b++] = boundary;
+      }
+      Arrays.sort(boundaries);
+      this.buckets = new ArrayList<>(boundaries.length);
+      for (final int boundary : boundaries) {
+        buckets.add(List.copyOf(byBoundary.get(boundary)));
+      }
+    }
+
+    /**
+     * The rules bucketed under a boundary code point.
+     *
+     * @param codePoint The boundary code point to look up.
+     * @return The bucket, possibly empty. Never {@code null}.
+     */
+    List<Affix> bucket(int codePoint) {
+      final int index = Arrays.binarySearch(boundaries, codePoint);
+      return index >= 0 ? buckets.get(index) : NO_AFFIXES;
+    }
   }
 
   /**
@@ -189,9 +233,9 @@ public final class HunspellDictionary {
    * @param suffix Whether the rules are suffix rules.
    * @param withoutMaterial Collects the rules with empty affix material, which no
    *                        boundary code point keys.
-   * @return The rules keyed by their boundary code point. Never {@code null}.
+   * @return The rules indexed by their boundary code point. Never {@code null}.
    */
-  private static Map<Integer, List<Affix>> bucketByBoundary(List<Affix> rules,
+  private static BoundaryIndex bucketByBoundary(List<Affix> rules,
       boolean suffix, List<Affix> withoutMaterial) {
     final Map<Integer, List<Affix>> byBoundary = new HashMap<>();
     for (final Affix rule : rules) {
@@ -205,7 +249,7 @@ public final class HunspellDictionary {
         byBoundary.computeIfAbsent(boundary, key -> new ArrayList<>()).add(rule);
       }
     }
-    return byBoundary;
+    return new BoundaryIndex(byBoundary);
   }
 
   /**
@@ -317,7 +361,7 @@ public final class HunspellDictionary {
    * @return The bucket, possibly empty. Never {@code null}.
    */
   List<Affix> suffixesEndingWith(int last) {
-    return suffixesByLast.getOrDefault(last, NO_AFFIXES);
+    return suffixesByLast.bucket(last);
   }
 
   /** {@return the strip-only suffix rules, applicable to any word} Never {@code null}. */
@@ -333,7 +377,7 @@ public final class HunspellDictionary {
    * @return The bucket, possibly empty. Never {@code null}.
    */
   List<Affix> prefixesStartingWith(int first) {
-    return prefixesByFirst.getOrDefault(first, NO_AFFIXES);
+    return prefixesByFirst.bucket(first);
   }
 
   /** {@return the strip-only prefix rules, applicable to any word} Never {@code null}. */

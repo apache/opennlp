@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.stemmer.Stemmer;
 
@@ -68,6 +69,11 @@ public class HunspellStemmerTest {
 
   private static HunspellStemmer stemmer;
 
+  /**
+   * Loads the shared fixture dictionary once for the tests that stem against it.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
   @BeforeAll
   static void loadDictionary() throws IOException {
     stemmer = new HunspellStemmer(load(AFFIX, WORDS));
@@ -482,16 +488,20 @@ public class HunspellStemmerTest {
 
   /**
    * Verifies that the parser trims word-list entries with the same whitespace
-   * definition it uses to find their fields: an entry led by a no-break space is
-   * registered under its real word, both with and without a flag run.
+   * definition it uses to find their fields: an entry edged by Unicode whitespace,
+   * leading or trailing, is registered under its real word, both with and without a
+   * flag run.
    *
+   * @param space The whitespace character at the line edges: the no-break space
+   *              U+00A0 and the ideographic space U+3000, both whitespace to
+   *              {@code StringUtil.isWhitespace} but not to {@code String.trim()}.
    * @throws IOException Thrown if a fixture fails to load.
    */
-  @Test
-  void testEntriesLedByNoBreakSpaceAreTrimmed() throws IOException {
-    // \u00A0 is the no-break space, which StringUtil.isWhitespace treats as whitespace
+  @ParameterizedTest
+  @ValueSource(strings = {"\u00A0", "\u3000"})
+  void testEntriesEdgedByUnicodeWhitespaceAreTrimmed(String space) throws IOException {
     final HunspellDictionary dictionary = load("SFX S Y 1\nSFX S 0 s .\n",
-        "2\n\u00A0fish\n\u00A0cat/S\n");
+        "2\n" + space + "fish" + space + "\n" + space + "cat/S" + space + "\n");
     Assertions.assertNotNull(dictionary.lookup("fish"));
     Assertions.assertNotNull(dictionary.lookup("cat"));
     Assertions.assertNull(dictionary.lookup(""));
