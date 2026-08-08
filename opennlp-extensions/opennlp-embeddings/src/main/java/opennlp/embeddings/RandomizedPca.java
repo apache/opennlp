@@ -21,7 +21,8 @@ import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
 /**
- * Principal component analysis by randomized SVD (Halko, Martinsson, Tropp), the approximation
+ * Principal component analysis by randomized SVD
+ * (<a href="https://arxiv.org/abs/0909.4061">Halko, Martinsson, Tropp</a>), the approximation
  * Model2Vec's distillation performs with a dense LAPACK SVD through scikit-learn. A dense SVD of
  * a vocabulary-size matrix (250k rows for a multilingual teacher) is not practical in pure Java,
  * so the top components are found with a random range finder and {@value #POWER_ITERATIONS} power

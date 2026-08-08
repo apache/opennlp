@@ -21,6 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import opennlp.tools.util.java.Experimental;
+
 /**
  * Distills a sentence-transformer teacher into a static embedding table in the layout
  * {@link StaticEmbeddingModel#load(Path)} opens, reproducing
@@ -46,7 +48,10 @@ import java.nio.file.StandardCopyOption;
  * <p>The teacher directory must hold {@code tokenizer.json} and {@code onnx/model.onnx} (the
  * ONNX export every sentence-transformer ships on the Hugging Face hub); a local
  * {@code tokenizer_config.json} supplies the pad token when present.</p>
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
+@Experimental
 public final class ModelDistiller {
 
   /** Model2Vec's default SIF coefficient for the Zipf weighting. */

@@ -18,6 +18,8 @@ package opennlp.tools.embeddings;
 
 import java.util.List;
 
+import opennlp.tools.util.java.Experimental;
+
 /**
  * Encodes a piece of text into a single fixed-length vector.
  *
@@ -29,7 +31,10 @@ import java.util.List;
  *
  * <p>Thread safety is implementation specific. Failures during encoding surface as unchecked
  * exceptions carrying the underlying cause.</p>
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
+@Experimental
 public interface TextEmbedder {
 
   /**

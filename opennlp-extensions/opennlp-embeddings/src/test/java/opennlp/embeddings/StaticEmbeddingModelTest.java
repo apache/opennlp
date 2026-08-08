@@ -214,6 +214,28 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testEmbedOfWhitespaceOnlyTextIsZeroVector(@TempDir Path dir) throws IOException {
+    final StaticEmbeddingModel model =
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
+
+    // Whitespace-only text produces no content pieces at all, unlike unknown text, which still
+    // produces a (skipped) [UNK]; both must pool to the zero vector without dividing by zero.
+    assertArrayEquals(new float[] {0f, 0f, 0f}, model.embed(" \t\n "), 1e-5f);
+  }
+
+  @Test
+  void testEmbedSkipsSupplementaryPlaneTextAsUnknown(@TempDir Path dir) throws IOException {
+    final StaticEmbeddingModel model =
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
+
+    // An emoji is a supplementary-plane character (a surrogate pair in Java) no vocabulary
+    // piece covers; it must fold to [UNK] and be skipped, leaving just "cat" in the pool.
+    assertArrayEquals(new float[] {5f, 50f, 500f}, model.embed("cat \uD83D\uDE00"), 1e-5f);
+  }
+
+  @Test
   void testDimensionAndVocabularySizeAccessors(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
         StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),

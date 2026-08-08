@@ -26,9 +26,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.java.Experimental;
+
 /**
- * Turns a distilled model directory (the layout the Model2Vec {@code save_pretrained} writes) into
- * a directory {@link StaticEmbeddingModel#load(Path)} can open, then verifies it by loading it.
+ * Turns a distilled model directory (the layout the
+ * <a href="https://github.com/MinishLab/model2vec">Model2Vec</a> {@code save_pretrained} writes)
+ * into a directory {@link StaticEmbeddingModel#load(Path)} can open, then verifies it by loading
+ * it.
  *
  * <p>A distillation ships {@code model.safetensors}, {@code tokenizer.json}, and
  * {@code config.json}, but not the two files the loader also needs for a WordPiece model
@@ -40,7 +44,10 @@ import java.util.Map;
  *
  * <p>Assembly writes only the missing files and never overwrites an existing one, so a directory
  * a caller already completed by hand is left intact.</p>
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
+@Experimental
 public final class ModelAssembler {
 
   /** The WordPiece tokenizer family, the {@code model.type} of a BERT-style distillation. */
