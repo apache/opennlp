@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@link SentencePieceTokenizer} from a {@code .model} file, encode text to pieces with
  * original offsets, and obtain id arrays.
  */
-public class SentencePieceUsageExampleTest {
+class SentencePieceUsageExampleTest {
 
   @Test
   void testLoadEncodeAndEncodeToIds(@TempDir Path dir) throws IOException {

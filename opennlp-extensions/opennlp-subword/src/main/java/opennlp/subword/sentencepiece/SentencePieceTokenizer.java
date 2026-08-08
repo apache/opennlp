@@ -140,7 +140,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     for (int i = 0; i < count; i++) {
       final String piece = pieces[i];
       if (piece.length() >= MAX_PIECE_LENGTH) {
-        throw new InvalidFormatException("The piece with id " + i + " is longer than "
+        throw new InvalidFormatException("The piece with id " + i + " must be shorter than "
             + MAX_PIECE_LENGTH + " characters.");
       }
       if (piece.indexOf(0) >= 0) {
@@ -651,6 +651,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    *
    * @param piece The piece to look up; must not be null.
    * @return The id, or the unknown id when the vocabulary does not contain the piece.
+   * @throws IllegalArgumentException Thrown if {@code piece} is null.
    */
   public int pieceToId(String piece) {
     if (piece == null) {

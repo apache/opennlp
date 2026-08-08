@@ -91,10 +91,10 @@ final class BpeEncoder implements Serializable {
     }
 
     // The symbol list as index-linked ranges of the normalized bytes; merged-away symbols
-    // become empty ranges.
+    // become empty ranges. Freeze flags travel as 0/1 bytes parallel to the ranges.
     final IntBuilder fromB = new IntBuilder(size);
     final IntBuilder toB = new IntBuilder(size);
-    final List<Boolean> freezeList = new ArrayList<>();
+    final ByteBuilder freezeB = new ByteBuilder(size);
     int position = 0;
     while (position < size) {
       int matched = 0;
@@ -107,19 +107,20 @@ final class BpeEncoder implements Serializable {
               size - position);
       fromB.append(position);
       toB.append(position + length);
-      freezeList.add(frozen);
+      freezeB.append(frozen ? (byte) 1 : (byte) 0);
       position += length;
     }
-    final int symbolCount = freezeList.size();
+    final int symbolCount = freezeB.length();
     final int[] from = fromB.toArray();
     final int[] to = toB.toArray();
+    final byte[] frozenFlags = freezeB.array();
     final int[] prev = new int[symbolCount];
     final int[] next = new int[symbolCount];
     final boolean[] freeze = new boolean[symbolCount];
     for (int i = 0; i < symbolCount; i++) {
       prev[i] = i - 1;
       next[i] = i + 1 < symbolCount ? i + 1 : -1;
-      freeze[i] = freezeList.get(i);
+      freeze[i] = frozenFlags[i] != 0;
     }
 
     // Higher score first; equal scores break towards the leftmost pair.

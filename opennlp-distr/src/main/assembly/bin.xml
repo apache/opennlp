@@ -240,6 +240,13 @@
     </fileSet>
 
     <fileSet>
+      <directory>../opennlp-extensions/opennlp-subword/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-subword</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>../opennlp-extensions/opennlp-uima/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
