@@ -17,11 +17,8 @@
 
 package opennlp.geo;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
@@ -34,7 +31,6 @@ import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
-import opennlp.tools.util.StringUtil;
 
 /**
  * A {@link Gazetteer} over a division table derived from Overture Maps data with the
@@ -42,7 +38,8 @@ import opennlp.tools.util.StringUtil;
  * per division with id, primary name, comma-separated alternate names, coordinates,
  * country code, Overture subtype, and population.
  *
- * <p>The upstream divisions theme is published under the
+ * <p>The upstream <a href="https://docs.overturemaps.org/guides/divisions/">divisions
+ * theme</a> is published under the
  * <a href="https://opendatacommons.org/licenses/odbl/1-0/">Open Database License</a>, whose
  * attribution and database share-alike terms follow the derived table; it is
  * distributed as partitioned Parquet, which this module deliberately does not parse.
@@ -90,8 +87,8 @@ public final class OvertureGazetteer implements Gazetteer {
    * @param table The tab-separated table. Must not be {@code null}.
    * @return A loaded {@link OvertureGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if {@code table} is {@code null} or a row
-   *         is not in the expected format.
+   * @throws IllegalArgumentException Thrown if {@code table} is {@code null}, the table
+   *         contains no rows, or a row is not in the expected format.
    */
   public static OvertureGazetteer load(Path table) throws IOException {
     if (table == null) {
@@ -117,23 +114,8 @@ public final class OvertureGazetteer implements Gazetteer {
     if (in == null) {
       throw new IllegalArgumentException("in must not be null");
     }
-    final GazetteerIndex index = new GazetteerIndex();
-    final BufferedReader reader =
-        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-    String line;
-    int lineNumber = 0;
-    while ((line = reader.readLine()) != null) {
-      lineNumber++;
-      if (StringUtil.isUnicodeBlank(line) || line.charAt(0) == '#') {
-        continue;
-      }
-      index.add(parseRow(line, lineNumber));
-    }
-    if (index.isEmpty()) {
-      throw new IllegalArgumentException("the table contains no rows");
-    }
-    index.freeze();
-    return new OvertureGazetteer(index);
+    return new OvertureGazetteer(
+        GazetteerIndex.load(in, true, OvertureGazetteer::parseRow));
   }
 
   /** {@inheritDoc} */
@@ -188,7 +170,8 @@ public final class OvertureGazetteer implements Gazetteer {
       }
       final GeoPoint location = new GeoPoint(
           Double.parseDouble(fields[3].trim()), Double.parseDouble(fields[4].trim()));
-      final String countryCode = fields[5].trim().isEmpty() ? null : fields[5].trim();
+      final String country = fields[5].trim();
+      final String countryCode = country.isEmpty() ? null : country;
       final String population = fields[7].trim();
       return new GazetteerEntry(SOURCE, id, name, List.copyOf(alternates), location,
           countryCode, List.of(), population.isEmpty() ? 0L : Long.parseLong(population),

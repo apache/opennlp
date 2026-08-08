@@ -143,28 +143,15 @@ public final class UserGazetteer implements Gazetteer {
     if (StringUtil.isUnicodeBlank(source)) {
       throw new IllegalArgumentException("source must not be null or blank");
     }
-    final GazetteerIndex index = new GazetteerIndex();
     final Set<String> seenIds = new HashSet<>();
-    final BufferedReader reader =
-        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-    String line;
-    int lineNumber = 0;
-    while ((line = reader.readLine()) != null) {
-      lineNumber++;
-      if (StringUtil.isUnicodeBlank(line) || line.charAt(0) == '#') {
-        continue;
-      }
+    final GazetteerIndex index = GazetteerIndex.load(in, true, (line, lineNumber) -> {
       final GazetteerEntry entry = parseRow(line, lineNumber, source);
       if (!seenIds.add(entry.recordId())) {
         throw new IllegalArgumentException(
             "line " + lineNumber + " repeats record id: " + entry.recordId());
       }
-      index.add(entry);
-    }
-    if (index.isEmpty()) {
-      throw new IllegalArgumentException("the table contains no rows");
-    }
-    index.freeze();
+      return entry;
+    });
     return new UserGazetteer(source, index);
   }
 

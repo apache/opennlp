@@ -17,6 +17,11 @@
 
 package opennlp.geo;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import opennlp.tools.geo.GazetteerEntry;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The shared in-memory index behind the file-loading gazetteers: entries keyed by
@@ -33,9 +39,26 @@ import opennlp.tools.geo.GazetteerEntry;
  * country representative is the most populous entry.
  *
  * <p>Mutable while loading; {@link #freeze()} ranks every candidate list by the
- * population prior and must be called once before queries.</p>
+ * population prior and must be called once before queries.
+ * {@link #load(InputStream, boolean, RowParser)} is the shared read loop of the file
+ * loaders and returns a frozen index.</p>
  */
 final class GazetteerIndex {
+
+  /** Parses one data line of a gazetteer table into an entry. */
+  @FunctionalInterface
+  interface RowParser {
+
+    /**
+     * Parses one data line.
+     *
+     * @param line       The data line; never blank and never a skipped comment line.
+     * @param lineNumber The one-based line number, for fail-loud messages.
+     * @return The parsed entry. Never {@code null}.
+     * @throws IllegalArgumentException Thrown if the line is not a valid row.
+     */
+    GazetteerEntry parse(String line, int lineNumber);
+  }
 
   private final Map<String, List<GazetteerEntry>> byName = new HashMap<>();
   private final Map<String, GazetteerEntry> byId = new HashMap<>();
@@ -57,6 +80,40 @@ final class GazetteerIndex {
       byCountry.merge(entry.countryCode(), entry,
           (a, b) -> a.population() >= b.population() ? a : b);
     }
+  }
+
+  /**
+   * Reads a table into a frozen index: every line is handed to {@code parser} with its
+   * one-based line number, except blank lines and, when {@code skipComments} is set,
+   * lines starting with {@code #}.
+   *
+   * @param in           The table content, read fully as UTF-8 but not closed.
+   * @param skipComments Whether lines starting with {@code #} are skipped.
+   * @param parser       The row parser of the caller's table format.
+   * @return The frozen index over the parsed entries.
+   * @throws IOException Thrown if reading fails.
+   * @throws IllegalArgumentException Thrown if the content has no data rows, or from
+   *     {@code parser} for a malformed row.
+   */
+  static GazetteerIndex load(InputStream in, boolean skipComments, RowParser parser)
+      throws IOException {
+    final GazetteerIndex index = new GazetteerIndex();
+    final BufferedReader reader =
+        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+    String line;
+    int lineNumber = 0;
+    while ((line = reader.readLine()) != null) {
+      lineNumber++;
+      if (StringUtil.isUnicodeBlank(line) || (skipComments && line.charAt(0) == '#')) {
+        continue;
+      }
+      index.add(parser.parse(line, lineNumber));
+    }
+    if (index.isEmpty()) {
+      throw new IllegalArgumentException("the table contains no rows");
+    }
+    index.freeze();
+    return index;
   }
 
   /** Ranks every candidate list by the population prior; call once after loading. */
