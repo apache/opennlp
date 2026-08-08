@@ -17,9 +17,9 @@
 
 # CJK dictionaries for the lattice tokenizer
 
-The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and Korean over a mecab-format dictionary, and the unigram segmenter handles Chinese over a plain word-frequency lexicon. Apache OpenNLP bundles no dictionary data: you download a dictionary from the project of your choice, and each dictionary carries its own license. Read the license file inside the archive before use.
+The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and Korean over a MeCab-format dictionary, and the unigram segmenter handles Chinese over a plain word-frequency lexicon. Apache OpenNLP bundles no dictionary data: you download a dictionary from the project of your choice, and each dictionary carries its own license. Read the license file inside the archive before use.
 
-## Known mecab-format dictionary projects
+## Known MeCab-format dictionary projects
 
 | Catalog id | Dictionary | Language | Encoding |
 |---|---|---|---|
@@ -108,7 +108,7 @@ threads, so load once and reuse.
 
 ## Chinese: the unigram segmenter needs only a frequency lexicon
 
-`opennlp.tools.tokenize.lattice.UnigramSegmenter` does not use mecab dictionaries. It
+`opennlp.tools.tokenize.lattice.UnigramSegmenter` does not use MeCab dictionaries. It
 loads a plain text lexicon, one entry per line: the word, its count, and optionally a
 tag, separated by whitespace. Any word-frequency list you have the rights to use works:
 

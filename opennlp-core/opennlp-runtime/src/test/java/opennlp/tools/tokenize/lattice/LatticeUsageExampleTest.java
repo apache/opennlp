@@ -33,7 +33,7 @@ import opennlp.tools.util.Span;
 
 /**
  * Demonstrates the intended end-to-end usage of this package with miniature,
- * project-authored data: a mecab-format dictionary archive is installed with
+ * project-authored data: a MeCab-format dictionary archive is installed with
  * {@link MecabDictionaryInstaller}, loaded as a {@link MecabDictionary}, and segmented
  * with a {@link LatticeTokenizer}; a plain frequency lexicon is loaded and segmented
  * with a {@link UnigramSegmenter}. Everything is written to a temporary directory by
@@ -50,7 +50,7 @@ import opennlp.tools.util.Span;
 public class LatticeUsageExampleTest {
 
   /**
-   * Walks the full mecab-format flow: package a miniature Japanese dictionary as a
+   * Walks the full MeCab-format flow: package a miniature Japanese dictionary as a
    * {@code tar.gz} archive, install it from a file URI, load it, and tokenize. The
    * segmentation must pick the cheaper path (Tokyo plus the metropolis suffix) over
    * the competing reading (east plus Kyoto), the spans must be in original text
@@ -60,7 +60,7 @@ public class LatticeUsageExampleTest {
   void testInstallLoadAndTokenizeAMecabFormatDictionary(@TempDir Path work)
       throws IOException {
     // A minimal but complete dictionary: one lexicon file plus the three definition
-    // files every mecab-format distribution contains, wrapped like a release archive.
+    // files every MeCab-format distribution contains, wrapped like a release archive.
     final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
         {"mini-dict-0.1/lexicon.csv", String.join("\n",
             "\u6771\u4EAC,0,0,3000,noun,proper",

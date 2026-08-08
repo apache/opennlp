@@ -32,15 +32,17 @@ import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
- * Fetches and unpacks a mecab-format dictionary archive into a local directory, so the
+ * Fetches and unpacks a MeCab-format dictionary archive into a local directory, so the
  * dictionary is acquired by the user at install time and never ships with this library.
  * No dictionary data is bundled. Any non-{@code file:} archive is downloaded through
  * {@link DownloadUtil#download(URI, Path, String)} and requires an expected SHA-512
  * digest. Built-in catalog URLs are opt-in via {@link #installFromCatalog(String, Path)}.
  *
- * <p>The installer reads gzip-compressed ustar archives (POSIX.1-1988), the format the
- * common distributions use. GNU long-name ({@code L}) and PAX ({@code x}/{@code g})
- * headers are not supported; entry names must fit the 100-byte ustar name field. It
+ * <p>The installer reads gzip-compressed
+ * <a href="https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06">
+ * ustar</a> archives (POSIX.1-1988), the format the common distributions use. GNU
+ * long-name ({@code L}) and PAX ({@code x}/{@code g}) headers are not supported; entry
+ * names must fit the 100-byte ustar name field. It
  * extracts only the dictionary payload: the {@code *.csv} lexicon files and
  * {@code *.def} definition files that a {@link MecabDictionary} reads, plus the
  * {@code dicrc} configuration file distributions ship alongside them. Entries are
