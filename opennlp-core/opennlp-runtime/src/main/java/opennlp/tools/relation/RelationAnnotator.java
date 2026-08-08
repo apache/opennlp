@@ -27,6 +27,7 @@ import opennlp.tools.depparse.DependencyArc;
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnnotator;
+import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
@@ -93,29 +94,29 @@ public class RelationAnnotator implements DocumentAnnotator {
    * entities share a head token, or whose heads are not connected in the dependency
    * graph, contributes no relation.</p>
    *
-   * @param document The document to annotate. Must not be {@code null} and must carry a
-   *                 non-empty {@link Layers#TOKENS} layer and a
-   *                 {@link DependencyAnnotator#DEPENDENCIES} layer holding exactly one
-   *                 arc per token. An absent {@link Layers#ENTITIES} layer reads as
-   *                 empty, which yields an empty {@link #RELATIONS} layer.
+   * @param document The document to annotate. Must not be {@code null} and must carry
+   *                 the {@link Layers#TOKENS}, {@link Layers#ENTITIES}, and
+   *                 {@link DependencyAnnotator#DEPENDENCIES} layers, the dependency
+   *                 layer holding exactly one arc per token. The layers may be empty: a
+   *                 document without tokens or without entities yields an empty
+   *                 {@link #RELATIONS} layer.
    * @return A new {@link Document} with the {@link #RELATIONS} layer added. Never
    *         {@code null}.
-   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
-   *         token layer is absent or empty, the dependency layer does not hold exactly
-   *         one arc per token, two arcs share a dependent, an arc refers to a token
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, a
+   *         required layer is absent, the dependency layer does not hold exactly one
+   *         arc per token, two arcs share a dependent, an arc refers to a token
    *         outside the token layer, or the document already carries the
    *         {@link #RELATIONS} layer.
    */
   @Override
   public Document annotate(Document document) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
+    DocumentAnnotators.requireLayers(document, Layers.TOKENS, Layers.ENTITIES,
+        DependencyAnnotator.DEPENDENCIES);
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> entities = document.get(Layers.ENTITIES);
     final List<Annotation<DependencyArc>> arcs =
         document.get(DependencyAnnotator.DEPENDENCIES);
-    if (tokens.isEmpty() || arcs.size() != tokens.size()) {
+    if (arcs.size() != tokens.size()) {
       throw new IllegalArgumentException("document needs aligned " + Layers.TOKENS
           + " and " + DependencyAnnotator.DEPENDENCIES + " layers");
     }
@@ -136,21 +137,21 @@ public class RelationAnnotator implements DocumentAnnotator {
     // Each entity's chain to the root depends only on that entity, so walking it once
     // per entity keeps the pair loop below from repeating the walk for every partner.
     final int[] entityHeads = new int[entities.size()];
-    final List<List<Integer>> chains = new ArrayList<>(entities.size());
+    final int[][] chains = new int[entities.size()][];
     for (int e = 0; e < entities.size(); e++) {
       entityHeads[e] = entityHead(entities.get(e).span(), tokens, heads);
-      chains.add(entityHeads[e] < 0 ? null : chainToRoot(entityHeads[e], heads));
+      chains[e] = entityHeads[e] < 0 ? null : chainToRoot(entityHeads[e], heads);
     }
 
     final List<Annotation<RelationMention>> mentions = new ArrayList<>();
     for (int subject = 0; subject < entities.size(); subject++) {
       for (int object = 0; object < entities.size(); object++) {
         if (subject == object || entityHeads[subject] == entityHeads[object]
-            || chains.get(subject) == null || chains.get(object) == null) {
+            || chains[subject] == null || chains[object] == null) {
           continue;
         }
         matchPair(tokens, relations, entities, subject, object,
-            chains.get(subject), chains.get(object), mentions);
+            chains[subject], chains[object], mentions);
       }
     }
     return document.with(RELATIONS, mentions);
@@ -184,15 +185,17 @@ public class RelationAnnotator implements DocumentAnnotator {
   private void matchPair(List<Annotation<String>> tokens,
       String[] relations, List<Annotation<String>> entities,
       int subject, int object,
-      List<Integer> subjectChain, List<Integer> objectChain,
+      int[] subjectChain, int[] objectChain,
       List<Annotation<RelationMention>> mentions) {
     int pivotOnSubject = -1;
     int pivotOnObject = -1;
-    for (int o = 0; o < objectChain.size() && pivotOnSubject < 0; o++) {
-      final int index = subjectChain.indexOf(objectChain.get(o));
-      if (index >= 0) {
-        pivotOnSubject = index;
-        pivotOnObject = o;
+    for (int o = 0; o < objectChain.length && pivotOnSubject < 0; o++) {
+      for (int s = 0; s < subjectChain.length; s++) {
+        if (subjectChain[s] == objectChain[o]) {
+          pivotOnSubject = s;
+          pivotOnObject = o;
+          break;
+        }
       }
     }
     if (pivotOnSubject < 0) {
@@ -201,12 +204,12 @@ public class RelationAnnotator implements DocumentAnnotator {
 
     final List<String> steps = new ArrayList<>();
     for (int s = 0; s < pivotOnSubject; s++) {
-      steps.add(RelationPattern.UP_STEP + relations[subjectChain.get(s)]);
+      steps.add(RelationPattern.UP_STEP + relations[subjectChain[s]]);
     }
     for (int o = pivotOnObject - 1; o >= 0; o--) {
-      steps.add(RelationPattern.DOWN_STEP + relations[objectChain.get(o)]);
+      steps.add(RelationPattern.DOWN_STEP + relations[objectChain[o]]);
     }
-    final int pivot = subjectChain.get(pivotOnSubject);
+    final int pivot = subjectChain[pivotOnSubject];
     final String pivotForm = StringUtil.toLowerCase(tokens.get(pivot).value());
 
     for (int p = 0; p < patterns.size(); p++) {
@@ -268,14 +271,17 @@ public class RelationAnnotator implements DocumentAnnotator {
    *         {@code null} when the walk takes more steps than there are tokens, which
    *         only happens when the arcs contain a cycle.
    */
-  private List<Integer> chainToRoot(int start, int[] heads) {
-    final List<Integer> chain = new ArrayList<>();
-    int current = start;
-    while (current != DependencyArc.ROOT_HEAD) {
-      if (chain.size() > heads.length) {
+  private int[] chainToRoot(int start, int[] heads) {
+    int length = 0;
+    for (int current = start; current != DependencyArc.ROOT_HEAD; current = heads[current]) {
+      if (++length > heads.length) {
         return null;
       }
-      chain.add(current);
+    }
+    final int[] chain = new int[length];
+    int current = start;
+    for (int i = 0; i < length; i++) {
+      chain[i] = current;
       current = heads[current];
     }
     return chain;
