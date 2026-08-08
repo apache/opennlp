@@ -273,7 +273,9 @@ public class StringUtil {
    * code points that {@link #isWhitespace(int)} accepts. Unlike
    * {@link String#isBlank()}, this follows the toolkit's whitespace definition, which
    * includes the no-break spaces the JDK predicate leaves out, so a value spelled
-   * entirely from them cannot pass a blank check as content.
+   * entirely from them cannot pass a blank check as content. Unlike
+   * {@link #isUnicodeBlank(CharSequence)}, it resolves through the active
+   * {@link WhitespaceMode} and does not treat {@code null} as blank.
    *
    * @param theString The {@link CharSequence} to examine. Must not be {@code null}.
    * @return {@code true} if {@code theString} is empty or all whitespace.

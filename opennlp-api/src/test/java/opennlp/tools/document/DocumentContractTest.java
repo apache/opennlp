@@ -223,6 +223,27 @@ public class DocumentContractTest {
   }
 
   /**
+   * Verifies that spans are indexed in {@code char} units, like {@link Span} itself: a
+   * supplementary-plane character counts as two, so a span over it covers the whole
+   * surrogate pair and the char-based text length is what bounds a span.
+   */
+  @Test
+  void testSpansAreCharIndexedOverSupplementaryCharacters() {
+    // U+1F600, a supplementary-plane character, is two chars in the text
+    final String text = "\uD83D\uDE00 ok";
+    final Document document = Document.of(text)
+        .with(WORDS, List.of(
+            new Annotation<>(new Span(0, 2), "emoji"),
+            new Annotation<>(new Span(3, 5), "ok")));
+    final List<Annotation<String>> words = document.get(WORDS);
+    assertEquals("\uD83D\uDE00",
+        words.get(0).span().getCoveredText(document.text()).toString());
+    assertEquals("ok", words.get(1).span().getCoveredText(document.text()).toString());
+    assertThrows(IllegalArgumentException.class, () -> Document.of("\uD83D\uDE00")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 3), "past the end"))));
+  }
+
+  /**
    * Verifies that a span reaching past the end of the text is rejected on insertion
    * with a message naming the span, the text length, and the layer.
    */

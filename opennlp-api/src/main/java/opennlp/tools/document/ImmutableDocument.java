@@ -43,7 +43,7 @@ final class ImmutableDocument implements Document {
 
   private ImmutableDocument(String text, Map<LayerKey<?>, List<Annotation<?>>> layers) {
     this.text = text;
-    this.layers = layers;
+    this.layers = Collections.unmodifiableMap(layers);
   }
 
   /**
@@ -86,14 +86,19 @@ final class ImmutableDocument implements Document {
   /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> layers() {
-    return Collections.unmodifiableSet(layers.keySet());
+    // The unmodifiable map exposes an unmodifiable key set and caches it, so this
+    // accessor allocates no wrapper per call.
+    return layers.keySet();
   }
 
   /** {@inheritDoc} */
   @Override
   public <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations) {
-    if (layer == null || annotations == null) {
-      throw new IllegalArgumentException("layer and annotations must not be null");
+    if (layer == null) {
+      throw new IllegalArgumentException("layer must not be null");
+    }
+    if (annotations == null) {
+      throw new IllegalArgumentException("annotations must not be null");
     }
     if (layers.containsKey(layer)) {
       throw new IllegalArgumentException("layer is already present: " + layer);
@@ -123,6 +128,6 @@ final class ImmutableDocument implements Document {
     }
     final Map<LayerKey<?>, List<Annotation<?>>> grown = new LinkedHashMap<>(layers);
     grown.put(layer, List.copyOf(annotations));
-    return new ImmutableDocument(text, Collections.unmodifiableMap(grown));
+    return new ImmutableDocument(text, grown);
   }
 }
