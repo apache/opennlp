@@ -77,6 +77,7 @@ public class ConlluDependencyParserEvalTest {
     assertTrue(evaluator.getLas() > 0.5d, "LAS regressed below the floor");
   }
 
+  /** Opens a sample stream over one CoNLL-U split using the universal tagset. */
   private static ConlluDependencySampleStream samples(Path conllu) throws IOException {
     final InputStreamFactory in = new MarkableFileInputStreamFactory(conllu.toFile());
     return new ConlluDependencySampleStream(in, ConlluTagset.U);

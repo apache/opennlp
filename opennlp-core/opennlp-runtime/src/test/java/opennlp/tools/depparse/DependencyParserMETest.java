@@ -43,6 +43,12 @@ public class DependencyParserMETest {
   private static DependencyModel model;
   private static DependencyParserME parser;
 
+  /**
+   * Trains the shared model once for all tests; the zero cutoff keeps every feature of
+   * the tiny corpus.
+   *
+   * @throws IOException Thrown if reading the in-memory samples fails.
+   */
   @BeforeAll
   static void trainParser() throws IOException {
     final TrainingParameters parameters = TrainingParameters.defaultParams();

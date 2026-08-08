@@ -39,6 +39,9 @@ public final class DependencyGraph {
   private final int[] heads;
   private final String[] relations;
 
+  /**
+   * Wraps already validated arrays; instances are created through {@link #of}.
+   */
   private DependencyGraph(int[] heads, String[] relations) {
     this.heads = heads;
     this.relations = relations;
@@ -144,6 +147,12 @@ public final class DependencyGraph {
     return Collections.unmodifiableList(arcs);
   }
 
+  /**
+   * Rejects a token index outside {@code [0, size())}.
+   *
+   * @param index The zero-based token index to check.
+   * @throws IllegalArgumentException Thrown if {@code index} is out of range.
+   */
   private void checkIndex(int index) {
     if (index < 0 || index >= heads.length) {
       throw new IllegalArgumentException("token index out of range: " + index

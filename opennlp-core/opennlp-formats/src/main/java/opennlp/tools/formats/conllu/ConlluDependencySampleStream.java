@@ -34,8 +34,9 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringUtil;
 
 /**
- * Reads {@link DependencySample samples} directly from CoNLL-U content, mapping the
- * {@code HEAD} and {@code DEPREL} columns of the basic dependency annotation.
+ * Reads {@link DependencySample samples} directly from
+ * <a href="https://universaldependencies.org/format.html">CoNLL-U</a> content, mapping
+ * the {@code HEAD} and {@code DEPREL} columns of the basic dependency annotation.
  *
  * <p>The file is parsed raw, deliberately not through {@link ConlluStream}: that stream
  * merges multiword token ranges with their syntactic words, which suits the token and
@@ -185,6 +186,12 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     reader.close();
   }
 
+  /**
+   * Opens a fresh UTF-8 reader over the content.
+   *
+   * @return A reader positioned at the start of the content. Never {@code null}.
+   * @throws IOException Thrown if opening the content fails.
+   */
   private BufferedReader open() throws IOException {
     return new BufferedReader(
         new InputStreamReader(in.createInputStream(), StandardCharsets.UTF_8));
