@@ -63,6 +63,7 @@ DependencyGraph graph = parser.parse(
 			arc annotation sits on its dependent token's span in original text
 			coordinates. The required layers must be present, but they may be empty:
 			a document without content yields a present-but-empty arc layer.
+			<code>DependencyAnnotatorPipelineTest</code> asserts the behavior shown here.
 			<programlisting language="java">
 <![CDATA[DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
     .add(new SentenceDetectorAnnotator(sentenceDetector))
