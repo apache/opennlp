@@ -58,7 +58,6 @@ final class ModelProtoReader {
   private static final int FIELD_TRAINER_MODEL_TYPE = 3;
   private static final int FIELD_TRAINER_TREAT_WHITESPACE_AS_SUFFIX = 24;
   private static final int FIELD_TRAINER_BYTE_FALLBACK = 35;
-  private static final int FIELD_TRAINER_UNK_ID = 40;
 
   // Field numbers of the NormalizerSpec sub-message.
   private static final int FIELD_NORMALIZER_PRECOMPILED_CHARSMAP = 2;
@@ -182,7 +181,6 @@ final class ModelProtoReader {
         case FIELD_TRAINER_TREAT_WHITESPACE_AS_SUFFIX ->
             model.treatWhitespaceAsSuffix = varintOf(tag) != 0;
         case FIELD_TRAINER_BYTE_FALLBACK -> model.byteFallback = varintOf(tag) != 0;
-        case FIELD_TRAINER_UNK_ID -> model.unkId = (int) varintOf(tag);
         default -> skip(tag);
       }
     }
@@ -406,7 +404,6 @@ final class ModelProtoReader {
     int modelType = MODEL_TYPE_UNIGRAM;
     boolean byteFallback = false;
     boolean treatWhitespaceAsSuffix = false;
-    int unkId = 0;
 
     byte[] precompiledCharsMap = new byte[0];
     boolean addDummyPrefix = true;
