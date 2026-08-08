@@ -174,6 +174,8 @@ for(ClassPathModelEntry entry : models) {
       format is detected from the bytes, not from the name: gzip-compressed tar archives and zip
       archives are unpacked with their relative structure, plain gzip files are decompressed, and
       anything else is stored as a file under its source name.
+      <code>ResourceInstallerTest#testInstallEndToEndUsageExample</code> asserts the behavior
+      shown here.
 
       <programlisting language="java">
 <![CDATA[Path result = ResourceInstaller.install(

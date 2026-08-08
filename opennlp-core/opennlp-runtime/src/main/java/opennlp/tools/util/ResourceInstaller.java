@@ -158,7 +158,7 @@ public final class ResourceInstaller {
    * Detects the content format from its leading bytes and unpacks accordingly.
    * One exception: a source named {@code *.bin} is stored verbatim even when its
    * bytes are a zip archive, because that is exactly what an OpenNLP model file
-   * is — a zipped artifact that consumers load packed. Unpacking it would
+   * is: a zipped artifact that consumers load packed. Unpacking it would
    * deliver its innards ({@code manifest.properties}, {@code *.model}) where
    * the operator asked for the model.
    *
