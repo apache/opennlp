@@ -48,6 +48,23 @@ public class RelationAnnotatorTest {
   private static final String NO_BREAK_SPACE = "\u00A0";
 
   /**
+   * Anchors each dependency arc on its dependent token's span, the layout
+   * {@link DependencyAnnotator} produces.
+   *
+   * @param tokens The token layer the arcs index into.
+   * @param arcs The arcs to annotate.
+   * @return One annotation per arc, in arc order. Never {@code null}.
+   */
+  private static List<Annotation<DependencyArc>> dependencyLayer(
+      List<Annotation<String>> tokens, List<DependencyArc> arcs) {
+    final List<Annotation<DependencyArc>> dependencies = new ArrayList<>(arcs.size());
+    for (final DependencyArc arc : arcs) {
+      dependencies.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
+    }
+    return dependencies;
+  }
+
+  /**
    * Builds the parsed document "Acme Corp acquired Bolt in 2024." with entities for
    * Acme Corp (index 0), Bolt (index 1), and 2024 (index 2). The dependency layer marks
    * {@code acquired} as the root with {@code Corp} as {@code nsubj}, {@code Bolt} as
@@ -74,17 +91,13 @@ public class RelationAnnotatorTest {
         new DependencyArc(5, 4, "case"),
         new DependencyArc(2, 5, "obl"),
         new DependencyArc(2, 6, "punct"));
-    final List<Annotation<DependencyArc>> dependencies = new ArrayList<>();
-    for (final DependencyArc arc : arcs) {
-      dependencies.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
-    }
     return Document.of(text)
         .with(Layers.TOKENS, tokens)
         .with(Layers.ENTITIES, List.of(
             new Annotation<>(new Span(0, 9), "organization"),
             new Annotation<>(new Span(19, 23), "organization"),
             new Annotation<>(new Span(27, 31), "date")))
-        .with(DependencyAnnotator.DEPENDENCIES, dependencies);
+        .with(DependencyAnnotator.DEPENDENCIES, dependencyLayer(tokens, arcs));
   }
 
   /**
@@ -292,13 +305,9 @@ public class RelationAnnotatorTest {
         new DependencyArc(1, 0, "nsubj"),
         new DependencyArc(DependencyArc.ROOT_HEAD, 1, "root"),
         new DependencyArc(1, 2, "punct"));
-    final List<Annotation<DependencyArc>> dependencies = new ArrayList<>();
-    for (final DependencyArc arc : arcs) {
-      dependencies.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
-    }
     return Document.of(text)
         .with(Layers.TOKENS, tokens)
-        .with(DependencyAnnotator.DEPENDENCIES, dependencies);
+        .with(DependencyAnnotator.DEPENDENCIES, dependencyLayer(tokens, arcs));
   }
 
   /**
@@ -413,16 +422,12 @@ public class RelationAnnotatorTest {
         new DependencyArc(4, 3, "case"),
         new DependencyArc(2, 4, "nmod"),
         new DependencyArc(0, 5, "punct"));
-    final List<Annotation<DependencyArc>> dependencies = new ArrayList<>();
-    for (final DependencyArc arc : arcs) {
-      dependencies.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
-    }
     return Document.of(text)
         .with(Layers.TOKENS, tokens)
         .with(Layers.ENTITIES, List.of(
             new Annotation<>(new Span(0, 8), "location"),
             new Annotation<>(new Span(18, 22), "organization")))
-        .with(DependencyAnnotator.DEPENDENCIES, dependencies);
+        .with(DependencyAnnotator.DEPENDENCIES, dependencyLayer(tokens, arcs));
   }
 
   /**

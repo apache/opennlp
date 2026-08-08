@@ -226,8 +226,9 @@ public class RelationPatternTest {
    * Verifies that a trigger containing whitespace is rejected at construction: the
    * trigger is compared against a single pivot token, which the tokenizer guarantees
    * carries no whitespace, so a multi-word or padded trigger is a rule that could
-   * never match. The whitespace scan follows the project predicate, so a no-break
-   * space inside or around the trigger is caught the same way as a plain space.
+   * never match. The scan covers whitespace inside, before, and after the trigger and
+   * follows the project predicate, so a no-break space is caught the same way as a
+   * plain space.
    */
   @Test
   void testTriggerContainingWhitespaceIsRejected() {
@@ -238,7 +239,11 @@ public class RelationPatternTest {
         + " against a single token: new york", spaced.getMessage());
 
     Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new RelationPattern("t", "<nsubj", " founded"));
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> new RelationPattern("t", "<nsubj", "founded" + NBSP));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new RelationPattern("t", "<nsubj", NBSP + "founded"));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new RelationPattern("t", "<nsubj", String.valueOf(NBSP)));
   }
