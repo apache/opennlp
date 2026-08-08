@@ -31,6 +31,7 @@ public class DependencySampleTest {
   private static final String[] TOKENS = {"the", "dog", "barks"};
   private static final String[] TAGS = {"DT", "NN", "VBZ"};
 
+  /** The graph matching {@link #TOKENS} and {@link #TAGS}. */
   private static DependencyGraph graph() {
     return DependencyGraph.of(new int[] {1, 2, -1},
         new String[] {"det", "nsubj", "root"});

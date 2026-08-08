@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class ConlluDependencySampleStreamTest {
 
+  /** Joins the ten CoNLL-U columns of one word line with tabs. */
   private static String line(String... fields) {
     return String.join("\t", fields);
   }
@@ -68,10 +69,12 @@ public class ConlluDependencySampleStreamTest {
       line("2", "bark", "bark", "VERB", "VBP", "_", "0", "root", "_", "_"),
       "") + "\n";
 
+  /** An in-memory factory over the shared fixture. */
   private static InputStreamFactory factory() {
     return () -> new ByteArrayInputStream(CONLLU.getBytes(StandardCharsets.UTF_8));
   }
 
+  /** A stream over the shared fixture using the universal tagset. */
   private static ConlluDependencySampleStream stream() throws IOException {
     return new ConlluDependencySampleStream(factory(), ConlluTagset.U);
   }

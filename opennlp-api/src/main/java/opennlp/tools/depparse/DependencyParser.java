@@ -27,6 +27,8 @@ package opennlp.tools.depparse;
  * whose indices refer back to the input token array, so spans computed for those tokens
  * remain valid for the parse.</p>
  *
+ * <p>Thread safety is implementation specific.</p>
+ *
  * @see DependencyGraph
  * @since 3.0.0
  */

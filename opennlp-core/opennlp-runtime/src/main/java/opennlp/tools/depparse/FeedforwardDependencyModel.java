@@ -38,7 +38,9 @@ import opennlp.tools.util.StringUtil;
 /**
  * The weights of the feedforward transition parser: embeddings for words, tags, and arc
  * labels, one hidden layer with cube activation, and a transition output layer, stored
- * in a plain versioned binary format with no serialization framework involved.
+ * in a plain versioned binary format with no serialization framework involved. The
+ * architecture follows
+ * <a href="https://aclanthology.org/D14-1082/">Chen and Manning (2014)</a>.
  *
  * <p>This is the pure-Java neural tier: the network is executed with ordinary array
  * arithmetic, so parsing needs no native runtime, and the same class scores
@@ -283,7 +285,8 @@ public class FeedforwardDependencyModel {
    * <p>Case is mapped per code point through UnicodeData, the same mapping as
    * {@link StringUtil#toLowerCase(CharSequence)}, with one contextual rule on top: a
    * Greek capital sigma preceded by a letter and not followed by one lowercases to
-   * the final form U+03C2, the Final_Sigma condition of the Unicode SpecialCasing
+   * the final form U+03C2, the Final_Sigma condition of the Unicode
+   * <a href="https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt">SpecialCasing</a>
    * file restricted to a single token. Natural lowercase Greek text, and with it
    * every vocabulary key derived from a treebank, spells a word-final sigma that
    * way, so without the rule an uppercase Greek word would normalize to a spelling
@@ -330,6 +333,14 @@ public class FeedforwardDependencyModel {
     return lowered.toString();
   }
 
+  /**
+   * Resolves a symbol to its embedding row: absences map to {@link #ABSENT}, symbols
+   * without a row of their own fall back to {@link #UNKNOWN}.
+   *
+   * @param ids The vocabulary to resolve against.
+   * @param symbol The symbol to resolve, or {@code null} for an absent position.
+   * @return The embedding row of the symbol or of its fallback.
+   */
   private static int lookup(Map<String, Integer> ids, String symbol) {
     Integer id = ids.get(symbol == null ? ABSENT : symbol);
     if (id == null) {
@@ -414,6 +425,9 @@ public class FeedforwardDependencyModel {
     }
   }
 
+  /**
+   * Writes one vocabulary as its size followed by (symbol, id) pairs.
+   */
   private static void writeVocabulary(DataOutputStream data, Map<String, Integer> ids)
       throws IOException {
     data.writeInt(ids.size());
@@ -428,6 +442,9 @@ public class FeedforwardDependencyModel {
     }
   }
 
+  /**
+   * Reads one vocabulary written by {@link #writeVocabulary}.
+   */
   private static Map<String, Integer> readVocabulary(DataInputStream data)
       throws IOException {
     final int size = data.readInt();
@@ -439,6 +456,9 @@ public class FeedforwardDependencyModel {
     return ids;
   }
 
+  /**
+   * Writes a rectangular matrix as its dimensions followed by its values in row order.
+   */
   private static void writeMatrix(DataOutputStream data, float[][] matrix)
       throws IOException {
     data.writeInt(matrix.length);
@@ -450,6 +470,9 @@ public class FeedforwardDependencyModel {
     }
   }
 
+  /**
+   * Reads a matrix written by {@link #writeMatrix}.
+   */
   private static float[][] readMatrix(DataInputStream data) throws IOException {
     final int rows = data.readInt();
     final int columns = data.readInt();
@@ -462,6 +485,9 @@ public class FeedforwardDependencyModel {
     return matrix;
   }
 
+  /**
+   * Writes a vector as its length followed by its values.
+   */
   private static void writeVector(DataOutputStream data, float[] vector) throws IOException {
     data.writeInt(vector.length);
     for (final float value : vector) {
@@ -469,6 +495,9 @@ public class FeedforwardDependencyModel {
     }
   }
 
+  /**
+   * Reads a vector written by {@link #writeVector}.
+   */
   private static float[] readVector(DataInputStream data) throws IOException {
     final float[] vector = new float[data.readInt()];
     for (int i = 0; i < vector.length; i++) {
@@ -494,6 +523,9 @@ public class FeedforwardDependencyModel {
         copyOf(outputWeights), outputBias.clone());
   }
 
+  /**
+   * Deep-copies a matrix, row by row.
+   */
   private static float[][] copyOf(float[][] matrix) {
     final float[][] copy = new float[matrix.length][];
     for (int r = 0; r < matrix.length; r++) {

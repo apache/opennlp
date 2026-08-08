@@ -20,7 +20,8 @@ package opennlp.tools.depparse;
 /**
  * The feature template of the feedforward parser: a fixed set of configuration
  * positions whose words, tags, and arc labels are embedded and concatenated into the
- * network input.
+ * network input, following
+ * <a href="https://aclanthology.org/D14-1082/">Chen and Manning (2014)</a>.
  *
  * <p>Positions: the top three stack and buffer items; the leftmost and rightmost
  * dependents of the top two stack items; and the leftmost dependent of the leftmost
@@ -78,14 +79,17 @@ final class FeedforwardContext {
     return features;
   }
 
+  /** The leftmost dependent of a position, or the absence marker for absent positions. */
   private static int leftmost(ArcStandardState state, int index) {
     return index >= 0 ? state.leftmostDependent(index) : ArcStandardState.NONE;
   }
 
+  /** The rightmost dependent of a position, or the absence marker for absent positions. */
   private static int rightmost(ArcStandardState state, int index) {
     return index >= 0 ? state.rightmostDependent(index) : ArcStandardState.NONE;
   }
 
+  /** The value at a position: the root symbol for the root, {@code null} when absent. */
   private static String symbol(String[] values, int index) {
     if (index == ArcStandardState.ROOT) {
       return FeedforwardDependencyModel.ROOT_SYMBOL;
