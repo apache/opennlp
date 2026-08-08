@@ -32,6 +32,12 @@ import opennlp.tools.util.DownloadUtil;
  */
 public class HunspellDictionaryDownloadTest {
 
+  /**
+   * Verifies that a catalog download without the remote-download property fails with
+   * the property name in the message, leaving the previous property value restored.
+   *
+   * @param target A scratch directory managed by the test framework.
+   */
   @Test
   void testDownloadRequiresRemoteProperty(@TempDir Path target) {
     final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
@@ -49,6 +55,12 @@ public class HunspellDictionaryDownloadTest {
     }
   }
 
+  /**
+   * Verifies that the shipped catalog holds the {@code en_US} pair and its license
+   * readme, each with a full-length SHA-512 digest.
+   *
+   * @throws IOException Thrown if the shipped catalog fails to load.
+   */
   @Test
   void testCatalogContainsEnUsPair() throws IOException {
     final DictionaryCatalog catalog = DictionaryCatalog.loadDefault();
