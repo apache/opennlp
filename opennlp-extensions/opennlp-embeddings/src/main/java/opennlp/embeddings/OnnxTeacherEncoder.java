@@ -34,7 +34,9 @@ import ai.onnxruntime.TensorInfo;
 
 /**
  * Runs a teacher transformer over id sequences through its ONNX graph and mean-pools the last
- * hidden states, the forward pass Model2Vec's distillation performs per vocabulary token. The
+ * hidden states, the forward pass
+ * <a href="https://github.com/MinishLab/model2vec">Model2Vec</a>'s distillation performs per
+ * vocabulary token. The
  * graph is fed exactly the inputs it declares: {@code input_ids} and {@code attention_mask} for
  * every model, plus a zero {@code token_type_ids} for the BERT-family graphs that ask for one.
  * The pooled output is the mean of the single rank-3 float output (the

@@ -65,12 +65,36 @@ final class EmbeddingTestFixtures {
    */
   static StaticEmbeddingModel loadAnalogyModel(Path dir, Normalization normalization)
       throws IOException {
-    final Path vocabulary = dir.resolve("vocab.txt");
-    Files.write(vocabulary, ANALOGY_VOCABULARY);
-    final Path safetensors = dir.resolve("model.safetensors");
-    SafetensorsTestFiles.write(safetensors,
+    writeVocabularyAndMatrix(dir);
+    return StaticEmbeddingModel.load(dir.resolve("vocab.txt"), dir.resolve("model.safetensors"),
+        Casing.UNCASED, normalization);
+  }
+
+  /**
+   * Writes {@link #ANALOGY_VOCABULARY} and {@link #ANALOGY_ROWS} into a directory as a complete
+   * WordPiece model directory (with its two JSON configuration files), so a test can load it
+   * with {@code StaticEmbeddingModel.load(Path)} the way the manual's usage listing shows.
+   *
+   * @param dir The directory to write the model files into.
+   * @throws IOException Thrown if writing a fixture file fails.
+   */
+  static void writeAnalogyDirectory(Path dir) throws IOException {
+    writeVocabularyAndMatrix(dir);
+    Files.writeString(dir.resolve("config.json"),
+        "{\"model_type\":\"model2vec\",\"normalize\":false}");
+    Files.writeString(dir.resolve("tokenizer_config.json"), "{\"do_lower_case\":true}");
+  }
+
+  /**
+   * Writes the analogy table's {@code vocab.txt} and {@code model.safetensors} into a directory.
+   *
+   * @param dir The directory to write the fixture files into.
+   * @throws IOException Thrown if writing a fixture file fails.
+   */
+  private static void writeVocabularyAndMatrix(Path dir) throws IOException {
+    Files.write(dir.resolve("vocab.txt"), ANALOGY_VOCABULARY);
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
         SafetensorsTestFiles.matrix("embeddings", ANALOGY_ROWS));
-    return StaticEmbeddingModel.load(vocabulary, safetensors, Casing.UNCASED, normalization);
   }
 
   /**

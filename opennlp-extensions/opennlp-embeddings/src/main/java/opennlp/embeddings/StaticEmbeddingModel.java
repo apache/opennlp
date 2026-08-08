@@ -41,7 +41,9 @@ import opennlp.tools.util.java.Experimental;
  * tokenization. Embedding a sentence is tokenize, gather each piece's row, optionally weight,
  * mean-pool, and optionally L2-normalize; there is no model forward pass.
  *
- * <p>It loads distilled tables in the Model2Vec release layout for both tokenizer families:
+ * <p>It loads distilled tables in the
+ * <a href="https://github.com/MinishLab/model2vec">Model2Vec</a> release layout for both
+ * tokenizer families:
  * WordPiece models carry a {@code vocab.txt} whose line number is the matrix row, and
  * SentencePiece models carry a Unigram {@code tokenizer.json} whose {@code model.vocab} list
  * order is the row order, next to the trained SentencePiece {@code .model} file that performs

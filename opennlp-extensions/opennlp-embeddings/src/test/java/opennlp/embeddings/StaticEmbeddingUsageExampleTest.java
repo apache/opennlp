@@ -23,22 +23,21 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import opennlp.embeddings.StaticEmbeddingModel.Normalization;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Pins the cookbook path documented in {@code embeddings.xml}: load a
- * {@link StaticEmbeddingModel}, embed a sentence, and call {@code similarity},
- * {@code mostSimilar}, and {@code analogy}.
+ * Pins the cookbook path documented in {@code embeddings.xml}, mirroring its usage listing:
+ * load a model directory with {@link StaticEmbeddingModel#load(Path)}, embed a text, and call
+ * {@code similarity}, {@code mostSimilar}, and {@code analogy}.
  */
 public class StaticEmbeddingUsageExampleTest {
 
   @Test
   void testEmbedSimilarityNeighborsAndAnalogy(@TempDir Path dir) throws IOException {
-    final StaticEmbeddingModel model =
-        EmbeddingTestFixtures.loadAnalogyModel(dir, Normalization.NONE);
+    EmbeddingTestFixtures.writeAnalogyDirectory(dir);
+
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(dir);
 
     final float[] vector = model.embed("king");
     assertEquals(2, vector.length);

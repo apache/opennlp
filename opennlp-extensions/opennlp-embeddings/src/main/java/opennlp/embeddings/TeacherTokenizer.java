@@ -29,7 +29,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * The tokenizer side of a teacher model, distilled the way Model2Vec distills it. The class reads
+ * The tokenizer side of a teacher model, distilled the way
+ * <a href="https://github.com/MinishLab/model2vec">Model2Vec</a> distills it. The class reads
  * the teacher's {@code tokenizer.json} (and, when present, its {@code tokenizer_config.json} for
  * the pad token), decides which vocabulary rows survive into the static table, and rewrites the
  * {@code tokenizer.json} so it describes the distilled table.
