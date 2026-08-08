@@ -34,7 +34,7 @@ import opennlp.tools.util.Span;
 /**
  * Verifies {@link RelationAnnotator} against a document with directly constructed token,
  * entity, and dependency layers, covering matching, direction handling, duplicate and
- * invalid configurations, and documents without entities.
+ * invalid configurations, and the required-layer contract for absent and empty layers.
  */
 public class RelationAnnotatorTest {
 
@@ -277,11 +277,12 @@ public class RelationAnnotatorTest {
   }
 
   /**
-   * Verifies the behavior on a document without an entity layer: an absent layer reads
-   * as an empty list, so the annotator succeeds and adds an empty relations layer.
+   * Builds the parsed document "Ada slept." with token and dependency layers only, so
+   * tests can attach an entity layer or leave it absent.
+   *
+   * @return A document without an entity layer. Never {@code null}.
    */
-  @Test
-  void testNoEntitiesProducesEmptyRelationsLayer() {
+  private static Document sleepingDocument() {
     final String text = "Ada slept.";
     final List<Annotation<String>> tokens = List.of(
         new Annotation<>(new Span(0, 3), "Ada"),
@@ -295,9 +296,55 @@ public class RelationAnnotatorTest {
     for (final DependencyArc arc : arcs) {
       dependencies.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
     }
-    final Document document = Document.of(text)
+    return Document.of(text)
         .with(Layers.TOKENS, tokens)
         .with(DependencyAnnotator.DEPENDENCIES, dependencies);
+  }
+
+  /**
+   * Verifies that a document lacking the entity layer is rejected the way every
+   * annotator in the container rejects an absent required layer: {@code requires()}
+   * names {@link Layers#ENTITIES}, so annotate throws the shared message naming the
+   * missing layer instead of reading absence as an empty layer.
+   */
+  @Test
+  void testAbsentEntityLayerIsRejectedWithTheLayerName() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("t", "<nsubj", null)));
+    final IllegalArgumentException e = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> annotator.annotate(sleepingDocument()));
+    Assertions.assertEquals("document lacks the required layer " + Layers.ENTITIES,
+        e.getMessage());
+  }
+
+  /**
+   * Verifies that a present but empty entity layer is valid input: no entities means no
+   * pairs, so the annotator succeeds and adds an empty relations layer.
+   */
+  @Test
+  void testEmptyEntityLayerProducesEmptyRelationsLayer() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("t", "<nsubj", null)));
+
+    final Document annotated = annotator.annotate(
+        sleepingDocument().with(Layers.ENTITIES, List.of()));
+
+    Assertions.assertTrue(annotated.layers().contains(RelationAnnotator.RELATIONS));
+    Assertions.assertTrue(annotated.get(RelationAnnotator.RELATIONS).isEmpty());
+  }
+
+  /**
+   * Verifies the graceful degradation the annotator contract promises for documents
+   * without content: every required layer is present but empty, so the annotator
+   * succeeds and adds a present but empty relations layer instead of rejecting the
+   * document.
+   */
+  @Test
+  void testEmptyRequiredLayersDegradeToAnEmptyRelationsLayer() {
+    final Document document = Document.of("")
+        .with(Layers.TOKENS, List.of())
+        .with(Layers.ENTITIES, List.of())
+        .with(DependencyAnnotator.DEPENDENCIES, List.of());
     final RelationAnnotator annotator = new RelationAnnotator(List.of(
         new RelationPattern("t", "<nsubj", null)));
 
