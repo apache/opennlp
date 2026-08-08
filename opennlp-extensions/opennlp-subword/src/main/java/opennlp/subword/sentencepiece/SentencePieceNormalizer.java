@@ -18,6 +18,8 @@ package opennlp.subword.sentencepiece;
 
 import java.io.Serializable;
 
+import opennlp.tools.util.InvalidFormatException;
+
 /**
  * The model-embedded text normalizer of a SentencePiece model, operating in UTF-8 byte space.
  *
@@ -61,11 +63,12 @@ final class SentencePieceNormalizer implements Serializable {
    * @param userDefinedMatcher      Longest-match trie over user-defined symbols that must pass
    *                                through normalization untouched, or null when the model
    *                                defines none.
-   * @throws IllegalArgumentException Thrown if the character map is structurally invalid.
+   * @throws InvalidFormatException Thrown if the character map is structurally invalid.
    */
   SentencePieceNormalizer(byte[] precompiledCharsMap, boolean addDummyPrefix,
                           boolean removeExtraWhitespaces, boolean escapeWhitespaces,
-                          boolean treatWhitespaceAsSuffix, PieceTrie userDefinedMatcher) {
+                          boolean treatWhitespaceAsSuffix, PieceTrie userDefinedMatcher)
+      throws InvalidFormatException {
     if (precompiledCharsMap.length == 0) {
       trie = null;
       blob = null;
@@ -73,24 +76,24 @@ final class SentencePieceNormalizer implements Serializable {
     } else {
       // Layout: <trie size, 4-byte little-endian><double-array trie><replacement blob>.
       if (precompiledCharsMap.length <= 4) {
-        throw new IllegalArgumentException("The precompiled character map is truncated.");
+        throw new InvalidFormatException("The precompiled character map is truncated.");
       }
       final long trieSize = (precompiledCharsMap[0] & 0xFFL)
           | (precompiledCharsMap[1] & 0xFFL) << 8
           | (precompiledCharsMap[2] & 0xFFL) << 16
           | (precompiledCharsMap[3] & 0xFFL) << 24;
       if (trieSize >= precompiledCharsMap.length - 4) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "The precompiled character map declares a trie of " + trieSize
                 + " bytes but only " + (precompiledCharsMap.length - 4) + " bytes follow.");
       }
       if (trieSize < 1024 || (trieSize & 0x3FF) != 0) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "The precompiled character map trie size " + trieSize
                 + " is not a positive multiple of 1024.");
       }
       if (precompiledCharsMap[precompiledCharsMap.length - 1] != 0) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "The precompiled character map replacement block is not null-terminated.");
       }
       trie = new DoubleArrayTrie(precompiledCharsMap, 4, (int) trieSize);

@@ -36,7 +36,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  * present in the vocabulary (every piece must have an id), so the vocabularies
  * here include them; the token sequences are unchanged.
  */
-public class WordpieceEncoderReferenceSequencesTest {
+class WordpieceEncoderReferenceSequencesTest {
 
   private static final List<String> VOCABULARY = List.of(
       "[CLS]", "[SEP]", "[UNK]",
