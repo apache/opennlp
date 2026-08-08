@@ -31,6 +31,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class ArcStandardOracleTest {
 
+  /**
+   * Derives the oracle transitions for {@code gold} and replays them on a fresh state.
+   *
+   * @param gold The gold graph to derive from.
+   * @return The graph the replayed derivation builds. Never {@code null}.
+   */
   private static DependencyGraph replay(DependencyGraph gold) {
     final List<Transition> transitions = ArcStandardOracle.transitions(gold);
     // every token is shifted once and attached once

@@ -34,9 +34,10 @@ import opennlp.tools.util.ObjectStream;
 /**
  * Trains the {@link FeedforwardDependencyModel} entirely in Java: oracle-derived
  * transition examples, minibatch AdaGrad over a softmax cross-entropy loss, cube
- * activation, and inverted dropout on the hidden layer. No external training framework
- * is involved, so the whole neural tier, training and inference, is plain array
- * arithmetic inside the JVM.
+ * activation, and inverted dropout on the hidden layer, the training recipe of
+ * <a href="https://aclanthology.org/D14-1082/">Chen and Manning (2014)</a>. No external
+ * training framework is involved, so the whole neural tier, training and inference, is
+ * plain array arithmetic inside the JVM.
  *
  * <p>Words below the frequency cutoff share a learned unknown embedding; absent
  * template positions share a learned padding embedding. Non-projective samples have no
@@ -144,11 +145,7 @@ public final class FeedforwardDependencyTrainer {
     if (samples == null || settings == null) {
       throw new IllegalArgumentException("samples and settings must not be null");
     }
-    final List<DependencySample> corpus = new ArrayList<>();
-    DependencySample sample;
-    while ((sample = samples.read()) != null) {
-      corpus.add(sample);
-    }
+    final List<DependencySample> corpus = readAll(samples);
     final FeedforwardDependencyModel model = initialize(corpus, settings);
     if (pretrained != null) {
       seed(model, pretrained, settings);
@@ -166,10 +163,11 @@ public final class FeedforwardDependencyTrainer {
   /**
    * Fine-tunes a locally trained model globally: sentences are decoded with a beam, the
    * gold derivation is tracked through it, and the moment the gold prefix falls out of
-   * the beam an early update pushes the model toward keeping it. The loss is a
-   * conditional likelihood over the beam's candidate paths, scored exactly like the
-   * beamed parser scores them, summed log-probabilities, so training optimizes the
-   * quantity decoding uses.
+   * the beam an early update, in the sense of
+   * <a href="https://aclanthology.org/P04-1015/">Collins and Roark (2004)</a>, pushes
+   * the model toward keeping it. The loss is a conditional likelihood over the beam's
+   * candidate paths, scored exactly like the beamed parser scores them, summed
+   * log-probabilities, so training optimizes the quantity decoding uses.
    *
    * <p>The refined weights are a copy: {@code model} itself is never written to, so a
    * model already being parsed with, possibly by several threads, keeps behaving exactly
@@ -204,11 +202,7 @@ public final class FeedforwardDependencyTrainer {
     if (beamSize < 2) {
       throw new IllegalArgumentException("beamSize must be at least 2: " + beamSize);
     }
-    final List<DependencySample> corpus = new ArrayList<>();
-    DependencySample sample;
-    while ((sample = samples.read()) != null) {
-      corpus.add(sample);
-    }
+    final List<DependencySample> corpus = readAll(samples);
     final String[] outcomes = model.transitions();
     final Map<String, Integer> transitionIds = new HashMap<>();
     final Transition[] transitions = new Transition[outcomes.length];
@@ -280,6 +274,7 @@ public final class FeedforwardDependencyTrainer {
     private final boolean gold;
     private ArcStandardState state;
 
+    /** Extends {@code parent} by one transition; the start node passes {@code null}. */
     private BeamNode(BeamNode parent, int[] features, int transition, double score,
         boolean gold) {
       this.parent = parent;
@@ -318,6 +313,7 @@ public final class FeedforwardDependencyTrainer {
     private final double[] hiddenDelta;
     private final double[] inputDelta;
 
+    /** Sizes the accumulators and scratch buffers for one refinement run over {@code model}. */
     private GlobalOptimizer(FeedforwardDependencyModel model, Settings settings) {
       this.model = model;
       this.settings = settings;
@@ -569,6 +565,23 @@ public final class FeedforwardDependencyTrainer {
         scores[i] -= logSum;
       }
     }
+  }
+
+  /**
+   * Reads a sample stream into memory; both trainers pass over the corpus repeatedly.
+   *
+   * @param samples The stream to drain.
+   * @return All samples in stream order. Never {@code null}.
+   * @throws IOException Thrown if reading the samples fails.
+   */
+  private static List<DependencySample> readAll(ObjectStream<DependencySample> samples)
+      throws IOException {
+    final List<DependencySample> corpus = new ArrayList<>();
+    DependencySample sample;
+    while ((sample = samples.read()) != null) {
+      corpus.add(sample);
+    }
+    return corpus;
   }
 
   /** Overwrites the random word rows with pretrained vectors where available. */
@@ -880,6 +893,7 @@ public final class FeedforwardDependencyTrainer {
     }
   }
 
+  /** One AdaGrad step on a weight matrix, with the L2 penalty folded into the gradient. */
   private static void update(float[][] weights, double[][] gradients,
       double[][] accumulators, int batch, Settings settings) {
     for (int r = 0; r < weights.length; r++) {
@@ -895,6 +909,7 @@ public final class FeedforwardDependencyTrainer {
     }
   }
 
+  /** One AdaGrad step on a bias vector; biases carry no L2 penalty. */
   private static void updateVector(float[] weights, double[] gradients,
       double[] accumulators, int batch, Settings settings) {
     for (int i = 0; i < weights.length; i++) {
@@ -905,6 +920,7 @@ public final class FeedforwardDependencyTrainer {
     }
   }
 
+  /** A matrix drawn uniformly from {@code [-scale, scale]}. */
   private static float[][] uniform(Random random, int rows, int columns, double scale) {
     final float[][] matrix = new float[rows][columns];
     for (int r = 0; r < rows; r++) {
@@ -915,12 +931,14 @@ public final class FeedforwardDependencyTrainer {
     return matrix;
   }
 
+  /** Fills a matrix with zeros. */
   private static void zero(double[][] matrix) {
     for (final double[] row : matrix) {
       Arrays.fill(row, 0.0);
     }
   }
 
+  /** Fisher-Yates shuffle of the visit order. */
   private static void shuffle(int[] order, Random random) {
     for (int i = order.length - 1; i > 0; i--) {
       final int j = random.nextInt(i + 1);
