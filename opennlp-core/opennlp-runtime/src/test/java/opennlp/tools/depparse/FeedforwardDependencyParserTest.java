@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,9 +52,14 @@ public class FeedforwardDependencyParserTest {
   private static FeedforwardDependencyModel model;
   private static FeedforwardDependencyParser parser;
 
+  /**
+   * Trains the shared model once for all tests, with dropout off and a fixed seed so
+   * the tiny network memorizes the corpus deterministically.
+   *
+   * @throws IOException Thrown if reading the in-memory samples fails.
+   */
   @BeforeAll
   static void trainParser() throws IOException {
-    // dropout off so the tiny network memorizes deterministically
     final FeedforwardDependencyTrainer.Settings settings =
         new FeedforwardDependencyTrainer.Settings(16, 32, 120, 32, 0.05, 0.0, 0.0, 1, 17L);
     model = FeedforwardDependencyTrainer.train(
@@ -340,7 +346,7 @@ public class FeedforwardDependencyParserTest {
   @Test
   void testCorruptModelFailsLoud() {
     assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
-        new ByteArrayInputStream("not a model".getBytes())));
+        new ByteArrayInputStream("not a model".getBytes(StandardCharsets.UTF_8))));
   }
 
   @Test

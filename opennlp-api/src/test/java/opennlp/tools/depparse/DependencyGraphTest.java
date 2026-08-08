@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class DependencyGraphTest {
 
+  /** The three-token graph shared by the accessor tests. */
   private static DependencyGraph sample() {
     return DependencyGraph.of(new int[] {1, 2, -1},
         new String[] {"det", "nsubj", "root"});

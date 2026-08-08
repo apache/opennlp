@@ -135,6 +135,7 @@ public class DependencyContextGenerator {
     return features.toArray(new String[0]);
   }
 
+  /** The word at a position, or the marker value for the root and absent positions. */
   private String word(String[] tokens, int index) {
     if (index == ArcStandardState.ROOT) {
       return ROOT_VALUE;
@@ -142,6 +143,7 @@ public class DependencyContextGenerator {
     return index == ArcStandardState.NONE ? NONE_VALUE : tokens[index];
   }
 
+  /** The tag at a position, or the marker value for the root and absent positions. */
   private String tag(String[] tags, int index) {
     if (index == ArcStandardState.ROOT) {
       return ROOT_VALUE;
@@ -175,11 +177,13 @@ public class DependencyContextGenerator {
     return relation == null ? NONE_VALUE : relation;
   }
 
+  /** A token's dependent count so far, capped at {@link #MAX_VALENCY}. */
   private String dependents(ArcStandardState state, int index) {
     return index < 0 ? NONE_VALUE
         : Integer.toString(Math.min(state.assignedDependents(index), MAX_VALENCY));
   }
 
+  /** The bucketed distance between stack top and buffer front, capped at {@link #MAX_DISTANCE}. */
   private String distance(int s0, int b0) {
     if (s0 < 0 || b0 < 0) {
       return NONE_VALUE;

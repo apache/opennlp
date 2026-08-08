@@ -21,7 +21,8 @@ import java.util.Arrays;
 
 /**
  * The mutable configuration of an arc-standard parse: a stack, a buffer of remaining
- * tokens, and the arcs assigned so far.
+ * tokens, and the arcs assigned so far. The arc-standard transition system is described
+ * in <a href="https://aclanthology.org/W04-0308/">Nivre (2004)</a>.
  *
  * <p>The stack bottom holds the artificial root, exposed as {@link #ROOT}. Positions that
  * do not exist, such as the second stack element in the initial configuration, are exposed
@@ -77,6 +78,9 @@ public final class ArcStandardState {
     Arrays.fill(this.rightmostDependents, NONE);
   }
 
+  /**
+   * Deep-copies {@code source}; used only by {@link #copy()}.
+   */
   private ArcStandardState(ArcStandardState source) {
     this.tokenCount = source.tokenCount;
     this.stack = source.stack.clone();
@@ -157,6 +161,14 @@ public final class ArcStandardState {
     }
   }
 
+  /**
+   * Records the arc from {@code head} to {@code dependent} and updates the dependent
+   * bookkeeping of {@code head} when it is a token rather than the artificial root.
+   *
+   * @param head The head token index, or {@link #ROOT} for the artificial root.
+   * @param dependent The zero-based index of the token being attached.
+   * @param relation The relation label of the arc.
+   */
   private void attach(int head, int dependent, String relation) {
     heads[dependent] = head;
     relations[dependent] = relation;
@@ -231,6 +243,12 @@ public final class ArcStandardState {
     return assignedDependents[index];
   }
 
+  /**
+   * Rejects a token index outside {@code [0, tokenCount)}.
+   *
+   * @param index The zero-based token index to check.
+   * @throws IllegalArgumentException Thrown if {@code index} is out of range.
+   */
   private void checkTokenIndex(int index) {
     if (index < 0 || index >= tokenCount) {
       throw new IllegalArgumentException("token index out of range: " + index);
