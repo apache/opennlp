@@ -89,6 +89,25 @@ class SentencePieceModelValidationTest {
   }
 
   @Test
+  void testMalformedPrecompiledCharsMapFailsLoudly() {
+    // A well-formed proto whose normalizer spec carries a truncated precompiled character map;
+    // load() must report it as an invalid model, like every other malformed model content.
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    writePiece(out, "<unk>", 2);
+    writePiece(out, "a", 1);
+    // normalizer_spec { precompiled_charsmap = <3 bytes> }
+    out.write(0x1A);
+    out.write(5);
+    out.write(0x12);
+    out.write(3);
+    out.writeBytes(new byte[] {1, 2, 3});
+    final byte[] model = out.toByteArray();
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
+        () -> SentencePieceTokenizer.load(new ByteArrayInputStream(model)));
+    assertTrue(e.getMessage().contains("character map"), e.getMessage());
+  }
+
+  @Test
   void testConcurrentEncodingIsConsistent() throws Exception {
     final SentencePieceTokenizer tokenizer = SentencePieceFixtures.tokenizer("tiny-unigram");
     final String[] inputs = {
