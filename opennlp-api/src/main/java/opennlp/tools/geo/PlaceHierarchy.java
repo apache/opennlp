@@ -23,6 +23,8 @@ import java.util.List;
  * The interface for place containment hierarchies: given a place identifier, report the
  * chain of enclosing places, so a mention expands into the places it belongs to.
  *
+ * <p>Thread safety is implementation specific.</p>
+ *
  * @see PlaceAncestor
  */
 public interface PlaceHierarchy {

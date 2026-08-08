@@ -17,11 +17,8 @@
 
 package opennlp.geo;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
@@ -34,12 +31,12 @@ import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
-import opennlp.tools.util.StringUtil;
 
 /**
- * A {@link Gazetteer} over a user-supplied file in the GeoNames main table format: one
- * tab-separated row per place with name, ASCII name, comma-separated alternate names,
- * coordinates, feature class, country code, and population.
+ * A {@link Gazetteer} over a user-supplied file in the
+ * <a href="https://download.geonames.org/export/dump/readme.txt">GeoNames main table
+ * format</a>: one tab-separated row per place with name, ASCII name, comma-separated
+ * alternate names, coordinates, feature class, country code, and population.
  *
  * <p>The file is downloaded by the caller; nothing is bundled, and the publisher's
  * license terms, including attribution, stay with the downloaded file.
@@ -83,8 +80,8 @@ public final class GeoNamesGazetteer implements Gazetteer {
    * @param table The tab-separated table. Must not be {@code null}.
    * @return A loaded {@link GeoNamesGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if {@code table} is {@code null} or a row
-   *         is not in the expected format.
+   * @throws IllegalArgumentException Thrown if {@code table} is {@code null}, the table
+   *         contains no rows, or a row is not in the expected format.
    */
   public static GeoNamesGazetteer load(Path table) throws IOException {
     if (table == null) {
@@ -109,23 +106,8 @@ public final class GeoNamesGazetteer implements Gazetteer {
     if (in == null) {
       throw new IllegalArgumentException("in must not be null");
     }
-    final GazetteerIndex index = new GazetteerIndex();
-    final BufferedReader reader =
-        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-    String line;
-    int lineNumber = 0;
-    while ((line = reader.readLine()) != null) {
-      lineNumber++;
-      if (StringUtil.isUnicodeBlank(line)) {
-        continue;
-      }
-      index.add(parseRow(line, lineNumber));
-    }
-    if (index.isEmpty()) {
-      throw new IllegalArgumentException("the table contains no rows");
-    }
-    index.freeze();
-    return new GeoNamesGazetteer(index);
+    return new GeoNamesGazetteer(
+        GazetteerIndex.load(in, false, GeoNamesGazetteer::parseRow));
   }
 
   /** {@inheritDoc} */
@@ -184,7 +166,8 @@ public final class GeoNamesGazetteer implements Gazetteer {
       }
       final GeoPoint location = new GeoPoint(
           Double.parseDouble(fields[4].trim()), Double.parseDouble(fields[5].trim()));
-      final String countryCode = fields[8].trim().isEmpty() ? null : fields[8].trim();
+      final String country = fields[8].trim();
+      final String countryCode = country.isEmpty() ? null : country;
       final String population = fields[14].trim();
       return new GazetteerEntry(SOURCE, id, name, List.copyOf(alternates), location,
           countryCode, List.of(), population.isEmpty() ? 0L : Long.parseLong(population),

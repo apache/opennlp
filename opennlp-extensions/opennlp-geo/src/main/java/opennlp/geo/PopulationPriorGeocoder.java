@@ -97,7 +97,7 @@ public final class PopulationPriorGeocoder implements Geocoder {
    * relative population separation between the winner and the runner-up and is clamped to the
    * {@code [0, 1]} contract of {@link GeoResolution}.
    */
-  private static double confidence(List<GazetteerEntry> rankedCandidates) {
+  private double confidence(List<GazetteerEntry> rankedCandidates) {
     if (rankedCandidates.size() == 1) {
       return SINGLE_CANDIDATE_CONFIDENCE;
     }
