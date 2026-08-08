@@ -52,8 +52,9 @@
 		<para>
 			The public API of this module
 			(<code>StaticEmbeddingModel</code>, <code>SafetensorsFile</code>,
-			<code>TensorInfo</code>, and <code>Neighbor</code>) is experimental and may change
-			in a later release.
+			<code>TensorInfo</code>, <code>Neighbor</code>, <code>ModelDistiller</code>, and
+			<code>ModelAssembler</code>), together with the <code>TextEmbedder</code> interface
+			in <code>opennlp-api</code>, is experimental and may change in a later release.
 		</para>
 	</section>
 

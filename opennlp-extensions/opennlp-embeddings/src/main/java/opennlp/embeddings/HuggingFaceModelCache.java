@@ -561,6 +561,13 @@ final class HuggingFaceModelCache {
     private final String algorithm;
     private final int hexLength;
 
+    /**
+     * Creates a digest form.
+     *
+     * @param displayName The name used in error messages.
+     * @param algorithm   The {@link java.security.MessageDigest} algorithm name.
+     * @param hexLength   The length of the digest's hex form.
+     */
     Checksum(String displayName, String algorithm, int hexLength) {
       this.displayName = displayName;
       this.algorithm = algorithm;
