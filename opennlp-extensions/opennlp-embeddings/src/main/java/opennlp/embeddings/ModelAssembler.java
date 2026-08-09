@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.java.Experimental;
 
 /**
@@ -85,8 +86,10 @@ public final class ModelAssembler {
    *                       {@code tokenizer.json}, and {@code config.json}.
    * @return The assembly result.
    * @throws IllegalArgumentException Thrown if {@code modelDirectory} is {@code null}, is not a
-   *     directory, is missing a required distillation file, is a SentencePiece model without its
-   *     {@code .model} file, or does not load after assembly.
+   *     directory, is missing a required distillation file, or is a SentencePiece model without
+   *     its {@code .model} file.
+   * @throws InvalidFormatException Thrown if a model file is malformed, its tokenizer family is
+   *     unsupported, or the directory does not load after assembly.
    * @throws IOException Thrown if reading or writing a file fails.
    */
   public static Result assemble(Path modelDirectory) throws IOException {
@@ -105,7 +108,7 @@ public final class ModelAssembler {
     return switch (tokenizer.modelType()) {
       case FAMILY_WORDPIECE -> assembleWordpiece(modelDirectory, tokenizer);
       case FAMILY_UNIGRAM -> assembleSentencePiece(modelDirectory);
-      default -> throw new IllegalArgumentException(tokenizerJson + " has a '"
+      default -> throw new InvalidFormatException(tokenizerJson + " has a '"
           + tokenizer.modelType() + "' tokenizer model; only " + FAMILY_WORDPIECE + " and "
           + FAMILY_UNIGRAM + " (" + FAMILY_SENTENCEPIECE + ") distillations are supported");
     };
@@ -126,7 +129,7 @@ public final class ModelAssembler {
     boolean wroteVocabulary = false;
     if (!Files.exists(vocabularyFile)) {
       if (tokenizer.orderedVocabulary() == null) {
-        throw new IllegalArgumentException("tokenizer.json in " + modelDirectory
+        throw new InvalidFormatException("tokenizer.json in " + modelDirectory
             + " has no model.vocab dictionary; cannot derive " + ModelFileNames.VOCABULARY);
       }
       Files.write(vocabularyFile, tokenizer.orderedVocabulary());
@@ -171,7 +174,7 @@ public final class ModelAssembler {
 
   /**
    * Loads the assembled directory to verify it, translating a load failure into an assembly
-   * failure with the same message.
+   * failure with the same message and the same exception type.
    *
    * @param modelDirectory The assembled directory.
    * @return The loaded model.
@@ -180,6 +183,9 @@ public final class ModelAssembler {
   private static StaticEmbeddingModel load(Path modelDirectory) throws IOException {
     try {
       return StaticEmbeddingModel.load(modelDirectory);
+    } catch (InvalidFormatException e) {
+      throw new InvalidFormatException("Assembled directory " + modelDirectory
+          + " does not load: " + e.getMessage(), e);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Assembled directory " + modelDirectory
           + " does not load: " + e.getMessage(), e);
@@ -220,7 +226,7 @@ public final class ModelAssembler {
    *
    * @param file The {@code tokenizer.json} file.
    * @return The parsed fields.
-   * @throws IllegalArgumentException Thrown if the file is not a well-formed {@code tokenizer.json}.
+   * @throws InvalidFormatException Thrown if the file is not a well-formed {@code tokenizer.json}.
    * @throws IOException Thrown if reading the file fails.
    */
   private static TokenizerJson readTokenizerJson(Path file) throws IOException {
@@ -263,7 +269,7 @@ public final class ModelAssembler {
     }
     cursor.requireEnd("Trailing content after the top-level object");
     if (modelType == null) {
-      throw new IllegalArgumentException(file + " has no model.type");
+      throw new InvalidFormatException(file + " has no model.type");
     }
     return new TokenizerJson(modelType, orderedVocabulary, lowerCase);
   }
@@ -279,7 +285,7 @@ public final class ModelAssembler {
    * @param cursor The cursor, positioned at the object's opening brace.
    * @return The parsed type and, for a dictionary vocabulary, the ordered rows.
    */
-  private static ModelSection parseModel(JsonCursor cursor) {
+  private static ModelSection parseModel(JsonCursor cursor) throws InvalidFormatException {
     cursor.expect('{');
     cursor.skipWhitespace();
     String type = null;
@@ -319,9 +325,10 @@ public final class ModelAssembler {
    *
    * @param cursor The cursor, positioned at the dictionary's opening brace.
    * @return The tokens in id order.
-   * @throws IllegalArgumentException Thrown if an id repeats or the ids are not a gapless range.
+   * @throws InvalidFormatException Thrown if an id repeats or the ids are not a gapless range.
    */
-  private static List<String> parseVocabularyDictionary(JsonCursor cursor) {
+  private static List<String> parseVocabularyDictionary(JsonCursor cursor)
+      throws InvalidFormatException {
     cursor.expect('{');
     cursor.skipWhitespace();
     final Map<Long, String> tokenById = new LinkedHashMap<>();
@@ -371,7 +378,8 @@ public final class ModelAssembler {
    * @return The {@code lowercase} flag, or {@code null} when the value is JSON null or the flag is
    *     absent (for example a nested normalizer with no flat flag).
    */
-  private static Boolean parseNormalizerLowercase(JsonCursor cursor) {
+  private static Boolean parseNormalizerLowercase(JsonCursor cursor)
+      throws InvalidFormatException {
     if (cursor.peek() != '{') {
       cursor.skipValue();
       return null;

@@ -27,6 +27,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -185,7 +187,7 @@ class TeacherTokenizerTest {
     final Path tokenizerJson = write(dir, "tokenizer.json",
         "{\"model\":{\"type\":\"BPE\",\"vocab\":{\"a\":0}}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TeacherTokenizer.read(tokenizerJson, null));
     assertTrue(e.getMessage().contains("BPE"), e.getMessage());
   }
@@ -232,7 +234,7 @@ class TeacherTokenizerTest {
                                           @TempDir Path dir) throws IOException {
     final Path tokenizerJson = write(dir, "tokenizer.json", teacherJson);
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TeacherTokenizer.read(tokenizerJson, null), reason);
     assertTrue(e.getMessage().contains(messagePart),
         "a teacher with " + reason + " reported: " + e.getMessage());
@@ -333,7 +335,7 @@ class TeacherTokenizerTest {
             + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"[UNK]\","
             + "\"vocab\":{\"[UNK]\":0,\"hello\":1}}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TeacherTokenizer.read(tokenizerJson, null));
     assertTrue(e.getMessage().contains("[BOS]"), e.getMessage());
   }
@@ -343,7 +345,7 @@ class TeacherTokenizerTest {
     final Path tokenizerJson = write(dir, "tokenizer.json",
         "{\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0,\"b\":0}}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TeacherTokenizer.read(tokenizerJson, null));
     assertTrue(e.getMessage().contains("assigned more than once"), e.getMessage());
   }
@@ -353,7 +355,7 @@ class TeacherTokenizerTest {
     final Path tokenizerJson = write(dir, "tokenizer.json",
         "{\"model\":{\"type\":\"Unigram\",\"unk_id\":null,\"vocab\":[[\"a\",0.0]]}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TeacherTokenizer.read(tokenizerJson, null));
     assertTrue(e.getMessage().contains("does not name an unknown token"), e.getMessage());
   }
@@ -363,7 +365,7 @@ class TeacherTokenizerTest {
   void testRejectsAnEmptyTokenizerJson(String content, @TempDir Path dir) throws IOException {
     final Path tokenizerJson = write(dir, "tokenizer.json", content);
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TeacherTokenizer.read(tokenizerJson, null));
     assertTrue(e.getMessage().contains("Unexpected end of input"), e.getMessage());
   }

@@ -22,6 +22,7 @@ import java.io.IOException;
 import opennlp.embeddings.ModelAssembler;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Completes a distilled embedding model directory so {@code StaticEmbeddingModel.load} can open it,
@@ -60,7 +61,7 @@ public class AssembleModelTool extends BasicCmdLineTool {
     final ModelAssembler.Result result;
     try {
       result = ModelAssembler.assemble(modelDir.toPath());
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | InvalidFormatException e) {
       throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,

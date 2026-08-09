@@ -21,6 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.InvalidFormatException;
+
 /**
  * A cursor parser for the JSON header of a safetensors file: a flat object of tensor name to a
  * {@code dtype}/{@code shape}/{@code data_offsets} record, plus an optional {@code __metadata__}
@@ -44,9 +46,10 @@ final class SafetensorsHeaderParser {
    *                   {@code null}.
    * @return The parse result: the declared tensors, in header order, and the
    *     {@code __metadata__} string map (empty when the header has none).
-   * @throws IllegalArgumentException Thrown if {@code headerJson} is {@code null} or malformed.
+   * @throws IllegalArgumentException Thrown if {@code headerJson} is {@code null}.
+   * @throws InvalidFormatException Thrown if {@code headerJson} is malformed.
    */
-  static Result parse(String headerJson) {
+  static Result parse(String headerJson) throws InvalidFormatException {
     if (headerJson == null) {
       throw new IllegalArgumentException("HeaderJson must not be null");
     }
@@ -55,7 +58,7 @@ final class SafetensorsHeaderParser {
   }
 
   /** {@return the parsed header: its tensors in header order and the {@code __metadata__} map} */
-  private Result parseTop() {
+  private Result parseTop() throws InvalidFormatException {
     final List<TensorInfo> tensors = new ArrayList<>();
     Map<String, String> metadata = Map.of();
     cursor.skipWhitespace();
@@ -95,7 +98,7 @@ final class SafetensorsHeaderParser {
    * Requires the rest of the header to be whitespace only. Trailing whitespace is legal (writers
    * space-pad the header to align the data section); other trailing content is a length mismatch.
    */
-  private void requireEnd() {
+  private void requireEnd() throws InvalidFormatException {
     cursor.requireEnd("Trailing content after the header object");
   }
 
@@ -104,7 +107,7 @@ final class SafetensorsHeaderParser {
    *
    * @param name The tensor's name, the key it was declared under.
    */
-  private TensorInfo parseTensorInfo(String name) {
+  private TensorInfo parseTensorInfo(String name) throws InvalidFormatException {
     cursor.expect('{');
     String dtype = null;
     int[] shape = null;
@@ -151,7 +154,7 @@ final class SafetensorsHeaderParser {
   }
 
   /** {@return a JSON object of string values, used for the {@code __metadata__} map} */
-  private Map<String, String> parseStringMap() {
+  private Map<String, String> parseStringMap() throws InvalidFormatException {
     final Map<String, String> map = new LinkedHashMap<>();
     cursor.expect('{');
     cursor.skipWhitespace();
@@ -181,9 +184,9 @@ final class SafetensorsHeaderParser {
   /**
    * {@return a JSON array of non-negative integers as an {@code int[]}}
    *
-   * @throws IllegalArgumentException Thrown if any element is outside the {@code int} range.
+   * @throws InvalidFormatException Thrown if any element is outside the {@code int} range.
    */
-  private int[] parseIntArray() {
+  private int[] parseIntArray() throws InvalidFormatException {
     final long[] longs = parseLongArray();
     final int[] ints = new int[longs.length];
     for (int i = 0; i < longs.length; i++) {
@@ -196,7 +199,7 @@ final class SafetensorsHeaderParser {
   }
 
   /** {@return a JSON array of integers as a {@code long[]}} */
-  private long[] parseLongArray() {
+  private long[] parseLongArray() throws InvalidFormatException {
     cursor.expect('[');
     cursor.skipWhitespace();
     final List<Long> values = new ArrayList<>();

@@ -24,6 +24,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class EmbeddingVocabularyTest {
 
   @Test
-  void testLineNumberIsTheTokenId() {
+  void testLineNumberIsTheTokenId() throws InvalidFormatException {
     final EmbeddingVocabulary vocabulary =
         EmbeddingVocabulary.fromLines(List.of("[CLS]", "[SEP]", "hello", "world"), "test");
     assertEquals(4, vocabulary.size());
@@ -46,7 +48,7 @@ class EmbeddingVocabularyTest {
   }
 
   @Test
-  void testUnknownTokenIdIsTheSentinel() {
+  void testUnknownTokenIdIsTheSentinel() throws InvalidFormatException {
     final EmbeddingVocabulary vocabulary =
         EmbeddingVocabulary.fromLines(List.of("hello"), "test");
     assertEquals(-1, vocabulary.id("missing"));
@@ -55,14 +57,14 @@ class EmbeddingVocabularyTest {
 
   @Test
   void testDuplicateTokenFailsLoudlyNamingBothLines() {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> EmbeddingVocabulary.fromLines(List.of("hello", "world", "hello"), "test"));
     assertTrue(e.getMessage().contains("hello"), e.getMessage());
     assertTrue(e.getMessage().contains("0") && e.getMessage().contains("2"), e.getMessage());
   }
 
   @Test
-  void testReverseLookupEnforcesBounds() {
+  void testReverseLookupEnforcesBounds() throws InvalidFormatException {
     final EmbeddingVocabulary vocabulary =
         EmbeddingVocabulary.fromLines(List.of("hello"), "test");
     assertEquals("hello", vocabulary.token(0));

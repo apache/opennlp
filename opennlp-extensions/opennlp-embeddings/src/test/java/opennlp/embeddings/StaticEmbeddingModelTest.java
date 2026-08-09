@@ -27,6 +27,7 @@ import org.junit.jupiter.api.io.TempDir;
 import opennlp.embeddings.StaticEmbeddingModel.Casing;
 import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 import opennlp.tools.embeddings.TextEmbedder;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -145,7 +146,7 @@ class StaticEmbeddingModelTest {
     final Path tensors = dir.resolve("model.safetensors");
     SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", rows));
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> StaticEmbeddingModel.load(vocab, tensors, Casing.UNCASED, Normalization.NONE));
     assertTrue(e.getMessage().contains("[UNK]"), e.getMessage());
   }
@@ -270,7 +271,9 @@ class StaticEmbeddingModelTest {
     final Path shortVocab = dir.resolve("short-vocab.txt");
     Files.write(shortVocab, List.of("[CLS]", "[SEP]", "[UNK]"));
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    // Malformed model content (files that disagree) is a checked InvalidFormatException, not
+    // an IllegalArgumentException; the latter is reserved for caller argument errors.
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> StaticEmbeddingModel.load(shortVocab, writeSafetensors(dir, false),
             Casing.UNCASED, Normalization.NONE));
     assertTrue(e.getMessage().contains("rows"));
@@ -284,7 +287,7 @@ class StaticEmbeddingModelTest {
         SafetensorsTestFiles.matrix("embeddings", ROWS),
         SafetensorsTestFiles.vector("weights", new float[] {1f}));
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> StaticEmbeddingModel.load(writeVocab(dir), file, Casing.UNCASED, Normalization.NONE));
     assertTrue(e.getMessage().contains("weights"));
   }
@@ -344,8 +347,8 @@ class StaticEmbeddingModelTest {
     writeSafetensors(dir, false);
     // no config.json, no tokenizer_config.json
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(dir));
     assertTrue(e.getMessage().contains("config.json"));
     assertTrue(e.getMessage().contains("explicit load overloads"));
   }
@@ -357,8 +360,8 @@ class StaticEmbeddingModelTest {
     writeConfigs(dir, "false", "true");
     Files.writeString(dir.resolve("config.json"), "{\"model_type\":\"model2vec\"}");
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(dir));
     assertTrue(e.getMessage().contains("normalize"));
   }
 
@@ -370,8 +373,8 @@ class StaticEmbeddingModelTest {
     Files.writeString(dir.resolve("tokenizer_config.json"),
         "{\"do_lower_case\":true,\"strip_accents\":false}");
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(dir));
     assertTrue(e.getMessage().contains("strip_accents"));
   }
 

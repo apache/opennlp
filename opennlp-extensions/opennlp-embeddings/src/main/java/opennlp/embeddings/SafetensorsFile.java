@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.java.Experimental;
 
 /**
@@ -94,8 +95,8 @@ public final class SafetensorsFile {
    * @param file The file to read. Must not be {@code null} and must exist.
    * @return The parsed file, with every tensor's metadata resolved and validated against the
    *     file's actual length.
-   * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or missing, or the
-   *     file is malformed.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or missing.
+   * @throws InvalidFormatException Thrown if the file is malformed.
    * @throws IOException Thrown if reading the file fails.
    */
   public static SafetensorsFile read(Path file) throws IOException {
@@ -108,7 +109,7 @@ public final class SafetensorsFile {
     try (FileChannel channel = FileChannel.open(file, StandardOpenOption.READ)) {
       final long fileSize = channel.size();
       if (fileSize < HEADER_LENGTH_PREFIX_BYTES) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "File " + file + " is too short to be a safetensors file: " + fileSize + " bytes");
       }
       final ByteBuffer prefix = ByteBuffer.allocate(HEADER_LENGTH_PREFIX_BYTES)
@@ -116,11 +117,11 @@ public final class SafetensorsFile {
       readFully(channel, prefix, 0, file);
       final long headerLength = prefix.flip().getLong();
       if (headerLength < 0 || headerLength > fileSize - HEADER_LENGTH_PREFIX_BYTES) {
-        throw new IllegalArgumentException("File " + file + " declares a header length of "
+        throw new InvalidFormatException("File " + file + " declares a header length of "
             + headerLength + ", which does not fit in a file of " + fileSize + " bytes");
       }
       if (headerLength > MAX_ARRAY_LENGTH) {
-        throw new IllegalArgumentException("File " + file + " declares a header length of "
+        throw new InvalidFormatException("File " + file + " declares a header length of "
             + headerLength + " bytes, too large to decode as a single JSON string");
       }
       final ByteBuffer headerBytes = ByteBuffer.allocate((int) headerLength);
@@ -134,12 +135,12 @@ public final class SafetensorsFile {
       for (final TensorInfo tensor : parsed.tensors()) {
         if (tensor.dataOffsetBegin() < 0 || tensor.dataOffsetEnd() < tensor.dataOffsetBegin()
             || tensor.dataOffsetEnd() > dataLength) {
-          throw new IllegalArgumentException("File " + file + " tensor '" + tensor.name()
+          throw new InvalidFormatException("File " + file + " tensor '" + tensor.name()
               + "' has a data range [" + tensor.dataOffsetBegin() + ", " + tensor.dataOffsetEnd()
               + ") that does not fit in the file");
         }
         if (tensorsByName.putIfAbsent(tensor.name(), tensor) != null) {
-          throw new IllegalArgumentException(
+          throw new InvalidFormatException(
               "File " + file + " declares tensor '" + tensor.name() + "' more than once");
         }
       }
@@ -181,9 +182,11 @@ public final class SafetensorsFile {
    *
    * @param name The tensor's name. Must not be {@code null}.
    * @return The tensor's elements in row-major (shape outermost-first) order.
-   * @throws IllegalArgumentException Thrown if {@code name} is {@code null}, not a tensor in
-   *     this file, not a supported float dtype ({@code F32}, {@code F16}, {@code BF16}), or
-   *     larger than a Java array can hold.
+   * @throws IllegalArgumentException Thrown if {@code name} is {@code null} or not a tensor in
+   *     this file.
+   * @throws InvalidFormatException Thrown if the tensor is not a supported float dtype
+   *     ({@code F32}, {@code F16}, {@code BF16}), its data range disagrees with its shape, or
+   *     it is larger than a Java array can hold.
    * @throws IllegalStateException Thrown if the file has been truncated since
    *     {@link #read(Path)} validated the tensor's byte range.
    * @throws IOException Thrown if reading the file fails.
@@ -193,13 +196,13 @@ public final class SafetensorsFile {
     final int elementBytes = floatElementBytes(info.dtype(), name);
     final long elementCount = info.elementCount();
     if (elementCount < 0 || elementCount > MAX_ARRAY_LENGTH) {
-      throw new IllegalArgumentException("Tensor '" + name + "' declares " + elementCount
+      throw new InvalidFormatException("Tensor '" + name + "' declares " + elementCount
           + " elements, more than a Java array can hold (" + MAX_ARRAY_LENGTH
           + "); decoding to a float[] is capped there");
     }
     final long byteLength = info.dataOffsetEnd() - info.dataOffsetBegin();
     if (byteLength != elementCount * elementBytes) {
-      throw new IllegalArgumentException("Tensor '" + name + "' declares " + elementCount + " "
+      throw new InvalidFormatException("Tensor '" + name + "' declares " + elementCount + " "
           + info.dtype() + " elements but its data range is " + byteLength + " bytes");
     }
     final float[] values = new float[(int) elementCount];
@@ -232,15 +235,17 @@ public final class SafetensorsFile {
    *
    * @param name The tensor's name. Must not be {@code null}.
    * @return The tensor's elements in row-major (shape outermost-first) order.
-   * @throws IllegalArgumentException Thrown if {@code name} is {@code null}, not a tensor in
-   *     this file, not declared with dtype {@code F32}, or larger than a Java array can hold.
+   * @throws IllegalArgumentException Thrown if {@code name} is {@code null} or not a tensor in
+   *     this file.
+   * @throws InvalidFormatException Thrown if the tensor is not declared with dtype {@code F32},
+   *     its data range disagrees with its shape, or it is larger than a Java array can hold.
    * @throws IllegalStateException Thrown if the file has been truncated since {@link #read(Path)}.
    * @throws IOException Thrown if reading the file fails.
    */
   public float[] readFloat32(String name) throws IOException {
     final TensorInfo info = tensorInfo(name);
     if (!DTYPE_F32.equals(info.dtype())) {
-      throw new IllegalArgumentException(
+      throw new InvalidFormatException(
           "Tensor '" + name + "' has dtype " + info.dtype() + ", not " + DTYPE_F32);
     }
     return readFloats(name);
@@ -281,13 +286,14 @@ public final class SafetensorsFile {
    *
    * @param dtype      The tensor dtype.
    * @param tensorName The tensor's name, for the error message.
-   * @throws IllegalArgumentException Thrown if {@code dtype} is not a supported float type.
+   * @throws InvalidFormatException Thrown if {@code dtype} is not a supported float type.
    */
-  private static int floatElementBytes(String dtype, String tensorName) {
+  private static int floatElementBytes(String dtype, String tensorName)
+      throws InvalidFormatException {
     return switch (dtype) {
       case DTYPE_F32 -> Float.BYTES;
       case DTYPE_F16, DTYPE_BF16 -> Short.BYTES;
-      default -> throw new IllegalArgumentException("Tensor '" + tensorName + "' has dtype "
+      default -> throw new InvalidFormatException("Tensor '" + tensorName + "' has dtype "
           + dtype + ", not a supported float type (" + DTYPE_F32 + ", " + DTYPE_F16 + ", "
           + DTYPE_BF16 + ")");
     };
@@ -328,16 +334,16 @@ public final class SafetensorsFile {
    * wrong guess cannot silently load the wrong tensor.
    *
    * @return The name of the single 2-D float tensor.
-   * @throws IllegalArgumentException Thrown if the file has zero or more than one 2-D float
+   * @throws InvalidFormatException Thrown if the file has zero or more than one 2-D float
    *     tensor; the message lists every candidate so the caller can pick explicitly with
    *     {@link #readFloats(String)}.
    */
-  public String singleMatrixTensorName() {
+  public String singleMatrixTensorName() throws InvalidFormatException {
     String found = null;
     for (final TensorInfo info : tensorsByName.values()) {
       if (isFloatDtype(info.dtype()) && info.shape().length == 2) {
         if (found != null) {
-          throw new IllegalArgumentException(
+          throw new InvalidFormatException(
               "More than one 2-D float tensor in this file; specify the name explicitly. "
                   + "Candidates: " + tensorsByName.keySet());
         }
@@ -345,7 +351,7 @@ public final class SafetensorsFile {
       }
     }
     if (found == null) {
-      throw new IllegalArgumentException(
+      throw new InvalidFormatException(
           "No 2-D float (F32/F16/BF16) tensor in this file. Available tensors: "
               + tensorsByName.keySet());
     }

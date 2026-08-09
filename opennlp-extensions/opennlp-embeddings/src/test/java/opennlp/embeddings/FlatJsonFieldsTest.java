@@ -23,6 +23,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -79,7 +81,7 @@ class FlatJsonFieldsTest {
   void testRejectsANonBooleanValue(@TempDir Path dir) throws IOException {
     final Path file = write(dir, "{\"normalize\":\"yes\"}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> FlatJsonFields.topLevelBoolean(file, "normalize"));
     assertTrue(e.getMessage().contains("must be a boolean"));
   }
@@ -88,7 +90,7 @@ class FlatJsonFieldsTest {
   void testRejectsADuplicateField(@TempDir Path dir) throws IOException {
     final Path file = write(dir, "{\"normalize\":true,\"normalize\":false}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> FlatJsonFields.topLevelBoolean(file, "normalize"));
     assertTrue(e.getMessage().contains("more than once"));
   }
@@ -97,7 +99,7 @@ class FlatJsonFieldsTest {
   void testRejectsMalformedJsonWithTheFileNameInTheMessage(@TempDir Path dir) throws IOException {
     final Path file = write(dir, "{\"normalize\" true}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> FlatJsonFields.topLevelBoolean(file, "normalize"));
     assertTrue(e.getMessage().contains("config.json"));
   }
@@ -106,7 +108,7 @@ class FlatJsonFieldsTest {
   void testRejectsTrailingGarbage(@TempDir Path dir) throws IOException {
     final Path file = write(dir, "{} x");
 
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(InvalidFormatException.class,
         () -> FlatJsonFields.topLevelBoolean(file, "normalize"));
   }
 
@@ -143,7 +145,7 @@ class FlatJsonFieldsTest {
   void testRejectsANonStringValue(@TempDir Path dir) throws IOException {
     final Path file = write(dir, "{\"pad_token\":true}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> FlatJsonFields.topLevelString(file, "pad_token"));
     assertTrue(e.getMessage().contains("must be a string"));
   }
@@ -152,7 +154,7 @@ class FlatJsonFieldsTest {
   void testRejectsADuplicateStringField(@TempDir Path dir) throws IOException {
     final Path file = write(dir, "{\"pad_token\":\"a\",\"pad_token\":\"b\"}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> FlatJsonFields.topLevelString(file, "pad_token"));
     assertTrue(e.getMessage().contains("more than once"));
   }

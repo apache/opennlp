@@ -34,6 +34,7 @@ import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.java.Experimental;
 
 /**
@@ -145,9 +146,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *                       directory.
    * @return The loaded model.
    * @throws IllegalArgumentException Thrown if {@code modelDirectory} is {@code null} or not a
-   *     directory, neither layout's files are present, a configuration file is malformed or
-   *     lacks its field, the accent handling is not representable, or the tokenizer and the
-   *     embedding matrix disagree.
+   *     directory.
+   * @throws InvalidFormatException Thrown if neither layout's files are present, a required
+   *     file is missing, a configuration file is malformed or lacks its field, the accent
+   *     handling is not representable, or the tokenizer and the embedding matrix disagree.
    * @throws IOException Thrown if reading a file fails.
    */
   public static StaticEmbeddingModel load(Path modelDirectory) throws IOException {
@@ -171,12 +173,12 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG)));
     }
     if (Files.isRegularFile(tokenizerJsonFile)) {
-      throw new IllegalArgumentException("Model directory " + modelDirectory + " has a "
+      throw new InvalidFormatException("Model directory " + modelDirectory + " has a "
           + ModelFileNames.TOKENIZER_JSON + " but no trained SentencePiece file ("
           + String.join(", ", ModelFileNames.SENTENCEPIECE_MODELS) + "); copy the .model file "
           + "from the model's base tokenizer next to it");
     }
-    throw new IllegalArgumentException("Model directory " + modelDirectory + " has neither a "
+    throw new InvalidFormatException("Model directory " + modelDirectory + " has neither a "
         + ModelFileNames.VOCABULARY + " (WordPiece layout) nor a "
         + ModelFileNames.TOKENIZER_JSON
         + " with a trained SentencePiece file (SentencePiece layout)");
@@ -202,14 +204,14 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     final Boolean lowerCase =
         FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "do_lower_case");
     if (lowerCase == null) {
-      throw new IllegalArgumentException(tokenizerConfigFile + " has no boolean "
+      throw new InvalidFormatException(tokenizerConfigFile + " has no boolean "
           + "'do_lower_case' field; use load(vocabularyFile, safetensorsFile, casing, "
           + "normalization) and choose explicitly");
     }
     final Boolean stripAccents =
         FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "strip_accents");
     if (stripAccents != null && !stripAccents.equals(lowerCase)) {
-      throw new IllegalArgumentException(tokenizerConfigFile + " sets strip_accents="
+      throw new InvalidFormatException(tokenizerConfigFile + " sets strip_accents="
           + stripAccents + " against do_lower_case=" + lowerCase + "; the single lower-case "
           + "switch strips accents exactly when lower-casing, so this model must be loaded "
           + "with load(vocabularyFile, safetensorsFile, casing, normalization) after choosing "
@@ -224,13 +226,13 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *
    * @param configFile The {@code config.json} file.
    * @return The corresponding {@link Normalization}.
-   * @throws IllegalArgumentException Thrown if the field is missing or not a boolean.
+   * @throws InvalidFormatException Thrown if the field is missing or not a boolean.
    * @throws IOException Thrown if reading the file fails.
    */
   private static Normalization requiredNormalize(Path configFile) throws IOException {
     final Boolean normalize = FlatJsonFields.topLevelBoolean(configFile, "normalize");
     if (normalize == null) {
-      throw new IllegalArgumentException(configFile + " has no boolean 'normalize' field; "
+      throw new InvalidFormatException(configFile + " has no boolean 'normalize' field; "
           + "use the explicit load overloads and choose the normalization deliberately");
     }
     return normalize ? Normalization.L2 : Normalization.NONE;
@@ -241,12 +243,13 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *
    * @param modelDirectory The model directory.
    * @param name           The required file name.
-   * @throws IllegalArgumentException Thrown if the file is absent.
+   * @throws InvalidFormatException Thrown if the file is absent.
    */
-  private static Path requiredFile(Path modelDirectory, String name) {
+  private static Path requiredFile(Path modelDirectory, String name)
+      throws InvalidFormatException {
     final Path file = modelDirectory.resolve(name);
     if (!Files.isRegularFile(file)) {
-      throw new IllegalArgumentException("Model directory " + modelDirectory + " has no "
+      throw new InvalidFormatException("Model directory " + modelDirectory + " has no "
           + name + "; for a different layout, use the explicit load overloads");
     }
     return file;
@@ -273,8 +276,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param normalization    Whether {@link #embed(String)} L2-normalizes its result
    *                         ({@link Normalization#L2}) or not ({@link Normalization#NONE}).
    * @return The loaded model.
-   * @throws IllegalArgumentException Thrown if an argument is {@code null}, a file is missing
-   *     or malformed, or the vocabulary size and the embedding matrix's row count disagree.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null} or a file is
+   *     missing.
+   * @throws InvalidFormatException Thrown if a file is malformed, the vocabulary lacks the
+   *     {@code [UNK]} token, or the vocabulary size and the embedding matrix's row count
+   *     disagree.
    * @throws IOException Thrown if reading a file fails.
    */
   public static StaticEmbeddingModel load(Path vocabularyFile, Path safetensorsFile,
@@ -296,7 +302,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     final Matrix matrix = readMatrix(vocabulary, safetensorsFile, vocabularyFile.toString());
     final int unknownId = vocabulary.id(WordpieceTokenizer.BERT_UNK_TOKEN);
     if (unknownId < 0) {
-      throw new IllegalArgumentException("Vocabulary " + vocabularyFile + " has no "
+      throw new InvalidFormatException("Vocabulary " + vocabularyFile + " has no "
           + WordpieceTokenizer.BERT_UNK_TOKEN + " token; a WordPiece embedding model needs an "
           + "unknown token as the fallback for out-of-vocabulary text");
     }
@@ -372,9 +378,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param normalization          Whether {@link #embed(String)} L2-normalizes its result
    *                               ({@link Normalization#L2}) or not ({@link Normalization#NONE}).
    * @return The loaded model.
-   * @throws IllegalArgumentException Thrown if an argument is {@code null}, a file is missing
-   *     or malformed, the vocabulary size and the embedding matrix's row count disagree, or the
-   *     tokenizer emits pieces the vocabulary does not map.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null} or a file is
+   *     missing.
+   * @throws InvalidFormatException Thrown if a file is malformed, the vocabulary size and the
+   *     embedding matrix's row count disagree, or the tokenizer emits pieces the vocabulary
+   *     does not map.
    * @throws IOException Thrown if reading a file fails.
    */
   public static StaticEmbeddingModel loadSentencePiece(Path sentencePieceModelFile,
@@ -417,12 +425,13 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param vocabulary             The matrix row vocabulary.
    * @param sentencePieceModelFile The tokenizer's source file, for error messages.
    * @param tokenizerJsonFile      The vocabulary's source file, for error messages.
-   * @throws IllegalArgumentException Thrown if a poolable piece has no matrix row.
+   * @throws InvalidFormatException Thrown if a poolable piece has no matrix row.
    */
   private static void requireVocabularyCoverage(SentencePieceTokenizer tokenizer,
                                                 EmbeddingVocabulary vocabulary,
                                                 Path sentencePieceModelFile,
-                                                Path tokenizerJsonFile) {
+                                                Path tokenizerJsonFile)
+      throws InvalidFormatException {
     int missing = 0;
     final StringBuilder samples = new StringBuilder();
     for (int id = 0; id < tokenizer.vocabularySize(); id++) {
@@ -440,7 +449,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       }
     }
     if (missing > 0) {
-      throw new IllegalArgumentException(sentencePieceModelFile + " defines " + missing
+      throw new InvalidFormatException(sentencePieceModelFile + " defines " + missing
           + " pieces that " + tokenizerJsonFile + " does not map to a matrix row (first: "
           + samples + "); these files do not belong to the same model");
     }
@@ -458,7 +467,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param safetensorsFile      The safetensors file to read.
    * @param vocabularySourceName The vocabulary's source, for error messages.
    * @return The matrix, its optional weights, and its dimension.
-   * @throws IllegalArgumentException Thrown if the matrix's row count or the weights tensor's
+   * @throws InvalidFormatException Thrown if the matrix's row count or the weights tensor's
    *     length disagrees with the vocabulary size.
    * @throws IOException Thrown if reading the file fails.
    */
@@ -468,7 +477,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     final String matrixName = tensors.singleMatrixTensorName();
     final TensorInfo matrixInfo = tensors.tensorInfo(matrixName);
     if (matrixInfo.shape()[0] != vocabulary.size()) {
-      throw new IllegalArgumentException("Vocabulary " + vocabularySourceName + " has "
+      throw new InvalidFormatException("Vocabulary " + vocabularySourceName + " has "
           + vocabulary.size() + " tokens but embedding matrix '" + matrixName + "' in "
           + safetensorsFile + " has " + matrixInfo.shape()[0] + " rows; these files do not "
           + "belong to the same model");
@@ -480,7 +489,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (tensors.tensorNames().contains(WEIGHTS_TENSOR_NAME)) {
       weights = tensors.readFloats(WEIGHTS_TENSOR_NAME);
       if (weights.length != vocabulary.size()) {
-        throw new IllegalArgumentException("Tensor '" + WEIGHTS_TENSOR_NAME + "' in "
+        throw new InvalidFormatException("Tensor '" + WEIGHTS_TENSOR_NAME + "' in "
             + safetensorsFile + " has " + weights.length + " elements but the vocabulary has "
             + vocabulary.size() + " tokens");
       }

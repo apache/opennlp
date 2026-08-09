@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * The row table of a static embedding matrix: piece string to row index and back. Row {@code id}
@@ -54,8 +55,8 @@ final class EmbeddingVocabulary {
    *
    * @param file The vocabulary file. Must not be {@code null} and must exist.
    * @return The parsed vocabulary.
-   * @throws IllegalArgumentException Thrown if {@code file} is {@code null}, missing, or
-   *     contains a duplicate token.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or missing.
+   * @throws InvalidFormatException Thrown if the file contains a duplicate token.
    * @throws IOException Thrown if reading the file fails.
    */
   static EmbeddingVocabulary fromVocabTxt(Path file) throws IOException {
@@ -69,8 +70,9 @@ final class EmbeddingVocabulary {
    *
    * @param file The {@code tokenizer.json} file. Must not be {@code null} and must exist.
    * @return The parsed vocabulary.
-   * @throws IllegalArgumentException Thrown if {@code file} is {@code null}, missing, or not a
-   *     well-formed Unigram {@code tokenizer.json}, or a piece appears more than once.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or missing.
+   * @throws InvalidFormatException Thrown if the file is not a well-formed Unigram
+   *     {@code tokenizer.json} or a piece appears more than once.
    * @throws IOException Thrown if reading the file fails.
    */
   static EmbeddingVocabulary fromTokenizerJson(Path file) throws IOException {
@@ -100,14 +102,15 @@ final class EmbeddingVocabulary {
    * @param lines      The tokens, one per element; the index is the token's row.
    * @param sourceName The source's name, for error messages.
    * @return The parsed vocabulary.
-   * @throws IllegalArgumentException Thrown if a token appears more than once.
+   * @throws InvalidFormatException Thrown if a token appears more than once.
    */
-  static EmbeddingVocabulary fromLines(List<String> lines, String sourceName) {
+  static EmbeddingVocabulary fromLines(List<String> lines, String sourceName)
+      throws InvalidFormatException {
     final Map<String, Integer> idByToken = new LinkedHashMap<>(lines.size() * 2);
     for (int id = 0; id < lines.size(); id++) {
       final String token = lines.get(id);
       if (idByToken.putIfAbsent(token, id) != null) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "Vocabulary " + sourceName + " declares token '" + token
                 + "' more than once, at rows " + idByToken.get(token) + " and " + id);
       }
