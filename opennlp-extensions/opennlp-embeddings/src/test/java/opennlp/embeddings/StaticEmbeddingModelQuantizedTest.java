@@ -29,6 +29,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -154,8 +156,8 @@ class StaticEmbeddingModelQuantizedTest {
     ModelQuantizer.quantize(directory, 4, SEED);
     assertTrue(Files.isRegularFile(directory.resolve(ModelFileNames.SAFETENSORS)));
     assertTrue(Files.isRegularFile(directory.resolve(ModelFileNames.QUANTIZED)));
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(directory));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(directory));
     assertTrue(e.getMessage().contains("has both"), e.getMessage());
     assertTrue(e.getMessage().contains(ModelFileNames.QUANTIZED), e.getMessage());
     assertTrue(e.getMessage().contains(ModelFileNames.SAFETENSORS), e.getMessage());
@@ -231,7 +233,7 @@ class StaticEmbeddingModelQuantizedTest {
 
   @Test
   void testQuantizerRequiresTheSafetensors(@TempDir Path directory) {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> ModelQuantizer.quantize(directory, 4, SEED));
     assertTrue(e.getMessage().contains(ModelFileNames.SAFETENSORS), e.getMessage());
   }
