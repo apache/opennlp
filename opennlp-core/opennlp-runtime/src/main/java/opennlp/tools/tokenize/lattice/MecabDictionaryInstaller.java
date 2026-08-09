@@ -45,9 +45,12 @@ import opennlp.tools.util.model.UncloseableInputStream;
  * names must fit the 100-byte ustar name field. It
  * extracts only the dictionary payload: the {@code *.csv} lexicon files and
  * {@code *.def} definition files that a {@link MecabDictionary} reads, plus the
- * {@code dicrc} configuration file distributions ship alongside them. Entries are
- * flattened to their base names, which also means no archive path can escape the target
- * directory.</p>
+ * {@code dicrc} configuration file distributions ship alongside them, taken from the
+ * archive root only (at most one leading directory deep). Deeper entries are skipped:
+ * mecab-ko-dic, for example, nests {@code user-dic} templates whose numeric fields are
+ * empty because they are input for {@code mecab-dict-index}, not loadable lexicon
+ * data. Extracted entries are flattened to their base names, which also means no
+ * archive path can escape the target directory.</p>
  *
  * <p>Extraction is bounded: each entry's declared size, the total bytes written, the
  * number of extracted dictionary files, and the gzip expansion ratio each have an
@@ -280,7 +283,11 @@ public final class MecabDictionaryInstaller {
         }
         final char type = (char) header[TAR_TYPE_OFFSET];
         final String baseName = baseName(name);
-        final boolean wanted = (type == '0' || type == 0)
+        // Only the archive root holds dictionary payload. Deeper files such as
+        // mecab-ko-dic's user-dic templates carry empty numeric fields for
+        // mecab-dict-index and would fail the load, or on a case-insensitive file
+        // system overwrite a real lexicon file of the same base name.
+        final boolean wanted = (type == '0' || type == 0) && pathDepth(name) <= 2
             && (baseName.endsWith(".csv") || baseName.endsWith(".def")
                 || "dicrc".equals(baseName));
         if (wanted) {
@@ -394,6 +401,24 @@ public final class MecabDictionaryInstaller {
   private static String baseName(String name) {
     final int slash = name.lastIndexOf('/');
     return slash < 0 ? name : name.substring(slash + 1);
+  }
+
+  /**
+   * Counts the path segments of a tar entry name, ignoring {@code .} segments and
+   * empty segments from doubled or trailing slashes. A file at the archive root has
+   * depth 1 bare or 2 inside the customary versioned top directory.
+   *
+   * @param name The tar entry name.
+   * @return The number of real path segments.
+   */
+  private static int pathDepth(String name) {
+    int depth = 0;
+    for (String segment : name.split("/")) {
+      if (!segment.isEmpty() && !".".equals(segment)) {
+        depth++;
+      }
+    }
+    return depth;
   }
 
   /**

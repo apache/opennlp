@@ -62,6 +62,29 @@ public class MecabDictionaryInstallerTest {
         Files.readString(target.resolve("lexicon.csv")));
   }
 
+  /**
+   * Verifies that only files at the archive root count as dictionary payload.
+   * mecab-ko-dic ships template user dictionaries under {@code user-dic/} whose
+   * numeric fields are empty, input for {@code mecab-dict-index} rather than loadable
+   * lexicon data. Flattening them next to the real lexicon fails the subsequent load,
+   * and on a case-insensitive file system a template can silently overwrite a real
+   * lexicon file of the same base name.
+   */
+  @Test
+  void testNestedTemplateFilesAreNotExtracted(@TempDir Path target) throws IOException {
+    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
+        {"dict-1.0/NNP.csv", "cat,1786,3546,2953,noun\n"},
+        {"dict-1.0/matrix.def", "1 1\n0 0 0\n"},
+        {"dict-1.0/user-dic/person.csv", "template,,,,noun\n"}});
+
+    final int extracted = MecabDictionaryInstaller.extract(
+        new ByteArrayInputStream(archive), target);
+
+    Assertions.assertEquals(2, extracted);
+    Assertions.assertTrue(Files.exists(target.resolve("NNP.csv")));
+    Assertions.assertTrue(Files.notExists(target.resolve("person.csv")));
+  }
+
   @Test
   void testInstallReadsAFileUri(@TempDir Path source, @TempDir Path target)
       throws IOException {
