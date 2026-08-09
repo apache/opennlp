@@ -593,8 +593,8 @@ int[] ids = tokenizer.encodeToIds("Ready for the embedding layer.");]]>
 				Output parity with the reference implementation is pinned by test fixtures whose
 				expected pieces, ids, and spans are produced by the reference
 				<link xlink:href="https://github.com/google/sentencepiece">sentencepiece</link>
-				package rather than by the Java code under test. The
-				<link xlink:href="https://github.com/apache/opennlp/blob/main/opennlp-extensions/opennlp-subword/src/test/resources/opennlp/subword/sentencepiece/README.md">fixtures README</link>
+				package rather than by the Java code under test. The fixtures README at
+				<code>opennlp-extensions/opennlp-subword/src/test/resources/opennlp/subword/sentencepiece/README.md</code>
 				documents how the bundled test models were created and walks through regenerating
 				them and validating the implementation, including against real published models.
 			</para>
