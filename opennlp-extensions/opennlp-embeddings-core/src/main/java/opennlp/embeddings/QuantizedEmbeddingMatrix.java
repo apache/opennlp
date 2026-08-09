@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * An embedding matrix quantized to {@code 2}-{@code 4} bits per dimension, following the
@@ -509,8 +510,9 @@ public final class QuantizedEmbeddingMatrix {
    *
    * @param file The file to read. Must not be {@code null}.
    * @return The quantized matrix.
-   * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or its content is
-   *     not a quantized matrix of a supported version.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null}.
+   * @throws InvalidFormatException Thrown if the content is not a quantized matrix of a
+   *     supported version or declares implausible sizes.
    * @throws IOException Thrown if reading fails or the file is truncated.
    */
   public static QuantizedEmbeddingMatrix read(Path file) throws IOException {
@@ -521,26 +523,36 @@ public final class QuantizedEmbeddingMatrix {
          DataInputStream data = new DataInputStream(new BufferedInputStream(in))) {
       final int magic = data.readInt();
       if (magic != MAGIC) {
-        throw new IllegalArgumentException(file + " is not a quantized embedding matrix "
+        throw new InvalidFormatException(file + " is not a quantized embedding matrix "
             + "(magic 0x" + Integer.toHexString(magic) + ", expected 0x"
             + Integer.toHexString(MAGIC) + ")");
       }
       final int rowCount = data.readInt();
       if (rowCount < 1) {
-        throw new IllegalArgumentException(file + " declares " + rowCount + " rows; a "
+        throw new InvalidFormatException(file + " declares " + rowCount + " rows; a "
             + "quantized matrix has at least 1");
       }
       final int dimension = data.readInt();
       if (dimension < 1) {
-        throw new IllegalArgumentException(file + " declares dimension " + dimension + "; a "
+        throw new InvalidFormatException(file + " declares dimension " + dimension + "; a "
             + "quantized matrix's dimension is at least 1");
       }
+      final long fileSize = Files.size(file);
+      if (rowCount > fileSize || dimension > fileSize) {
+        throw new InvalidFormatException(file + " declares " + rowCount + " rows and dimension "
+            + dimension + " but holds only " + fileSize + " bytes");
+      }
       final int bits = data.readInt();
-      GaussianQuantizer.requireSupportedBits(bits);
+      try {
+        GaussianQuantizer.requireSupportedBits(bits);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidFormatException(file + " declares an unsupported bit width: "
+            + e.getMessage());
+      }
       final long seed = data.readLong();
       final int levelCount = data.readInt();
       if (levelCount != 1 << bits) {
-        throw new IllegalArgumentException(file + " declares " + levelCount + " grid levels "
+        throw new InvalidFormatException(file + " declares " + levelCount + " grid levels "
             + "for " + bits + " bits; expected " + (1 << bits));
       }
       final float[] levels = new float[levelCount];
@@ -552,7 +564,7 @@ public final class QuantizedEmbeddingMatrix {
       for (int row = 0; row < rowCount; row++) {
         scales[row] = data.readFloat();
         if (!Float.isFinite(scales[row])) {
-          throw new IllegalArgumentException(file + " has a non-finite scale for row " + row
+          throw new InvalidFormatException(file + " has a non-finite scale for row " + row
               + ": " + scales[row]);
         }
       }

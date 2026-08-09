@@ -27,6 +27,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -306,14 +308,14 @@ class QuantizedEmbeddingMatrixTest {
     bytes[11] = (byte) overflowingDimension;
     final Path patched = directory.resolve("overflow.bin");
     Files.write(patched, bytes);
-    assertThrows(IllegalArgumentException.class, () -> QuantizedEmbeddingMatrix.read(patched));
+    assertThrows(InvalidFormatException.class, () -> QuantizedEmbeddingMatrix.read(patched));
   }
 
   @Test
   void testReadRejectsForeignAndTruncatedFiles(@TempDir Path directory) throws IOException {
     final Path foreign = directory.resolve("foreign.bin");
     Files.write(foreign, new byte[] {1, 2, 3, 4, 5, 6, 7, 8});
-    assertThrows(IllegalArgumentException.class, () -> QuantizedEmbeddingMatrix.read(foreign));
+    assertThrows(InvalidFormatException.class, () -> QuantizedEmbeddingMatrix.read(foreign));
 
     final Path file = directory.resolve("matrix.bin");
     QuantizedEmbeddingMatrix.quantize(testMatrix(), ROWS, DIMENSION, 2, SEED).write(file);

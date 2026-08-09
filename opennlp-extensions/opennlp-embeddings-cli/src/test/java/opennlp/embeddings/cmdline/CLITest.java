@@ -39,12 +39,12 @@ class CLITest {
 
   /** {@return the tools the dispatcher registers, as parameterized-test arguments} */
   static Stream<BasicCmdLineTool> tools() {
-    return Stream.of(new AssembleModelTool(), new DistillModelTool());
+    return Stream.of(new AssembleModelTool(), new DistillModelTool(), new QuantizeModelTool());
   }
 
   @Test
-  void testOffersExactlyTheDistillationCommands() {
-    assertEquals(Set.of("AssembleModel", "DistillModel"), CLI.getToolNames());
+  void testOffersExactlyTheModelCommands() {
+    assertEquals(Set.of("AssembleModel", "DistillModel", "QuantizeModel"), CLI.getToolNames());
   }
 
   @Test

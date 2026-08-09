@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import opennlp.tools.util.InvalidFormatException;
+
 /**
  * Quantizes a static embedding model directory in place: reads the matrix and optional
  * per-token weights from the directory's {@code model.safetensors}, quantizes the matrix to the
@@ -83,7 +85,7 @@ public final class ModelQuantizer {
     }
     final Path safetensorsFile = modelDirectory.resolve(ModelFileNames.SAFETENSORS);
     if (!Files.isRegularFile(safetensorsFile)) {
-      throw new IllegalArgumentException("Model directory " + modelDirectory + " has no "
+      throw new InvalidFormatException("Model directory " + modelDirectory + " has no "
           + ModelFileNames.SAFETENSORS + " to quantize");
     }
     final SafetensorsFile tensors = SafetensorsFile.read(safetensorsFile);
