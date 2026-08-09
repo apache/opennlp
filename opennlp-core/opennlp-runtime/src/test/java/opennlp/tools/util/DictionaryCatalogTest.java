@@ -33,6 +33,13 @@ import org.junit.jupiter.api.io.TempDir;
  */
 public class DictionaryCatalogTest {
 
+  /**
+   * Verifies that a catalog download without the remote-download property fails with
+   * the property name in the message.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared.
+   */
   @Test
   void testDownloadRequiresRemoteProperty(@TempDir Path dir) throws Exception {
     final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
@@ -49,6 +56,13 @@ public class DictionaryCatalogTest {
     }
   }
 
+  /**
+   * Verifies that an enabled catalog download fetches the entry and writes the
+   * digest-verified bytes to the target.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared or fetched.
+   */
   @Test
   void testDownloadWithRemotePropertyEnabled(@TempDir Path dir) throws Exception {
     final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
@@ -65,6 +79,12 @@ public class DictionaryCatalogTest {
     }
   }
 
+  /**
+   * Verifies that the shipped catalog holds the MeCab and Hunspell entries, each with
+   * a full-length SHA-512 digest.
+   *
+   * @throws IOException Thrown if the shipped catalog fails to load.
+   */
   @Test
   void testDefaultCatalogContainsMecabAndHunspellEntries() throws IOException {
     final DictionaryCatalog catalog = DictionaryCatalog.loadDefault();
@@ -75,6 +95,15 @@ public class DictionaryCatalogTest {
     Assertions.assertEquals(128, catalog.get("hunspell.en_US.dic").sha512().length());
   }
 
+  /**
+   * Builds a one-entry catalog whose URL is a local file holding {@code payload}, so
+   * downloads need no network.
+   *
+   * @param dir The directory to write the payload file into.
+   * @param payload The bytes the catalog entry points at.
+   * @return The loaded catalog. Never {@code null}.
+   * @throws IOException Thrown if the payload file cannot be written.
+   */
   private static DictionaryCatalog demoCatalog(Path dir, byte[] payload)
       throws IOException {
     final Path source = dir.resolve("dict.bin");
@@ -85,6 +114,11 @@ public class DictionaryCatalogTest {
         new ByteArrayInputStream(catalog.getBytes(StandardCharsets.UTF_8)));
   }
 
+  /**
+   * Restores the remote-download property to its value before the test.
+   *
+   * @param previous The saved value, or {@code null} when the property was unset.
+   */
   private static void restore(String previous) {
     if (previous == null) {
       System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
