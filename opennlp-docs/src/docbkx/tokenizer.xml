@@ -550,9 +550,10 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				expected SHA-512 digest; the opt-in catalog
 				(<code>installFromCatalog</code>) also needs
 				<code>-Dopennlp.download.remote=true</code>.
-				<code>matrix.def</code> must list a cost for every declared cell, and matrix
+				<code>matrix.def</code> must list a cost for every declared cell; matrix
 				dimensions plus lexicon size are bounded by the shared
-				<code>ResourceLimits.MAX_ENTRIES</code> limit.
+				<code>ResourceLimits.MAX_ENTRIES</code> limit and the matrix cell count
+				by <code>ResourceLimits.MAX_MATRIX_CELLS</code>.
 				Extraction caps per-entry size, total bytes, entry count, and gzip expansion;
 				the byte ceilings default to 512 MiB per download and entry and 2 GiB total,
 				and can be raised at JVM startup via

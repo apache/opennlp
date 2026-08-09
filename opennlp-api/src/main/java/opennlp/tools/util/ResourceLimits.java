@@ -35,13 +35,39 @@ public final class ResourceLimits {
    * (matrix dimensions, lexicon entries, model outcome counts, and similar).
    * Configurable via {@link #MAX_ENTRIES_PROPERTY}.
    */
-  public static final int MAX_ENTRIES = initMaxEntries();
+  public static final int MAX_ENTRIES = initLimit(MAX_ENTRIES_PROPERTY, 10_000_000);
+
+  /**
+   * System property for overriding {@link #MAX_MATRIX_CELLS}.
+   * Set at JVM startup, e.g. {@code -DOPENNLP_MAX_MATRIX_CELLS=20000000}.
+   * Falls back to {@code 134_217_728} if absent or invalid.
+   */
+  public static final String MAX_MATRIX_CELLS_PROPERTY = "OPENNLP_MAX_MATRIX_CELLS";
+
+  /**
+   * Upper bound on the cell count of a two-dimensional cost table, whose entries
+   * are far smaller than the record-sized entries {@link #MAX_ENTRIES} bounds.
+   * The default of 2^27 cells caps a 16-bit cost matrix at 256 MiB, which admits
+   * every published MeCab-format distribution (mecab-ko-dic 2.1.1 alone declares
+   * 3822 x 2693, above {@link #MAX_ENTRIES}) while still refusing the roughly
+   * 4 GiB allocation a crafted {@code 46340 46340} header would force.
+   * Configurable via {@link #MAX_MATRIX_CELLS_PROPERTY}.
+   */
+  public static final int MAX_MATRIX_CELLS =
+      initLimit(MAX_MATRIX_CELLS_PROPERTY, 134_217_728);
 
   private ResourceLimits() {
   }
 
-  private static int initMaxEntries() {
-    final String prop = System.getProperty(MAX_ENTRIES_PROPERTY, "").trim();
+  /**
+   * Reads a positive integer limit from the given system property.
+   *
+   * @param property The system property name. Must not be {@code null}.
+   * @param defaultValue The value used when the property is absent or invalid.
+   * @return The configured limit, or {@code defaultValue}.
+   */
+  private static int initLimit(String property, int defaultValue) {
+    final String prop = System.getProperty(property, "").trim();
     if (!prop.isEmpty()) {
       try {
         final int val = Integer.parseInt(prop);
@@ -52,6 +78,6 @@ public final class ResourceLimits {
         // Fall through to the default.
       }
     }
-    return 10_000_000;
+    return defaultValue;
   }
 }

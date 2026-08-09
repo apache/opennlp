@@ -54,8 +54,9 @@ import opennlp.tools.util.StringUtil;
  * space, so load once and share. Lexicon CSV files under the dictionary directory are
  * read in sorted path order so tie-breaking is stable across file systems. Connection
  * costs must cover every declared matrix cell; missing pairs are rejected rather than
- * treated as cost zero. Matrix dimensions, the cell count, and the lexicon entry count
- * are each bounded by {@link ResourceLimits#MAX_ENTRIES}. Lexicon CSV fields may be
+ * treated as cost zero. Matrix dimensions and the lexicon entry count are bounded by
+ * {@link ResourceLimits#MAX_ENTRIES}, and the matrix cell count by
+ * {@link ResourceLimits#MAX_MATRIX_CELLS}. Lexicon CSV fields may be
  * MeCab-quoted with {@code ""} escapes. An {@code unk.def} template must name a
  * category {@code char.def} defined.</p>
  *
@@ -619,9 +620,9 @@ public final class MecabDictionary {
         throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
             + " overflow the addressable connection matrix");
       }
-      if (cells > ResourceLimits.MAX_ENTRIES) {
+      if (cells > ResourceLimits.MAX_MATRIX_CELLS) {
         throw new IOException(MATRIX_DEF + " dimensions " + leftSize + " x " + rightSize
-            + " exceed safe limit of " + ResourceLimits.MAX_ENTRIES);
+            + " exceed safe limit of " + ResourceLimits.MAX_MATRIX_CELLS);
       }
       cellCount = (int) cells;
       costs = new short[cellCount];
