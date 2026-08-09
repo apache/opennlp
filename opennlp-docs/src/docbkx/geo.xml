@@ -37,9 +37,11 @@
 			Earth populated-places table, <code>GeoNamesGazetteer</code> over a
 			user-downloaded GeoNames extract, <code>OvertureGazetteer</code> over an
 			Overture divisions export, and <code>UserGazetteer</code> over a
-			user-authored file, described in the next section. All four are
-			immutable and thread-safe after loading, so one instance can be shared
-			across threads.
+			user-authored file, each described in its own section below. An
+			<code>InMemoryGazetteer</code> builds the same index over
+			caller-supplied entries, so place records from a database or a service
+			compose without a file in between. All are immutable and thread-safe
+			after loading, so one instance can be shared across threads.
 		</para>
 	</section>
 
@@ -71,6 +73,54 @@
 # id	name	alternates	lat	lon	cc	class	pop	bbox	containment	attributes
 plant-3	Acme Plant 3	Plant 3|The Plant	33.75	-84.39	US	POI	0		Georgia|Fulton County	address=123 Main St, Atlanta GA 30303
 campus-east	Acme Campus East				US	POI	0	-84.5,33.6,-84.2,33.9]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.geonames">
+		<title>GeoNames tables</title>
+		<para>
+			<code>GeoNamesGazetteer</code> loads a table in the GeoNames main
+			format, such as the filtered city extracts published on the GeoNames
+			export site. The user downloads the extract; nothing is bundled, and
+			the publisher's license terms, including attribution, stay with the
+			downloaded file. The whole table is indexed in memory, so the loader
+			is meant for the filtered extracts rather than the full dump.
+		</para>
+		<para>
+			Lookup matches the canonical name, the ASCII name, and every
+			alternate name case-insensitively; the ASCII name column is what
+			makes accent-free queries hit accented places. Candidates return
+			ranked by population descending.
+			<code>GeoNamesGazetteerTest</code> asserts the loading and ranking
+			shown here.
+			<programlisting language="java"><![CDATA[
+GeoNamesGazetteer gazetteer = GeoNamesGazetteer.load(Path.of("cities500.txt"));
+
+List<GazetteerEntry> candidates = gazetteer.lookup("Paris");
+// candidates.get(0).countryCode() = "FR": the most populous Paris ranks first]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.overture">
+		<title>Overture division tables</title>
+		<para>
+			<code>OvertureGazetteer</code> loads a division table derived from an
+			Overture Maps divisions export with the
+			<code>dev/derive-overture-divisions.py</code> script in the project
+			source tree. The user produces the table from the downloaded export;
+			the upstream data is published under the Open Database License, whose
+			attribution and share-alike terms follow the derived table. Because
+			divisions include countries and regions, not only settlements, a
+			derived table also resolves mentions like <code>Australia</code> or
+			<code>Bavaria</code> that place-only gazetteers miss.
+			<code>OvertureGazetteerTest</code> asserts the lookups shown here.
+			<programlisting language="java"><![CDATA[
+OvertureGazetteer gazetteer = OvertureGazetteer.load(Path.of("divisions.tsv"));
+
+// gazetteer.lookup("Australia").get(0).countryCode() = "AU"
+// gazetteer.lookup("Bavaria").get(0).featureClass() = GazetteerEntry.FEATURE_CLASS_ADMIN]]>
 			</programlisting>
 		</para>
 	</section>
@@ -228,6 +278,37 @@ gazetteer.lookup("Tokyo");   // the base still answers everything else]]>
 		</para>
 	</section>
 
+	<section xml:id="tools.geo.hierarchy">
+		<title>Place hierarchies</title>
+		<para>
+			A <code>PlaceHierarchy</code> reports the chain of places enclosing a
+			place, so a mention expands into the places it belongs to.
+			<code>ContainmentSpine</code> is the in-memory implementation over
+			user-supplied tables: a neutral tab-separated format with
+			<code>id</code>, <code>parent_id</code>, <code>name</code>, and
+			<code>type</code> columns, and the Who's On First meta CSV format,
+			read directly by its header columns, so the published per-placetype
+			tables load without conversion. No hierarchy data is bundled; the
+			user supplies the tables, and the license of a supplied table stays
+			with its files. Places can also be added directly through the
+			builder. <code>ContainmentSpineTest</code> asserts the chain shown
+			here.
+			<programlisting language="java"><![CDATA[
+ContainmentSpine spine = ContainmentSpine.builder()
+    .add("85865587", "421205765", "Park Slope", "neighbourhood")
+    .add("421205765", "85977539", "Brooklyn", "borough")
+    .add("85977539", "85688543", "New York", "locality")
+    .add("85688543", "85633793", "New York", "region")
+    .add("85633793", null, "United States", "country")
+    .build();
+
+List<PlaceAncestor> chain = spine.ancestors("85865587");
+// chain.get(0).name() = "Brooklyn": the nearest enclosing place first
+// chain.get(3).name() = "United States": the chain ends at the root]]>
+			</programlisting>
+		</para>
+	</section>
+
 	<section xml:id="tools.geo.geocoder">
 		<title>Geocoder</title>
 		<para>
@@ -244,6 +325,31 @@ Span mention = new Span(text.indexOf("Springfield"),
 
 List<GeoResolution> resolutions = geocoder.resolve(text, List.of(mention));
 // resolutions.get(0).entry() is the most populous Springfield]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.coherence">
+		<title>Spatial coherence</title>
+		<para>
+			<code>SpatialCoherenceGeocoder</code> disambiguates by the document's
+			other mentions: among a mention's candidates it prefers the one
+			closest to where the other mentions point, because places named
+			together tend to lie together. A lone ambiguous mention keeps the
+			population prior. <code>SpatialCoherenceGeocoderTest</code> asserts
+			both behaviors shown here.
+			<programlisting language="java"><![CDATA[
+Geocoder geocoder = new SpatialCoherenceGeocoder(gazetteer);
+String text = "the tour hits Dallas, Paris and Houston";
+List<Span> mentions = new ArrayList<>();
+for (String name : List.of("Dallas", "Paris", "Houston")) {
+  mentions.add(new Span(text.indexOf(name), text.indexOf(name) + name.length()));
+}
+
+List<GeoResolution> resolutions = geocoder.resolve(text, mentions);
+// resolutions.get(1).entry() is Paris, Texas: with Dallas and Houston in
+// context, the candidate nearest the other mentions wins the ambiguity.
+// A lone "a week in Paris" keeps the population favorite, Paris, France.]]>
 			</programlisting>
 		</para>
 	</section>

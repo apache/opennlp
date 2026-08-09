@@ -21,10 +21,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -59,6 +62,21 @@ public class OvertureGazetteerTest {
   private static OvertureGazetteer gazetteer() throws IOException {
     return OvertureGazetteer.load(
         new ByteArrayInputStream(FIXTURE.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  /**
+   * Pins the cookbook path documented in {@code geo.xml}: load a derived division table
+   * by path and resolve country and region mentions place-only gazetteers miss.
+   */
+  @Test
+  void testLoadsFromAFile(@TempDir Path dir) throws IOException {
+    final Path table = dir.resolve("divisions.tsv");
+    Files.writeString(table, FIXTURE, StandardCharsets.UTF_8);
+
+    final OvertureGazetteer gazetteer = OvertureGazetteer.load(table);
+    assertEquals("AU", gazetteer.lookup("Australia").get(0).countryCode());
+    assertEquals(GazetteerEntry.FEATURE_CLASS_ADMIN,
+        gazetteer.lookup("Bavaria").get(0).featureClass());
   }
 
   @Test

@@ -21,10 +21,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -59,6 +62,20 @@ public class GeoNamesGazetteerTest {
   private static GeoNamesGazetteer gazetteer() throws IOException {
     return GeoNamesGazetteer.load(
         new ByteArrayInputStream(FIXTURE.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  /**
+   * Pins the cookbook path documented in {@code geo.xml}: load a user-downloaded
+   * GeoNames extract by path and get candidates ranked by population descending.
+   */
+  @Test
+  void testLoadsFromAFile(@TempDir Path dir) throws IOException {
+    final Path table = dir.resolve("cities500.txt");
+    Files.writeString(table, FIXTURE, StandardCharsets.UTF_8);
+
+    final GeoNamesGazetteer gazetteer = GeoNamesGazetteer.load(table);
+    final List<GazetteerEntry> candidates = gazetteer.lookup("Paris");
+    assertEquals("FR", candidates.get(0).countryCode()); // the most populous Paris ranks first
   }
 
   @Test
