@@ -38,19 +38,19 @@ public class AttributeValueTest {
   }
 
   @Test
-  void testRejectsNullOrEmptyValue() {
-    assertMessage("value must not be null or empty",
-        assertThrows(IllegalArgumentException.class, () -> new AttributeValue(null, "s", "")));
-    assertMessage("value must not be null or empty",
-        assertThrows(IllegalArgumentException.class, () -> new AttributeValue("", "s", "")));
+  void testRejectsNullEmptyOrBlankValue() {
+    for (final String value : new String[] {null, "", " "}) {
+      assertMessage("value must not be null or blank",
+          assertThrows(IllegalArgumentException.class, () -> new AttributeValue(value, "s", "")));
+    }
   }
 
   @Test
-  void testRejectsNullOrEmptySource() {
-    assertMessage("source must not be null or empty",
-        assertThrows(IllegalArgumentException.class, () -> new AttributeValue("v", null, "")));
-    assertMessage("source must not be null or empty",
-        assertThrows(IllegalArgumentException.class, () -> new AttributeValue("v", "", "")));
+  void testRejectsNullEmptyOrBlankSource() {
+    for (final String source : new String[] {null, "", " "}) {
+      assertMessage("source must not be null or blank",
+          assertThrows(IllegalArgumentException.class, () -> new AttributeValue("v", source, "")));
+    }
   }
 
   @Test

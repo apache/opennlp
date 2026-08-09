@@ -33,6 +33,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import opennlp.tools.geo.AttributeValue;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -63,15 +64,19 @@ public class BundledGazetteerTest {
       "naturalearth;9;Winston-Salem;;36.09986;-80.24422;US;North Carolina;615000;CITY;",
   };
 
-  private static BundledGazetteer gazetteer(String... rows) {
+  private static List<GazetteerEntry> parseRows(String... rows) throws IOException {
     final StringBuilder data = new StringBuilder("# comment line\n\n");
     for (final String row : rows) {
       data.append(row).append('\n');
     }
     final InputStream in =
         new ByteArrayInputStream(data.toString().getBytes(StandardCharsets.UTF_8));
+    return BundledGazetteer.parse(in, "test-gazetteer.txt");
+  }
+
+  private static BundledGazetteer gazetteer(String... rows) {
     try {
-      return new BundledGazetteer(BundledGazetteer.parse(in, "test-gazetteer.txt"));
+      return new BundledGazetteer(parseRows(rows));
     } catch (IOException e) {
       throw new IllegalStateException("Unexpected IOException from an in-memory stream", e);
     }
@@ -289,8 +294,8 @@ public class BundledGazetteerTest {
   @Test
   void testParseReportsTheFailingLineNotTheFirst() {
     // Two good rows before the bad one: the reported line number is the bad row's.
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> gazetteer(ROWS[0], ROWS[1], "naturalearth;99;Bad;;95.0;8.5;CH;;1;CITY;"));
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
+        () -> parseRows(ROWS[0], ROWS[1], "naturalearth;99;Bad;;95.0;8.5;CH;;1;CITY;"));
     assertTrue(e.getMessage().contains("test-gazetteer.txt"), e.getMessage());
     assertTrue(e.getMessage().contains("at line 5"), e.getMessage()); // header comment + blank
   }
@@ -367,8 +372,8 @@ public class BundledGazetteerTest {
   }
 
   private static void assertMalformedAt(int line, String row) {
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> gazetteer(row));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> parseRows(row));
     assertTrue(e.getMessage().startsWith(
             "Malformed gazetteer data in test-gazetteer.txt at line " + line + ":"),
         e.getMessage());

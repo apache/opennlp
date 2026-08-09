@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import opennlp.tools.geo.GazetteerEntry;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -55,9 +56,9 @@ final class GazetteerIndex {
      * @param line       The data line; never blank and never a skipped comment line.
      * @param lineNumber The one-based line number, for fail-loud messages.
      * @return The parsed entry. Never {@code null}.
-     * @throws IllegalArgumentException Thrown if the line is not a valid row.
+     * @throws InvalidFormatException Thrown if the line is not a valid row.
      */
-    GazetteerEntry parse(String line, int lineNumber);
+    GazetteerEntry parse(String line, int lineNumber) throws InvalidFormatException;
   }
 
   private final Map<String, List<GazetteerEntry>> byName = new HashMap<>();
@@ -92,7 +93,7 @@ final class GazetteerIndex {
    * @param parser       The row parser of the caller's table format.
    * @return The frozen index over the parsed entries.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if the content has no data rows, or from
+   * @throws InvalidFormatException Thrown if the content has no data rows, or from
    *     {@code parser} for a malformed row.
    */
   static GazetteerIndex load(InputStream in, boolean skipComments, RowParser parser)
@@ -110,7 +111,7 @@ final class GazetteerIndex {
       index.add(parser.parse(line, lineNumber));
     }
     if (index.isEmpty()) {
-      throw new IllegalArgumentException("the table contains no rows");
+      throw new InvalidFormatException("the table contains no rows");
     }
     index.freeze();
     return index;

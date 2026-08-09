@@ -113,39 +113,38 @@ public class GazetteerEntryTest {
   }
 
   @Test
-  void testRejectsNullOrEmptySource() {
-    assertMessage("source must not be null or empty", () -> entry(null, "1", "n", List.of(),
-        TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("source must not be null or empty", () -> entry("", "1", "n", List.of(),
-        TOKYO, null, List.of(), 0L, null, Map.of()));
+  void testRejectsNullEmptyOrBlankSource() {
+    for (final String source : new String[] {null, "", " "}) {
+      assertMessage("source must not be null or blank", () -> entry(source, "1", "n", List.of(),
+          TOKYO, null, List.of(), 0L, null, Map.of()));
+    }
   }
 
   @Test
-  void testRejectsNullOrEmptyRecordId() {
-    assertMessage("recordId must not be null or empty", () -> entry("s", null, "n", List.of(),
-        TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("recordId must not be null or empty", () -> entry("s", "", "n", List.of(),
-        TOKYO, null, List.of(), 0L, null, Map.of()));
+  void testRejectsNullEmptyOrBlankRecordId() {
+    for (final String recordId : new String[] {null, "", "\t"}) {
+      assertMessage("recordId must not be null or blank", () -> entry("s", recordId, "n",
+          List.of(), TOKYO, null, List.of(), 0L, null, Map.of()));
+    }
   }
 
   @Test
-  void testRejectsNullOrEmptyName() {
-    assertMessage("name must not be null or empty", () -> entry("s", "1", null, List.of(),
-        TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("name must not be null or empty", () -> entry("s", "1", "", List.of(),
-        TOKYO, null, List.of(), 0L, null, Map.of()));
+  void testRejectsNullEmptyOrBlankName() {
+    for (final String name : new String[] {null, "", "  "}) {
+      assertMessage("name must not be null or blank", () -> entry("s", "1", name, List.of(),
+          TOKYO, null, List.of(), 0L, null, Map.of()));
+    }
   }
 
   @Test
   void testRejectsBadAlternateNames() {
     assertMessage("alternateNames must not be null", () -> entry("s", "1", "n", null,
         TOKYO, null, List.of(), 0L, null, Map.of()));
-    assertMessage("alternateNames must not contain a null or empty element",
-        () -> entry("s", "1", "n", Arrays.asList("ok", null), TOKYO, null, List.of(), 0L, null,
-            Map.of()));
-    assertMessage("alternateNames must not contain a null or empty element",
-        () -> entry("s", "1", "n", Arrays.asList("ok", ""), TOKYO, null, List.of(), 0L, null,
-            Map.of()));
+    for (final String alternateName : new String[] {null, "", " "}) {
+      assertMessage("alternateNames must not contain a null or blank element",
+          () -> entry("s", "1", "n", Arrays.asList("ok", alternateName), TOKYO, null, List.of(),
+              0L, null, Map.of()));
+    }
   }
 
   @Test
@@ -165,11 +164,11 @@ public class GazetteerEntryTest {
   void testRejectsBadContainment() {
     assertMessage("containment must not be null", () -> entry("s", "1", "n", List.of(), TOKYO,
         null, null, 0L, null, Map.of()));
-    assertMessage("containment must not contain a null or empty element",
-        () -> entry("s", "1", "n", List.of(), TOKYO, null, Arrays.asList("ok", null), 0L, null,
-            Map.of()));
-    assertMessage("containment must not contain a null or empty element",
-        () -> entry("s", "1", "n", List.of(), TOKYO, null, Arrays.asList(""), 0L, null, Map.of()));
+    for (final String level : new String[] {null, "", " "}) {
+      assertMessage("containment must not contain a null or blank element",
+          () -> entry("s", "1", "n", List.of(), TOKYO, null, Arrays.asList("ok", level), 0L, null,
+              Map.of()));
+    }
   }
 
   @Test
@@ -179,9 +178,11 @@ public class GazetteerEntryTest {
   }
 
   @Test
-  void testRejectsEmptyFeatureClass() {
-    assertMessage("featureClass must be null when unknown, not empty", () -> entry("s", "1", "n",
-        List.of(), TOKYO, null, List.of(), 0L, "", Map.of()));
+  void testRejectsBlankFeatureClass() {
+    for (final String featureClass : new String[] {"", " "}) {
+      assertMessage("featureClass must be null when unknown, not blank", () -> entry("s", "1",
+          "n", List.of(), TOKYO, null, List.of(), 0L, featureClass, Map.of()));
+    }
   }
 
   @Test
@@ -190,12 +191,14 @@ public class GazetteerEntryTest {
         null, List.of(), 0L, null, null));
     final Map<String, AttributeValue> nullValue = new HashMap<>();
     nullValue.put("key", null);
-    assertMessage("attributes must not contain a null or empty key or a null value",
+    assertMessage("attributes must not contain a null or blank key or a null value",
         () -> entry("s", "1", "n", List.of(), TOKYO, null, List.of(), 0L, null, nullValue));
-    final Map<String, AttributeValue> emptyKey = new HashMap<>();
-    emptyKey.put("", new AttributeValue("v", "s", ""));
-    assertMessage("attributes must not contain a null or empty key or a null value",
-        () -> entry("s", "1", "n", List.of(), TOKYO, null, List.of(), 0L, null, emptyKey));
+    for (final String key : new String[] {"", " "}) {
+      final Map<String, AttributeValue> blankKey = new HashMap<>();
+      blankKey.put(key, new AttributeValue("v", "s", ""));
+      assertMessage("attributes must not contain a null or blank key or a null value",
+          () -> entry("s", "1", "n", List.of(), TOKYO, null, List.of(), 0L, null, blankKey));
+    }
   }
 
   private static void assertMessage(String expected, Executable e) {

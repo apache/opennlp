@@ -31,6 +31,7 @@ import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * A {@link Gazetteer} over a division table derived from Overture Maps data with the
@@ -87,8 +88,9 @@ public final class OvertureGazetteer implements Gazetteer {
    * @param table The tab-separated table. Must not be {@code null}.
    * @return A loaded {@link OvertureGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if {@code table} is {@code null}, the table
-   *         contains no rows, or a row is not in the expected format.
+   * @throws InvalidFormatException Thrown if the table contains no rows or a row is not
+   *         in the expected format.
+   * @throws IllegalArgumentException Thrown if {@code table} is {@code null}.
    */
   public static OvertureGazetteer load(Path table) throws IOException {
     if (table == null) {
@@ -107,8 +109,9 @@ public final class OvertureGazetteer implements Gazetteer {
    *           record and are skipped.
    * @return A loaded {@link OvertureGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}, the content
-   *         has no rows, or a row is not in the expected format.
+   * @throws InvalidFormatException Thrown if the content has no rows or a row is not in
+   *         the expected format.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    */
   public static OvertureGazetteer load(InputStream in) throws IOException {
     if (in == null) {
@@ -152,10 +155,11 @@ public final class OvertureGazetteer implements Gazetteer {
   }
 
   /** Parses one derived row into an entry, failing loud with the line number. */
-  private static GazetteerEntry parseRow(String line, int lineNumber) {
+  private static GazetteerEntry parseRow(String line, int lineNumber)
+      throws InvalidFormatException {
     final String[] fields = line.split(FIELD_SEPARATOR, -1);
     if (fields.length < COLUMNS) {
-      throw new IllegalArgumentException("line " + lineNumber + " has " + fields.length
+      throw new InvalidFormatException("line " + lineNumber + " has " + fields.length
           + " columns, expected " + COLUMNS);
     }
     try {
@@ -177,7 +181,7 @@ public final class OvertureGazetteer implements Gazetteer {
           countryCode, List.of(), population.isEmpty() ? 0L : Long.parseLong(population),
           featureClass(fields[6].trim()), Map.of());
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(
+      throw new InvalidFormatException(
           "line " + lineNumber + " is not a derived division row: " + e.getMessage(), e);
     }
   }

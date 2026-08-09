@@ -30,6 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.geo.GazetteerEntry;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -110,7 +111,7 @@ public class OvertureGazetteerTest {
   @ParameterizedTest
   @MethodSource("malformedContent")
   void testMalformedContentFailsLoud(String content) {
-    assertThrows(IllegalArgumentException.class, () -> OvertureGazetteer.load(
+    assertThrows(InvalidFormatException.class, () -> OvertureGazetteer.load(
         new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
   }
 
