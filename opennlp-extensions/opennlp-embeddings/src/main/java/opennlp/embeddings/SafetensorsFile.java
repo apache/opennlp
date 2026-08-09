@@ -242,7 +242,7 @@ public final class SafetensorsFile {
    * @throws IllegalStateException Thrown if the file has been truncated since {@link #read(Path)}.
    * @throws IOException Thrown if reading the file fails.
    */
-  public float[] readFloat32(String name) throws IOException {
+  float[] readFloat32(String name) throws IOException {
     final TensorInfo info = tensorInfo(name);
     if (!DTYPE_F32.equals(info.dtype())) {
       throw new InvalidFormatException(
@@ -359,7 +359,7 @@ public final class SafetensorsFile {
   }
 
   /** {@return the file's {@code __metadata__} string map, empty when the header has none} */
-  public Map<String, String> metadata() {
+  Map<String, String> metadata() {
     return metadata;
   }
 
