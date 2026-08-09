@@ -123,6 +123,54 @@ StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
 		</para>
 	</section>
 
+	<section xml:id="tools.embeddings.cmdline">
+		<title>Command Line Tools</title>
+		<para>
+			The module ships its own command line launcher, <code>bin/embeddings</code>, next to
+			<code>bin/opennlp</code> in the binary distribution. Invoked without arguments it lists
+			the available tools, and every tool prints its help when invoked with the
+			<code>help</code> parameter.
+		</para>
+		<section xml:id="tools.embeddings.cmdline.distill">
+			<title>Distill Model Tool</title>
+			<para>
+				The <code>DistillModel</code> tool compresses a sentence-transformer teacher into a
+				static embedding table. The teacher is either a Hugging Face model id
+				(<code>org/model</code>, or <code>org/model@revision</code> to pin a branch, tag, or
+				commit; the required files download once into a local cache) or a local directory
+				holding the teacher's <code>tokenizer.json</code> and <code>onnx/model.onnx</code>.
+				The following command distills a teacher into the directory given by
+				<code>-out</code>:
+				<screen>
+<![CDATA[$ bin/embeddings DistillModel -teacher hf-id-or-path -out dir [-pcaDims num]]]>
+				</screen>
+				<code>-pcaDims</code> is the number of principal components to keep and defaults
+				to 256. The run ends by assembling the output directory and verifying it with
+				<code>StaticEmbeddingModel.load</code>, then prints a summary naming the tokenizer
+				family, the row count, the dimension reduction, and the variance the PCA kept, so a
+				run that prints a summary is a directory that works.
+			</para>
+		</section>
+		<section xml:id="tools.embeddings.cmdline.assemble">
+			<title>Assemble Model Tool</title>
+			<para>
+				The <code>AssembleModel</code> tool completes a downloaded distillation in place so
+				<code>StaticEmbeddingModel.load</code> can open it. A Model2Vec distillation writes
+				<code>model.safetensors</code>, <code>tokenizer.json</code>, and
+				<code>config.json</code>; for a WordPiece model the tool derives the missing
+				<code>vocab.txt</code> and <code>tokenizer_config.json</code> from
+				<code>tokenizer.json</code>, and for a SentencePiece model it checks that the
+				trained <code>.model</code> file copied from the teacher is present, naming the fix
+				if it is not. It never overwrites an existing file.
+				<screen>
+<![CDATA[$ bin/embeddings AssembleModel -modelDir dir]]>
+				</screen>
+				The tool then verifies the directory by loading it and prints the loaded model's
+				family, row count, and dimension, along with a line for every file it wrote.
+			</para>
+		</section>
+	</section>
+
 	<section xml:id="tools.embeddings.safetensors">
 		<title>The safetensors Reader</title>
 		<para>
