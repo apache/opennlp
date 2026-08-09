@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
 import opennlp.tools.geo.GeoResolution;
@@ -45,7 +46,7 @@ public class SpatialCoherenceGeocoderTest {
         country, List.of(), population, GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
   }
 
-  private static final BundledGazetteer GAZETTEER = BundledGazetteer.fromEntries(List.of(
+  private static final Gazetteer GAZETTEER = InMemoryGazetteer.fromEntries(List.of(
       place("paris-fr", "Paris", 48.85, 2.35, "FR", 2_100_000),
       place("paris-tx", "Paris", 33.66, -95.56, "US", 25_000),
       place("dallas", "Dallas", 32.78, -96.80, "US", 1_300_000),

@@ -20,9 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -32,7 +30,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.geo.AttributeValue;
 import opennlp.tools.geo.GazetteerEntry;
-import opennlp.tools.geo.GeoPoint;
 import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -344,31 +341,6 @@ public class BundledGazetteerTest {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> gazetteer("naturalearth;1;Zurich;...;47.4;8.5;CH;;1108000;CITY;"));
     assertTrue(e.getMessage().contains("folds to an empty match key"), e.getMessage());
-  }
-
-  @Test
-  void testFromEntriesBuildsACustomGazetteer() {
-    // The documented third-party path: build a gazetteer over caller-supplied entries without
-    // touching the bundled table, and get the same folding and ranking behavior.
-    final GazetteerEntry smallville = new GazetteerEntry("customsource", "sv-1", "Smallville",
-        List.of("Small Ville"), new GeoPoint(38.0, -97.0), "US",
-        List.of("Kansas"), 45001L, GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
-    final GazetteerEntry bigtown = new GazetteerEntry("customsource", "bt-1", "Bigtown",
-        List.of(), new GeoPoint(40.0, -75.0), "US",
-        List.of(), 250000L, GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
-    final BundledGazetteer custom = BundledGazetteer.fromEntries(List.of(smallville, bigtown));
-    assertEquals(Set.of("customsource"), custom.sources());
-    assertEquals("sv-1", custom.lookup("smallville").get(0).recordId()); // case folded
-    assertEquals("sv-1", custom.lookup("Small Ville").get(0).recordId()); // alternate name
-    assertEquals("bt-1", custom.byRegion("US").orElseThrow().recordId()); // most populous
-    assertEquals(smallville, custom.byId("customsource", "sv-1").orElseThrow());
-  }
-
-  @Test
-  void testFromEntriesValidatesItsInput() {
-    assertThrows(IllegalArgumentException.class, () -> BundledGazetteer.fromEntries(null));
-    assertThrows(IllegalArgumentException.class,
-        () -> BundledGazetteer.fromEntries(Arrays.asList((GazetteerEntry) null)));
   }
 
   private static void assertMalformedAt(int line, String row) {
