@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import opennlp.tools.util.InvalidFormatException;
+
 /**
  * Reads single top-level fields out of a small flat JSON configuration file (a model's
  * {@code config.json} or {@code tokenizer_config.json}) without a JSON library dependency. Only
@@ -43,7 +45,8 @@ final class FlatJsonFields {
    * @param field The top-level field name to read. Must not be {@code null}.
    * @return The field's value, or {@code null} when the field is absent or explicitly JSON
    *     {@code null} (the formats treat those the same: fall back to the default).
-   * @throws IllegalArgumentException Thrown if the file is not a well-formed JSON object, the
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
+   * @throws InvalidFormatException Thrown if the file is not a well-formed JSON object, the
    *     field appears more than once, or its value is neither a boolean nor {@code null}.
    * @throws IOException Thrown if reading the file fails.
    */
@@ -70,7 +73,8 @@ final class FlatJsonFields {
    * @param field The top-level field name to read. Must not be {@code null}.
    * @return The field's value, or {@code null} when the field is absent or explicitly JSON
    *     {@code null} (the formats treat those the same: fall back to the default).
-   * @throws IllegalArgumentException Thrown if the file is not a well-formed JSON object, the
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
+   * @throws InvalidFormatException Thrown if the file is not a well-formed JSON object, the
    *     field appears more than once, or its value is neither a string nor {@code null}.
    * @throws IOException Thrown if reading the file fails.
    */
@@ -96,8 +100,9 @@ final class FlatJsonFields {
    * @param valueReader Reads the matched field's value off the cursor.
    * @param <T>         The value type the reader produces.
    * @return The field's value, or {@code null} when the field is absent.
-   * @throws IllegalArgumentException Thrown if an argument is {@code null}, the file is not a
-   *     well-formed JSON object, or the field appears more than once.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
+   * @throws InvalidFormatException Thrown if the file is not a well-formed JSON object or the
+   *     field appears more than once.
    * @throws IOException Thrown if reading the file fails.
    */
   private static <T> T topLevelField(Path file, String field, ValueReader<T> valueReader)
@@ -161,8 +166,9 @@ final class FlatJsonFields {
      *
      * @param cursor The cursor, positioned at the value's first character.
      * @return The decoded value, or {@code null} for a JSON {@code null}.
-     * @throws IllegalArgumentException Thrown if the value is not of the expected type.
+     * @throws InvalidFormatException Thrown if the value is malformed or not of the expected
+     *     type.
      */
-    T read(JsonCursor cursor);
+    T read(JsonCursor cursor) throws InvalidFormatException;
   }
 }

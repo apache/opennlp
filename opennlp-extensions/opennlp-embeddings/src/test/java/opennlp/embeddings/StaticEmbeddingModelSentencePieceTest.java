@@ -30,6 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 import opennlp.tools.tokenize.SubwordPiece;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -250,8 +251,8 @@ class StaticEmbeddingModelSentencePieceTest {
     SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
         SafetensorsTestFiles.matrix("embeddings", matrix));
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> loadFromDirectory(dir));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> loadFromDirectory(dir));
     assertTrue(e.getMessage().contains("do not belong"), e.getMessage());
   }
 
@@ -262,8 +263,8 @@ class StaticEmbeddingModelSentencePieceTest {
     SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
         SafetensorsTestFiles.matrix("embeddings", matrix));
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> loadFromDirectory(dir));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> loadFromDirectory(dir));
     assertTrue(e.getMessage().contains("rows"), e.getMessage());
   }
 
@@ -272,8 +273,8 @@ class StaticEmbeddingModelSentencePieceTest {
     writeModelDirectory(dir, true);
     Files.delete(dir.resolve("sentencepiece.bpe.model"));
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(dir));
     assertTrue(e.getMessage().contains("copy the .model"), e.getMessage());
   }
 

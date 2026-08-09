@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SafetensorsHeaderParserTest {
 
   @Test
-  void testParsesTensorsInHeaderOrder() {
+  void testParsesTensorsInHeaderOrder() throws InvalidFormatException {
     final SafetensorsHeaderParser.Result result = SafetensorsHeaderParser.parse(
         "{\"beta\":{\"dtype\":\"F32\",\"shape\":[2,3],\"data_offsets\":[0,24]},"
             + "\"alpha\":{\"dtype\":\"I64\",\"shape\":[],\"data_offsets\":[24,32]}}");
@@ -55,7 +57,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testParsesAnEmptyHeader() {
+  void testParsesAnEmptyHeader() throws InvalidFormatException {
     final SafetensorsHeaderParser.Result result = SafetensorsHeaderParser.parse("{}");
 
     assertTrue(result.tensors().isEmpty());
@@ -63,7 +65,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testParsesAMetadataOnlyHeader() {
+  void testParsesAMetadataOnlyHeader() throws InvalidFormatException {
     final SafetensorsHeaderParser.Result result =
         SafetensorsHeaderParser.parse("{\"__metadata__\":{\"format\":\"pt\"}}");
 
@@ -72,7 +74,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testDecodesEveryEscapeSequence() {
+  void testDecodesEveryEscapeSequence() throws InvalidFormatException {
     final SafetensorsHeaderParser.Result result = SafetensorsHeaderParser.parse(
         "{\"__metadata__\":{\"note\":\"\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0041\"}}");
 
@@ -80,7 +82,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testSkipsUnknownFieldsOfEveryValueType() {
+  void testSkipsUnknownFieldsOfEveryValueType() throws InvalidFormatException {
     // Fields safetensors may add over time must not break the reader: nested objects, arrays,
     // floating-point numbers, booleans, null, and strings are all skipped structurally.
     final SafetensorsHeaderParser.Result result = SafetensorsHeaderParser.parse(
@@ -91,7 +93,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testToleratesTrailingWhitespacePadding() {
+  void testToleratesTrailingWhitespacePadding() throws InvalidFormatException {
     // Writers space-pad the header so the data section starts aligned; padding is part of the
     // declared header length and must parse cleanly.
     final SafetensorsHeaderParser.Result result = SafetensorsHeaderParser.parse(
@@ -102,7 +104,7 @@ class SafetensorsHeaderParserTest {
 
   @Test
   void testRejectsTrailingGarbage() {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> SafetensorsHeaderParser.parse("{} x"));
     assertTrue(e.getMessage().contains("Trailing content"));
   }
@@ -150,7 +152,7 @@ class SafetensorsHeaderParserTest {
       "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]}"
   })
   void testRejectsMalformedHeaders(String header) {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> SafetensorsHeaderParser.parse(header));
     assertTrue(e.getMessage().contains("Malformed safetensors header at offset"),
         () -> "Message should carry the offset, got: " + e.getMessage());
@@ -161,7 +163,7 @@ class SafetensorsHeaderParserTest {
     // Integer.parseInt would accept "-0FF" and decode the wrong character; the parser must not.
     final String header = "{\"__metadata__\":{\"note\":\"a\\u-0FFb\"},"
         + "\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]}}";
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsHeaderParser.parse(header));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsHeaderParser.parse(header));
   }
 
   @Test
@@ -169,7 +171,7 @@ class SafetensorsHeaderParserTest {
     // Skipped unknown fields still hold values to the JSON grammar; "1e++--..5" is not a number.
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
         + "\"data_offsets\":[0,4],\"unknown\":1e++--..5}}";
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsHeaderParser.parse(header));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsHeaderParser.parse(header));
   }
 
   @Test
@@ -177,11 +179,11 @@ class SafetensorsHeaderParserTest {
     // A bare "-" is not a JSON number; the skip path must reject it rather than treating it as one.
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
         + "\"data_offsets\":[0,4],\"unknown\":-}}";
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsHeaderParser.parse(header));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsHeaderParser.parse(header));
   }
 
   @Test
-  void testWellFormedNumbersInSkippedFieldsAreAccepted() {
+  void testWellFormedNumbersInSkippedFieldsAreAccepted() throws InvalidFormatException {
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
         + "\"data_offsets\":[0,4],\"a\":-1.5e+10,\"b\":0.25,\"c\":3}}";
     assertEquals(1, SafetensorsHeaderParser.parse(header).tensors().size());
