@@ -57,9 +57,9 @@ import opennlp.tools.util.normalizer.TermAnalyzer;
  * feature-class prior ({@link GazetteerEntry#FEATURE_CLASS_CITY} before
  * {@link GazetteerEntry#FEATURE_CLASS_ADMIN} before {@link GazetteerEntry#FEATURE_CLASS_POI}),
  * then source and record id for a deterministic total order. {@link #byRegion(String)} returns
- * the most populous bundled entry for the region. {@link #fromEntries(List)} builds a gazetteer
- * over caller-supplied entries with the same indexing and ranking, without touching the bundled
- * table or the shared instance.</p>
+ * the most populous bundled entry for the region. An {@link InMemoryGazetteer} indexes
+ * caller-supplied entries the same way, without touching the bundled table or the shared
+ * instance.</p>
  */
 @ThreadSafe
 public final class BundledGazetteer implements Gazetteer {
@@ -83,7 +83,7 @@ public final class BundledGazetteer implements Gazetteer {
 
   /**
    * Indexes the given entries. Package-private; callers go through {@link #getInstance()} for
-   * the bundled table or {@link #fromEntries(List)} for their own entries.
+   * the bundled table or {@link InMemoryGazetteer#fromEntries(List)} for their own entries.
    *
    * @throws IllegalArgumentException Thrown if {@code entries} is {@code null}, contains a
    *     {@code null} element, contains two entries with the same (source, recordId), or
@@ -136,23 +136,6 @@ public final class BundledGazetteer implements Gazetteer {
    */
   public static BundledGazetteer getInstance() {
     return Holder.INSTANCE;
-  }
-
-  /**
-   * Creates a gazetteer over caller-supplied entries, indexed and ranked exactly like the
-   * bundled table (same folding chain, same candidate order). The bundled table is not loaded
-   * and the shared {@link #getInstance()} instance is not affected, so callers can build any
-   * number of independent gazetteers over their own place records.
-   *
-   * @param entries The entries to index. Must not be {@code null} or contain {@code null}
-   *                elements.
-   * @return A new immutable, thread-safe gazetteer over the given entries.
-   * @throws IllegalArgumentException Thrown if {@code entries} is {@code null}, contains a
-   *     {@code null} element, contains two entries with the same (source, recordId), or
-   *     contains an entry with a name that folds to an empty match key.
-   */
-  public static BundledGazetteer fromEntries(List<GazetteerEntry> entries) {
-    return new BundledGazetteer(entries);
   }
 
   /** {@inheritDoc} */
