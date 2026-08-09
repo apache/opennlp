@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import opennlp.tools.util.InvalidFormatException;
+
 /**
  * The tokenizer side of a teacher model, distilled the way
  * <a href="https://github.com/MinishLab/model2vec">Model2Vec</a> distills it. The class reads
@@ -104,9 +106,11 @@ final class TeacherTokenizer {
    * @param tokenizerConfigFile The teacher's {@code tokenizer_config.json}, consulted for the
    *                            pad token only; may be {@code null} (no pad token then).
    * @return The parsed teacher tokenizer.
-   * @throws IllegalArgumentException Thrown if the files are missing or malformed, the tokenizer
-   *     model is neither WordPiece nor Unigram, the vocabulary ids are not a gapless range, the
-   *     unknown token is missing, or the post-processor is of an unsupported type.
+   * @throws IllegalArgumentException Thrown if {@code tokenizerJsonFile} is {@code null} or
+   *     missing.
+   * @throws InvalidFormatException Thrown if a file is malformed, the tokenizer model is
+   *     neither WordPiece nor Unigram, the vocabulary ids are not a gapless range, the unknown
+   *     token is missing, or the post-processor is of an unsupported type.
    * @throws IOException Thrown if reading a file fails.
    */
   static TeacherTokenizer read(Path tokenizerJsonFile, Path tokenizerConfigFile)
@@ -166,11 +170,11 @@ final class TeacherTokenizer {
     }
     cursor.requireEnd("Trailing content after the top-level object");
     if (modelType == null || tokensById == null) {
-      throw new IllegalArgumentException(tokenizerJsonFile + " has no model with a vocabulary; "
+      throw new InvalidFormatException(tokenizerJsonFile + " has no model with a vocabulary; "
           + "it does not look like a teacher's tokenizer.json");
     }
     if (!WORDPIECE.equals(modelType) && !UNIGRAM.equals(modelType)) {
-      throw new IllegalArgumentException(tokenizerJsonFile + " has a '" + modelType
+      throw new InvalidFormatException(tokenizerJsonFile + " has a '" + modelType
           + "' tokenizer model; only " + WORDPIECE + " and " + UNIGRAM
           + " teachers are supported");
     }
@@ -180,14 +184,14 @@ final class TeacherTokenizer {
     }
     if (unkToken == null) {
       if (unkId == null || unkId < 0 || unkId >= tokensById.size()) {
-        throw new IllegalArgumentException(tokenizerJsonFile + " does not name an unknown token "
+        throw new InvalidFormatException(tokenizerJsonFile + " does not name an unknown token "
             + "(no model.unk_token / model.unk_id); a distilled table needs one");
       }
       unkToken = tokensById.get(unkId.intValue());
     }
     final Integer originalUnkId = idByToken.get(unkToken);
     if (originalUnkId == null) {
-      throw new IllegalArgumentException(tokenizerJsonFile + " names the unknown token '"
+      throw new InvalidFormatException(tokenizerJsonFile + " names the unknown token '"
           + unkToken + "' but it is not in the vocabulary");
     }
     // The wrapper ids come from the cls/sep pairs of a BertProcessing/RobertaProcessing
@@ -232,10 +236,11 @@ final class TeacherTokenizer {
    * @param specialTokenIds The post-processor's name-to-id table.
    * @param idByToken       The vocabulary, token to id.
    * @param file            The source file, for error messages.
-   * @throws IllegalArgumentException Thrown if a name resolves nowhere.
+   * @throws InvalidFormatException Thrown if a name resolves nowhere.
    */
   private static int[] resolveNames(List<String> names, Map<String, Long> specialTokenIds,
-                                    Map<String, Integer> idByToken, Path file) {
+                                    Map<String, Integer> idByToken, Path file)
+      throws InvalidFormatException {
     final int[] ids = new int[names.size()];
     for (int i = 0; i < names.size(); i++) {
       final Long specialId = specialTokenIds.get(names.get(i));
@@ -245,7 +250,7 @@ final class TeacherTokenizer {
       } else if (vocabId != null) {
         ids[i] = vocabId;
       } else {
-        throw new IllegalArgumentException(file + " wraps sequences in the special token '"
+        throw new InvalidFormatException(file + " wraps sequences in the special token '"
             + names.get(i) + "' but neither the post-processor nor the vocabulary defines it");
       }
     }
@@ -379,7 +384,8 @@ final class TeacherTokenizer {
    * @param newIdByOriginal The original-to-new id map.
    */
   private void rewriteModel(JsonCursor cursor, StringBuilder out,
-                            Map<Integer, Integer> newIdByOriginal) {
+                            Map<Integer, Integer> newIdByOriginal)
+      throws InvalidFormatException {
     cursor.expect('{');
     out.append('{');
     cursor.skipWhitespace();
@@ -431,7 +437,8 @@ final class TeacherTokenizer {
    * @param cursor          The cursor, positioned at the vocabulary's opening character.
    * @param newIdByOriginal The original-to-new id map.
    */
-  private String rewrittenVocab(JsonCursor cursor, Map<Integer, Integer> newIdByOriginal) {
+  private String rewrittenVocab(JsonCursor cursor, Map<Integer, Integer> newIdByOriginal)
+      throws InvalidFormatException {
     final StringBuilder out = new StringBuilder();
     if (cursor.peek() == '{') {
       cursor.consume();
@@ -586,7 +593,7 @@ final class TeacherTokenizer {
    *
    * @param cursor The cursor, positioned at the value.
    */
-  private String copyRawValue(JsonCursor cursor) {
+  private String copyRawValue(JsonCursor cursor) throws InvalidFormatException {
     final int start = cursor.position();
     cursor.skipValue();
     return json.substring(start, cursor.position());
@@ -603,7 +610,7 @@ final class TeacherTokenizer {
    * @param cursor The cursor, positioned at the object's opening brace.
    * @return The parsed section.
    */
-  private static ModelSection parseModel(JsonCursor cursor) {
+  private static ModelSection parseModel(JsonCursor cursor) throws InvalidFormatException {
     cursor.expect('{');
     cursor.skipWhitespace();
     String type = null;
@@ -649,7 +656,7 @@ final class TeacherTokenizer {
    *
    * @param cursor The cursor, positioned at the vocabulary's opening character.
    */
-  private static List<String> parseVocab(JsonCursor cursor) {
+  private static List<String> parseVocab(JsonCursor cursor) throws InvalidFormatException {
     if (cursor.peek() == '{') {
       cursor.consume();
       cursor.skipWhitespace();
@@ -725,7 +732,8 @@ final class TeacherTokenizer {
    *
    * @param cursor The cursor, positioned at the list's opening bracket.
    */
-  private static Set<String> parseAddedTokenContents(JsonCursor cursor) {
+  private static Set<String> parseAddedTokenContents(JsonCursor cursor)
+      throws InvalidFormatException {
     cursor.expect('[');
     cursor.skipWhitespace();
     final Set<String> contents = new HashSet<>();
@@ -792,9 +800,10 @@ final class TeacherTokenizer {
    *
    * @param cursor The cursor, positioned at the value.
    * @return The parsed post-processor.
-   * @throws IllegalArgumentException Thrown if the type is not one of the supported forms.
+   * @throws InvalidFormatException Thrown if the type is not one of the supported forms.
    */
-  private static PostProcessor parsePostProcessor(JsonCursor cursor) {
+  private static PostProcessor parsePostProcessor(JsonCursor cursor)
+      throws InvalidFormatException {
     if (cursor.consumeLiteral("null")) {
       return new PostProcessor(List.of(), List.of(), null, null, Map.of());
     }
@@ -847,7 +856,7 @@ final class TeacherTokenizer {
           new PostProcessor(bosNames, eosNames, null, null, specialTokenIds);
       case "BertProcessing", "RobertaProcessing" ->
           new PostProcessor(List.of(), List.of(), clsId, sepId, specialTokenIds);
-      default -> throw new IllegalArgumentException("The post_processor type '" + type
+      default -> throw new InvalidFormatException("The post_processor type '" + type
           + "' is not supported; expected TemplateProcessing, BertProcessing, or "
           + "RobertaProcessing");
     };
@@ -861,7 +870,8 @@ final class TeacherTokenizer {
    *
    * @param cursor The cursor, positioned at the template value.
    */
-  private static List<List<String>> parseTemplate(JsonCursor cursor) {
+  private static List<List<String>> parseTemplate(JsonCursor cursor)
+      throws InvalidFormatException {
     final List<String> bos = new ArrayList<>(1);
     final List<String> eos = new ArrayList<>(1);
     if (cursor.peek() == '"') {
@@ -950,7 +960,8 @@ final class TeacherTokenizer {
    *
    * @param cursor The cursor, positioned at the table's opening brace.
    */
-  private static Map<String, Long> parseSpecialTokenIds(JsonCursor cursor) {
+  private static Map<String, Long> parseSpecialTokenIds(JsonCursor cursor)
+      throws InvalidFormatException {
     cursor.expect('{');
     cursor.skipWhitespace();
     final Map<String, Long> ids = new HashMap<>();
@@ -1021,7 +1032,7 @@ final class TeacherTokenizer {
    *
    * @param cursor The cursor, positioned at the pair's opening bracket.
    */
-  private static Long parseTokenIdPair(JsonCursor cursor) {
+  private static Long parseTokenIdPair(JsonCursor cursor) throws InvalidFormatException {
     cursor.expect('[');
     cursor.skipWhitespace();
     cursor.parseString();

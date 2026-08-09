@@ -24,6 +24,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -76,7 +78,7 @@ class TokenizerJsonVocabTest {
 
     final Path contradicting = write("{\"added_tokens\":[{\"id\":0,\"content\":\"<s>\"}],"
         + "\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"<pad>\",0.0],[\"a\",-1.0]]}}");
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(contradicting));
     assertTrue(e.getMessage().contains("contradicts"), e.getMessage());
   }
@@ -86,7 +88,7 @@ class TokenizerJsonVocabTest {
     final Path file = write("{\"added_tokens\":[{\"id\":5,\"content\":\"<mask>\"}],"
         + "\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"a\",0.0]]}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(file));
     assertTrue(e.getMessage().contains("gap"), e.getMessage());
   }
@@ -115,7 +117,7 @@ class TokenizerJsonVocabTest {
   void testRejectsANonUnigramModel() throws IOException {
     final Path file = write("{\"model\":{\"type\":\"BPE\",\"vocab\":[[\"a\",0.0]]}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(file));
     assertTrue(e.getMessage().contains("BPE"), e.getMessage());
   }
@@ -126,7 +128,7 @@ class TokenizerJsonVocabTest {
     // are not list positions, so it must be refused rather than misread.
     final Path file = write("{\"model\":{\"type\":\"Unigram\",\"vocab\":{\"a\":0,\"b\":1}}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(file));
     assertTrue(e.getMessage().contains("object"), e.getMessage());
   }
@@ -134,11 +136,11 @@ class TokenizerJsonVocabTest {
   @Test
   void testRejectsAMissingVocab() throws IOException {
     final Path noModel = write("{\"version\":\"1.0\"}");
-    assertTrue(assertThrows(IllegalArgumentException.class,
+    assertTrue(assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(noModel)).getMessage().contains("model.vocab"));
 
     final Path noVocab = write("{\"model\":{\"type\":\"Unigram\"}}");
-    assertTrue(assertThrows(IllegalArgumentException.class,
+    assertTrue(assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(noVocab)).getMessage().contains("model.vocab"));
   }
 
@@ -147,7 +149,7 @@ class TokenizerJsonVocabTest {
     final Path file = write("{\"added_tokens\":[{\"content\":\"<mask>\"}],"
         + "\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"a\",0.0]]}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(file));
     assertTrue(e.getMessage().contains("id"), e.getMessage());
   }
@@ -157,7 +159,7 @@ class TokenizerJsonVocabTest {
     final Path file = write("{\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"a\",0.0]]},"
         + "\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"b\",0.0]]}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> TokenizerJsonVocab.rows(file));
     assertTrue(e.getMessage().contains("more than once"), e.getMessage());
   }
@@ -166,7 +168,7 @@ class TokenizerJsonVocabTest {
   void testRejectsMalformedJson() throws IOException {
     final Path file = write("{\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"a\",0.0]");
 
-    assertThrows(IllegalArgumentException.class, () -> TokenizerJsonVocab.rows(file));
+    assertThrows(InvalidFormatException.class, () -> TokenizerJsonVocab.rows(file));
   }
 
   @Test
@@ -174,7 +176,7 @@ class TokenizerJsonVocabTest {
     final Path file = write("{\"model\":{\"type\":\"Unigram\","
         + "\"vocab\":[[\"a\",0.0],[\"a\",-1.0]]}}");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> EmbeddingVocabulary.fromTokenizerJson(file));
     assertTrue(e.getMessage().contains("more than once"), e.getMessage());
   }

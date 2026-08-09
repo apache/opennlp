@@ -31,6 +31,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -150,7 +152,7 @@ class SafetensorsFileTest {
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
-    assertThrows(IllegalArgumentException.class, parsed::singleMatrixTensorName);
+    assertThrows(InvalidFormatException.class, parsed::singleMatrixTensorName);
   }
 
   @Test
@@ -160,7 +162,7 @@ class SafetensorsFileTest {
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
-    assertThrows(IllegalArgumentException.class, parsed::singleMatrixTensorName);
+    assertThrows(InvalidFormatException.class, parsed::singleMatrixTensorName);
   }
 
   @Test
@@ -171,8 +173,8 @@ class SafetensorsFileTest {
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> parsed.readFloat32("ids"));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> parsed.readFloat32("ids"));
     assertTrue(e.getMessage().contains("I64"));
   }
 
@@ -199,7 +201,7 @@ class SafetensorsFileTest {
     final Path file = dir.resolve("truncated.safetensors");
     Files.write(file, new byte[] {1, 2, 3});
 
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
   }
 
   @Test
@@ -209,7 +211,7 @@ class SafetensorsFileTest {
         .putLong(1000L).array();
     Files.write(file, prefix);
 
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
   }
 
   @Test
@@ -220,8 +222,8 @@ class SafetensorsFileTest {
         + "\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]}}";
     final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[] {1, 2, 3, 4});
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
     assertTrue(e.getMessage().contains("more than once"));
   }
 
@@ -230,7 +232,7 @@ class SafetensorsFileTest {
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1]}}";
     final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[0]);
 
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
   }
 
   @Test
@@ -238,7 +240,7 @@ class SafetensorsFileTest {
     final String header = singleTensorHeader("w", "F32", "[1]", 0, 999);
     final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[] {1, 2, 3, 4});
 
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
   }
 
   @Test
@@ -246,7 +248,7 @@ class SafetensorsFileTest {
     final String header = "{\"w\":{\"dtype\":\"F32";
     final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[0]);
 
-    assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
   }
 
   @Test
@@ -259,8 +261,8 @@ class SafetensorsFileTest {
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> parsed.readFloat32("w"));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> parsed.readFloat32("w"));
     assertTrue(e.getMessage().contains("more than a Java array can hold"));
   }
 
@@ -288,8 +290,8 @@ class SafetensorsFileTest {
     final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> parsed.readFloat32("w"));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> parsed.readFloat32("w"));
     assertTrue(e.getMessage().contains("2 F32 elements"), e.getMessage());
   }
 
@@ -353,6 +355,6 @@ class SafetensorsFileTest {
     final SafetensorsFile parsed = SafetensorsFile.read(file);
     // readFloats accepts it; the strict readFloat32 must not.
     assertArrayEquals(new float[] {1f, 2f}, parsed.readFloats("w"), 1e-3f);
-    assertThrows(IllegalArgumentException.class, () -> parsed.readFloat32("w"));
+    assertThrows(InvalidFormatException.class, () -> parsed.readFloat32("w"));
   }
 }

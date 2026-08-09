@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import opennlp.embeddings.ModelDistiller;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Distills a sentence-transformer teacher into a static embedding model directory, the
@@ -61,7 +62,7 @@ public class DistillModelTool extends BasicCmdLineTool {
     try {
       result = ModelDistiller.distill(params.getTeacher(), Path.of(params.getOut()),
           params.getPcaDims(), listener);
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | InvalidFormatException e) {
       throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,
