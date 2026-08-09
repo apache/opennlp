@@ -24,6 +24,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -84,8 +86,8 @@ class StaticEmbeddingModelSentencePieceQuantizedTest {
   void testBothMatrixFilesPresentIsRejected(@TempDir Path directory) throws IOException {
     fixture.write(directory, DIMENSION, true, SEED);
     ModelQuantizer.quantize(directory, 4, SEED);
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(directory));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(directory));
     assertTrue(e.getMessage().contains("has both"), e.getMessage());
   }
 
