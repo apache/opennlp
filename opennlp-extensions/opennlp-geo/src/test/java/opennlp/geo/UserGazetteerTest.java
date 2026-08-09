@@ -32,6 +32,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoBoundingBox;
 import opennlp.tools.geo.GeoPoint;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -123,39 +124,39 @@ public class UserGazetteerTest {
       "bad-population\tPlace\t\t1.0\t2.0\t\t\tmany",
       "only-one-column"})
   void testRejectsMalformedRowsWithTheLineNumber(String row) {
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> load(row + "\n"));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> load(row + "\n"));
     assertTrue(e.getMessage().startsWith("line 1 "), e.getMessage());
   }
 
   @Test
   void testRejectsARepeatedRecordId() {
     final String content = "a\tPlace One\t\t1.0\t2.0\na\tPlace Two\t\t3.0\t4.0\n";
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> load(content));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> load(content));
     assertEquals("line 2 repeats record id: a", e.getMessage());
   }
 
   @Test
   void testRejectsARepeatedAttributeKey() {
     final String content = "a\tPlace\t\t1.0\t2.0\t\t\t\t\t\tk=1\tk=2\n";
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> load(content));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> load(content));
     assertTrue(e.getMessage().contains("the attribute key repeats: k"), e.getMessage());
   }
 
   @Test
   void testRejectsContentWithoutRows() {
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> load("# only a comment\n\n"));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> load("# only a comment\n\n"));
     assertEquals("the table contains no rows", e.getMessage());
+    assertThrows(InvalidFormatException.class, () -> load(""));
   }
 
   @Test
   void testRejectsInvalidArguments() {
     assertThrows(IllegalArgumentException.class,
         () -> UserGazetteer.load((InputStream) null, "customer"));
-    assertThrows(IllegalArgumentException.class, () -> load(""));
     final InputStream in = new ByteArrayInputStream(new byte[0]);
     assertThrows(IllegalArgumentException.class, () -> UserGazetteer.load(in, null));
     assertThrows(IllegalArgumentException.class, () -> UserGazetteer.load(in, " "));
@@ -191,7 +192,7 @@ public class UserGazetteerTest {
   @ParameterizedTest
   @ValueSource(strings = {"a\tb\tc\td", "\tUS", "name\tUSA"})
   void testRejectsMalformedSuppressionsWithTheLineNumber(String line) {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> UserGazetteer.loadSuppressions(
             new ByteArrayInputStream((line + "\n").getBytes(StandardCharsets.UTF_8))));
     assertTrue(e.getMessage().startsWith("line 1 "), e.getMessage());

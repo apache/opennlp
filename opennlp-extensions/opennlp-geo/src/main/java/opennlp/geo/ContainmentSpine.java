@@ -36,6 +36,7 @@ import java.util.Set;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.PlaceAncestor;
 import opennlp.tools.geo.PlaceHierarchy;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -170,7 +171,9 @@ public final class ContainmentSpine implements PlaceHierarchy {
      *
      * @param table The table file, UTF-8. Must not be {@code null}.
      * @return This builder.
-     * @throws IOException Thrown if reading fails or a line is malformed.
+     * @throws IOException Thrown if reading fails.
+     * @throws InvalidFormatException Thrown if a line is malformed: too few columns, or
+     *         a blank id, name, or type column.
      * @throws IllegalArgumentException Thrown if {@code table} is {@code null}.
      */
     public Builder addTable(Path table) throws IOException {
@@ -185,13 +188,18 @@ public final class ContainmentSpine implements PlaceHierarchy {
         }
         final List<String> fields = splitOn(line, '\t');
         if (fields.size() < 4) {
-          throw new IOException("malformed containment line " + lineNumber
+          throw new InvalidFormatException("malformed containment line " + lineNumber
               + " in " + table);
         }
         final String parent = StringUtil.trimUnicodeWhitespace(fields.get(1));
-        add(StringUtil.trimUnicodeWhitespace(fields.get(0)), parent.isEmpty() ? null : parent,
-            StringUtil.trimUnicodeWhitespace(fields.get(2)),
-            StringUtil.trimUnicodeWhitespace(fields.get(3)));
+        try {
+          add(StringUtil.trimUnicodeWhitespace(fields.get(0)), parent.isEmpty() ? null : parent,
+              StringUtil.trimUnicodeWhitespace(fields.get(2)),
+              StringUtil.trimUnicodeWhitespace(fields.get(3)));
+        } catch (IllegalArgumentException e) {
+          throw new InvalidFormatException("malformed containment line " + lineNumber
+              + " in " + table + ": " + e.getMessage(), e);
+        }
       }
       return this;
     }
@@ -214,9 +222,10 @@ public final class ContainmentSpine implements PlaceHierarchy {
      *
      * @param metaCsv The meta CSV file, UTF-8. Must not be {@code null}.
      * @return This builder.
-     * @throws IOException Thrown if reading fails, the file is empty, a required column
-     *         is missing, a quoted field is unterminated, or a row is short, has an
-     *         empty name column, or has an empty placetype column.
+     * @throws IOException Thrown if reading fails.
+     * @throws InvalidFormatException Thrown if the file is empty, a required column is
+     *         missing, a quoted field is unterminated, or a row is short, has an empty
+     *         name column, or has an empty placetype column.
      * @throws IllegalArgumentException Thrown if {@code metaCsv} is {@code null}.
      */
     public Builder addWofMeta(Path metaCsv) throws IOException {
@@ -226,7 +235,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
       final WofMetaRows consumer = new WofMetaRows(this, metaCsv);
       parseCsv(metaCsv, consumer);
       if (!consumer.sawHeader) {
-        throw new IOException("empty meta CSV: " + metaCsv);
+        throw new InvalidFormatException("empty meta CSV: " + metaCsv);
       }
       return this;
     }
@@ -313,9 +322,9 @@ public final class ContainmentSpine implements PlaceHierarchy {
      *
      * @param line   The line the row starts on, counted from {@code 1}.
      * @param fields The row's fields, unquoted and in column order.
-     * @throws IOException Thrown if the row cannot be accepted.
+     * @throws InvalidFormatException Thrown if the row cannot be accepted.
      */
-    void row(int line, List<String> fields) throws IOException;
+    void row(int line, List<String> fields) throws InvalidFormatException;
   }
 
   /**
@@ -340,7 +349,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
     }
 
     @Override
-    public void row(int line, List<String> fields) throws IOException {
+    public void row(int line, List<String> fields) throws InvalidFormatException {
       if (!sawHeader) {
         sawHeader = true;
         idColumn = fields.indexOf("id");
@@ -348,7 +357,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
         nameColumn = fields.indexOf("name");
         typeColumn = fields.indexOf("placetype");
         if (idColumn < 0 || parentColumn < 0 || nameColumn < 0 || typeColumn < 0) {
-          throw new IOException(
+          throw new InvalidFormatException(
               "meta CSV lacks id, parent_id, name, or placetype columns: " + file);
         }
         lastColumn = Math.max(Math.max(idColumn, parentColumn),
@@ -356,20 +365,20 @@ public final class ContainmentSpine implements PlaceHierarchy {
         return;
       }
       if (fields.size() <= lastColumn) {
-        throw new IOException("short row at line " + line + " in " + file);
+        throw new InvalidFormatException("short row at line " + line + " in " + file);
       }
       final String id = StringUtil.trimUnicodeWhitespace(fields.get(idColumn));
       final String name = StringUtil.trimUnicodeWhitespace(fields.get(nameColumn));
       final String type = StringUtil.trimUnicodeWhitespace(fields.get(typeColumn));
       if (id.isEmpty()) {
-        throw new IOException("empty id column at line " + line + " in " + file);
+        throw new InvalidFormatException("empty id column at line " + line + " in " + file);
       }
       if (name.isEmpty()) {
-        throw new IOException("empty name column at line " + line + " in "
+        throw new InvalidFormatException("empty name column at line " + line + " in "
             + file + ": id " + id);
       }
       if (type.isEmpty()) {
-        throw new IOException("empty placetype column at line " + line + " in "
+        throw new InvalidFormatException("empty placetype column at line " + line + " in "
             + file + ": id " + id);
       }
       final String parent = StringUtil.trimUnicodeWhitespace(fields.get(parentColumn));
@@ -391,8 +400,9 @@ public final class ContainmentSpine implements PlaceHierarchy {
    *
    * @param file The CSV file, UTF-8.
    * @param consumer Receives each completed row with its starting line.
-   * @throws IOException Thrown if reading fails, a quoted field is never closed, a
-   *         quote appears inside an unquoted field, or content follows a closing quote.
+   * @throws IOException Thrown if reading fails.
+   * @throws InvalidFormatException Thrown if a quoted field is never closed, a quote
+   *         appears inside an unquoted field, or content follows a closing quote.
    */
   private static void parseCsv(Path file, CsvRows consumer) throws IOException {
     // The file streams through a replacing UTF-8 decoder, so tables larger than any
@@ -446,7 +456,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
           }
         } else if (c == '"') {
           if (field.length() > 0 || closedQuote) {
-            throw new IOException("stray quote in an unquoted field at line " + line
+            throw new InvalidFormatException("stray quote in an unquoted field at line " + line
                 + " in " + file);
           }
           quoted = true;
@@ -465,14 +475,14 @@ public final class ContainmentSpine implements PlaceHierarchy {
           rowLine = line;
         } else {
           if (closedQuote) {
-            throw new IOException("content after a closing quote at line " + line
+            throw new InvalidFormatException("content after a closing quote at line " + line
                 + " in " + file);
           }
           field.append(c);
         }
       }
       if (quoted) {
-        throw new IOException("unterminated quoted field starting at line " + quoteLine
+        throw new InvalidFormatException("unterminated quoted field starting at line " + quoteLine
             + " in " + file);
       }
       if (field.length() > 0 || !fields.isEmpty() || closedQuote) {
@@ -484,7 +494,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
 
   /** Hands the row to the consumer unless it is a blank line, which carries no fields. */
   private static void emitRow(CsvRows consumer, int line, List<String> fields)
-      throws IOException {
+      throws InvalidFormatException {
     if (fields.size() == 1 && fields.get(0).isEmpty()) {
       return;
     }

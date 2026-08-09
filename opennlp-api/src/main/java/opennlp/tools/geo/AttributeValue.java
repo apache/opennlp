@@ -17,6 +17,7 @@
 package opennlp.tools.geo;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.StringUtil;
 
 /**
  * One provenance-tagged attribute value of a {@link GazetteerEntry}: a value plus the identifier
@@ -24,9 +25,9 @@ import opennlp.tools.commons.ThreadSafe;
  *
  * <p>Instances are immutable and thread-safe.</p>
  *
- * @param value  The attribute value. Must not be {@code null} or empty.
+ * @param value  The attribute value. Must not be {@code null} or blank.
  * @param source The provenance tag, for example {@code naturalearth}, or {@link #SOURCE_UNSPECIFIED}
- *               for a project judgment with no dataset behind it. Must not be {@code null} or empty.
+ *               for a project judgment with no dataset behind it. Must not be {@code null} or blank.
  * @param notes  Free-text notes, for example the upstream field a value was derived from. Must not
  *               be {@code null}; may be empty.
  */
@@ -40,14 +41,14 @@ public record AttributeValue(String value, String source, String notes) {
    * Creates an attribute value.
    *
    * @throws IllegalArgumentException Thrown if {@code value} or {@code source} is {@code null} or
-   *     empty, or if {@code notes} is {@code null}.
+   *     blank, or if {@code notes} is {@code null}.
    */
   public AttributeValue {
-    if (value == null || value.isEmpty()) {
-      throw new IllegalArgumentException("value must not be null or empty");
+    if (StringUtil.isUnicodeBlank(value)) {
+      throw new IllegalArgumentException("value must not be null or blank");
     }
-    if (source == null || source.isEmpty()) {
-      throw new IllegalArgumentException("source must not be null or empty");
+    if (StringUtil.isUnicodeBlank(source)) {
+      throw new IllegalArgumentException("source must not be null or blank");
     }
     if (notes == null) {
       throw new IllegalArgumentException("notes must not be null");

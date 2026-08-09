@@ -38,6 +38,7 @@ import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoBoundingBox;
 import opennlp.tools.geo.GeoPoint;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -112,8 +113,9 @@ public final class UserGazetteer implements Gazetteer {
    *               {@code customer}. Must not be {@code null} or blank.
    * @return A loaded {@link UserGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if an argument violates its constraint, the table
-   *         contains no rows, a row is not in the documented format, or a record id repeats.
+   * @throws InvalidFormatException Thrown if the table contains no rows, a row is not in
+   *         the documented format, or a record id repeats.
+   * @throws IllegalArgumentException Thrown if an argument violates its constraint.
    */
   public static UserGazetteer load(Path table, String source) throws IOException {
     if (table == null) {
@@ -133,8 +135,9 @@ public final class UserGazetteer implements Gazetteer {
    *               {@code customer}. Must not be {@code null} or blank.
    * @return A loaded {@link UserGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if an argument violates its constraint, the content
-   *         contains no rows, a row is not in the documented format, or a record id repeats.
+   * @throws InvalidFormatException Thrown if the content contains no rows, a row is not
+   *         in the documented format, or a record id repeats.
+   * @throws IllegalArgumentException Thrown if an argument violates its constraint.
    */
   public static UserGazetteer load(InputStream in, String source) throws IOException {
     if (in == null) {
@@ -147,7 +150,7 @@ public final class UserGazetteer implements Gazetteer {
     final GazetteerIndex index = GazetteerIndex.load(in, true, (line, lineNumber) -> {
       final GazetteerEntry entry = parseRow(line, lineNumber, source);
       if (!seenIds.add(entry.recordId())) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "line " + lineNumber + " repeats record id: " + entry.recordId());
       }
       return entry;
@@ -164,8 +167,8 @@ public final class UserGazetteer implements Gazetteer {
    * @param table The tab-separated rules. Must not be {@code null}.
    * @return The rules in file order. Never {@code null}; possibly empty.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if {@code table} is {@code null} or a line is not a
-   *         valid rule.
+   * @throws InvalidFormatException Thrown if a line is not a valid rule.
+   * @throws IllegalArgumentException Thrown if {@code table} is {@code null}.
    */
   public static List<Suppression> loadSuppressions(Path table) throws IOException {
     if (table == null) {
@@ -184,8 +187,8 @@ public final class UserGazetteer implements Gazetteer {
    *           not closed.
    * @return The rules in file order. Never {@code null}; possibly empty.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown if {@code in} is {@code null} or a line is not a
-   *         valid rule.
+   * @throws InvalidFormatException Thrown if a line is not a valid rule.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    */
   public static List<Suppression> loadSuppressions(InputStream in) throws IOException {
     if (in == null) {
@@ -203,7 +206,7 @@ public final class UserGazetteer implements Gazetteer {
       }
       final String[] fields = line.split(FIELD_SEPARATOR, -1);
       if (fields.length > 3) {
-        throw new IllegalArgumentException("line " + lineNumber + " has " + fields.length
+        throw new InvalidFormatException("line " + lineNumber + " has " + fields.length
             + " columns, expected at most 3");
       }
       try {
@@ -211,7 +214,7 @@ public final class UserGazetteer implements Gazetteer {
             absent(fields, 1) ? null : fields[1].trim(),
             absent(fields, 2) ? null : fields[2].trim()));
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "line " + lineNumber + " is not a suppression rule: " + e.getMessage(), e);
       }
     }
@@ -252,10 +255,11 @@ public final class UserGazetteer implements Gazetteer {
   }
 
   /** Parses one row into an entry, failing loud with the line number. */
-  private static GazetteerEntry parseRow(String line, int lineNumber, String source) {
+  private static GazetteerEntry parseRow(String line, int lineNumber, String source)
+      throws InvalidFormatException {
     final String[] fields = line.split(FIELD_SEPARATOR, -1);
     if (fields.length < 2) {
-      throw new IllegalArgumentException("line " + lineNumber + " has " + fields.length
+      throw new InvalidFormatException("line " + lineNumber + " has " + fields.length
           + " columns, expected at least record id and name");
     }
     try {
@@ -283,7 +287,7 @@ public final class UserGazetteer implements Gazetteer {
           absent(fields, 6) ? null : fields[6].trim(),
           attributes);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(
+      throw new InvalidFormatException(
           "line " + lineNumber + " is not a gazetteer row: " + e.getMessage(), e);
     }
   }

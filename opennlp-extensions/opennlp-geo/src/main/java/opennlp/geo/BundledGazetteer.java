@@ -36,6 +36,7 @@ import opennlp.tools.geo.AttributeValue;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.normalizer.Term;
 import opennlp.tools.util.normalizer.TermAnalyzer;
 
@@ -230,7 +231,7 @@ public final class BundledGazetteer implements Gazetteer {
    * @param resourceName The name to report in error messages.
    * @return The parsed entries in file order, never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws IllegalArgumentException Thrown for any malformed row; the message names
+   * @throws InvalidFormatException Thrown for any malformed row; the message names
    *     {@code resourceName} and the line number.
    */
   static List<GazetteerEntry> parse(InputStream in, String resourceName) throws IOException {
@@ -253,10 +254,11 @@ public final class BundledGazetteer implements Gazetteer {
   /**
    * Parses one data line into a gazetteer entry.
    *
-   * @throws IllegalArgumentException Thrown if the line is malformed; the message names
+   * @throws InvalidFormatException Thrown if the line is malformed; the message names
    *     {@code resourceName} and {@code lineNumber}.
    */
-  private static GazetteerEntry parseRow(String line, String resourceName, int lineNumber) {
+  private static GazetteerEntry parseRow(String line, String resourceName, int lineNumber)
+      throws InvalidFormatException {
     // Scan the line into exactly FIELD_COUNT semicolon-separated fields.
     final String[] fields = new String[FIELD_COUNT];
     int fieldCount = 0;
@@ -351,12 +353,12 @@ public final class BundledGazetteer implements Gazetteer {
    *
    * @return The exception to throw for the malformed row.
    */
-  private static IllegalArgumentException malformed(String resourceName, int lineNumber,
-                                                    String line, Throwable cause) {
+  private static InvalidFormatException malformed(String resourceName, int lineNumber,
+                                                  String line, Throwable cause) {
     final String message = "Malformed gazetteer data in " + resourceName + " at line "
         + lineNumber + ": " + line;
     return cause == null
-        ? new IllegalArgumentException(message) : new IllegalArgumentException(message, cause);
+        ? new InvalidFormatException(message) : new InvalidFormatException(message, cause);
   }
 
   /**
@@ -364,9 +366,8 @@ public final class BundledGazetteer implements Gazetteer {
    *
    * @return The parsed entries in file order.
    * @throws IllegalStateException Thrown if the bundled data resource is missing.
-   * @throws UncheckedIOException Thrown if the resource cannot be read.
-   * @throws IllegalArgumentException Thrown if a row is malformed; the message names the resource
-   *     and line.
+   * @throws UncheckedIOException Thrown if the resource cannot be read or a row is malformed;
+   *     for a malformed row the cause names the resource and line.
    */
   private static List<GazetteerEntry> load() {
     try (InputStream in = BundledGazetteer.class.getResourceAsStream(RESOURCE)) {
@@ -375,7 +376,7 @@ public final class BundledGazetteer implements Gazetteer {
       }
       return parse(in, RESOURCE);
     } catch (IOException e) {
-      throw new UncheckedIOException("Unable to read gazetteer data resource " + RESOURCE, e);
+      throw new UncheckedIOException("Unable to load gazetteer data resource " + RESOURCE, e);
     }
   }
 

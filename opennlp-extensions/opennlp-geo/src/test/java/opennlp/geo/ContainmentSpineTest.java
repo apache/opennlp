@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.geo.PlaceAncestor;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Tests the containment hierarchy against project-authored miniature tables; no
@@ -219,7 +220,7 @@ public class ContainmentSpineTest {
         "456,-1,Brazil,country",
         "").getBytes(StandardCharsets.UTF_8));
 
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(meta));
     Assertions.assertTrue(e.getMessage().contains("unterminated quoted field"),
         e.getMessage());
@@ -239,7 +240,7 @@ public class ContainmentSpineTest {
         "857,86,,county",
         "").getBytes(StandardCharsets.UTF_8));
 
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(meta));
     Assertions.assertTrue(e.getMessage().contains("empty name"), e.getMessage());
     Assertions.assertTrue(e.getMessage().contains("857"), e.getMessage());
@@ -258,7 +259,7 @@ public class ContainmentSpineTest {
         "857,86,Kings County,",
         "").getBytes(StandardCharsets.UTF_8));
 
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(meta));
     Assertions.assertTrue(e.getMessage().contains("empty placetype"), e.getMessage());
     Assertions.assertTrue(e.getMessage().contains("857"), e.getMessage());
@@ -277,7 +278,7 @@ public class ContainmentSpineTest {
         ",86,Kings County,county",
         "").getBytes(StandardCharsets.UTF_8));
 
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(meta));
     Assertions.assertTrue(e.getMessage().contains("empty id column"), e.getMessage());
     Assertions.assertTrue(e.getMessage().contains("line 2"), e.getMessage());
@@ -297,7 +298,7 @@ public class ContainmentSpineTest {
         "456,-1,New York,locality",
         "").getBytes(StandardCharsets.UTF_8));
 
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(meta));
     Assertions.assertTrue(e.getMessage().contains("stray quote"), e.getMessage());
     Assertions.assertTrue(e.getMessage().contains("line 2"), e.getMessage());
@@ -316,7 +317,7 @@ public class ContainmentSpineTest {
         "123,456,\"Kings\"County,county",
         "").getBytes(StandardCharsets.UTF_8));
 
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(meta));
     Assertions.assertTrue(e.getMessage().contains("after a closing quote"),
         e.getMessage());
@@ -381,7 +382,7 @@ public class ContainmentSpineTest {
         "456,-1,,country",
         "").getBytes(StandardCharsets.UTF_8));
 
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(meta));
     Assertions.assertTrue(e.getMessage().contains("empty name"), e.getMessage());
     Assertions.assertTrue(e.getMessage().contains("line 4"), e.getMessage());
@@ -391,13 +392,30 @@ public class ContainmentSpineTest {
   void testMalformedTablesFailLoud(@TempDir Path dir) throws IOException {
     final Path bad = dir.resolve("bad.tsv");
     Files.write(bad, "onlyone\n".getBytes(StandardCharsets.UTF_8));
-    Assertions.assertThrows(IOException.class,
+    Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addTable(bad));
 
     final Path noColumns = dir.resolve("meta.csv");
     Files.write(noColumns, "a,b,c\n1,2,3\n".getBytes(StandardCharsets.UTF_8));
-    Assertions.assertThrows(IOException.class,
+    Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(noColumns));
+  }
+
+  /**
+   * Asserts that a neutral-table row whose required column is blank fails as malformed
+   * content, naming the offending line, rather than as a bare argument rejection
+   * without any file context.
+   */
+  @Test
+  void testNeutralTableRowWithBlankNameFailsLoud(@TempDir Path dir) throws IOException {
+    final Path blankName = dir.resolve("blank-name.tsv");
+    Files.write(blankName, "x1\t\t \tregion\n".getBytes(StandardCharsets.UTF_8));
+
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
+        () -> ContainmentSpine.builder().addTable(blankName));
+    Assertions.assertTrue(e.getMessage().contains("line 1"), e.getMessage());
+    Assertions.assertTrue(e.getMessage().contains("name must not be null or blank"),
+        e.getMessage());
   }
 
   @Test

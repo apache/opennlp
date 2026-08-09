@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.StringUtil;
 
 /**
  * One gazetteer record: a named place with its location, coarse classification, and
@@ -37,13 +38,13 @@ import opennlp.tools.commons.ThreadSafe;
  * to immutable views at construction.</p>
  *
  * @param source         The dataset identifier, for example {@code naturalearth}, {@code overture},
- *                       or {@code geonames}. Must not be {@code null} or empty.
+ *                       or {@code geonames}. Must not be {@code null} or blank.
  * @param recordId       The source-scoped stable identifier, opaque to consumers. Must not be
- *                       {@code null} or empty. Only ({@code source}, {@code recordId}) together
+ *                       {@code null} or blank. Only ({@code source}, {@code recordId}) together
  *                       identify a record.
- * @param name           The canonical place name. Must not be {@code null} or empty.
+ * @param name           The canonical place name. Must not be {@code null} or blank.
  * @param alternateNames The alternate names, possibly empty. Must not be {@code null} or contain
- *                       {@code null} or empty elements.
+ *                       {@code null} or blank elements.
  * @param location       The point location. Must not be {@code null}.
  * @param boundingBox    The bounding box enclosing the place's extent, or {@code null} when the
  *                       source provides none. Whether {@code location} lies inside the box is the
@@ -52,7 +53,7 @@ import opennlp.tools.commons.ThreadSafe;
  *                       (for example a disputed territory the source assigns no code). When
  *                       present it must be exactly two ASCII capital letters.
  * @param containment    The administrative containment chain, outermost first, possibly empty.
- *                       Must not be {@code null} or contain {@code null} or empty elements.
+ *                       Must not be {@code null} or contain {@code null} or blank elements.
  * @param population     The population, {@code 0} when unknown or genuinely zero. Must not be
  *                       negative. Consumers that rank or score by population must treat {@code 0}
  *                       as absent evidence, never as a confirmed empty place.
@@ -60,10 +61,10 @@ import opennlp.tools.commons.ThreadSafe;
  *                       {@code FEATURE_CLASS_*} constants on this record ({@link
  *                       #FEATURE_CLASS_CITY}, {@link #FEATURE_CLASS_ADMIN},
  *                       {@link #FEATURE_CLASS_POI}); {@code null} when unknown. Must not be
- *                       empty when present.
+ *                       blank when present.
  * @param attributes     The dataset-specific extras keyed by attribute name, each value carrying
  *                       its own provenance. Must not be {@code null} or contain {@code null} or
- *                       empty keys or {@code null} values.
+ *                       blank keys or {@code null} values.
  */
 @ThreadSafe
 public record GazetteerEntry(
@@ -112,22 +113,22 @@ public record GazetteerEntry(
    * @throws IllegalArgumentException Thrown if any component violates its documented constraint.
    */
   public GazetteerEntry {
-    if (source == null || source.isEmpty()) {
-      throw new IllegalArgumentException("source must not be null or empty");
+    if (StringUtil.isUnicodeBlank(source)) {
+      throw new IllegalArgumentException("source must not be null or blank");
     }
-    if (recordId == null || recordId.isEmpty()) {
-      throw new IllegalArgumentException("recordId must not be null or empty");
+    if (StringUtil.isUnicodeBlank(recordId)) {
+      throw new IllegalArgumentException("recordId must not be null or blank");
     }
-    if (name == null || name.isEmpty()) {
-      throw new IllegalArgumentException("name must not be null or empty");
+    if (StringUtil.isUnicodeBlank(name)) {
+      throw new IllegalArgumentException("name must not be null or blank");
     }
     if (alternateNames == null) {
       throw new IllegalArgumentException("alternateNames must not be null");
     }
     for (final String alternateName : alternateNames) {
-      if (alternateName == null || alternateName.isEmpty()) {
+      if (StringUtil.isUnicodeBlank(alternateName)) {
         throw new IllegalArgumentException(
-            "alternateNames must not contain a null or empty element, got: " + alternateNames);
+            "alternateNames must not contain a null or blank element, got: " + alternateNames);
       }
     }
     if (location == null) {
@@ -142,24 +143,24 @@ public record GazetteerEntry(
       throw new IllegalArgumentException("containment must not be null");
     }
     for (final String level : containment) {
-      if (level == null || level.isEmpty()) {
+      if (StringUtil.isUnicodeBlank(level)) {
         throw new IllegalArgumentException(
-            "containment must not contain a null or empty element, got: " + containment);
+            "containment must not contain a null or blank element, got: " + containment);
       }
     }
     if (population < 0) {
       throw new IllegalArgumentException("population must not be negative, got: " + population);
     }
-    if (featureClass != null && featureClass.isEmpty()) {
-      throw new IllegalArgumentException("featureClass must be null when unknown, not empty");
+    if (featureClass != null && StringUtil.isUnicodeBlank(featureClass)) {
+      throw new IllegalArgumentException("featureClass must be null when unknown, not blank");
     }
     if (attributes == null) {
       throw new IllegalArgumentException("attributes must not be null");
     }
     for (final Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      if (entry.getKey() == null || entry.getKey().isEmpty() || entry.getValue() == null) {
+      if (StringUtil.isUnicodeBlank(entry.getKey()) || entry.getValue() == null) {
         throw new IllegalArgumentException(
-            "attributes must not contain a null or empty key or a null value, got: " + attributes);
+            "attributes must not contain a null or blank key or a null value, got: " + attributes);
       }
     }
     alternateNames = List.copyOf(alternateNames);
