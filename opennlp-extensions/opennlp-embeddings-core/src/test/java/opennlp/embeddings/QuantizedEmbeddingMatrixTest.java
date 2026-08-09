@@ -323,7 +323,7 @@ class QuantizedEmbeddingMatrixTest {
     bytes[11] = (byte) overflowingDimension;
     final Path patched = directory.resolve("overflow.bin");
     Files.write(patched, bytes);
-    assertThrows(IllegalArgumentException.class, () -> QuantizedEmbeddingMatrix.read(patched));
+    assertThrows(InvalidFormatException.class, () -> QuantizedEmbeddingMatrix.read(patched));
   }
 
   @Test
