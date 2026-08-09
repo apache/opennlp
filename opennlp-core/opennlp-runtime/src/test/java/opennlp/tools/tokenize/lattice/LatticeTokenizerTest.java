@@ -760,19 +760,39 @@ public class LatticeTokenizerTest {
   }
 
   /**
-   * Verifies that a matrix whose cell count is above {@link ResourceLimits#MAX_ENTRIES}
-   * but still below {@link Integer#MAX_VALUE} is rejected. Without that bound, a header
-   * such as {@code 46340 46340} would allocate about 4 GiB of shorts.
+   * Verifies that a matrix whose cell count is above
+   * {@link ResourceLimits#MAX_MATRIX_CELLS} but still below {@link Integer#MAX_VALUE}
+   * is rejected. Without that bound, a header such as {@code 46340 46340} would
+   * allocate about 4 GiB of shorts.
    */
   @Test
-  void testMatrixCellCountAboveMaxEntriesFailsLoud(@TempDir Path broken) throws IOException {
+  void testMatrixCellCountAboveMaxCellsFailsLoud(@TempDir Path broken) throws IOException {
     writeUnitMatrixDictionary(broken);
-    // 5000 x 5000 = 25_000_000 cells, above the default MAX_ENTRIES of 10_000_000.
-    write(broken, MATRIX_DEF, "5000 5000\n");
+    // 11600 x 11600 = 134_560_000 cells, above the default MAX_MATRIX_CELLS of 2^27.
+    write(broken, MATRIX_DEF, "11600 11600\n");
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(broken));
-    Assertions.assertEquals("matrix.def dimensions 5000 x 5000 exceed safe limit of "
-        + ResourceLimits.MAX_ENTRIES, e.getMessage());
+    Assertions.assertEquals("matrix.def dimensions 11600 x 11600 exceed safe limit of "
+        + ResourceLimits.MAX_MATRIX_CELLS, e.getMessage());
+  }
+
+  /**
+   * Verifies that the dimensions of a real published distribution pass the header
+   * bound. mecab-ko-dic 2.1.1 declares {@code 3822 2693}, which is 10,292,646 cells:
+   * above {@link ResourceLimits#MAX_ENTRIES} but a legitimate 20 MB cost matrix, so
+   * the cell bound must be sized to cells rather than reusing the entry bound. The
+   * load still fails on the truncated body, but with the incomplete-matrix message,
+   * not the safe-limit one.
+   */
+  @Test
+  void testKoDicSizedMatrixDimensionsPassTheHeaderBound(@TempDir Path koDic)
+      throws IOException {
+    writeUnitMatrixDictionary(koDic);
+    write(koDic, MATRIX_DEF, "3822 2693\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(koDic));
+    Assertions.assertEquals("matrix.def declares 3822 x 2693 connection costs but only 0"
+        + " pairs are listed", e.getMessage());
   }
 
   /**
