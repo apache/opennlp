@@ -226,8 +226,8 @@ class StaticEmbeddingModelQuantizedTest {
     final List<String> extended = new ArrayList<>(Files.readAllLines(vocabularyFile));
     extended.add("straggler");
     Files.write(vocabularyFile, extended);
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(directory));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(directory));
     assertTrue(e.getMessage().contains("do not belong to the same model"), e.getMessage());
   }
 
