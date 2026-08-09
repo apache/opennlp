@@ -278,7 +278,7 @@ gazetteer.lookup("Tokyo");   // the base still answers everything else]]>
 		</para>
 	</section>
 
-	<section xml:id="tools.geo.hierarchy">
+	<section xml:id="tools.geo.containment">
 		<title>Place hierarchies</title>
 		<para>
 			A <code>PlaceHierarchy</code> reports the chain of places enclosing a
