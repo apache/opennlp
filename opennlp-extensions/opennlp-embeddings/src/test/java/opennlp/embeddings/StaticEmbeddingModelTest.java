@@ -350,6 +350,21 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testDirectoryLoadReadsCasedFromTheTokenizerConfig(@TempDir Path dir) throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    writeConfigs(dir, "false", "false");
+
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(dir);
+
+    // do_lower_case=false maps to Casing.CASED: lower-case text still matches the vocabulary...
+    assertArrayEquals(new float[] {3.5f, 35f, 350f}, model.embed("hello world"), 1e-5f);
+    // ...but upper-case text is preserved as-is, matches no cased vocabulary entry, folds to
+    // the (skipped) [UNK], and pools to the zero vector instead of being lower-cased first.
+    assertArrayEquals(new float[] {0f, 0f, 0f}, model.embed("HELLO WORLD"), 1e-5f);
+  }
+
+  @Test
   void testDirectoryLoadReadsNormalizeFromTheConfig(@TempDir Path dir) throws IOException {
     writeVocab(dir);
     writeSafetensors(dir, false);
