@@ -27,9 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Pins the cookbook path documented in {@code embeddings.xml}, mirroring its usage listing:
- * load a model directory with {@link StaticEmbeddingModel#load(Path)}, embed a text, and call
- * {@code similarity}, {@code mostSimilar}, and {@code analogy}.
+ * Pins the cookbook paths documented in {@code embeddings.xml}, mirroring its listings: load a
+ * model directory with {@link StaticEmbeddingModel#load(Path)}, embed a text, and call
+ * {@code similarity}, {@code mostSimilar}, and {@code analogy}; and load through the explicit
+ * WordPiece and SentencePiece overloads.
  */
 public class StaticEmbeddingUsageExampleTest {
 
@@ -51,5 +52,45 @@ public class StaticEmbeddingUsageExampleTest {
     final List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);
     assertEquals(1, analogy.size());
     assertEquals("queen", analogy.get(0).token());
+  }
+
+  @Test
+  void testExplicitOverloads(@TempDir Path wordPieceDir, @TempDir Path sentencePieceDir)
+      throws IOException {
+    EmbeddingTestFixtures.writeAnalogyDirectory(wordPieceDir);
+    EmbeddingTestFixtures.writeSentencePieceDirectory(sentencePieceDir);
+
+    // The manual's explicit WordPiece overload: the data files plus the two switches the
+    // model's configuration publishes.
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(
+        wordPieceDir.resolve("vocab.txt"), wordPieceDir.resolve("model.safetensors"),
+        StaticEmbeddingModel.Casing.UNCASED,
+        StaticEmbeddingModel.Normalization.L2);
+    assertEquals(2, model.dimension());
+    assertUnitLength(model.embed("king"));
+
+    // The manual's explicit SentencePiece overload: no casing switch, because the trained
+    // .model file carries the model's own text normalizer.
+    final StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
+        sentencePieceDir.resolve("sentencepiece.bpe.model"),
+        sentencePieceDir.resolve("tokenizer.json"),
+        sentencePieceDir.resolve("model.safetensors"),
+        StaticEmbeddingModel.Normalization.L2);
+    assertEquals(EmbeddingTestFixtures.SENTENCEPIECE_DIMENSION, multilingual.dimension());
+    assertUnitLength(multilingual.embed("a"));
+  }
+
+  /**
+   * Asserts that a vector has unit L2 length, the visible effect of choosing
+   * {@code Normalization.L2} in the explicit overloads.
+   *
+   * @param vector The vector to measure.
+   */
+  private static void assertUnitLength(float[] vector) {
+    double normSquared = 0;
+    for (final float v : vector) {
+      normSquared += (double) v * v;
+    }
+    assertEquals(1.0, Math.sqrt(normSquared), 1e-5);
   }
 }

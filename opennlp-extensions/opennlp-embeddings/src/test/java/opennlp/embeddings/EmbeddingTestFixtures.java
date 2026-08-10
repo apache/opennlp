@@ -16,13 +16,17 @@
  */
 package opennlp.embeddings;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.embeddings.StaticEmbeddingModel.Casing;
 import opennlp.embeddings.StaticEmbeddingModel.Normalization;
+import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 
 /**
  * Fixtures shared by more than one test in this module: the small WordPiece table the geometry
@@ -95,6 +99,59 @@ final class EmbeddingTestFixtures {
     Files.write(dir.resolve("vocab.txt"), ANALOGY_VOCABULARY);
     SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
         SafetensorsTestFiles.matrix("embeddings", ANALOGY_ROWS));
+  }
+
+  /** The classpath resource of the tiny trained SentencePiece model shared by the tests. */
+  static final String TINY_UNIGRAM_RESOURCE = "/opennlp/embeddings/tiny-unigram.model";
+
+  /** The row width of the matrix {@link #writeSentencePieceDirectory(Path)} writes. */
+  static final int SENTENCEPIECE_DIMENSION = 4;
+
+  /**
+   * Writes a minimal loadable SentencePiece model into a directory: the trained
+   * {@code tiny-unigram.model} fixture copied as {@code sentencepiece.bpe.model}, a Unigram
+   * {@code tokenizer.json} whose vocabulary is the unknown piece followed by every poolable
+   * tokenizer piece, and a deterministic embedding matrix with one row per listed piece. A test
+   * can then load it through the explicit
+   * {@code StaticEmbeddingModel.loadSentencePiece(Path, Path, Path, Normalization)} overload
+   * the way the manual's listing shows.
+   *
+   * @param dir The directory to write the model files into.
+   * @throws IOException Thrown if reading the fixture resource or writing a file fails.
+   */
+  static void writeSentencePieceDirectory(Path dir) throws IOException {
+    final byte[] modelBytes;
+    try (InputStream in =
+             EmbeddingTestFixtures.class.getResourceAsStream(TINY_UNIGRAM_RESOURCE)) {
+      modelBytes = in.readAllBytes();
+    }
+    Files.write(dir.resolve("sentencepiece.bpe.model"), modelBytes);
+    final SentencePieceTokenizer tokenizer =
+        SentencePieceTokenizer.load(new ByteArrayInputStream(modelBytes));
+    final List<String> rows = new ArrayList<>();
+    rows.add("<unk>");
+    for (int id = 0; id < tokenizer.vocabularySize(); id++) {
+      if (!tokenizer.isControl(id) && !tokenizer.isUnknown(id)) {
+        rows.add(tokenizer.idToPiece(id));
+      }
+    }
+    final StringBuilder json =
+        new StringBuilder("{\"model\":{\"type\":\"Unigram\",\"unk_id\":0,\"vocab\":[");
+    for (int i = 0; i < rows.size(); i++) {
+      if (i > 0) {
+        json.append(',');
+      }
+      json.append('[').append(jsonString(rows.get(i))).append(",-1.5]");
+    }
+    Files.writeString(dir.resolve("tokenizer.json"), json.append("]}}").toString());
+    final float[][] matrix = new float[rows.size()][SENTENCEPIECE_DIMENSION];
+    for (int row = 0; row < matrix.length; row++) {
+      for (int d = 0; d < SENTENCEPIECE_DIMENSION; d++) {
+        matrix[row][d] = row + d * 0.25f;
+      }
+    }
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
+        SafetensorsTestFiles.matrix("embeddings", matrix));
   }
 
   /**

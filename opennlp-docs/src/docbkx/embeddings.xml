@@ -106,6 +106,10 @@ StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
 ]]>
 		</programlisting>
 		<para>
+			The <code>testExplicitOverloads</code> case of
+			<code>StaticEmbeddingUsageExampleTest</code> asserts the two overloads shown here.
+		</para>
+		<para>
 			Matrix rows are resolved by piece string, never by tokenizer id, because the two
 			files of a SentencePiece model routinely order and offset their ids differently. A
 			poolable piece with no matrix row fails loud at load time. Distillation output
