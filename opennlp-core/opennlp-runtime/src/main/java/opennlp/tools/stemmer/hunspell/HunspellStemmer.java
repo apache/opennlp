@@ -547,7 +547,10 @@ public final class HunspellStemmer implements Stemmer {
    * the strip string the rule removed on application, and checks the rule's condition
    * against the restored stem. A strip-only rule, whose affix material is empty, is
    * undone by restoring its strip string alone. Rules that neither add nor remove
-   * material and candidates that would leave an empty stem are rejected.
+   * material and candidates that would leave an empty stem are rejected. A word the
+   * affix material covers entirely reverses a full-strip application, which hunspell
+   * only performs when the affix file declares {@code FULLSTRIP}; without that
+   * declaration the rule does not apply.
    *
    * @param word The surface form.
    * @param suffix The rule to undo.
@@ -557,7 +560,8 @@ public final class HunspellStemmer implements Stemmer {
     final String affix = suffix.affix();
     final String strip = suffix.strip();
     if (affix.isEmpty() && strip.isEmpty() || !word.endsWith(affix)
-        || word.length() - affix.length() + strip.length() == 0) {
+        || word.length() - affix.length() + strip.length() == 0
+        || (word.length() == affix.length() && !dictionary.fullStrip())) {
       return null;
     }
     final String stem = word.substring(0, word.length() - affix.length()) + strip;
@@ -569,7 +573,10 @@ public final class HunspellStemmer implements Stemmer {
    * restores the strip string the rule removed on application, and checks the rule's
    * condition against the restored stem. A strip-only rule, whose affix material is
    * empty, is undone by restoring its strip string alone. Rules that neither add nor
-   * remove material and candidates that would leave an empty stem are rejected.
+   * remove material and candidates that would leave an empty stem are rejected. A
+   * word the affix material covers entirely reverses a full-strip application, which
+   * hunspell only performs when the affix file declares {@code FULLSTRIP}; without
+   * that declaration the rule does not apply.
    *
    * @param word The surface form.
    * @param prefix The rule to undo.
@@ -579,7 +586,8 @@ public final class HunspellStemmer implements Stemmer {
     final String affix = prefix.affix();
     final String strip = prefix.strip();
     if (affix.isEmpty() && strip.isEmpty() || !word.startsWith(affix)
-        || word.length() - affix.length() + strip.length() == 0) {
+        || word.length() - affix.length() + strip.length() == 0
+        || (word.length() == affix.length() && !dictionary.fullStrip())) {
       return null;
     }
     final String stem = strip + word.substring(affix.length());
