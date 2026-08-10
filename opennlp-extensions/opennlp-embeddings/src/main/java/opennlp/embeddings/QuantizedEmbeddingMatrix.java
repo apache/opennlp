@@ -42,10 +42,12 @@ import opennlp.tools.util.InvalidFormatException;
  * its grid levels; the scale is least-squares fitted per row, which strictly reduces the squared
  * error of the fixed grid.
  *
- * <p>The storage is {@code bits} per dimension plus one float per row, against 32 bits per
- * dimension for the float matrix: a 500,000-row, 300-dimension table shrinks from roughly 600 MB
- * to 77 MB at 4 bits (the padded dimension, 512 here, is what is stored). The workload this
- * serves is memory-bound row gathering, so reading fewer bytes is also the throughput lever.</p>
+ * <p>The storage is {@code bits} per <em>padded</em> dimension plus two floats per row (the
+ * fitted scale and the decoded norm), against 32 bits per dimension for the float matrix. The
+ * rotation pads each row to the next power of two, so a 500,000-row, 300-dimension table stores
+ * 512 coded dimensions per row and shrinks from roughly 600 MB to about 132 MB at 4 bits, 4.5
+ * times smaller. The workload this serves is memory-bound row gathering, so reading fewer bytes
+ * is also the throughput lever.</p>
  *
  * <p>Rows live in <b>rotated space</b>, and the cheap operations stay there: the rotation is
  * orthonormal, so dot products and norms of rotated vectors equal those of the originals, and
