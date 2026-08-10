@@ -280,6 +280,36 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testLoadRejectsANonFiniteMatrixValue(@TempDir Path dir) throws IOException {
+    // The distiller replaces non-finite teacher values with zero before writing, so a NaN in a
+    // loaded matrix marks a corrupt or foreign file. It must fail loud at load time: a NaN row
+    // defeats both the zero-norm guard and every similarity comparison downstream.
+    final float[][] rows = new float[ROWS.length][];
+    for (int r = 0; r < ROWS.length; r++) {
+      rows[r] = ROWS[r].clone();
+    }
+    rows[4][1] = Float.NaN;
+    final Path vocab = writeVocab(dir);
+    final Path nanTensors = dir.resolve("nan.safetensors");
+    SafetensorsTestFiles.write(nanTensors, SafetensorsTestFiles.matrix("embeddings", rows));
+
+    final InvalidFormatException nan = assertThrows(InvalidFormatException.class,
+        () -> StaticEmbeddingModel.load(vocab, nanTensors, Casing.UNCASED, Normalization.NONE));
+    assertTrue(nan.getMessage().contains("row 4"), nan.getMessage());
+
+    // An infinity is just as corrupting and must be rejected the same way.
+    rows[4][1] = Float.POSITIVE_INFINITY;
+    final Path infiniteTensors = dir.resolve("infinite.safetensors");
+    SafetensorsTestFiles.write(infiniteTensors,
+        SafetensorsTestFiles.matrix("embeddings", rows));
+
+    final InvalidFormatException infinite = assertThrows(InvalidFormatException.class,
+        () -> StaticEmbeddingModel.load(vocab, infiniteTensors,
+            Casing.UNCASED, Normalization.NONE));
+    assertTrue(infinite.getMessage().contains("row 4"), infinite.getMessage());
+  }
+
+  @Test
   void testLoadRejectsWeightsSizeMismatch(@TempDir Path dir) throws IOException {
     // A weights tensor sized for a different (smaller) vocabulary than the embedding matrix.
     final Path file = dir.resolve("mismatched.safetensors");
