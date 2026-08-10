@@ -117,9 +117,18 @@ public class MorphyLemmatizerTest {
   @Test
   void testListFormReturnsAllCandidates() {
     final List<List<String>> lemmas = morphy().lemmatize(
-        List.of("glarbs", "berries"), List.of("NNS", "NNS"));
+        List.of("glarbs", "berries", "axes"), List.of("NNS", "NNS", "NNS"));
     assertEquals(List.of("O"), lemmas.get(0));
     assertEquals(List.of("berry"), lemmas.get(1));
+    // The fixture noun.exc lists axes with two base forms; both come back, in file order.
+    assertEquals(List.of("axis", "ax"), lemmas.get(2));
+  }
+
+  @Test
+  void testArrayFormReturnsFirstOfSeveralCandidates() {
+    // The list form above returns both base forms of axes; the array form keeps only the
+    // first, most preferred one.
+    assertEquals("axis", one("axes", "NNS"));
   }
 
   @Test
