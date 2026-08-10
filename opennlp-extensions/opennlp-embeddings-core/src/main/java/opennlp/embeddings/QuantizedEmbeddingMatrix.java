@@ -511,8 +511,10 @@ public final class QuantizedEmbeddingMatrix {
    * @param file The file to read. Must not be {@code null}.
    * @return The quantized matrix.
    * @throws IllegalArgumentException Thrown if {@code file} is {@code null}.
-   * @throws InvalidFormatException Thrown if the content is not a quantized matrix of a
-   *     supported version or declares implausible sizes.
+   * @throws InvalidFormatException Thrown if the content is malformed: not a quantized matrix
+   *     of a supported version, declaring sizes the file's bytes cannot back or this reader
+   *     cannot store, storing an invalid grid or non-finite per-row values, or carrying
+   *     trailing bytes after the declared content.
    * @throws IOException Thrown if reading fails or the file is truncated.
    */
   public static QuantizedEmbeddingMatrix read(Path file) throws IOException {
@@ -555,11 +557,37 @@ public final class QuantizedEmbeddingMatrix {
         throw new InvalidFormatException(file + " declares " + levelCount + " grid levels "
             + "for " + bits + " bits; expected " + (1 << bits));
       }
+      final int rowBytes;
+      try {
+        rowBytes = rowByteCount(HadamardRotation.paddedDimension(dimension), bits);
+        requireStorableSize(rowCount, rowBytes);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidFormatException(file + " declares a matrix this reader cannot "
+            + "store: " + e.getMessage());
+      }
+      // The header fully determines the file size: 28 fixed bytes (magic, row count, dimension,
+      // and bit width at 4 each, the 8-byte seed, the 4-byte level count), the grid levels, a
+      // scale and a decoded norm per row, the 1-byte pooling-weight flag, and the packed codes.
+      // Everything past this point allocates per-row storage, so the declared total is held
+      // against the bytes actually present first: a small hostile file must not force a giant
+      // allocation before its content is ever read.
+      final long declaredBytes = 28L + 4L * levelCount + (8L + rowBytes) * rowCount + 1L;
+      if (declaredBytes > fileSize) {
+        throw new InvalidFormatException(file + " declares " + rowCount + " rows and "
+            + "dimension " + dimension + " at " + bits + " bits, needing at least "
+            + declaredBytes + " bytes of scales, norms, and packed codes, but holds only "
+            + fileSize + " bytes");
+      }
       final float[] levels = new float[levelCount];
       for (int i = 0; i < levelCount; i++) {
         levels[i] = data.readFloat();
       }
-      final GaussianQuantizer quantizer = GaussianQuantizer.fromLevels(levels);
+      final GaussianQuantizer quantizer;
+      try {
+        quantizer = GaussianQuantizer.fromLevels(levels);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidFormatException(file + " stores an invalid grid: " + e.getMessage());
+      }
       final float[] scales = new float[rowCount];
       for (int row = 0; row < rowCount; row++) {
         scales[row] = data.readFloat();
@@ -572,24 +600,26 @@ public final class QuantizedEmbeddingMatrix {
       for (int row = 0; row < rowCount; row++) {
         decodedNorms[row] = data.readFloat();
         if (!Float.isFinite(decodedNorms[row]) || decodedNorms[row] < 0) {
-          throw new IllegalArgumentException(file + " has an invalid decoded norm for row "
+          throw new InvalidFormatException(file + " has an invalid decoded norm for row "
               + row + ": " + decodedNorms[row]);
         }
       }
       float[] poolingWeights = null;
       if (data.readBoolean()) {
+        if (declaredBytes + 4L * rowCount > fileSize) {
+          throw new InvalidFormatException(file + " declares per-row pooling weights, "
+              + "needing at least " + (declaredBytes + 4L * rowCount) + " bytes in total, but "
+              + "holds only " + fileSize + " bytes");
+        }
         poolingWeights = new float[rowCount];
         for (int row = 0; row < rowCount; row++) {
           poolingWeights[row] = data.readFloat();
           if (!Float.isFinite(poolingWeights[row])) {
-            throw new IllegalArgumentException(file + " has a non-finite pooling weight for "
+            throw new InvalidFormatException(file + " has a non-finite pooling weight for "
                 + "row " + row + ": " + poolingWeights[row]);
           }
         }
       }
-      final int paddedDimension = HadamardRotation.paddedDimension(dimension);
-      final int rowBytes = rowByteCount(paddedDimension, bits);
-      requireStorableSize(rowCount, rowBytes);
       final byte[] codes = new byte[rowCount * rowBytes];
       try {
         data.readFully(codes);
@@ -598,7 +628,7 @@ public final class QuantizedEmbeddingMatrix {
             + " rows of " + rowBytes + " packed bytes, but the file ends early", e);
       }
       if (data.read() != -1) {
-        throw new IllegalArgumentException(file + " has trailing bytes after the declared "
+        throw new InvalidFormatException(file + " has trailing bytes after the declared "
             + "content; it is not a quantized matrix of this version");
       }
       return new QuantizedEmbeddingMatrix(rowCount, dimension, bits, seed, quantizer, scales,
