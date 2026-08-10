@@ -228,8 +228,11 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 		<title>Quantized Models</title>
 		<para>
 			A static embedding table can be quantized to 2, 3, or 4 bits per dimension, shrinking
-			it by roughly 8 to 16 times against the 32-bit float matrix (a 500,000-row,
-			300-dimension table drops from about 600 MB to 77 MB at 4 bits). Because embedding is
+			it by roughly 4 to 16 times against the 32-bit float matrix, depending on the bit
+			width and on how far the dimension is from a power of two: rows are padded to the
+			next power of two before coding, so a 500,000-row, 300-dimension table stores 512
+			coded dimensions per row and drops from about 600 MB to about 132 MB at 4 bits, 4.5
+			times smaller. Because embedding is
 			memory-bound row gathering, reading fewer bytes is also the throughput lever. The
 			method is the TurboQuant construction: each row is rotated so its coordinates become
 			near-independent and near-Gaussian, and each rotated coordinate is encoded against an
