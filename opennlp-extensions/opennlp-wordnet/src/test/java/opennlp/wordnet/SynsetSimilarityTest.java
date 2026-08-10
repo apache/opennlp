@@ -101,6 +101,41 @@ public class SynsetSimilarityTest {
     Assertions.assertEquals(0.0, similarity.wuPalmer("n6", "n12"), 1e-9);
   }
 
+  /**
+   * Pins the self-similarity regime at the taxonomy root. Wu-Palmer counts depth in
+   * edges from the root, so the root itself has depth zero and the formula
+   * {@code 2 * depth(lcs) / (depth(a) + depth(b))} has a zero denominator for the pair
+   * (root, root); that case is skipped and the score is {@code 0.0}, while path
+   * similarity of any synset with itself, root included, is {@code 1.0} by
+   * {@code 1 / (1 + 0)}. Both values follow the documented formulas; this test keeps
+   * the asymmetry a deliberate pin rather than a surprise.
+   */
+  @Test
+  void testRootSelfSimilarityFollowsTheFormulas() {
+    final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
+    Assertions.assertEquals(1.0, similarity.path("n1", "n1"), 1e-9);
+    Assertions.assertEquals(0.0, similarity.wuPalmer("n1", "n1"), 1e-9);
+    // Away from the root the same formula does yield full self-similarity.
+    Assertions.assertEquals(1.0, similarity.wuPalmer("n5", "n5"), 1e-9);
+  }
+
+  /**
+   * Pins the sign regime of Leacock-Chodorow. The measure is
+   * {@code -log((d + 1) / (2 * taxonomyDepth))} with a caller-supplied depth; when the
+   * shortest path exceeds the stated depth budget, {@code d + 1 > 2 * taxonomyDepth},
+   * the ratio exceeds one and the score goes negative rather than clamping at zero.
+   * That is the documented formula behavior for an understated taxonomy depth, pinned
+   * here so the negative range is a deliberate contract.
+   */
+  @Test
+  void testLeacockChodorowGoesNegativeWhenDistanceExceedsTheDepthBudget() {
+    final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
+    // chemist to city is six edges, so (6 + 1) / (2 * 3) is greater than one
+    final double score = similarity.leacockChodorow("n6", "n8", 3);
+    Assertions.assertEquals(-Math.log(7.0 / 6.0), score, 1e-9);
+    Assertions.assertTrue(score < 0.0);
+  }
+
   @Test
   void testLeacockChodorow() {
     final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
