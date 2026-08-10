@@ -127,6 +127,39 @@ StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
 		</para>
 	</section>
 
+	<section xml:id="tools.embeddings.search">
+		<title>Semantic Search</title>
+		<para>
+			The headline use case is ranking documents against a query by meaning rather than by
+			shared words. <code>similarity</code> embeds both texts and returns the cosine
+			similarity of their vectors, so a small document list ranks with one call per
+			document:
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
+
+String query = "home espresso machine";
+List<String> documents = List.of(
+    "How do I brew espresso at home?",
+    "The history of tea in East Asia",
+    "Best grinders for pour-over coffee");
+
+record Scored(String document, double score) {}
+List<Scored> results = new ArrayList<>();
+for (String document : documents) {
+  results.add(new Scored(document, model.similarity(query, document)));
+}
+results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
+		</programlisting>
+		<para>
+			<code>StaticEmbeddingSearchExampleTest</code> asserts the ranking shown here. For a
+			corpus too large to score per query, embed each document once with
+			<code>embed</code>, keep the vectors in any vector index, and embed only the query
+			at search time; the index does not care how the vectors were produced.
+		</para>
+	</section>
+
 	<section xml:id="tools.embeddings.cmdline">
 		<title>Command Line Tools</title>
 		<para>
