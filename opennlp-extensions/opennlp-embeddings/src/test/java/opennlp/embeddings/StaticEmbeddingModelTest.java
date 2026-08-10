@@ -366,6 +366,36 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testDirectoryLoadRejectsAConfigDeclaringNonMeanPooling(@TempDir Path dir)
+      throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    writeConfigs(dir, "false", "true");
+    // Only mean pooling is implemented; a third-party config declaring another pooling must
+    // fail loud instead of silently mean-pooling with the wrong semantics.
+    Files.writeString(dir.resolve("config.json"),
+        "{\"model_type\":\"model2vec\",\"normalize\":false,\"pooling\":\"max\"}");
+
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(dir));
+    assertTrue(e.getMessage().contains("max"), e.getMessage());
+    assertTrue(e.getMessage().contains("mean"), e.getMessage());
+  }
+
+  @Test
+  void testDirectoryLoadAcceptsTheDeclaredMeanPooling(@TempDir Path dir) throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    writeConfigs(dir, "false", "true");
+    // The pooling the distiller writes; declaring it explicitly must load like omitting it.
+    Files.writeString(dir.resolve("config.json"),
+        "{\"model_type\":\"model2vec\",\"normalize\":false,\"pooling\":\"mean\"}");
+
+    assertArrayEquals(new float[] {3.5f, 35f, 350f},
+        StaticEmbeddingModel.load(dir).embed("hello world"), 1e-5f);
+  }
+
+  @Test
   void testDirectoryLoadRejectsContradictoryStripAccents(@TempDir Path dir) throws IOException {
     writeVocab(dir);
     writeSafetensors(dir, false);
