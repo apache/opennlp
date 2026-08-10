@@ -762,9 +762,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (queryNorm < NORMALIZE_EPSILON) {
       return List.of();
     }
-    final TopK best = new TopK(topK);
-    int nextExcluded = 0;
     final int rowCount = rowNorms.length;
+    // The capacity sizes the candidate arrays; a topK beyond the vocabulary (the scan can never
+    // yield more than every row) would otherwise allocate topK-sized arrays or overflow.
+    final TopK best = new TopK(Math.min(topK, rowCount));
+    int nextExcluded = 0;
     for (int row = 0; row < rowCount; row++) {
       if (nextExcluded < sortedExcludedRows.length && sortedExcludedRows[nextExcluded] == row) {
         nextExcluded++;

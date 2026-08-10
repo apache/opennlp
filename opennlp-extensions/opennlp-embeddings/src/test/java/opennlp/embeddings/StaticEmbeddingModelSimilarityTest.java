@@ -19,6 +19,7 @@ package opennlp.embeddings;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -104,6 +106,22 @@ class StaticEmbeddingModelSimilarityTest {
     }
     // apple is the clear outlier (opposite-ish direction) and must rank last.
     assertEquals("apple", result.get(result.size() - 1).token());
+  }
+
+  @Test
+  void testMostSimilarClampsTopKToTheVocabularySize(@TempDir Path dir) throws IOException {
+    final StaticEmbeddingModel model = load(dir);
+
+    // topK sizes the candidate arrays, so it must be clamped to the vocabulary before
+    // allocation; unclamped, Integer.MAX_VALUE fails with OutOfMemoryError. The fixture has
+    // 8 rows, 3 of them special, so any request larger than the vocabulary returns the same
+    // 5 neighbors a topK of 8 would.
+    final List<Neighbor> result = assertTimeoutPreemptively(Duration.ofSeconds(10),
+        () -> model.mostSimilar("king", Integer.MAX_VALUE));
+
+    assertEquals(model.vocabularySize() - 3, result.size());
+    assertEquals("king", result.get(0).token());
+    assertEquals(result, model.mostSimilar("king", model.vocabularySize()));
   }
 
   @Test
