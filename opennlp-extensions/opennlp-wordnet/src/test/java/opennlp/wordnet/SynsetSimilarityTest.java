@@ -102,6 +102,23 @@ public class SynsetSimilarityTest {
   }
 
   /**
+   * Verifies that Wu-Palmer distinguishes synsets that share only the taxonomy root from
+   * synsets that share no ancestor at all. The documented return is {@code 0} only when
+   * the synsets share no ancestor; city ({@code n8}) and company ({@code n10}) both sit
+   * under entity ({@code n1}), so their score must be positive and distinct from the
+   * disconnected chemist/abstract pair.
+   */
+  @Test
+  void testWuPalmerDistinguishesRootOnlyAncestryFromNoAncestry() {
+    final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
+    final double rootOnly = similarity.wuPalmer("n8", "n10");
+    Assertions.assertTrue(rootOnly > 0.0,
+        "city and company share entity; expected positive Wu-Palmer, got " + rootOnly);
+    Assertions.assertEquals(0.0, similarity.wuPalmer("n6", "n12"), 1e-9);
+    Assertions.assertNotEquals(similarity.wuPalmer("n6", "n12"), rootOnly);
+  }
+
+  /**
    * Pins the self-similarity regime at the taxonomy root. Wu-Palmer counts depth in
    * edges from the root, so the root itself has depth zero and the formula
    * {@code 2 * depth(lcs) / (depth(a) + depth(b))} has a zero denominator for the pair
