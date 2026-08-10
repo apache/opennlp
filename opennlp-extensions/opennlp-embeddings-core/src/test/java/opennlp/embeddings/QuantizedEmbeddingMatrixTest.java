@@ -327,7 +327,7 @@ class QuantizedEmbeddingMatrixTest {
     final Path trailing = directory.resolve("trailing.bin");
     final byte[] extra = Arrays.copyOf(full, full.length + 1);
     Files.write(trailing, extra);
-    assertThrows(IllegalArgumentException.class, () -> QuantizedEmbeddingMatrix.read(trailing));
+    assertThrows(InvalidFormatException.class, () -> QuantizedEmbeddingMatrix.read(trailing));
   }
 
 }
