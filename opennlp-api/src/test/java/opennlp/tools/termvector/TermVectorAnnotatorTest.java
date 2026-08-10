@@ -32,6 +32,7 @@ import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
+import opennlp.tools.util.normalizer.CharSequenceNormalizer;
 import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -134,6 +135,21 @@ public class TermVectorAnnotatorTest {
   private static final OffsetAwareNormalizer FOLD = new WhitespaceCaseFoldNormalizer();
 
   private static final OffsetAwareNormalizer DROP_DIGITS = new DigitDeletingNormalizer();
+
+  /**
+   * A plain, alignment-free case folder for the per-token path: it stands in for the
+   * shipped normalizers (case fold, NFC, accent fold) that cannot report offsets and
+   * therefore cannot implement {@link OffsetAwareNormalizer}.
+   */
+  private static final CharSequenceNormalizer PLAIN_LOWER =
+      text -> text.toString().toLowerCase(Locale.ROOT);
+
+  /**
+   * A plain normalizer that deletes every digit, so a token made up of digits alone
+   * normalizes to the empty string on the per-token path.
+   */
+  private static final CharSequenceNormalizer PLAIN_DROP_DIGITS =
+      text -> text.toString().replaceAll("\\d", "");
 
   /**
    * Splits a text on single space characters into a token layer, skipping the empty
@@ -264,6 +280,70 @@ public class TermVectorAnnotatorTest {
         document.get(TermVectorAnnotator.TERM_VECTORS);
     assertEquals(1, vectors.size());
     assertEquals(TermVector.count("gross", 3), vectors.get(0).value());
+  }
+
+  /**
+   * The general per-token path: a plain {@link CharSequenceNormalizer} defines term
+   * identity by folding each token's covered text, no alignment involved, while every
+   * occurrence span stays the token's own span in the original text. This admits the
+   * folds {@code buildAligned()} rejects (case fold, NFC, accent fold).
+   */
+  @Test
+  void testPlainNormalizerGroupsFoldedTokensWithOriginalSpans() {
+    final String text = "Word word WORD";
+    final Document document = new TermVectorAnnotator(PLAIN_LOWER)
+        .annotate(documentWithTokens(text));
+
+    final List<Annotation<TermVector>> vectors =
+        document.get(TermVectorAnnotator.TERM_VECTORS);
+    assertEquals(1, vectors.size());
+    assertEquals(new TermVector("word", 3,
+        List.of(new Span(0, 4), new Span(5, 9), new Span(10, 14))), vectors.get(0).value());
+
+    // Every occurrence span covers the original surface form, not the folded one.
+    final List<String> surfaceForms = vectors.get(0).value().spans().stream()
+        .map(s -> s.getCoveredText(text).toString()).toList();
+    assertEquals(List.of("Word", "word", "WORD"), surfaceForms);
+  }
+
+  @Test
+  void testPlainNormalizerScoringOnlyModeCountsWithoutOffsets() {
+    final Document document = new TermVectorAnnotator(PLAIN_LOWER,
+        TermVectorAnnotator.Mode.SCORING_ONLY).annotate(documentWithTokens("Word word WORD"));
+
+    final List<Annotation<TermVector>> vectors =
+        document.get(TermVectorAnnotator.TERM_VECTORS);
+    assertEquals(1, vectors.size());
+    assertEquals(TermVector.count("word", 3), vectors.get(0).value());
+  }
+
+  /**
+   * The empty-term bucket behaves identically on the per-token path: tokens a plain
+   * normalizer folds to the empty string group under one {@code ""} term with their
+   * original spans, matching {@link #testTokensNormalizedAwayGroupUnderTheEmptyTerm()}.
+   */
+  @Test
+  void testPlainNormalizerFoldsDeletedTokensIntoTheEmptyTerm() {
+    final Document document = new TermVectorAnnotator(PLAIN_DROP_DIGITS)
+        .annotate(documentWithTokens("dog 42 dog 7"));
+
+    final List<Annotation<TermVector>> vectors =
+        document.get(TermVectorAnnotator.TERM_VECTORS);
+    assertEquals(2, vectors.size());
+    assertEquals(new TermVector("dog", 2, List.of(new Span(0, 3), new Span(7, 10))),
+        vectors.get(0).value());
+    assertEquals(new TermVector("", 2, List.of(new Span(4, 6), new Span(11, 12))),
+        vectors.get(1).value());
+  }
+
+  @Test
+  void testNullPlainNormalizerIsRejected() {
+    final CharSequenceNormalizer noNormalizer = null;
+    assertThrows(IllegalArgumentException.class, () -> new TermVectorAnnotator(noNormalizer));
+    assertThrows(IllegalArgumentException.class,
+        () -> new TermVectorAnnotator(noNormalizer, TermVectorAnnotator.Mode.FULL));
+    assertThrows(IllegalArgumentException.class,
+        () -> new TermVectorAnnotator(PLAIN_LOWER, null));
   }
 
   /**
