@@ -88,6 +88,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
 
   private static final float NORMALIZE_EPSILON = 1e-12f;
   private static final String WEIGHTS_TENSOR_NAME = "weights";
+  // The only pooling this model implements; the value the distiller writes into config.json.
+  private static final String MEAN_POOLING = "mean";
   private static final int[] NO_EXCLUDED_ROWS = new int[0];
   // Excluded from neighbor results, including [PAD] and [MASK] that a distilled table keeps.
   private static final Set<String> WORDPIECE_SPECIAL_TOKENS =
@@ -222,14 +224,24 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   }
 
   /**
-   * Reads the required {@code normalize} switch out of a model's {@code config.json}.
+   * Reads the required {@code normalize} switch out of a model's {@code config.json}, rejecting
+   * a configuration whose {@code pooling} field declares anything but the mean pooling this
+   * model implements. Silently mean-pooling a table distilled for another pooling would produce
+   * plausible but wrong vectors, so such a model fails loud here.
    *
    * @param configFile The {@code config.json} file.
    * @return The corresponding {@link Normalization}.
-   * @throws InvalidFormatException Thrown if the field is missing or not a boolean.
+   * @throws InvalidFormatException Thrown if the {@code normalize} field is missing or not a
+   *     boolean, or the {@code pooling} field declares a pooling other than {@code "mean"}.
    * @throws IOException Thrown if reading the file fails.
    */
   private static Normalization requiredNormalize(Path configFile) throws IOException {
+    final String pooling = FlatJsonFields.topLevelString(configFile, "pooling");
+    if (pooling != null && !MEAN_POOLING.equals(pooling)) {
+      throw new InvalidFormatException(configFile + " declares pooling '" + pooling
+          + "' but only '" + MEAN_POOLING + "' pooling is implemented; embedding this model "
+          + "would silently pool differently than its distiller intended");
+    }
     final Boolean normalize = FlatJsonFields.topLevelBoolean(configFile, "normalize");
     if (normalize == null) {
       throw new InvalidFormatException(configFile + " has no boolean 'normalize' field; "
