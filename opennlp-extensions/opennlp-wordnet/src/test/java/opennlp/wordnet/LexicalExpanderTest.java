@@ -16,8 +16,10 @@
  */
 package opennlp.wordnet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -54,6 +56,8 @@ public class LexicalExpanderTest {
   //      sense 2 = {dog, frank, hot dog} -> sausage. The verb sense = {dog, chase}.
   // hot dog: the standalone multiword sense {hot dog, red hot}.
   // alpha <-> beta form a malformed hypernym cycle.
+  // poly: four singleton-synonym senses, one more than the default maxSenses of 3.
+  // hub: one synset with 24 synonyms, more than the default maxExpansions of 20.
   // Lookups fold through LemmaFolding, exactly as the readers fold their keys at load time.
   private static LexicalKnowledgeBase lexicon() {
     final Map<String, Synset> synsets = new HashMap<>();
@@ -79,8 +83,23 @@ public class LexicalExpanderTest {
         Map.of(WordNetRelation.HYPERNYM, List.of("c2")));
     final Synset c2 = new Synset("c2", WordNetPOS.NOUN, List.of("beta"), "cycle end",
         Map.of(WordNetRelation.HYPERNYM, List.of("c1")));
+    final Synset p1 = new Synset("p1", WordNetPOS.NOUN, List.of("poly", "poly-one"),
+        "first sense", Map.of());
+    final Synset p2 = new Synset("p2", WordNetPOS.NOUN, List.of("poly", "poly-two"),
+        "second sense", Map.of());
+    final Synset p3 = new Synset("p3", WordNetPOS.NOUN, List.of("poly", "poly-three"),
+        "third sense", Map.of());
+    final Synset p4 = new Synset("p4", WordNetPOS.NOUN, List.of("poly", "poly-four"),
+        "fourth sense", Map.of());
+    final List<String> hubMembers = new ArrayList<>();
+    hubMembers.add("hub");
+    for (int i = 1; i <= 24; i++) {
+      hubMembers.add(String.format(Locale.ROOT, "spoke%02d", i));
+    }
+    final Synset b1 = new Synset("b1", WordNetPOS.NOUN, hubMembers, "wide synset", Map.of());
 
-    for (final Synset synset : List.of(n1, n2, n3, n4, n5, n6, v1, m1, c1, c2)) {
+    for (final Synset synset : List.of(n1, n2, n3, n4, n5, n6, v1, m1, c1, c2,
+        p1, p2, p3, p4, b1)) {
       synsets.put(synset.id(), synset);
     }
     senses.put("dog|NOUN", List.of(n1, n5));
@@ -88,6 +107,8 @@ public class LexicalExpanderTest {
     senses.put("domestic dog|NOUN", List.of(n1));
     senses.put("hot dog|NOUN", List.of(m1));
     senses.put("alpha|NOUN", List.of(c1));
+    senses.put("poly|NOUN", List.of(p1, p2, p3, p4));
+    senses.put("hub|NOUN", List.of(b1));
 
     return new LexicalKnowledgeBase() {
       @Override
@@ -268,6 +289,51 @@ public class LexicalExpanderTest {
     assertNotNull(find(expansions, "domestic dog"));
 
     assertEquals(List.of(), expander.expand("cats", WordNetPOS.NOUN));
+  }
+
+  /**
+   * Verifies the accepting side of the builder boundaries: {@code senseDecay(1.0)} is the
+   * closed upper bound of {@code (0, 1]} and keeps later senses at full weight, and
+   * {@code hypernymDepth(0)} is the accepted lower bound and disables hypernym expansion
+   * without touching synonyms.
+   */
+  @Test
+  void testBoundaryConfigurationsAreAccepted() {
+    final List<Expansion> undecayed = LexicalExpander.builder(lexicon())
+        .senseDecay(1.0).build().expand("dog", WordNetPOS.NOUN);
+    assertEquals(1.0, find(undecayed, "frank").weight());
+    assertEquals(1, find(undecayed, "frank").senseRank());
+
+    final List<Expansion> synonymsOnly = LexicalExpander.builder(lexicon())
+        .hypernymDepth(0).build().expand("dog", WordNetPOS.NOUN);
+    assertNull(find(synonymsOnly, "canid"));
+    assertNotNull(find(synonymsOnly, "domestic dog"));
+  }
+
+  /**
+   * Pins the default {@code maxSenses} of {@code 3} against a lemma with four senses: the
+   * third sense still contributes, the fourth never does.
+   */
+  @Test
+  void testDefaultMaxSensesIsThree() {
+    final List<Expansion> expansions =
+        LexicalExpander.builder(lexicon()).build().expand("poly", WordNetPOS.NOUN);
+
+    assertEquals(1.0, find(expansions, "poly-one").weight());
+    assertEquals(0.25, find(expansions, "poly-three").weight());
+    assertNull(find(expansions, "poly-four"));
+  }
+
+  /**
+   * Pins the default {@code maxExpansions} of {@code 20} against a synset with 24 synonyms:
+   * the default build caps the result at 20, and raising the cap shows all 24 were available.
+   */
+  @Test
+  void testDefaultMaxExpansionsIsTwenty() {
+    assertEquals(20,
+        LexicalExpander.builder(lexicon()).build().expand("hub", WordNetPOS.NOUN).size());
+    assertEquals(24, LexicalExpander.builder(lexicon()).maxExpansions(30).build()
+        .expand("hub", WordNetPOS.NOUN).size());
   }
 
   @Test
