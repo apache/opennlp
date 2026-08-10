@@ -93,8 +93,8 @@ public class SynsetSimilarityTest {
   @Test
   void testWuPalmerRewardsDeepSharedAncestry() {
     final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
-    // scientist and chemist share scientist itself at depth four
-    Assertions.assertEquals(8.0 / 9.0, similarity.wuPalmer("n5", "n6"), 1e-9);
+    // scientist and chemist share scientist itself, at node depth five from entity
+    Assertions.assertEquals(10.0 / 11.0, similarity.wuPalmer("n5", "n6"), 1e-9);
     final double siblingBranches = similarity.wuPalmer("n6", "n8");
     Assertions.assertTrue(siblingBranches < similarity.wuPalmer("n5", "n6"));
     Assertions.assertTrue(siblingBranches > 0.0);
@@ -120,19 +120,18 @@ public class SynsetSimilarityTest {
 
   /**
    * Pins the self-similarity regime at the taxonomy root. Wu-Palmer counts depth in
-   * edges from the root, so the root itself has depth zero and the formula
-   * {@code 2 * depth(lcs) / (depth(a) + depth(b))} has a zero denominator for the pair
-   * (root, root); that case is skipped and the score is {@code 0.0}, while path
-   * similarity of any synset with itself, root included, is {@code 1.0} by
-   * {@code 1 / (1 + 0)}. Both values follow the documented formulas; this test keeps
-   * the asymmetry a deliberate pin rather than a surprise.
+   * nodes from the root, so the root itself has depth one and the formula
+   * {@code 2 * depth(lcs) / (depth(a) + depth(b))} yields {@code 2 * 1 / (1 + 1)},
+   * a full {@code 1.0}, for the pair (root, root), matching path similarity's
+   * {@code 1 / (1 + 0)}. Self-similarity is {@code 1.0} everywhere, root included;
+   * this test keeps that a deliberate pin rather than a surprise.
    */
   @Test
   void testRootSelfSimilarityFollowsTheFormulas() {
     final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
     Assertions.assertEquals(1.0, similarity.path("n1", "n1"), 1e-9);
-    Assertions.assertEquals(0.0, similarity.wuPalmer("n1", "n1"), 1e-9);
-    // Away from the root the same formula does yield full self-similarity.
+    Assertions.assertEquals(1.0, similarity.wuPalmer("n1", "n1"), 1e-9);
+    // Away from the root the same formula also yields full self-similarity.
     Assertions.assertEquals(1.0, similarity.wuPalmer("n5", "n5"), 1e-9);
   }
 

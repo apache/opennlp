@@ -80,8 +80,10 @@ public class SynsetSimilarity {
 
   /**
    * Computes Wu-Palmer similarity: {@code 2 * depth(lcs) / (depth(a) + depth(b))},
-   * with depths counted from the taxonomy root and the deepest common ancestor as the
-   * lcs.
+   * with depths counted in nodes from the taxonomy root, the root itself at depth one,
+   * and the deepest common ancestor as the lcs. Node counting keeps the score positive
+   * whenever any ancestor is shared, the root included, so {@code 0} is reserved for
+   * synsets that share no ancestor at all.
    *
    * @param synsetId The first synset identifier. Must not be {@code null}.
    * @param otherSynsetId The second synset identifier. Must not be {@code null}.
@@ -100,13 +102,12 @@ public class SynsetSimilarity {
       if (otherDistance == null) {
         continue;
       }
-      final int rootDepth = depthFromRoot(common.getKey());
-      final int depthA = rootDepth + common.getValue();
-      final int depthB = rootDepth + otherDistance;
-      if (depthA + depthB == 0) {
-        continue;
-      }
-      final double score = 2.0 * rootDepth / (depthA + depthB);
+      // Node counting: the root sits at depth one, so a shared ancestor always
+      // contributes a positive numerator and the denominator is never zero.
+      final int lcsDepth = depthFromRoot(common.getKey()) + 1;
+      final int depthA = lcsDepth + common.getValue();
+      final int depthB = lcsDepth + otherDistance;
+      final double score = 2.0 * lcsDepth / (depthA + depthB);
       best = Math.max(best, score);
     }
     return best;
