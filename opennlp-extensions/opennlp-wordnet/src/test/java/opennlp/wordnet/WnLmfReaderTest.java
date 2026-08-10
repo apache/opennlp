@@ -23,9 +23,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
@@ -248,40 +253,113 @@ public class WnLmfReaderTest {
     assertTrue(e.getMessage().contains("inline.xml"));
   }
 
-  @Test
-  void testRejectsSenseWithoutSynsetAttribute() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\"/></LexicalEntry>")));
-    assertTrue(e.getMessage().contains("synset"));
+  /**
+   * One rejected document per structural rule the reader enforces: the document body (wrapped
+   * in the standard resource envelope) and the fragments its rejection message must contain.
+   *
+   * @return The (description, document body, expected message fragments) cases.
+   */
+  static Stream<Arguments> rejectedDocuments() {
+    return Stream.of(
+        Arguments.of(Named.of("sense without synset attribute",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\"/></LexicalEntry>"),
+            List.of("synset")),
+        Arguments.of(Named.of("sense to undeclared synset",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-9\"/></LexicalEntry>"),
+            List.of("t-9")),
+        Arguments.of(Named.of("relation to undeclared synset",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "<SynsetRelation relType=\"hypernym\" target=\"t-9\"/></Synset>"),
+            List.of("t-9")),
+        Arguments.of(Named.of("unknown relation type",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "<SynsetRelation relType=\"quasi_synonym\" target=\"t-1\"/></Synset>"),
+            List.of("quasi_synonym")),
+        Arguments.of(Named.of("unknown part of speech",
+            "<LexicalEntry id=\"t-cat-x\"><Lemma writtenForm=\"cat\" partOfSpeech=\"x\"/>"
+                + "<Sense id=\"t-cat-x-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "</Synset>"),
+            List.of("x")),
+        Arguments.of(Named.of("synset without members",
+            "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>orphan</Definition></Synset>"),
+            List.of("t-1")),
+        Arguments.of(Named.of("duplicate synset id",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "</Synset>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a repeat</Definition>"
+                + "</Synset>"),
+            List.of("Duplicate synset id t-1")),
+        Arguments.of(Named.of("duplicate lexical entry id",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"dog\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-dog-n-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "</Synset>"),
+            List.of("Duplicate lexical entry id t-cat-n")),
+        Arguments.of(Named.of("duplicate sense id",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-2\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "</Synset>"
+                + "<Synset id=\"t-2\" partOfSpeech=\"n\"><Definition>a second</Definition>"
+                + "</Synset>"),
+            List.of("Duplicate sense id t-cat-n-1")),
+        Arguments.of(Named.of("synset member pos mismatch",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"v\"><Definition>a feline</Definition>"
+                + "</Synset>"),
+            List.of("t-cat-n", "VERB", "NOUN")),
+        Arguments.of(Named.of("sense relation to undeclared sense",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\">"
+                + "<SenseRelation relType=\"antonym\" target=\"t-ghost-1\"/></Sense>"
+                + "</LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "</Synset>"),
+            List.of("t-ghost-1")),
+        Arguments.of(Named.of("lemma outside lexical entry",
+            "<Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"),
+            List.of("Lemma outside a LexicalEntry")),
+        Arguments.of(Named.of("sense before lemma",
+            "<LexicalEntry id=\"t-cat-n\"><Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
+                + "<Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "</Synset>"),
+            List.of("Sense before its entry's Lemma")),
+        Arguments.of(Named.of("sense relation outside sense",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
+                + "<SenseRelation relType=\"antonym\" target=\"t-cat-n-1\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
+                + "</Synset>"),
+            List.of("SenseRelation outside a Sense")),
+        Arguments.of(Named.of("synset relation outside synset",
+            "<SynsetRelation relType=\"hypernym\" target=\"t-1\"/>"),
+            List.of("SynsetRelation outside a Synset")));
   }
 
-  @Test
-  void testRejectsSenseToUndeclaredSynset() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-9\"/></LexicalEntry>")));
-    assertTrue(e.getMessage().contains("t-9"));
-  }
-
-  @Test
-  void testRejectsRelationToUndeclaredSynset() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
-            + "<SynsetRelation relType=\"hypernym\" target=\"t-9\"/></Synset>")));
-    assertTrue(e.getMessage().contains("t-9"));
-  }
-
-  @Test
-  void testRejectsUnknownRelationType() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
-            + "<SynsetRelation relType=\"quasi_synonym\" target=\"t-1\"/></Synset>")));
-    assertTrue(e.getMessage().contains("quasi_synonym"));
+  @ParameterizedTest
+  @MethodSource("rejectedDocuments")
+  void testRejectsStructurallyInvalidDocument(String body,
+      List<String> expectedMessageFragments) {
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> parse(wrap(body)));
+    for (final String fragment : expectedMessageFragments) {
+      assertTrue(e.getMessage().contains(fragment),
+          () -> "Rejection message must contain '" + fragment + "' but was: " + e.getMessage());
+    }
   }
 
   @Test
@@ -306,105 +384,4 @@ public class WnLmfReaderTest {
     assertTrue(lexicon.synset("t-1").orElseThrow().relations().isEmpty());
   }
 
-  @Test
-  void testRejectsUnknownPartOfSpeech() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-x\"><Lemma writtenForm=\"cat\" partOfSpeech=\"x\"/>"
-            + "<Sense id=\"t-cat-x-1\" synset=\"t-1\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("x"));
-  }
-
-  @Test
-  void testRejectsSynsetWithoutMembers() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>orphan</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("t-1"));
-  }
-
-  @Test
-  void testRejectsDuplicateSynsetId() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition></Synset>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a repeat</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("Duplicate synset id t-1"));
-  }
-
-  @Test
-  void testRejectsDuplicateLexicalEntryId() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
-            + "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"dog\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-dog-n-1\" synset=\"t-1\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("Duplicate lexical entry id t-cat-n"));
-  }
-
-  @Test
-  void testRejectsDuplicateSenseId() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-2\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition></Synset>"
-            + "<Synset id=\"t-2\" partOfSpeech=\"n\"><Definition>a second</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("Duplicate sense id t-cat-n-1"));
-  }
-
-  @Test
-  void testRejectsSynsetMemberPosMismatch() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"v\"><Definition>a feline</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("t-cat-n"));
-    assertTrue(e.getMessage().contains("VERB"));
-    assertTrue(e.getMessage().contains("NOUN"));
-  }
-
-  @Test
-  void testRejectsSenseRelationToUndeclaredSense() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\">"
-            + "<SenseRelation relType=\"antonym\" target=\"t-ghost-1\"/></Sense></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("t-ghost-1"));
-  }
-
-  @Test
-  void testRejectsLemmaOutsideLexicalEntry() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
-        () -> parse(wrap("<Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>")));
-    assertTrue(e.getMessage().contains("Lemma outside a LexicalEntry"));
-  }
-
-  @Test
-  void testRejectsSenseBeforeLemma() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
-            + "<Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("Sense before its entry's Lemma"));
-  }
-
-  @Test
-  void testRejectsSenseRelationOutsideSense() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class, () -> parse(
-        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
-            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
-            + "<SenseRelation relType=\"antonym\" target=\"t-cat-n-1\"/></LexicalEntry>"
-            + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition></Synset>")));
-    assertTrue(e.getMessage().contains("SenseRelation outside a Sense"));
-  }
-
-  @Test
-  void testRejectsSynsetRelationOutsideSynset() {
-    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
-        () -> parse(wrap("<SynsetRelation relType=\"hypernym\" target=\"t-1\"/>")));
-    assertTrue(e.getMessage().contains("SynsetRelation outside a Synset"));
-  }
 }
