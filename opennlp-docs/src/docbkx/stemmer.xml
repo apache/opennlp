@@ -98,8 +98,11 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			(<code>HunspellDictionaryDownload.downloadFromCatalog</code>) needs
 			<code>-Dopennlp.download.remote=true</code> and verifies SHA-512 digests.
 			Directives that would change stems when ignored
-			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>)
+			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>,
+			<code>COMPOUNDRULE</code>, <code>IGNORE</code>, <code>KEEPCASE</code>)
 			fail at load time; cosmetic tables such as <code>REP</code> are skipped.
+			A rule that strips a whole stem applies only when the affix file
+			declares <code>FULLSTRIP</code>, as in Hunspell itself.
 			Each affix or dictionary stream is rejected when it exceeds
 			<code>HunspellDictionary.MAX_STREAM_BYTES</code> (64&#160;MiB).
 		</para>

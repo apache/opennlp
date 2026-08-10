@@ -55,9 +55,12 @@ import opennlp.tools.util.StringUtil;
  * {@code NEEDAFFIX} (with its historical alias {@code PSEUDOROOT}),
  * {@code ONLYINCOMPOUND}, and {@code FORBIDDENWORD}, which suppress analyses the
  * dictionary marks as virtual stems, compound-only parts, or forbidden words; and
- * {@code CIRCUMFIX}, which binds marked prefix and suffix halves to one another.
+ * {@code CIRCUMFIX}, which binds marked prefix and suffix halves to one another; and
+ * the {@code FULLSTRIP} declaration, without which a rule that strips a whole stem is
+ * not applied, matching hunspell.
  * Directives that would change stems when ignored ({@code ICONV}, {@code OCONV},
- * {@code COMPLEXPREFIXES}) are rejected at load time. Cosmetic tables such as
+ * {@code COMPLEXPREFIXES}, {@code COMPOUNDRULE}, {@code IGNORE},
+ * {@code KEEPCASE}) are rejected at load time. Cosmetic tables such as
  * {@code REP}, {@code MAP}, and {@code KEY} are skipped, so analyses that would need
  * them are missed rather than invented.</p>
  *
@@ -148,6 +151,7 @@ public final class HunspellDictionary {
   private final boolean checkCompoundDup;
   private final boolean checkCompoundCase;
   private final boolean checkCompoundTriple;
+  private final boolean fullStrip;
 
   /**
    * Initializes the dictionary from the two parsed files.
@@ -171,6 +175,7 @@ public final class HunspellDictionary {
     this.checkCompoundDup = affix.checkCompoundDup;
     this.checkCompoundCase = affix.checkCompoundCase;
     this.checkCompoundTriple = affix.checkCompoundTriple;
+    this.fullStrip = affix.fullStrip;
     this.entries = entries;
     // A material-bearing rule can only be undone from a word whose boundary
     // character matches its affix material, so bucketing by that character
@@ -414,6 +419,11 @@ public final class HunspellDictionary {
   /** {@return whether {@code CHECKCOMPOUNDTRIPLE} forbids triple letters at boundaries} */
   boolean checkCompoundTriple() {
     return checkCompoundTriple;
+  }
+
+  /** {@return whether {@code FULLSTRIP} allows an affix rule to strip a whole stem} */
+  boolean fullStrip() {
+    return fullStrip;
   }
 
   /**
@@ -722,6 +732,7 @@ public final class HunspellDictionary {
     private boolean checkCompoundDup;
     private boolean checkCompoundCase;
     private boolean checkCompoundTriple;
+    private boolean fullStrip;
   }
 
   /**
@@ -733,7 +744,8 @@ public final class HunspellDictionary {
    * @param content The decoded affix file content.
    * @return The parsed rules and flag mode. Never {@code null}.
    * @throws IOException Thrown if a supported directive is malformed, or if
-   *     {@code ICONV}, {@code OCONV}, or {@code COMPLEXPREFIXES} appears.
+   *     {@code ICONV}, {@code OCONV}, {@code COMPLEXPREFIXES}, {@code COMPOUNDRULE},
+   *     {@code IGNORE}, or {@code KEEPCASE} appears.
    */
   private static AffixFile parseAffix(String content) throws IOException {
     final AffixFile result = new AffixFile();
@@ -811,6 +823,10 @@ public final class HunspellDictionary {
           result.checkCompoundTriple = true;
           i++;
           break;
+        case "FULLSTRIP":
+          result.fullStrip = true;
+          i++;
+          break;
         case "AF":
           // the first AF line declares the alias count; every further AF line is one
           // alias, a flag run whose 1-based position numeric dictionary flags refer to
@@ -830,6 +846,12 @@ public final class HunspellDictionary {
         case "ICONV":
         case "OCONV":
         case "COMPLEXPREFIXES":
+        // COMPOUNDRULE licenses pattern compounds, IGNORE drops characters before
+        // matching, and KEEPCASE forbids the case variants this stemmer analyzes;
+        // ignoring any of them would change stems with no signal
+        case "COMPOUNDRULE":
+        case "IGNORE":
+        case "KEEPCASE":
           throw new IOException("unsupported affix directive '" + fields[0]
               + "' at line " + (i + 1));
         default:
