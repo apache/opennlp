@@ -30,6 +30,7 @@ import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
+import opennlp.tools.util.normalizer.CharSequenceNormalizer;
 import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
 
 /**
@@ -39,15 +40,18 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  *
  * <p>Term identity comes from the annotator's inputs, not from logic of its own. Without
  * a normalizer, the term is the token layer's value as-is, that is, the token's covered
- * text in the original document. With an {@link OffsetAwareNormalizer}, the whole
- * document text is normalized once with its alignment recorded, each token span is
- * mapped forward to the normalized form, and the covered normalized text is the term, so
- * tokens that differ only by a normalization fold (case, an eszett expansion, collapsed
- * whitespace) group together. Either way, the occurrence spans emitted in
- * {@link Mode#FULL full mode} are the token layer's own spans and therefore always
- * point into the original text. A token whose normalized form is empty, for example one
- * the normalizer deleted entirely, groups under the empty string rather than being
- * dropped.</p>
+ * text in the original document. With a plain {@link CharSequenceNormalizer}, the general
+ * path, each token's covered text is normalized on its own to produce the term, so any
+ * normalizer works: case folding, NFC, accent folding, a stemmer-backed normalizer. With
+ * an {@link OffsetAwareNormalizer}, the whole document text is normalized once with its
+ * alignment recorded, each token span is mapped forward to the normalized form, and the
+ * covered normalized text is the term; this path can see across token boundaries but is
+ * limited to alignment-reporting normalizers. On every path, tokens that differ only by
+ * a normalization fold (case, an eszett expansion, collapsed whitespace) group together,
+ * and the occurrence spans emitted in {@link Mode#FULL full mode} are the token layer's
+ * own spans and therefore always point into the original text. A token whose normalized
+ * form is empty, for example one the normalizer deleted entirely, groups under the empty
+ * string rather than being dropped.</p>
  *
  * <p>The layer is {@link LayerKey.Scope#DOCUMENT document-scoped}: each {@link TermVector}
  * is a whole-document statistic, so the annotations carry no span of their own and the
@@ -82,6 +86,7 @@ public class TermVectorAnnotator implements DocumentAnnotator {
   }
 
   private final OffsetAwareNormalizer normalizer;
+  private final CharSequenceNormalizer tokenNormalizer;
   private final Mode mode;
 
   /**
@@ -103,12 +108,57 @@ public class TermVectorAnnotator implements DocumentAnnotator {
       throw new IllegalArgumentException("mode must not be null");
     }
     this.normalizer = null;
+    this.tokenNormalizer = null;
     this.mode = mode;
   }
 
   /**
    * Initializes a {@link Mode#FULL full mode} annotator that groups tokens by their
-   * normalized form.
+   * per-token normalized form. This is the general path: the normalizer is applied to
+   * each token's covered text on its own, so any {@link CharSequenceNormalizer} works,
+   * including the folds that cannot report an alignment (case folding, NFC, accent
+   * folding, stemmer-backed normalizers). The occurrence spans stay the tokens' own
+   * spans in the original text.
+   *
+   * @param normalizer The normalizer that defines term identity, applied to each token's
+   *                   covered text. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code normalizer} is {@code null}.
+   */
+  public TermVectorAnnotator(CharSequenceNormalizer normalizer) {
+    this(normalizer, Mode.FULL);
+  }
+
+  /**
+   * Initializes an annotator that groups tokens by their per-token normalized form. This
+   * is the general path: the normalizer is applied to each token's covered text on its
+   * own, so any {@link CharSequenceNormalizer} works, including the folds that cannot
+   * report an alignment (case folding, NFC, accent folding, stemmer-backed normalizers).
+   * The occurrence spans stay the tokens' own spans in the original text.
+   *
+   * @param normalizer The normalizer that defines term identity, applied to each token's
+   *                   covered text. Must not be {@code null}.
+   * @param mode How much each {@link TermVector} records. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code normalizer} or {@code mode} is
+   *         {@code null}.
+   */
+  public TermVectorAnnotator(CharSequenceNormalizer normalizer, Mode mode) {
+    if (normalizer == null) {
+      throw new IllegalArgumentException("normalizer must not be null");
+    }
+    if (mode == null) {
+      throw new IllegalArgumentException("mode must not be null");
+    }
+    this.normalizer = null;
+    this.tokenNormalizer = normalizer;
+    this.mode = mode;
+  }
+
+  /**
+   * Initializes a {@link Mode#FULL full mode} annotator that groups tokens by their
+   * normalized form through a whole-document alignment. Prefer the
+   * {@link #TermVectorAnnotator(CharSequenceNormalizer) plain-normalizer constructor}
+   * as the general path; this one only accepts alignment-reporting normalizers but can
+   * see across token boundaries, for example a whitespace collapse spanning two tokens.
    *
    * @param normalizer The normalizer that defines term identity, applied to the whole
    *                   document text so token spans can be mapped into the normalized
@@ -120,7 +170,12 @@ public class TermVectorAnnotator implements DocumentAnnotator {
   }
 
   /**
-   * Initializes an annotator that groups tokens by their normalized form.
+   * Initializes an annotator that groups tokens by their normalized form through a
+   * whole-document alignment. Prefer the
+   * {@link #TermVectorAnnotator(CharSequenceNormalizer, Mode) plain-normalizer
+   * constructor} as the general path; this one only accepts alignment-reporting
+   * normalizers but can see across token boundaries, for example a whitespace collapse
+   * spanning two tokens.
    *
    * @param normalizer The normalizer that defines term identity, applied to the whole
    *                   document text so token spans can be mapped into the normalized
@@ -137,6 +192,7 @@ public class TermVectorAnnotator implements DocumentAnnotator {
       throw new IllegalArgumentException("mode must not be null");
     }
     this.normalizer = normalizer;
+    this.tokenNormalizer = null;
     this.mode = mode;
   }
 
@@ -231,17 +287,22 @@ public class TermVectorAnnotator implements DocumentAnnotator {
   }
 
   /**
-   * Determines the term one token groups under: its covered text as-is, or the covered
-   * text of its span mapped into the normalized form when a normalizer is present.
+   * Determines the term one token groups under: its covered text as-is, its covered text
+   * normalized on its own when a plain per-token normalizer is present, or the covered
+   * text of its span mapped into the normalized form when an offset-aware normalizer is
+   * present.
    *
    * @param token The token annotation.
    * @param aligned The normalized document text with its alignment, or {@code null}
-   *                when no normalizer is present.
-   * @param normalized The normalized document text, or {@code null} when no normalizer is
-   *                   present.
+   *                when no offset-aware normalizer is present.
+   * @param normalized The normalized document text, or {@code null} when no offset-aware
+   *                   normalizer is present.
    * @return The term string. Never {@code null}, possibly empty.
    */
   private String termOf(Annotation<String> token, AlignedText aligned, String normalized) {
+    if (tokenNormalizer != null) {
+      return tokenNormalizer.normalize(token.value()).toString();
+    }
     if (aligned == null) {
       return token.value();
     }
