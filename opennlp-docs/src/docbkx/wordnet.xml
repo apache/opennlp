@@ -61,6 +61,30 @@ List<Synset> senses = lexicon.lookup("dog", WordNetPOS.NOUN);
 		</para>
 	</section>
 
+	<section xml:id="tools.wordnet.relations">
+		<title>Navigating relations</title>
+		<para>
+			Each synset carries its typed relations (<code>WordNetRelation</code>) to
+			other synsets. Follow a relation with <code>Synset.related(...)</code>,
+			resolve the returned ids with <code>synset(id)</code>, or navigate in one
+			step with <code>related(...)</code> on the knowledge base. Starting from
+			the noun <code>dog</code> above, the hypernym relation leads to its
+			parent concept:
+			<programlisting language="java"><![CDATA[
+Synset dog = lexicon.lookup("dog", WordNetPOS.NOUN).get(0);
+List<String> parents = dog.related(WordNetRelation.HYPERNYM);
+// parents = ["mini-n2"]
+
+Synset parent = lexicon.synset(parents.get(0)).orElseThrow();
+// parent.lemmas() = ["canid"]
+// parent.gloss() = "a carnivorous mammal with nonretractile claws"
+
+// one-step navigation, back down the hyponym relation:
+// lexicon.related("mini-n2", WordNetRelation.HYPONYM) = ["mini-n1"]]]>
+			</programlisting>
+		</para>
+	</section>
+
 	<section xml:id="tools.wordnet.morphy">
 		<title>Morphy lemmatization</title>
 		<para>
