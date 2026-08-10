@@ -1232,20 +1232,42 @@ public class HunspellStemmerTest {
 
   /**
    * Verifies that result-altering unsupported affix directives fail at load time.
-   * Ignoring {@code ICONV}, {@code OCONV}, or {@code COMPLEXPREFIXES} would change
-   * stems with no signal.
+   * Ignoring {@code ICONV}, {@code OCONV}, {@code COMPLEXPREFIXES},
+   * {@code COMPOUNDRULE}, {@code IGNORE}, or {@code KEEPCASE} would change stems
+   * with no signal.
    */
   @ParameterizedTest
   @CsvSource({
       "ICONV, ICONV 1",
       "OCONV, OCONV 1",
-      "COMPLEXPREFIXES, COMPLEXPREFIXES"
+      "COMPLEXPREFIXES, COMPLEXPREFIXES",
+      "COMPOUNDRULE, COMPOUNDRULE 1",
+      "IGNORE, IGNORE x",
+      "KEEPCASE, KEEPCASE k"
   })
   void testResultAlteringUnsupportedDirectiveFailsLoud(String name, String line) {
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> load(line + "\n", "0\n"));
     Assertions.assertEquals("unsupported affix directive '" + name + "' at line 1",
         e.getMessage());
+  }
+
+  /**
+   * Verifies that a full-strip suffix rule is not applied unless the affix file
+   * declares {@code FULLSTRIP}. Hunspell applies a rule whose strip string consumes
+   * the whole stem only under that declaration; without it, inventing a stem from
+   * such a rule contradicts the fail-closed loader policy.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testFullStripRuleRequiresFullStripDirective() throws IOException {
+    final String rule = "SFX A Y 1\nSFX A work ed .\n";
+    final String words = "1\nwork/A\n";
+    Assertions.assertEquals(List.of("work"),
+        new HunspellStemmer(load("FULLSTRIP\n" + rule, words)).stemAll("ed"));
+    Assertions.assertEquals(List.of("ed"),
+        new HunspellStemmer(load(rule, words)).stemAll("ed"));
   }
 
   /**
