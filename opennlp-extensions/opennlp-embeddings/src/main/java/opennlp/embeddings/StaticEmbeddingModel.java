@@ -480,7 +480,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param vocabularySourceName The vocabulary's source, for error messages.
    * @return The matrix, its optional weights, and its dimension.
    * @throws InvalidFormatException Thrown if the matrix's row count or the weights tensor's
-   *     length disagrees with the vocabulary size.
+   *     length disagrees with the vocabulary size, or the matrix contains a non-finite value.
    * @throws IOException Thrown if reading the file fails.
    */
   private static Matrix readMatrix(EmbeddingVocabulary vocabulary, Path safetensorsFile,
@@ -496,6 +496,16 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     }
     final int dimension = matrixInfo.shape()[1];
     final float[] embeddings = tensors.readFloats(matrixName);
+    // Distillation replaces non-finite teacher values with zero before writing, so a NaN or
+    // infinity here marks a corrupt or foreign file; unrejected, a single NaN row silently
+    // defeats the norm guards and corrupts every similarity ranking it appears in.
+    for (int i = 0; i < embeddings.length; i++) {
+      if (!Float.isFinite(embeddings[i])) {
+        throw new InvalidFormatException("Embedding matrix '" + matrixName + "' in "
+            + safetensorsFile + " holds the non-finite value " + embeddings[i] + " in row "
+            + (i / dimension) + "; the matrix is corrupt");
+      }
+    }
 
     float[] weights = null;
     if (tensors.tensorNames().contains(WEIGHTS_TENSOR_NAME)) {
