@@ -245,7 +245,9 @@ List<Expansion> expansions = LexicalExpander.builder(lexicon)
 			hypernym graph. Path similarity is <code>1 / (1 + d)</code> for the
 			shortest distance <code>d</code> through a common ancestor. Wu-Palmer
 			similarity relates the depth of the deepest common ancestor to the depths
-			of both synsets. Unrelated synsets score <code>0</code>. The example runs
+			of both synsets, with depths counted in nodes so the root sits at depth
+			one and any shared ancestor scores above <code>0</code>. Only unrelated
+			synsets score <code>0</code>. The example runs
 			against the miniature taxonomy in the leading comment, with synset ids
 			<code>n1</code> to <code>n9</code>;
 			<code>LexicalExpansionUsageExampleTest</code> builds exactly that
@@ -258,7 +260,7 @@ List<Expansion> expansions = LexicalExpander.builder(lexicon)
 SynsetSimilarity similarity = new SynsetSimilarity(lexicon);
 
 similarity.path("n6", "n5");       // 0.5      (chemist to scientist)
-similarity.wuPalmer("n5", "n6");   // 8.0/9.0  (deep shared ancestry)
+similarity.wuPalmer("n5", "n6");   // 10.0/11.0 (deep shared ancestry)
 similarity.path("n6", "n8");       // 1.0/7.0  (chemist to city, six edges)]]>
 			</programlisting>
 		</para>

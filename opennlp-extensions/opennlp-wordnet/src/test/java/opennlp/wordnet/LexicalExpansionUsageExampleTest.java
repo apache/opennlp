@@ -157,7 +157,7 @@ public class LexicalExpansionUsageExampleTest {
   void testSynsetSimilarityScores() {
     final SynsetSimilarity similarity = new SynsetSimilarity(similarityTaxonomy());
     Assertions.assertEquals(0.5, similarity.path("n6", "n5"), 1e-9);
-    Assertions.assertEquals(8.0 / 9.0, similarity.wuPalmer("n5", "n6"), 1e-9);
+    Assertions.assertEquals(10.0 / 11.0, similarity.wuPalmer("n5", "n6"), 1e-9);
     Assertions.assertEquals(1.0 / 7.0, similarity.path("n6", "n8"), 1e-9);
   }
 
