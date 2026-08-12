@@ -149,7 +149,8 @@ public final class TarStream {
    * @throws IOException Thrown if the archive is truncated or a header is malformed.
    */
   public boolean next() throws IOException {
-    skip(remaining + padding(size));
+    skip(remaining);
+    skip(padding(size));
     while (true) {
       if (!readBlock() || isEndBlock()) {
         return false;
