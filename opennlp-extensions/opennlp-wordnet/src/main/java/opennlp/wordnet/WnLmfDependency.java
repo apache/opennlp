@@ -34,20 +34,11 @@ public record WnLmfDependency(String ref, String version) {
    * @throws IllegalArgumentException Thrown if a component is {@code null} or empty.
    */
   public WnLmfDependency {
-    requireText(ref, "Ref");
-    requireText(version, "Version");
-  }
-
-  /**
-   * Requires a non-empty text component.
-   *
-   * @param value The component value.
-   * @param name  The component name used in the rejection message.
-   * @throws IllegalArgumentException Thrown if {@code value} is {@code null} or empty.
-   */
-  private static void requireText(String value, String name) {
-    if (value == null || value.isEmpty()) {
-      throw new IllegalArgumentException(name + " must not be null or empty");
+    if (ref == null || ref.isEmpty()) {
+      throw new IllegalArgumentException("Ref must not be null or empty");
+    }
+    if (version == null || version.isEmpty()) {
+      throw new IllegalArgumentException("Version must not be null or empty");
     }
   }
 }
