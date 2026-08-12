@@ -623,4 +623,120 @@ public class ResourceInstallerTest {
 
     Assertions.assertEquals("small", Files.readString(target.resolve("corpus/data.txt")));
   }
+
+  /**
+   * Pins the default limits the two- and three-argument {@code install} methods
+   * apply, so a change to them cannot slip through unnoticed.
+   */
+  @Test
+  void testDefaultLimitsArePinned() {
+    final ResourceInstaller.Limits defaults = ResourceInstaller.Limits.DEFAULT;
+    Assertions.assertEquals(Duration.ofSeconds(20), defaults.connectTimeout());
+    Assertions.assertEquals(Duration.ofSeconds(60), defaults.readTimeout());
+    Assertions.assertEquals(5, defaults.maxRedirects());
+    Assertions.assertEquals(1L << 30, defaults.maxDownloadBytes());
+    Assertions.assertEquals(4L << 30, defaults.maxExpandedBytes());
+  }
+
+  /**
+   * Proves that SHA-512 comparison is case-insensitive like SHA-256: an uppercase
+   * rendering of the correct digest passes verification.
+   */
+  @Test
+  void testSha512ChecksumComparisonIgnoresHexLetterCase(@TempDir Path source,
+      @TempDir Path target) throws Exception {
+    final byte[] archive = tarGz(new String[][] {{"data/entry.txt", "payload"}});
+    final Path file = source.resolve("cased512.tar.gz");
+    Files.write(file, archive);
+    final String upperCase = sha512(archive).toUpperCase(Locale.ROOT);
+    Assertions.assertNotEquals(sha512(archive), upperCase);
+
+    ResourceInstaller.install(file.toUri(), target, upperCase);
+
+    Assertions.assertEquals("payload",
+        Files.readString(target.resolve("data/entry.txt")));
+  }
+
+  /**
+   * Proves the accept side of the download ceiling: a source exactly at the ceiling
+   * installs, so the boundary is exclusive of failure.
+   */
+  @Test
+  void testDownloadExactlyAtCeilingSucceeds(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final Path file = source.resolve("exact.dat");
+    Files.write(file, new byte[1024]);
+
+    ResourceInstaller.install(file.toUri(), target, null, ceilings(1024, 1024 * 1024));
+
+    Assertions.assertEquals(List.of("exact.dat"), installedFiles(target));
+    Assertions.assertEquals(1024, Files.size(target.resolve("exact.dat")));
+  }
+
+  /**
+   * Proves the accept side of the expansion ceiling: content that expands to exactly
+   * the ceiling installs, so the boundary is exclusive of failure.
+   */
+  @Test
+  void testExpansionExactlyAtCeilingSucceeds(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
+    tarEntry(tar, "corpus/exact.bin", new byte[1024]);
+    tar.write(new byte[TERMINATOR_SIZE]);
+    final Path file = source.resolve("exact.tar.gz");
+    Files.write(file, gzip(tar.toByteArray()));
+
+    ResourceInstaller.install(file.toUri(), target, null, ceilings(1024 * 1024, 1024));
+
+    Assertions.assertEquals(List.of("corpus/exact.bin"), installedFiles(target));
+    Assertions.assertEquals(1024, Files.size(target.resolve("corpus/exact.bin")));
+  }
+
+  /**
+   * Proves that the expansion budget is shared across all archive entries: two
+   * entries that each fit under the ceiling but cross it together are rejected, and
+   * nothing is installed.
+   */
+  @Test
+  void testCumulativeExpansionAcrossEntriesHitsCeiling(@TempDir Path source,
+      @TempDir Path target) throws Exception {
+    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
+    tarEntry(tar, "corpus/first.bin", new byte[768]);
+    tarEntry(tar, "corpus/second.bin", new byte[768]);
+    tar.write(new byte[TERMINATOR_SIZE]);
+    final Path file = source.resolve("cumulative.tar.gz");
+    Files.write(file, gzip(tar.toByteArray()));
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(file.toUri(), target, null,
+            ceilings(1024 * 1024, 1024)));
+    Assertions.assertEquals("expanded content exceeds the ceiling of 1024 bytes",
+        thrown.getMessage());
+    Assertions.assertEquals(List.of(), installedFiles(target));
+  }
+
+  /**
+   * Proves that installing over the same target replaces files the previous
+   * installation delivered, so an operator can refresh a resource in place.
+   */
+  @Test
+  void testReinstallReplacesExistingFiles(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final byte[] first = tarGz(new String[][] {{"corpus/data.txt", "version one"}});
+    final byte[] second = tarGz(new String[][] {{"corpus/data.txt", "version two"}});
+    final Path firstFile = source.resolve("first.tar.gz");
+    final Path secondFile = source.resolve("second.tar.gz");
+    Files.write(firstFile, first);
+    Files.write(secondFile, second);
+
+    ResourceInstaller.install(firstFile.toUri(), target, sha256(first));
+    Assertions.assertEquals("version one",
+        Files.readString(target.resolve("corpus/data.txt")));
+
+    ResourceInstaller.install(secondFile.toUri(), target, sha256(second));
+
+    Assertions.assertEquals("version two",
+        Files.readString(target.resolve("corpus/data.txt")));
+    Assertions.assertEquals(List.of("corpus/data.txt"), installedFiles(target));
+  }
 }
