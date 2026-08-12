@@ -367,9 +367,6 @@ public class TarStreamTest {
     Assertions.assertTrue(stream.next());
     Assertions.assertEquals("plain.txt", stream.name());
   }
-
-
-
   /**
    * Proves that a pax global header carrying only a {@code comment} record is consumed
    * and the entry after it is delivered normally. A tar written by {@code git archive}
@@ -379,8 +376,7 @@ public class TarStreamTest {
   void testPaxGlobalHeaderWithOnlyACommentIsConsumed() throws IOException {
     final ByteArrayOutputStream tar = new ByteArrayOutputStream();
     entry(tar, "pax_global_header",
-        concat(TarArchives.paxRecord("comment", "0123456789abcdef"),
-            metadataRecords()), 'g');
+        TarArchives.paxRecord("comment", "0123456789abcdef"), 'g');
     entry(tar, "data.txt", "content".getBytes(StandardCharsets.UTF_8));
     tar.write(new byte[TERMINATOR_SIZE]);
     final TarStream stream = new TarStream(new ByteArrayInputStream(tar.toByteArray()));
@@ -793,7 +789,9 @@ public class TarStreamTest {
 
   /**
    * Proves that the largest length a {@code long} can hold round-trips, so the overflow
-   * guard rejects only what genuinely does not fit.
+   * guard rejects only what genuinely does not fit. Advancing afterward must still
+   * detect that the declared content is absent rather than overflowing the skip count
+   * and reporting a clean end of archive.
    */
   @Test
   void testBase256SizeFieldAcceptsTheLargestRepresentableLength() throws IOException {
@@ -802,6 +800,8 @@ public class TarStreamTest {
 
     Assertions.assertTrue(stream.next());
     Assertions.assertEquals(Long.MAX_VALUE, stream.size());
+    final IOException thrown = Assertions.assertThrows(IOException.class, stream::next);
+    Assertions.assertEquals("truncated tar archive", thrown.getMessage());
   }
 
   /**
