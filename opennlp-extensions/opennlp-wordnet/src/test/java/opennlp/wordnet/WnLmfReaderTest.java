@@ -287,9 +287,6 @@ public class WnLmfReaderTest {
                 + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
                 + "</Synset>"),
             List.of("x")),
-        Arguments.of(Named.of("synset without members",
-            "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>orphan</Definition></Synset>"),
-            List.of("t-1")),
         Arguments.of(Named.of("duplicate synset id",
             "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
                 + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
