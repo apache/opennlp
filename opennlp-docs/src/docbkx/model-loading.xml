@@ -169,11 +169,12 @@ for(ClassPathModelEntry entry : models) {
     <title>Installing archived resources</title>
     <para>
       <code>ResourceInstaller</code> fetches a third-party resource, such as a training corpus or a
-      lexicon, into a target directory. An optional SHA-256 checksum is verified before anything is
-      unpacked, and archive entries that would escape the target directory are rejected. The content
-      format is detected from the bytes, not from the name: gzip-compressed tar archives and zip
-      archives are unpacked with their relative structure, plain gzip files are decompressed, and
-      anything else is stored as a file under its source name.
+      lexicon, into a target directory. An optional checksum is verified before anything is
+      unpacked: a 64-character hex digest selects SHA-256, a 128-character one SHA-512. Archive
+      entries that would escape the target directory are rejected. The content format is detected
+      from the bytes, not from the name: gzip-compressed tar archives and zip archives are unpacked
+      with their relative structure, plain gzip files are decompressed, and anything else is stored
+      as a file under its source name.
       <code>ResourceInstallerTest#testInstallEndToEndUsageExample</code> asserts the behavior
       shown here.
 
@@ -181,6 +182,32 @@ for(ClassPathModelEntry entry : models) {
 <![CDATA[Path result = ResourceInstaller.install(
     corpusTarGz.toUri(), targetDirectory, expectedSha256);
 // result is targetDirectory; the archived files appear under their archive paths]]>
+      </programlisting>
+
+      Installation is staged: content unpacks into a hidden staging directory on the target
+      filesystem and moves into the target only after the download was verified and every entry
+      unpacked cleanly. A failed installation therefore leaves the target directory as it was,
+      without partially written files.
+    </para>
+    <para>
+      Every installation is bounded. Http and https fetches carry connection and read timeouts,
+      follow at most a fixed number of redirects, and refuse redirects that leave the http and
+      https schemes or downgrade https to http. A download larger than its ceiling, whether
+      declared by the server or discovered while transferring, is aborted, and so is an archive
+      whose entries expand beyond the expansion ceiling, which stops decompression bombs. The
+      defaults (20 second connect timeout, 60 second read timeout, 5 redirects, 1 GiB download,
+      4 GiB expanded) apply to the two- and three-argument <code>install</code> methods; pass a
+      <code>ResourceInstaller.Limits</code> to tighten or widen them.
+      <code>ResourceInstallerTest#testInstallWithinCustomCeilingsSucceeds</code> asserts the
+      behavior shown here.
+
+      <programlisting language="java">
+<![CDATA[ResourceInstaller.Limits limits = new ResourceInstaller.Limits(
+    Duration.ofSeconds(10), Duration.ofSeconds(10), 5,
+    1024 * 1024,   // download ceiling in bytes
+    1024 * 1024);  // expansion ceiling in bytes
+Path result = ResourceInstaller.install(
+    corpusTarGz.toUri(), targetDirectory, expectedSha256, limits);]]>
       </programlisting>
 
     </para>
