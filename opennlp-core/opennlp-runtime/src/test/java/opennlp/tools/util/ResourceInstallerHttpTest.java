@@ -40,6 +40,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static opennlp.tools.util.InstallerTestSupport.installedFiles;
 import static opennlp.tools.util.InstallerTestSupport.sha256;
@@ -138,6 +140,57 @@ public class ResourceInstallerHttpTest {
 
     Assertions.assertEquals("relative",
         Files.readString(target.resolve("corpus/data.txt")));
+  }
+
+  /**
+   * Proves that every redirect status the installer claims to follow (301, 302, 303,
+   * 307, 308) is actually followed.
+   */
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(strings = {"301 Moved Permanently", "302 Found", "303 See Other",
+      "307 Temporary Redirect", "308 Permanent Redirect"})
+  void testEveryRedirectStatusIsFollowed(String status, @TempDir Path target)
+      throws Exception {
+    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "followed"}});
+    server.route("/old.tar.gz", out -> StubServer.redirect(out, status, "/new.tar.gz"));
+    server.route("/new.tar.gz", out -> StubServer.ok(out, archive));
+
+    ResourceInstaller.install(server.uri("/old.tar.gz"), target, sha256(archive));
+
+    Assertions.assertEquals("followed",
+        Files.readString(target.resolve("corpus/data.txt")));
+  }
+
+  /**
+   * Proves the boundary of the redirect cap: an allowance of zero refuses the very
+   * first redirect.
+   */
+  @Test
+  void testZeroRedirectAllowanceRefusesTheFirstRedirect(@TempDir Path target)
+      throws Exception {
+    server.route("/once", out -> StubServer.redirect(out,
+        server.uri("/anywhere.tar.gz").toString()));
+
+    final URI source = server.uri("/once");
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(source, target, null, withMaxRedirects(0)));
+    Assertions.assertEquals("more than 0 redirects: " + source, thrown.getMessage());
+    Assertions.assertEquals(List.of(), installedFiles(target));
+  }
+
+  /**
+   * Proves that a Location header that cannot be parsed as a URI fails loud with the
+   * offending value instead of surfacing a bare parse exception.
+   */
+  @Test
+  void testMalformedRedirectLocationFails() {
+    final URI from = URI.create("http://example.invalid/archive.tar.gz");
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.resolveRedirect(from, "http://mirror.invalid/bad path"));
+    Assertions.assertEquals("redirect from " + from
+        + " carries a malformed Location: http://mirror.invalid/bad path",
+        thrown.getMessage());
   }
 
   /**
@@ -382,7 +435,21 @@ public class ResourceInstallerHttpTest {
      * @throws IOException Thrown if writing fails.
      */
     static void redirect(OutputStream out, String location) throws IOException {
-      head(out, "302 Found", "Location: " + location, "Content-Length: 0", "");
+      redirect(out, "302 Found", location);
+    }
+
+    /**
+     * Writes a redirect with the given status to the given location.
+     *
+     * @param out The response stream.
+     * @param status The status line content after the protocol, such as
+     *               {@code 301 Moved Permanently}.
+     * @param location The Location header value, absolute or relative.
+     * @throws IOException Thrown if writing fails.
+     */
+    static void redirect(OutputStream out, String status, String location)
+        throws IOException {
+      head(out, status, "Location: " + location, "Content-Length: 0", "");
     }
 
     /**

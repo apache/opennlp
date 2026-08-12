@@ -188,6 +188,8 @@ for(ClassPathModelEntry entry : models) {
       filesystem and moves into the target only after the download was verified and every entry
       unpacked cleanly. A failed installation therefore leaves the target directory as it was,
       without partially written files.
+      <code>ResourceInstallerTest#testFailedTarUnpackLeavesTargetEmpty</code> and its zip and
+      truncated-archive siblings assert this guarantee.
     </para>
     <para>
       Every installation is bounded. Http and https fetches carry connection and read timeouts,
@@ -196,8 +198,11 @@ for(ClassPathModelEntry entry : models) {
       declared by the server or discovered while transferring, is aborted, and so is an archive
       whose entries expand beyond the expansion ceiling, which stops decompression bombs. The
       defaults (20 second connect timeout, 60 second read timeout, 5 redirects, 1 GiB download,
-      4 GiB expanded) apply to the two- and three-argument <code>install</code> methods; pass a
-      <code>ResourceInstaller.Limits</code> to tighten or widen them.
+      4 GiB expanded) apply to the two- and three-argument <code>install</code> methods and are
+      asserted by <code>ResourceInstallerTest#testDefaultLimitsArePinned</code>; the network
+      behavior is exercised against a local scripted server in
+      <code>ResourceInstallerHttpTest</code>. Pass a
+      <code>ResourceInstaller.Limits</code> to tighten or widen the defaults.
       <code>ResourceInstallerTest#testInstallWithinCustomCeilingsSucceeds</code> asserts the
       behavior shown here.
 
