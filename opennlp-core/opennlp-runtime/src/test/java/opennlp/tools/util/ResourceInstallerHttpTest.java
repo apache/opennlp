@@ -39,10 +39,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static opennlp.tools.util.InstallerTestSupport.KIBIBYTE;
+import static opennlp.tools.util.InstallerTestSupport.MEBIBYTE;
 import static opennlp.tools.util.InstallerTestSupport.installedFiles;
 import static opennlp.tools.util.InstallerTestSupport.sha256;
 import static opennlp.tools.util.InstallerTestSupport.tarGz;
@@ -55,7 +58,9 @@ import static opennlp.tools.util.InstallerTestSupport.tarGz;
 public class ResourceInstallerHttpTest {
 
   private static final Duration GENEROUS = Duration.ofSeconds(10);
-  private static final long MEBIBYTE = 1024 * 1024;
+
+  /** Long enough that a stalled route outlives any timeout a test configures. */
+  private static final Duration STALL = Duration.ofSeconds(30);
 
   private StubServer server;
 
@@ -249,18 +254,21 @@ public class ResourceInstallerHttpTest {
   void testHttpsToHttpDowngradeIsRejected() {
     final URI https = URI.create("https://example.invalid/archive.tar.gz");
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.resolveRedirect(https,
-            "http://example.invalid/archive.tar.gz"));
-    Assertions.assertEquals(
-        "redirect downgrades https to http: http://example.invalid/archive.tar.gz",
-        thrown.getMessage());
-
-    Assertions.assertDoesNotThrow(() -> ResourceInstaller.resolveRedirect(https,
-        "https://mirror.invalid/archive.tar.gz"));
-    Assertions.assertDoesNotThrow(() -> ResourceInstaller.resolveRedirect(
-        URI.create("http://example.invalid/archive.tar.gz"),
-        "https://mirror.invalid/archive.tar.gz"));
+    // assertAll so a wrongly rejected upgrade is not hidden by the rejection case.
+    Assertions.assertAll(
+        () -> {
+          final IOException thrown = Assertions.assertThrows(IOException.class,
+              () -> ResourceInstaller.resolveRedirect(https,
+                  "http://example.invalid/archive.tar.gz"));
+          Assertions.assertEquals(
+              "redirect downgrades https to http: http://example.invalid/archive.tar.gz",
+              thrown.getMessage());
+        },
+        () -> Assertions.assertDoesNotThrow(() -> ResourceInstaller.resolveRedirect(https,
+            "https://mirror.invalid/archive.tar.gz")),
+        () -> Assertions.assertDoesNotThrow(() -> ResourceInstaller.resolveRedirect(
+            URI.create("http://example.invalid/archive.tar.gz"),
+            "https://mirror.invalid/archive.tar.gz")));
   }
 
   @Test
@@ -282,7 +290,7 @@ public class ResourceInstallerHttpTest {
    */
   @Test
   void testStalledResponseHitsReadTimeout(@TempDir Path target) {
-    server.route("/stall", out -> StubServer.sleep(Duration.ofSeconds(30)));
+    server.route("/stall", out -> StubServer.sleep(STALL));
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
         () -> ResourceInstaller.install(server.uri("/stall"), target, null,
@@ -300,7 +308,7 @@ public class ResourceInstallerHttpTest {
       StubServer.head(out, "200 OK", "Content-Length: 100000", "");
       out.write("just a few bytes".getBytes(StandardCharsets.UTF_8));
       out.flush();
-      StubServer.sleep(Duration.ofSeconds(30));
+      StubServer.sleep(STALL);
     });
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
@@ -322,7 +330,7 @@ public class ResourceInstallerHttpTest {
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
         () -> ResourceInstaller.install(server.uri("/liar.tar.gz"), target, null,
-            withDownloadCeiling(1024)));
+            withDownloadCeiling(KIBIBYTE)));
     Assertions.assertEquals(
         "declared content length 10000000 exceeds the download ceiling of 1024 bytes",
         thrown.getMessage());
@@ -343,10 +351,54 @@ public class ResourceInstallerHttpTest {
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
         () -> ResourceInstaller.install(server.uri("/endless"), target, null,
-            withDownloadCeiling(1024)));
+            withDownloadCeiling(KIBIBYTE)));
     Assertions.assertEquals("download exceeds the ceiling of 1024 bytes",
         thrown.getMessage());
     Assertions.assertEquals(List.of(), installedFiles(target));
+  }
+
+  /**
+   * Proves that a positive timeout shorter than a millisecond is applied as a real
+   * timeout. Rounded down to zero it would mean no timeout at all to
+   * {@code HttpURLConnection}, so the tightest configuration a caller can express would
+   * become the loosest, and this install would never return.
+   */
+  @Test
+  @Timeout(value = 15, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  void testSubMillisecondReadTimeoutStillTimesOut(@TempDir Path target) {
+    server.route("/stall", out -> StubServer.sleep(STALL));
+    final ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()
+        .readTimeout(Duration.ofNanos(1))
+        .build();
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(server.uri("/stall"), target, null, limits));
+
+    Assertions.assertInstanceOf(SocketTimeoutException.class, thrown);
+  }
+
+
+  /**
+   * Proves that a timeout too large to express in milliseconds is capped rather than
+   * overflowing. {@link Duration#toMillis()} raises an {@code ArithmeticException} on
+   * such a value, which would abort the install before a single byte was fetched.
+   */
+  @Test
+  void testTimeoutBeyondTheMillisecondRangeIsCapped(@TempDir Path target)
+      throws Exception {
+    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "patient"}});
+    server.route("/corpus.tar.gz", out -> StubServer.ok(out, archive));
+    final Duration beyondMillis = Duration.ofSeconds(Long.MAX_VALUE / 1000 + 1);
+    final ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()
+        .connectTimeout(beyondMillis)
+        .readTimeout(beyondMillis)
+        .build();
+
+    ResourceInstaller.install(server.uri("/corpus.tar.gz"), target, sha256(archive),
+        limits);
+
+    Assertions.assertEquals("patient",
+        Files.readString(target.resolve("corpus/data.txt")));
   }
 
   /**
@@ -359,6 +411,13 @@ public class ResourceInstallerHttpTest {
     /** Writes a raw HTTP response to the connected client. */
     @FunctionalInterface
     interface Responder {
+
+      /**
+       * Writes the raw response bytes for one request.
+       *
+       * @param out The response stream.
+       * @throws IOException Thrown if writing fails.
+       */
       void respond(OutputStream out) throws IOException;
     }
 
@@ -394,13 +453,14 @@ public class ResourceInstallerHttpTest {
     }
 
     /**
-     * Writes a response head: the HTTP/1.0 status line, the given header lines, and
-     * the blank separator line, followed by any further lines verbatim.
+     * Writes the HTTP/1.0 status line followed by the given lines, each terminated by
+     * CRLF. The caller supplies the header lines, then an empty string for the blank
+     * line separating head from body, then optional body text.
      *
      * @param out The response stream.
      * @param status The status line content after the protocol, such as {@code 200 OK}.
      * @param lines Header lines, then an empty string separator, then optional body
-     *              text written verbatim.
+     *              text, each written with a trailing CRLF.
      * @throws IOException Thrown if writing fails.
      */
     static void head(OutputStream out, String status, String... lines)

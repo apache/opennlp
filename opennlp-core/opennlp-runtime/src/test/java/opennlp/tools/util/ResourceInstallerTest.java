@@ -19,6 +19,7 @@ package opennlp.tools.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +35,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,6 +44,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static opennlp.tools.util.InstallerTestSupport.BLOCK;
+import static opennlp.tools.util.InstallerTestSupport.KIBIBYTE;
+import static opennlp.tools.util.InstallerTestSupport.MEBIBYTE;
 import static opennlp.tools.util.InstallerTestSupport.TERMINATOR_SIZE;
 import static opennlp.tools.util.InstallerTestSupport.gzip;
 import static opennlp.tools.util.InstallerTestSupport.installedFiles;
@@ -50,6 +55,48 @@ import static opennlp.tools.util.InstallerTestSupport.tarEntry;
 import static opennlp.tools.util.InstallerTestSupport.tarGz;
 
 public class ResourceInstallerTest {
+
+  private static final String CHECKSUM_ARGUMENT_ERROR =
+      "checksum must be 64 (SHA-256) or 128 (SHA-512) hex characters; pass null to skip";
+  private static final String ESCAPE_ERROR =
+      "archive entry escapes the target directory: ";
+  private static final String EXPANSION_CEILING_ERROR =
+      "expanded content exceeds the ceiling of " + KIBIBYTE + " bytes";
+
+  /**
+   * Installs the given file under the default limits and asserts that it fails with the
+   * expected message, leaving the target directory without a single installed file.
+   *
+   * @param file The source file to install.
+   * @param target The target directory, which must have been empty before the attempt.
+   * @param message The exact failure message expected.
+   * @throws IOException Thrown if listing the target directory fails.
+   */
+  private static void assertInstallFails(Path file, Path target, String message)
+      throws IOException {
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(file.toUri(), target));
+    Assertions.assertEquals(message, thrown.getMessage());
+    Assertions.assertEquals(List.of(), installedFiles(target));
+  }
+
+  /**
+   * Installs the given file under the given limits and asserts that it fails with the
+   * expected message, leaving the target directory without a single installed file.
+   *
+   * @param file The source file to install.
+   * @param target The target directory, which must have been empty before the attempt.
+   * @param limits The limits to install under.
+   * @param message The exact failure message expected.
+   * @throws IOException Thrown if listing the target directory fails.
+   */
+  private static void assertInstallFails(Path file, Path target,
+      ResourceInstaller.Limits limits, String message) throws IOException {
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(file.toUri(), target, null, limits));
+    Assertions.assertEquals(message, thrown.getMessage());
+    Assertions.assertEquals(List.of(), installedFiles(target));
+  }
 
   /**
    * Computes the SHA-256 of the given bytes as an uppercase hex string, so tests can
@@ -134,7 +181,6 @@ public class ResourceInstallerTest {
     final String wrong = "0".repeat(64);
     final IOException thrown = Assertions.assertThrows(IOException.class,
         () -> ResourceInstaller.install(file.toUri(), target, wrong));
-    Assertions.assertEquals(IOException.class, thrown.getClass());
     Assertions.assertEquals("checksum mismatch: expected " + wrong
         + " but downloaded " + sha256(archive), thrown.getMessage());
     Assertions.assertEquals(List.of(), installedFiles(target));
@@ -167,11 +213,7 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("evil.tar.gz");
     Files.write(file, archive);
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target));
-    Assertions.assertEquals(
-        "archive entry escapes the target directory: ../escape.txt",
-        thrown.getMessage());
+    assertInstallFails(file, target, ESCAPE_ERROR + "../escape.txt");
     Assertions.assertTrue(Files.notExists(target.getParent().resolve("escape.txt")));
   }
 
@@ -187,12 +229,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("absolute.tar.gz");
     Files.write(file, archive);
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target));
-    Assertions.assertEquals(
-        "archive entry escapes the target directory: /absolute-escape-attempt/evil.txt",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target,
+        ESCAPE_ERROR + "/absolute-escape-attempt/evil.txt");
     Assertions.assertTrue(Files.notExists(Path.of("/absolute-escape-attempt")));
   }
 
@@ -212,13 +250,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("evil.zip");
     Files.write(file, out.toByteArray());
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target));
-    Assertions.assertEquals(
-        "archive entry escapes the target directory: ../zip-escape.txt",
-        thrown.getMessage());
+    assertInstallFails(file, target, ESCAPE_ERROR + "../zip-escape.txt");
     Assertions.assertTrue(Files.notExists(target.getParent().resolve("zip-escape.txt")));
-    Assertions.assertEquals(List.of(), installedFiles(target));
   }
 
   @Test
@@ -290,25 +323,54 @@ public class ResourceInstallerTest {
     Assertions.assertEquals("cat 100", Files.readString(target.resolve("frequencies.txt")));
   }
 
+  /**
+   * Proves that every argument the public API rejects is rejected with its own message,
+   * before anything is fetched.
+   */
   @Test
   void testInvalidArguments(@TempDir Path target) {
-    IllegalArgumentException thrown = Assertions.assertThrows(
-        IllegalArgumentException.class, () -> ResourceInstaller.install(null, target));
-    Assertions.assertEquals("source must not be null", thrown.getMessage());
+    // assertAll so an unvalidated argument does not hide the others.
+    Assertions.assertAll(
+        () -> assertArgumentError("source must not be null",
+            () -> ResourceInstaller.install(null, target)),
+        () -> assertArgumentError("targetDirectory must not be null",
+            () -> ResourceInstaller.install(target.toUri(), null)),
+        () -> assertArgumentError("limits must not be null",
+            () -> ResourceInstaller.install(target.toUri(), target, null, null)));
+  }
 
-    thrown = Assertions.assertThrows(IllegalArgumentException.class,
-        () -> ResourceInstaller.install(target.toUri(), null));
-    Assertions.assertEquals("targetDirectory must not be null", thrown.getMessage());
+  /**
+   * Enumerates checksum arguments that are neither a valid SHA-256 nor a valid SHA-512
+   * digest, so a typo cannot masquerade as a checksum mismatch.
+   *
+   * @return One case per rejected digest. Never {@code null}.
+   */
+  static Stream<Arguments> rejectedChecksums() {
+    return Stream.of(
+        Arguments.of("blank", " "),
+        Arguments.of("too short", "abc123"),
+        Arguments.of("right length, non-hex characters", "g".repeat(64)),
+        Arguments.of("between the two supported lengths", "a".repeat(96)),
+        Arguments.of("longer than SHA-512", "a".repeat(129)));
+  }
 
-    thrown = Assertions.assertThrows(IllegalArgumentException.class,
-        () -> ResourceInstaller.install(target.toUri(), target, " "));
-    Assertions.assertEquals(
-        "checksum must be 64 (SHA-256) or 128 (SHA-512) hex characters; pass null to skip",
-        thrown.getMessage());
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("rejectedChecksums")
+  void testInvalidChecksumIsRejected(String label, String checksum, @TempDir Path target) {
+    assertArgumentError(CHECKSUM_ARGUMENT_ERROR,
+        () -> ResourceInstaller.install(target.toUri(), target, checksum));
+  }
 
-    thrown = Assertions.assertThrows(IllegalArgumentException.class,
-        () -> ResourceInstaller.install(target.toUri(), target, null, null));
-    Assertions.assertEquals("limits must not be null", thrown.getMessage());
+  /**
+   * Asserts that the given call fails as an argument error carrying the exact message.
+   *
+   * @param message The exact failure message expected.
+   * @param call The call under test.
+   */
+  private static void assertArgumentError(String message, Executable call) {
+    final IllegalArgumentException thrown =
+        Assertions.assertThrows(IllegalArgumentException.class, call);
+    Assertions.assertEquals(message, thrown.getMessage());
   }
 
   /**
@@ -344,34 +406,6 @@ public class ResourceInstallerTest {
   }
 
   /**
-   * Proves that a digest whose length matches neither SHA-256 nor SHA-512 is rejected
-   * as an argument error before anything is fetched.
-   */
-  @Test
-  void testChecksumOfUnsupportedLengthIsRejected(@TempDir Path target) {
-    final IllegalArgumentException thrown = Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () -> ResourceInstaller.install(target.toUri(), target, "abc123"));
-    Assertions.assertEquals(
-        "checksum must be 64 (SHA-256) or 128 (SHA-512) hex characters; pass null to skip",
-        thrown.getMessage());
-  }
-
-  /**
-   * Proves that a digest of the right length but with non-hex characters is rejected
-   * as an argument error, so a typo cannot masquerade as a checksum mismatch.
-   */
-  @Test
-  void testChecksumWithNonHexCharactersIsRejected(@TempDir Path target) {
-    final IllegalArgumentException thrown = Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () -> ResourceInstaller.install(target.toUri(), target, "g".repeat(64)));
-    Assertions.assertEquals(
-        "checksum must be 64 (SHA-256) or 128 (SHA-512) hex characters; pass null to skip",
-        thrown.getMessage());
-  }
-
-  /**
    * Proves staged installation for tar content: when a later entry escapes the target
    * directory, the earlier entry that already unpacked cleanly must not appear either.
    */
@@ -384,12 +418,7 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("partial.tar.gz");
     Files.write(file, archive);
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target));
-    Assertions.assertEquals(
-        "archive entry escapes the target directory: ../escape.txt",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target, ESCAPE_ERROR + "../escape.txt");
   }
 
   /**
@@ -411,12 +440,7 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("partial.zip");
     Files.write(file, out.toByteArray());
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target));
-    Assertions.assertEquals(
-        "archive entry escapes the target directory: ../zip-escape.txt",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target, ESCAPE_ERROR + "../zip-escape.txt");
   }
 
   /**
@@ -536,12 +560,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("large.txt");
     Files.write(file, new byte[8192]);
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target, null,
-            ceilings(1024, 1024 * 1024)));
-    Assertions.assertEquals("download exceeds the ceiling of 1024 bytes",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target, ceilings(KIBIBYTE, MEBIBYTE),
+        "download exceeds the ceiling of " + KIBIBYTE + " bytes");
   }
 
   /**
@@ -557,12 +577,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("bomb.tar.gz");
     Files.write(file, gzip(tar.toByteArray()));
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target, null,
-            ceilings(1024 * 1024, 1024)));
-    Assertions.assertEquals("expanded content exceeds the ceiling of 1024 bytes",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target, ceilings(MEBIBYTE, KIBIBYTE),
+        EXPANSION_CEILING_ERROR);
   }
 
   /**
@@ -581,12 +597,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("bomb.zip");
     Files.write(file, out.toByteArray());
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target, null,
-            ceilings(1024 * 1024, 1024)));
-    Assertions.assertEquals("expanded content exceeds the ceiling of 1024 bytes",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target, ceilings(MEBIBYTE, KIBIBYTE),
+        EXPANSION_CEILING_ERROR);
   }
 
   /**
@@ -599,12 +611,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("zeros.bin.gz");
     Files.write(file, gzip(new byte[64 * 1024]));
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target, null,
-            ceilings(1024 * 1024, 1024)));
-    Assertions.assertEquals("expanded content exceeds the ceiling of 1024 bytes",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target, ceilings(MEBIBYTE, KIBIBYTE),
+        EXPANSION_CEILING_ERROR);
   }
 
   /**
@@ -619,7 +627,7 @@ public class ResourceInstallerTest {
     Files.write(file, archive);
 
     ResourceInstaller.install(file.toUri(), target, sha256(archive),
-        ceilings(1024 * 1024, 1024 * 1024));
+        ceilings(MEBIBYTE, MEBIBYTE));
 
     Assertions.assertEquals("small", Files.readString(target.resolve("corpus/data.txt")));
   }
@@ -667,7 +675,7 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("exact.dat");
     Files.write(file, new byte[1024]);
 
-    ResourceInstaller.install(file.toUri(), target, null, ceilings(1024, 1024 * 1024));
+    ResourceInstaller.install(file.toUri(), target, null, ceilings(KIBIBYTE, MEBIBYTE));
 
     Assertions.assertEquals(List.of("exact.dat"), installedFiles(target));
     Assertions.assertEquals(1024, Files.size(target.resolve("exact.dat")));
@@ -686,7 +694,7 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("exact.tar.gz");
     Files.write(file, gzip(tar.toByteArray()));
 
-    ResourceInstaller.install(file.toUri(), target, null, ceilings(1024 * 1024, 1024));
+    ResourceInstaller.install(file.toUri(), target, null, ceilings(MEBIBYTE, KIBIBYTE));
 
     Assertions.assertEquals(List.of("corpus/exact.bin"), installedFiles(target));
     Assertions.assertEquals(1024, Files.size(target.resolve("corpus/exact.bin")));
@@ -707,12 +715,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("cumulative.tar.gz");
     Files.write(file, gzip(tar.toByteArray()));
 
-    final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(file.toUri(), target, null,
-            ceilings(1024 * 1024, 1024)));
-    Assertions.assertEquals("expanded content exceeds the ceiling of 1024 bytes",
-        thrown.getMessage());
-    Assertions.assertEquals(List.of(), installedFiles(target));
+    assertInstallFails(file, target, ceilings(MEBIBYTE, KIBIBYTE),
+        EXPANSION_CEILING_ERROR);
   }
 
   /**
@@ -738,5 +742,160 @@ public class ResourceInstallerTest {
     Assertions.assertEquals("version two",
         Files.readString(target.resolve("corpus/data.txt")));
     Assertions.assertEquals(List.of("corpus/data.txt"), installedFiles(target));
+  }
+
+  /**
+   * Proves that promotion refuses to follow a symbolic link that already exists below
+   * the target. Every archive entry here stays inside the staging directory, so the
+   * entry-name guard never fires; without a check at promotion time the content lands
+   * wherever the link points.
+   */
+  @Test
+  @DisabledOnOs(OS.WINDOWS)
+  void testPromotionRefusesToFollowASymlinkedDirectory(@TempDir Path source,
+      @TempDir Path target, @TempDir Path outside) throws Exception {
+    final Path link = target.resolve("link");
+    Files.createSymbolicLink(link, outside);
+    final byte[] archive = tarGz(new String[][] {{"link/planted.txt", "escaped"}});
+    final Path file = source.resolve("symlink.tar.gz");
+    Files.write(file, archive);
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(file.toUri(), target));
+
+    Assertions.assertEquals("installation path crosses a symbolic link: " + link,
+        thrown.getMessage());
+    Assertions.assertEquals(List.of(), installedFiles(outside));
+    Assertions.assertTrue(Files.notExists(outside.resolve("planted.txt")));
+  }
+
+  /**
+   * Proves that an ordinary directory of the same shape still installs, so the symlink
+   * guard rejects the link rather than nested paths in general.
+   */
+  @Test
+  void testNestedDirectoryThatIsNotASymlinkStillInstalls(@TempDir Path source,
+      @TempDir Path target) throws Exception {
+    Files.createDirectory(target.resolve("link"));
+    final byte[] archive = tarGz(new String[][] {{"link/planted.txt", "fine"}});
+    final Path file = source.resolve("nested.tar.gz");
+    Files.write(file, archive);
+
+    ResourceInstaller.install(file.toUri(), target);
+
+    Assertions.assertEquals("fine",
+        Files.readString(target.resolve("link/planted.txt")));
+  }
+
+  /**
+   * Enumerates source schemes the installer refuses, each of which would otherwise be
+   * handed to whatever URL handler the runtime has installed, outside the timeouts and
+   * ceilings this class enforces.
+   *
+   * @return One case per rejected scheme. Never {@code null}.
+   */
+  static Stream<Arguments> rejectedSourceSchemes() {
+    return Stream.of(
+        Arguments.of("ftp", URI.create("ftp://example.invalid/corpus.tar.gz")),
+        Arguments.of("jar", URI.create("jar:file:/tmp/a.jar!/corpus.tar.gz")),
+        Arguments.of("mailto", URI.create("mailto:someone@example.invalid")),
+        Arguments.of("no scheme at all", URI.create("corpus.tar.gz")));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("rejectedSourceSchemes")
+  void testUnsupportedSourceSchemeIsRejected(String label, URI source,
+      @TempDir Path target) throws IOException {
+    assertArgumentError("source scheme must be http, https, or file, but was: " + source,
+        () -> ResourceInstaller.install(source, target));
+    Assertions.assertEquals(List.of(), installedFiles(target));
+  }
+
+  /**
+   * Proves that the scheme is rejected before the target directory is touched, so an
+   * unusable location cannot leave an empty directory behind.
+   */
+  @Test
+  void testUnsupportedSourceSchemeIsRejectedBeforeCreatingTheTarget(@TempDir Path parent) {
+    final Path target = parent.resolve("not-created-yet");
+
+    assertArgumentError(
+        "source scheme must be http, https, or file, but was: ftp://example.invalid/c.gz",
+        () -> ResourceInstaller.install(URI.create("ftp://example.invalid/c.gz"), target));
+    Assertions.assertTrue(Files.notExists(target));
+  }
+
+
+
+
+  /**
+   * Proves that a builder with nothing set produces exactly the default limits, so
+   * {@code builder()} is a safe starting point rather than a second set of defaults.
+   */
+  @Test
+  void testBuilderWithoutOverridesEqualsTheDefaults() {
+    Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT,
+        ResourceInstaller.Limits.builder().build());
+  }
+
+  /**
+   * Proves that each builder setter changes its own value and leaves the other four at
+   * their defaults.
+   */
+  @Test
+  void testBuilderOverridesOnlyWhatIsSet() {
+    final ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()
+        .maxDownloadBytes(MEBIBYTE)
+        .maxExpandedBytes(2 * MEBIBYTE)
+        .build();
+
+    Assertions.assertEquals(MEBIBYTE, limits.maxDownloadBytes());
+    Assertions.assertEquals(2 * MEBIBYTE, limits.maxExpandedBytes());
+    Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.connectTimeout(),
+        limits.connectTimeout());
+    Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.readTimeout(),
+        limits.readTimeout());
+    Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.maxRedirects(),
+        limits.maxRedirects());
+  }
+
+  /**
+   * Proves that the builder validates exactly as the canonical constructor does, so it
+   * cannot be used to sneak past a limit check.
+   */
+  @Test
+  void testBuilderRejectsInvalidValues() {
+    Assertions.assertAll(
+        () -> assertArgumentError("connectTimeout must be positive",
+            () -> ResourceInstaller.Limits.builder().connectTimeout(Duration.ZERO).build()),
+        () -> assertArgumentError("readTimeout must be positive",
+            () -> ResourceInstaller.Limits.builder().readTimeout(null).build()),
+        () -> assertArgumentError("maxRedirects must not be negative",
+            () -> ResourceInstaller.Limits.builder().maxRedirects(-1).build()),
+        () -> assertArgumentError("maxDownloadBytes must be positive",
+            () -> ResourceInstaller.Limits.builder().maxDownloadBytes(0).build()),
+        () -> assertArgumentError("maxExpandedBytes must be positive",
+            () -> ResourceInstaller.Limits.builder().maxExpandedBytes(-1).build()));
+  }
+
+  /**
+   * Proves that the download is written on the target's filesystem rather than in the
+   * system temporary directory, where a 1 GiB default ceiling could exhaust a small
+   * {@code /tmp} while the target has room. The file is hidden and deleted before
+   * {@code install} returns, so a leak surfaces in
+   * {@link #testInstallationLeavesNoStagingResidue} instead.
+   */
+  @Test
+  void testDownloadFileIsCreatedInTheTargetDirectory(@TempDir Path target)
+      throws Exception {
+    final Path downloaded = ResourceInstaller.createDownloadFile(target);
+    try {
+      Assertions.assertEquals(target, downloaded.getParent());
+      Assertions.assertTrue(
+          downloaded.getFileName().toString().startsWith(".opennlp-download"),
+          downloaded.getFileName().toString());
+    } finally {
+      Files.deleteIfExists(downloaded);
+    }
   }
 }
