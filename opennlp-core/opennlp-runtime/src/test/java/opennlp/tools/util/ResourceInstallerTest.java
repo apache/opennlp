@@ -43,6 +43,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import opennlp.tools.util.archive.TarArchives;
+
 import static opennlp.tools.util.InstallerTestSupport.BLOCK;
 import static opennlp.tools.util.InstallerTestSupport.KIBIBYTE;
 import static opennlp.tools.util.InstallerTestSupport.MEBIBYTE;
@@ -582,6 +584,25 @@ public class ResourceInstallerTest {
   }
 
   /**
+   * Proves that tar metadata is part of the expanded stream budget. A gzip stream made
+   * only of highly compressible pax metadata must not bypass the expansion ceiling just
+   * because it installs no regular-file content.
+   */
+  @Test
+  void testTarMetadataCountsTowardExpansionCeiling(@TempDir Path source,
+      @TempDir Path target) throws Exception {
+    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
+    TarArchives.entry(tar, "pax_global_header",
+        TarArchives.paxRecord("comment", "a".repeat(64 * 1024)), 'g');
+    tar.write(new byte[TERMINATOR_SIZE]);
+    final Path file = source.resolve("metadata-bomb.tar.gz");
+    Files.write(file, gzip(tar.toByteArray()));
+
+    assertInstallFails(file, target, ceilings(MEBIBYTE, KIBIBYTE),
+        EXPANSION_CEILING_ERROR);
+  }
+
+  /**
    * Proves the expansion ceiling on zip content: highly compressible entries that
    * expand beyond the ceiling are rejected and nothing is installed.
    */
@@ -682,8 +703,8 @@ public class ResourceInstallerTest {
   }
 
   /**
-   * Proves the accept side of the expansion ceiling: content that expands to exactly
-   * the ceiling installs, so the boundary is exclusive of failure.
+   * Proves the accept side of the expansion ceiling: a gzip stream that expands to
+   * exactly the ceiling installs, so the boundary is exclusive of failure.
    */
   @Test
   void testExpansionExactlyAtCeilingSucceeds(@TempDir Path source, @TempDir Path target)
@@ -694,7 +715,8 @@ public class ResourceInstallerTest {
     final Path file = source.resolve("exact.tar.gz");
     Files.write(file, gzip(tar.toByteArray()));
 
-    ResourceInstaller.install(file.toUri(), target, null, ceilings(MEBIBYTE, KIBIBYTE));
+    ResourceInstaller.install(file.toUri(), target, null,
+        ceilings(MEBIBYTE, tar.size()));
 
     Assertions.assertEquals(List.of("corpus/exact.bin"), installedFiles(target));
     Assertions.assertEquals(1024, Files.size(target.resolve("corpus/exact.bin")));
