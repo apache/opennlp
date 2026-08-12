@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -43,7 +44,8 @@ import opennlp.tools.util.archive.TarStream;
 /**
  * Fetches a third-party resource, such as a training corpus, a dictionary archive, or a
  * lexicon, into a local directory. The caller supplies the location and thereby accepts
- * that resource's license; no locations are built in and no data is bundled.
+ * that resource's license; no locations are built in and no data is bundled. Only
+ * {@code http}, {@code https}, and {@code file} locations are accepted.
  *
  * <p>An optional checksum is verified against the downloaded bytes before anything is
  * unpacked: a 64-character hex digest selects SHA-256, a 128-character one SHA-512.
@@ -59,12 +61,13 @@ import opennlp.tools.util.archive.TarStream;
  * connection and read timeouts, follow at most a fixed number of redirects, refuse
  * redirects that leave the http and https schemes or downgrade https to http, and
  * abort once the download or the expanded content crosses its size ceiling. The
- * defaults in {@link Limits#DEFAULT} apply when no limits are given.</p>
+ * defaults in {@link Limits#DEFAULT} apply when no limits are given, and
+ * {@link Limits#builder()} starts from them.</p>
  *
  * <p>Installation is staged: content is unpacked into a hidden staging directory on
  * the same filesystem and moved into the target only after the download was verified
- * and every entry unpacked cleanly. A failed installation therefore leaves the target
- * directory as it was, without partially written files.</p>
+ * and every entry unpacked cleanly. A fetch, verification, or unpacking failure
+ * therefore leaves the target directory as it was, without partially written files.</p>
  *
  * @see DownloadUtil
  * @since 3.0.0
@@ -81,6 +84,8 @@ public final class ResourceInstaller {
   private static final String MODEL_SUFFIX = ".bin";
   private static final String DEFAULT_RESOURCE_NAME = "resource";
   private static final String STAGING_PREFIX = ".opennlp-staging";
+  private static final String DOWNLOAD_PREFIX = ".opennlp-download";
+  private static final String DOWNLOAD_SUFFIX = ".part";
   private static final int BUFFER_SIZE = 8192;
   private static final int MAGIC_LENGTH = 2;
   private static final int GZIP_MAGIC_FIRST = 0x1F;
@@ -91,6 +96,7 @@ public final class ResourceInstaller {
   private static final int HTTP_PERMANENT_REDIRECT = 308;
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
+  private static final String SCHEME_FILE = "file";
 
   /**
    * Safety ceilings and network behavior for one installation.
@@ -133,6 +139,104 @@ public final class ResourceInstaller {
         throw new IllegalArgumentException("maxExpandedBytes must be positive");
       }
     }
+
+    /**
+     * Starts from {@link #DEFAULT} so a caller can state only the limits that differ
+     * from it, instead of repeating all five in the canonical constructor.
+     *
+     * @return A builder holding the default limits. Never {@code null}.
+     */
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    /**
+     * Collects limit values and validates them on {@link #build()}. Each setter returns
+     * this builder. Not thread safe; the {@link Limits} it builds is immutable.
+     */
+    public static final class Builder {
+
+      private Duration connectTimeout = DEFAULT.connectTimeout();
+      private Duration readTimeout = DEFAULT.readTimeout();
+      private int maxRedirects = DEFAULT.maxRedirects();
+      private long maxDownloadBytes = DEFAULT.maxDownloadBytes();
+      private long maxExpandedBytes = DEFAULT.maxExpandedBytes();
+
+      private Builder() {
+      }
+
+      /**
+       * Sets how long to wait for a connection to be established.
+       *
+       * @param connectTimeout How long to wait for a connection to be established.
+       *                       Must be positive.
+       * @return This builder. Never {@code null}.
+       */
+      public Builder connectTimeout(Duration connectTimeout) {
+        this.connectTimeout = connectTimeout;
+        return this;
+      }
+
+      /**
+       * Sets how long to wait for data on an established connection.
+       *
+       * @param readTimeout How long to wait for data on an established connection.
+       *                    Must be positive.
+       * @return This builder. Never {@code null}.
+       */
+      public Builder readTimeout(Duration readTimeout) {
+        this.readTimeout = readTimeout;
+        return this;
+      }
+
+      /**
+       * Sets how many http redirects to follow before failing.
+       *
+       * @param maxRedirects How many http redirects to follow before failing. Must not
+       *                     be negative; zero refuses all redirects.
+       * @return This builder. Never {@code null}.
+       */
+      public Builder maxRedirects(int maxRedirects) {
+        this.maxRedirects = maxRedirects;
+        return this;
+      }
+
+      /**
+       * Sets the largest download accepted.
+       *
+       * @param maxDownloadBytes The largest download accepted, in bytes. Must be
+       *                         positive.
+       * @return This builder. Never {@code null}.
+       */
+      public Builder maxDownloadBytes(long maxDownloadBytes) {
+        this.maxDownloadBytes = maxDownloadBytes;
+        return this;
+      }
+
+      /**
+       * Sets the largest total expanded content accepted.
+       *
+       * @param maxExpandedBytes The largest total expanded content accepted, in bytes,
+       *                         summed over all archive entries. Must be positive.
+       * @return This builder. Never {@code null}.
+       */
+      public Builder maxExpandedBytes(long maxExpandedBytes) {
+        this.maxExpandedBytes = maxExpandedBytes;
+        return this;
+      }
+
+      /**
+       * Builds the limits.
+       *
+       * @return The limits collected so far. Never {@code null}.
+       * @throws IllegalArgumentException Thrown if any value is outside its documented
+       *         range, exactly as the canonical constructor rejects it.
+       */
+      public Limits build() {
+        return new Limits(connectTimeout, readTimeout, maxRedirects, maxDownloadBytes,
+            maxExpandedBytes);
+      }
+    }
   }
 
   private ResourceInstaller() {
@@ -142,13 +246,15 @@ public final class ResourceInstaller {
    * Fetches and unpacks a resource without checksum verification, under
    * {@link Limits#DEFAULT}.
    *
-   * @param source The resource location. Must not be {@code null}.
+   * @param source The resource location, an {@code http}, {@code https}, or
+   *               {@code file} URI. Must not be {@code null}.
    * @param targetDirectory The directory to install into; created when absent. Must
    *                        not be {@code null}.
    * @return The target directory. Never {@code null}.
    * @throws IOException Thrown if fetching or unpacking fails.
    * @throws IllegalArgumentException Thrown if {@code source} or
-   *         {@code targetDirectory} is {@code null}.
+   *         {@code targetDirectory} is {@code null}, or {@code source} carries a scheme
+   *         other than {@code http}, {@code https}, or {@code file}.
    */
   public static Path install(URI source, Path targetDirectory) throws IOException {
     return install(source, targetDirectory, null);
@@ -157,7 +263,8 @@ public final class ResourceInstaller {
   /**
    * Fetches, verifies, and unpacks a resource under {@link Limits#DEFAULT}.
    *
-   * @param source The resource location. Must not be {@code null}.
+   * @param source The resource location, an {@code http}, {@code https}, or
+   *               {@code file} URI. Must not be {@code null}.
    * @param targetDirectory The directory to install into; created when absent. Must
    *                        not be {@code null}.
    * @param checksum The expected digest of the downloaded bytes as a hex string,
@@ -168,8 +275,9 @@ public final class ResourceInstaller {
    * @throws IOException Thrown if fetching fails, the checksum does not match, or
    *         unpacking fails.
    * @throws IllegalArgumentException Thrown if {@code source} or
-   *         {@code targetDirectory} is {@code null}, or {@code checksum} is neither a
-   *         64-character nor a 128-character hex string.
+   *         {@code targetDirectory} is {@code null}, {@code source} carries a scheme
+   *         other than {@code http}, {@code https}, or {@code file}, or {@code checksum}
+   *         is neither a 64-character nor a 128-character hex string.
    */
   public static Path install(URI source, Path targetDirectory, String checksum)
       throws IOException {
@@ -179,7 +287,8 @@ public final class ResourceInstaller {
   /**
    * Fetches, verifies, and unpacks a resource under the given {@link Limits}.
    *
-   * @param source The resource location. Must not be {@code null}.
+   * @param source The resource location, an {@code http}, {@code https}, or
+   *               {@code file} URI. Must not be {@code null}.
    * @param targetDirectory The directory to install into; created when absent. Must
    *                        not be {@code null}.
    * @param checksum The expected digest of the downloaded bytes as a hex string,
@@ -192,8 +301,9 @@ public final class ResourceInstaller {
    * @throws IOException Thrown if fetching fails, a limit is exceeded, the checksum
    *         does not match, or unpacking fails.
    * @throws IllegalArgumentException Thrown if {@code source}, {@code targetDirectory},
-   *         or {@code limits} is {@code null}, or {@code checksum} is neither a
-   *         64-character nor a 128-character hex string.
+   *         or {@code limits} is {@code null}, {@code source} carries a scheme other
+   *         than {@code http}, {@code https}, or {@code file}, or {@code checksum} is
+   *         neither a 64-character nor a 128-character hex string.
    */
   public static Path install(URI source, Path targetDirectory, String checksum,
       Limits limits) throws IOException {
@@ -206,9 +316,10 @@ public final class ResourceInstaller {
     if (limits == null) {
       throw new IllegalArgumentException("limits must not be null");
     }
+    validateSource(source);
     final String expected = validateChecksum(checksum);
     Files.createDirectories(targetDirectory);
-    final Path downloaded = Files.createTempFile("opennlp-resource", ".download");
+    final Path downloaded = createDownloadFile(targetDirectory);
     try {
       download(source, downloaded, limits);
       if (expected != null) {
@@ -219,6 +330,20 @@ public final class ResourceInstaller {
     } finally {
       Files.deleteIfExists(downloaded);
     }
+  }
+
+  /**
+   * Creates the file the download is written to. It is placed on the target's
+   * filesystem, not in the system temporary directory, so a large download cannot
+   * exhaust the system temporary directory while the target has room. It is hidden, so
+   * a leaked one is visible as residue rather than as an installed file.
+   *
+   * @param targetDirectory The directory to install into. Must already exist.
+   * @return The newly created, empty download file. Never {@code null}.
+   * @throws IOException Thrown if the file cannot be created.
+   */
+  static Path createDownloadFile(Path targetDirectory) throws IOException {
+    return Files.createTempFile(targetDirectory, DOWNLOAD_PREFIX, DOWNLOAD_SUFFIX);
   }
 
   /**
@@ -243,6 +368,8 @@ public final class ResourceInstaller {
   }
 
   /**
+   * Checks whether a string is made up entirely of hexadecimal digits.
+   *
    * @param value The string to inspect.
    * @return {@code true} if every character is a hexadecimal digit.
    */
@@ -261,8 +388,9 @@ public final class ResourceInstaller {
 
   /**
    * Fetches the source into the given file, bounded by the download ceiling. Http and
-   * https locations are fetched with timeouts and the redirect policy; other schemes,
-   * such as {@code file}, are opened directly.
+   * https locations are fetched with timeouts and the redirect policy; a {@code file}
+   * location is read directly. The scheme was accepted by {@link #validateSource(URI)}
+   * at the public boundary.
    *
    * @param source The resource location.
    * @param file The file receiving the downloaded bytes.
@@ -272,13 +400,55 @@ public final class ResourceInstaller {
   private static void download(URI source, Path file, Limits limits) throws IOException {
     final Budget budget = new Budget(limits.maxDownloadBytes(),
         "download exceeds the ceiling of " + limits.maxDownloadBytes() + " bytes");
-    final String scheme = source.getScheme();
-    if (SCHEME_HTTP.equalsIgnoreCase(scheme) || SCHEME_HTTPS.equalsIgnoreCase(scheme)) {
+    if (isHttp(source.getScheme())) {
       downloadHttp(source, file, limits, budget);
     } else {
-      try (InputStream in = source.toURL().openStream()) {
+      try (InputStream in = Files.newInputStream(localFile(source))) {
         copyBounded(in, file, budget);
       }
+    }
+  }
+
+  /**
+   * Rejects a source the installer will not fetch. Only {@code http}, {@code https}, and
+   * {@code file} are accepted: any other scheme would be handed to whichever URL handler
+   * the runtime happens to have installed, none of which honor the timeouts and ceilings
+   * this class enforces.
+   *
+   * @param source The resource location as given by the caller.
+   * @throws IllegalArgumentException Thrown if the scheme is absent or unsupported.
+   */
+  private static void validateSource(URI source) {
+    final String scheme = source.getScheme();
+    if (!isHttp(scheme) && !SCHEME_FILE.equalsIgnoreCase(scheme)) {
+      throw new IllegalArgumentException(
+          "source scheme must be http, https, or file, but was: " + source);
+    }
+  }
+
+  /**
+   * Classifies a scheme as one the http fetch path handles.
+   *
+   * @param scheme The URI scheme, or {@code null} when the location has none.
+   * @return {@code true} for {@code http} and {@code https}, ignoring case.
+   */
+  private static boolean isHttp(String scheme) {
+    return SCHEME_HTTP.equalsIgnoreCase(scheme) || SCHEME_HTTPS.equalsIgnoreCase(scheme);
+  }
+
+  /**
+   * Resolves a {@code file} location to a path on the default filesystem.
+   *
+   * @param source The {@code file} location, already validated as such.
+   * @return The local path. Never {@code null}.
+   * @throws IOException Thrown if the location does not name a file this runtime can
+   *         open, such as a {@code file} URI naming a remote host.
+   */
+  private static Path localFile(URI source) throws IOException {
+    try {
+      return Path.of(source);
+    } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+      throw new IOException("not a readable local file location: " + source, e);
     }
   }
 
@@ -337,6 +507,8 @@ public final class ResourceInstaller {
   }
 
   /**
+   * Classifies a response status as a redirect the installer follows.
+   *
    * @param status The HTTP response status.
    * @return {@code true} if the status is one of the redirect statuses 301, 302, 303,
    *         307, or 308.
@@ -385,11 +557,23 @@ public final class ResourceInstaller {
   }
 
   /**
-   * @param timeout The timeout as a duration.
-   * @return The timeout in milliseconds, clamped to the int range.
+   * Converts a timeout to the millisecond form the connection setters take. A positive
+   * timeout shorter than a millisecond becomes one millisecond rather than zero, because
+   * {@link HttpURLConnection#setReadTimeout(int) zero means no timeout at all}, and a
+   * timeout too large for the int range is capped instead of overflowing.
+   *
+   * @param timeout The timeout as a duration. Must be positive.
+   * @return The timeout in milliseconds, at least {@code 1} and at most
+   *         {@link Integer#MAX_VALUE}.
    */
   private static int timeoutMillis(Duration timeout) {
-    return (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
+    final long millis;
+    try {
+      millis = timeout.toMillis();
+    } catch (ArithmeticException e) {
+      return Integer.MAX_VALUE;
+    }
+    return Math.clamp(millis, 1, Integer.MAX_VALUE);
   }
 
   /**
@@ -461,7 +645,8 @@ public final class ResourceInstaller {
    *
    * @param staging The staging directory holding the fully unpacked content.
    * @param target The directory to install into.
-   * @throws IOException Thrown if a move fails.
+   * @throws IOException Thrown if a move fails or a directory on the way to a
+   *         destination is an existing symbolic link.
    */
   private static void promote(Path staging, Path target) throws IOException {
     final List<Path> files;
@@ -469,8 +654,7 @@ public final class ResourceInstaller {
       files = walk.filter(Files::isRegularFile).toList();
     }
     for (final Path file : files) {
-      final Path destination = target.resolve(staging.relativize(file).toString());
-      Files.createDirectories(destination.getParent());
+      final Path destination = destination(target, staging.relativize(file));
       try {
         Files.move(file, destination, StandardCopyOption.REPLACE_EXISTING,
             StandardCopyOption.ATOMIC_MOVE);
@@ -478,6 +662,39 @@ public final class ResourceInstaller {
         Files.move(file, destination, StandardCopyOption.REPLACE_EXISTING);
       }
     }
+  }
+
+  /**
+   * Resolves one staged file's destination beneath the target, creating the directories
+   * leading to it one at a time and refusing to descend through a symbolic link that is
+   * already there. An entry name that stays inside the staging directory can still land
+   * outside the target if a directory below the target is a link to somewhere else.
+   *
+   * <p>This covers links present when the installation runs. It is not a defense against
+   * a link created concurrently, between the check here and the move that follows.</p>
+   *
+   * @param target The directory to install into.
+   * @param relative The staged file's path relative to the staging directory.
+   * @return The destination path beneath the target. Never {@code null}.
+   * @throws IOException Thrown if a directory on the way is a symbolic link or exists as
+   *         something other than a directory, or if a directory cannot be created.
+   */
+  private static Path destination(Path target, Path relative) throws IOException {
+    Path directory = target;
+    for (int i = 0; i < relative.getNameCount() - 1; i++) {
+      directory = directory.resolve(relative.getName(i));
+      if (Files.isSymbolicLink(directory)) {
+        throw new IOException(
+            "installation path crosses a symbolic link: " + directory);
+      }
+      if (!Files.exists(directory)) {
+        Files.createDirectory(directory);
+      } else if (!Files.isDirectory(directory)) {
+        throw new IOException(
+            "installation path crosses an existing file: " + directory);
+      }
+    }
+    return directory.resolve(relative.getFileName());
   }
 
   /**
@@ -669,6 +886,8 @@ public final class ResourceInstaller {
     private long used;
 
     /**
+     * Creates a budget that has spent nothing yet.
+     *
      * @param ceiling The largest total number of bytes accepted.
      * @param message The failure message raised when the ceiling is crossed.
      */
