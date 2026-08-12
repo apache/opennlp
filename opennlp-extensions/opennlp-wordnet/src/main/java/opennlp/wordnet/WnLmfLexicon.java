@@ -61,10 +61,18 @@ public record WnLmfLexicon(
    * @throws IllegalArgumentException Thrown if a component violates its documented constraint.
    */
   public WnLmfLexicon {
-    requireText(id, "Id");
-    requireText(label, "Label");
-    requireText(language, "Language");
-    requireText(version, "Version");
+    if (id == null || id.isEmpty()) {
+      throw new IllegalArgumentException("Id must not be null or empty");
+    }
+    if (label == null || label.isEmpty()) {
+      throw new IllegalArgumentException("Label must not be null or empty");
+    }
+    if (language == null || language.isEmpty()) {
+      throw new IllegalArgumentException("Language must not be null or empty");
+    }
+    if (version == null || version.isEmpty()) {
+      throw new IllegalArgumentException("Version must not be null or empty");
+    }
     if (metadata == null) {
       throw new IllegalArgumentException("Metadata must not be null");
     }
@@ -86,18 +94,5 @@ public record WnLmfLexicon(
     }
     metadata = Map.copyOf(metadata);
     dependencies = List.copyOf(dependencies);
-  }
-
-  /**
-   * Requires a non-empty text component.
-   *
-   * @param value The component value.
-   * @param name  The component name used in the rejection message.
-   * @throws IllegalArgumentException Thrown if {@code value} is {@code null} or empty.
-   */
-  private static void requireText(String value, String name) {
-    if (value == null || value.isEmpty()) {
-      throw new IllegalArgumentException(name + " must not be null or empty");
-    }
   }
 }
