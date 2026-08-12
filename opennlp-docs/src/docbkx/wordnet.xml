@@ -45,6 +45,46 @@ LexicalKnowledgeBase lexicon = WnLmfReader.read(Path.of("en-wordnet.xml"));
 		</para>
 	</section>
 
+	<section xml:id="tools.wordnet.multilingual">
+		<title>Loading a multilingual lexical resource</title>
+		<para>
+			A WN-LMF <code>LexicalResource</code> may contain several
+			<code>Lexicon</code> elements. Use <code>readResource</code> for this
+			shape. It returns the lexicons in document order and keeps each language's
+			lookup index separate. The single-lexicon <code>read</code> methods reject a
+			multi-lexicon document with an error that points to
+			<code>readResource</code>; they never merge equal lemmas across languages.
+			<code>WordNetUsageExampleTest</code> mirrors this example:
+			<programlisting language="java"><![CDATA[
+WnLmfResource resource =
+    WnLmfReader.readResource(inputStream, "omw-multilingual.xml");
+WnLmfLexicon spanish = resource.lexicon("omw-es").orElseThrow();
+
+spanish.language();  // "es"
+WnLmfDependency englishBase = spanish.dependencies().get(0);
+englishBase.ref();      // "omw-en"
+englishBase.version();  // "2.0"
+Synset dog = spanish.knowledgeBase()
+    .lookup("perro", WordNetPOS.NOUN).get(0);
+dog.id();  // "omw-es-02084071-n"]]>
+			</programlisting>
+		</para>
+		<para>
+			A <code>WnLmfLexicon</code> exposes its id, label, language, version,
+			WN-LMF <code>Requires</code> declarations, and independently queryable
+			<code>knowledgeBase</code>. Dependencies are immutable and retain source
+			order. They are descriptive metadata: the reader does not fetch or resolve
+			the referenced lexicons, so the application remains responsible for loading
+			them. Remaining XML
+			attributes are available through the namespace-aware
+			<code>Map&lt;QName, String&gt; metadata</code>. This preserves attributes such
+			as <code>license</code> and <code>dc:publisher</code> without allowing
+			namespace collisions. <code>LexiconExtension</code> is not yet represented
+			by the knowledge-base contract and is rejected clearly rather than partly
+			loaded.
+		</para>
+	</section>
+
 	<section xml:id="tools.wordnet.lookup">
 		<title>Lookup</title>
 		<para>
@@ -82,6 +122,55 @@ Synset parent = lexicon.synset(parents.get(0)).orElseThrow();
 // one-step navigation, back down the hyponym relation:
 // lexicon.related("mini-n2", WordNetRelation.HYPONYM) = ["mini-n1"]]]>
 			</programlisting>
+		</para>
+		<para>
+			The reader covers every typed <code>SynsetRelation</code> and
+			<code>SenseRelation</code> declared by WN-LMF 1.4. Sense relations are
+			lifted to the synset level. The format's <code>other</code> escape hatch is
+			intentionally skipped because it carries no type the API can preserve;
+			any other unknown relation name fails with the source line. A relation
+			that is valid only on <code>SenseRelation</code> or only on
+			<code>SynsetRelation</code> is also rejected when placed on the wrong
+			element. A
+			<code>similar</code> synset relation on a verb maps to
+			<code>VERB_GROUP</code>, while a sense relation named
+			<code>similar</code> remains <code>SIMILAR_TO</code>.
+		</para>
+		<para>
+			The expanded relation vocabulary is navigated through the same API. For
+			example, semantic-role relations can resolve the participants of an event:
+			<programlisting language="java"><![CDATA[
+Synset purchase = lexicon.lookup("purchase", WordNetPOS.VERB).get(0);
+
+String agentId = purchase.related(WordNetRelation.INVOLVED_AGENT).get(0);
+String instrumentId = purchase.related(WordNetRelation.INVOLVED_INSTRUMENT).get(0);
+
+lexicon.synset(agentId).orElseThrow().lemmas();       // ["buyer"]
+lexicon.synset(instrumentId).orElseThrow().lemmas(); // ["payment card"]]]>
+			</programlisting>
+			This listing is mirrored by
+			<code>WordNetUsageExampleTest.testNavigateSemanticRoleRelations</code>.
+		</para>
+		<para>
+			Some multilingual resources retain an unlexicalized synset as the target
+			of a relation. Such a synset is available through <code>synset(id)</code>
+			with an empty lemma list, but is naturally absent from lemma lookup.
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.real-data-test">
+		<title>Checking complete OMW releases</title>
+		<para>
+			The offline unit suite includes a reduced Italian, Spanish, and Swedish
+			multi-lexicon fixture. For a full-size compatibility check, run the
+			following command from the repository root:
+			<programlisting language="bash"><![CDATA[
+dev/test-omw-wordnets.sh]]>
+			</programlisting>
+			The script downloads the pinned OMW 2.0 releases for those languages,
+			verifies each archive with SHA-512, extracts into a temporary directory,
+			runs <code>WnLmfOmwIntegrationTest</code>, and removes the downloads. The
+			archives are never added to the source tree.
 		</para>
 	</section>
 

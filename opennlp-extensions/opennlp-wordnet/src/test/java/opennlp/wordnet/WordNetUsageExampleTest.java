@@ -81,6 +81,24 @@ public class WordNetUsageExampleTest {
         wndbLexicon.lookup("dog", WordNetPOS.NOUN).get(0).lemmas());
   }
 
+  /** Load and select one language from a multi-lexicon resource as the chapter shows. */
+  @Test
+  void testLoadMultilingualResource() throws IOException {
+    try (InputStream in = WordNetUsageExampleTest.class
+        .getResourceAsStream("omw-multilingual.xml")) {
+      assertNotNull(in, "Fixture omw-multilingual.xml must be on the test classpath");
+      final WnLmfResource resource = WnLmfReader.readResource(in, "omw-multilingual.xml");
+      final WnLmfLexicon spanish = resource.lexicon("omw-es").orElseThrow();
+
+      assertEquals("es", spanish.language());
+      final WnLmfDependency englishBase = spanish.dependencies().get(0);
+      assertEquals("omw-en", englishBase.ref());
+      assertEquals("2.0", englishBase.version());
+      assertEquals("omw-es-02084071-n",
+          spanish.knowledgeBase().lookup("perro", WordNetPOS.NOUN).get(0).id());
+    }
+  }
+
   /**
    * Follow the hypernym relation from the first sense of dog as the chapter's relation
    * navigation listing shows.
@@ -97,5 +115,23 @@ public class WordNetUsageExampleTest {
     assertEquals("a carnivorous mammal with nonretractile claws", parent.gloss());
 
     assertEquals(List.of("mini-n1"), lexicon.related("mini-n2", WordNetRelation.HYPONYM));
+  }
+
+  /** Navigate WN-LMF semantic-role relations as the extended relation example shows. */
+  @Test
+  void testNavigateSemanticRoleRelations() throws IOException {
+    try (InputStream in = WordNetUsageExampleTest.class
+        .getResourceAsStream("relation-usage-wn-lmf.xml")) {
+      assertNotNull(in, "Fixture relation-usage-wn-lmf.xml must be on the test classpath");
+      final LexicalKnowledgeBase lexicon =
+          WnLmfReader.read(in, "relation-usage-wn-lmf.xml");
+      final Synset purchase = lexicon.lookup("purchase", WordNetPOS.VERB).get(0);
+
+      final String agentId = purchase.related(WordNetRelation.INVOLVED_AGENT).get(0);
+      final String instrumentId = purchase.related(WordNetRelation.INVOLVED_INSTRUMENT).get(0);
+      assertEquals(List.of("buyer"), lexicon.synset(agentId).orElseThrow().lemmas());
+      assertEquals(List.of("payment card"),
+          lexicon.synset(instrumentId).orElseThrow().lemmas());
+    }
   }
 }
