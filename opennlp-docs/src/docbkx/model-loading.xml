@@ -180,7 +180,8 @@ for(ClassPathModelEntry entry : models) {
       longer than 100 bytes are read in full from the pax or GNU extension header that carries them,
       so archives written by <code>bsdtar</code>, <code>tar --format=posix</code>, and
       <code>tar --format=gnu</code> all unpack under their real paths; every header must carry a valid
-      checksum; entries of 8 GiB and above state their length in the base-256 form GNU writes for it;
+      checksum; when the configured expansion ceiling permits them, entries of 8 GiB and above state
+      their length in the base-256 form GNU writes for it;
       sparse entries are refused, because their archived bytes encode holes rather than the file
       content), plain gzip files are decompressed, and anything else is stored
       as a file under its source name. One name rule overrides byte detection: a source named
@@ -211,6 +212,8 @@ for(ClassPathModelEntry entry : models) {
       https schemes or downgrade https to http. A download larger than its ceiling, whether
       declared by the server or discovered while transferring, is aborted, and so is an archive
       whose entries expand beyond the expansion ceiling, which stops decompression bombs. The
+      ceiling counts every byte produced by gzip decompression, including tar headers, padding, and
+      metadata; for zip and uncompressed inputs, it counts the installed file content. The
       defaults (20 second connect timeout, 60 second read timeout, 5 redirects, 1 GiB download,
       4 GiB expanded) apply to the two- and three-argument <code>install</code> methods and are
       asserted by <code>ResourceInstallerTest#testDefaultLimitsArePinned</code>; the network
