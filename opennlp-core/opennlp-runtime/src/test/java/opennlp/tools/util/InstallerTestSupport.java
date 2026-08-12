@@ -29,28 +29,31 @@ import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
+import opennlp.tools.util.archive.TarArchives;
+
 /**
- * Shared fixtures for the {@code ResourceInstaller} test classes: hand-rolled tar
- * archive building, gzip compression, digest computation, and installed-file listing.
+ * Shared fixtures for the {@code ResourceInstaller} test classes: tar archive building,
+ * gzip compression, digest computation, and installed-file listing.
  */
 final class InstallerTestSupport {
 
-  static final int BLOCK = 512;
-  static final int TERMINATOR_SIZE = 2 * BLOCK;
+  static final int BLOCK = TarArchives.BLOCK;
+  static final int TERMINATOR_SIZE = TarArchives.TERMINATOR_SIZE;
 
-  private static final int NAME_LENGTH = 100;
-  private static final int SIZE_OFFSET = 124;
-  private static final int TYPE_OFFSET = 156;
-  private static final String SIZE_FORMAT = "%011o";
-  private static final char TYPE_REGULAR_FILE = '0';
+  /** One kibibyte, a convenient small ceiling for limit tests. */
+  static final long KIBIBYTE = 1024;
+
+  /** One mebibyte, a convenient generous ceiling for tests that do not exercise it. */
+  static final long MEBIBYTE = 1024 * KIBIBYTE;
+
+  private static final String SHA_256 = "SHA-256";
+  private static final String SHA_512 = "SHA-512";
 
   private InstallerTestSupport() {
   }
 
   /**
-   * Writes one tar entry into the given buffer: a 512-byte header block carrying the
-   * name, the octal content size, and the regular-file type flag, followed by the
-   * content padded to the next 512-byte block boundary.
+   * Writes one regular-file tar entry into the given buffer.
    *
    * @param tar The buffer receiving the entry bytes. Must not be {@code null}.
    * @param name The entry name; at most 100 bytes when encoded as UTF-8.
@@ -60,20 +63,7 @@ final class InstallerTestSupport {
    */
   static void tarEntry(ByteArrayOutputStream tar, String name, byte[] content)
       throws IOException {
-    final byte[] header = new byte[BLOCK];
-    final byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-    if (nameBytes.length > NAME_LENGTH) {
-      throw new IllegalArgumentException(
-          "entry name exceeds " + NAME_LENGTH + " bytes: " + name);
-    }
-    System.arraycopy(nameBytes, 0, header, 0, nameBytes.length);
-    final byte[] size = String.format(SIZE_FORMAT, content.length)
-        .getBytes(StandardCharsets.US_ASCII);
-    System.arraycopy(size, 0, header, SIZE_OFFSET, size.length);
-    header[TYPE_OFFSET] = TYPE_REGULAR_FILE;
-    tar.write(header);
-    tar.write(content);
-    tar.write(new byte[(BLOCK - content.length % BLOCK) % BLOCK]);
+    TarArchives.entry(tar, name, content);
   }
 
   /**
@@ -117,7 +107,7 @@ final class InstallerTestSupport {
    * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
    */
   static String sha256(byte[] content) throws NoSuchAlgorithmException {
-    return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));
+    return digest(SHA_256, content);
   }
 
   /**
@@ -128,7 +118,20 @@ final class InstallerTestSupport {
    * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
    */
   static String sha512(byte[] content) throws NoSuchAlgorithmException {
-    return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-512").digest(content));
+    return digest(SHA_512, content);
+  }
+
+  /**
+   * Computes a digest of the given bytes as a lowercase hex string.
+   *
+   * @param algorithm The digest algorithm name.
+   * @param content The bytes to digest. Must not be {@code null}.
+   * @return The lowercase hex digest. Never {@code null}.
+   * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
+   */
+  private static String digest(String algorithm, byte[] content)
+      throws NoSuchAlgorithmException {
+    return HexFormat.of().formatHex(MessageDigest.getInstance(algorithm).digest(content));
   }
 
   /**
