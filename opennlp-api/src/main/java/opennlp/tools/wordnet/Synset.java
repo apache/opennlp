@@ -39,8 +39,9 @@ import opennlp.tools.commons.ThreadSafe;
  *                  empty.
  * @param pos       The part of speech. Must not be {@code null}.
  * @param lemmas    The member lemmas in source order, human-readable (multiword lemmas use
- *                  spaces, not the underscores some formats store). Must not be {@code null} or
- *                  empty, and must not contain {@code null} or empty elements.
+ *                  spaces, not the underscores some formats store). Must not be {@code null} and
+ *                  must not contain {@code null} or empty elements. May be empty for an
+ *                  unlexicalized concept retained as a relation target.
  * @param gloss     The definition text, possibly empty when the source has none. Must not be
  *                  {@code null}.
  * @param relations The typed relations, each mapping to the target synset ids in source order.
@@ -67,8 +68,8 @@ public record Synset(
     if (pos == null) {
       throw new IllegalArgumentException("Pos must not be null");
     }
-    if (lemmas == null || lemmas.isEmpty()) {
-      throw new IllegalArgumentException("Lemmas must not be null or empty for synset " + id);
+    if (lemmas == null) {
+      throw new IllegalArgumentException("Lemmas must not be null for synset " + id);
     }
     for (final String lemma : lemmas) {
       if (lemma == null || lemma.isEmpty()) {

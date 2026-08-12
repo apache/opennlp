@@ -109,11 +109,11 @@ public class SynsetTest {
   }
 
   @Test
-  void testRejectsNullOrEmptyLemmas() {
+  void testAllowsUnlexicalizedSynsetButRejectsInvalidLemmaLists() {
     assertThrows(IllegalArgumentException.class,
         () -> new Synset("test-1-n", WordNetPOS.NOUN, null, "", Map.of()));
-    assertThrows(IllegalArgumentException.class,
-        () -> new Synset("test-1-n", WordNetPOS.NOUN, List.of(), "", Map.of()));
+    assertTrue(new Synset("test-1-n", WordNetPOS.NOUN, List.of(), "", Map.of())
+        .lemmas().isEmpty());
     final List<String> withNull = new ArrayList<>();
     withNull.add(null);
     assertThrows(IllegalArgumentException.class,
