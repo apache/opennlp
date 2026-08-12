@@ -18,6 +18,7 @@
 package opennlp.tools.util;
 
 import java.io.BufferedInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -108,8 +109,9 @@ public final class ResourceInstaller {
    * @param maxRedirects How many http redirects to follow before failing. Must not be
    *                     negative; zero refuses all redirects.
    * @param maxDownloadBytes The largest download accepted, in bytes. Must be positive.
-   * @param maxExpandedBytes The largest total expanded content accepted, in bytes,
-   *                         summed over all archive entries. Must be positive.
+   * @param maxExpandedBytes The largest expanded byte count accepted. For gzip content,
+   *                         this counts the entire decompressed stream; otherwise, it
+   *                         counts installed file content. Must be positive.
    */
   public record Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
                        long maxDownloadBytes, long maxExpandedBytes) {
@@ -122,7 +124,20 @@ public final class ResourceInstaller {
     public static final Limits DEFAULT = new Limits(Duration.ofSeconds(20),
         Duration.ofSeconds(60), 5, 1L << 30, 4L << 30);
 
-    public Limits {
+    /**
+     * Validates the limit values before constructing an instance.
+     *
+     * @param connectTimeout How long to wait for a connection to be established.
+     * @param readTimeout How long to wait for data on an established connection.
+     * @param maxRedirects How many http redirects to follow before failing.
+     * @param maxDownloadBytes The largest download accepted, in bytes.
+     * @param maxExpandedBytes The largest expanded byte count accepted.
+     * @throws IllegalArgumentException Thrown if either timeout is {@code null}, zero,
+     *         or negative, either byte ceiling is not positive, or the redirect limit
+     *         is negative.
+     */
+    public Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
+        long maxDownloadBytes, long maxExpandedBytes) {
       if (connectTimeout == null || connectTimeout.isZero() || connectTimeout.isNegative()) {
         throw new IllegalArgumentException("connectTimeout must be positive");
       }
@@ -138,6 +153,11 @@ public final class ResourceInstaller {
       if (maxExpandedBytes <= 0) {
         throw new IllegalArgumentException("maxExpandedBytes must be positive");
       }
+      this.connectTimeout = connectTimeout;
+      this.readTimeout = readTimeout;
+      this.maxRedirects = maxRedirects;
+      this.maxDownloadBytes = maxDownloadBytes;
+      this.maxExpandedBytes = maxExpandedBytes;
     }
 
     /**
@@ -214,10 +234,12 @@ public final class ResourceInstaller {
       }
 
       /**
-       * Sets the largest total expanded content accepted.
+       * Sets the largest expanded byte count accepted.
        *
-       * @param maxExpandedBytes The largest total expanded content accepted, in bytes,
-       *                         summed over all archive entries. Must be positive.
+       * @param maxExpandedBytes The largest expanded byte count accepted. For gzip
+       *                         content, this counts the entire decompressed stream;
+       *                         otherwise, it counts installed file content. Must be
+       *                         positive.
        * @return This builder. Never {@code null}.
        */
       public Builder maxExpandedBytes(long maxExpandedBytes) {
@@ -412,8 +434,8 @@ public final class ResourceInstaller {
   /**
    * Rejects a source the installer will not fetch. Only {@code http}, {@code https}, and
    * {@code file} are accepted: any other scheme would be handed to whichever URL handler
-   * the runtime happens to have installed, none of which honor the timeouts and ceilings
-   * this class enforces.
+   * the runtime happens to have installed, outside the connection timeout, read timeout,
+   * and redirect policy this class enforces.
    *
    * @param source The resource location as given by the caller.
    * @throws IllegalArgumentException Thrown if the scheme is absent or unsupported.
@@ -764,14 +786,14 @@ public final class ResourceInstaller {
    */
   private static void unpackGzip(InputStream raw, String name, Path staging,
       Budget budget) throws IOException {
-    final InputStream decompressed =
-        new BufferedInputStream(new GZIPInputStream(raw), BUFFER_SIZE);
+    final InputStream decompressed = new BufferedInputStream(
+        new BudgetInputStream(new GZIPInputStream(raw), budget), BUFFER_SIZE);
     if (TarStream.startsWithHeader(decompressed)) {
-      unpackTar(decompressed, staging, budget);
+      unpackTar(decompressed, staging);
     } else {
       final String plainName = name.endsWith(GZIP_SUFFIX)
           ? name.substring(0, name.length() - GZIP_SUFFIX.length()) : name;
-      copyBounded(decompressed, safeChild(staging, plainName), budget);
+      copy(decompressed, safeChild(staging, plainName));
     }
   }
 
@@ -781,12 +803,10 @@ public final class ResourceInstaller {
    *
    * @param decompressed The uncompressed tar content.
    * @param staging The staging directory to unpack into.
-   * @param budget The expansion budget.
-   * @throws IOException Thrown if the archive is malformed, an entry escapes the
-   *         staging directory, or the expansion ceiling is exceeded.
+   * @throws IOException Thrown if the archive is malformed or an entry escapes the
+   *         staging directory.
    */
-  private static void unpackTar(InputStream decompressed, Path staging, Budget budget)
-      throws IOException {
+  private static void unpackTar(InputStream decompressed, Path staging) throws IOException {
     final TarStream entries = new TarStream(decompressed);
     while (entries.next()) {
       if (!entries.isFile()) {
@@ -794,7 +814,7 @@ public final class ResourceInstaller {
       }
       final Path file = safeChild(staging, entries.name());
       Files.createDirectories(file.getParent());
-      copyBounded(entries.entryStream(), file, budget);
+      copy(entries.entryStream(), file);
     }
   }
 
@@ -840,6 +860,20 @@ public final class ResourceInstaller {
         budget.spend(read);
         out.write(buffer, 0, read);
       }
+    }
+  }
+
+  /**
+   * Copies the stream into the file. The caller is responsible for applying any byte
+   * ceiling to the input stream.
+   *
+   * @param in The content to copy.
+   * @param file The file to write.
+   * @throws IOException Thrown if reading or writing fails.
+   */
+  private static void copy(InputStream in, Path file) throws IOException {
+    try (OutputStream out = Files.newOutputStream(file)) {
+      in.transferTo(out);
     }
   }
 
@@ -907,6 +941,59 @@ public final class ResourceInstaller {
       if (used > ceiling) {
         throw new IOException(message);
       }
+    }
+  }
+
+  /**
+   * Charges every byte read or skipped from an expanded stream against a shared budget.
+   */
+  private static final class BudgetInputStream extends FilterInputStream {
+
+    private final Budget budget;
+
+    /**
+     * Initializes a budgeted stream.
+     *
+     * @param in The expanded stream to read.
+     * @param budget The budget to charge.
+     */
+    BudgetInputStream(InputStream in, Budget budget) {
+      super(in);
+      this.budget = budget;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int read() throws IOException {
+      final int value = super.read();
+      if (value >= 0) {
+        budget.spend(1);
+      }
+      return value;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int read(byte[] buffer, int offset, int length) throws IOException {
+      final int read = super.read(buffer, offset, length);
+      if (read > 0) {
+        budget.spend(read);
+      }
+      return read;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public long skip(long bytes) throws IOException {
+      final long skipped = super.skip(bytes);
+      budget.spend(skipped);
+      return skipped;
     }
   }
 }
