@@ -19,6 +19,7 @@ package opennlp.morfologik.tagdict;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
@@ -64,7 +65,7 @@ public class MorfologikTagDictionary implements TagDictionary {
   @Override
   public String[] getTags(String word) {
     if (!isCaseSensitive) {
-      word = word.toLowerCase();
+      word = word.toLowerCase(Locale.ROOT);
     }
 
     List<WordData> data = dictLookup.lookup(word);
