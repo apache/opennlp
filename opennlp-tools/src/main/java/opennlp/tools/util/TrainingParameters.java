@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -559,16 +560,14 @@ public class TrainingParameters {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM , "MAXENT");
     mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM , EventTrainer.EVENT_VALUE);
+    final String iterationsFlag = "-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase(Locale.ROOT);
+    final String cutoffFlag = "-" + TrainingParameters.CUTOFF_PARAM.toLowerCase(Locale.ROOT);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM ,
-        null != CmdLineUtil.getIntParameter("-" +
-                TrainingParameters.ITERATIONS_PARAM.toLowerCase() , params) ?
-            CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase() , params) :
-            ITERATIONS_DEFAULT_VALUE);
+        null != CmdLineUtil.getIntParameter(iterationsFlag , params) ?
+            CmdLineUtil.getIntParameter(iterationsFlag , params) : ITERATIONS_DEFAULT_VALUE);
     mlParams.put(TrainingParameters.CUTOFF_PARAM ,
-        null != CmdLineUtil.getIntParameter("-" +
-                TrainingParameters.CUTOFF_PARAM.toLowerCase() , params) ?
-            CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase() , params) :
-            CUTOFF_DEFAULT_VALUE);
+        null != CmdLineUtil.getIntParameter(cutoffFlag , params) ?
+            CmdLineUtil.getIntParameter(cutoffFlag , params) : CUTOFF_DEFAULT_VALUE);
 
     return mlParams;
   }

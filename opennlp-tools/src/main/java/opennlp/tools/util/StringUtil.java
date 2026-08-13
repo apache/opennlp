@@ -18,6 +18,7 @@
 package opennlp.tools.util;
 
 import java.nio.CharBuffer;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -350,8 +351,8 @@ public class StringUtil {
    * @return Retrieves the Shortest Edit Script (SES) required to go from a word to a lemma.
    */
   public static String getShortestEditScript(String wordForm, String lemma) {
-    String reversedWF = new StringBuffer(wordForm.toLowerCase()).reverse().toString();
-    String reversedLemma = new StringBuffer(lemma.toLowerCase()).reverse().toString();
+    String reversedWF = new StringBuffer(wordForm.toLowerCase(Locale.ROOT)).reverse().toString();
+    String reversedLemma = new StringBuffer(lemma.toLowerCase(Locale.ROOT)).reverse().toString();
     StringBuffer permutations = new StringBuffer();
     String ses;
     if (!reversedWF.equals(reversedLemma)) {
