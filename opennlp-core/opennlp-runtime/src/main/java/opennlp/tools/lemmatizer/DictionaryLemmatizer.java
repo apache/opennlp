@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -161,7 +162,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * @return Retrieves the dictionary keys (word and postag).
    */
   private List<String> getDictKeys(final String word, final String postag) {
-    return new ArrayList<>(Arrays.asList(word.toLowerCase(), postag));
+    return new ArrayList<>(Arrays.asList(word.toLowerCase(Locale.ROOT), postag));
   }
 
 

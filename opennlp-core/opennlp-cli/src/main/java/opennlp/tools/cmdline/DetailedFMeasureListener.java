@@ -116,7 +116,7 @@ public abstract class DetailedFMeasureListener<T> implements EvaluationMonitor<T
       + " [target: %3d; tp: %3d; fp: %3d]";
 
   public String createReport() {
-    return createReport(Locale.getDefault());
+    return createReport(Locale.ROOT);
   }
 
   public String createReport(Locale locale) {

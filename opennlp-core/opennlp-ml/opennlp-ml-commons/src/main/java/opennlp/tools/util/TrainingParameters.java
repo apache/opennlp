@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -329,12 +330,12 @@ public class TrainingParameters implements Parameters {
     mlParams.put(Parameters.ALGORITHM_PARAM , "MAXENT");
     mlParams.put(Parameters.TRAINER_TYPE_PARAM , EventTrainer.EVENT_VALUE);
     mlParams.put(Parameters.ITERATIONS_PARAM ,
-        null != getIntParameter("-" + Parameters.ITERATIONS_PARAM.toLowerCase() , params) ?
-            getIntParameter("-" + Parameters.ITERATIONS_PARAM.toLowerCase() , params) :
+        null != getIntParameter("-" + Parameters.ITERATIONS_PARAM.toLowerCase(Locale.ROOT) , params) ?
+            getIntParameter("-" + Parameters.ITERATIONS_PARAM.toLowerCase(Locale.ROOT) , params) :
             Parameters.ITERATIONS_DEFAULT_VALUE);
     mlParams.put(Parameters.CUTOFF_PARAM ,
-        null != getIntParameter("-" + Parameters.CUTOFF_PARAM.toLowerCase() , params) ?
-            getIntParameter("-" + Parameters.CUTOFF_PARAM.toLowerCase() , params) :
+        null != getIntParameter("-" + Parameters.CUTOFF_PARAM.toLowerCase(Locale.ROOT) , params) ?
+            getIntParameter("-" + Parameters.CUTOFF_PARAM.toLowerCase(Locale.ROOT) , params) :
             Parameters.CUTOFF_DEFAULT_VALUE);
 
     return mlParams;

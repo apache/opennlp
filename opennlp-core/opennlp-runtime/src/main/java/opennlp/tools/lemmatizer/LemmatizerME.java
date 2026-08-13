@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import opennlp.tools.commons.ThreadSafe;
@@ -168,7 +169,7 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
   public static String[] decodeLemmas(String[] toks, String[] preds) {
     List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < toks.length; i++) {
-      String lemma = StringUtil.decodeShortestEditScript(toks[i].toLowerCase(), preds[i]);
+      String lemma = StringUtil.decodeShortestEditScript(toks[i].toLowerCase(Locale.ROOT), preds[i]);
       if (lemma.length() == 0) {
         lemma = "_";
       }
