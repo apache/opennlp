@@ -70,3 +70,6 @@ src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
 src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
 src/main/resources/opennlp/tools/util/normalizer/confusables.txt
 src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
+
+<!-- UniNE light/minimal stemmer parity fixtures (generated word/stem pairs, see README) -->
+src/test/resources/opennlp/tools/stemmer/light/*.tsv
