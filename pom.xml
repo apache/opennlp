@@ -206,6 +206,7 @@
 
 			<dependency>
 				<artifactId>opennlp-embeddings</artifactId>
+				<artifactId>opennlp-geo</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>

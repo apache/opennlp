@@ -81,3 +81,6 @@ src/test/resources/opennlp/subword/sentencepiece/corpus.txt
 src/test/resources/opennlp/embeddings/tiny-unigram.model
 <!-- opennlp-embeddings parity harness input sentences (data file, no AL header possible) -->
 dev/embeddings/parity/sentences.txt
+<!-- OPENNLP-1879 bundled Natural Earth gazetteer table (public domain data;
+     the file header carries the derivation record and the LICENSE pointer) -->
+src/main/resources/opennlp/geo/naturalearth-populated-places.txt
