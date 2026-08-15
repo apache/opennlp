@@ -679,4 +679,31 @@ public class StringUtilTest {
     String lc = StringUtil.toLowerCase(input);
     Assertions.assertArrayEquals(expectedCodePoints, lc.codePoints().toArray());
   }
+
+  /**
+   * Verifies the accepting side of the blank check against the toolkit's whitespace
+   * definition: empty and JDK-whitespace values are blank, and so are the no-break
+   * spaces U+00A0 and U+2007, which {@link String#isBlank()} does not cover.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"", " \t\n", "\u00A0", " \u00A0\u2007 "})
+  void testIsBlankAcceptsWhitespaceOnlyValues(String input) {
+    Assertions.assertTrue(StringUtil.isBlank(input));
+  }
+
+  /**
+   * Verifies the rejecting side of the blank check: any non-whitespace code point
+   * makes a value non-blank, including the supplementary-plane letter U+10428, which
+   * must be read as one code point rather than two chars.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"a", " a ", "\uD801\uDC28"})
+  void testIsBlankRejectsValuesWithContent(String input) {
+    Assertions.assertFalse(StringUtil.isBlank(input));
+  }
+
+  @Test
+  void testIsBlankWithNullString() {
+    Assertions.assertThrows(NullPointerException.class, () -> StringUtil.isBlank(null));
+  }
 }
