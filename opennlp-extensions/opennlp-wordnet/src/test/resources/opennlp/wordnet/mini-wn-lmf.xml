@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+
+   Project-authored miniature WN-LMF fixture. The content mirrors the miniature WNDB fixture in
+   this directory (see mini-wndb/): the same lemmas, glosses, and relations, so reader
+   equivalence can be asserted structurally.
+-->
+<LexicalResource>
+  <Lexicon id="mini" label="Miniature test wordnet" language="en" version="1">
+    <LexicalEntry id="mini-dog-n">
+      <Lemma writtenForm="dog" partOfSpeech="n">
+        <Pronunciation variety="US">dog</Pronunciation>
+      </Lemma>
+      <Sense id="mini-dog-n-1" synset="mini-n1"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-domestic_dog-n">
+      <Lemma writtenForm="domestic dog" partOfSpeech="n"/>
+      <Sense id="mini-domestic_dog-n-1" synset="mini-n1"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-canid-n">
+      <Lemma writtenForm="canid" partOfSpeech="n"/>
+      <Sense id="mini-canid-n-1" synset="mini-n2"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-mouse-n">
+      <Lemma writtenForm="mouse" partOfSpeech="n"/>
+      <Sense id="mini-mouse-n-1" synset="mini-n3"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-rodent-n">
+      <Lemma writtenForm="rodent" partOfSpeech="n"/>
+      <Sense id="mini-rodent-n-1" synset="mini-n4"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-run-n">
+      <Lemma writtenForm="run" partOfSpeech="n"/>
+      <Sense id="mini-run-n-1" synset="mini-n5">
+        <SenseRelation relType="derivation" target="mini-run-v-1"/>
+      </Sense>
+      <Sense id="mini-run-n-2" synset="mini-n9"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-box-n">
+      <Lemma writtenForm="box" partOfSpeech="n"/>
+      <Form writtenForm="boxes"/>
+      <Sense id="mini-box-n-1" synset="mini-n6"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-berry-n">
+      <Lemma writtenForm="berry" partOfSpeech="n"/>
+      <Sense id="mini-berry-n-1" synset="mini-n7"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-man-n">
+      <Lemma writtenForm="man" partOfSpeech="n"/>
+      <Sense id="mini-man-n-1" synset="mini-n8"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-run-v">
+      <Lemma writtenForm="run" partOfSpeech="v"/>
+      <Sense id="mini-run-v-1" synset="mini-v1">
+        <SenseRelation relType="derivation" target="mini-run-n-1"/>
+      </Sense>
+    </LexicalEntry>
+    <LexicalEntry id="mini-walk-v">
+      <Lemma writtenForm="walk" partOfSpeech="v"/>
+      <Sense id="mini-walk-v-1" synset="mini-v2"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-go-v">
+      <Lemma writtenForm="go" partOfSpeech="v"/>
+      <Sense id="mini-go-v-1" synset="mini-v3"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-move-v">
+      <Lemma writtenForm="move" partOfSpeech="v"/>
+      <Sense id="mini-move-v-1" synset="mini-v4"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-tall-a">
+      <Lemma writtenForm="tall" partOfSpeech="a"/>
+      <Sense id="mini-tall-a-1" synset="mini-a1">
+        <SenseRelation relType="antonym" target="mini-short-a-1"/>
+      </Sense>
+    </LexicalEntry>
+    <LexicalEntry id="mini-short-a">
+      <Lemma writtenForm="short" partOfSpeech="a"/>
+      <Sense id="mini-short-a-1" synset="mini-a2">
+        <SenseRelation relType="antonym" target="mini-tall-a-1"/>
+      </Sense>
+    </LexicalEntry>
+    <LexicalEntry id="mini-big-a">
+      <Lemma writtenForm="big" partOfSpeech="a"/>
+      <Sense id="mini-big-a-1" synset="mini-a3"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-large-a">
+      <Lemma writtenForm="large" partOfSpeech="a"/>
+      <Sense id="mini-large-a-1" synset="mini-a4"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-quickly-r">
+      <Lemma writtenForm="quickly" partOfSpeech="r"/>
+      <Sense id="mini-quickly-r-1" synset="mini-r1"/>
+    </LexicalEntry>
+    <LexicalEntry id="mini-well-r">
+      <Lemma writtenForm="well" partOfSpeech="r"/>
+      <Sense id="mini-well-r-1" synset="mini-r2"/>
+    </LexicalEntry>
+    <Synset id="mini-n1" partOfSpeech="n" members="mini-dog-n mini-domestic_dog-n">
+      <Definition>a domesticated canid</Definition>
+      <SynsetRelation relType="hypernym" target="mini-n2"/>
+      <Example>the dog barked</Example>
+    </Synset>
+    <Synset id="mini-n2" partOfSpeech="n" members="mini-canid-n">
+      <Definition>a carnivorous mammal with nonretractile claws</Definition>
+      <SynsetRelation relType="hyponym" target="mini-n1"/>
+    </Synset>
+    <Synset id="mini-n3" partOfSpeech="n" members="mini-mouse-n">
+      <Definition>a small rodent with a long tail</Definition>
+      <SynsetRelation relType="hypernym" target="mini-n4"/>
+    </Synset>
+    <Synset id="mini-n4" partOfSpeech="n" members="mini-rodent-n">
+      <Definition>a gnawing mammal with chisel teeth</Definition>
+      <SynsetRelation relType="hyponym" target="mini-n3"/>
+    </Synset>
+    <Synset id="mini-n5" partOfSpeech="n" members="mini-run-n">
+      <Definition>an act of running at speed</Definition>
+    </Synset>
+    <Synset id="mini-n6" partOfSpeech="n" members="mini-box-n">
+      <Definition>a rigid rectangular container</Definition>
+    </Synset>
+    <Synset id="mini-n7" partOfSpeech="n" members="mini-berry-n">
+      <Definition>a small juicy fruit</Definition>
+    </Synset>
+    <Synset id="mini-n8" partOfSpeech="n" members="mini-man-n">
+      <Definition>an adult male person</Definition>
+    </Synset>
+    <Synset id="mini-n9" partOfSpeech="n" members="mini-run-n">
+      <Definition>a score made in baseball</Definition>
+    </Synset>
+    <Synset id="mini-v1" partOfSpeech="v" members="mini-run-v">
+      <Definition>move fast on foot</Definition>
+      <SynsetRelation relType="hypernym" target="mini-v4"/>
+    </Synset>
+    <Synset id="mini-v2" partOfSpeech="v" members="mini-walk-v">
+      <Definition>move at a regular pace</Definition>
+      <SynsetRelation relType="hypernym" target="mini-v4"/>
+    </Synset>
+    <Synset id="mini-v3" partOfSpeech="v" members="mini-go-v">
+      <Definition>change location or position</Definition>
+    </Synset>
+    <Synset id="mini-v4" partOfSpeech="v" members="mini-move-v">
+      <Definition>change position in space</Definition>
+      <SynsetRelation relType="hyponym" target="mini-v1"/>
+      <SynsetRelation relType="hyponym" target="mini-v2"/>
+    </Synset>
+    <Synset id="mini-a1" partOfSpeech="a" members="mini-tall-a">
+      <Definition>of great height</Definition>
+    </Synset>
+    <Synset id="mini-a2" partOfSpeech="a" members="mini-short-a">
+      <Definition>of small height</Definition>
+    </Synset>
+    <Synset id="mini-a3" partOfSpeech="a" members="mini-big-a">
+      <Definition>of great size</Definition>
+      <SynsetRelation relType="similar" target="mini-a4"/>
+    </Synset>
+    <Synset id="mini-a4" partOfSpeech="s" members="mini-large-a">
+      <Definition>above average in size</Definition>
+      <SynsetRelation relType="similar" target="mini-a3"/>
+    </Synset>
+    <Synset id="mini-r1" partOfSpeech="r" members="mini-quickly-r">
+      <Definition>with speed</Definition>
+    </Synset>
+    <Synset id="mini-r2" partOfSpeech="r" members="mini-well-r">
+      <Definition>in a good or proper manner</Definition>
+    </Synset>
+  </Lexicon>
+</LexicalResource>
