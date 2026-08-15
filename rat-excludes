@@ -92,3 +92,5 @@ src/test/resources/opennlp/wordnet/mini-wndb/noun.exc
 src/test/resources/opennlp/wordnet/mini-wndb/verb.exc
 src/test/resources/opennlp/wordnet/mini-wndb/adj.exc
 src/test/resources/opennlp/wordnet/mini-wndb/adv.exc
+<!-- UniNE light/minimal stemmer parity fixtures (generated word/stem pairs, see README) -->
+src/test/resources/opennlp/tools/stemmer/light/*.tsv
