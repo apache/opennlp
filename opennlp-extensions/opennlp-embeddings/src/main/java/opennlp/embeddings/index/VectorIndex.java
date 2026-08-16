@@ -28,9 +28,8 @@ import opennlp.tools.util.java.Experimental;
  * vectors; neither adding nor freezing is safe from more than one thread. {@link #freeze()} ends
  * the build phase, after which {@link #add(String, float[])} is rejected and
  * {@link #topK(float[], int)} is available; a frozen index that is safely published is safe for
- * concurrent queries from any number of threads.</p>
- *
- * <p>Thread safety beyond this contract is implementation specific.</p>
+ * concurrent queries from any number of threads. Implementations must support concurrent
+ * {@code topK} calls after safe publication. No other concurrent calls are permitted.</p>
  *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
