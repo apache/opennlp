@@ -102,6 +102,16 @@
           </excludes>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <!-- These invented corpus fixtures use formats that do not admit an AL header. -->
+          <excludes combine.children="append">
+            <exclude>src/test/resources/opennlp/embeddings/corpus/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
