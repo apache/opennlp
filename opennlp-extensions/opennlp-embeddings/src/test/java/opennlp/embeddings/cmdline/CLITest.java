@@ -44,7 +44,8 @@ class CLITest {
 
   @Test
   void testOffersExactlyTheModelCommands() {
-    assertEquals(Set.of("AssembleModel", "DistillModel", "QuantizeModel"), CLI.getToolNames());
+    assertEquals(Set.of("AssembleModel", "DistillModel", "QuantizeModel",
+        "NormalizeDictionary", "NormalizeReporter", "LearnVocabulary"), CLI.getToolNames());
   }
 
   @Test
@@ -70,9 +71,8 @@ class CLITest {
 
     assertTrue(help.contains("-teacher hf-id-or-path"), help);
     assertTrue(help.contains("-out dir"), help);
-    // The optional parameters are bracketed, so a user can see they may be omitted.
+    // The optional parameter is bracketed, so a user can see it may be omitted.
     assertTrue(help.contains("[-pcaDims "), help);
-    assertTrue(help.contains("[-terms "), help);
   }
 
   @Test
