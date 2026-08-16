@@ -50,6 +50,9 @@ import opennlp.tools.util.java.Experimental;
  * <p>The caller supplies the quantization seed, and queries retain input order. Timing values
  * depend on the runtime environment.</p>
  *
+ * <p>The package-private measurement helpers are shared with the test-scope HNSW baseline in
+ * the test tree, so both report the same metrics the same way.</p>
+ *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
 @Experimental
@@ -65,11 +68,19 @@ public final class SearchEvaluator {
   /**
    * The build and throughput measurements of one index.
    *
+<<<<<<< HEAD
    * @param name                  The index's display name.
    * @param rows                  The number of indexed vectors.
    * @param storageBytesPerVector The index's reported storage cost of one vector.
    * @param buildMillis           Milliseconds for construction, vector insertion and freeze.
    * @param queriesPerSecond      Single-thread queries per second, measured after a warm-up pass.
+=======
+   * @param name             The index's display name.
+   * @param rows             The number of indexed vectors.
+   * @param storageBytesPerVector The index's reported storage cost of one vector.
+   * @param buildMillis      The freeze time in milliseconds.
+   * @param queriesPerSecond Single-thread queries per second, measured after a warm-up pass.
+>>>>>>> 0de4dabf7 (OPENNLP-1911: Add a test-scope Lucene HNSW baseline)
    */
   public record IndexMetrics(String name, int rows, double storageBytesPerVector,
                              long buildMillis,
@@ -206,7 +217,10 @@ public final class SearchEvaluator {
       md.append("Embedding the passages took ").append(embedMillis).append(" ms.\n\n");
 
       md.append("## Passage index build and throughput\n\n");
+<<<<<<< HEAD
       md.append(IndexBuild.DESCRIPTION).append("\n\n");
+=======
+>>>>>>> 0de4dabf7 (OPENNLP-1911: Add a test-scope Lucene HNSW baseline)
       md.append("| index | rows | storage bytes/vector | build (ms) | QPS (1 thread) |\n");
       md.append("|---|---|---|---|---|\n");
       for (final IndexMetrics index : List.of(flat, quantized)) {
@@ -623,8 +637,12 @@ public final class SearchEvaluator {
    * @param text The passage text.
    */
   static String firstHalf(String text) {
+<<<<<<< HEAD
     final int midpoint = text.offsetByCodePoints(
         0, text.codePointCount(0, text.length()) / 2);
+=======
+    final int midpoint = text.length() / 2;
+>>>>>>> 0de4dabf7 (OPENNLP-1911: Add a test-scope Lucene HNSW baseline)
     if (midpoint == 0) {
       return text;
     }
