@@ -18,6 +18,7 @@ package opennlp.embeddings.eval;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -61,6 +62,7 @@ class HnswBaselineTest {
     model = StaticEmbeddingModel.load(modelDir);
   }
 
+  /** {@return one baseline run over the deterministic fixture} */
   private HnswBaseline.Report run() {
     return HnswBaseline.run(model, PASSAGES, DICTIONARY, 2);
   }
@@ -76,9 +78,9 @@ class HnswBaselineTest {
     assertEquals(model.dimension(), report.dimension());
     assertEquals(PASSAGES.size(), report.exact().rows());
     assertEquals(PASSAGES.size(), report.hnsw().rows());
-    assertTrue(report.hnsw().serializedBytesPerVector()
+    assertTrue(report.hnsw().storageBytesPerVector()
         >= model.dimension() * (double) Float.BYTES,
-        "serialized bytes/vector: " + report.hnsw().serializedBytesPerVector());
+        "storage bytes/vector: " + report.hnsw().storageBytesPerVector());
     assertTrue(report.hnsw().queriesPerSecond() > 0);
     assertTrue(report.fidelityRecallAtK() >= 0 && report.fidelityRecallAtK() <= 1);
     assertTrue(report.fidelityAgreement() >= 0 && report.fidelityAgreement() <= 1);
@@ -103,9 +105,9 @@ class HnswBaselineTest {
 
     assertTrue(markdown.contains("| hnsw |"), markdown);
     assertTrue(markdown.contains("| exact |"), markdown);
-    assertTrue(markdown.contains("serialized bytes/vector"), markdown);
+    assertTrue(markdown.contains("storage bytes/vector"), markdown);
     assertTrue(markdown.contains("rank-1 agreement"), markdown);
-    assertTrue(tsv.contains("hnsw.serializedBytesPerVector\t"), tsv);
+    assertTrue(tsv.contains("hnsw.storageBytesPerVector\t"), tsv);
     assertTrue(tsv.contains("fidelity.recallAtK\t"), tsv);
     assertTrue(tsv.contains("halfPassage.hnsw.mrr\t"), tsv);
   }
@@ -145,7 +147,7 @@ class HnswBaselineTest {
     assertEquals("passages must not contain null at index 1",
         assertThrows(IllegalArgumentException.class,
             () -> HnswBaseline.run(model,
-                java.util.Arrays.asList(PASSAGES.get(0), null), DICTIONARY, 2))
+                Arrays.asList(PASSAGES.get(0), null), DICTIONARY, 2))
             .getMessage());
     assertEquals("passage id must be unique: " + PASSAGES.get(0).id(),
         assertThrows(IllegalArgumentException.class,
@@ -154,7 +156,7 @@ class HnswBaselineTest {
     assertEquals("dictionary must not contain null at index 1",
         assertThrows(IllegalArgumentException.class,
             () -> HnswBaseline.run(model, PASSAGES,
-                java.util.Arrays.asList(DICTIONARY.get(0), null), 2)).getMessage());
+                Arrays.asList(DICTIONARY.get(0), null), 2)).getMessage());
     assertEquals("dictionary headword must be unique: " + DICTIONARY.get(0).headword(),
         assertThrows(IllegalArgumentException.class,
             () -> HnswBaseline.run(model, PASSAGES,

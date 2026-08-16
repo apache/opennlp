@@ -267,6 +267,7 @@
 		<logcaptor.version>2.12.6</logcaptor.version>
 		<classgraph.version>4.8.186</classgraph.version>
 		<zlibsvm.version>3.0.0</zlibsvm.version>
+		<lucene.version>10.4.0</lucene.version>
 		<jmh.version>1.37</jmh.version>
 
 		<!-- Plugin versions -->

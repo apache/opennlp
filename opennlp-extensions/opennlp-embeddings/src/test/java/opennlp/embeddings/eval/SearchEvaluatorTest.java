@@ -78,8 +78,8 @@ class SearchEvaluatorTest {
     assertEquals(2, report.topK());
     assertEquals(3, report.flat().rows());
     assertEquals(3, report.quantized().rows());
-    assertTrue(report.flat().serializedBytesPerVector() > 0);
-    assertTrue(report.quantized().serializedBytesPerVector() > 0);
+    assertTrue(report.flat().storageBytesPerVector() > 0);
+    assertTrue(report.quantized().storageBytesPerVector() > 0);
     assertTrue(report.flat().queriesPerSecond() > 0);
     assertTrue(report.quantized().queriesPerSecond() > 0);
     for (final double ratio : new double[] {report.fidelityRecallAtK(),

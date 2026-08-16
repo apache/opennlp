@@ -1,10 +1,8 @@
 # Legal corpus acquisition
 
-Stage 0 of the legal vocabulary and vector index work (see
-`turboquant-legal-search-plan.md` at the workspace root): fetch open legal
-data, verify and record it, and normalize it into two small interchange files
-the later stages consume. Licensing details and acquisition-time findings are
-in `LICENSING.md`.
+These tools fetch open legal data, verify and record it, and normalize it into
+two small interchange files consumed by the embedding evaluation. Licensing
+details and acquisition-time findings are in `LICENSING.md`.
 
 Everything lands under `$LEGAL_CORPUS_HOME` (default
 `~/.cache/opennlp-legal-corpus`), never in the repository.
@@ -39,6 +37,26 @@ The last command is the whole evaluation loop: it builds the exact and the
 quantized index over the embedded passages and writes one markdown report
 (and a TSV twin) with index fidelity, definition-to-headword retrieval,
 half-passage retrieval, throughput, and storage cost.
+
+A Lucene HNSW baseline reruns the same measurements against a graph index
+for comparison. It lives in the module's test tree so Lucene stays a
+test-scope dependency. From the repository root, run it through the Maven
+test runner:
+
+```
+./mvnw -pl opennlp-extensions/opennlp-embeddings -am \
+  -Dtest=HnswBaselineRunnerTest \
+  -Dsurefire.failIfNoSpecifiedTests=false \
+  -Dopennlp.forkCount=1 \
+  -Dopennlp.hnsw.model="$H/model" \
+  -Dopennlp.hnsw.passages="$H/normalized/passages.jsonl" \
+  -Dopennlp.hnsw.dictionary="$H/normalized/dictionary.tsv" \
+  -Dopennlp.hnsw.output="$H/hnsw-report.md" \
+  -Dopennlp.hnsw.topK=10 test
+```
+
+The report's per-vector footprint is serialized Lucene vector and graph
+storage, not live JVM memory.
 
 The original Python normalizers were retired 2026-08-16 after the Java ports
 reproduced their output byte for byte on the full first acquisition (see
@@ -80,3 +98,17 @@ resources. They are NOT excerpts of the fetched data.
 
 - Bouvier: 6,270 entries from 26 letter files.
 - One validation volume (us/200, 1906): 676 passages from 109 cases.
+
+The full evaluation used 22,087 passages and 6,270 headwords at dimension
+256 and top 10. On the author's workstation, the default JVM run produced:
+
+| index | storage bytes/vector | build (ms) | QPS (1 thread) |
+|---|---|---|---|
+| exact | 1024.000 | 16 | 842 |
+| Lucene HNSW | 1049.958 | 8466 | 4212 |
+
+HNSW reached 0.976 recall at 10 against the exact scan and 0.921 rank-1
+agreement. Its definition-to-headword MRR at 10 was 0.069, and its
+half-passage MRR at 10 was 0.804. Timings are environment-sensitive. The
+exact and TurboQuant figures count their stored row payloads; the HNSW
+figure counts Lucene's serialized vector data, metadata, and graph files.

@@ -59,6 +59,15 @@
       <version>${onnxruntime.version}</version>
     </dependency>
 
+    <!-- The HNSW baseline the evaluation harness benchmarks against; test scope keeps the
+         module's runtime free of search-engine dependencies. -->
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${lucene.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>

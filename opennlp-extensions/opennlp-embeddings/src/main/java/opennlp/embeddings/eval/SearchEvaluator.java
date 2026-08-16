@@ -51,6 +51,9 @@ import opennlp.tools.util.java.Experimental;
  * <p>The run is deterministic apart from the wall-clock timings: the quantization seed is
  * fixed by the caller and the queries are the inputs in order.</p>
  *
+ * <p>The package-private measurement helpers are shared with the test-scope HNSW baseline in
+ * the test tree, so both report the same metrics the same way.</p>
+ *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
 @Experimental
@@ -65,11 +68,12 @@ public final class SearchEvaluator {
    *
    * @param name             The index's display name.
    * @param rows             The number of indexed vectors.
-   * @param bytesPerVector   The in-memory storage cost of one vector.
+   * @param storageBytesPerVector The index's reported storage cost of one vector.
    * @param buildMillis      The freeze time in milliseconds.
    * @param queriesPerSecond Single-thread queries per second, measured after a warm-up pass.
    */
-  public record IndexMetrics(String name, int rows, double bytesPerVector, long buildMillis,
+  public record IndexMetrics(String name, int rows, double storageBytesPerVector,
+                             long buildMillis,
                              double queriesPerSecond) {
 
     /**
@@ -80,7 +84,7 @@ public final class SearchEvaluator {
     public IndexMetrics {
       requireName(name);
       requireNonNegative(rows, "rows");
-      requireNonNegative(bytesPerVector, "bytesPerVector");
+      requireNonNegative(storageBytesPerVector, "storageBytesPerVector");
       requireNonNegative(buildMillis, "buildMillis");
       requireNonNegative(queriesPerSecond, "queriesPerSecond");
     }
@@ -196,12 +200,12 @@ public final class SearchEvaluator {
       md.append("Embedding the passages took ").append(embedMillis).append(" ms.\n\n");
 
       md.append("## Passage index build and throughput\n\n");
-      md.append("| index | rows | bytes/vector | build (ms) | QPS (1 thread) |\n");
+      md.append("| index | rows | storage bytes/vector | build (ms) | QPS (1 thread) |\n");
       md.append("|---|---|---|---|---|\n");
       for (final IndexMetrics index : List.of(flat, quantized)) {
         md.append("| ").append(index.name())
             .append(" | ").append(index.rows())
-            .append(" | ").append(format(index.bytesPerVector()))
+            .append(" | ").append(format(index.storageBytesPerVector()))
             .append(" | ").append(index.buildMillis())
             .append(" | ").append(String.format(Locale.ROOT, "%.0f", index.queriesPerSecond()))
             .append(" |\n");
@@ -258,7 +262,8 @@ public final class SearchEvaluator {
       line(tsv, "topK", topK);
       line(tsv, "embed.millis", embedMillis);
       for (final IndexMetrics index : List.of(flat, quantized)) {
-        line(tsv, index.name() + ".bytesPerVector", format(index.bytesPerVector()));
+        line(tsv, index.name() + ".storageBytesPerVector",
+            format(index.storageBytesPerVector()));
         line(tsv, index.name() + ".build.millis", index.buildMillis());
         line(tsv, index.name() + ".qps", String.format(Locale.ROOT, "%.0f",
             index.queriesPerSecond()));
@@ -282,7 +287,7 @@ public final class SearchEvaluator {
      * @param prefix The metric key prefix.
      * @param m      The metrics.
      */
-    private static void retrievalLines(StringBuilder tsv, String prefix, RetrievalMetrics m) {
+    private void retrievalLines(StringBuilder tsv, String prefix, RetrievalMetrics m) {
       line(tsv, prefix + ".queries", m.queries());
       line(tsv, prefix + ".mrr", format(m.mrr()));
       line(tsv, prefix + ".recallAt1", format(m.recallAt1()));
@@ -296,12 +301,12 @@ public final class SearchEvaluator {
      * @param key   The metric key.
      * @param value The metric value.
      */
-    private static void line(StringBuilder tsv, String key, Object value) {
+    private void line(StringBuilder tsv, String key, Object value) {
       tsv.append(key).append('\t').append(value).append('\n');
     }
 
     /** {@return a ratio formatted with three decimals, locale-independent} */
-    private static String format(double value) {
+    private String format(double value) {
       return String.format(Locale.ROOT, "%.3f", value);
     }
   }
@@ -381,29 +386,7 @@ public final class SearchEvaluator {
 
     // Fidelity: quantized against exact on every indexable passage vector; this also warms both
     // indexes for the throughput measurement after it.
-    long overlap = 0;
-    long exactResultCount = 0;
-    int agreement = 0;
-    for (final float[] query : fidelityQueries) {
-      final List<VectorIndex.Hit> exact = flat.topK(query, topK);
-      final List<VectorIndex.Hit> approximate = quantized.topK(query, topK);
-      exactResultCount += exact.size();
-      final Set<String> truth = new HashSet<>(exact.size() * 2);
-      for (final VectorIndex.Hit hit : exact) {
-        truth.add(hit.id());
-      }
-      for (final VectorIndex.Hit hit : approximate) {
-        if (truth.contains(hit.id())) {
-          overlap++;
-        }
-      }
-      if (!exact.isEmpty() && !approximate.isEmpty()
-          && exact.get(0).id().equals(approximate.get(0).id())) {
-        agreement++;
-      }
-    }
-    final double fidelityRecall = overlap / (double) exactResultCount;
-    final double fidelityAgreement = agreement / (double) fidelityQueries.size();
+    final Fidelity fidelity = fidelity(flat, quantized, fidelityQueries, topK);
 
     final float[][] timedQueries = fidelityQueries.toArray(float[][]::new);
 
@@ -463,8 +446,55 @@ public final class SearchEvaluator {
     return new Report(passages.size(), fidelityQueries.size(),
         dictionary.size(), indexedHeadwordCount, model.dimension(),
         model.vocabularySize(), model.termCount(), bits, topK, embedMillis,
-        flatMetrics, quantizedMetrics, fidelityRecall, fidelityAgreement,
+        flatMetrics, quantizedMetrics, fidelity.recallAtK(), fidelity.rank1Agreement(),
         List.copyOf(definitionToHeadword), halfPassage);
+  }
+
+  /**
+   * An approximate index's agreement with the exact one on the same queries.
+   *
+   * @param recallAtK      The mean overlap between the two top-k result sets, relative to the
+   *                       number of exact results returned.
+   * @param rank1Agreement The share of queries where both indexes rank the same id first.
+   */
+  record Fidelity(double recallAtK, double rank1Agreement) {
+  }
+
+  /**
+   * Measures an approximate index against the exact one: each query runs against both, and the
+   * approximate results are scored by their overlap with the exact top {@code topK}.
+   *
+   * @param exact       The exact index.
+   * @param approximate The approximate index over the same vectors.
+   * @param queries     The query vectors; every query must have a direction.
+   * @param topK        The evaluation depth.
+   * @return The fidelity measurements.
+   */
+  static Fidelity fidelity(VectorIndex exact, VectorIndex approximate,
+                           List<float[]> queries, int topK) {
+    long overlap = 0;
+    long exactResultCount = 0;
+    int agreement = 0;
+    for (final float[] query : queries) {
+      final List<VectorIndex.Hit> truth = exact.topK(query, topK);
+      final List<VectorIndex.Hit> answer = approximate.topK(query, topK);
+      exactResultCount += truth.size();
+      final Set<String> truthIds = new HashSet<>(truth.size() * 2);
+      for (final VectorIndex.Hit hit : truth) {
+        truthIds.add(hit.id());
+      }
+      for (final VectorIndex.Hit hit : answer) {
+        if (truthIds.contains(hit.id())) {
+          overlap++;
+        }
+      }
+      if (!truth.isEmpty() && !answer.isEmpty()
+          && truth.get(0).id().equals(answer.get(0).id())) {
+        agreement++;
+      }
+    }
+    return new Fidelity(overlap / (double) exactResultCount,
+        agreement / (double) queries.size());
   }
 
   /**
@@ -475,8 +505,8 @@ public final class SearchEvaluator {
    * @throws IllegalArgumentException Thrown if an element is {@code null} or an identifier
    *     repeats.
    */
-  private static void validateInputs(List<CasePassage> passages,
-                                     List<DictionaryEntry> dictionary) {
+  static void validateInputs(List<CasePassage> passages,
+                             List<DictionaryEntry> dictionary) {
     final Set<String> passageIds = new HashSet<>(passages.size() * 2);
     for (int i = 0; i < passages.size(); i++) {
       final CasePassage passage = passages.get(i);
@@ -506,7 +536,7 @@ public final class SearchEvaluator {
    * @param vector The embedding vector.
    * @return {@code true} when at least one coordinate is nonzero.
    */
-  private static boolean hasDirection(float[] vector) {
+  static boolean hasDirection(float[] vector) {
     for (final float value : vector) {
       if (value != 0f) {
         return true;
@@ -528,7 +558,7 @@ public final class SearchEvaluator {
    * @param topK    The evaluation depth.
    * @return The metrics.
    */
-  private static RetrievalMetrics retrieval(String name, VectorIndex index,
+  static RetrievalMetrics retrieval(String name, VectorIndex index,
                                             List<float[]> queries, List<String> targets,
                                             int topK) {
     int usable = 0;
@@ -567,7 +597,7 @@ public final class SearchEvaluator {
    * @param topK    The result depth per query.
    * @return Queries per second.
    */
-  private static double queriesPerSecond(VectorIndex index, float[][] queries, int topK) {
+  static double queriesPerSecond(VectorIndex index, float[][] queries, int topK) {
     final long start = System.nanoTime();
     for (final float[] query : queries) {
       index.topK(query, topK);
@@ -583,7 +613,7 @@ public final class SearchEvaluator {
    *
    * @param text The passage text.
    */
-  private static String firstHalf(String text) {
+  static String firstHalf(String text) {
     final int midpoint = text.length() / 2;
     if (midpoint == 0) {
       return text;
@@ -597,7 +627,7 @@ public final class SearchEvaluator {
    *
    * @param startNanos The mark.
    */
-  private static long millisSince(long startNanos) {
+  static long millisSince(long startNanos) {
     return (System.nanoTime() - startNanos) / 1_000_000;
   }
 
