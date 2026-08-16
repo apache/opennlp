@@ -42,13 +42,16 @@ class CLITest {
 
   /** {@return the tools the dispatcher registers, as parameterized-test arguments} */
   static Stream<BasicCmdLineTool> tools() {
-    return Stream.of(new AssembleModelTool(), new DistillModelTool(), new QuantizeModelTool());
+    return Stream.of(new AssembleModelTool(), new DistillModelTool(), new QuantizeModelTool(),
+        new NormalizeDictionaryTool(), new NormalizeReporterTool(), new LearnVocabularyTool(),
+        new EvalVectorSearchTool());
   }
 
   @Test
   void testOffersExactlyTheModelCommands() {
     assertEquals(Set.of("AssembleModel", "DistillModel", "QuantizeModel",
-        "NormalizeDictionary", "NormalizeReporter", "LearnVocabulary"), CLI.getToolNames());
+        "NormalizeDictionary", "NormalizeReporter", "LearnVocabulary", "EvalVectorSearch"),
+        CLI.getToolNames());
   }
 
   @Test
@@ -74,8 +77,9 @@ class CLITest {
 
     assertTrue(help.contains("-teacher hf-id-or-path"), help);
     assertTrue(help.contains("-out dir"), help);
-    // The optional parameter is bracketed, so a user can see it may be omitted.
+    // The optional parameters are bracketed, so a user can see they may be omitted.
     assertTrue(help.contains("[-pcaDims "), help);
+    assertTrue(help.contains("[-terms "), help);
   }
 
   @Test
@@ -83,6 +87,36 @@ class CLITest {
     final String help = new AssembleModelTool().getHelp();
 
     assertTrue(help.contains("-modelDir dir"), help);
+  }
+
+  @Test
+  void testEvalVectorSearchHelpNamesEveryParameter() {
+    final String help = new EvalVectorSearchTool().getHelp();
+
+    assertTrue(help.contains("-model dir"), help);
+    assertTrue(help.contains("-passages file"), help);
+    assertTrue(help.contains("-dictionary file"), help);
+    assertTrue(help.contains("-out file"), help);
+    assertTrue(help.contains("[-bits num]"), help);
+    assertTrue(help.contains("[-seed num]"), help);
+    assertTrue(help.contains("[-topK num]"), help);
+  }
+
+  @Test
+  void testCorpusToolHelpNamesEveryParameter() {
+    final String dictionaryHelp = new NormalizeDictionaryTool().getHelp();
+    final String reporterHelp = new NormalizeReporterTool().getHelp();
+    final String vocabularyHelp = new LearnVocabularyTool().getHelp();
+
+    assertTrue(dictionaryHelp.contains("-rawDir dir"), dictionaryHelp);
+    assertTrue(dictionaryHelp.contains("-out file"), dictionaryHelp);
+    assertTrue(reporterHelp.contains("-rawDir dir"), reporterHelp);
+    assertTrue(reporterHelp.contains("-out file"), reporterHelp);
+    assertTrue(vocabularyHelp.contains("-dictionary file"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("-passages file"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("-out file"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("[-minFrequency n]"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("[-maxTerms n]"), vocabularyHelp);
   }
 
   @Test
