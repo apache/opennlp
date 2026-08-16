@@ -70,3 +70,7 @@ src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
 src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
 src/main/resources/opennlp/tools/util/normalizer/confusables.txt
 src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
+
+<!-- OPENNLP-1879 bundled Natural Earth gazetteer table (public domain data;
+     the file header carries the derivation record and the LICENSE pointer) -->
+src/main/resources/opennlp/geo/naturalearth-populated-places.txt
