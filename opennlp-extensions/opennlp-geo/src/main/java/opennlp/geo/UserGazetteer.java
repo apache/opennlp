@@ -86,7 +86,7 @@ public final class UserGazetteer implements Gazetteer {
   private static final String FIELD_SEPARATOR = "\t";
 
   /** The separator between the elements of the alternate-names and containment fields. */
-  private static final String LIST_SEPARATOR = "\\|";
+  private static final char LIST_SEPARATOR = '|';
 
   /** The separator between the edges of the bounding-box field. */
   private static final String BOX_SEPARATOR = ",";
@@ -335,10 +335,14 @@ public final class UserGazetteer implements Gazetteer {
   /** Splits a {@code |}-separated list field, dropping blank elements. */
   private static List<String> names(String field) {
     final List<String> elements = new ArrayList<>();
-    for (final String element : field.split(LIST_SEPARATOR, -1)) {
-      final String trimmed = element.trim();
-      if (!trimmed.isEmpty()) {
-        elements.add(trimmed);
+    int start = 0;
+    for (int i = 0; i <= field.length(); i++) {
+      if (i == field.length() || field.charAt(i) == LIST_SEPARATOR) {
+        final String trimmed = field.substring(start, i).trim();
+        if (!trimmed.isEmpty()) {
+          elements.add(trimmed);
+        }
+        start = i + 1;
       }
     }
     return elements;
