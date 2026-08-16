@@ -32,7 +32,7 @@ import opennlp.subword.sentencepiece.SentencePieceTokenizer;
  * Fixtures shared by more than one test in this module: the small WordPiece table the geometry
  * tests load, and JSON string quoting for the hand-built {@code tokenizer.json} fixtures.
  */
-final class EmbeddingTestFixtures {
+public final class EmbeddingTestFixtures {
 
   /** The analogy table's tokens; the list index is the matrix row. */
   static final List<String> ANALOGY_VOCABULARY =
@@ -82,7 +82,7 @@ final class EmbeddingTestFixtures {
    * @param dir The directory to write the model files into.
    * @throws IOException Thrown if writing a fixture file fails.
    */
-  static void writeAnalogyDirectory(Path dir) throws IOException {
+  public static void writeAnalogyDirectory(Path dir) throws IOException {
     writeVocabularyAndMatrix(dir);
     Files.writeString(dir.resolve("config.json"),
         "{\"model_type\":\"model2vec\",\"normalize\":false}");
