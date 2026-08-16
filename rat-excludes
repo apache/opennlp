@@ -94,3 +94,8 @@ src/test/resources/opennlp/wordnet/mini-wndb/adj.exc
 src/test/resources/opennlp/wordnet/mini-wndb/adv.exc
 <!-- UniNE light/minimal stemmer parity fixtures (generated word/stem pairs, see README) -->
 src/test/resources/opennlp/tools/stemmer/light/*.tsv
+
+<!-- OPENNLP-1911 invented corpus fixtures (data formats do not allow an AL header) -->
+src/test/resources/opennlp/embeddings/corpus/mini-bouvier.htm
+src/test/resources/opennlp/embeddings/corpus/mini-dictionary.tsv
+src/test/resources/opennlp/embeddings/corpus/mini-passages.jsonl

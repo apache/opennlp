@@ -39,12 +39,15 @@ class CLITest {
 
   /** {@return the tools the dispatcher registers, as parameterized-test arguments} */
   static Stream<BasicCmdLineTool> tools() {
-    return Stream.of(new AssembleModelTool(), new DistillModelTool(), new QuantizeModelTool());
+    return Stream.of(new AssembleModelTool(), new DistillModelTool(), new QuantizeModelTool(),
+        new EvalVectorSearchTool());
   }
 
   @Test
   void testOffersExactlyTheModelCommands() {
-    assertEquals(Set.of("AssembleModel", "DistillModel", "QuantizeModel"), CLI.getToolNames());
+    assertEquals(Set.of("AssembleModel", "DistillModel", "QuantizeModel",
+        "NormalizeDictionary", "NormalizeReporter", "LearnVocabulary", "EvalVectorSearch"),
+        CLI.getToolNames());
   }
 
   @Test
@@ -80,5 +83,18 @@ class CLITest {
     final String help = new AssembleModelTool().getHelp();
 
     assertTrue(help.contains("-modelDir dir"), help);
+  }
+
+  @Test
+  void testEvalVectorSearchHelpNamesEveryParameter() {
+    final String help = new EvalVectorSearchTool().getHelp();
+
+    assertTrue(help.contains("-model dir"), help);
+    assertTrue(help.contains("-passages file"), help);
+    assertTrue(help.contains("-dictionary file"), help);
+    assertTrue(help.contains("-out file"), help);
+    assertTrue(help.contains("[-bits num]"), help);
+    assertTrue(help.contains("[-seed num]"), help);
+    assertTrue(help.contains("[-topK num]"), help);
   }
 }

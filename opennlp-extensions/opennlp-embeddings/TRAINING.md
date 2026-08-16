@@ -74,6 +74,43 @@ Confirm parity against the Python reference before trusting a fresh distillation
 
 Two tables distilled independently from the same teacher (one with this command, one with Python Model2Vec) agree on their pairwise geometry to a few parts in a thousand — similarities, neighbors, and rankings match — but their raw vectors are not directly comparable axis by axis: PCA fixes only the subspace, and within the near-degenerate tail of the spectrum two independent decompositions choose different bases.
 
+## 4. Evaluate retrieval and quantization
+
+The `EvalVectorSearch` command evaluates a distilled model over a normalized passage corpus and dictionary without hand-labelled judgments:
+
+```
+opennlp-embeddings EvalVectorSearch \
+  -model bge-m3-static \
+  -passages passages.jsonl \
+  -dictionary dictionary.tsv \
+  -out vector-search-report.md \
+  -bits 4 -seed 42 -topK 10
+```
+
+The command builds an exact float index and a TurboQuant index. It reports quantized overlap with the exact results, rank-1 agreement, definition-to-headword retrieval, half-passage retrieval, single-thread throughput, and storage per vector. A TSV containing the same metrics is written next to the markdown report.
+
+Inputs that embed to a zero vector have no search direction and are not indexed or evaluated. The report records total and indexable passage and headword counts, so this coverage remains visible. Fidelity recall uses the number of exact results actually returned, including when `topK` exceeds the index size.
+
+## 5. Benchmark against Lucene HNSW
+
+The module's test tree carries a Lucene HNSW baseline that reruns the same measurements against a graph index: `opennlp.embeddings.index.HnswFloatIndex` adapts an in-memory Lucene index (vectors L2-normalized, dot-product similarity, default graph parameters, a 100-candidate search beam) to the `VectorIndex` contract, and `opennlp.embeddings.eval.HnswBaseline` reports the same table columns as `EvalVectorSearch`, so the two reports read side by side. Lucene is a test-scope dependency only; the shipped module has no search-engine dependency.
+
+From the repository root, run the baseline through the Maven test runner. Set `H` to the legal corpus directory described above:
+
+```
+./mvnw -pl opennlp-extensions/opennlp-embeddings -am \
+  -Dtest=HnswBaselineRunnerTest \
+  -Dsurefire.failIfNoSpecifiedTests=false \
+  -Dopennlp.forkCount=1 \
+  -Dopennlp.hnsw.model="$H/model" \
+  -Dopennlp.hnsw.passages="$H/normalized/passages.jsonl" \
+  -Dopennlp.hnsw.dictionary="$H/normalized/dictionary.tsv" \
+  -Dopennlp.hnsw.output="$H/hnsw-report.md" \
+  -Dopennlp.hnsw.topK=10 test
+```
+
+It writes the markdown report and a TSV twin next to it, covering the graph's recall against the exact scan, rank-1 agreement, both retrieval evaluations, build time, single-thread throughput, and serialized storage per vector including the graph links. The storage figure sums Lucene's serialized vector data, metadata, and graph files. It is not a measurement of live JVM memory.
+
 ## The WordPiece path
 
 A WordPiece teacher (a BERT-family model such as bge-large-en) distills the same way. Its directory layout is the BERT one instead: `vocab.txt` (one token per line, line number is the row), `model.safetensors`, `config.json`, and `tokenizer_config.json` (whose `do_lower_case` sets the casing). `load` detects WordPiece from the presence of `vocab.txt`.
