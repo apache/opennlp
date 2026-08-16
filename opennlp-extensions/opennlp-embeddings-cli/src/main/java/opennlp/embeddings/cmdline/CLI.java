@@ -50,6 +50,9 @@ public final class CLI {
     tools.add(new AssembleModelTool());
     tools.add(new DistillModelTool());
     tools.add(new QuantizeModelTool());
+    tools.add(new NormalizeDictionaryTool());
+    tools.add(new NormalizeReporterTool());
+    tools.add(new LearnVocabularyTool());
 
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);

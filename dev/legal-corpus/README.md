@@ -15,9 +15,23 @@ Everything lands under `$LEGAL_CORPUS_HOME` (default
 ./fetch-dictionary.sh              # Bouvier 1856, 26 pinned Wayback files
 WITH_BLACKS=1 ./fetch-dictionary.sh  # additionally the Black's 2nd (1910) OCR
 ./fetch-reporter.sh 190 220        # CAP U.S. Reports volumes (default range)
-python3 normalize_dictionary.py    # -> normalized/dictionary.tsv
-python3 normalize_reporter.py      # -> normalized/passages.jsonl
 ```
+
+Everything after the fetch is pure Java, via the opennlp-embeddings CLI
+(`opennlp.embeddings.cmdline.CLI`; build the module, then put its classes and
+dependencies on the classpath):
+
+```
+CLI NormalizeDictionary -rawDir $H/raw/bouvier -out $H/normalized/dictionary.tsv
+CLI NormalizeReporter   -rawDir $H/raw/us      -out $H/normalized/passages.jsonl
+CLI LearnVocabulary     -dictionary $H/normalized/dictionary.tsv \
+                        -passages $H/normalized/passages.jsonl \
+                        -out $H/normalized/vocabulary.tsv
+```
+
+The original Python normalizers were retired 2026-08-16 after the Java ports
+reproduced their output byte for byte on the full first acquisition (see
+`opennlp.embeddings.corpus`).
 
 Fetches are idempotent (existing files are skipped) and every download is
 appended to `$LEGAL_CORPUS_HOME/MANIFEST.tsv` with URL, UTC date, sha256, and
