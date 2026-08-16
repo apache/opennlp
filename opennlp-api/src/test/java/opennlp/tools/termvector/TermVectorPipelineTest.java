@@ -17,7 +17,6 @@
 
 package opennlp.tools.termvector;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +27,6 @@ import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnalyzer;
 import opennlp.tools.document.Layers;
 import opennlp.tools.document.TokenizerAnnotator;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,39 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Wires the {@link TermVectorAnnotator} into a {@link DocumentAnalyzer} behind a
  * {@link TokenizerAnnotator}: the token layer goes in, the term vector layer comes out,
- * and nothing else about the document changes. The tokenizer is a deterministic stand-in
- * defined here, so every expected span follows directly from the input text.
+ * and nothing else about the document changes. The tokenizer is the shared deterministic
+ * single-space fixture, so every expected span follows directly from the input text.
  */
 public class TermVectorPipelineTest {
-
-  /**
-   * A deterministic tokenizer that splits on single space characters and keeps all
-   * other characters, including sentence-final periods, attached to their token. Only
-   * the span-producing method is implemented because the adapter calls no other method.
-   */
-  private static final Tokenizer SPACE_TOKENIZER = new Tokenizer() {
-
-    @Override
-    public String[] tokenize(String s) {
-      throw new UnsupportedOperationException("the adapter only calls tokenizePos");
-    }
-
-    @Override
-    public Span[] tokenizePos(String s) {
-      final List<Span> spans = new ArrayList<>();
-      int start = -1;
-      for (int i = 0; i <= s.length(); i++) {
-        final boolean boundary = i == s.length() || s.charAt(i) == ' ';
-        if (boundary && start >= 0) {
-          spans.add(new Span(start, i));
-          start = -1;
-        } else if (!boundary && start < 0) {
-          start = i;
-        }
-      }
-      return spans.toArray(new Span[0]);
-    }
-  };
 
   /**
    * Runs tokenizer plus term vector roll-up over a text with repeated tokens and reads
@@ -78,7 +47,7 @@ public class TermVectorPipelineTest {
   @Test
   void testTokenizerAndTermVectorPipeline() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new TokenizerAnnotator(SPACE_TOKENIZER))
+        .add(new TokenizerAnnotator(SingleSpaceTokens.TOKENIZER))
         .add(new TermVectorAnnotator())
         .build();
 
@@ -113,7 +82,7 @@ public class TermVectorPipelineTest {
   @Test
   void testScoringOnlyPipeline() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new TokenizerAnnotator(SPACE_TOKENIZER))
+        .add(new TokenizerAnnotator(SingleSpaceTokens.TOKENIZER))
         .add(new TermVectorAnnotator(TermVectorAnnotator.Mode.SCORING_ONLY))
         .build();
 

@@ -18,7 +18,6 @@
 package opennlp.tools.termvector;
 
 import java.io.Serial;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -148,30 +147,18 @@ public class TermVectorAnnotatorTest {
    * A plain normalizer that deletes every digit, so a token made up of digits alone
    * normalizes to the empty string on the per-token path.
    */
-  private static final CharSequenceNormalizer PLAIN_DROP_DIGITS =
-      text -> text.toString().replaceAll("\\d", "");
-
-  /**
-   * Splits a text on single space characters into a token layer, skipping the empty
-   * tokens a collapsed run would produce, so double spaces yield no tokens.
-   */
-  private static List<Annotation<String>> splitOnSpaces(String text) {
-    final List<Annotation<String>> tokens = new ArrayList<>();
-    int start = -1;
-    for (int i = 0; i <= text.length(); i++) {
-      final boolean boundary = i == text.length() || text.charAt(i) == ' ';
-      if (boundary && start >= 0) {
-        tokens.add(new Annotation<>(new Span(start, i), text.substring(start, i)));
-        start = -1;
-      } else if (!boundary && start < 0) {
-        start = i;
+  private static final CharSequenceNormalizer PLAIN_DROP_DIGITS = text -> {
+    final StringBuilder out = new StringBuilder(text.length());
+    for (int i = 0; i < text.length(); i++) {
+      if (!Character.isDigit(text.charAt(i))) {
+        out.append(text.charAt(i));
       }
     }
-    return tokens;
-  }
+    return out.toString();
+  };
 
   private static Document documentWithTokens(String text) {
-    return Document.of(text).with(Layers.TOKENS, splitOnSpaces(text));
+    return Document.of(text).with(Layers.TOKENS, SingleSpaceTokens.tokens(text));
   }
 
   @Test
@@ -362,6 +349,30 @@ public class TermVectorAnnotatorTest {
         vectors.get(0).value());
     assertEquals(new TermVector("", 2, List.of(new Span(4, 6), new Span(11, 12))),
         vectors.get(1).value());
+  }
+
+  /**
+   * Spans are UTF-16 offsets, so a supplementary-plane character occupies two positions:
+   * {@code "𝕏 x 𝕏"} tokenizes to spans of width two around the surrogate pairs, and both
+   * occurrences group under one term whose spans still cover the original text exactly.
+   */
+  @Test
+  void testSupplementaryPlaneTokensKeepUtf16Offsets() {
+    final String text = "𝕏 x 𝕏";
+    final Document document = new TermVectorAnnotator()
+        .annotate(documentWithTokens(text));
+
+    final List<Annotation<TermVector>> vectors =
+        document.get(TermVectorAnnotator.TERM_VECTORS);
+    assertEquals(2, vectors.size());
+    assertEquals(new TermVector("𝕏", 2, List.of(new Span(0, 2), new Span(5, 7))),
+        vectors.get(0).value());
+    assertEquals(new TermVector("x", 1, List.of(new Span(3, 4))), vectors.get(1).value());
+    for (final Annotation<TermVector> vector : vectors) {
+      for (final Span span : vector.value().spans()) {
+        assertEquals(vector.value().term(), span.getCoveredText(text).toString());
+      }
+    }
   }
 
   @Test

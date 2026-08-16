@@ -75,6 +75,15 @@ public class TermVectorTest {
     assertThrows(IllegalArgumentException.class, () -> new TermVector("dog", 1, null));
   }
 
+  @Test
+  void testNullSpanElementIsRejected() {
+    final List<Span> spans = new ArrayList<>();
+    spans.add(new Span(0, 3));
+    spans.add(null);
+    assertThrows(IllegalArgumentException.class, () -> new TermVector("dog", 2, spans));
+    assertThrows(IllegalArgumentException.class, () -> TermVector.withSpans("dog", spans));
+  }
+
   @ParameterizedTest
   @ValueSource(ints = {0, -1, Integer.MIN_VALUE})
   void testFrequencyBelowOneIsRejected(int frequency) {
