@@ -53,6 +53,7 @@ public final class CLI {
     tools.add(new NormalizeDictionaryTool());
     tools.add(new NormalizeReporterTool());
     tools.add(new LearnVocabularyTool());
+    tools.add(new EvalVectorSearchTool());
 
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
