@@ -74,6 +74,23 @@ Confirm parity against the Python reference before trusting a fresh distillation
 
 Two tables distilled independently from the same teacher (one with this command, one with Python Model2Vec) agree on their pairwise geometry to a few parts in a thousand — similarities, neighbors, and rankings match — but their raw vectors are not directly comparable axis by axis: PCA fixes only the subspace, and within the near-degenerate tail of the spectrum two independent decompositions choose different bases.
 
+## 4. Evaluate retrieval and quantization
+
+The `EvalVectorSearch` command evaluates a distilled model over a normalized passage corpus and dictionary without hand-labelled judgments:
+
+```
+opennlp-embeddings EvalVectorSearch \
+  -model bge-m3-static \
+  -passages passages.jsonl \
+  -dictionary dictionary.tsv \
+  -out vector-search-report.md \
+  -bits 4 -seed 42 -topK 10
+```
+
+The command builds an exact float index and a TurboQuant index. It reports quantized overlap with the exact results, rank-1 agreement, definition-to-headword retrieval, half-passage retrieval, single-thread throughput, and storage per vector. A TSV containing the same metrics is written next to the markdown report.
+
+Inputs that embed to a zero vector have no search direction and are not indexed or evaluated. The report records total and indexable passage and headword counts, so this coverage remains visible. Fidelity recall uses the number of exact results actually returned, including when `topK` exceeds the index size.
+
 ## The WordPiece path
 
 A WordPiece teacher (a BERT-family model such as bge-large-en) distills the same way. Its directory layout is the BERT one instead: `vocab.txt` (one token per line, line number is the row), `model.safetensors`, `config.json`, and `tokenizer_config.json` (whose `do_lower_case` sets the casing). `load` detects WordPiece from the presence of `vocab.txt`.
