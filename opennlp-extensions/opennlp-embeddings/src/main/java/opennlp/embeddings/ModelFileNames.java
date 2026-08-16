@@ -36,6 +36,13 @@ final class ModelFileNames {
   /** The safetensors file holding the embedding matrix and optional per-token weights. */
   static final String SAFETENSORS = "model.safetensors";
 
+  /**
+   * The quantized matrix file, written by the {@code QuantizeModel} tool. It carries the matrix
+   * and any per-token weights itself, and is the directory's matrix source in place of
+   * {@link #SAFETENSORS}, which a quantized deployment deletes.
+   */
+  static final String QUANTIZED = "model.quantized";
+
   /** The tokenizer description whose Unigram {@code model.vocab} order names the matrix rows. */
   static final String TOKENIZER_JSON = "tokenizer.json";
 
