@@ -81,7 +81,7 @@ public class BouvierDictionaryParserTest {
         "<p><b>DASH</b>, a &#150; b &#8212; c &#x2013; d, with padding to pass the filter.</p>");
     assertEquals(1, entries.size());
     // The C1 range maps through Windows-1252, so &#150; is an en dash.
-    assertEquals("a – b — c – d, with padding to pass the filter.",
+    assertEquals("a \u2013 b \u2014 c \u2013 d, with padding to pass the filter.",
         entries.get(0).definition());
   }
 
