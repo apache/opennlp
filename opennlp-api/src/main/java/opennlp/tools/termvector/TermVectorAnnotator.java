@@ -50,8 +50,9 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  * a normalization fold (case, an eszett expansion, collapsed whitespace) group together,
  * and the occurrence spans emitted in {@link Mode#FULL full mode} are the token layer's
  * own spans and therefore always point into the original text. A token whose normalized
- * form is empty, for example one the normalizer deleted entirely, groups under the empty
- * string rather than being dropped.</p>
+ * form is empty, for example one the normalizer deleted entirely, is omitted from the
+ * layer; an empty string is no term, and the token layer still accounts for the
+ * token.</p>
  *
  * <p>The layer is {@link LayerKey.Scope#DOCUMENT document-scoped}: each {@link TermVector}
  * is a whole-document statistic, so the annotations carry no span of their own and the
@@ -240,8 +241,10 @@ public final class TermVectorAnnotator implements DocumentAnnotator {
       AlignedText aligned, String normalized) {
     final Map<String, List<Span>> spansByTerm = new LinkedHashMap<>();
     for (final Annotation<String> token : tokens) {
-      spansByTerm.computeIfAbsent(termOf(token, aligned, normalized), key -> new ArrayList<>())
-          .add(token.span());
+      final String term = termOf(token, aligned, normalized);
+      if (!term.isEmpty()) {
+        spansByTerm.computeIfAbsent(term, key -> new ArrayList<>()).add(token.span());
+      }
     }
     final List<Annotation<TermVector>> vectors = new ArrayList<>(spansByTerm.size());
     for (final Map.Entry<String, List<Span>> entry : spansByTerm.entrySet()) {
@@ -265,7 +268,10 @@ public final class TermVectorAnnotator implements DocumentAnnotator {
       AlignedText aligned, String normalized) {
     final Map<String, Integer> frequencies = new LinkedHashMap<>();
     for (final Annotation<String> token : tokens) {
-      frequencies.merge(termOf(token, aligned, normalized), 1, Integer::sum);
+      final String term = termOf(token, aligned, normalized);
+      if (!term.isEmpty()) {
+        frequencies.merge(term, 1, Integer::sum);
+      }
     }
     final List<Annotation<TermVector>> vectors = new ArrayList<>(frequencies.size());
     for (final Map.Entry<String, Integer> entry : frequencies.entrySet()) {

@@ -305,22 +305,20 @@ public class TermVectorAnnotatorTest {
   }
 
   /**
-   * The empty-term bucket behaves identically on the per-token path: tokens a plain
-   * normalizer folds to the empty string group under one {@code ""} term with their
-   * original spans, matching {@link #testTokensNormalizedAwayGroupUnderTheEmptyTerm()}.
+   * Empty-term omission behaves identically on the per-token path: tokens a plain
+   * normalizer folds to the empty string are left out of the layer, matching
+   * {@link #testTokensNormalizedAwayAreOmitted()}.
    */
   @Test
-  void testPlainNormalizerFoldsDeletedTokensIntoTheEmptyTerm() {
+  void testPlainNormalizerOmitsDeletedTokens() {
     final Document document = new TermVectorAnnotator(PLAIN_DROP_DIGITS)
         .annotate(documentWithTokens("dog 42 dog 7"));
 
     final List<Annotation<TermVector>> vectors =
         document.get(TermVectorAnnotator.TERM_VECTORS);
-    assertEquals(2, vectors.size());
+    assertEquals(1, vectors.size());
     assertEquals(new TermVector("dog", 2, List.of(new Span(0, 3), new Span(7, 10))),
         vectors.get(0).value());
-    assertEquals(new TermVector("", 2, List.of(new Span(4, 6), new Span(11, 12))),
-        vectors.get(1).value());
   }
 
   @Test
@@ -334,21 +332,19 @@ public class TermVectorAnnotatorTest {
   }
 
   /**
-   * A token the normalizer deletes entirely groups under the empty string instead of
-   * being dropped, so the term vector layer still accounts for every token.
+   * A token the normalizer deletes entirely is omitted from the layer: an empty string
+   * is no term, and the token layer still accounts for the token itself.
    */
   @Test
-  void testTokensNormalizedAwayGroupUnderTheEmptyTerm() {
+  void testTokensNormalizedAwayAreOmitted() {
     final Document document = new TermVectorAnnotator(DROP_DIGITS)
         .annotate(documentWithTokens("dog 42 dog 7"));
 
     final List<Annotation<TermVector>> vectors =
         document.get(TermVectorAnnotator.TERM_VECTORS);
-    assertEquals(2, vectors.size());
+    assertEquals(1, vectors.size());
     assertEquals(new TermVector("dog", 2, List.of(new Span(0, 3), new Span(7, 10))),
         vectors.get(0).value());
-    assertEquals(new TermVector("", 2, List.of(new Span(4, 6), new Span(11, 12))),
-        vectors.get(1).value());
   }
 
   /**
@@ -373,6 +369,18 @@ public class TermVectorAnnotatorTest {
         assertEquals(vector.value().term(), span.getCoveredText(text).toString());
       }
     }
+  }
+
+  /**
+   * A document whose every token normalizes to the empty string yields the layer
+   * present but empty, the same graceful degradation as an empty token layer.
+   */
+  @Test
+  void testAllTokensNormalizedAwayYieldPresentButEmptyLayer() {
+    final Document document = new TermVectorAnnotator(DROP_DIGITS)
+        .annotate(documentWithTokens("42 7"));
+    assertTrue(document.layers().contains(TermVectorAnnotator.TERM_VECTORS));
+    assertTrue(document.get(TermVectorAnnotator.TERM_VECTORS).isEmpty());
   }
 
   @Test
