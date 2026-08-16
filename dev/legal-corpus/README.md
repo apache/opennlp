@@ -21,6 +21,7 @@ The remaining commands use the `opennlp-embeddings` CLI from the binary
 distribution:
 
 ```
+<<<<<<< HEAD
 CORPUS_DIR="$LEGAL_CORPUS_HOME"
 bin/embeddings NormalizeDictionary \
   -rawDir "$CORPUS_DIR/raw/bouvier" \
@@ -46,6 +47,29 @@ bin/embeddings EvalVectorSearch \
 `EvalVectorSearch` builds the exact and quantized indexes and writes markdown
 and TSV reports with fidelity, definition-to-headword retrieval, half-passage
 retrieval, throughput, and storage measurements.
+=======
+CLI NormalizeDictionary -rawDir $H/raw/bouvier -out $H/normalized/dictionary.tsv
+CLI NormalizeReporter   -rawDir $H/raw/us      -out $H/normalized/passages.jsonl
+CLI LearnVocabulary     -dictionary $H/normalized/dictionary.tsv \
+                        -passages $H/normalized/passages.jsonl \
+                        -out $H/normalized/vocabulary.tsv
+CLI DistillModel        -teacher sentence-transformers/all-MiniLM-L6-v2 \
+                        -out $H/model -terms $H/normalized/vocabulary.tsv
+CLI EvalVectorSearch    -model $H/model \
+                        -passages $H/normalized/passages.jsonl \
+                        -dictionary $H/normalized/dictionary.tsv \
+                        -out $H/report.md
+```
+
+The last command is the whole evaluation loop: it builds the exact and the
+quantized index over the embedded passages and writes one markdown report
+(and a TSV twin) with index fidelity, definition-to-headword retrieval,
+half-passage retrieval, throughput, and storage cost.
+
+The original Python normalizers were retired 2026-08-16 after the Java ports
+reproduced their output byte for byte on the full first acquisition (see
+`opennlp.embeddings.corpus`).
+>>>>>>> e518dc8fa (OPENNLP-1911: Add reproducible in-memory search evaluation)
 
 A Lucene HNSW baseline runs the same measurements against a graph index. It is
 in the test tree, so Lucene remains a test-scope dependency. Run it from the
