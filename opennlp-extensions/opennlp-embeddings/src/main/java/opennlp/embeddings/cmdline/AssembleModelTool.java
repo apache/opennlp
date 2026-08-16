@@ -74,6 +74,8 @@ public class AssembleModelTool extends BasicCmdLineTool {
       System.out.println("Wrote tokenizer_config.json derived from tokenizer.json");
     }
     System.out.println("Assembled and verified a " + result.family() + " model: "
-        + result.vocabularySize() + " rows, dimension " + result.dimension());
+        + result.vocabularySize() + " rows"
+        + (result.termCount() > 0 ? " plus " + result.termCount() + " terms" : "")
+        + ", dimension " + result.dimension());
   }
 }

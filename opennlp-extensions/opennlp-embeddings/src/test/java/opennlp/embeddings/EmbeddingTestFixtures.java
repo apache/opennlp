@@ -120,6 +120,20 @@ final class EmbeddingTestFixtures {
    * @throws IOException Thrown if reading the fixture resource or writing a file fails.
    */
   static void writeSentencePieceDirectory(Path dir) throws IOException {
+    writeSentencePieceDirectory(dir, List.of());
+  }
+
+  /**
+   * Writes the SentencePiece model directory of {@link #writeSentencePieceDirectory(Path)} with
+   * additional term rows: the terms land in {@code terms.txt} and the matrix grows one row per
+   * term, keeping the deterministic {@code row + d * 0.25} cell formula, so a test can predict a
+   * term row's vector from the model's vocabulary size.
+   *
+   * @param dir   The directory to write the model files into.
+   * @param terms The terms in row order; empty for none.
+   * @throws IOException Thrown if reading the fixture resource or writing a file fails.
+   */
+  static void writeSentencePieceDirectory(Path dir, List<String> terms) throws IOException {
     final byte[] modelBytes;
     try (InputStream in =
              EmbeddingTestFixtures.class.getResourceAsStream(TINY_UNIGRAM_RESOURCE)) {
@@ -144,7 +158,10 @@ final class EmbeddingTestFixtures {
       json.append('[').append(jsonString(rows.get(i))).append(",-1.5]");
     }
     Files.writeString(dir.resolve("tokenizer.json"), json.append("]}}").toString());
-    final float[][] matrix = new float[rows.size()][SENTENCEPIECE_DIMENSION];
+    if (!terms.isEmpty()) {
+      Files.write(dir.resolve("terms.txt"), terms);
+    }
+    final float[][] matrix = new float[rows.size() + terms.size()][SENTENCEPIECE_DIMENSION];
     for (int row = 0; row < matrix.length; row++) {
       for (int d = 0; d < SENTENCEPIECE_DIMENSION; d++) {
         matrix[row][d] = row + d * 0.25f;

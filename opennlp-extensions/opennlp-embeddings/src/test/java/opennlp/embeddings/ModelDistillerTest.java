@@ -19,6 +19,8 @@ package opennlp.embeddings;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -166,5 +168,30 @@ class ModelDistillerTest {
     assertEquals("PcaDims must be at least 1, got 0",
         assertThrows(IllegalArgumentException.class,
             () -> ModelDistiller.distill(teacher, dir.resolve("out"), 0, null)).getMessage());
+  }
+
+  /**
+   * Term arguments are validated before the teacher reference is resolved, so a bad term list
+   * against a hub id fails before anything is downloaded.
+   */
+  @Test
+  void testRejectsBadTermsBeforeResolvingAHubTeacher(@TempDir Path dir) {
+    assertEquals("Terms must not be null",
+        assertThrows(IllegalArgumentException.class,
+            () -> ModelDistiller.distill("BAAI/bge-m3", dir.resolve("out"), 256, null, null))
+            .getMessage());
+    assertEquals("Terms must not contain null",
+        assertThrows(IllegalArgumentException.class,
+            () -> ModelDistiller.distill("BAAI/bge-m3", dir.resolve("out"), 256,
+                Collections.singletonList(null), null)).getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"&", "!!", " . "})
+  void testRejectsATermWithoutALetterOrDigit(String term, @TempDir Path dir) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ModelDistiller.distill("BAAI/bge-m3", dir.resolve("out"), 256, List.of(term),
+            null));
+    assertTrue(e.getMessage().contains("no letter or digit"), e.getMessage());
   }
 }

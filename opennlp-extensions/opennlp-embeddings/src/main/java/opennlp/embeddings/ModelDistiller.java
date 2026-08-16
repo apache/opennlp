@@ -20,6 +20,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import opennlp.tools.util.java.Experimental;
 
@@ -84,13 +91,14 @@ public final class ModelDistiller {
    * the variance the PCA kept.
    *
    * @param family                  {@code "WordPiece"} or {@code "SentencePiece"}.
-   * @param vocabularySize          The number of rows in the distilled table.
+   * @param vocabularySize          The number of subword rows in the distilled table.
+   * @param termCount               The number of term rows appended after the subword rows.
    * @param teacherDimension        The teacher's hidden dimension.
    * @param dimension               The distilled table's dimension (after PCA).
    * @param explainedVarianceRatio  The share of the embedding variance the PCA kept.
    */
-  public record Result(String family, int vocabularySize, int teacherDimension, int dimension,
-                       double explainedVarianceRatio) {
+  public record Result(String family, int vocabularySize, int termCount, int teacherDimension,
+                       int dimension, double explainedVarianceRatio) {
   }
 
   /**
@@ -111,9 +119,34 @@ public final class ModelDistiller {
    */
   public static Result distill(String teacher, Path outputDirectory, int pcaDims,
                                ProgressListener listener) throws IOException {
+    return distill(teacher, outputDirectory, pcaDims, List.of(), listener);
+  }
+
+  /**
+   * Distills a teacher into a model directory with additional term rows, resolving the teacher
+   * reference the way {@link #distill(String, Path, int, ProgressListener)} does.
+   *
+   * @param teacher         The teacher: a local directory or a Hugging Face model id. Must not
+   *                        be {@code null}.
+   * @param outputDirectory The model directory to write. Must not be {@code null}.
+   * @param pcaDims         The number of principal components to keep.
+   * @param terms           The terms to distill as extra rows; see
+   *                        {@link #distill(Path, Path, int, List, ProgressListener)}. Must not
+   *                        be {@code null}.
+   * @param listener        Receives progress lines; may be {@code null}.
+   * @return The distillation result, read back from the verified directory.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null} or invalid, a term
+   *     normalizes to nothing, the teacher reference is malformed, or the teacher cannot be run.
+   * @throws IOException Thrown if reading or writing a file fails, or if a teacher cannot be
+   *     downloaded and verified.
+   */
+  public static Result distill(String teacher, Path outputDirectory, int pcaDims,
+                               List<String> terms, ProgressListener listener)
+      throws IOException {
     checkOutput(outputDirectory, pcaDims);
+    final List<String> prepared = prepareTerms(terms);
     return distill(HuggingFaceModelCache.resolve(teacher, listener), outputDirectory, pcaDims,
-        listener);
+        prepared, listener);
   }
 
   /**
@@ -142,6 +175,43 @@ public final class ModelDistiller {
   public static Result distill(Path teacherDirectory, Path outputDirectory, int pcaDims,
                                ProgressListener listener)
       throws IOException {
+    return distill(teacherDirectory, outputDirectory, pcaDims, List.of(), listener);
+  }
+
+  /**
+   * Distills a teacher into a model directory with additional term rows: whole words and
+   * multi-word phrases (a learned corpus vocabulary) that are segmented by the teacher's own
+   * tokenizer, run through the teacher as full sequences, and appended to the table after the
+   * subword rows. The loaded model then matches text against these terms greedily
+   * longest-first before falling back to subword pieces.
+   *
+   * <p>Each term is normalized to lower-cased words joined by single spaces before use; terms
+   * that normalize to the same form are distilled once, and a term equal to a surviving
+   * vocabulary token is dropped, because its row would duplicate that token's. The terms are
+   * written to the model directory as {@code terms.txt}, one per line in row order, and should
+   * arrive sorted by descending corpus frequency: the Zipf weighting spans the subword rows and
+   * the term rows as one ranking.</p>
+   *
+   * @param teacherDirectory The teacher's directory, as in
+   *                         {@link #distill(Path, Path, int, ProgressListener)}. A Unigram
+   *                         teacher must also hold its trained SentencePiece {@code .model}
+   *                         file. Must not be {@code null}.
+   * @param outputDirectory  The model directory to write, as in
+   *                         {@link #distill(Path, Path, int, ProgressListener)}. Must not be
+   *                         {@code null}.
+   * @param pcaDims          The number of principal components to keep.
+   * @param terms            The terms to distill as extra rows; empty for none. Must not be
+   *                         {@code null} and must not contain {@code null}.
+   * @param listener         Receives progress lines; may be {@code null}.
+   * @return The distillation result, read back from the verified directory.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null} or invalid, a term
+   *     normalizes to nothing, the teacher directory lacks its files, or the teacher cannot be
+   *     run.
+   * @throws IOException Thrown if reading or writing a file fails.
+   */
+  public static Result distill(Path teacherDirectory, Path outputDirectory, int pcaDims,
+                               List<String> terms, ProgressListener listener)
+      throws IOException {
     if (teacherDirectory == null) {
       throw new IllegalArgumentException("TeacherDirectory must not be null");
     }
@@ -164,6 +234,23 @@ public final class ModelDistiller {
       throw new IllegalArgumentException("Teacher directory " + teacherDirectory + " has no "
           + "vocabulary token left after cleaning; there is nothing to distill");
     }
+    final List<String> termList = new ArrayList<>(prepareTerms(terms));
+    if (!termList.isEmpty()) {
+      // A term equal to a surviving vocabulary token would encode to the same teacher sequence
+      // and duplicate that token's row, so it is dropped; matching then reaches the token's row
+      // through the subword fallback instead.
+      final Set<String> keptTokens = new HashSet<>(rows * 2);
+      for (int row = 0; row < rows; row++) {
+        keptTokens.add(tokenizer.rowToken(row));
+      }
+      final int requestedTerms = termList.size();
+      termList.removeIf(keptTokens::contains);
+      if (requestedTerms > termList.size()) {
+        report(listener, "Dropped " + (requestedTerms - termList.size())
+            + " terms already present as vocabulary tokens");
+      }
+    }
+    final int totalRows = rows + termList.size();
 
     report(listener, "Encoding " + rows + " vocabulary tokens of " + teacherDirectory
         + " through its ONNX graph");
@@ -172,7 +259,7 @@ public final class ModelDistiller {
     try (OnnxTeacherEncoder encoder = OnnxTeacherEncoder.load(onnxFile)) {
       float[][] first = encoder.encodeBatch(new long[][] {tokenizer.inputSequence(0)});
       teacherDimension = first[0].length;
-      embeddings = new float[rows * teacherDimension];
+      embeddings = new float[totalRows * teacherDimension];
       System.arraycopy(first[0], 0, embeddings, 0, teacherDimension);
       int row = 1;
       while (row < rows) {
@@ -189,6 +276,8 @@ public final class ModelDistiller {
         row += batchSize;
         report(listener, "Encoded " + row + " / " + rows + " vocabulary tokens");
       }
+      encodeTerms(termList, tokenizer, teacherDirectory, encoder, embeddings, rows,
+          teacherDimension, listener);
     }
     nonFiniteToZero(embeddings);
 
@@ -196,22 +285,22 @@ public final class ModelDistiller {
     final float[] transformed;
     final int components;
     double explainedVarianceRatio = 1.0;
-    if (requested >= rows) {
+    if (requested >= totalRows) {
       // A PCA with more components than rows is not a reduction; Model2Vec skips it with a
       // warning. Only reachable for toy vocabularies, which then keep the teacher's dimension.
       transformed = embeddings;
       components = teacherDimension;
     } else {
-      report(listener, "Reducing " + rows + " x " + teacherDimension + " to " + requested
+      report(listener, "Reducing " + totalRows + " x " + teacherDimension + " to " + requested
           + " principal components");
-      final RandomizedPca.Result pca = RandomizedPca.fitTransform(embeddings, rows,
+      final RandomizedPca.Result pca = RandomizedPca.fitTransform(embeddings, totalRows,
           teacherDimension, requested, PCA_SEED);
       transformed = pca.transformed();
       components = requested;
       explainedVarianceRatio = pca.explainedVarianceRatio();
     }
-    final float[] weights = zipfWeights(rows, SIF_COEFFICIENT);
-    for (int row = 0; row < rows; row++) {
+    final float[] weights = zipfWeights(totalRows, SIF_COEFFICIENT);
+    for (int row = 0; row < totalRows; row++) {
       final int base = row * components;
       final float weight = weights[row];
       for (int d = 0; d < components; d++) {
@@ -221,15 +310,107 @@ public final class ModelDistiller {
 
     report(listener, "Writing and verifying the model directory " + outputDirectory);
     Files.createDirectories(outputDirectory);
-    SafetensorsWriter.writeMatrix(outputDirectory.resolve(ModelFileNames.SAFETENSORS), rows,
+    SafetensorsWriter.writeMatrix(outputDirectory.resolve(ModelFileNames.SAFETENSORS), totalRows,
         components, transformed);
     tokenizer.writeCleaned(outputDirectory.resolve(ModelFileNames.TOKENIZER_JSON));
     Files.writeString(outputDirectory.resolve(ModelFileNames.CONFIG),
         configJson(teacherDirectory, pcaDims, components));
     copySentencePieceModel(teacherDirectory, outputDirectory);
+    final Path termsFile = outputDirectory.resolve(ModelFileNames.TERMS);
+    if (termList.isEmpty()) {
+      // A stale terms file from a previous run would no longer match the matrix's row count.
+      Files.deleteIfExists(termsFile);
+    } else {
+      Files.write(termsFile, termList);
+    }
     final ModelAssembler.Result assembled = ModelAssembler.assemble(outputDirectory);
-    return new Result(assembled.family(), assembled.vocabularySize(), teacherDimension,
-        assembled.dimension(), explainedVarianceRatio);
+    return new Result(assembled.family(), assembled.vocabularySize(), assembled.termCount(),
+        teacherDimension, assembled.dimension(), explainedVarianceRatio);
+  }
+
+  /**
+   * Encodes the term rows: each term is segmented by the teacher's own tokenizer, wrapped as a
+   * full input sequence, and mean-pooled through the teacher, filling the matrix rows after the
+   * vocabulary rows. Sequences vary in length and a batch must not be ragged, so equal-length
+   * sequences are batched together.
+   *
+   * @param termList         The normalized terms, in row order.
+   * @param tokenizer        The teacher's parsed tokenizer.
+   * @param teacherDirectory The teacher's directory, for the segmenter.
+   * @param encoder          The open teacher encoder.
+   * @param embeddings       The matrix being filled, {@code totalRows * teacherDimension}.
+   * @param vocabularyRows   The number of vocabulary rows preceding the term rows.
+   * @param teacherDimension The teacher's hidden dimension.
+   * @param listener         Receives one progress line per batch; may be {@code null}.
+   * @throws IOException Thrown if reading the teacher's SentencePiece file fails.
+   */
+  private static void encodeTerms(List<String> termList, TeacherTokenizer tokenizer,
+                                  Path teacherDirectory, OnnxTeacherEncoder encoder,
+                                  float[] embeddings, int vocabularyRows, int teacherDimension,
+                                  ProgressListener listener) throws IOException {
+    if (termList.isEmpty()) {
+      return;
+    }
+    report(listener, "Encoding " + termList.size()
+        + " terms through the teacher's own segmentation");
+    final TermSegmenter segmenter = TermSegmenter.forTeacher(tokenizer, teacherDirectory);
+    final long[][] sequences = new long[termList.size()][];
+    for (int t = 0; t < sequences.length; t++) {
+      sequences[t] = tokenizer.inputSequence(segmenter.pieces(termList.get(t)));
+    }
+    final Integer[] byLength = new Integer[sequences.length];
+    for (int t = 0; t < byLength.length; t++) {
+      byLength[t] = t;
+    }
+    Arrays.sort(byLength, Comparator.comparingInt(t -> sequences[t].length));
+    int encoded = 0;
+    while (encoded < byLength.length) {
+      int end = encoded + 1;
+      while (end < byLength.length && end - encoded < BATCH_SIZE
+          && sequences[byLength[end]].length == sequences[byLength[encoded]].length) {
+        end++;
+      }
+      final long[][] batch = new long[end - encoded][];
+      for (int b = 0; b < batch.length; b++) {
+        batch[b] = sequences[byLength[encoded + b]];
+      }
+      final float[][] pooled = encoder.encodeBatch(batch);
+      for (int b = 0; b < batch.length; b++) {
+        System.arraycopy(pooled[b], 0, embeddings,
+            (vocabularyRows + byLength[encoded + b]) * teacherDimension, teacherDimension);
+      }
+      encoded = end;
+      report(listener, "Encoded " + encoded + " / " + termList.size() + " terms");
+    }
+  }
+
+  /**
+   * Normalizes and deduplicates the requested terms before any teacher work: each term becomes
+   * its lower-cased words joined by single spaces, and terms normalizing to the same form are
+   * kept once, in first-occurrence order.
+   *
+   * @param terms The requested terms.
+   * @return The normalized, duplicate-free terms.
+   * @throws IllegalArgumentException Thrown if {@code terms} is {@code null}, contains
+   *     {@code null}, or contains a term with no letter or digit.
+   */
+  private static List<String> prepareTerms(List<String> terms) {
+    if (terms == null) {
+      throw new IllegalArgumentException("Terms must not be null");
+    }
+    final Set<String> prepared = new LinkedHashSet<>(terms.size() * 2);
+    for (final String term : terms) {
+      if (term == null) {
+        throw new IllegalArgumentException("Terms must not contain null");
+      }
+      final String normalized = TermTable.normalizeTerm(term);
+      if (normalized.isEmpty()) {
+        throw new IllegalArgumentException("Term '" + term
+            + "' has no letter or digit; it cannot be matched in text");
+      }
+      prepared.add(normalized);
+    }
+    return List.copyOf(prepared);
   }
 
   /**

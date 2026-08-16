@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.IntConsumer;
 import java.util.function.IntPredicate;
 
 import opennlp.subword.sentencepiece.SentencePieceTokenizer;
@@ -57,6 +58,13 @@ import opennlp.tools.util.java.Experimental;
  * SentencePiece model's control and unknown pieces) are never pooled; the sum is divided by the
  * count of pooled pieces, not the sum of weights. A text with no in-vocabulary pieces yields a
  * zero vector.</p>
+ *
+ * <p>A model directory may additionally carry a {@code terms.txt}: whole words and multi-word
+ * phrases distilled through the teacher as units, owning the matrix rows after the subword rows
+ * (see {@link ModelDistiller}). Embedding then matches the text against these terms greedily
+ * longest-first, pools a matched term's single row in place of its words' subword pieces, and
+ * tokenizes only the text between matches; a model without the file embeds exactly as before.
+ * Term matching is case-insensitive regardless of the subword tokenizer's casing.</p>
  *
  * <p>Instances are immutable and safe for concurrent use after construction.</p>
  *
@@ -109,12 +117,14 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   // Per-row L2 norms and special-token mask, precomputed at load time for the neighbor scan.
   private final double[] rowNorms;
   private final boolean[] specialRows;
+  // The term rows after the subword rows; empty for a model without a term table.
+  private final TermTable terms;
 
   /** Holds the loaded, validated state; callers reach this through the {@code load} factories. */
   private StaticEmbeddingModel(float[] embeddings, float[] weights, int dimension,
                                 EmbeddingVocabulary vocabulary, SubwordTokenizer tokenizer,
                                 IntPredicate skipPieceId, boolean normalize, double[] rowNorms,
-                                boolean[] specialRows) {
+                                boolean[] specialRows, TermTable terms) {
     this.embeddings = embeddings;
     this.weights = weights;
     this.dimension = dimension;
@@ -124,6 +134,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     this.normalize = normalize;
     this.rowNorms = rowNorms;
     this.specialRows = specialRows;
+    this.terms = terms;
   }
 
   /**
@@ -162,9 +173,13 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       throw new IllegalArgumentException(
           "Model directory does not exist or is not a directory: " + modelDirectory);
     }
+    final Path termsFile = modelDirectory.resolve(ModelFileNames.TERMS);
+    final List<String> termLines = Files.isRegularFile(termsFile)
+        ? Files.readAllLines(termsFile) : List.of();
     final Path vocabularyFile = modelDirectory.resolve(ModelFileNames.VOCABULARY);
     if (Files.isRegularFile(vocabularyFile)) {
-      return loadWordpieceDirectory(modelDirectory, vocabularyFile);
+      return loadWordpieceDirectory(modelDirectory, vocabularyFile, termLines,
+          termsFile.toString());
     }
     final Path sentencePieceModelFile = ModelFileNames.firstRegularFile(modelDirectory,
         ModelFileNames.SENTENCEPIECE_MODELS);
@@ -172,7 +187,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (sentencePieceModelFile != null && Files.isRegularFile(tokenizerJsonFile)) {
       return loadSentencePiece(sentencePieceModelFile, tokenizerJsonFile,
           requiredFile(modelDirectory, ModelFileNames.SAFETENSORS),
-          requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG)));
+          requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG)),
+          termLines, termsFile.toString());
     }
     if (Files.isRegularFile(tokenizerJsonFile)) {
       throw new InvalidFormatException("Model directory " + modelDirectory + " has a "
@@ -190,13 +206,17 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * Loads the WordPiece directory layout, reading the tokenizer and pooling switches from the
    * model's own configuration files.
    *
-   * @param modelDirectory The model directory.
-   * @param vocabularyFile The directory's {@code vocab.txt}.
+   * @param modelDirectory  The model directory.
+   * @param vocabularyFile  The directory's {@code vocab.txt}.
+   * @param termLines       The directory's terms in row order; empty without a terms file.
+   * @param termsSourceName The terms' source, for error messages.
    * @return The loaded model.
    * @throws IOException Thrown if reading a file fails.
    */
   private static StaticEmbeddingModel loadWordpieceDirectory(Path modelDirectory,
-                                                             Path vocabularyFile)
+                                                             Path vocabularyFile,
+                                                             List<String> termLines,
+                                                             String termsSourceName)
       throws IOException {
     final Path safetensorsFile = requiredFile(modelDirectory, ModelFileNames.SAFETENSORS);
     final Path tokenizerConfigFile =
@@ -219,8 +239,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           + "with load(vocabularyFile, safetensorsFile, casing, normalization) after choosing "
           + "deliberately");
     }
-    return load(vocabularyFile, safetensorsFile,
-        lowerCase ? Casing.UNCASED : Casing.CASED, normalization);
+    return loadWordpiece(vocabularyFile, safetensorsFile,
+        lowerCase ? Casing.UNCASED : Casing.CASED, normalization, termLines, termsSourceName);
   }
 
   /**
@@ -298,6 +318,27 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   public static StaticEmbeddingModel load(Path vocabularyFile, Path safetensorsFile,
                                            Casing casing, Normalization normalization)
       throws IOException {
+    return loadWordpiece(vocabularyFile, safetensorsFile, casing, normalization, List.of(),
+        ModelFileNames.TERMS);
+  }
+
+  /**
+   * Loads the WordPiece layout with an optional term table.
+   *
+   * @param vocabularyFile  The {@code vocab.txt} file.
+   * @param safetensorsFile The {@code model.safetensors} file.
+   * @param casing          The tokenizer's casing.
+   * @param normalization   The pooling normalization.
+   * @param termLines       The terms in row order; empty without a term table.
+   * @param termsSourceName The terms' source, for error messages.
+   * @return The loaded model.
+   * @throws IOException Thrown if reading a file fails.
+   */
+  private static StaticEmbeddingModel loadWordpiece(Path vocabularyFile, Path safetensorsFile,
+                                                    Casing casing, Normalization normalization,
+                                                    List<String> termLines,
+                                                    String termsSourceName)
+      throws IOException {
     if (vocabularyFile == null) {
       throw new IllegalArgumentException("VocabularyFile must not be null");
     }
@@ -311,7 +352,9 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       throw new IllegalArgumentException("Normalization must not be null");
     }
     final EmbeddingVocabulary vocabulary = EmbeddingVocabulary.fromVocabTxt(vocabularyFile);
-    final Matrix matrix = readMatrix(vocabulary, safetensorsFile, vocabularyFile.toString());
+    final TermTable terms = TermTable.of(termLines, vocabulary.size(), termsSourceName);
+    final Matrix matrix = readMatrix(vocabulary, terms.size(), safetensorsFile,
+        vocabularyFile.toString());
     final int unknownId = vocabulary.id(WordpieceTokenizer.BERT_UNK_TOKEN);
     if (unknownId < 0) {
       throw new InvalidFormatException("Vocabulary " + vocabularyFile + " has no "
@@ -328,8 +371,9 @@ public final class StaticEmbeddingModel implements TextEmbedder {
         id -> id == unknownId || id == classificationId || id == separatorId;
     return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
         vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
-        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size()),
-        specialRows(vocabulary, WORDPIECE_SPECIAL_TOKENS));
+        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size() + terms.size()),
+        specialRows(vocabulary, WORDPIECE_SPECIAL_TOKENS, vocabulary.size() + terms.size()),
+        terms);
   }
 
   /**
@@ -402,6 +446,29 @@ public final class StaticEmbeddingModel implements TextEmbedder {
                                                         Path safetensorsFile,
                                                         Normalization normalization)
       throws IOException {
+    return loadSentencePiece(sentencePieceModelFile, tokenizerJsonFile, safetensorsFile,
+        normalization, List.of(), ModelFileNames.TERMS);
+  }
+
+  /**
+   * Loads the SentencePiece layout with an optional term table.
+   *
+   * @param sentencePieceModelFile The trained SentencePiece {@code .model} file.
+   * @param tokenizerJsonFile      The Unigram {@code tokenizer.json} file.
+   * @param safetensorsFile        The {@code model.safetensors} file.
+   * @param normalization          The pooling normalization.
+   * @param termLines              The terms in row order; empty without a term table.
+   * @param termsSourceName        The terms' source, for error messages.
+   * @return The loaded model.
+   * @throws IOException Thrown if reading a file fails.
+   */
+  private static StaticEmbeddingModel loadSentencePiece(Path sentencePieceModelFile,
+                                                        Path tokenizerJsonFile,
+                                                        Path safetensorsFile,
+                                                        Normalization normalization,
+                                                        List<String> termLines,
+                                                        String termsSourceName)
+      throws IOException {
     if (sentencePieceModelFile == null) {
       throw new IllegalArgumentException("SentencePieceModelFile must not be null");
     }
@@ -416,16 +483,20 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     }
     final EmbeddingVocabulary vocabulary =
         EmbeddingVocabulary.fromTokenizerJson(tokenizerJsonFile);
+    final TermTable terms = TermTable.of(termLines, vocabulary.size(), termsSourceName);
     final SentencePieceTokenizer tokenizer =
         SentencePieceTokenizer.load(sentencePieceModelFile);
     requireVocabularyCoverage(tokenizer, vocabulary, sentencePieceModelFile, tokenizerJsonFile);
-    final Matrix matrix = readMatrix(vocabulary, safetensorsFile, tokenizerJsonFile.toString());
+    final Matrix matrix = readMatrix(vocabulary, terms.size(), safetensorsFile,
+        tokenizerJsonFile.toString());
     final IntPredicate skipPieceId =
         id -> tokenizer.isUnknown(id) || tokenizer.isControl(id);
     return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
         vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
-        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size()),
-        specialRows(vocabulary, SENTENCEPIECE_SPECIAL_TOKENS));
+        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size() + terms.size()),
+        specialRows(vocabulary, SENTENCEPIECE_SPECIAL_TOKENS,
+            vocabulary.size() + terms.size()),
+        terms);
   }
 
   /**
@@ -473,24 +544,29 @@ public final class StaticEmbeddingModel implements TextEmbedder {
 
   /**
    * Reads the embedding matrix and the optional {@code weights} tensor, holding both to the
-   * vocabulary's size.
+   * model's row count: the vocabulary's size plus the term count.
    *
    * @param vocabulary           The matrix row vocabulary.
+   * @param termCount            The number of term rows after the vocabulary rows.
    * @param safetensorsFile      The safetensors file to read.
    * @param vocabularySourceName The vocabulary's source, for error messages.
    * @return The matrix, its optional weights, and its dimension.
    * @throws InvalidFormatException Thrown if the matrix's row count or the weights tensor's
-   *     length disagrees with the vocabulary size, or the matrix contains a non-finite value.
+   *     length disagrees with the model's row count, or the matrix contains a non-finite value.
    * @throws IOException Thrown if reading the file fails.
    */
-  private static Matrix readMatrix(EmbeddingVocabulary vocabulary, Path safetensorsFile,
-                                   String vocabularySourceName) throws IOException {
+  private static Matrix readMatrix(EmbeddingVocabulary vocabulary, int termCount,
+                                   Path safetensorsFile, String vocabularySourceName)
+      throws IOException {
+    final int expectedRows = vocabulary.size() + termCount;
     final SafetensorsFile tensors = SafetensorsFile.read(safetensorsFile);
     final String matrixName = tensors.singleMatrixTensorName();
     final TensorInfo matrixInfo = tensors.tensorInfo(matrixName);
-    if (matrixInfo.shape()[0] != vocabulary.size()) {
+    if (matrixInfo.shape()[0] != expectedRows) {
       throw new InvalidFormatException("Vocabulary " + vocabularySourceName + " has "
-          + vocabulary.size() + " tokens but embedding matrix '" + matrixName + "' in "
+          + vocabulary.size() + " tokens"
+          + (termCount > 0 ? " plus " + termCount + " terms" : "")
+          + " but embedding matrix '" + matrixName + "' in "
           + safetensorsFile + " has " + matrixInfo.shape()[0] + " rows; these files do not "
           + "belong to the same model");
     }
@@ -510,10 +586,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     float[] weights = null;
     if (tensors.tensorNames().contains(WEIGHTS_TENSOR_NAME)) {
       weights = tensors.readFloats(WEIGHTS_TENSOR_NAME);
-      if (weights.length != vocabulary.size()) {
+      if (weights.length != expectedRows) {
         throw new InvalidFormatException("Tensor '" + WEIGHTS_TENSOR_NAME + "' in "
-            + safetensorsFile + " has " + weights.length + " elements but the vocabulary has "
-            + vocabulary.size() + " tokens");
+            + safetensorsFile + " has " + weights.length + " elements but the model has "
+            + expectedRows + " rows");
       }
     }
     return new Matrix(embeddings, weights, dimension);
@@ -541,15 +617,17 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   }
 
   /**
-   * {@return the mask of rows holding special tokens, excluded from neighbor results}
+   * {@return the mask of rows holding special tokens, excluded from neighbor results; term rows
+   * are never special}
    *
    * @param vocabulary    The matrix row vocabulary.
    * @param specialTokens The special-token strings of the model's convention; tokens absent
    *                      from the vocabulary are simply not marked.
+   * @param totalRows     The model's row count, the vocabulary's size plus the term count.
    */
   private static boolean[] specialRows(EmbeddingVocabulary vocabulary,
-                                       Set<String> specialTokens) {
-    final boolean[] specialRows = new boolean[vocabulary.size()];
+                                       Set<String> specialTokens, int totalRows) {
+    final boolean[] specialRows = new boolean[totalRows];
     for (final String special : specialTokens) {
       final int row = vocabulary.id(special);
       if (row >= 0) {
@@ -586,20 +664,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (text == null) {
       throw new IllegalArgumentException("Text must not be null");
     }
-    final List<SubwordPiece> pieces = tokenizer.encode(text);
     final float[] sum = new float[dimension];
-    int pooledCount = 0;
-    for (int i = 0; i < pieces.size(); i++) {
-      final SubwordPiece piece = pieces.get(i);
-      if (skipPieceId.test(piece.id())) {
-        continue;
-      }
-      final int row = vocabulary.id(piece.piece());
-      if (row < 0) {
-        throw new IllegalStateException("Tokenizer produced piece '" + piece.piece()
-            + "' that has no matrix row; load-time validation admits no such piece, so this "
-            + "indicates a construction bug, not an input problem");
-      }
+    // The count travels through the IntConsumer as a one-element array.
+    final int[] pooled = new int[1];
+    forEachPooledRow(text, row -> {
       final int base = row * dimension;
       if (weights == null) {
         for (int d = 0; d < dimension; d++) {
@@ -611,9 +679,9 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           sum[d] += embeddings[base + d] * weight;
         }
       }
-      pooledCount++;
-    }
-    final int denominator = Math.max(pooledCount, 1);
+      pooled[0]++;
+    });
+    final int denominator = Math.max(pooled[0], 1);
     for (int d = 0; d < dimension; d++) {
       sum[d] /= denominator;
     }
@@ -630,15 +698,72 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     return sum;
   }
 
+  /**
+   * Feeds every matrix row a text pools to the action, in text order: matched terms' rows where
+   * the term table matches, and subword piece rows everywhere else. Without a term table this
+   * is exactly the piece walk over the whole text.
+   *
+   * @param text   The text to fold into rows.
+   * @param action Receives each pooled row.
+   */
+  private void forEachPooledRow(String text, IntConsumer action) {
+    if (terms.size() == 0) {
+      forEachPieceRow(text, action);
+      return;
+    }
+    int cursor = 0;
+    for (final TermTable.Match match : terms.matches(text)) {
+      if (match.start() > cursor) {
+        forEachPieceRow(text.substring(cursor, match.start()), action);
+      }
+      action.accept(match.row());
+      cursor = match.end();
+    }
+    if (cursor < text.length()) {
+      forEachPieceRow(text.substring(cursor), action);
+    }
+  }
+
+  /**
+   * Feeds the matrix row of every poolable subword piece of a text to the action.
+   *
+   * @param text   The text to tokenize.
+   * @param action Receives each piece's row.
+   */
+  private void forEachPieceRow(String text, IntConsumer action) {
+    final List<SubwordPiece> pieces = tokenizer.encode(text);
+    for (int i = 0; i < pieces.size(); i++) {
+      final SubwordPiece piece = pieces.get(i);
+      if (skipPieceId.test(piece.id())) {
+        continue;
+      }
+      final int row = vocabulary.id(piece.piece());
+      if (row < 0) {
+        throw new IllegalStateException("Tokenizer produced piece '" + piece.piece()
+            + "' that has no matrix row; load-time validation admits no such piece, so this "
+            + "indicates a construction bug, not an input problem");
+      }
+      action.accept(row);
+    }
+  }
+
   /** {@inheritDoc} */
   @Override
   public int dimension() {
     return dimension;
   }
 
-  /** {@return the number of tokens in this model's vocabulary} */
+  /** {@return the number of subword tokens in this model's vocabulary, without term rows} */
   public int vocabularySize() {
     return vocabulary.size();
+  }
+
+  /**
+   * {@return the number of term rows appended after the subword vocabulary, {@code 0} for a
+   * model without a term table}
+   */
+  public int termCount() {
+    return terms.size();
   }
 
   /**
@@ -662,7 +787,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
 
   /**
    * Finds the vocabulary tokens whose vectors are nearest a piece of text's pooled embedding,
-   * most similar first. This is a brute-force scan over the whole vocabulary.
+   * most similar first. This is a brute-force scan over the whole table; a model with a term
+   * table returns matching terms as neighbors like any token.
    *
    * @param text The query text. Must not be {@code null}.
    * @param topK The maximum number of results. Must be at least 1.
@@ -736,18 +862,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *
    * @param terms The terms to fold and exclude.
    */
-  private int[] excludedRows(String... terms) {
+  private int[] excludedRows(String... queryTerms) {
     final SortedSet<Integer> rows = new TreeSet<>();
-    for (final String term : terms) {
-      for (final SubwordPiece piece : tokenizer.encode(term)) {
-        if (skipPieceId.test(piece.id())) {
-          continue;
-        }
-        final int row = vocabulary.id(piece.piece());
-        if (row >= 0) {
-          rows.add(row);
-        }
-      }
+    for (final String queryTerm : queryTerms) {
+      forEachPooledRow(queryTerm, rows::add);
     }
     final int[] sorted = new int[rows.size()];
     int i = 0;
@@ -812,10 +930,20 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     }
     final Neighbor[] ordered = new Neighbor[best.size()];
     for (int i = ordered.length - 1; i >= 0; i--) {
-      ordered[i] = new Neighbor(vocabulary.token(best.minRow()), best.minSimilarity());
+      ordered[i] = new Neighbor(rowToken(best.minRow()), best.minSimilarity());
       best.removeMin();
     }
     return List.of(ordered);
+  }
+
+  /**
+   * {@return the string of a matrix row: the vocabulary token of a subword row, the term of a
+   * term row}
+   *
+   * @param row The matrix row.
+   */
+  private String rowToken(int row) {
+    return row < vocabulary.size() ? vocabulary.token(row) : terms.term(row);
   }
 
   /**

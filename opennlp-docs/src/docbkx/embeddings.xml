@@ -179,13 +179,29 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 				The following command distills a teacher into the directory given by
 				<code>-out</code>:
 				<screen>
-<![CDATA[$ bin/embeddings DistillModel -teacher hf-id-or-path -out dir [-pcaDims num]]]>
+<![CDATA[$ bin/embeddings DistillModel -teacher hf-id-or-path -out dir [-pcaDims num] [-terms file]]]>
 				</screen>
 				<code>-pcaDims</code> is the number of principal components to keep and defaults
 				to 256. The run ends by assembling the output directory and verifying it with
 				<code>StaticEmbeddingModel.load</code>, then prints a summary naming the tokenizer
 				family, the row count, the dimension reduction, and the variance the PCA kept, so a
 				run that prints a summary is a directory that works.
+			</para>
+			<para>
+				<code>-terms</code> names an optional term file: one term per line, with text after
+				a tab ignored, so a learned vocabulary TSV works unchanged. Each term, a whole word
+				or a multi-word phrase such as a domain vocabulary entry, is segmented by the
+				teacher's own tokenizer, encoded through the teacher as one sequence, and appended
+				to the table as an extra row, recorded in the model directory as
+				<code>terms.txt</code>. When such a model embeds text, it first matches the text
+				against its terms greedily longest-first, case-insensitively, and pools a matched
+				term's single row instead of the subword pieces of its words; text between matches
+				is tokenized as usual, and a model without a term file embeds exactly as before.
+				Terms should arrive sorted by descending corpus frequency, because the Zipf
+				weighting treats the subword rows and the term rows as one frequency ranking. A
+				term that equals a vocabulary token is dropped as a duplicate row, and terms are
+				also returned by the similarity search of <code>mostSimilar</code> like any
+				vocabulary token.
 			</para>
 		</section>
 		<section xml:id="tools.embeddings.cmdline.assemble">
