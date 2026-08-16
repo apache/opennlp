@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Fetches the files a distillation needs from a Hugging Face model repository into a local cache
@@ -74,10 +72,14 @@ final class HuggingFaceModelCache {
   private static final String DEFAULT_REVISION = "main";
 
   /**
-   * A teacher reference: an organization and a model name, both of word characters, dots, or
-   * dashes, optionally followed by {@code @} and the revision to pin.
+   * A parsed teacher reference: an organization and a model name joined by {@code /}, optionally
+   * followed by {@code @} and the revision to pin; see {@link #parseTeacherReference(String)}.
+   *
+   * @param modelId  The {@code org/model} id.
+   * @param revision The pinned revision, or {@code null} when none is given.
    */
-  private static final Pattern TEACHER_PATTERN = Pattern.compile("([\\w.-]+/[\\w.-]+)(?:@([\\w.-]+))?");
+  private record TeacherReference(String modelId, String revision) {
+  }
 
   /** The directory the cache lives in, below the user's home directory. */
   private static final String CACHE_DIRECTORY = ".cache";
@@ -110,8 +112,6 @@ final class HuggingFaceModelCache {
   /** The length in hex of a SHA-256: the shape of the digest published for a Git LFS file. */
   private static final int SHA256_HEX_LENGTH = 64;
 
-  /** A hex string of any length, the shape both the commit sha and the digests have. */
-  private static final Pattern HEX_PATTERN = Pattern.compile("[0-9a-fA-F]+");
 
   /** The header git hashes in front of a blob's bytes, completed by the length and a NUL byte. */
   private static final String GIT_BLOB_PREFIX = "blob ";
@@ -208,13 +208,13 @@ final class HuggingFaceModelCache {
     if (Files.isDirectory(local)) {
       return local;
     }
-    final Matcher reference = TEACHER_PATTERN.matcher(teacher);
-    if (!reference.matches()) {
+    final TeacherReference reference = parseTeacherReference(teacher);
+    if (reference == null) {
       throw new IllegalArgumentException("Teacher '" + teacher + "' is neither a local "
           + "directory nor a Hugging Face model id (expected 'org/model' or 'org/model@revision')");
     }
-    final String modelId = reference.group(1);
-    final String requestedRevision = reference.group(2);
+    final String modelId = reference.modelId();
+    final String requestedRevision = reference.revision();
     final Path cache = cacheRoot.resolve(cacheDirectoryName(teacher));
     final String pinned = pinnedRevision(cache);
     if (pinned != null && hasRequiredFiles(cache)
@@ -494,8 +494,72 @@ final class HuggingFaceModelCache {
    * @param value The value to check; may be {@code null}.
    */
   private static boolean isCommitSha(String value) {
-    return value != null && value.length() == SHA1_HEX_LENGTH
-        && HEX_PATTERN.matcher(value).matches();
+    return value != null && value.length() == SHA1_HEX_LENGTH && isHex(value);
+  }
+
+  /**
+   * {@return whether a value is one or more ASCII hex characters, the shape both the commit sha
+   * and the digests have}
+   *
+   * @param value The value to check.
+   */
+  private static boolean isHex(String value) {
+    if (value.isEmpty()) {
+      return false;
+    }
+    for (int i = 0; i < value.length(); i++) {
+      final char c = value.charAt(i);
+      final boolean hex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')
+          || (c >= 'A' && c <= 'F');
+      if (!hex) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Parses a teacher reference: an organization and a model name, both runs of ASCII word
+   * characters, dots, or dashes, joined by {@code /} and optionally followed by {@code @} and a
+   * revision of the same shape.
+   *
+   * @param teacher The reference to parse.
+   * @return The parsed reference, or {@code null} when the value does not have this form.
+   */
+  private static TeacherReference parseTeacherReference(String teacher) {
+    final int slash = teacher.indexOf('/');
+    if (slash < 0) {
+      return null;
+    }
+    final int at = teacher.indexOf('@', slash + 1);
+    final String organization = teacher.substring(0, slash);
+    final String model = at < 0 ? teacher.substring(slash + 1) : teacher.substring(slash + 1, at);
+    final String revision = at < 0 ? null : teacher.substring(at + 1);
+    if (!isReferencePart(organization) || !isReferencePart(model)
+        || (revision != null && !isReferencePart(revision))) {
+      return null;
+    }
+    return new TeacherReference(organization + "/" + model, revision);
+  }
+
+  /**
+   * {@return whether a reference part is one or more ASCII word characters, dots, or dashes}
+   *
+   * @param part The part to check.
+   */
+  private static boolean isReferencePart(String part) {
+    if (part.isEmpty()) {
+      return false;
+    }
+    for (int i = 0; i < part.length(); i++) {
+      final char c = part.charAt(i);
+      final boolean allowed = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9') || c == '_' || c == '.' || c == '-';
+      if (!allowed) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -582,7 +646,7 @@ final class HuggingFaceModelCache {
      */
     static Checksum of(String value) {
       for (final Checksum checksum : values()) {
-        if (value.length() == checksum.hexLength && HEX_PATTERN.matcher(value).matches()) {
+        if (value.length() == checksum.hexLength && isHex(value)) {
           return checksum;
         }
       }
