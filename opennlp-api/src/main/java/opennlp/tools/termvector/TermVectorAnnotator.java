@@ -63,7 +63,7 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  *
  * @since 3.0.0
  */
-public class TermVectorAnnotator implements DocumentAnnotator {
+public final class TermVectorAnnotator implements DocumentAnnotator {
 
   /**
    * The key of the term vector layer this annotator provides: a document-scoped layer

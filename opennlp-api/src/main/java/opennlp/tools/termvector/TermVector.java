@@ -43,8 +43,9 @@ import opennlp.tools.util.Span;
  * @param term The term string. Must not be {@code null}.
  * @param frequency The number of occurrences in the document. Must be at least one.
  * @param spans The occurrence spans in original text coordinates, one per occurrence,
- *              or an empty list for a scoring-only vector. Must not be {@code null} and,
- *              when non-empty, must contain exactly {@code frequency} spans.
+ *              or an empty list for a scoring-only vector. Must not be {@code null} or
+ *              contain {@code null} and, when non-empty, must hold exactly
+ *              {@code frequency} spans.
  *
  * @since 3.0.0
  */
@@ -55,8 +56,9 @@ public record TermVector(String term, int frequency, List<Span> spans) {
    * Validates the term vector and detaches the span list from the caller's input.
    *
    * @throws IllegalArgumentException Thrown if {@code term} is {@code null},
-   *         {@code frequency} is below one, {@code spans} is {@code null}, or a
-   *         non-empty {@code spans} list does not hold exactly {@code frequency} spans.
+   *         {@code frequency} is below one, {@code spans} is or contains {@code null},
+   *         or a non-empty {@code spans} list does not hold exactly {@code frequency}
+   *         spans.
    */
   public TermVector {
     if (term == null) {
@@ -67,6 +69,11 @@ public record TermVector(String term, int frequency, List<Span> spans) {
     }
     if (spans == null) {
       throw new IllegalArgumentException("spans must not be null");
+    }
+    for (final Span span : spans) {
+      if (span == null) {
+        throw new IllegalArgumentException("spans must not contain null");
+      }
     }
     if (!spans.isEmpty() && spans.size() != frequency) {
       throw new IllegalArgumentException("a full term vector holds one span per "
