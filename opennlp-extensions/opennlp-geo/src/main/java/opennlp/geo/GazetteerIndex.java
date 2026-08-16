@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -136,7 +135,7 @@ final class GazetteerIndex {
    * @return The candidates in {@link #freeze()} order; empty when nothing matches.
    */
   List<GazetteerEntry> lookup(CharSequence name) {
-    final List<GazetteerEntry> found = byName.get(name.toString().toLowerCase(Locale.ROOT));
+    final List<GazetteerEntry> found = byName.get(StringUtil.toLowerCase(name));
     return found == null ? List.of() : Collections.unmodifiableList(found);
   }
 
@@ -195,7 +194,7 @@ final class GazetteerIndex {
    */
   private void index(String name, GazetteerEntry entry) {
     final List<GazetteerEntry> entries =
-        byName.computeIfAbsent(name.toLowerCase(Locale.ROOT), key -> new ArrayList<>(2));
+        byName.computeIfAbsent(StringUtil.toLowerCase(name), key -> new ArrayList<>(2));
     if (!entries.contains(entry)) {
       entries.add(entry);
     }
