@@ -220,6 +220,45 @@ List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);]]>
 		</para>
 	</section>
 
+	<section xml:id="tools.embeddings.vector-index">
+		<title>Bounded In-Memory Vector Search</title>
+		<para>
+			The module includes two build-once, read-many implementations of
+			<code>VectorIndex</code>. <code>FlatFloatIndex</code> keeps full-precision vectors and
+			scans every row, which makes it the exact baseline and the simplest choice for a small
+			collection. <code>TurboQuantIndex</code> also scans every row, but stores packed 2-bit,
+			3-bit, or 4-bit vectors to reduce the working set. Neither implementation is an
+			approximate-nearest-neighbor graph or a distributed search engine. They are intended for
+			bounded collections held by one JVM, such as the passages of one document or a modest
+			working set.
+		</para>
+		<para>
+			Build the index on one thread, call <code>freeze</code> once, then safely publish the
+			frozen index. Frozen indexes accept concurrent <code>topK</code> calls. Added vectors are
+			copied, ids must be unique, and the query and every vector must match the configured
+			dimension:
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
+VectorIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
+
+index.add("royal-article", model.embed("king queen"));
+index.add("fruit-article", model.embed("apple"));
+index.freeze();
+
+List<VectorIndex.Hit> hits = index.topK(model.embed("king"), 5);]]>
+		</programlisting>
+		<para>
+			<code>VectorIndexUsageExampleTest</code> asserts this lifecycle. Use
+			<code>FlatFloatIndex</code> in the same listing when exact float scoring matters more
+			than storage. A frozen, non-empty <code>TurboQuantIndex</code> can be saved with
+			<code>write(Path)</code> and reopened with <code>read(Path)</code>; the loaded index is
+			already frozen. The interface deliberately has no delete or update operation. Rebuild a
+			new index when the bounded collection changes.
+		</para>
+	</section>
+
 	<section xml:id="tools.embeddings.cmdline">
 		<title>Command Line Tools</title>
 		<para>

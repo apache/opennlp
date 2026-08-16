@@ -31,12 +31,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /** Exercises the bounded in-memory vector search listing in {@code embeddings.xml}. */
 class VectorIndexUsageExampleTest {
 
+  /**
+   * Builds, saves and queries a quantized index using a small test model.
+   *
+   * @param modelDirectory The temporary model directory.
+   * @throws IOException Thrown if model or index file access fails.
+   */
   @Test
-  void testBuildFreezeAndQuery(@TempDir Path modelDirectory) throws IOException {
+  void testBuildFreezeSaveAndQuery(@TempDir Path modelDirectory) throws IOException {
     EmbeddingTestFixtures.writeAnalogyDirectory(modelDirectory);
 
     final StaticEmbeddingModel model = StaticEmbeddingModel.load(modelDirectory);
-    final VectorIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
+    final TurboQuantIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
 
     index.add("wonderland-excerpt", model.embed("Alice met the Queen in the garden."));
     index.add("orchard-notes", model.embed("A ripe apple hangs from the tree."));
@@ -45,5 +51,14 @@ class VectorIndexUsageExampleTest {
     final List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);
     assertEquals(2, hits.size());
     assertEquals("wonderland-excerpt", hits.get(0).id());
+
+    final Path indexDirectory = modelDirectory.resolve("index");
+    index.write(indexDirectory);
+
+    final TurboQuantIndex loaded = TurboQuantIndex.read(indexDirectory);
+    final List<VectorIndex.Hit> savedHits = loaded.topK(model.embed("queen"), 5);
+    final double encodedBytesPerVector = loaded.bytesPerVector();
+    assertEquals(hits, savedHits);
+    assertEquals(index.bytesPerVector(), encodedBytesPerVector);
   }
 }
