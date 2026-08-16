@@ -48,6 +48,9 @@ final class ModelFileNames {
   /** The tokenizer configuration carrying the WordPiece {@code do_lower_case} switch. */
   static final String TOKENIZER_CONFIG = "tokenizer_config.json";
 
+  /** The optional term rows of the matrix, one normalized term per line in row order. */
+  static final String TERMS = "terms.txt";
+
   /** The file names SentencePiece models ship their trained {@code .model} under, in try order. */
   static final List<String> SENTENCEPIECE_MODELS =
       List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");

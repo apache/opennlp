@@ -70,8 +70,9 @@ class CLITest {
 
     assertTrue(help.contains("-teacher hf-id-or-path"), help);
     assertTrue(help.contains("-out dir"), help);
-    // The optional parameter is bracketed, so a user can see it may be omitted.
+    // The optional parameters are bracketed, so a user can see they may be omitted.
     assertTrue(help.contains("[-pcaDims "), help);
+    assertTrue(help.contains("[-terms "), help);
   }
 
   @Test

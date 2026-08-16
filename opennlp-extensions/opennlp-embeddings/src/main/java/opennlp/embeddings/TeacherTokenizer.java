@@ -20,13 +20,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import opennlp.tools.util.InvalidFormatException;
 
@@ -53,11 +53,8 @@ import opennlp.tools.util.InvalidFormatException;
  */
 final class TeacherTokenizer {
 
-  /** Model2Vec's default token removal pattern; matched from the start, like Python re.match. */
-  private static final Pattern UNUSED_TOKEN_PATTERN = Pattern.compile("\\[unused\\d+\\]");
-
-  /** Separates the items of a string post-processor template such as {@code "[CLS] $A [SEP]"}. */
-  private static final Pattern TEMPLATE_ITEM_SEPARATOR = Pattern.compile("\\s+");
+  /** The prefix of the BERT-style placeholder tokens Model2Vec's cleaning drops. */
+  private static final String UNUSED_TOKEN_PREFIX = "[unused";
 
   /** Marks a template item as the sequence placeholder rather than a special token. */
   private static final String SEQUENCE_PLACEHOLDER_PREFIX = "$";
@@ -79,16 +76,20 @@ final class TeacherTokenizer {
   private final int padTokenId;
   private final int[] bosIds;
   private final int[] eosIds;
+  private final Map<String, Integer> idByOriginalToken;
+  private final Boolean lowerCase;
 
   /** Holds the parsed state; built by {@link #read(Path, Path)}. */
   private TeacherTokenizer(String json, String inputName, String modelType,
-                           List<String> tokensByOriginalId, int[] keptOriginalIds,
+                           List<String> tokensByOriginalId,
+                           Map<String, Integer> idByOriginalToken, int[] keptOriginalIds,
                            int originalUnkId, String unkToken, String padToken, int padTokenId,
-                           int[] bosIds, int[] eosIds) {
+                           int[] bosIds, int[] eosIds, Boolean lowerCase) {
     this.json = json;
     this.inputName = inputName;
     this.modelType = modelType;
     this.tokensByOriginalId = tokensByOriginalId;
+    this.idByOriginalToken = idByOriginalToken;
     this.keptOriginalIds = keptOriginalIds;
     this.originalUnkId = originalUnkId;
     this.unkToken = unkToken;
@@ -96,6 +97,7 @@ final class TeacherTokenizer {
     this.padTokenId = padTokenId;
     this.bosIds = bosIds;
     this.eosIds = eosIds;
+    this.lowerCase = lowerCase;
   }
 
   /**
@@ -134,6 +136,7 @@ final class TeacherTokenizer {
     List<String> tokensById = null;
     String unkToken = null;
     Long unkId = null;
+    Boolean lowerCase = null;
     Set<String> addedContents = Set.of();
     PostProcessor postProcessor = new PostProcessor(List.of(), List.of(), null, null, Map.of());
     if (cursor.peek() == '}') {
@@ -155,6 +158,7 @@ final class TeacherTokenizer {
           }
           case "added_tokens" -> addedContents = parseAddedTokenContents(cursor);
           case "post_processor" -> postProcessor = parsePostProcessor(cursor);
+          case "normalizer" -> lowerCase = parseNormalizerLowercase(cursor);
           default -> cursor.skipValue();
         }
         cursor.skipWhitespace();
@@ -215,7 +219,7 @@ final class TeacherTokenizer {
     final List<Integer> kept = new ArrayList<>(tokensById.size());
     for (int id = 0; id < tokensById.size(); id++) {
       final String token = tokensById.get(id);
-      if (UNUSED_TOKEN_PATTERN.matcher(token).lookingAt()) {
+      if (isUnusedToken(token)) {
         continue;
       }
       if (addedContents.contains(token) && !keepSpecial.contains(token)) {
@@ -223,9 +227,81 @@ final class TeacherTokenizer {
       }
       kept.add(id);
     }
-    return new TeacherTokenizer(json, inputName, modelType, tokensById,
+    return new TeacherTokenizer(json, inputName, modelType, tokensById, idByToken,
         kept.stream().mapToInt(Integer::intValue).toArray(), originalUnkId, unkToken, padToken,
-        padTokenId, bosIds, eosIds);
+        padTokenId, bosIds, eosIds, lowerCase);
+  }
+
+  /**
+   * Reads the flat {@code lowercase} boolean of a {@code normalizer} object, for the BERT
+   * normalizer a WordPiece tokenizer carries. Shared with {@link ModelAssembler}, which derives
+   * a distilled directory's {@code do_lower_case} from the same flag.
+   *
+   * @param cursor The cursor, positioned at the normalizer value.
+   * @return The {@code lowercase} flag, or {@code null} when the value is JSON null or the flag
+   *     is absent (for example a nested normalizer with no flat flag).
+   * @throws InvalidFormatException Thrown if the normalizer object is malformed.
+   */
+  static Boolean parseNormalizerLowercase(JsonCursor cursor) throws InvalidFormatException {
+    if (cursor.peek() != '{') {
+      cursor.skipValue();
+      return null;
+    }
+    cursor.expect('{');
+    cursor.skipWhitespace();
+    Boolean lowerCase = null;
+    if (cursor.peek() == '}') {
+      cursor.consume();
+      return null;
+    }
+    while (true) {
+      cursor.skipWhitespace();
+      final String key = cursor.parseString();
+      cursor.skipWhitespace();
+      cursor.expect(':');
+      cursor.skipWhitespace();
+      if ("lowercase".equals(key)) {
+        if (cursor.consumeLiteral("true")) {
+          lowerCase = Boolean.TRUE;
+        } else if (cursor.consumeLiteral("false")) {
+          lowerCase = Boolean.FALSE;
+        } else {
+          cursor.skipValue();
+        }
+      } else {
+        cursor.skipValue();
+      }
+      cursor.skipWhitespace();
+      final char next = cursor.consume();
+      if (next == ',') {
+        continue;
+      }
+      if (next == '}') {
+        return lowerCase;
+      }
+      throw cursor.malformed("Expected ',' or '}' after a normalizer field, got '" + next + "'");
+    }
+  }
+
+  /**
+   * {@return whether a token starts with a BERT-style unused placeholder, {@code [unused}
+   * followed by at least one ASCII digit and {@code ]}}
+   *
+   * <p>Model2Vec's cleaning drops these tokens by a prefix match, so a longer token starting
+   * with the placeholder form is dropped the same way.</p>
+   *
+   * @param token The vocabulary token.
+   */
+  private static boolean isUnusedToken(String token) {
+    if (!token.startsWith(UNUSED_TOKEN_PREFIX)) {
+      return false;
+    }
+    int i = UNUSED_TOKEN_PREFIX.length();
+    final int digitsStart = i;
+    while (i < token.length() && token.charAt(i) >= '0' && token.charAt(i) <= '9') {
+      i++;
+    }
+    return i > digitsStart && i < token.length() && token.charAt(i) == ']';
   }
 
   /**
@@ -305,6 +381,58 @@ final class TeacherTokenizer {
       sequence[i++] = id;
     }
     return sequence;
+  }
+
+  /**
+   * The teacher input sequence of a segmented term: the begin-of-sequence ids, each piece's
+   * original id (the unknown token's id for a piece the vocabulary does not carry), and the
+   * end-of-sequence ids.
+   *
+   * @param pieces The term's piece strings, as the teacher's own segmenter produced them. Must
+   *               not be {@code null}.
+   * @return The teacher input ids.
+   * @throws IllegalArgumentException Thrown if {@code pieces} is {@code null}.
+   */
+  long[] inputSequence(List<String> pieces) {
+    if (pieces == null) {
+      throw new IllegalArgumentException("Pieces must not be null");
+    }
+    final long[] sequence = new long[bosIds.length + pieces.size() + eosIds.length];
+    int i = 0;
+    for (final int id : bosIds) {
+      sequence[i++] = id;
+    }
+    for (final String piece : pieces) {
+      final Integer id = idByOriginalToken.get(piece);
+      sequence[i++] = id == null ? originalUnkId : id;
+    }
+    for (final int id : eosIds) {
+      sequence[i++] = id;
+    }
+    return sequence;
+  }
+
+  /**
+   * Looks up the token string of a matrix row.
+   *
+   * @param row The matrix row, within {@code [0, vocabularySize())}.
+   * @return The surviving token at that row.
+   */
+  String rowToken(int row) {
+    return tokensByOriginalId.get(keptOriginalIds[row]);
+  }
+
+  /** {@return the whole vocabulary in the teacher's id order, for an id-is-index segmenter} */
+  List<String> tokensByOriginalId() {
+    return Collections.unmodifiableList(tokensByOriginalId);
+  }
+
+  /**
+   * {@return the {@code normalizer.lowercase} flag of the teacher's {@code tokenizer.json}, or
+   * {@code null} when the tokenizer does not state it}
+   */
+  Boolean lowerCase() {
+    return lowerCase;
   }
 
   /**
@@ -875,12 +1003,22 @@ final class TeacherTokenizer {
     final List<String> bos = new ArrayList<>(1);
     final List<String> eos = new ArrayList<>(1);
     if (cursor.peek() == '"') {
+      // The template is items separated by whitespace runs, such as "[CLS] $A [SEP]".
       final String template = cursor.parseString();
       List<String> current = bos;
-      for (final String part : TEMPLATE_ITEM_SEPARATOR.split(template)) {
-        if (part.isEmpty()) {
+      final int length = template.length();
+      int i = 0;
+      while (i < length) {
+        final int c = template.codePointAt(i);
+        if (Character.isWhitespace(c)) {
+          i += Character.charCount(c);
           continue;
         }
+        final int start = i;
+        while (i < length && !Character.isWhitespace(template.codePointAt(i))) {
+          i += Character.charCount(template.codePointAt(i));
+        }
+        final String part = template.substring(start, i);
         if (part.startsWith(SEQUENCE_PLACEHOLDER_PREFIX)) {
           current = eos;
         } else {
