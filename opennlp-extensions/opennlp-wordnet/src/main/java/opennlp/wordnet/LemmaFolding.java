@@ -18,7 +18,8 @@ package opennlp.wordnet;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+
+import opennlp.tools.util.StringUtil;
 
 /**
  * The single home of the lemma fold and the space-separated field split this package relies on.
@@ -32,8 +33,9 @@ final class LemmaFolding {
   }
 
   /**
-   * Folds a written form into its canonical shape: lowercase with the root locale, with the
-   * underscore some formats store in multiword lemmas treated as a space.
+   * Folds a written form into its canonical shape: lowercase with the locale-independent
+   * one-to-one mapping of {@link StringUtil#toLowerCase(CharSequence)}, with the underscore
+   * some formats store in multiword lemmas treated as a space.
    *
    * @param writtenForm The form as written in a source file or query. Must not be {@code null}.
    * @return The folded form.
@@ -43,7 +45,7 @@ final class LemmaFolding {
     if (writtenForm == null) {
       throw new IllegalArgumentException("WrittenForm must not be null");
     }
-    return writtenForm.replace('_', ' ').toLowerCase(Locale.ROOT);
+    return StringUtil.toLowerCase(writtenForm.replace('_', ' '));
   }
 
   /**
