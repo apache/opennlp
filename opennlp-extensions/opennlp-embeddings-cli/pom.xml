@@ -59,5 +59,13 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <!-- The HNSW baseline the evaluation harness benchmarks against, and HnswFloatIndex use
+         Lucene directly; test scope keeps the runtime free of search-engine dependencies. -->
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${lucene.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
