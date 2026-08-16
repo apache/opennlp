@@ -41,7 +41,8 @@ class VectorIndexContractTest {
     return Stream.of(
         Arguments.of(Named.<IntFunction<VectorIndex>>of("flat", FlatFloatIndex::new)),
         Arguments.of(Named.<IntFunction<VectorIndex>>of("turboquant",
-            dimension -> new TurboQuantIndex(dimension, 4, 42))));
+            dimension -> new TurboQuantIndex(dimension, 4, 42))),
+        Arguments.of(Named.<IntFunction<VectorIndex>>of("hnsw", HnswFloatIndex::new)));
   }
 
   /** {@return a unit vector along the given axis} */
