@@ -492,4 +492,26 @@ class TeacherTokenizerTest {
     assertEquals("File must not be null", assertThrows(
         IllegalArgumentException.class, () -> tokenizer.writeCleaned(null)).getMessage());
   }
+
+  @Test
+  void testTermInputSequenceMapsPieceStringsToOriginalIds(@TempDir Path dir) throws IOException {
+    final TeacherTokenizer tokenizer = TeacherTokenizer.read(
+        write(dir, "tokenizer.json", WORDPIECE_TEACHER), null);
+
+    // hello and world map to their original ids, an unmapped piece falls to the unknown id,
+    // and the sequence is wrapped in the post-processor's [CLS]/[SEP] ids.
+    assertArrayEquals(new long[] {2, 5, 1, 7, 3},
+        tokenizer.inputSequence(List.of("hello", "nope", "world")));
+    assertEquals("Pieces must not be null", assertThrows(IllegalArgumentException.class,
+        () -> tokenizer.inputSequence((List<String>) null)).getMessage());
+  }
+
+  @Test
+  void testReadsTheNormalizerLowercaseFlag(@TempDir Path dir) throws IOException {
+    assertEquals(Boolean.TRUE, TeacherTokenizer.read(
+        write(dir, "wordpiece.json", WORDPIECE_TEACHER), null).lowerCase());
+    // The Unigram teacher states no normalizer, so the flag is unknown.
+    assertNull(TeacherTokenizer.read(
+        write(dir, "unigram.json", UNIGRAM_TEACHER), null).lowerCase());
+  }
 }

@@ -47,4 +47,14 @@ interface DistillModelParams {
   @ParameterDescription(valueName = "num",
       description = "The number of principal components to keep, default is 256.")
   Integer getPcaDims();
+
+  /**
+   * {@return the term file to distill as extra rows, or {@code null} for none}
+   */
+  @OptionalParameter
+  @ParameterDescription(valueName = "file",
+      description = "A term file: one term per line, text after a tab ignored, so a learned "
+          + "vocabulary TSV works as-is. Each term is encoded through the teacher as a unit and "
+          + "added as an extra row, matched greedily longest-first before subword tokenization.")
+  String getTerms();
 }

@@ -70,11 +70,13 @@ public final class ModelAssembler {
    *
    * @param family               {@code "WordPiece"} or {@code "SentencePiece"}.
    * @param dimension            The embedding dimension of the loaded model.
-   * @param vocabularySize       The number of rows in the loaded model's table.
+   * @param vocabularySize       The number of subword rows in the loaded model's table.
+   * @param termCount            The number of term rows after the subword rows; {@code 0} for a
+   *                             model without a term table.
    * @param wroteVocabulary      Whether a {@code vocab.txt} was written.
    * @param wroteTokenizerConfig Whether a {@code tokenizer_config.json} was written.
    */
-  public record Result(String family, int dimension, int vocabularySize,
+  public record Result(String family, int dimension, int vocabularySize, int termCount,
                        boolean wroteVocabulary, boolean wroteTokenizerConfig) {
   }
 
@@ -147,7 +149,7 @@ public final class ModelAssembler {
     }
     final StaticEmbeddingModel model = load(modelDirectory);
     return new Result(FAMILY_WORDPIECE, model.dimension(), model.vocabularySize(),
-        wroteVocabulary, wroteTokenizerConfig);
+        model.termCount(), wroteVocabulary, wroteTokenizerConfig);
   }
 
   /**
@@ -169,7 +171,7 @@ public final class ModelAssembler {
     }
     final StaticEmbeddingModel model = load(modelDirectory);
     return new Result(FAMILY_SENTENCEPIECE, model.dimension(), model.vocabularySize(),
-        false, false);
+        model.termCount(), false, false);
   }
 
   /**
@@ -253,7 +255,7 @@ public final class ModelAssembler {
             modelType = model.type();
             orderedVocabulary = model.orderedVocabulary();
           }
-          case "normalizer" -> lowerCase = parseNormalizerLowercase(cursor);
+          case "normalizer" -> lowerCase = TeacherTokenizer.parseNormalizerLowercase(cursor);
           default -> cursor.skipValue();
         }
         cursor.skipWhitespace();
@@ -370,53 +372,4 @@ public final class ModelAssembler {
     return ordered;
   }
 
-  /**
-   * Reads the flat {@code lowercase} boolean of a {@code normalizer} object, for the BERT
-   * normalizer a WordPiece distillation carries.
-   *
-   * @param cursor The cursor, positioned at the normalizer value.
-   * @return The {@code lowercase} flag, or {@code null} when the value is JSON null or the flag is
-   *     absent (for example a nested normalizer with no flat flag).
-   */
-  private static Boolean parseNormalizerLowercase(JsonCursor cursor)
-      throws InvalidFormatException {
-    if (cursor.peek() != '{') {
-      cursor.skipValue();
-      return null;
-    }
-    cursor.expect('{');
-    cursor.skipWhitespace();
-    Boolean lowerCase = null;
-    if (cursor.peek() == '}') {
-      cursor.consume();
-      return null;
-    }
-    while (true) {
-      cursor.skipWhitespace();
-      final String key = cursor.parseString();
-      cursor.skipWhitespace();
-      cursor.expect(':');
-      cursor.skipWhitespace();
-      if ("lowercase".equals(key)) {
-        if (cursor.consumeLiteral("true")) {
-          lowerCase = Boolean.TRUE;
-        } else if (cursor.consumeLiteral("false")) {
-          lowerCase = Boolean.FALSE;
-        } else {
-          cursor.skipValue();
-        }
-      } else {
-        cursor.skipValue();
-      }
-      cursor.skipWhitespace();
-      final char next = cursor.consume();
-      if (next == ',') {
-        continue;
-      }
-      if (next == '}') {
-        return lowerCase;
-      }
-      throw cursor.malformed("Expected ',' or '}' after a normalizer field, got '" + next + "'");
-    }
-  }
 }
