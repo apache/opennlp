@@ -220,7 +220,8 @@ int firstTokenLength = lengths.get(0).value(); // 3, for "The" at [0..3)]]>
 			<code>OffsetAwareNormalizer</code> the document text is normalized once and each
 			token's covered normalized text becomes the term. On every path tokens differing
 			only by a normalization fold group together while their spans keep pointing into
-			the original text. The layer preserves first-occurrence order.
+			the original text. A token whose normalized form is empty is omitted from the
+			layer. The layer preserves first-occurrence order.
 			<code>TermVectorPipelineTest#testTokenizerAndTermVectorPipeline</code> asserts the
 			behavior shown here.
 			<programlisting language="java"><![CDATA[
