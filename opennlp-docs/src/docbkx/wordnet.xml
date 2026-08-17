@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.wordnet">
+
+	<title>WordNet</title>
+
+	<section xml:id="tools.wordnet.introduction">
+		<title>Introduction</title>
+		<para>
+			The <code>opennlp-wordnet</code> module loads a WordNet-style lexicon into
+			a <code>LexicalKnowledgeBase</code> and looks up synsets by lemma and part
+			of speech. Two readers are provided: <code>WnLmfReader</code> for the
+			Global WordNet Association WN-LMF XML interchange format, and
+			<code>WndbReader</code> for the classic Princeton WordNet database file
+			layout. Both return an immutable, thread-safe knowledge base.
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.load">
+		<title>Loading a lexicon</title>
+		<para>
+			WN-LMF is the usual choice for Open English WordNet and other GWA
+			wordnets. WNDB remains available for a local Princeton-style
+			<code>dict</code> directory. The examples below use the miniature
+			fixtures from the module's tests; replace the paths with a full lexicon
+			in application code. <code>WordNetUsageExampleTest</code> asserts the
+			behavior shown here.
+			<programlisting language="java"><![CDATA[
+LexicalKnowledgeBase lexicon = WnLmfReader.read(Path.of("en-wordnet.xml"));
+// or: LexicalKnowledgeBase lexicon = WndbReader.read(Path.of("dict"));]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.multilingual">
+		<title>Loading a multilingual lexical resource</title>
+		<para>
+			A WN-LMF <code>LexicalResource</code> may contain several
+			<code>Lexicon</code> elements. Use <code>readResource</code> for this
+			shape. It returns the lexicons in document order and keeps each language's
+			lookup index separate. The single-lexicon <code>read</code> methods reject a
+			multi-lexicon document with an error that points to
+			<code>readResource</code>; they never merge equal lemmas across languages.
+			<code>WordNetUsageExampleTest</code> mirrors this example:
+			<programlisting language="java"><![CDATA[
+WnLmfResource resource =
+    WnLmfReader.readResource(inputStream, "omw-multilingual.xml");
+WnLmfLexicon spanish = resource.lexicon("omw-es").orElseThrow();
+
+spanish.language();  // "es"
+WnLmfDependency englishBase = spanish.dependencies().get(0);
+englishBase.ref();      // "omw-en"
+englishBase.version();  // "2.0"
+Synset dog = spanish.knowledgeBase()
+    .lookup("perro", WordNetPOS.NOUN).get(0);
+dog.id();  // "omw-es-02084071-n"]]>
+			</programlisting>
+		</para>
+		<para>
+			A <code>WnLmfLexicon</code> exposes its id, label, language, version,
+			WN-LMF <code>Requires</code> declarations, and independently queryable
+			<code>knowledgeBase</code>. Dependencies are immutable and retain source
+			order. They are descriptive metadata: the reader does not fetch or resolve
+			the referenced lexicons, so the application remains responsible for loading
+			them. Remaining XML
+			attributes are available through the namespace-aware
+			<code>Map&lt;QName, String&gt; metadata</code>. This preserves attributes such
+			as <code>license</code> and <code>dc:publisher</code> without allowing
+			namespace collisions. <code>LexiconExtension</code> is not yet represented
+			by the knowledge-base contract and is rejected clearly rather than partly
+			loaded.
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.lookup">
+		<title>Lookup</title>
+		<para>
+			Lookups are scoped by part of speech and fold case and underscores the
+			same way the readers index lemmas. Against the miniature WN-LMF fixture,
+			the noun <code>dog</code> has one sense:
+			<programlisting language="java"><![CDATA[
+List<Synset> senses = lexicon.lookup("dog", WordNetPOS.NOUN);
+// senses.size() = 1
+// senses.get(0).id() = "mini-n1"
+// senses.get(0).lemmas() = ["dog", "domestic dog"]
+// senses.get(0).gloss() = "a domesticated canid"]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.relations">
+		<title>Navigating relations</title>
+		<para>
+			Each synset carries its typed relations (<code>WordNetRelation</code>) to
+			other synsets. Follow a relation with <code>Synset.related(...)</code>,
+			resolve the returned ids with <code>synset(id)</code>, or navigate in one
+			step with <code>related(...)</code> on the knowledge base. Starting from
+			the noun <code>dog</code> above, the hypernym relation leads to its
+			parent concept:
+			<programlisting language="java"><![CDATA[
+Synset dog = lexicon.lookup("dog", WordNetPOS.NOUN).get(0);
+List<String> parents = dog.related(WordNetRelation.HYPERNYM);
+// parents = ["mini-n2"]
+
+Synset parent = lexicon.synset(parents.get(0)).orElseThrow();
+// parent.lemmas() = ["canid"]
+// parent.gloss() = "a carnivorous mammal with nonretractile claws"
+
+// one-step navigation, back down the hyponym relation:
+// lexicon.related("mini-n2", WordNetRelation.HYPONYM) = ["mini-n1"]]]>
+			</programlisting>
+		</para>
+		<para>
+			The reader covers every typed <code>SynsetRelation</code> and
+			<code>SenseRelation</code> declared by WN-LMF 1.4. Sense relations are
+			lifted to the synset level. The format's <code>other</code> escape hatch is
+			intentionally skipped because it carries no type the API can preserve;
+			any other unknown relation name fails with the source line. A relation
+			that is valid only on <code>SenseRelation</code> or only on
+			<code>SynsetRelation</code> is also rejected when placed on the wrong
+			element. A
+			<code>similar</code> synset relation on a verb maps to
+			<code>VERB_GROUP</code>, while a sense relation named
+			<code>similar</code> remains <code>SIMILAR_TO</code>.
+		</para>
+		<para>
+			The expanded relation vocabulary is navigated through the same API. For
+			example, semantic-role relations can resolve the participants of an event:
+			<programlisting language="java"><![CDATA[
+Synset purchase = lexicon.lookup("purchase", WordNetPOS.VERB).get(0);
+
+String agentId = purchase.related(WordNetRelation.INVOLVED_AGENT).get(0);
+String instrumentId = purchase.related(WordNetRelation.INVOLVED_INSTRUMENT).get(0);
+
+lexicon.synset(agentId).orElseThrow().lemmas();       // ["buyer"]
+lexicon.synset(instrumentId).orElseThrow().lemmas(); // ["payment card"]]]>
+			</programlisting>
+			This listing is mirrored by
+			<code>WordNetUsageExampleTest.testNavigateSemanticRoleRelations</code>.
+		</para>
+		<para>
+			Some multilingual resources retain an unlexicalized synset as the target
+			of a relation. Such a synset is available through <code>synset(id)</code>
+			with an empty lemma list, but is naturally absent from lemma lookup.
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.real-data-test">
+		<title>Checking complete OMW releases</title>
+		<para>
+			The offline unit suite includes a reduced Italian, Spanish, and Swedish
+			multi-lexicon fixture. For a full-size compatibility check, run the
+			following command from the repository root:
+			<programlisting language="bash"><![CDATA[
+dev/test-omw-wordnets.sh]]>
+			</programlisting>
+			The script downloads the pinned OMW 2.0 releases for those languages,
+			verifies each archive with SHA-512, extracts into a temporary directory,
+			runs <code>WnLmfOmwIntegrationTest</code>, and removes the downloads. The
+			archives are never added to the source tree.
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.morphy">
+		<title>Morphy lemmatization</title>
+		<para>
+			<code>MorphyLemmatizer</code> implements the Morphy algorithm against a
+			loaded lexicon and the irregular-form exception lists
+			(<code>noun.exc</code>, <code>verb.exc</code>, <code>adj.exc</code>,
+			<code>adv.exc</code>). Exception hits are returned first; regular
+			detachments are kept only when the candidate is in the lexicon. Unknown
+			forms yield the marker <code>O</code>.
+			<programlisting language="java"><![CDATA[
+MorphyExceptions exceptions = MorphyExceptions.load(Path.of("dict"));
+MorphyLemmatizer lemmatizer = new MorphyLemmatizer(lexicon, exceptions);
+
+lemmatizer.lemmatize(new String[] {"mice"}, new String[] {"NNS"})[0];  // "mouse"
+lemmatizer.lemmatize(new String[] {"dogs"}, new String[] {"NNS"})[0];  // "dog"]]>
+			</programlisting>
+		</para>
+	</section>
+</chapter>
