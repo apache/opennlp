@@ -503,7 +503,8 @@ public class DocumentContractTest {
 
     final IllegalArgumentException differing = assertThrows(IllegalArgumentException.class,
         () -> words.merge(retokenized, Document.DuplicateLayerPolicy.KEEP_EQUAL));
-    assertEquals("layer is already present: words<String>", differing.getMessage());
+    assertEquals("layer is present on both documents with differing contents: words<String>",
+        differing.getMessage());
 
     final IllegalArgumentException nullPolicy = assertThrows(IllegalArgumentException.class,
         () -> words.merge(Document.of("the dog"), null));
