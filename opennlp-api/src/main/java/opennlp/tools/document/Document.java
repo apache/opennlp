@@ -165,9 +165,12 @@ public interface Document {
     Document merged = this;
     for (final LayerKey<?> layer : other.layers()) {
       if (duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
-          && merged.layers().contains(layer)
-          && layersEqual(merged, layer, other)) {
-        continue;
+          && merged.layers().contains(layer)) {
+        if (layersEqual(merged, layer, other)) {
+          continue;
+        }
+        throw new IllegalArgumentException(
+            "layer is present on both documents with differing contents: " + layer);
       }
       merged = addLayer(merged, layer, other);
     }
