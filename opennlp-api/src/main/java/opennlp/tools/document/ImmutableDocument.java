@@ -103,6 +103,69 @@ final class ImmutableDocument implements Document {
     if (layers.containsKey(layer)) {
       throw new IllegalArgumentException("layer is already present: " + layer);
     }
+    validate(layer, annotations);
+    final Map<LayerKey<?>, List<Annotation<?>>> grown = new LinkedHashMap<>(layers);
+    grown.put(layer, List.copyOf(annotations));
+    return new ImmutableDocument(text, grown);
+  }
+
+  /**
+   * {@inheritDoc}
+   * This implementation copies the layer map once, not once per added layer.
+   */
+  @Override
+  public Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
+    if (other == null) {
+      throw new IllegalArgumentException("other must not be null");
+    }
+    if (duplicateLayers == null) {
+      throw new IllegalArgumentException("duplicateLayers must not be null");
+    }
+    if (!text.contentEquals(other.text())) {
+      throw new IllegalArgumentException(
+          "merge requires both documents to carry the same text");
+    }
+    final Map<LayerKey<?>, List<Annotation<?>>> combined = new LinkedHashMap<>(layers);
+    for (final LayerKey<?> layer : other.layers()) {
+      if (combined.containsKey(layer)) {
+        if (duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
+            && get(layer).equals(other.get(layer))) {
+          continue;
+        }
+        throw new IllegalArgumentException(duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
+            ? "layer is present on both documents with differing contents: " + layer
+            : "layer is already present: " + layer);
+      }
+      combined.put(layer, copyValidated(layer, other));
+    }
+    if (combined.size() == layers.size()) {
+      return this;
+    }
+    return new ImmutableDocument(text, combined);
+  }
+
+  /**
+   * {@return a validated immutable copy of one of {@code from}'s layers, capturing the
+   * key's value type}
+   */
+  private <T> List<Annotation<?>> copyValidated(LayerKey<T> layer, Document from) {
+    final List<Annotation<T>> annotations = from.get(layer);
+    if (annotations == null) {
+      throw new IllegalArgumentException("annotations must not be null");
+    }
+    validate(layer, annotations);
+    return List.copyOf(annotations);
+  }
+
+  /**
+   * Checks one layer's annotations against the key's contract: no null elements, values
+   * assignable to the key's type, spans present and within the text bounds under a
+   * positional key, absent under a document-scoped key.
+   *
+   * @throws IllegalArgumentException Thrown if any check fails; the message names the
+   *         layer.
+   */
+  private <T> void validate(LayerKey<T> layer, List<Annotation<T>> annotations) {
     for (final Annotation<T> annotation : annotations) {
       if (annotation == null) {
         throw new IllegalArgumentException("annotations must not contain null: " + layer);
@@ -126,8 +189,5 @@ final class ImmutableDocument implements Document {
             "document-scoped layer " + layer + " must not carry spans");
       }
     }
-    final Map<LayerKey<?>, List<Annotation<?>>> grown = new LinkedHashMap<>(layers);
-    grown.put(layer, List.copyOf(annotations));
-    return new ImmutableDocument(text, grown);
   }
 }
