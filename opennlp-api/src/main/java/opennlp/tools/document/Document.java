@@ -100,4 +100,23 @@ public interface Document {
    * @throws IllegalArgumentException Thrown if any of the above constraints is violated.
    */
   <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations);
+
+  /**
+   * Returns a new document combining this document's layers with another document's
+   * layers over the same text: the parallel fan-out join. Two pipelines can each start
+   * from the same text and grow their own document independently; {@code merge} stacks
+   * their layers into one document.
+   *
+   * @param other The document whose layers are added on top of this document's layers.
+   *              Must not be {@code null}, must carry the same text content, and must
+   *              not provide a layer this document already has.
+   * @return A new {@link Document} carrying the layers of both documents. Never
+   *         {@code null}; both source documents are left untouched.
+   * @throws IllegalArgumentException Thrown if {@code other} is {@code null}, if its
+   *         text content differs, or if a layer key is present on both documents; the
+   *         exception names the offending key.
+   */
+  default Document merge(Document other) {
+    throw new UnsupportedOperationException("merge is not implemented yet");
+  }
 }

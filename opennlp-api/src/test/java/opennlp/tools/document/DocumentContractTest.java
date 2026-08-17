@@ -413,4 +413,57 @@ public class DocumentContractTest {
     assertEquals("value of type java.lang.String does not match layer counts2<Integer>",
         e.getMessage());
   }
+
+  /**
+   * Verifies that merge joins two documents grown independently over the same text, for
+   * example by two pipelines that ran in parallel, into one document carrying both layer
+   * sets, while leaving both sources untouched. Text content decides equality, not the
+   * {@link CharSequence} implementation.
+   */
+  @Test
+  void testMergeJoinsLayersOfDocumentsOverTheSameText() {
+    final LayerKey<Integer> lengths = LayerKey.of("lengths", Integer.class);
+    final Document words = Document.of("the dog")
+        .with(WORDS, List.of(
+            new Annotation<>(new Span(0, 3), "the"),
+            new Annotation<>(new Span(4, 7), "dog")));
+    final Document counted = Document.of(new StringBuilder("the dog"))
+        .with(lengths, List.of(
+            new Annotation<>(new Span(0, 3), 3),
+            new Annotation<>(new Span(4, 7), 3)));
+
+    final Document merged = words.merge(counted);
+
+    assertEquals("the dog", merged.text().toString());
+    assertEquals(Set.of(WORDS, lengths), merged.layers());
+    assertEquals("the", merged.get(WORDS).get(0).value());
+    assertEquals(3, merged.get(lengths).get(0).value().intValue());
+    // The sources are unchanged: merge, like with, never modifies in place.
+    assertEquals(Set.of(WORDS), words.layers());
+    assertEquals(Set.of(lengths), counted.layers());
+  }
+
+  /**
+   * Verifies that merge rejects a null argument, a document over a different text even
+   * when their layers are disjoint, and a layer key present on both documents, naming
+   * the offending key.
+   */
+  @Test
+  void testMergeRejectsNullDifferentTextAndDuplicateLayers() {
+    final Document words = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 3), "the")));
+
+    final IllegalArgumentException nullOther = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(null));
+    assertEquals("other must not be null", nullOther.getMessage());
+
+    final IllegalArgumentException differentText = assertThrows(
+        IllegalArgumentException.class, () -> words.merge(Document.of("the cat")));
+    assertEquals("merge requires both documents to carry the same text",
+        differentText.getMessage());
+
+    final IllegalArgumentException duplicate = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(words));
+    assertEquals("layer is already present: words<String>", duplicate.getMessage());
+  }
 }
