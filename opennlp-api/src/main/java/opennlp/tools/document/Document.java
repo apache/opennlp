@@ -114,6 +114,8 @@ public interface Document {
      * Keep one copy of a layer key present on both documents when the two layers are
      * structurally equal, for example when two parallel branches ran the same
      * tokenizer. Layers whose contents differ are rejected as with {@link #REJECT}.
+     * Equality is {@link Annotation} equality: spans compare by offsets and type,
+     * never by probability, and values by their own {@code equals}.
      */
     KEEP_EQUAL
   }
