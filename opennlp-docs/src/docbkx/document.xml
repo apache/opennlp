@@ -158,10 +158,12 @@ for (Annotation<String> token : tokens) {
 			Because a document is immutable, independent pipelines can process the same
 			text in parallel, each starting from its own <code>Document.of(text)</code>,
 			and their results can be joined afterwards: <code>merge</code> returns a new
-			document carrying the layers of both. The texts must match and the layer sets
-			must be disjoint, so two branches that both run a tokenizer collide on
-			<code>opennlp:tokens</code>; partition the branches by the layers they
-			provide.
+			document carrying the layers of both. The texts must match, and by default a
+			layer key present on both documents is rejected, so two branches that both
+			run a tokenizer collide on <code>opennlp:tokens</code>. When the branches
+			rebuild a shared prefix identically, passing
+			<code>DuplicateLayerPolicy.KEEP_EQUAL</code> keeps one copy of each agreeing
+			layer; copies whose contents differ are still rejected.
 		</para>
 	</section>
 

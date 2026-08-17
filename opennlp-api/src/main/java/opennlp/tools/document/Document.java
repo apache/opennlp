@@ -134,18 +134,7 @@ public interface Document {
    *         exception names the offending key.
    */
   default Document merge(Document other) {
-    if (other == null) {
-      throw new IllegalArgumentException("other must not be null");
-    }
-    if (!text().toString().contentEquals(other.text())) {
-      throw new IllegalArgumentException(
-          "merge requires both documents to carry the same text");
-    }
-    Document merged = this;
-    for (final LayerKey<?> layer : other.layers()) {
-      merged = addLayer(merged, layer, other);
-    }
-    return merged;
+    return merge(other, DuplicateLayerPolicy.REJECT);
   }
 
   /**
@@ -164,7 +153,34 @@ public interface Document {
    *         the policy does not keep it; the exception names the offending key.
    */
   default Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
-    throw new UnsupportedOperationException("merge with policy is not implemented yet");
+    if (other == null) {
+      throw new IllegalArgumentException("other must not be null");
+    }
+    if (duplicateLayers == null) {
+      throw new IllegalArgumentException("duplicateLayers must not be null");
+    }
+    if (!text().toString().contentEquals(other.text())) {
+      throw new IllegalArgumentException(
+          "merge requires both documents to carry the same text");
+    }
+    Document merged = this;
+    for (final LayerKey<?> layer : other.layers()) {
+      if (duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
+          && merged.layers().contains(layer)
+          && layersEqual(merged, layer, other)) {
+        continue;
+      }
+      merged = addLayer(merged, layer, other);
+    }
+    return merged;
+  }
+
+  /**
+   * @return Whether the layer is present on both documents with structurally equal
+   *         contents.
+   */
+  private static <T> boolean layersEqual(Document first, LayerKey<T> layer, Document second) {
+    return first.get(layer).equals(second.get(layer));
   }
 
   /**
