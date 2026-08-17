@@ -117,6 +117,25 @@ public interface Document {
    *         exception names the offending key.
    */
   default Document merge(Document other) {
-    throw new UnsupportedOperationException("merge is not implemented yet");
+    if (other == null) {
+      throw new IllegalArgumentException("other must not be null");
+    }
+    if (!text().toString().contentEquals(other.text())) {
+      throw new IllegalArgumentException(
+          "merge requires both documents to carry the same text");
+    }
+    Document merged = this;
+    for (final LayerKey<?> layer : other.layers()) {
+      merged = addLayer(merged, layer, other);
+    }
+    return merged;
+  }
+
+  /**
+   * Adds one layer of {@code from} to {@code base}, capturing the key's value type so
+   * {@link #with(LayerKey, List)} re-validates the layer against this document.
+   */
+  private static <T> Document addLayer(Document base, LayerKey<T> layer, Document from) {
+    return base.with(layer, from.get(layer));
   }
 }
