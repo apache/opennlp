@@ -120,9 +120,8 @@ public interface Document {
 
   /**
    * Returns a new document combining this document's layers with another document's
-   * layers over the same text: the parallel fan-out join. Two pipelines can each start
-   * from the same text and grow their own document independently; {@code merge} stacks
-   * their layers into one document.
+   * layers over the same text, joining documents grown independently, for example by
+   * pipelines that ran in parallel.
    *
    * @param other The document whose layers are added on top of this document's layers.
    *              Must not be {@code null}, must carry the same text content, and must
@@ -176,16 +175,15 @@ public interface Document {
   }
 
   /**
-   * @return Whether the layer is present on both documents with structurally equal
-   *         contents.
+   * @return Whether the two documents carry structurally equal contents for the layer.
    */
   private static <T> boolean layersEqual(Document first, LayerKey<T> layer, Document second) {
     return first.get(layer).equals(second.get(layer));
   }
 
   /**
-   * Adds one layer of {@code from} to {@code base}, capturing the key's value type so
-   * {@link #with(LayerKey, List)} re-validates the layer against this document.
+   * Adds one layer of {@code from} to {@code base} through {@link #with(LayerKey, List)},
+   * capturing the key's value type.
    */
   private static <T> Document addLayer(Document base, LayerKey<T> layer, Document from) {
     return base.with(layer, from.get(layer));

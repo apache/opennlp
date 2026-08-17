@@ -25,14 +25,14 @@
 			annotation layers over it. A layer is a list of <code>Annotation</code> values,
 			each pairing a <code>Span</code> with a value. A span's offsets count characters
 			from the beginning of the text exactly as the caller supplied it, never a
-			normalized or otherwise derived form, so every annotation can be highlighted in
+			normalized or derived form, so every annotation can be highlighted in
 			the source text. The value's Java type is part of the layer's identity: a token
 			layer reads back as <code>List&lt;Annotation&lt;String&gt;&gt;</code>, for
 			example the token <code>The</code> paired with the span <code>[0..3)</code>.
 		</para>
 		<example xml:id="tools.document.introduction.stacked">
 			<title>A document with three annotation layers</title>
-			<literallayout>
+			<literallayout class="monospaced">
 text:      The dog barks. It naps.
            0         1         2
            01234567890123456789012
@@ -54,7 +54,7 @@ pos-tags:  [0..3) "DT"  [4..7) "NN"  [8..14) "VBZ"    [15..17) "PRP" [18..23) "V
 		</para>
 		<para>
 			Key ids are namespaced. Keys OpenNLP defines start with the
-			<code>opennlp:</code> prefix; a user extension needs to use its own prefix. A
+			<code>opennlp:</code> prefix; a user extension must use its own prefix. A
 			bare id, like the <code>token-lengths</code> key below, is legal for an
 			application-local layer. Toolkit keys are created through
 			<code>Layers.key</code> and <code>Layers.documentKey</code>, which apply the
@@ -66,11 +66,10 @@ pos-tags:  [0..3) "DT"  [4..7) "NN"  [8..14) "VBZ"    [15..17) "PRP" [18..23) "V
 			<code>Document.of</code> capture their text at construction and are safe to
 			share between threads. Annotations reference other annotations by index within
 			their layer, never by object identity. Three invariants make those index
-			references sound: a layer preserves its insertion order and is never sorted or
-			reordered, a layer is
-			immutable once added and detached from the caller's input list, and providing
-			a layer that already exists is rejected, so an index reference stays valid for
-			the lifetime of the document.
+			references sound: a layer keeps its insertion order, a layer is immutable once
+			added and detached from the caller's input list, and providing a layer that
+			already exists is rejected, so an index reference stays valid for the lifetime
+			of the document.
 		</para>
 		<para>
 			A key declares its scope. Keys are positional by default: every annotation
@@ -131,8 +130,8 @@ Document document = analyzer.analyze("The dog barks. It naps.");]]>
 			round-trip shown here.
 		</para>
 		<para>
-			The resulting document carries exactly the four layers the pipeline provides,
-			rendered as the stacked layers of the introduction's figure. The sentence
+			The resulting document carries exactly the four layers the pipeline provides:
+			the figure's three plus the custom token-lengths layer. The sentence
 			layer holds two annotations, <code>[0..14)</code> covering
 			<code>The dog barks.</code> and <code>[15..23)</code> covering
 			<code>It naps.</code>. The token layer holds five tokens whose spans refer to

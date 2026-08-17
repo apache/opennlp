@@ -415,9 +415,8 @@ public class DocumentContractTest {
   }
 
   /**
-   * Verifies that merge joins two documents grown independently over the same text, for
-   * example by two pipelines that ran in parallel, into one document carrying both layer
-   * sets, while leaving both sources untouched. Text content decides equality, not the
+   * Verifies that merge joins two documents grown independently over the same text and
+   * leaves both sources untouched. Text content decides equality, not the
    * {@link CharSequence} implementation.
    */
   @Test
@@ -438,7 +437,6 @@ public class DocumentContractTest {
     assertEquals(Set.of(WORDS, lengths), merged.layers());
     assertEquals("the", merged.get(WORDS).get(0).value());
     assertEquals(3, merged.get(lengths).get(0).value().intValue());
-    // The sources are unchanged: merge, like with, never modifies in place.
     assertEquals(Set.of(WORDS), words.layers());
     assertEquals(Set.of(lengths), counted.layers());
   }
@@ -469,8 +467,7 @@ public class DocumentContractTest {
 
   /**
    * Verifies that {@link Document.DuplicateLayerPolicy#KEEP_EQUAL} keeps one copy of a
-   * layer both documents rebuilt identically, for example the shared tokenizer prefix
-   * of two parallel branches, while still joining the disjoint layers.
+   * layer both documents rebuilt identically while still joining the disjoint layers.
    */
   @Test
   void testMergeKeepingEqualLayersToleratesIdenticalCopies() {
