@@ -466,4 +466,50 @@ public class DocumentContractTest {
         () -> words.merge(words));
     assertEquals("layer is already present: words<String>", duplicate.getMessage());
   }
+
+  /**
+   * Verifies that {@link Document.DuplicateLayerPolicy#KEEP_EQUAL} keeps one copy of a
+   * layer both documents rebuilt identically, for example the shared tokenizer prefix
+   * of two parallel branches, while still joining the disjoint layers.
+   */
+  @Test
+  void testMergeKeepingEqualLayersToleratesIdenticalCopies() {
+    final List<Annotation<String>> tokens = List.of(
+        new Annotation<>(new Span(0, 3), "the"),
+        new Annotation<>(new Span(4, 7), "dog"));
+    final LayerKey<Integer> lengths = LayerKey.of("lengths", Integer.class);
+    final Document words = Document.of("the dog").with(WORDS, tokens);
+    final Document recounted = Document.of("the dog")
+        .with(WORDS, tokens)
+        .with(lengths, List.of(
+            new Annotation<>(new Span(0, 3), 3),
+            new Annotation<>(new Span(4, 7), 3)));
+
+    final Document merged = words.merge(recounted, Document.DuplicateLayerPolicy.KEEP_EQUAL);
+
+    assertEquals(Set.of(WORDS, lengths), merged.layers());
+    // The shared layer is kept once, not concatenated.
+    assertEquals(2, merged.get(WORDS).size());
+    assertEquals(2, merged.get(lengths).size());
+  }
+
+  /**
+   * Verifies that {@link Document.DuplicateLayerPolicy#KEEP_EQUAL} still rejects a layer
+   * whose two copies differ, naming the key, and rejects a null policy.
+   */
+  @Test
+  void testMergeKeepingEqualLayersRejectsDifferingCopiesAndNullPolicy() {
+    final Document words = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 3), "the")));
+    final Document retokenized = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 7), "the dog")));
+
+    final IllegalArgumentException differing = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(retokenized, Document.DuplicateLayerPolicy.KEEP_EQUAL));
+    assertEquals("layer is already present: words<String>", differing.getMessage());
+
+    final IllegalArgumentException nullPolicy = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(Document.of("the dog"), null));
+    assertEquals("duplicateLayers must not be null", nullPolicy.getMessage());
+  }
 }

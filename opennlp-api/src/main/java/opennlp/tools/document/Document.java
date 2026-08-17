@@ -102,6 +102,23 @@ public interface Document {
   <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations);
 
   /**
+   * How {@link #merge(Document, DuplicateLayerPolicy)} treats a layer key that is
+   * present on both documents.
+   */
+  enum DuplicateLayerPolicy {
+
+    /** Reject any layer key present on both documents. */
+    REJECT,
+
+    /**
+     * Keep one copy of a layer key present on both documents when the two layers are
+     * structurally equal, for example when two parallel branches ran the same
+     * tokenizer. Layers whose contents differ are rejected as with {@link #REJECT}.
+     */
+    KEEP_EQUAL
+  }
+
+  /**
    * Returns a new document combining this document's layers with another document's
    * layers over the same text: the parallel fan-out join. Two pipelines can each start
    * from the same text and grow their own document independently; {@code merge} stacks
@@ -129,6 +146,25 @@ public interface Document {
       merged = addLayer(merged, layer, other);
     }
     return merged;
+  }
+
+  /**
+   * Returns a new document combining this document's layers with another document's
+   * layers over the same text, resolving duplicate layer keys with
+   * {@code duplicateLayers}.
+   *
+   * @param other The document whose layers are added on top of this document's layers.
+   *              Must not be {@code null} and must carry the same text content.
+   * @param duplicateLayers How to treat a layer key present on both documents. Must
+   *                        not be {@code null}.
+   * @return A new {@link Document} carrying the layers of both documents. Never
+   *         {@code null}; both source documents are left untouched.
+   * @throws IllegalArgumentException Thrown if either argument is {@code null}, if the
+   *         text content differs, or if a layer key is present on both documents and
+   *         the policy does not keep it; the exception names the offending key.
+   */
+  default Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
+    throw new UnsupportedOperationException("merge with policy is not implemented yet");
   }
 
   /**
