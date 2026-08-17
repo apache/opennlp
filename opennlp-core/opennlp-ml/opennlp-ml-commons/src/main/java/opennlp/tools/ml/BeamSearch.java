@@ -79,10 +79,13 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
    * {@link #bestSequences(int, Object[], Object[], double, BeamSearchContextGenerator, SequenceValidator)}.
    * A node stores its own outcome plus a parent link, so extending a candidate is O(1);
    * the full outcome array is materialized only when a candidate is expanded.
-   * Score accumulation ({@code parent.score + StrictMath.log(prob)}) and
-   * {@link #compareTo(SearchNode)} must stay in lockstep with
-   * {@link Sequence#Sequence(Sequence, String, double)} and {@link Sequence#compareTo(Sequence)}
-   * to keep search results bit-identical to a search over {@link Sequence} instances.
+   * Score accumulation ({@code parent.score + StrictMath.log(prob)}) mirrors
+   * {@link Sequence#Sequence(Sequence, String, double)}, and descending score order
+   * mirrors {@link Sequence#compareTo(Sequence)}, so non-tied search results stay
+   * bit-identical to a search over {@link Sequence} instances. Unlike
+   * {@link Sequence#compareTo(Sequence)}, {@link #compareTo(SearchNode)} additionally
+   * resolves exact score ties into a canonical outcome order; under ties the
+   * {@link Sequence}-based search has no defined order at all.
    */
   private static final class SearchNode implements Comparable<SearchNode> {
     private final SearchNode parent;
@@ -132,10 +135,28 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
 
     /**
      * Orders nodes by descending score, mirroring {@link Sequence#compareTo(Sequence)}.
+     * Exact score ties are broken lexicographically by the outcome chain from the
+     * root, so tied candidates expand and are returned in the same canonical order
+     * on every run and JVM. {@link PriorityQueue} gives no ordering guarantee for
+     * elements whose comparison returns {@code 0}, and ties decide both which
+     * candidates survive beam truncation and the order of equal-scored winners.
      */
     @Override
     public int compareTo(SearchNode other) {
-      return Double.compare(other.score, this.score);
+      final int byScore = Double.compare(other.score, this.score);
+      if (byScore != 0) {
+        return byScore;
+      }
+      final String[] mine = outcomes();
+      final String[] theirs = other.outcomes();
+      final int common = StrictMath.min(mine.length, theirs.length);
+      for (int i = 0; i < common; i++) {
+        final int byOutcome = mine[i].compareTo(theirs[i]);
+        if (byOutcome != 0) {
+          return byOutcome;
+        }
+      }
+      return Integer.compare(mine.length, theirs.length);
     }
   }
 
