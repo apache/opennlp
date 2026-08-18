@@ -34,12 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -107,6 +109,62 @@ public class ResourceInstallerHttpTest {
   private static ResourceInstaller.Limits withDownloadCeiling(long maxDownloadBytes) {
     return new ResourceInstaller.Limits(GENEROUS, GENEROUS, 5, maxDownloadBytes,
         MEBIBYTE);
+  }
+
+  /**
+   * Asserts that the given call is rejected as an argument error demanding a checksum
+   * for the remote source.
+   *
+   * @param source The remote source the message must name.
+   * @param call The call under test.
+   */
+  private static void assertChecksumRequired(URI source, Executable call) {
+    final IllegalArgumentException thrown =
+        Assertions.assertThrows(IllegalArgumentException.class, call);
+    Assertions.assertEquals(
+        "checksum must be given for an http or https source: " + source,
+        thrown.getMessage());
+  }
+
+  /**
+   * Proves that an http source without a checksum is rejected as an argument error on
+   * every overload that could omit one, before any connection is opened, so bytes that
+   * can never be verified are never fetched.
+   */
+  @Test
+  void testHttpSourceWithoutChecksumIsRejectedBeforeFetching(@TempDir Path target)
+      throws Exception {
+    final AtomicBoolean fetched = new AtomicBoolean();
+    server.route("/corpus.tar.gz", out -> {
+      fetched.set(true);
+      StubServer.ok(out, tarGz(new String[][] {{"corpus/data.txt", "unverified"}}));
+    });
+
+    final URI source = server.uri("/corpus.tar.gz");
+    Assertions.assertAll(
+        () -> assertChecksumRequired(source,
+            () -> ResourceInstaller.install(source, target)),
+        () -> assertChecksumRequired(source,
+            () -> ResourceInstaller.install(source, target, null)),
+        () -> assertChecksumRequired(source,
+            () -> ResourceInstaller.install(source, target, null, withMaxRedirects(5))));
+    Assertions.assertFalse(fetched.get());
+    Assertions.assertEquals(List.of(), installedFiles(target));
+  }
+
+  /**
+   * Proves that the checksum requirement covers https and fires before the target
+   * directory is created, so a checksum-less call cannot leave an empty directory
+   * behind.
+   */
+  @Test
+  void testHttpsSourceWithoutChecksumIsRejectedBeforeCreatingTheTarget(
+      @TempDir Path parent) {
+    final Path target = parent.resolve("not-created-yet");
+    final URI source = URI.create("https://example.invalid/corpus.tar.gz");
+
+    assertChecksumRequired(source, () -> ResourceInstaller.install(source, target));
+    Assertions.assertTrue(Files.notExists(target));
   }
 
   @Test
