@@ -742,31 +742,6 @@ public class ResourceInstallerTest {
   }
 
   /**
-   * Proves that installing over the same target replaces files the previous
-   * installation delivered, so an operator can refresh a resource in place.
-   */
-  @Test
-  void testReinstallReplacesExistingFiles(@TempDir Path source, @TempDir Path target)
-      throws Exception {
-    final byte[] first = tarGz(new String[][] {{"corpus/data.txt", "version one"}});
-    final byte[] second = tarGz(new String[][] {{"corpus/data.txt", "version two"}});
-    final Path firstFile = source.resolve("first.tar.gz");
-    final Path secondFile = source.resolve("second.tar.gz");
-    Files.write(firstFile, first);
-    Files.write(secondFile, second);
-
-    ResourceInstaller.install(firstFile.toUri(), target, sha256(first));
-    Assertions.assertEquals("version one",
-        Files.readString(target.resolve("corpus/data.txt")));
-
-    ResourceInstaller.install(secondFile.toUri(), target, sha256(second));
-
-    Assertions.assertEquals("version two",
-        Files.readString(target.resolve("corpus/data.txt")));
-    Assertions.assertEquals(List.of("corpus/data.txt"), installedFiles(target));
-  }
-
-  /**
    * Proves that promotion refuses to replace a file that already exists in the target:
    * the second installation fails naming the file, the first installation's content
    * survives, and after the operator removes it the reinstall succeeds.
