@@ -63,9 +63,9 @@ import opennlp.tools.util.archive.TarStream;
  * <p>Every installation is bounded by {@link Limits}: http and https fetches carry
  * connection and read timeouts, follow at most a fixed number of redirects, refuse
  * redirects that leave the http and https schemes or downgrade https to http, and
- * abort once the download or the expanded content crosses its size ceiling. The
- * defaults in {@link Limits#DEFAULT} apply when no limits are given, and
- * {@link Limits#builder()} starts from them.</p>
+ * abort once the download or the expanded content crosses its size ceiling or the
+ * archive crosses its entry ceiling. The defaults in {@link Limits#DEFAULT} apply when
+ * no limits are given, and {@link Limits#builder()} starts from them.</p>
  *
  * <p>Installation is staged: content is unpacked into a hidden staging directory on
  * the same filesystem and moved into the target only after the download was verified
@@ -117,17 +117,60 @@ public final class ResourceInstaller {
    * @param maxExpandedBytes The largest expanded byte count accepted. For gzip content,
    *                         this counts the entire decompressed stream; otherwise, it
    *                         counts installed file content. Must be positive.
+   * @param maxEntries The largest number of archive entries accepted, counting every
+   *                   entry including directories, so an archive of countless tiny
+   *                   files cannot exhaust directory entries below the byte ceilings.
+   *                   Must be positive.
    */
   public record Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
-                       long maxDownloadBytes, long maxExpandedBytes) {
+                       long maxDownloadBytes, long maxExpandedBytes, long maxEntries) {
+
+    /** The system property overriding the default download ceiling in bytes. */
+    public static final String MAX_DOWNLOAD_BYTES_PROPERTY = "opennlp.download.max.bytes";
+
+    /** The system property overriding the default expansion ceiling in bytes. */
+    public static final String MAX_EXPANDED_BYTES_PROPERTY =
+        "opennlp.install.max.total.bytes";
+
+    /** The system property overriding the default archive entry ceiling. */
+    public static final String MAX_ENTRIES_PROPERTY = "opennlp.install.max.entries";
 
     /**
      * The limits applied when none are given: 20 second connect timeout, 60 second
-     * read timeout, at most 5 redirects, a 1 GiB download ceiling, and a 4 GiB
-     * expansion ceiling.
+     * read timeout, at most 5 redirects, a 1 GiB download ceiling, a 4 GiB expansion
+     * ceiling, and 100000 archive entries. Each ceiling can be raised or lowered at
+     * startup through its system property ({@link #MAX_DOWNLOAD_BYTES_PROPERTY},
+     * {@link #MAX_EXPANDED_BYTES_PROPERTY}, {@link #MAX_ENTRIES_PROPERTY}), read once
+     * at class load; a value that is absent, not a number, or not positive falls back
+     * to the built-in default.
      */
     public static final Limits DEFAULT = new Limits(Duration.ofSeconds(20),
-        Duration.ofSeconds(60), 5, 1L << 30, 4L << 30);
+        Duration.ofSeconds(60), 5,
+        longProperty(MAX_DOWNLOAD_BYTES_PROPERTY, 1L << 30),
+        longProperty(MAX_EXPANDED_BYTES_PROPERTY, 4L << 30),
+        longProperty(MAX_ENTRIES_PROPERTY, 100_000L));
+
+    /**
+     * Reads a ceiling override from a system property, trimmed before parsing.
+     *
+     * @param name The property name.
+     * @param fallback The built-in default.
+     * @return The property's value, or {@code fallback} when the property is absent,
+     *         not a number, or not positive.
+     */
+    static long longProperty(String name, long fallback) {
+      final String value = System.getProperty(name);
+      if (value == null) {
+        return fallback;
+      }
+      final long parsed;
+      try {
+        parsed = Long.parseLong(value.trim());
+      } catch (NumberFormatException e) {
+        return fallback;
+      }
+      return parsed > 0 ? parsed : fallback;
+    }
 
     /**
      * Validates the limit values before constructing an instance.
@@ -137,12 +180,13 @@ public final class ResourceInstaller {
      * @param maxRedirects How many http redirects to follow before failing.
      * @param maxDownloadBytes The largest download accepted, in bytes.
      * @param maxExpandedBytes The largest expanded byte count accepted.
+     * @param maxEntries The largest number of archive entries accepted.
      * @throws IllegalArgumentException Thrown if either timeout is {@code null}, zero,
-     *         or negative, either byte ceiling is not positive, or the redirect limit
-     *         is negative.
+     *         or negative, a ceiling is not positive, or the redirect limit is
+     *         negative.
      */
     public Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
-        long maxDownloadBytes, long maxExpandedBytes) {
+        long maxDownloadBytes, long maxExpandedBytes, long maxEntries) {
       if (connectTimeout == null || connectTimeout.isZero() || connectTimeout.isNegative()) {
         throw new IllegalArgumentException("connectTimeout must be positive");
       }
@@ -158,16 +202,20 @@ public final class ResourceInstaller {
       if (maxExpandedBytes <= 0) {
         throw new IllegalArgumentException("maxExpandedBytes must be positive");
       }
+      if (maxEntries <= 0) {
+        throw new IllegalArgumentException("maxEntries must be positive");
+      }
       this.connectTimeout = connectTimeout;
       this.readTimeout = readTimeout;
       this.maxRedirects = maxRedirects;
       this.maxDownloadBytes = maxDownloadBytes;
       this.maxExpandedBytes = maxExpandedBytes;
+      this.maxEntries = maxEntries;
     }
 
     /**
      * Starts from {@link #DEFAULT} so a caller can state only the limits that differ
-     * from it, instead of repeating all five in the canonical constructor.
+     * from it, instead of repeating all six in the canonical constructor.
      *
      * @return A builder holding the default limits. Never {@code null}.
      */
@@ -186,6 +234,7 @@ public final class ResourceInstaller {
       private int maxRedirects = DEFAULT.maxRedirects();
       private long maxDownloadBytes = DEFAULT.maxDownloadBytes();
       private long maxExpandedBytes = DEFAULT.maxExpandedBytes();
+      private long maxEntries = DEFAULT.maxEntries();
 
       private Builder() {
       }
@@ -253,6 +302,18 @@ public final class ResourceInstaller {
       }
 
       /**
+       * Sets the largest number of archive entries accepted.
+       *
+       * @param maxEntries The largest number of archive entries accepted, counting
+       *                   every entry including directories. Must be positive.
+       * @return This builder. Never {@code null}.
+       */
+      public Builder maxEntries(long maxEntries) {
+        this.maxEntries = maxEntries;
+        return this;
+      }
+
+      /**
        * Builds the limits.
        *
        * @return The limits collected so far. Never {@code null}.
@@ -261,7 +322,7 @@ public final class ResourceInstaller {
        */
       public Limits build() {
         return new Limits(connectTimeout, readTimeout, maxRedirects, maxDownloadBytes,
-            maxExpandedBytes);
+            maxExpandedBytes, maxEntries);
       }
     }
   }
@@ -326,8 +387,8 @@ public final class ResourceInstaller {
    *                 whitespace: 64 characters select SHA-256, 128 characters SHA-512.
    *                 Required for an http or https source; pass {@code null} to skip
    *                 verification for a {@code file} source.
-   * @param limits The timeouts, redirect allowance, and size ceilings to enforce.
-   *               Must not be {@code null}.
+   * @param limits The timeouts, redirect allowance, and size and entry ceilings to
+   *               enforce. Must not be {@code null}.
    * @return The target directory. Never {@code null}.
    * @throws IOException Thrown if fetching fails, a limit is exceeded, the checksum
    *         does not match, or unpacking fails.
@@ -808,6 +869,9 @@ public final class ResourceInstaller {
     final Budget budget = new Budget(limits.maxExpandedBytes(),
         "expanded content exceeds the ceiling of " + limits.maxExpandedBytes()
             + " bytes");
+    final Budget entryBudget = new Budget(limits.maxEntries(),
+        "archive entry count exceeds the ceiling of " + limits.maxEntries()
+            + " entries");
     try (InputStream raw = new BufferedInputStream(Files.newInputStream(downloaded))) {
       raw.mark(MAGIC_LENGTH);
       final int first = raw.read();
@@ -816,9 +880,9 @@ public final class ResourceInstaller {
       if (name.endsWith(MODEL_SUFFIX)) {
         copyBounded(raw, safeChild(staging, name), budget);
       } else if (first == GZIP_MAGIC_FIRST && second == GZIP_MAGIC_SECOND) {
-        unpackGzip(raw, name, staging, budget);
+        unpackGzip(raw, name, staging, budget, entryBudget);
       } else if (first == ZIP_MAGIC_FIRST && second == ZIP_MAGIC_SECOND) {
-        unpackZip(raw, staging, budget);
+        unpackZip(raw, staging, budget, entryBudget);
       } else {
         copyBounded(raw, safeChild(staging, name), budget);
       }
@@ -833,15 +897,16 @@ public final class ResourceInstaller {
    * @param name The file name derived from the source location.
    * @param staging The staging directory to unpack into.
    * @param budget The expansion budget.
-   * @throws IOException Thrown if decompressing or unpacking fails or the expansion
-   *         ceiling is exceeded.
+   * @param entryBudget The entry-count budget.
+   * @throws IOException Thrown if decompressing or unpacking fails or a ceiling is
+   *         exceeded.
    */
   private static void unpackGzip(InputStream raw, String name, Path staging,
-      Budget budget) throws IOException {
+      Budget budget, Budget entryBudget) throws IOException {
     final InputStream decompressed = new BufferedInputStream(
         new BudgetInputStream(new GZIPInputStream(raw), budget), BUFFER_SIZE);
     if (TarStream.startsWithHeader(decompressed)) {
-      unpackTar(decompressed, staging);
+      unpackTar(decompressed, staging, entryBudget);
     } else {
       final String plainName = name.endsWith(GZIP_SUFFIX)
           ? name.substring(0, name.length() - GZIP_SUFFIX.length()) : name;
@@ -855,12 +920,16 @@ public final class ResourceInstaller {
    *
    * @param decompressed The uncompressed tar content.
    * @param staging The staging directory to unpack into.
-   * @throws IOException Thrown if the archive is malformed or an entry escapes the
-   *         staging directory.
+   * @param entryBudget The entry-count budget, charged for every entry including
+   *                    directories.
+   * @throws IOException Thrown if the archive is malformed, an entry escapes the
+   *         staging directory, or the entry ceiling is exceeded.
    */
-  private static void unpackTar(InputStream decompressed, Path staging) throws IOException {
+  private static void unpackTar(InputStream decompressed, Path staging,
+      Budget entryBudget) throws IOException {
     final TarStream entries = new TarStream(decompressed);
     while (entries.next()) {
+      entryBudget.spend(1);
       if (!entries.isFile()) {
         continue;
       }
@@ -877,14 +946,17 @@ public final class ResourceInstaller {
    * @param raw The zip content.
    * @param staging The staging directory to unpack into.
    * @param budget The expansion budget.
+   * @param entryBudget The entry-count budget, charged for every entry including
+   *                    directories.
    * @throws IOException Thrown if the archive is malformed, an entry escapes the
-   *         staging directory, or the expansion ceiling is exceeded.
+   *         staging directory, or a ceiling is exceeded.
    */
-  private static void unpackZip(InputStream raw, Path staging, Budget budget)
-      throws IOException {
+  private static void unpackZip(InputStream raw, Path staging, Budget budget,
+      Budget entryBudget) throws IOException {
     final ZipInputStream zip = new ZipInputStream(raw);
     ZipEntry entry;
     while ((entry = zip.getNextEntry()) != null) {
+      entryBudget.spend(1);
       if (entry.isDirectory()) {
         continue;
       }
@@ -962,8 +1034,8 @@ public final class ResourceInstaller {
   }
 
   /**
-   * A byte budget: {@link #spend(long)} accumulates transferred bytes and fails once
-   * the ceiling is crossed.
+   * A unit budget, counting bytes or archive entries: {@link #spend(long)} accumulates
+   * spent units and fails once the ceiling is crossed.
    */
   private static final class Budget {
 
@@ -974,7 +1046,7 @@ public final class ResourceInstaller {
     /**
      * Creates a budget that has spent nothing yet.
      *
-     * @param ceiling The largest total number of bytes accepted.
+     * @param ceiling The largest total number of units accepted.
      * @param message The failure message raised when the ceiling is crossed.
      */
     Budget(long ceiling, String message) {
@@ -983,13 +1055,13 @@ public final class ResourceInstaller {
     }
 
     /**
-     * Charges the given number of bytes against the budget.
+     * Charges the given number of units against the budget.
      *
-     * @param bytes The number of bytes to charge.
-     * @throws IOException Thrown if the total charged bytes exceed the ceiling.
+     * @param units The number of units to charge.
+     * @throws IOException Thrown if the total charged units exceed the ceiling.
      */
-    void spend(long bytes) throws IOException {
-      used += bytes;
+    void spend(long units) throws IOException {
+      used += units;
       if (used > ceiling) {
         throw new IOException(message);
       }

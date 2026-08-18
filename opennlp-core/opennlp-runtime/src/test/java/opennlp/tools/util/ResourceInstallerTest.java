@@ -123,7 +123,8 @@ public class ResourceInstallerTest {
   private static ResourceInstaller.Limits ceilings(long maxDownloadBytes,
       long maxExpandedBytes) {
     return new ResourceInstaller.Limits(Duration.ofSeconds(10), Duration.ofSeconds(10),
-        5, maxDownloadBytes, maxExpandedBytes);
+        5, maxDownloadBytes, maxExpandedBytes,
+        ResourceInstaller.Limits.DEFAULT.maxEntries());
   }
 
   /**
@@ -520,27 +521,30 @@ public class ResourceInstallerTest {
     final Duration valid = Duration.ofSeconds(10);
     return Stream.of(
         Arguments.of("null connectTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(null, valid, 5, 1024, 1024),
+            () -> new ResourceInstaller.Limits(null, valid, 5, 1024, 1024, 10),
             "connectTimeout must be positive"),
         Arguments.of("zero connectTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(Duration.ZERO, valid, 5, 1024, 1024),
+            () -> new ResourceInstaller.Limits(Duration.ZERO, valid, 5, 1024, 1024, 10),
             "connectTimeout must be positive"),
         Arguments.of("null readTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(valid, null, 5, 1024, 1024),
+            () -> new ResourceInstaller.Limits(valid, null, 5, 1024, 1024, 10),
             "readTimeout must be positive"),
         Arguments.of("negative readTimeout", (Executable)
             () -> new ResourceInstaller.Limits(valid, Duration.ofSeconds(-1),
-                5, 1024, 1024),
+                5, 1024, 1024, 10),
             "readTimeout must be positive"),
         Arguments.of("negative maxRedirects", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, -1, 1024, 1024),
+            () -> new ResourceInstaller.Limits(valid, valid, -1, 1024, 1024, 10),
             "maxRedirects must not be negative"),
         Arguments.of("zero maxDownloadBytes", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, 5, 0, 1024),
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 0, 1024, 10),
             "maxDownloadBytes must be positive"),
         Arguments.of("zero maxExpandedBytes", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 0),
-            "maxExpandedBytes must be positive"));
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 0, 10),
+            "maxExpandedBytes must be positive"),
+        Arguments.of("zero maxEntries", (Executable)
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 1024, 0),
+            "maxEntries must be positive"));
   }
 
   @ParameterizedTest(name = "{0}")
@@ -1028,7 +1032,7 @@ public class ResourceInstallerTest {
   }
 
   /**
-   * Proves that each builder setter changes its own value and leaves the other four at
+   * Proves that each builder setter changes its own value and leaves the others at
    * their defaults.
    */
   @Test
@@ -1046,6 +1050,8 @@ public class ResourceInstallerTest {
         limits.readTimeout());
     Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.maxRedirects(),
         limits.maxRedirects());
+    Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.maxEntries(),
+        limits.maxEntries());
   }
 
   /**
@@ -1064,7 +1070,9 @@ public class ResourceInstallerTest {
         () -> assertArgumentError("maxDownloadBytes must be positive",
             () -> ResourceInstaller.Limits.builder().maxDownloadBytes(0).build()),
         () -> assertArgumentError("maxExpandedBytes must be positive",
-            () -> ResourceInstaller.Limits.builder().maxExpandedBytes(-1).build()));
+            () -> ResourceInstaller.Limits.builder().maxExpandedBytes(-1).build()),
+        () -> assertArgumentError("maxEntries must be positive",
+            () -> ResourceInstaller.Limits.builder().maxEntries(0).build()));
   }
 
   /**
