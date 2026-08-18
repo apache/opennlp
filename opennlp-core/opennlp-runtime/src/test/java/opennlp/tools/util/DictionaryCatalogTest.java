@@ -80,6 +80,31 @@ public class DictionaryCatalogTest {
   }
 
   /**
+   * Verifies that an enabled catalog install fetches the entry and stores its
+   * digest-verified bytes under the source name in the target directory.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared or fetched.
+   */
+  @Test
+  void testInstallStoresTheEntryUnderItsSourceName(@TempDir Path dir) throws Exception {
+    final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
+    final DictionaryCatalog loaded = demoCatalog(dir, payload);
+    final Path target = dir.resolve("out");
+
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, "true");
+    try {
+      loaded.install("demo", target);
+      Assertions.assertArrayEquals(payload,
+          Files.readAllBytes(target.resolve("dict.bin")));
+    } finally {
+      restore(previous);
+    }
+  }
+
+  /**
    * Verifies that the shipped catalog holds the MeCab and Hunspell entries, each with
    * a full-length SHA-512 digest.
    *
