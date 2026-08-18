@@ -23,8 +23,9 @@
 			The package <code>opennlp.tools.document</code> provides an immutable container
 			that carries the original text of one document together with any number of
 			annotation layers over it. A layer is a list of <code>Annotation</code> values,
-			each pairing a <code>Span</code> with a value. A span's offsets count characters
-			from the beginning of the text exactly as the caller supplied it, never a
+			each pairing a <code>Span</code> with a value. A span's offsets count Java
+			chars (UTF-16 units, so a supplementary-plane character counts as two) from
+			the beginning of the text exactly as the caller supplied it, never a
 			normalized or derived form, so every annotation can be highlighted in
 			the source text. The value's Java type is part of the layer's identity: a token
 			layer reads back as <code>List&lt;Annotation&lt;String&gt;&gt;</code>, for
