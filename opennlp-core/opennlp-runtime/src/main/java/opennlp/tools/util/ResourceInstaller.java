@@ -27,6 +27,7 @@ import java.net.URI;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
@@ -48,8 +49,9 @@ import opennlp.tools.util.archive.TarStream;
  * that resource's license; no locations are built in and no data is bundled. Only
  * {@code http}, {@code https}, and {@code file} locations are accepted.
  *
- * <p>An optional checksum is verified against the downloaded bytes before anything is
- * unpacked: a 64-character hex digest selects SHA-256, a 128-character one SHA-512.
+ * <p>A checksum is required for http and https sources and optional for file sources.
+ * It is verified against the downloaded bytes before anything is unpacked: a
+ * 64-character hex digest selects SHA-256, a 128-character one SHA-512.
  * The content format is detected from the bytes, not from the name: gzip-compressed
  * tar archives and zip archives are unpacked with their relative structure, entries
  * that would escape the target directory are rejected, plain gzip files are
@@ -68,7 +70,10 @@ import opennlp.tools.util.archive.TarStream;
  * <p>Installation is staged: content is unpacked into a hidden staging directory on
  * the same filesystem and moved into the target only after the download was verified
  * and every entry unpacked cleanly. A fetch, verification, or unpacking failure
- * therefore leaves the target directory as it was, without partially written files.</p>
+ * therefore leaves the target directory as it was, without partially written files.
+ * Promotion refuses to replace a file that already exists in the target and detects
+ * the collision before moving anything, so refreshing a resource means removing its
+ * old files first.</p>
  *
  * @see DownloadUtil
  * @since 3.0.0
@@ -265,18 +270,19 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Fetches and unpacks a resource without checksum verification, under
-   * {@link Limits#DEFAULT}.
+   * Unpacks a resource without checksum verification, under {@link Limits#DEFAULT}.
+   * This overload treats the source as trusted caller input and performs no
+   * cryptographic integrity verification, so it accepts only {@code file} sources; an
+   * http or https source must go through an overload that takes its checksum.
    *
-   * @param source The resource location, an {@code http}, {@code https}, or
-   *               {@code file} URI. Must not be {@code null}.
+   * @param source The resource location, a {@code file} URI. Must not be {@code null}.
    * @param targetDirectory The directory to install into; created when absent. Must
    *                        not be {@code null}.
    * @return The target directory. Never {@code null}.
    * @throws IOException Thrown if fetching or unpacking fails.
    * @throws IllegalArgumentException Thrown if {@code source} or
    *         {@code targetDirectory} is {@code null}, or {@code source} carries a scheme
-   *         other than {@code http}, {@code https}, or {@code file}.
+   *         other than {@code file}.
    */
   public static Path install(URI source, Path targetDirectory) throws IOException {
     return install(source, targetDirectory, null);
@@ -292,14 +298,16 @@ public final class ResourceInstaller {
    * @param checksum The expected digest of the downloaded bytes as a hex string,
    *                 compared case-insensitively and ignoring leading and trailing
    *                 whitespace: 64 characters select SHA-256, 128 characters SHA-512.
-   *                 Pass {@code null} to skip verification.
+   *                 Required for an http or https source; pass {@code null} to skip
+   *                 verification for a {@code file} source.
    * @return The target directory. Never {@code null}.
    * @throws IOException Thrown if fetching fails, the checksum does not match, or
    *         unpacking fails.
    * @throws IllegalArgumentException Thrown if {@code source} or
    *         {@code targetDirectory} is {@code null}, {@code source} carries a scheme
-   *         other than {@code http}, {@code https}, or {@code file}, or {@code checksum}
-   *         is neither a 64-character nor a 128-character hex string.
+   *         other than {@code http}, {@code https}, or {@code file}, {@code checksum}
+   *         is neither a 64-character nor a 128-character hex string, or an http or
+   *         https source carries no checksum.
    */
   public static Path install(URI source, Path targetDirectory, String checksum)
       throws IOException {
@@ -316,7 +324,8 @@ public final class ResourceInstaller {
    * @param checksum The expected digest of the downloaded bytes as a hex string,
    *                 compared case-insensitively and ignoring leading and trailing
    *                 whitespace: 64 characters select SHA-256, 128 characters SHA-512.
-   *                 Pass {@code null} to skip verification.
+   *                 Required for an http or https source; pass {@code null} to skip
+   *                 verification for a {@code file} source.
    * @param limits The timeouts, redirect allowance, and size ceilings to enforce.
    *               Must not be {@code null}.
    * @return The target directory. Never {@code null}.
@@ -324,8 +333,9 @@ public final class ResourceInstaller {
    *         does not match, or unpacking fails.
    * @throws IllegalArgumentException Thrown if {@code source}, {@code targetDirectory},
    *         or {@code limits} is {@code null}, {@code source} carries a scheme other
-   *         than {@code http}, {@code https}, or {@code file}, or {@code checksum} is
-   *         neither a 64-character nor a 128-character hex string.
+   *         than {@code http}, {@code https}, or {@code file}, {@code checksum} is
+   *         neither a 64-character nor a 128-character hex string, or an http or https
+   *         source carries no checksum.
    */
   public static Path install(URI source, Path targetDirectory, String checksum,
       Limits limits) throws IOException {
@@ -340,6 +350,10 @@ public final class ResourceInstaller {
     }
     validateSource(source);
     final String expected = validateChecksum(checksum);
+    if (expected == null && isHttp(source.getScheme())) {
+      throw new IllegalArgumentException(
+          "checksum must be given for an http or https source: " + source);
+    }
     Files.createDirectories(targetDirectory);
     final Path downloaded = createDownloadFile(targetDirectory);
     try {
@@ -662,13 +676,15 @@ public final class ResourceInstaller {
 
   /**
    * Moves every staged regular file to its relative location beneath the target,
-   * replacing existing files. Moves are attempted atomically and fall back to a plain
-   * move where the filesystem does not support atomic replacement.
+   * refusing to replace anything that already exists there. All destinations are
+   * checked before the first move, so a collision leaves the target without a mix of
+   * old and new files. Moves are attempted atomically and fall back to a plain move
+   * where the filesystem does not support it.
    *
    * @param staging The staging directory holding the fully unpacked content.
    * @param target The directory to install into.
-   * @throws IOException Thrown if a move fails or a directory on the way to a
-   *         destination is an existing symbolic link.
+   * @throws IOException Thrown if a destination already exists, a move fails, or a
+   *         directory on the way to a destination is an existing symbolic link.
    */
   private static void promote(Path staging, Path target) throws IOException {
     final List<Path> files;
@@ -676,13 +692,49 @@ public final class ResourceInstaller {
       files = walk.filter(Files::isRegularFile).toList();
     }
     for (final Path file : files) {
+      ensureVacant(target, staging.relativize(file));
+    }
+    for (final Path file : files) {
       final Path destination = destination(target, staging.relativize(file));
       try {
-        Files.move(file, destination, StandardCopyOption.REPLACE_EXISTING,
-            StandardCopyOption.ATOMIC_MOVE);
+        Files.move(file, destination, StandardCopyOption.ATOMIC_MOVE);
       } catch (AtomicMoveNotSupportedException e) {
-        Files.move(file, destination, StandardCopyOption.REPLACE_EXISTING);
+        Files.move(file, destination);
       }
+    }
+  }
+
+  /**
+   * Checks that one staged file's destination is free to receive it, without creating
+   * anything: an existing filesystem object at the destination is a collision, and a
+   * symbolic link or a non-directory on the way to it is refused exactly as
+   * {@link #destination(Path, Path)} refuses it during the move pass. A missing
+   * directory on the way proves the destination vacant.
+   *
+   * @param target The directory to install into.
+   * @param relative The staged file's path relative to the staging directory.
+   * @throws IOException Thrown if the destination already exists, or a directory on
+   *         the way is a symbolic link or exists as something other than a directory.
+   */
+  private static void ensureVacant(Path target, Path relative) throws IOException {
+    Path directory = target;
+    for (int i = 0; i < relative.getNameCount() - 1; i++) {
+      directory = directory.resolve(relative.getName(i));
+      if (Files.isSymbolicLink(directory)) {
+        throw new IOException(
+            "installation path crosses a symbolic link: " + directory);
+      }
+      if (!Files.exists(directory)) {
+        return;
+      }
+      if (!Files.isDirectory(directory)) {
+        throw new IOException(
+            "installation path crosses an existing file: " + directory);
+      }
+    }
+    final Path destination = directory.resolve(relative.getFileName());
+    if (Files.exists(destination, LinkOption.NOFOLLOW_LINKS)) {
+      throw new IOException("target already contains: " + destination);
     }
   }
 
