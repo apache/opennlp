@@ -36,14 +36,17 @@ public final class HunspellDictionaryDownload {
 
   /**
    * Downloads the cataloged {@code .aff}, {@code .dic}, and readme files for
-   * {@code dictionaryId} into {@code targetDirectory}.
+   * {@code dictionaryId} into {@code targetDirectory}, each stored under its source
+   * name, for example {@code en_US.aff}. A file that already exists in the target is
+   * refused, so refreshing a dictionary means removing its old files first.
    *
    * @param dictionaryId The catalog dictionary name, for example {@code en_US}.
    *                     Must not be {@code null}.
    * @param targetDirectory The directory to write into; created when absent. Must not
    *                        be {@code null}.
    * @throws IOException Thrown if remote downloads are disabled, a catalog entry is
-   *         missing, or verification fails.
+   *         missing, verification fails, or the target already contains one of the
+   *         files.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static void downloadFromCatalog(String dictionaryId, Path targetDirectory)
@@ -56,34 +59,11 @@ public final class HunspellDictionaryDownload {
     }
     final DictionaryCatalog catalog = DictionaryCatalog.loadDefault();
     final String prefix = "hunspell." + dictionaryId + ".";
-    download(catalog, prefix + "aff", targetDirectory);
-    download(catalog, prefix + "dic", targetDirectory);
+    catalog.install(prefix + "aff", targetDirectory);
+    catalog.install(prefix + "dic", targetDirectory);
     final String readmeId = prefix + "readme";
     if (catalog.ids().contains(readmeId)) {
-      download(catalog, readmeId, targetDirectory);
+      catalog.install(readmeId, targetDirectory);
     }
-  }
-
-  /**
-   * Downloads one catalog entry into {@code targetDirectory}, named by the entry's
-   * preferred file name or, when absent, by the last segment of its URI path.
-   *
-   * @param catalog The catalog holding {@code id}.
-   * @param id The catalog entry id.
-   * @param targetDirectory The directory to write into.
-   * @throws IOException Thrown if remote downloads are disabled, the entry is missing,
-   *         or the download fails verification.
-   */
-  private static void download(DictionaryCatalog catalog, String id, Path targetDirectory)
-      throws IOException {
-    final DictionaryCatalog.Entry entry = catalog.get(id);
-    final String filename;
-    if (entry.filename() != null) {
-      filename = entry.filename();
-    } else {
-      final String path = entry.uri().getPath();
-      filename = path.substring(path.lastIndexOf('/') + 1);
-    }
-    catalog.download(id, targetDirectory.resolve(filename));
   }
 }

@@ -34,46 +34,27 @@ import org.junit.jupiter.api.io.TempDir;
 public class DictionaryCatalogTest {
 
   /**
-   * Verifies that a catalog download without the remote-download property fails with
-   * the property name in the message.
+   * Verifies that a catalog install without the remote-download property fails with
+   * the property name in the message, before anything is fetched or created.
    *
    * @param dir A scratch directory managed by the test framework.
    * @throws Exception Thrown if the fixture catalog cannot be prepared.
    */
   @Test
-  void testDownloadRequiresRemoteProperty(@TempDir Path dir) throws Exception {
+  void testInstallRequiresRemoteProperty(@TempDir Path dir) throws Exception {
     final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
     final DictionaryCatalog loaded = demoCatalog(dir, payload);
+    final Path target = dir.resolve("out");
 
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
       final IOException e = Assertions.assertThrows(IOException.class,
-          () -> loaded.download("demo", dir.resolve("out.bin")));
-      Assertions.assertTrue(e.getMessage().contains(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY));
-    } finally {
-      restore(previous);
-    }
-  }
-
-  /**
-   * Verifies that an enabled catalog download fetches the entry and writes the
-   * digest-verified bytes to the target.
-   *
-   * @param dir A scratch directory managed by the test framework.
-   * @throws Exception Thrown if the fixture catalog cannot be prepared or fetched.
-   */
-  @Test
-  void testDownloadWithRemotePropertyEnabled(@TempDir Path dir) throws Exception {
-    final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
-    final DictionaryCatalog loaded = demoCatalog(dir, payload);
-    final Path target = dir.resolve("out.bin");
-
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, "true");
-    try {
-      loaded.download("demo", target);
-      Assertions.assertArrayEquals(payload, Files.readAllBytes(target));
+          () -> loaded.install("demo", target));
+      Assertions.assertTrue(
+          e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
+      Assertions.assertTrue(Files.notExists(target));
     } finally {
       restore(previous);
     }
@@ -146,9 +127,9 @@ public class DictionaryCatalogTest {
    */
   private static void restore(String previous) {
     if (previous == null) {
-      System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+      System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     } else {
-      System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, previous);
+      System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, previous);
     }
   }
 }

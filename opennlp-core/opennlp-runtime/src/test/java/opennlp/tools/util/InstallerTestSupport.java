@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
@@ -45,9 +42,6 @@ final class InstallerTestSupport {
 
   /** One mebibyte, a convenient generous ceiling for tests that do not exercise it. */
   static final long MEBIBYTE = 1024 * KIBIBYTE;
-
-  private static final String SHA_256 = "SHA-256";
-  private static final String SHA_512 = "SHA-512";
 
   private InstallerTestSupport() {
   }
@@ -104,10 +98,9 @@ final class InstallerTestSupport {
    *
    * @param content The bytes to digest. Must not be {@code null}.
    * @return The 64-character lowercase hex digest. Never {@code null}.
-   * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
    */
-  static String sha256(byte[] content) throws NoSuchAlgorithmException {
-    return digest(SHA_256, content);
+  static String sha256(byte[] content) {
+    return DigestTestUtil.sha256(content);
   }
 
   /**
@@ -115,23 +108,9 @@ final class InstallerTestSupport {
    *
    * @param content The bytes to digest. Must not be {@code null}.
    * @return The 128-character lowercase hex digest. Never {@code null}.
-   * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
    */
-  static String sha512(byte[] content) throws NoSuchAlgorithmException {
-    return digest(SHA_512, content);
-  }
-
-  /**
-   * Computes a digest of the given bytes as a lowercase hex string.
-   *
-   * @param algorithm The digest algorithm name.
-   * @param content The bytes to digest. Must not be {@code null}.
-   * @return The lowercase hex digest. Never {@code null}.
-   * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
-   */
-  private static String digest(String algorithm, byte[] content)
-      throws NoSuchAlgorithmException {
-    return HexFormat.of().formatHex(MessageDigest.getInstance(algorithm).digest(content));
+  static String sha512(byte[] content) {
+    return DigestTestUtil.sha512(content);
   }
 
   /**

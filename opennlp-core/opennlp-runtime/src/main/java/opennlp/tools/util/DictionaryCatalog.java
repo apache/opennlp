@@ -30,12 +30,19 @@ import java.util.Set;
 /**
  * Opt-in catalog of remote dictionary archives and companion files. The catalog
  * ships URLs and SHA-512 digests only; it never bundles the data itself. Fetching
- * an entry requires {@link DownloadUtil#REMOTE_DOWNLOAD_PROPERTY} to be
- * {@code true}, so enabling a built-in URL is an explicit user action.
+ * an entry requires {@link #REMOTE_DOWNLOAD_PROPERTY} to be {@code true}, so
+ * enabling a built-in URL is an explicit user action.
  *
  * @since 3.0.0
  */
 public final class DictionaryCatalog {
+
+  /**
+   * System property that must be {@code true} before a catalog entry may be
+   * fetched. Direct {@link ResourceInstaller} calls do not require it: there the
+   * caller already supplied the URI and digest.
+   */
+  public static final String REMOTE_DOWNLOAD_PROPERTY = "opennlp.download.remote";
 
   private static final String DEFAULT_RESOURCE =
       "opennlp/tools/util/dictionary-catalog.properties";
@@ -109,34 +116,37 @@ public final class DictionaryCatalog {
     if (url == null || sha512 == null) {
       throw new IOException("unknown or incomplete dictionary catalog entry: " + id);
     }
-    final String filename = properties.getProperty(id + ".filename");
     try {
-      return new Entry(id, new URI(url), sha512.trim(), filename);
+      return new Entry(id, new URI(url), sha512.trim());
     } catch (URISyntaxException e) {
       throw new IOException("malformed catalog URI for " + id, e);
     }
   }
 
   /**
-   * Downloads a catalog entry into {@code target} after checking that remote catalog
-   * downloads are enabled.
+   * Installs a catalog entry into {@code targetDirectory} after checking that remote
+   * catalog downloads are enabled. The entry is fetched, digest-verified, and unpacked
+   * by {@link ResourceInstaller#install(URI, Path, String)}: an archive expands into
+   * the directory, and a plain file is stored under its source name.
    *
    * @param id The entry id. Must not be {@code null}.
-   * @param target The local file to create. Must not be {@code null}.
+   * @param targetDirectory The directory to install into; created when absent. Must
+   *                        not be {@code null}.
    * @throws IOException Thrown if the property is not enabled, the entry is missing,
-   *         or the download fails verification.
+   *         the download fails verification, or the target already contains an
+   *         installed file.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
-  public void download(String id, Path target) throws IOException {
-    if (target == null) {
-      throw new IllegalArgumentException("target must not be null");
+  public void install(String id, Path targetDirectory) throws IOException {
+    if (targetDirectory == null) {
+      throw new IllegalArgumentException("targetDirectory must not be null");
     }
-    if (!DownloadUtil.isRemoteDownloadEnabled()) {
+    if (!Boolean.getBoolean(REMOTE_DOWNLOAD_PROPERTY)) {
       throw new IOException("remote dictionary catalog downloads are disabled; set -D"
-          + DownloadUtil.REMOTE_DOWNLOAD_PROPERTY + "=true to enable");
+          + REMOTE_DOWNLOAD_PROPERTY + "=true to enable");
     }
     final Entry entry = get(id);
-    DownloadUtil.download(entry.uri(), target, entry.sha512());
+    ResourceInstaller.install(entry.uri(), targetDirectory, entry.sha512());
   }
 
   /**
@@ -145,14 +155,12 @@ public final class DictionaryCatalog {
    * @param id The catalog id.
    * @param uri The absolute download URI.
    * @param sha512 The expected SHA-512 hex digest.
-   * @param filename An optional preferred local file name; may be {@code null}.
    */
-  public record Entry(String id, URI uri, String sha512, String filename) {
+  public record Entry(String id, URI uri, String sha512) {
     /**
      * @param id The catalog id. Must not be {@code null}.
      * @param uri The absolute download URI. Must not be {@code null}.
      * @param sha512 The expected SHA-512 hex digest. Must not be {@code null}.
-     * @param filename An optional preferred local file name; may be {@code null}.
      */
     public Entry {
       if (id == null) {
