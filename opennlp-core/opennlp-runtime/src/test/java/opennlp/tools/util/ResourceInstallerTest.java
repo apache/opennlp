@@ -767,6 +767,64 @@ public class ResourceInstallerTest {
   }
 
   /**
+   * Proves that promotion refuses to replace a file that already exists in the target:
+   * the second installation fails naming the file, the first installation's content
+   * survives, and after the operator removes it the reinstall succeeds.
+   */
+  @Test
+  void testReinstallOverAnExistingFileIsRefused(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final byte[] first = tarGz(new String[][] {{"corpus/data.txt", "version one"}});
+    final byte[] second = tarGz(new String[][] {{"corpus/data.txt", "version two"}});
+    final Path firstFile = source.resolve("first.tar.gz");
+    final Path secondFile = source.resolve("second.tar.gz");
+    Files.write(firstFile, first);
+    Files.write(secondFile, second);
+    ResourceInstaller.install(firstFile.toUri(), target, sha256(first));
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(secondFile.toUri(), target, sha256(second)));
+
+    Assertions.assertEquals(
+        "target already contains: " + target.resolve("corpus/data.txt"),
+        thrown.getMessage());
+    Assertions.assertEquals("version one",
+        Files.readString(target.resolve("corpus/data.txt")));
+
+    Files.delete(target.resolve("corpus/data.txt"));
+    ResourceInstaller.install(secondFile.toUri(), target, sha256(second));
+    Assertions.assertEquals("version two",
+        Files.readString(target.resolve("corpus/data.txt")));
+  }
+
+  /**
+   * Proves that a collision is detected before anything is promoted: an archive whose
+   * first entry is new and whose second entry collides installs neither, so a failed
+   * installation never leaves a mix of old and new files.
+   */
+  @Test
+  void testCollidingInstallPromotesNothing(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    Files.createDirectories(target.resolve("corpus"));
+    Files.writeString(target.resolve("corpus/data.txt"), "keep");
+    final byte[] archive = tarGz(new String[][] {
+        {"corpus/fresh.txt", "new"},
+        {"corpus/data.txt", "replacement"}});
+    final Path file = source.resolve("colliding.tar.gz");
+    Files.write(file, archive);
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(file.toUri(), target, sha256(archive)));
+
+    Assertions.assertEquals(
+        "target already contains: " + target.resolve("corpus/data.txt"),
+        thrown.getMessage());
+    Assertions.assertEquals("keep", Files.readString(target.resolve("corpus/data.txt")));
+    Assertions.assertTrue(Files.notExists(target.resolve("corpus/fresh.txt")));
+    Assertions.assertEquals(List.of("corpus/data.txt"), installedFiles(target));
+  }
+
+  /**
    * Proves that promotion refuses to follow a symbolic link that already exists below
    * the target. Every archive entry here stays inside the staging directory, so the
    * entry-name guard never fires; without a check at promotion time the content lands
