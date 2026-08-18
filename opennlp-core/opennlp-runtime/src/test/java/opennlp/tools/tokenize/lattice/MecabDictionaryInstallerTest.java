@@ -17,34 +17,33 @@
 
 package opennlp.tools.tokenize.lattice;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.util.DictionaryCatalog;
 import opennlp.tools.util.DigestTestUtil;
-import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.archive.TarArchives;
 
 /**
  * Tests the installer against project-authored, in-memory archives; no external
- * dictionary data and no network access are involved.
+ * dictionary data and no network access are involved. Fetch, verification, and
+ * unpacking limits are exercised in {@code opennlp.tools.util.ResourceInstallerTest},
+ * which tests the shared installation path this installer delegates to.
  */
 public class MecabDictionaryInstallerTest {
 
   @Test
-  void testExtractsDictionaryFilesAndFlattensPaths(@TempDir Path target)
-      throws IOException {
-    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
+  void testInstallsDictionaryFilesAndFlattensPaths(@TempDir Path source,
+      @TempDir Path target) throws IOException {
+    final Path archiveFile = archive(source, new String[][] {
         {"dict-1.0/lexicon.csv", "cat,0,0,100,noun\n"},
         {"dict-1.0/matrix.def", "1 1\n0 0 0\n"},
         {"dict-1.0/char.def", "DEFAULT 0 1 0\n"},
@@ -52,10 +51,10 @@ public class MecabDictionaryInstallerTest {
         {"dict-1.0/README", "not a dictionary file"},
         {"dict-1.0/dicrc", "config"}});
 
-    final int extracted = MecabDictionaryInstaller.extract(
-        new ByteArrayInputStream(archive), target);
+    final int installed =
+        MecabDictionaryInstaller.install(archiveFile.toUri(), target);
 
-    Assertions.assertEquals(5, extracted);
+    Assertions.assertEquals(5, installed);
     Assertions.assertTrue(Files.exists(target.resolve("lexicon.csv")));
     Assertions.assertTrue(Files.exists(target.resolve("matrix.def")));
     Assertions.assertTrue(Files.exists(target.resolve("char.def")));
@@ -75,32 +74,51 @@ public class MecabDictionaryInstallerTest {
    * lexicon file of the same base name.
    */
   @Test
-  void testNestedTemplateFilesAreNotExtracted(@TempDir Path target) throws IOException {
-    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
+  void testNestedTemplateFilesAreNotInstalled(@TempDir Path source,
+      @TempDir Path target) throws IOException {
+    final Path archiveFile = archive(source, new String[][] {
         {"dict-1.0/NNP.csv", "cat,1786,3546,2953,noun\n"},
         {"dict-1.0/matrix.def", "1 1\n0 0 0\n"},
         {"dict-1.0/user-dic/person.csv", "template,,,,noun\n"}});
 
-    final int extracted = MecabDictionaryInstaller.extract(
-        new ByteArrayInputStream(archive), target);
+    final int installed =
+        MecabDictionaryInstaller.install(archiveFile.toUri(), target);
 
-    Assertions.assertEquals(2, extracted);
+    Assertions.assertEquals(2, installed);
     Assertions.assertTrue(Files.exists(target.resolve("NNP.csv")));
     Assertions.assertTrue(Files.notExists(target.resolve("person.csv")));
+  }
+
+  /**
+   * Verifies that two payload entries that flatten to the same base name are refused,
+   * because keeping either one silently would install an ambiguous dictionary.
+   */
+  @Test
+  void testEntriesFlatteningToTheSameNameAreRefused(@TempDir Path source,
+      @TempDir Path target) throws IOException {
+    final Path archiveFile = archive(source, new String[][] {
+        {"words.csv", "cat,0,0,100,noun\n"},
+        {"d/words.csv", "dog,0,0,100,noun\n"}});
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionaryInstaller.install(archiveFile.toUri(), target));
+    Assertions.assertEquals(
+        "the archive flattens two entries to the same name: words.csv",
+        e.getMessage());
+    Assertions.assertTrue(Files.notExists(target.resolve("words.csv")));
   }
 
   @Test
   void testInstallReadsAFileUri(@TempDir Path source, @TempDir Path target)
       throws IOException {
-    final Path archiveFile = source.resolve("dict.tar.gz");
-    Files.write(archiveFile, TarGzArchives.gzippedTar(new String[][] {
+    final Path archiveFile = archive(source, new String[][] {
         {"d/words.csv", "cat,0,0,100,noun\n"},
-        {"d/matrix.def", "1 1\n0 0 0\n"}}));
+        {"d/matrix.def", "1 1\n0 0 0\n"}});
 
-    final int extracted =
+    final int installed =
         MecabDictionaryInstaller.install(archiveFile.toUri(), target);
 
-    Assertions.assertEquals(2, extracted);
+    Assertions.assertEquals(2, installed);
     Assertions.assertTrue(Files.exists(target.resolve("words.csv")));
   }
 
@@ -121,11 +139,12 @@ public class MecabDictionaryInstallerTest {
         "cat,0,0,100,noun\n".getBytes(StandardCharsets.UTF_8));
     tar.write(new byte[TarArchives.TERMINATOR_SIZE]);
     final Path archiveFile = source.resolve("dict.tar.gz");
-    Files.write(archiveFile, gzip(tar.toByteArray()));
+    Files.write(archiveFile, TarGzArchives.gzip(tar.toByteArray()));
 
-    final int extracted = MecabDictionaryInstaller.install(archiveFile.toUri(), target);
+    final int installed =
+        MecabDictionaryInstaller.install(archiveFile.toUri(), target);
 
-    Assertions.assertEquals(1, extracted);
+    Assertions.assertEquals(1, installed);
     Assertions.assertEquals("cat,0,0,100,noun\n",
         Files.readString(target.resolve(longBaseName)));
   }
@@ -138,9 +157,8 @@ public class MecabDictionaryInstallerTest {
   @Test
   void testReinstallOverAnExistingDictionaryIsRefused(@TempDir Path source,
       @TempDir Path target) throws IOException {
-    final Path archiveFile = source.resolve("dict.tar.gz");
-    Files.write(archiveFile, TarGzArchives.gzippedTar(new String[][] {
-        {"d/words.csv", "cat,0,0,100,noun\n"}}));
+    final Path archiveFile = archive(source, new String[][] {
+        {"d/words.csv", "cat,0,0,100,noun\n"}});
     Assertions.assertEquals(1,
         MecabDictionaryInstaller.install(archiveFile.toUri(), target));
 
@@ -151,141 +169,61 @@ public class MecabDictionaryInstallerTest {
         Files.readString(target.resolve("words.csv")));
   }
 
-  /**
-   * Compresses raw tar bytes the way a {@code .tar.gz} distribution is shipped.
-   *
-   * @param content The raw tar bytes. Must not be {@code null}.
-   * @return The gzip-compressed bytes. Never {@code null}.
-   * @throws IOException Thrown if writing to the in-memory stream fails.
-   */
-  private static byte[] gzip(byte[] content) throws IOException {
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    try (GZIPOutputStream compressed = new GZIPOutputStream(out)) {
-      compressed.write(content);
-    }
-    return out.toByteArray();
-  }
-
   @Test
   void testRemoteInstallWithoutDigestFailsLoud(@TempDir Path target) {
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.install(
-            URI.create("https://example.invalid/dict.tar.gz"), target));
+    final IllegalArgumentException e =
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> MecabDictionaryInstaller.install(
+                URI.create("https://example.invalid/dict.tar.gz"), target));
+    Assertions.assertTrue(
+        e.getMessage().contains("checksum must be given for an http or https source"));
   }
 
   @Test
   void testInstallVerifiesDigest(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
+    final Path archiveFile = archive(source, new String[][] {
         {"d/words.csv", "cat,0,0,100,noun\n"},
         {"d/matrix.def", "1 1\n0 0 0\n"}});
-    final Path archiveFile = source.resolve("dict.tar.gz");
-    Files.write(archiveFile, archive);
+    final byte[] archive = Files.readAllBytes(archiveFile);
 
-    final int extracted = MecabDictionaryInstaller.install(
+    final int installed = MecabDictionaryInstaller.install(
         archiveFile.toUri(), target, DigestTestUtil.sha512(archive));
-    Assertions.assertEquals(2, extracted);
+    Assertions.assertEquals(2, installed);
 
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionaryInstaller.install(archiveFile.toUri(),
             target.resolve("other"), DigestTestUtil.sha512(new byte[] {1})));
-    Assertions.assertTrue(e.getMessage().contains("SHA512 checksum validation failed"));
+    Assertions.assertTrue(e.getMessage().contains("checksum mismatch: expected"));
   }
 
   @Test
   void testInstallFromCatalogRequiresRemoteProperty(@TempDir Path target) {
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
       final IOException e = Assertions.assertThrows(IOException.class,
           () -> MecabDictionaryInstaller.installFromCatalog("mecab.ipadic", target));
-      Assertions.assertTrue(e.getMessage().contains(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY));
+      Assertions.assertTrue(
+          e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
     } finally {
       if (previous == null) {
-        System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+        System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
       } else {
-        System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, previous);
+        System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, previous);
       }
     }
   }
 
   @Test
-  void testArchivesWithoutDictionaryFilesFailLoud(@TempDir Path target)
-      throws IOException {
-    final byte[] archive =
-        TarGzArchives.gzippedTar(new String[][] {{"readme.txt", "nothing here"}});
-    Assertions.assertThrows(IOException.class, () -> MecabDictionaryInstaller.extract(
-        new ByteArrayInputStream(archive), target));
-  }
-
-  /**
-   * Verifies that a tar entry whose declared size is above the per-entry ceiling is
-   * rejected before any payload is written. The fixture stores only the oversized
-   * header so the test does not allocate the declared size.
-   */
-  @Test
-  void testOversizedEntryFailsLoud(@TempDir Path target) throws IOException {
-    final long limit = 64;
-    final byte[] archive = TarGzArchives.gzippedTar(
-        TarGzArchives.Entry.withDeclaredSize("huge.csv", new byte[0], limit + 1));
+  void testArchivesWithoutDictionaryFilesFailLoud(@TempDir Path source,
+      @TempDir Path target) throws IOException {
+    final Path archiveFile =
+        archive(source, new String[][] {{"readme.txt", "nothing here"}});
     final IOException e = Assertions.assertThrows(IOException.class,
-        () -> MecabDictionaryInstaller.extract(new ByteArrayInputStream(archive),
-            target, limit, 1024, 16, 100));
-    Assertions.assertEquals("tar entry size exceeds safe limit of " + limit,
-        e.getMessage());
-  }
-
-  /**
-   * Verifies that extracting dictionary files whose sizes sum above the total-bytes
-   * ceiling fails with {@link IOException}.
-   */
-  @Test
-  void testTotalExtractedBytesBudgetFailsLoud(@TempDir Path target) throws IOException {
-    final long limit = 30;
-    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
-        {"a.csv", "01234567890123456789"},
-        {"b.csv", "01234567890123456789"}});
-    final IOException e = Assertions.assertThrows(IOException.class,
-        () -> MecabDictionaryInstaller.extract(new ByteArrayInputStream(archive),
-            target, 1024, limit, 16, 100));
-    Assertions.assertEquals("extracted archive size exceeds safe limit of " + limit,
-        e.getMessage());
-  }
-
-  /**
-   * Verifies that an archive with more dictionary files than the entry-count ceiling
-   * fails on the entry that would exceed it.
-   */
-  @Test
-  void testExtractedEntryCountBudgetFailsLoud(@TempDir Path target) throws IOException {
-    final int limit = 2;
-    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
-        {"a.csv", "a\n"},
-        {"b.def", "b\n"},
-        {"c.csv", "c\n"}});
-    final IOException e = Assertions.assertThrows(IOException.class,
-        () -> MecabDictionaryInstaller.extract(new ByteArrayInputStream(archive),
-            target, 1024, 1024, limit, 100));
-    Assertions.assertEquals("extracted entry count exceeds safe limit of " + limit,
-        e.getMessage());
-  }
-
-  /**
-   * Verifies that a highly compressible payload whose expansion exceeds the gzip
-   * ratio ceiling fails loud before the inflated content is kept.
-   */
-  @Test
-  void testGzipExpansionRatioBudgetFailsLoud(@TempDir Path target) throws IOException {
-    final int ratio = 2;
-    final byte[] zeros = new byte[64 * 1024];
-    Arrays.fill(zeros, (byte) 0);
-    final byte[] archive = TarGzArchives.gzippedTar(
-        TarGzArchives.Entry.of("zeros.csv", zeros));
-    final IOException e = Assertions.assertThrows(IOException.class,
-        () -> MecabDictionaryInstaller.extract(new ByteArrayInputStream(archive),
-            target, zeros.length, zeros.length, 16, ratio));
-    Assertions.assertEquals("gzip expansion ratio exceeds safe limit of " + ratio,
-        e.getMessage());
+        () -> MecabDictionaryInstaller.install(archiveFile.toUri(), target));
+    Assertions.assertEquals("the archive contains no dictionary file", e.getMessage());
   }
 
   @Test
@@ -295,16 +233,22 @@ public class MecabDictionaryInstallerTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> MecabDictionaryInstaller.install(target.toUri(), null));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.extract(null, target));
+        () -> MecabDictionaryInstaller.installFromCatalog(null, target));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.extract(
-            new ByteArrayInputStream(new byte[0]), null));
+        () -> MecabDictionaryInstaller.installFromCatalog("mecab.ipadic", null));
   }
 
-  @Test
-  void testDefaultBudgetsWithoutOverrides() {
-    Assertions.assertEquals(512L * 1024 * 1024, MecabDictionaryInstaller.MAX_ENTRY_BYTES);
-    Assertions.assertEquals(2L * 1024 * 1024 * 1024,
-        MecabDictionaryInstaller.MAX_TOTAL_EXTRACTED_BYTES);
+  /**
+   * Writes a gzip-compressed tar archive of the given entries to a file.
+   *
+   * @param directory The directory to write the archive into.
+   * @param entries The entries as {@code {name, content}} pairs.
+   * @return The archive file. Never {@code null}.
+   * @throws IOException Thrown if writing fails.
+   */
+  private static Path archive(Path directory, String[][] entries) throws IOException {
+    final Path archiveFile = directory.resolve("dict.tar.gz");
+    Files.write(archiveFile, TarGzArchives.gzippedTar(entries));
+    return archiveFile;
   }
 }

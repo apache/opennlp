@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.util.DictionaryCatalog;
-import opennlp.tools.util.DownloadUtil;
 
 /**
  * Pins the Hunspell catalog download gate; network fetches are not exercised here.
@@ -40,17 +39,17 @@ public class HunspellDictionaryDownloadTest {
    */
   @Test
   void testDownloadRequiresRemoteProperty(@TempDir Path target) {
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    final String previous = System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
       final IOException e = Assertions.assertThrows(IOException.class,
           () -> HunspellDictionaryDownload.downloadFromCatalog("en_US", target));
-      Assertions.assertTrue(e.getMessage().contains(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY));
+      Assertions.assertTrue(e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
     } finally {
       if (previous == null) {
-        System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+        System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
       } else {
-        System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, previous);
+        System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, previous);
       }
     }
   }
