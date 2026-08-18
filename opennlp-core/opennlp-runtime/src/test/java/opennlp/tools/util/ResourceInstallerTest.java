@@ -64,6 +64,12 @@ public class ResourceInstallerTest {
       "archive entry escapes the target directory: ";
   private static final String EXPANSION_CEILING_ERROR =
       "expanded content exceeds the ceiling of " + KIBIBYTE + " bytes";
+  private static final String ENTRY_CEILING_ERROR =
+      "archive entry count exceeds the ceiling of 2 entries";
+  private static final String COLLISION_ERROR = "target already contains: ";
+
+  /** The property name used by the parser tests; never read by the installer. */
+  private static final String TEST_CEILING_PROPERTY = "opennlp.test.ceiling";
 
   /**
    * Installs the given file under the default limits and asserts that it fails with the
@@ -123,7 +129,8 @@ public class ResourceInstallerTest {
   private static ResourceInstaller.Limits ceilings(long maxDownloadBytes,
       long maxExpandedBytes) {
     return new ResourceInstaller.Limits(Duration.ofSeconds(10), Duration.ofSeconds(10),
-        5, maxDownloadBytes, maxExpandedBytes);
+        5, maxDownloadBytes, maxExpandedBytes,
+        ResourceInstaller.Limits.DEFAULT.maxEntries());
   }
 
   /**
@@ -520,27 +527,30 @@ public class ResourceInstallerTest {
     final Duration valid = Duration.ofSeconds(10);
     return Stream.of(
         Arguments.of("null connectTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(null, valid, 5, 1024, 1024),
+            () -> new ResourceInstaller.Limits(null, valid, 5, 1024, 1024, 10),
             "connectTimeout must be positive"),
         Arguments.of("zero connectTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(Duration.ZERO, valid, 5, 1024, 1024),
+            () -> new ResourceInstaller.Limits(Duration.ZERO, valid, 5, 1024, 1024, 10),
             "connectTimeout must be positive"),
         Arguments.of("null readTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(valid, null, 5, 1024, 1024),
+            () -> new ResourceInstaller.Limits(valid, null, 5, 1024, 1024, 10),
             "readTimeout must be positive"),
         Arguments.of("negative readTimeout", (Executable)
             () -> new ResourceInstaller.Limits(valid, Duration.ofSeconds(-1),
-                5, 1024, 1024),
+                5, 1024, 1024, 10),
             "readTimeout must be positive"),
         Arguments.of("negative maxRedirects", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, -1, 1024, 1024),
+            () -> new ResourceInstaller.Limits(valid, valid, -1, 1024, 1024, 10),
             "maxRedirects must not be negative"),
         Arguments.of("zero maxDownloadBytes", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, 5, 0, 1024),
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 0, 1024, 10),
             "maxDownloadBytes must be positive"),
         Arguments.of("zero maxExpandedBytes", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 0),
-            "maxExpandedBytes must be positive"));
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 0, 10),
+            "maxExpandedBytes must be positive"),
+        Arguments.of("zero maxEntries", (Executable)
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 1024, 0),
+            "maxEntries must be positive"));
   }
 
   @ParameterizedTest(name = "{0}")
@@ -655,7 +665,9 @@ public class ResourceInstallerTest {
 
   /**
    * Pins the default limits the two- and three-argument {@code install} methods
-   * apply, so a change to them cannot slip through unnoticed.
+   * apply, so a change to them cannot slip through unnoticed. The three ceiling
+   * defaults read their system properties once at class load; the build sets none of
+   * them, so the built-in values are what this test observes.
    */
   @Test
   void testDefaultLimitsArePinned() {
@@ -665,6 +677,137 @@ public class ResourceInstallerTest {
     Assertions.assertEquals(5, defaults.maxRedirects());
     Assertions.assertEquals(1L << 30, defaults.maxDownloadBytes());
     Assertions.assertEquals(4L << 30, defaults.maxExpandedBytes());
+    Assertions.assertEquals(100_000L, defaults.maxEntries());
+  }
+
+  /**
+   * Pins the system property names an operator can set at startup to override the
+   * default ceilings, so a rename cannot silently orphan deployed configurations.
+   */
+  @Test
+  void testCeilingPropertyNamesArePinned() {
+    Assertions.assertEquals("opennlp.download.max.bytes",
+        ResourceInstaller.Limits.MAX_DOWNLOAD_BYTES_PROPERTY);
+    Assertions.assertEquals("opennlp.install.max.total.bytes",
+        ResourceInstaller.Limits.MAX_EXPANDED_BYTES_PROPERTY);
+    Assertions.assertEquals("opennlp.install.max.entries",
+        ResourceInstaller.Limits.MAX_ENTRIES_PROPERTY);
+  }
+
+  /**
+   * Proves that a set ceiling property is read, with surrounding whitespace accepted,
+   * through the parser behind the {@code DEFAULT} ceilings. The parser is tested
+   * directly because {@code DEFAULT} captures its properties once at class load.
+   */
+  @Test
+  void testCeilingPropertyOverrideIsRead() {
+    System.setProperty(TEST_CEILING_PROPERTY, " 123 ");
+    try {
+      Assertions.assertEquals(123L,
+          ResourceInstaller.Limits.longProperty(TEST_CEILING_PROPERTY, 7L));
+    } finally {
+      System.clearProperty(TEST_CEILING_PROPERTY);
+    }
+  }
+
+  /**
+   * Enumerates property values that must fall back to the built-in default: absent,
+   * not a number, zero, negative, and empty.
+   *
+   * @return One case per unusable value. Never {@code null}.
+   */
+  static Stream<Arguments> unusableCeilingProperties() {
+    return Stream.of(
+        Arguments.of("absent", null),
+        Arguments.of("not a number", "abc"),
+        Arguments.of("zero", "0"),
+        Arguments.of("negative", "-5"),
+        Arguments.of("empty", ""));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("unusableCeilingProperties")
+  void testCeilingPropertyFallsBackOnUnusableValues(String label, String value) {
+    if (value == null) {
+      System.clearProperty(TEST_CEILING_PROPERTY);
+    } else {
+      System.setProperty(TEST_CEILING_PROPERTY, value);
+    }
+    try {
+      Assertions.assertEquals(7L,
+          ResourceInstaller.Limits.longProperty(TEST_CEILING_PROPERTY, 7L));
+    } finally {
+      System.clearProperty(TEST_CEILING_PROPERTY);
+    }
+  }
+
+  /**
+   * Builds installation limits with the given entry ceiling and otherwise default
+   * values, so entry-count tests state only the value they exercise.
+   *
+   * @param maxEntries The entry ceiling.
+   * @return The limits. Never {@code null}.
+   */
+  private static ResourceInstaller.Limits entryCeiling(long maxEntries) {
+    return ResourceInstaller.Limits.builder().maxEntries(maxEntries).build();
+  }
+
+  /**
+   * Proves the entry-count ceiling on tar content: an archive with more entries than
+   * the ceiling is rejected and nothing is installed.
+   */
+  @Test
+  void testTarEntryCountCeilingRejectsArchive(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final byte[] archive = tarGz(new String[][] {
+        {"corpus/one.txt", "1"},
+        {"corpus/two.txt", "2"},
+        {"corpus/three.txt", "3"}});
+    final Path file = source.resolve("many.tar.gz");
+    Files.write(file, archive);
+
+    assertInstallFails(file, target, entryCeiling(2),
+        ENTRY_CEILING_ERROR);
+  }
+
+  /**
+   * Proves the entry-count ceiling on zip content, matching the tar behavior.
+   */
+  @Test
+  void testZipEntryCountCeilingRejectsArchive(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+      for (int i = 0; i < 3; i++) {
+        zip.putNextEntry(new ZipEntry("corpus/entry-" + i + ".txt"));
+        zip.write("x".getBytes(StandardCharsets.UTF_8));
+        zip.closeEntry();
+      }
+    }
+    final Path file = source.resolve("many.zip");
+    Files.write(file, out.toByteArray());
+
+    assertInstallFails(file, target, entryCeiling(2),
+        ENTRY_CEILING_ERROR);
+  }
+
+  /**
+   * Proves the accept side of the entry-count ceiling: an archive with exactly as many
+   * entries as the ceiling installs, so the boundary is exclusive of failure.
+   */
+  @Test
+  void testEntryCountExactlyAtCeilingSucceeds(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final byte[] archive = tarGz(new String[][] {
+        {"corpus/one.txt", "1"},
+        {"corpus/two.txt", "2"}});
+    final Path file = source.resolve("exact.tar.gz");
+    Files.write(file, archive);
+
+    ResourceInstaller.install(file.toUri(), target, sha256(archive), entryCeiling(2));
+
+    Assertions.assertEquals(List.of("corpus/one.txt", "corpus/two.txt"),
+        installedFiles(target));
   }
 
   /**
@@ -742,11 +885,12 @@ public class ResourceInstallerTest {
   }
 
   /**
-   * Proves that installing over the same target replaces files the previous
-   * installation delivered, so an operator can refresh a resource in place.
+   * Proves that promotion refuses to replace a file that already exists in the target:
+   * the second installation fails naming the file, the first installation's content
+   * survives, and after the operator removes it the reinstall succeeds.
    */
   @Test
-  void testReinstallReplacesExistingFiles(@TempDir Path source, @TempDir Path target)
+  void testReinstallOverAnExistingFileIsRefused(@TempDir Path source, @TempDir Path target)
       throws Exception {
     final byte[] first = tarGz(new String[][] {{"corpus/data.txt", "version one"}});
     final byte[] second = tarGz(new String[][] {{"corpus/data.txt", "version two"}});
@@ -754,15 +898,47 @@ public class ResourceInstallerTest {
     final Path secondFile = source.resolve("second.tar.gz");
     Files.write(firstFile, first);
     Files.write(secondFile, second);
-
     ResourceInstaller.install(firstFile.toUri(), target, sha256(first));
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(secondFile.toUri(), target, sha256(second)));
+
+    Assertions.assertEquals(
+        COLLISION_ERROR + target.resolve("corpus/data.txt"),
+        thrown.getMessage());
     Assertions.assertEquals("version one",
         Files.readString(target.resolve("corpus/data.txt")));
 
+    Files.delete(target.resolve("corpus/data.txt"));
     ResourceInstaller.install(secondFile.toUri(), target, sha256(second));
-
     Assertions.assertEquals("version two",
         Files.readString(target.resolve("corpus/data.txt")));
+  }
+
+  /**
+   * Proves that a collision is detected before anything is promoted: an archive whose
+   * first entry is new and whose second entry collides installs neither, so a failed
+   * installation never leaves a mix of old and new files.
+   */
+  @Test
+  void testCollidingInstallPromotesNothing(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    Files.createDirectories(target.resolve("corpus"));
+    Files.writeString(target.resolve("corpus/data.txt"), "keep");
+    final byte[] archive = tarGz(new String[][] {
+        {"corpus/fresh.txt", "new"},
+        {"corpus/data.txt", "replacement"}});
+    final Path file = source.resolve("colliding.tar.gz");
+    Files.write(file, archive);
+
+    final IOException thrown = Assertions.assertThrows(IOException.class,
+        () -> ResourceInstaller.install(file.toUri(), target, sha256(archive)));
+
+    Assertions.assertEquals(
+        COLLISION_ERROR + target.resolve("corpus/data.txt"),
+        thrown.getMessage());
+    Assertions.assertEquals("keep", Files.readString(target.resolve("corpus/data.txt")));
+    Assertions.assertTrue(Files.notExists(target.resolve("corpus/fresh.txt")));
     Assertions.assertEquals(List.of("corpus/data.txt"), installedFiles(target));
   }
 
@@ -861,7 +1037,7 @@ public class ResourceInstallerTest {
   }
 
   /**
-   * Proves that each builder setter changes its own value and leaves the other four at
+   * Proves that each builder setter changes its own value and leaves the others at
    * their defaults.
    */
   @Test
@@ -879,6 +1055,8 @@ public class ResourceInstallerTest {
         limits.readTimeout());
     Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.maxRedirects(),
         limits.maxRedirects());
+    Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.maxEntries(),
+        limits.maxEntries());
   }
 
   /**
@@ -897,7 +1075,9 @@ public class ResourceInstallerTest {
         () -> assertArgumentError("maxDownloadBytes must be positive",
             () -> ResourceInstaller.Limits.builder().maxDownloadBytes(0).build()),
         () -> assertArgumentError("maxExpandedBytes must be positive",
-            () -> ResourceInstaller.Limits.builder().maxExpandedBytes(-1).build()));
+            () -> ResourceInstaller.Limits.builder().maxExpandedBytes(-1).build()),
+        () -> assertArgumentError("maxEntries must be positive",
+            () -> ResourceInstaller.Limits.builder().maxEntries(0).build()));
   }
 
   /**

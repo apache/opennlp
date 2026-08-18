@@ -42,7 +42,7 @@ HunspellDictionaryDownload.downloadFromCatalog("en_US", Path.of("/tmp/hunspell-e
 ## Option B: your own files
 
 Fetch `.aff` / `.dic` (and the license readme) with any tool, or with
-`DownloadUtil.download(uri, path, sha512)`, then load them:
+`ResourceInstaller.install(uri, directory, sha512)`, then load them:
 
 ```java
 import java.nio.file.Path;

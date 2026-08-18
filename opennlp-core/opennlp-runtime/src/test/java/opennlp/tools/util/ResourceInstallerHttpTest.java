@@ -34,12 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -62,6 +64,12 @@ public class ResourceInstallerHttpTest {
   /** Long enough that a stalled route outlives any timeout a test configures. */
   private static final Duration STALL = Duration.ofSeconds(30);
 
+  /**
+   * A well-formed digest for fetches that fail before verification runs; its value is
+   * never compared.
+   */
+  private static final String UNREACHED_CHECKSUM = "0".repeat(64);
+
   private StubServer server;
 
   @BeforeEach
@@ -82,7 +90,8 @@ public class ResourceInstallerHttpTest {
    * @return The limits. Never {@code null}.
    */
   private static ResourceInstaller.Limits withReadTimeout(Duration readTimeout) {
-    return new ResourceInstaller.Limits(GENEROUS, readTimeout, 5, MEBIBYTE, MEBIBYTE);
+    return new ResourceInstaller.Limits(GENEROUS, readTimeout, 5, MEBIBYTE, MEBIBYTE,
+        ResourceInstaller.Limits.DEFAULT.maxEntries());
   }
 
   /**
@@ -94,7 +103,7 @@ public class ResourceInstallerHttpTest {
    */
   private static ResourceInstaller.Limits withMaxRedirects(int maxRedirects) {
     return new ResourceInstaller.Limits(GENEROUS, GENEROUS, maxRedirects,
-        MEBIBYTE, MEBIBYTE);
+        MEBIBYTE, MEBIBYTE, ResourceInstaller.Limits.DEFAULT.maxEntries());
   }
 
   /**
@@ -106,7 +115,63 @@ public class ResourceInstallerHttpTest {
    */
   private static ResourceInstaller.Limits withDownloadCeiling(long maxDownloadBytes) {
     return new ResourceInstaller.Limits(GENEROUS, GENEROUS, 5, maxDownloadBytes,
-        MEBIBYTE);
+        MEBIBYTE, ResourceInstaller.Limits.DEFAULT.maxEntries());
+  }
+
+  /**
+   * Asserts that the given call is rejected as an argument error demanding a checksum
+   * for the remote source.
+   *
+   * @param source The remote source the message must name.
+   * @param call The call under test.
+   */
+  private static void assertChecksumRequired(URI source, Executable call) {
+    final IllegalArgumentException thrown =
+        Assertions.assertThrows(IllegalArgumentException.class, call);
+    Assertions.assertEquals(
+        "checksum must be given for an http or https source: " + source,
+        thrown.getMessage());
+  }
+
+  /**
+   * Proves that an http source without a checksum is rejected as an argument error on
+   * every overload that could omit one, before any connection is opened, so bytes that
+   * can never be verified are never fetched.
+   */
+  @Test
+  void testHttpSourceWithoutChecksumIsRejectedBeforeFetching(@TempDir Path target)
+      throws Exception {
+    final AtomicBoolean fetched = new AtomicBoolean();
+    server.route("/corpus.tar.gz", out -> {
+      fetched.set(true);
+      StubServer.ok(out, tarGz(new String[][] {{"corpus/data.txt", "unverified"}}));
+    });
+
+    final URI source = server.uri("/corpus.tar.gz");
+    Assertions.assertAll(
+        () -> assertChecksumRequired(source,
+            () -> ResourceInstaller.install(source, target)),
+        () -> assertChecksumRequired(source,
+            () -> ResourceInstaller.install(source, target, null)),
+        () -> assertChecksumRequired(source,
+            () -> ResourceInstaller.install(source, target, null, withMaxRedirects(5))));
+    Assertions.assertFalse(fetched.get());
+    Assertions.assertEquals(List.of(), installedFiles(target));
+  }
+
+  /**
+   * Proves that the checksum requirement covers https and fires before the target
+   * directory is created, so a checksum-less call cannot leave an empty directory
+   * behind.
+   */
+  @Test
+  void testHttpsSourceWithoutChecksumIsRejectedBeforeCreatingTheTarget(
+      @TempDir Path parent) {
+    final Path target = parent.resolve("not-created-yet");
+    final URI source = URI.create("https://example.invalid/corpus.tar.gz");
+
+    assertChecksumRequired(source, () -> ResourceInstaller.install(source, target));
+    Assertions.assertTrue(Files.notExists(target));
   }
 
   @Test
@@ -178,7 +243,7 @@ public class ResourceInstallerHttpTest {
 
     final URI source = server.uri("/once");
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(source, target, null, withMaxRedirects(0)));
+        () -> ResourceInstaller.install(source, target, UNREACHED_CHECKSUM, withMaxRedirects(0)));
     Assertions.assertEquals("more than 0 redirects: " + source, thrown.getMessage());
     Assertions.assertEquals(List.of(), installedFiles(target));
   }
@@ -208,7 +273,7 @@ public class ResourceInstallerHttpTest {
 
     final URI source = server.uri("/loop");
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(source, target, null, withMaxRedirects(3)));
+        () -> ResourceInstaller.install(source, target, UNREACHED_CHECKSUM, withMaxRedirects(3)));
     Assertions.assertEquals("more than 3 redirects: " + source, thrown.getMessage());
     Assertions.assertEquals(List.of(), installedFiles(target));
   }
@@ -224,7 +289,7 @@ public class ResourceInstallerHttpTest {
 
     final URI source = server.uri("/broken");
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(source, target));
+        () -> ResourceInstaller.install(source, target, UNREACHED_CHECKSUM));
     Assertions.assertEquals("redirect from " + source + " carries no Location header",
         thrown.getMessage());
     Assertions.assertEquals(List.of(), installedFiles(target));
@@ -239,7 +304,8 @@ public class ResourceInstallerHttpTest {
     server.route("/hostile", out -> StubServer.redirect(out, "file:///etc/passwd"));
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(server.uri("/hostile"), target));
+        () -> ResourceInstaller.install(server.uri("/hostile"), target,
+            UNREACHED_CHECKSUM));
     Assertions.assertEquals(
         "redirect target is not an http or https location: file:///etc/passwd",
         thrown.getMessage());
@@ -278,7 +344,7 @@ public class ResourceInstallerHttpTest {
 
     final URI source = server.uri("/missing.tar.gz");
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(source, target));
+        () -> ResourceInstaller.install(source, target, UNREACHED_CHECKSUM));
     Assertions.assertEquals("download failed with HTTP status 404: " + source,
         thrown.getMessage());
     Assertions.assertEquals(List.of(), installedFiles(target));
@@ -293,8 +359,8 @@ public class ResourceInstallerHttpTest {
     server.route("/stall", out -> StubServer.sleep(STALL));
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(server.uri("/stall"), target, null,
-            withReadTimeout(Duration.ofMillis(250))));
+        () -> ResourceInstaller.install(server.uri("/stall"), target,
+            UNREACHED_CHECKSUM, withReadTimeout(Duration.ofMillis(250))));
     Assertions.assertInstanceOf(SocketTimeoutException.class, thrown);
   }
 
@@ -312,8 +378,8 @@ public class ResourceInstallerHttpTest {
     });
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(server.uri("/drip"), target, null,
-            withReadTimeout(Duration.ofMillis(250))));
+        () -> ResourceInstaller.install(server.uri("/drip"), target,
+            UNREACHED_CHECKSUM, withReadTimeout(Duration.ofMillis(250))));
     Assertions.assertInstanceOf(SocketTimeoutException.class, thrown);
     Assertions.assertEquals(List.of(), installedFiles(target));
   }
@@ -329,8 +395,8 @@ public class ResourceInstallerHttpTest {
         "Content-Length: 10000000", ""));
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(server.uri("/liar.tar.gz"), target, null,
-            withDownloadCeiling(KIBIBYTE)));
+        () -> ResourceInstaller.install(server.uri("/liar.tar.gz"), target,
+            UNREACHED_CHECKSUM, withDownloadCeiling(KIBIBYTE)));
     Assertions.assertEquals(
         "declared content length 10000000 exceeds the download ceiling of 1024 bytes",
         thrown.getMessage());
@@ -350,8 +416,8 @@ public class ResourceInstallerHttpTest {
     });
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(server.uri("/endless"), target, null,
-            withDownloadCeiling(KIBIBYTE)));
+        () -> ResourceInstaller.install(server.uri("/endless"), target,
+            UNREACHED_CHECKSUM, withDownloadCeiling(KIBIBYTE)));
     Assertions.assertEquals("download exceeds the ceiling of 1024 bytes",
         thrown.getMessage());
     Assertions.assertEquals(List.of(), installedFiles(target));
@@ -372,7 +438,8 @@ public class ResourceInstallerHttpTest {
         .build();
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(server.uri("/stall"), target, null, limits));
+        () -> ResourceInstaller.install(server.uri("/stall"), target,
+            UNREACHED_CHECKSUM, limits));
 
     Assertions.assertInstanceOf(SocketTimeoutException.class, thrown);
   }
