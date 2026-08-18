@@ -118,9 +118,9 @@ public final class ResourceInstaller {
    *                         this counts the entire decompressed stream; otherwise, it
    *                         counts installed file content. Must be positive.
    * @param maxEntries The largest number of archive entries accepted, counting every
-   *                   entry including directories, so an archive of countless tiny
-   *                   files cannot exhaust directory entries below the byte ceilings.
-   *                   Must be positive.
+   *                   entry including directories, so an archive of many tiny files
+   *                   cannot exhaust directory entries while staying under the byte
+   *                   ceilings. Must be positive.
    */
   public record Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
                        long maxDownloadBytes, long maxExpandedBytes, long maxEntries) {

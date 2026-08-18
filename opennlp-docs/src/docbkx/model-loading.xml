@@ -219,7 +219,8 @@ for(ClassPathModelEntry entry : models) {
       ceiling counts every byte produced by gzip decompression, including tar headers, padding, and
       metadata; for zip and uncompressed inputs, it counts the installed file content. An archive
       is also bounded by an entry ceiling counting every entry including directories, so an
-      archive of countless tiny files cannot exhaust directory entries below the byte ceilings.
+      archive of many tiny files cannot exhaust directory entries while staying under the byte
+      ceilings.
       The defaults (20 second connect timeout, 60 second read timeout, 5 redirects, 1 GiB
       download, 4 GiB expanded, 100000 entries) apply to the two- and three-argument
       <code>install</code> methods and are

@@ -64,6 +64,12 @@ public class ResourceInstallerTest {
       "archive entry escapes the target directory: ";
   private static final String EXPANSION_CEILING_ERROR =
       "expanded content exceeds the ceiling of " + KIBIBYTE + " bytes";
+  private static final String ENTRY_CEILING_ERROR =
+      "archive entry count exceeds the ceiling of 2 entries";
+  private static final String COLLISION_ERROR = "target already contains: ";
+
+  /** The property name used by the parser tests; never read by the installer. */
+  private static final String TEST_CEILING_PROPERTY = "opennlp.test.ceiling";
 
   /**
    * Installs the given file under the default limits and asserts that it fails with the
@@ -695,12 +701,12 @@ public class ResourceInstallerTest {
    */
   @Test
   void testCeilingPropertyOverrideIsRead() {
-    System.setProperty("opennlp.test.ceiling", " 123 ");
+    System.setProperty(TEST_CEILING_PROPERTY, " 123 ");
     try {
       Assertions.assertEquals(123L,
-          ResourceInstaller.Limits.longProperty("opennlp.test.ceiling", 7L));
+          ResourceInstaller.Limits.longProperty(TEST_CEILING_PROPERTY, 7L));
     } finally {
-      System.clearProperty("opennlp.test.ceiling");
+      System.clearProperty(TEST_CEILING_PROPERTY);
     }
   }
 
@@ -723,15 +729,15 @@ public class ResourceInstallerTest {
   @MethodSource("unusableCeilingProperties")
   void testCeilingPropertyFallsBackOnUnusableValues(String label, String value) {
     if (value == null) {
-      System.clearProperty("opennlp.test.ceiling");
+      System.clearProperty(TEST_CEILING_PROPERTY);
     } else {
-      System.setProperty("opennlp.test.ceiling", value);
+      System.setProperty(TEST_CEILING_PROPERTY, value);
     }
     try {
       Assertions.assertEquals(7L,
-          ResourceInstaller.Limits.longProperty("opennlp.test.ceiling", 7L));
+          ResourceInstaller.Limits.longProperty(TEST_CEILING_PROPERTY, 7L));
     } finally {
-      System.clearProperty("opennlp.test.ceiling");
+      System.clearProperty(TEST_CEILING_PROPERTY);
     }
   }
 
@@ -748,8 +754,7 @@ public class ResourceInstallerTest {
 
   /**
    * Proves the entry-count ceiling on tar content: an archive with more entries than
-   * the ceiling is rejected and nothing is installed, so an archive of countless tiny
-   * files cannot exhaust directory entries below the byte ceilings.
+   * the ceiling is rejected and nothing is installed.
    */
   @Test
   void testTarEntryCountCeilingRejectsArchive(@TempDir Path source, @TempDir Path target)
@@ -762,7 +767,7 @@ public class ResourceInstallerTest {
     Files.write(file, archive);
 
     assertInstallFails(file, target, entryCeiling(2),
-        "archive entry count exceeds the ceiling of 2 entries");
+        ENTRY_CEILING_ERROR);
   }
 
   /**
@@ -783,7 +788,7 @@ public class ResourceInstallerTest {
     Files.write(file, out.toByteArray());
 
     assertInstallFails(file, target, entryCeiling(2),
-        "archive entry count exceeds the ceiling of 2 entries");
+        ENTRY_CEILING_ERROR);
   }
 
   /**
@@ -899,7 +904,7 @@ public class ResourceInstallerTest {
         () -> ResourceInstaller.install(secondFile.toUri(), target, sha256(second)));
 
     Assertions.assertEquals(
-        "target already contains: " + target.resolve("corpus/data.txt"),
+        COLLISION_ERROR + target.resolve("corpus/data.txt"),
         thrown.getMessage());
     Assertions.assertEquals("version one",
         Files.readString(target.resolve("corpus/data.txt")));
@@ -930,7 +935,7 @@ public class ResourceInstallerTest {
         () -> ResourceInstaller.install(file.toUri(), target, sha256(archive)));
 
     Assertions.assertEquals(
-        "target already contains: " + target.resolve("corpus/data.txt"),
+        COLLISION_ERROR + target.resolve("corpus/data.txt"),
         thrown.getMessage());
     Assertions.assertEquals("keep", Files.readString(target.resolve("corpus/data.txt")));
     Assertions.assertTrue(Files.notExists(target.resolve("corpus/fresh.txt")));
