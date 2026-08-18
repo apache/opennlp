@@ -90,7 +90,8 @@ public class ResourceInstallerHttpTest {
    * @return The limits. Never {@code null}.
    */
   private static ResourceInstaller.Limits withReadTimeout(Duration readTimeout) {
-    return new ResourceInstaller.Limits(GENEROUS, readTimeout, 5, MEBIBYTE, MEBIBYTE);
+    return new ResourceInstaller.Limits(GENEROUS, readTimeout, 5, MEBIBYTE, MEBIBYTE,
+        ResourceInstaller.Limits.DEFAULT.maxEntries());
   }
 
   /**
@@ -102,7 +103,7 @@ public class ResourceInstallerHttpTest {
    */
   private static ResourceInstaller.Limits withMaxRedirects(int maxRedirects) {
     return new ResourceInstaller.Limits(GENEROUS, GENEROUS, maxRedirects,
-        MEBIBYTE, MEBIBYTE);
+        MEBIBYTE, MEBIBYTE, ResourceInstaller.Limits.DEFAULT.maxEntries());
   }
 
   /**
@@ -114,7 +115,7 @@ public class ResourceInstallerHttpTest {
    */
   private static ResourceInstaller.Limits withDownloadCeiling(long maxDownloadBytes) {
     return new ResourceInstaller.Limits(GENEROUS, GENEROUS, 5, maxDownloadBytes,
-        MEBIBYTE);
+        MEBIBYTE, ResourceInstaller.Limits.DEFAULT.maxEntries());
   }
 
   /**
