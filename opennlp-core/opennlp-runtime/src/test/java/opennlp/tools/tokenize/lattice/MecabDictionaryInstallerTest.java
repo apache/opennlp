@@ -18,11 +18,14 @@
 package opennlp.tools.tokenize.lattice;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,6 +33,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.util.DigestTestUtil;
 import opennlp.tools.util.DownloadUtil;
+import opennlp.tools.util.archive.TarArchives;
 
 /**
  * Tests the installer against project-authored, in-memory archives; no external
@@ -98,6 +102,68 @@ public class MecabDictionaryInstallerTest {
 
     Assertions.assertEquals(2, extracted);
     Assertions.assertTrue(Files.exists(target.resolve("words.csv")));
+  }
+
+  /**
+   * Verifies that a pax long-name entry installs under its real name. The common
+   * distributions ship plain ustar today, but {@code bsdtar} and
+   * {@code tar --format=posix} write pax archives, whose over-100-byte names live in an
+   * extension header rather than the header name field.
+   */
+  @Test
+  void testPaxLongNamedEntryInstallsUnderItsRealName(@TempDir Path source,
+      @TempDir Path target) throws IOException {
+    final String longBaseName = "a".repeat(110) + ".csv";
+    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
+    TarArchives.entry(tar, "PaxHeaders.0/lexicon",
+        TarArchives.paxRecord("path", "dict-1.0/" + longBaseName), 'x');
+    TarArchives.entry(tar, "dict-1.0/" + "a".repeat(88),
+        "cat,0,0,100,noun\n".getBytes(StandardCharsets.UTF_8));
+    tar.write(new byte[TarArchives.TERMINATOR_SIZE]);
+    final Path archiveFile = source.resolve("dict.tar.gz");
+    Files.write(archiveFile, gzip(tar.toByteArray()));
+
+    final int extracted = MecabDictionaryInstaller.install(archiveFile.toUri(), target);
+
+    Assertions.assertEquals(1, extracted);
+    Assertions.assertEquals("cat,0,0,100,noun\n",
+        Files.readString(target.resolve(longBaseName)));
+  }
+
+  /**
+   * Verifies that installing into a target that already holds a dictionary file of the
+   * same name is refused, leaving the first installation in place. Refreshing a
+   * dictionary means removing its old files first.
+   */
+  @Test
+  void testReinstallOverAnExistingDictionaryIsRefused(@TempDir Path source,
+      @TempDir Path target) throws IOException {
+    final Path archiveFile = source.resolve("dict.tar.gz");
+    Files.write(archiveFile, TarGzArchives.gzippedTar(new String[][] {
+        {"d/words.csv", "cat,0,0,100,noun\n"}}));
+    Assertions.assertEquals(1,
+        MecabDictionaryInstaller.install(archiveFile.toUri(), target));
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionaryInstaller.install(archiveFile.toUri(), target));
+    Assertions.assertTrue(e.getMessage().contains("target already contains: "));
+    Assertions.assertEquals("cat,0,0,100,noun\n",
+        Files.readString(target.resolve("words.csv")));
+  }
+
+  /**
+   * Compresses raw tar bytes the way a {@code .tar.gz} distribution is shipped.
+   *
+   * @param content The raw tar bytes. Must not be {@code null}.
+   * @return The gzip-compressed bytes. Never {@code null}.
+   * @throws IOException Thrown if writing to the in-memory stream fails.
+   */
+  private static byte[] gzip(byte[] content) throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (GZIPOutputStream compressed = new GZIPOutputStream(out)) {
+      compressed.write(content);
+    }
+    return out.toByteArray();
   }
 
   @Test
