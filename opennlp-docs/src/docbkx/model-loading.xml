@@ -164,4 +164,88 @@ for(ClassPathModelEntry entry : models) {
 
     </para>
   </section>
+
+  <section xml:id="tools.model.resource-installer">
+    <title>Installing archived resources</title>
+    <para>
+      <code>ResourceInstaller</code> fetches a third-party resource, such as a training corpus or a
+      lexicon, into a target directory. The location must be an <code>http</code>, <code>https</code>,
+      or <code>file</code> URI; any other scheme is rejected, because it would be opened through
+      whichever URL handler the runtime has installed, none of which honor the connection and read
+      timeouts below. A checksum is required for http and https sources and optional for file
+      sources, which are trusted caller input; it is verified before anything is
+      unpacked: a 64-character hex digest selects SHA-256, a 128-character one SHA-512. Archive
+      entries that would escape the target directory are rejected. The content format is detected
+      from the bytes, not from the name: gzip-compressed tar archives and zip archives are unpacked
+      with their relative structure (tar entry names may use the ustar name prefix field, so paths
+      longer than 100 bytes are read in full from the pax or GNU extension header that carries them,
+      so archives written by <code>bsdtar</code>, <code>tar --format=posix</code>, and
+      <code>tar --format=gnu</code> all unpack under their real paths; every header must carry a valid
+      checksum; when the configured expansion ceiling permits them, entries of 8 GiB and above state
+      their length in the base-256 form GNU writes for it;
+      sparse entries are refused, because their archived bytes encode holes rather than the file
+      content), plain gzip files are decompressed, and anything else is stored
+      as a file under its source name. One name rule overrides byte detection: a source named
+      <code>*.bin</code> is always stored packed, because an OpenNLP model file is itself a zip
+      archive that its consumers load packed.
+      <code>ResourceInstallerTest#testInstallEndToEndUsageExample</code> asserts the behavior
+      shown here.
+
+      <programlisting language="java">
+<![CDATA[Path result = ResourceInstaller.install(
+    corpusTarGz.toUri(), targetDirectory, expectedSha256);
+// result is targetDirectory; the archived files appear under their archive paths]]>
+      </programlisting>
+
+      Installation is staged: content unpacks into a hidden staging directory on the target
+      filesystem and moves into the target only after the download was verified and every entry
+      unpacked cleanly. A fetch, verification, or unpacking failure therefore leaves the target
+      directory as it was, without partially written files. Promotion refuses to replace a file
+      that already exists in the target and checks every destination before moving anything, so a
+      collision leaves the target unchanged rather than a mix of old and new files; refreshing a
+      resource means removing its old files first. Promotion also refuses to descend through a
+      symbolic link that already exists below the target, so a link planted there beforehand cannot
+      steer content out of the target. It is not a defense against a tree modified while the
+      installation runs.
+      <code>ResourceInstallerTest#testFailedTarUnpackLeavesTargetEmpty</code> and its zip and
+      truncated-archive siblings assert this guarantee.
+    </para>
+    <para>
+      Every installation is bounded. Http and https fetches carry connection and read timeouts,
+      follow at most a fixed number of redirects, and refuse redirects that leave the http and
+      https schemes or downgrade https to http. A download larger than its ceiling, whether
+      declared by the server or discovered while transferring, is aborted, and so is an archive
+      whose entries expand beyond the expansion ceiling, which stops decompression bombs. The
+      ceiling counts every byte produced by gzip decompression, including tar headers, padding, and
+      metadata; for zip and uncompressed inputs, it counts the installed file content. An archive
+      is also bounded by an entry ceiling counting every entry including directories, so an
+      archive of many tiny files cannot exhaust directory entries while staying under the byte
+      ceilings.
+      The defaults (20 second connect timeout, 60 second read timeout, 5 redirects, 1 GiB
+      download, 4 GiB expanded, 100000 entries) apply to the two- and three-argument
+      <code>install</code> methods and are
+      asserted by <code>ResourceInstallerTest#testDefaultLimitsArePinned</code>. The three
+      default ceilings can be raised or lowered at startup through the system properties
+      <code>opennlp.download.max.bytes</code>, <code>opennlp.install.max.total.bytes</code>, and
+      <code>opennlp.install.max.entries</code>, read once at class load; a value that is absent,
+      not a number, or not positive falls back to the built-in default. The network
+      behavior is exercised against a local scripted server in
+      <code>ResourceInstallerHttpTest</code>. Pass a
+      <code>ResourceInstaller.Limits</code> to tighten or widen them. <code>Limits.builder()</code>
+      starts from the defaults, so only the limits that differ need to be stated.
+      <code>ResourceInstallerTest#testInstallWithinCustomCeilingsSucceeds</code> asserts the
+      behavior shown here.
+
+      <programlisting language="java">
+<![CDATA[ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()
+    .readTimeout(Duration.ofSeconds(10))
+    .maxDownloadBytes(1024L * 1024)   // download ceiling in bytes
+    .maxExpandedBytes(1024L * 1024)   // expansion ceiling in bytes
+    .build();                         // connect timeout and redirects stay at the defaults
+Path result = ResourceInstaller.install(
+    corpusTarGz.toUri(), targetDirectory, expectedSha256, limits);]]>
+      </programlisting>
+
+    </para>
+  </section>
 </chapter>
