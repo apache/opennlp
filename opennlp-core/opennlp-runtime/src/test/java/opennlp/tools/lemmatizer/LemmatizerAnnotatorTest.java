@@ -119,6 +119,15 @@ public class LemmatizerAnnotatorTest {
         lemmatized.get(LemmatizerAnnotator.LEMMAS).get(2).span());
   }
 
+  /**
+   * Verifies that the adapter identifies itself by its simple class name, which is how a
+   * pipeline validation message names the offending annotator.
+   */
+  @Test
+  void testAdapterNamesItselfByClassName() {
+    assertEquals("LemmatizerAnnotator", new LemmatizerAnnotator(FIXTURE).toString());
+  }
+
   @Test
   void testInvalidArguments() {
     assertThrows(IllegalArgumentException.class,
