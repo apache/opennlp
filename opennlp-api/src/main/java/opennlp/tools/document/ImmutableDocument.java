@@ -1,0 +1,193 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.document;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import opennlp.tools.util.Span;
+
+/**
+ * The default {@link Document} implementation: an unmodifiable map from layer key to an
+ * unmodifiable annotation list.
+ *
+ * <p>Instances are immutable: {@link #with(LayerKey, List)} returns a new document that
+ * shares the unchanged layers with its ancestor, copying the map but not the layers, so
+ * documents grown from a common ancestor share their layer lists. The text is captured
+ * as a {@link String} at construction, so a mutable {@link CharSequence} handed to
+ * {@link #empty(CharSequence)} cannot change the document afterwards. That immutability
+ * makes instances safe to share between threads.</p>
+ */
+final class ImmutableDocument implements Document {
+
+  private final String text;
+  private final Map<LayerKey<?>, List<Annotation<?>>> layers;
+
+  private ImmutableDocument(String text, Map<LayerKey<?>, List<Annotation<?>>> layers) {
+    this.text = text;
+    this.layers = Collections.unmodifiableMap(layers);
+  }
+
+  /**
+   * Creates a document without any layers.
+   *
+   * @param text The original document text, captured as its content at this moment.
+   *             Must not be {@code null}.
+   * @return An empty {@link ImmutableDocument}. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  static ImmutableDocument empty(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
+    return new ImmutableDocument(text.toString(), Collections.emptyMap());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public CharSequence text() {
+    return text;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> List<Annotation<T>> get(LayerKey<T> layer) {
+    if (layer == null) {
+      throw new IllegalArgumentException("layer must not be null");
+    }
+    final List<Annotation<?>> annotations = layers.get(layer);
+    if (annotations == null) {
+      return List.of();
+    }
+    // This cast is safe because with(LayerKey, List) verified every value against the
+    // key's type when the layer was inserted.
+    return (List<Annotation<T>>) (List<?>) annotations;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Set<LayerKey<?>> layers() {
+    // The unmodifiable map exposes an unmodifiable key set and caches it, so this
+    // accessor allocates no wrapper per call.
+    return layers.keySet();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations) {
+    if (layer == null) {
+      throw new IllegalArgumentException("layer must not be null");
+    }
+    if (annotations == null) {
+      throw new IllegalArgumentException("annotations must not be null");
+    }
+    if (layers.containsKey(layer)) {
+      throw new IllegalArgumentException("layer is already present: " + layer);
+    }
+    validate(layer, annotations);
+    final Map<LayerKey<?>, List<Annotation<?>>> grown = new LinkedHashMap<>(layers);
+    grown.put(layer, List.copyOf(annotations));
+    return new ImmutableDocument(text, grown);
+  }
+
+  /**
+   * {@inheritDoc}
+   * This implementation copies the layer map once, not once per added layer.
+   */
+  @Override
+  public Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
+    if (other == null) {
+      throw new IllegalArgumentException("other must not be null");
+    }
+    if (duplicateLayers == null) {
+      throw new IllegalArgumentException("duplicateLayers must not be null");
+    }
+    if (!text.contentEquals(other.text())) {
+      throw new IllegalArgumentException(
+          "merge requires both documents to carry the same text");
+    }
+    final Map<LayerKey<?>, List<Annotation<?>>> combined = new LinkedHashMap<>(layers);
+    for (final LayerKey<?> layer : other.layers()) {
+      if (combined.containsKey(layer)) {
+        if (duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
+            && get(layer).equals(other.get(layer))) {
+          continue;
+        }
+        throw new IllegalArgumentException(duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
+            ? "layer is present on both documents with differing contents: " + layer
+            : "layer is already present: " + layer);
+      }
+      combined.put(layer, copyValidated(layer, other));
+    }
+    if (combined.size() == layers.size()) {
+      return this;
+    }
+    return new ImmutableDocument(text, combined);
+  }
+
+  /**
+   * {@return a validated immutable copy of one of {@code from}'s layers, capturing the
+   * key's value type}
+   */
+  private <T> List<Annotation<?>> copyValidated(LayerKey<T> layer, Document from) {
+    final List<Annotation<T>> annotations = from.get(layer);
+    if (annotations == null) {
+      throw new IllegalArgumentException("annotations must not be null");
+    }
+    validate(layer, annotations);
+    return List.copyOf(annotations);
+  }
+
+  /**
+   * Checks one layer's annotations against the key's contract: no null elements, values
+   * assignable to the key's type, spans present and within the text bounds under a
+   * positional key, absent under a document-scoped key.
+   *
+   * @throws IllegalArgumentException Thrown if any check fails; the message names the
+   *         layer.
+   */
+  private <T> void validate(LayerKey<T> layer, List<Annotation<T>> annotations) {
+    for (final Annotation<T> annotation : annotations) {
+      if (annotation == null) {
+        throw new IllegalArgumentException("annotations must not contain null: " + layer);
+      }
+      if (!layer.type().isInstance(annotation.value())) {
+        throw new IllegalArgumentException("value of type "
+            + annotation.value().getClass().getName() + " does not match layer " + layer);
+      }
+      final Span span = annotation.span();
+      if (layer.scope() == LayerKey.Scope.POSITIONAL) {
+        if (span == null) {
+          throw new IllegalArgumentException(
+              "positional layer " + layer + " requires a span on every annotation");
+        }
+        if (span.getEnd() > text.length()) {
+          throw new IllegalArgumentException("span " + span + " exceeds the text length "
+              + text.length() + " in layer " + layer);
+        }
+      } else if (span != null) {
+        throw new IllegalArgumentException(
+            "document-scoped layer " + layer + " must not carry spans");
+      }
+    }
+  }
+}
