@@ -655,7 +655,9 @@ public class ResourceInstallerTest {
 
   /**
    * Pins the default limits the two- and three-argument {@code install} methods
-   * apply, so a change to them cannot slip through unnoticed.
+   * apply, so a change to them cannot slip through unnoticed. The three ceiling
+   * defaults read their system properties once at class load; the build sets none of
+   * them, so the built-in values are what this test observes.
    */
   @Test
   void testDefaultLimitsArePinned() {
@@ -665,6 +667,138 @@ public class ResourceInstallerTest {
     Assertions.assertEquals(5, defaults.maxRedirects());
     Assertions.assertEquals(1L << 30, defaults.maxDownloadBytes());
     Assertions.assertEquals(4L << 30, defaults.maxExpandedBytes());
+    Assertions.assertEquals(100_000L, defaults.maxEntries());
+  }
+
+  /**
+   * Pins the system property names an operator can set at startup to override the
+   * default ceilings, so a rename cannot silently orphan deployed configurations.
+   */
+  @Test
+  void testCeilingPropertyNamesArePinned() {
+    Assertions.assertEquals("opennlp.download.max.bytes",
+        ResourceInstaller.Limits.MAX_DOWNLOAD_BYTES_PROPERTY);
+    Assertions.assertEquals("opennlp.install.max.total.bytes",
+        ResourceInstaller.Limits.MAX_EXPANDED_BYTES_PROPERTY);
+    Assertions.assertEquals("opennlp.install.max.entries",
+        ResourceInstaller.Limits.MAX_ENTRIES_PROPERTY);
+  }
+
+  /**
+   * Proves that a set ceiling property is read, with surrounding whitespace accepted,
+   * through the parser behind the {@code DEFAULT} ceilings. The parser is tested
+   * directly because {@code DEFAULT} captures its properties once at class load.
+   */
+  @Test
+  void testCeilingPropertyOverrideIsRead() {
+    System.setProperty("opennlp.test.ceiling", " 123 ");
+    try {
+      Assertions.assertEquals(123L,
+          ResourceInstaller.Limits.longProperty("opennlp.test.ceiling", 7L));
+    } finally {
+      System.clearProperty("opennlp.test.ceiling");
+    }
+  }
+
+  /**
+   * Enumerates property values that must fall back to the built-in default: absent,
+   * not a number, zero, negative, and empty.
+   *
+   * @return One case per unusable value. Never {@code null}.
+   */
+  static Stream<Arguments> unusableCeilingProperties() {
+    return Stream.of(
+        Arguments.of("absent", null),
+        Arguments.of("not a number", "abc"),
+        Arguments.of("zero", "0"),
+        Arguments.of("negative", "-5"),
+        Arguments.of("empty", ""));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("unusableCeilingProperties")
+  void testCeilingPropertyFallsBackOnUnusableValues(String label, String value) {
+    if (value == null) {
+      System.clearProperty("opennlp.test.ceiling");
+    } else {
+      System.setProperty("opennlp.test.ceiling", value);
+    }
+    try {
+      Assertions.assertEquals(7L,
+          ResourceInstaller.Limits.longProperty("opennlp.test.ceiling", 7L));
+    } finally {
+      System.clearProperty("opennlp.test.ceiling");
+    }
+  }
+
+  /**
+   * Builds installation limits with the given entry ceiling and otherwise default
+   * values, so entry-count tests state only the value they exercise.
+   *
+   * @param maxEntries The entry ceiling.
+   * @return The limits. Never {@code null}.
+   */
+  private static ResourceInstaller.Limits entryCeiling(long maxEntries) {
+    return ResourceInstaller.Limits.builder().maxEntries(maxEntries).build();
+  }
+
+  /**
+   * Proves the entry-count ceiling on tar content: an archive with more entries than
+   * the ceiling is rejected and nothing is installed, so an archive of countless tiny
+   * files cannot exhaust directory entries below the byte ceilings.
+   */
+  @Test
+  void testTarEntryCountCeilingRejectsArchive(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final byte[] archive = tarGz(new String[][] {
+        {"corpus/one.txt", "1"},
+        {"corpus/two.txt", "2"},
+        {"corpus/three.txt", "3"}});
+    final Path file = source.resolve("many.tar.gz");
+    Files.write(file, archive);
+
+    assertInstallFails(file, target, entryCeiling(2),
+        "archive entry count exceeds the ceiling of 2 entries");
+  }
+
+  /**
+   * Proves the entry-count ceiling on zip content, matching the tar behavior.
+   */
+  @Test
+  void testZipEntryCountCeilingRejectsArchive(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+      for (int i = 0; i < 3; i++) {
+        zip.putNextEntry(new ZipEntry("corpus/entry-" + i + ".txt"));
+        zip.write("x".getBytes(StandardCharsets.UTF_8));
+        zip.closeEntry();
+      }
+    }
+    final Path file = source.resolve("many.zip");
+    Files.write(file, out.toByteArray());
+
+    assertInstallFails(file, target, entryCeiling(2),
+        "archive entry count exceeds the ceiling of 2 entries");
+  }
+
+  /**
+   * Proves the accept side of the entry-count ceiling: an archive with exactly as many
+   * entries as the ceiling installs, so the boundary is exclusive of failure.
+   */
+  @Test
+  void testEntryCountExactlyAtCeilingSucceeds(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final byte[] archive = tarGz(new String[][] {
+        {"corpus/one.txt", "1"},
+        {"corpus/two.txt", "2"}});
+    final Path file = source.resolve("exact.tar.gz");
+    Files.write(file, archive);
+
+    ResourceInstaller.install(file.toUri(), target, sha256(archive), entryCeiling(2));
+
+    Assertions.assertEquals(List.of("corpus/one.txt", "corpus/two.txt"),
+        installedFiles(target));
   }
 
   /**
