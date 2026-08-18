@@ -172,7 +172,8 @@ for(ClassPathModelEntry entry : models) {
       lexicon, into a target directory. The location must be an <code>http</code>, <code>https</code>,
       or <code>file</code> URI; any other scheme is rejected, because it would be opened through
       whichever URL handler the runtime has installed, none of which honor the connection and read
-      timeouts below. An optional checksum is verified before anything is
+      timeouts below. A checksum is required for http and https sources and optional for file
+      sources, which are trusted caller input; it is verified before anything is
       unpacked: a 64-character hex digest selects SHA-256, a 128-character one SHA-512. Archive
       entries that would escape the target directory are rejected. The content format is detected
       from the bytes, not from the name: gzip-compressed tar archives and zip archives are unpacked
@@ -199,7 +200,10 @@ for(ClassPathModelEntry entry : models) {
       Installation is staged: content unpacks into a hidden staging directory on the target
       filesystem and moves into the target only after the download was verified and every entry
       unpacked cleanly. A fetch, verification, or unpacking failure therefore leaves the target
-      directory as it was, without partially written files. Promotion refuses to descend through a
+      directory as it was, without partially written files. Promotion refuses to replace a file
+      that already exists in the target and checks every destination before moving anything, so a
+      collision leaves the target unchanged rather than a mix of old and new files; refreshing a
+      resource means removing its old files first. Promotion also refuses to descend through a
       symbolic link that already exists below the target, so a link planted there beforehand cannot
       steer content out of the target. It is not a defense against a tree modified while the
       installation runs.
@@ -213,10 +217,17 @@ for(ClassPathModelEntry entry : models) {
       declared by the server or discovered while transferring, is aborted, and so is an archive
       whose entries expand beyond the expansion ceiling, which stops decompression bombs. The
       ceiling counts every byte produced by gzip decompression, including tar headers, padding, and
-      metadata; for zip and uncompressed inputs, it counts the installed file content. The
-      defaults (20 second connect timeout, 60 second read timeout, 5 redirects, 1 GiB download,
-      4 GiB expanded) apply to the two- and three-argument <code>install</code> methods and are
-      asserted by <code>ResourceInstallerTest#testDefaultLimitsArePinned</code>; the network
+      metadata; for zip and uncompressed inputs, it counts the installed file content. An archive
+      is also bounded by an entry ceiling counting every entry including directories, so an
+      archive of countless tiny files cannot exhaust directory entries below the byte ceilings.
+      The defaults (20 second connect timeout, 60 second read timeout, 5 redirects, 1 GiB
+      download, 4 GiB expanded, 100000 entries) apply to the two- and three-argument
+      <code>install</code> methods and are
+      asserted by <code>ResourceInstallerTest#testDefaultLimitsArePinned</code>. The three
+      default ceilings can be raised or lowered at startup through the system properties
+      <code>opennlp.download.max.bytes</code>, <code>opennlp.install.max.total.bytes</code>, and
+      <code>opennlp.install.max.entries</code>, read once at class load; a value that is absent,
+      not a number, or not positive falls back to the built-in default. The network
       behavior is exercised against a local scripted server in
       <code>ResourceInstallerHttpTest</code>. Pass a
       <code>ResourceInstaller.Limits</code> to tighten or widen them. <code>Limits.builder()</code>
