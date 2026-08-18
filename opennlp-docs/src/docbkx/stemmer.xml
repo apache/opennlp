@@ -96,7 +96,10 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			<code>dev/README-hunspell-dictionaries.md</code>.
 			An opt-in catalog download
 			(<code>HunspellDictionaryDownload.downloadFromCatalog</code>) needs
-			<code>-Dopennlp.download.remote=true</code> and verifies SHA-512 digests.
+			<code>-Dopennlp.download.remote=true</code> and fetches through the
+			digest-verified <code>ResourceInstaller</code> path, storing each file under
+			its source name; a file that already exists in the target is refused, so
+			refreshing a dictionary means removing its old files first.
 			Directives that would change stems when ignored
 			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>,
 			<code>COMPOUNDRULE</code>, <code>IGNORE</code>, <code>KEEPCASE</code>)
