@@ -30,7 +30,7 @@ public class TextNormalizerTest {
   }
 
   @Test
-  void testRungsApplyInOrder() {
+  void testNormalizersApplyInOrder() {
     final CharSequenceNormalizer n = TextNormalizer.builder().caseFold().accentFold().build();
     assertEquals("cafe", n.normalize("CAF" + cp(0x00C9)).toString()); // CAFE-acute -> cafe
   }
@@ -66,7 +66,7 @@ public class TextNormalizerTest {
   }
 
   @Test
-  void testEveryRungIsInvokable() {
+  void testEveryNormalizerIsInvokable() {
     final CharSequenceNormalizer n = TextNormalizer.builder()
         .stripInvisible().nfc().nfkc().whitespace().quotes().dashes().digits().ellipsis().bullets()
         .fullCaseFold().accentFold().build();
@@ -76,14 +76,14 @@ public class TextNormalizerTest {
   }
 
   @Test
-  void testCaseFoldRungIsInvokable() {
+  void testCaseFoldNormalizerIsInvokable() {
     final CharSequenceNormalizer n = TextNormalizer.builder().caseFold().build();
     assertEquals("cafe", n.normalize("CAFE").toString());
   }
 
   @Test
   void testCaseFoldWithFullCaseFoldIsPermittedButRedundant() {
-    // This builder composes rungs freely and does not enforce the exclusion the TermAnalyzer
+    // This builder composes normalizers freely and does not enforce the exclusion the TermAnalyzer
     // layer does; the combination is documented as redundant, and this pins that it changes
     // nothing over full case folding alone.
     final String input = "STRA" + cp(0x00DF) + "E";
