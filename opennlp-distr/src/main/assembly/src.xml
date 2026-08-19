@@ -34,5 +34,12 @@
         <exclude>**/release.properties</exclude>
       </excludes>
     </fileSet>
+    <!-- OPENNLP-1913: The Maven Wrapper configuration lives in a hidden directory and would
+         be dropped by the '**/.*/**' exclude above. Without it, './mvnw' cannot be used to
+         build from a source release. -->
+    <fileSet>
+      <directory>../.mvn</directory>
+      <outputDirectory>.mvn</outputDirectory>
+    </fileSet>
   </fileSets>
 </assembly>
