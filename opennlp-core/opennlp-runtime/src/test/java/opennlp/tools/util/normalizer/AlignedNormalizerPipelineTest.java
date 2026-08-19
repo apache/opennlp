@@ -28,9 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Exercises {@link OffsetAwareNormalizer} and {@code TextNormalizer.Builder.buildAligned()}: the
- * cursor-based rungs report alignments, an aligned pipeline composes them with
+ * cursor-based normalizers report alignments, an aligned pipeline composes them with
  * {@link Alignment#andThen(Alignment)} so a span found in the fully normalized text maps back to the
- * original input, and a non-alignable rung is rejected loudly.
+ * original input, and a non-alignable normalizer is rejected loudly.
  */
 public class AlignedNormalizerPipelineTest {
 
@@ -50,8 +50,8 @@ public class AlignedNormalizerPipelineTest {
 
   // The aligned form must always reproduce exactly what the plain form produces.
   @Test
-  void alignedNormalizedTextMatchesPlainForEveryRung() {
-    final OffsetAwareNormalizer[] rungs = {
+  void alignedNormalizedTextMatchesPlainForEveryNormalizer() {
+    final OffsetAwareNormalizer[] normalizers = {
         WhitespaceCharSequenceNormalizer.getInstance(),
         LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance(),
         DashCharSequenceNormalizer.getInstance(),
@@ -74,10 +74,10 @@ public class AlignedNormalizerPipelineTest {
         cp(0x201C) + "don" + cp(0x2019) + "t " + cp(0x2026) + " Stra" + cp(0x00DF) + "e "
             + cp(0x2022) + " " + cp(0xFF15) + cp(MATH_BOLD_DIGIT_ZERO)
     };
-    for (final OffsetAwareNormalizer rung : rungs) {
+    for (final OffsetAwareNormalizer normalizer : normalizers) {
       for (final String input : inputs) {
-        assertEquals(rung.normalize(input).toString(), rung.normalizeAligned(input).normalized(),
-            rung.getClass().getSimpleName() + " on [" + input + "]");
+        assertEquals(normalizer.normalize(input).toString(), normalizer.normalizeAligned(input).normalized(),
+            normalizer.getClass().getSimpleName() + " on [" + input + "]");
       }
     }
   }
@@ -137,7 +137,7 @@ public class AlignedNormalizerPipelineTest {
   }
 
   @Test
-  void buildAlignedRejectsNonAlignableRungLoudly() {
+  void buildAlignedRejectsNonAlignableNormalizerLoudly() {
     final IllegalStateException ex = assertThrows(IllegalStateException.class,
         () -> TextNormalizer.builder().nfc().whitespace().buildAligned());
     assertTrue(ex.getMessage().contains("Nfc"), ex.getMessage());
@@ -145,7 +145,7 @@ public class AlignedNormalizerPipelineTest {
   }
 
   @Test
-  void buildAlignedReportsTheOffendingRungIndexWhenItIsNotFirst() {
+  void buildAlignedReportsTheOffendingNormalizerIndexWhenItIsNotFirst() {
     // A non-alignable step after several offset-aware ones must still be rejected, and the message
     // must name its 0-based position (index 2) and type so the failure points at the right fold.
     final IllegalStateException ex = assertThrows(IllegalStateException.class,
@@ -155,7 +155,7 @@ public class AlignedNormalizerPipelineTest {
   }
 
   @Test
-  void buildAlignedRejectsEachKindOfNonAlignableRung() {
+  void buildAlignedRejectsEachKindOfNonAlignableNormalizer() {
     // Every fold that routes through java.text.Normalizer or JDK case mapping is rejected, named.
     assertThrows(IllegalStateException.class,
         () -> TextNormalizer.builder().nfkc().buildAligned());
@@ -203,17 +203,17 @@ public class AlignedNormalizerPipelineTest {
 
   @Test
   void lineBreakPreservingCollapsesHorizontalRunsButKeepsBreaks() {
-    final LineBreakPreservingWhitespaceCharSequenceNormalizer rung =
+    final LineBreakPreservingWhitespaceCharSequenceNormalizer normalizer =
         LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance();
     final String original = "Hello   world\n\n\tfoo  bar";
-    assertEquals("Hello world\nfoo bar", rung.normalize(original).toString());
+    assertEquals("Hello world\nfoo bar", normalizer.normalize(original).toString());
 
-    // The plain whitespace rung instead flattens the blank line into a single space.
+    // The plain whitespace normalizer instead flattens the blank line into a single space.
     assertEquals("Hello world foo bar",
         WhitespaceCharSequenceNormalizer.getInstance().normalize(original).toString());
 
-    final AlignedText aligned = rung.normalizeAligned(original);
-    assertEquals(rung.normalize(original).toString(), aligned.normalized());
+    final AlignedText aligned = normalizer.normalizeAligned(original);
+    assertEquals(normalizer.normalize(original).toString(), aligned.normalized());
     // "bar" sits at [16, 19) in the collapsed form and at [21, 24) in the original.
     assertEquals(original.indexOf("bar"), aligned.toOriginalSpan(16, 19).getStart());
     assertEquals("bar", covered(aligned, 16, 19));
@@ -223,10 +223,10 @@ public class AlignedNormalizerPipelineTest {
 
   @Test
   void lineBreakPreservingTrimsLeadingAndTrailingBreaks() {
-    final LineBreakPreservingWhitespaceCharSequenceNormalizer rung =
+    final LineBreakPreservingWhitespaceCharSequenceNormalizer normalizer =
         LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance();
     final String original = "\n\nHello\n\n";
-    final AlignedText aligned = rung.normalizeAligned(original);
+    final AlignedText aligned = normalizer.normalizeAligned(original);
     assertEquals("Hello", aligned.normalized());
     assertEquals("Hello", covered(aligned, 0, 5));
     assertEquals(original.indexOf("Hello"), aligned.toOriginalSpan(0, 5).getStart());
@@ -261,18 +261,18 @@ public class AlignedNormalizerPipelineTest {
 
   @Test
   void lineBreakPreservingNormalizesCrLfAndUnicodeSeparators() {
-    final LineBreakPreservingWhitespaceCharSequenceNormalizer rung =
+    final LineBreakPreservingWhitespaceCharSequenceNormalizer normalizer =
         LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance();
-    assertEquals("a\nb", rung.normalize("a\r\nb").toString());            // CRLF -> one newline
-    assertEquals("a\nb", rung.normalize("a\n\n\n\nb").toString());        // blank lines -> one newline
-    assertEquals("x\ny", rung.normalize("x" + cp(0x2028) + "y").toString()); // line separator
-    assertEquals("p\nq", rung.normalize("p" + cp(0x2029) + "q").toString()); // paragraph separator
+    assertEquals("a\nb", normalizer.normalize("a\r\nb").toString());            // CRLF -> one newline
+    assertEquals("a\nb", normalizer.normalize("a\n\n\n\nb").toString());        // blank lines -> one newline
+    assertEquals("x\ny", normalizer.normalize("x" + cp(0x2028) + "y").toString()); // line separator
+    assertEquals("p\nq", normalizer.normalize("p" + cp(0x2029) + "q").toString()); // paragraph separator
     // A horizontal run still collapses to a space even when mixed with a break-bearing run.
-    assertEquals("a b\nc", rung.normalize("a  b \n c").toString());
+    assertEquals("a b\nc", normalizer.normalize("a  b \n c").toString());
   }
 
   @Test
-  void whitespaceRungCollapsesAllWhitespaceToEmptyWithAValidSpan() {
+  void whitespaceNormalizerCollapsesAllWhitespaceToEmptyWithAValidSpan() {
     final AlignedText aligned =
         WhitespaceCharSequenceNormalizer.getInstance().normalizeAligned("   ");
     assertEquals("", aligned.normalized());

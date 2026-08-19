@@ -27,19 +27,36 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
   private static final long serialVersionUID = 5514902020184083235L;
   private final CharSequenceNormalizer[] normalizers;
 
-  public AggregateCharSequenceNormalizer(CharSequenceNormalizer ... normalizers) {
-    this.normalizers = normalizers;
+  /**
+   * Creates an aggregate that applies the given normalizers in order.
+   *
+   * @param normalizers The normalizers to apply, first to last. Must not be
+   *                    {@code null} and must not contain {@code null}. The array is
+   *                    copied, so later changes to it do not reach this instance.
+   * @throws IllegalArgumentException Thrown if {@code normalizers} is {@code null} or
+   *         contains {@code null}.
+   */
+  public AggregateCharSequenceNormalizer(CharSequenceNormalizer... normalizers) {
+    if (normalizers == null) {
+      throw new IllegalArgumentException("The normalizers must not be null.");
+    }
+    for (CharSequenceNormalizer normalizer : normalizers) {
+      if (normalizer == null) {
+        throw new IllegalArgumentException("The normalizers must not contain null.");
+      }
+    }
+    this.normalizers = normalizers.clone();
   }
 
   /** {@inheritDoc} */
   @Override
-  public CharSequence normalize (CharSequence text) {
+  public CharSequence normalize(CharSequence text) {
     if (text == null) {
       throw new IllegalArgumentException("The text must not be null.");
     }
 
-    for (CharSequenceNormalizer normalizers : normalizers) {
-      text = normalizers.normalize(text);
+    for (CharSequenceNormalizer normalizer : normalizers) {
+      text = normalizer.normalize(text);
     }
 
     return text;
