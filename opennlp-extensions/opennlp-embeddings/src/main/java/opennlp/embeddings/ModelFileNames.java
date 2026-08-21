@@ -24,8 +24,9 @@ import java.util.List;
  * The file names of a static embedding model directory, shared by
  * {@link StaticEmbeddingModel}'s loader and {@link ModelAssembler}. A WordPiece directory holds
  * {@link #SAFETENSORS}, {@link #CONFIG}, {@link #VOCABULARY}, and {@link #TOKENIZER_CONFIG}; a
- * SentencePiece directory holds {@link #SAFETENSORS}, {@link #CONFIG}, {@link #TOKENIZER_JSON},
- * and one of {@link #SENTENCEPIECE_MODELS}.
+ * Unigram directory holds {@link #SAFETENSORS}, {@link #CONFIG}, and
+ * {@link #TOKENIZER_JSON}. Legacy SentencePiece directories may additionally hold one of
+ * {@link #SENTENCEPIECE_MODELS}.
  *
  * <p>{@link #ONNX_MODEL} and {@link #ONNX_MODEL_DATA} name files of a <em>teacher</em> directory
  * rather than of a model directory; {@link ModelDistiller} and {@link HuggingFaceModelCache} share

@@ -47,9 +47,10 @@ import opennlp.tools.util.java.Experimental;
  * <a href="https://github.com/MinishLab/model2vec">Model2Vec</a> release layout for both
  * tokenizer families:
  * WordPiece models carry a {@code vocab.txt} whose line number is the matrix row, and
- * SentencePiece models carry a Unigram {@code tokenizer.json} whose {@code model.vocab} list
- * order is the row order, next to the trained SentencePiece {@code .model} file that performs
- * the segmentation. In both cases the {@code model.safetensors} holds one 2-D float matrix, with
+ * Unigram models carry a {@code tokenizer.json} whose {@code model.vocab} list order is the row
+ * order and whose normalizer and scores drive segmentation. Legacy SentencePiece layouts with a
+ * separate trained {@code .model} file remain supported. In both cases the
+ * {@code model.safetensors} holds one 2-D float matrix, with
  * an optional per-token {@code weights} tensor. Matrix rows are resolved by piece <i>string</i>,
  * never by tokenizer id, so the two files may order or offset their ids differently without
  * corrupting lookups; a piece the matrix does not carry fails loud at load time.</p>
@@ -150,10 +151,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * stripping accents exactly when lower-casing. When both layouts are present, the
    * {@code vocab.txt} wins.</p>
    *
-   * <p>A directory with a trained SentencePiece file ({@code sentencepiece.bpe.model},
-   * {@code spiece.model}, or {@code tokenizer.model}) next to a Unigram {@code tokenizer.json}
-   * is a SentencePiece model; the {@code .model} file carries its own text normalizer, so there
-   * is no casing switch to read.</p>
+   * <p>A directory with a Unigram {@code tokenizer.json} is a Model2Vec Unigram model. Its
+   * vocabulary, scores, precompiled normalizer, and supported post-normalization steps are read
+   * directly from JSON. A legacy directory may instead carry a trained SentencePiece file
+   * ({@code sentencepiece.bpe.model}, {@code spiece.model}, or {@code tokenizer.model}) next to
+   * the JSON vocabulary; that file remains supported.</p>
    *
    * @param modelDirectory The model directory. Must not be {@code null} and must be a
    *                       directory.
@@ -191,15 +193,54 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           termLines, termsFile.toString());
     }
     if (Files.isRegularFile(tokenizerJsonFile)) {
-      throw new InvalidFormatException("Model directory " + modelDirectory + " has a "
-          + ModelFileNames.TOKENIZER_JSON + " but no trained SentencePiece file ("
-          + String.join(", ", ModelFileNames.SENTENCEPIECE_MODELS) + "); copy the .model file "
-          + "from the model's base tokenizer next to it");
+      return loadModel2VecUnigram(tokenizerJsonFile,
+          requiredFile(modelDirectory, ModelFileNames.SAFETENSORS),
+          requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG)),
+          termLines, termsFile.toString());
     }
     throw new InvalidFormatException("Model directory " + modelDirectory + " has neither a "
         + ModelFileNames.VOCABULARY + " (WordPiece layout) nor a "
-        + ModelFileNames.TOKENIZER_JSON
-        + " with a trained SentencePiece file (SentencePiece layout)");
+        + ModelFileNames.TOKENIZER_JSON + " (Unigram layout)");
+  }
+
+  /** Loads a self-contained Model2Vec Unigram directory. */
+  private static StaticEmbeddingModel loadModel2VecUnigram(
+      Path tokenizerJsonFile, Path safetensorsFile, Normalization normalization,
+      List<String> termLines, String termsSourceName) throws IOException {
+    final EmbeddingVocabulary vocabulary =
+        EmbeddingVocabulary.fromTokenizerJson(tokenizerJsonFile);
+    final TermTable terms = TermTable.of(termLines, vocabulary.size(), termsSourceName);
+    final Model2VecUnigramTokenizer tokenizer;
+    try {
+      tokenizer = Model2VecUnigramTokenizer.load(tokenizerJsonFile);
+    } catch (InvalidFormatException e) {
+      throw new InvalidFormatException("Unigram model needs either a self-contained "
+          + "tokenizer.json or a trained SentencePiece .model file: " + e.getMessage(), e);
+    }
+    requireVocabularyCoverage(tokenizer, vocabulary, tokenizerJsonFile);
+    final Matrix matrix = readMatrix(vocabulary, terms.size(), safetensorsFile,
+        tokenizerJsonFile.toString());
+    final IntPredicate skipPieceId =
+        id -> tokenizer.isUnknown(id) || tokenizer.isControl(id);
+    return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
+        vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
+        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size() + terms.size()),
+        specialRows(vocabulary, SENTENCEPIECE_SPECIAL_TOKENS,
+            vocabulary.size() + terms.size()),
+        terms);
+  }
+
+  /** Verifies the self-contained tokenizer and matrix vocabulary agree. */
+  private static void requireVocabularyCoverage(
+      Model2VecUnigramTokenizer tokenizer, EmbeddingVocabulary vocabulary,
+      Path tokenizerJsonFile) throws InvalidFormatException {
+    for (int id = 0; id < tokenizer.vocabularySize(); id++) {
+      if (!tokenizer.isUnknown(id) && !tokenizer.isControl(id)
+          && vocabulary.id(tokenizer.idToPiece(id)) < 0) {
+        throw new InvalidFormatException(tokenizerJsonFile + " defines tokenizer piece '"
+            + tokenizer.idToPiece(id) + "' without a matrix row");
+      }
+    }
   }
 
   /**
