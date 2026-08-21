@@ -17,7 +17,9 @@
 
 package opennlp.tools.ml;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
@@ -134,10 +136,82 @@ public class BeamSearchTest {
   }
 
   /**
+   * Uniform model: every outcome is equally probable in every context, so all
+   * candidates at a given depth tie on score exactly.
+   */
+  static class UniformModel implements MaxentModel {
+
+    private final String[] outcomes;
+
+    UniformModel(String[] outcomes) {
+      this.outcomes = outcomes;
+    }
+
+    public double[] eval(String[] context) {
+      double[] probs = new double[outcomes.length];
+      Arrays.fill(probs, 1.0d / outcomes.length);
+      return probs;
+    }
+
+    public double[] eval(String[] context, double[] probs) {
+      Arrays.fill(probs, 1.0d / outcomes.length);
+      return probs;
+    }
+
+    public double[] eval(String[] context, float[] values) {
+      return eval(context);
+    }
+
+    public String getAllOutcomes(double[] outcomes) {
+      return null;
+    }
+
+    public String getBestOutcome(double[] outcomes) {
+      return null;
+    }
+
+    public int getIndex(String outcome) {
+      return 0;
+    }
+
+    public int getNumOutcomes() {
+      return outcomes.length;
+    }
+
+    public String getOutcome(int i) {
+      return outcomes[i];
+    }
+  }
+
+  /**
+   * Tests that exact score ties resolve in a canonical outcome order rather than
+   * in whatever order the priority queue's heap layout produces.
+   */
+  @Test
+  void testBestSequencesBreakScoreTiesDeterministically() {
+    String[] sequence = {"t1", "t2"};
+    BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
+
+    // The model's outcome iteration order ("b" before "a") must not leak into the tie order.
+    BeamSearch bs = new BeamSearch(4, new UniformModel(new String[] {"b", "a"}));
+
+    Sequence[] best = bs.bestSequences(4, sequence, null, cg,
+        (int i, String[] inputSequence, String[] outcomesSequence,
+         String outcome) -> true);
+
+    Assertions.assertEquals(4, best.length);
+    Assertions.assertEquals(List.of("a", "a"), best[0].getOutcomes());
+    Assertions.assertEquals(List.of("a", "b"), best[1].getOutcomes());
+    Assertions.assertEquals(List.of("b", "a"), best[2].getOutcomes());
+    Assertions.assertEquals(List.of("b", "b"), best[3].getOutcomes());
+  }
+
+  /**
    * Tests finding a sequence of length one.
    */
   @Test
   void testBestSequenceOneElementInput() {
+
     String[] sequence = {"1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
