@@ -269,13 +269,15 @@ class StaticEmbeddingModelSentencePieceTest {
   }
 
   @Test
-  void testDirectoryLoadNamesTheMissingSentencePieceModel(@TempDir Path dir) throws IOException {
+  void testDirectoryLoadExplainsAnIncompleteLegacyTokenizer(@TempDir Path dir)
+      throws IOException {
     writeModelDirectory(dir, true);
     Files.delete(dir.resolve("sentencepiece.bpe.model"));
 
     final InvalidFormatException e =
         assertThrows(InvalidFormatException.class, () -> StaticEmbeddingModel.load(dir));
-    assertTrue(e.getMessage().contains("copy the .model"), e.getMessage());
+    assertTrue(e.getMessage().contains("self-contained tokenizer.json"), e.getMessage());
+    assertTrue(e.getMessage().contains("trained SentencePiece .model"), e.getMessage());
   }
 
   @Test
