@@ -37,8 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * The assembler completes a distilled directory into a loadable one: it derives the WordPiece
  * {@code vocab.txt} and {@code tokenizer_config.json} from {@code tokenizer.json}, leaves existing
- * files alone, and reports the SentencePiece {@code .model} it cannot fabricate. The CLI tool wraps
- * it and turns failures into a {@link TerminateToolException}.
+ * files alone, and assembles a Model2Vec Unigram tokenizer directly from {@code tokenizer.json}.
+ * The CLI tool wraps it and turns failures into a {@link TerminateToolException}.
  */
 class ModelAssemblerTest {
 
@@ -122,18 +122,34 @@ class ModelAssemblerTest {
   }
 
   @Test
-  void testReportsTheMissingSentencePieceModelFile(@TempDir Path dir) throws IOException {
-    // A Unigram distillation without its trained .model file: the assembler cannot fabricate it.
+  void testLoadsAModel2VecUnigramTokenizerWithoutASeparateModelFile(@TempDir Path dir)
+      throws IOException {
     Files.writeString(dir.resolve("tokenizer.json"),
-        "{\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"<unk>\",0.0],[\"a\",-1.0]]}}");
-    Files.writeString(dir.resolve("config.json"), "{\"normalize\":true}");
+        "{\"normalizer\":{\"type\":\"Sequence\",\"normalizers\":["
+            + "{\"type\":\"Precompiled\",\"precompiled_charsmap\":\"\"},"
+            + "{\"type\":\"Replace\",\"pattern\":{\"String\":\".\"},"
+            + "\"content\":\" . \"},"
+            + "{\"type\":\"Replace\",\"pattern\":{\"Regex\":\"\\\\s+\"},"
+            + "\"content\":\" \"},"
+            + "{\"type\":\"Strip\",\"strip_left\":true,\"strip_right\":true}]},"
+            + "\"pre_tokenizer\":{\"type\":\"Metaspace\",\"replacement\":\"▁\","
+            + "\"prepend_scheme\":\"always\",\"split\":false},"
+            + "\"model\":{\"type\":\"Unigram\",\"unk_id\":1,"
+            + "\"byte_fallback\":false,\"vocab\":["
+            + "[\"[PAD]\",-10.0],[\"[UNK]\",-10.0],[\"▁hello\",-1.0],"
+            + "[\"▁world\",-1.0],[\"▁\",-2.0],[\".\",-1.0]]}}");
+    Files.writeString(dir.resolve("config.json"), "{\"normalize\":false}");
     SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
-        SafetensorsTestFiles.matrix("embeddings", new float[][] {{0f, 0f}, {1f, 1f}}));
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {
+            {0f}, {0f}, {2f}, {4f}, {8f}, {16f}
+        }));
 
-    final IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> ModelAssembler.assemble(dir));
-    assertTrue(e.getMessage().contains("sentencepiece.bpe.model"), e.getMessage());
-    assertTrue(e.getMessage().contains("copy it from the teacher"), e.getMessage());
+    final ModelAssembler.Result result = ModelAssembler.assemble(dir);
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(dir);
+
+    assertEquals("Unigram", result.family());
+    assertEquals(6, result.vocabularySize());
+    assertEquals(7.5f, model.embed("hello world.")[0], 1e-6f);
   }
 
   @Test

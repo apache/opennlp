@@ -37,11 +37,10 @@ import opennlp.tools.util.java.Experimental;
  *
  * <p>A distillation ships {@code model.safetensors}, {@code tokenizer.json}, and
  * {@code config.json}, but not the two files the loader also needs for a WordPiece model
- * ({@code vocab.txt} and {@code tokenizer_config.json}), and not the trained SentencePiece
- * {@code .model} file. This class fills the WordPiece gap from {@code tokenizer.json} itself: the
- * matrix row order is the {@code model.vocab} dictionary in id order, and the casing is the
- * {@code normalizer.lowercase} flag. It cannot fabricate the SentencePiece {@code .model} file,
- * which comes from the teacher, so it reports that as an actionable error.</p>
+ * ({@code vocab.txt} and {@code tokenizer_config.json}). This class fills the WordPiece gap from
+ * {@code tokenizer.json} itself: the matrix row order is the {@code model.vocab} dictionary in id
+ * order, and the casing is the {@code normalizer.lowercase} flag. A Model2Vec Unigram model is
+ * self-contained and loads directly from its JSON vocabulary, scores, and normalizer.</p>
  *
  * <p>Assembly writes only the missing files and never overwrites an existing one, so a directory
  * a caller already completed by hand is left intact.</p>
@@ -57,7 +56,7 @@ public final class ModelAssembler {
   /** The Unigram {@code model.type} a SentencePiece distillation's {@code tokenizer.json} uses. */
   private static final String FAMILY_UNIGRAM = "Unigram";
 
-  /** The SentencePiece tokenizer family, reported for an assembled Unigram directory. */
+  /** The legacy SentencePiece tokenizer family, when a separate model file is present. */
   private static final String FAMILY_SENTENCEPIECE = "SentencePiece";
 
   /** Not instantiable. */
@@ -68,7 +67,8 @@ public final class ModelAssembler {
    * The outcome of assembling a directory: what family it is, the files that were written, and the
    * stats read back from the loaded model.
    *
-   * @param family               {@code "WordPiece"} or {@code "SentencePiece"}.
+   * @param family               {@code "WordPiece"}, {@code "Unigram"}, or
+   *                             {@code "SentencePiece"}.
    * @param dimension            The embedding dimension of the loaded model.
    * @param vocabularySize       The number of subword rows in the loaded model's table.
    * @param termCount            The number of term rows after the subword rows; {@code 0} for a
@@ -88,8 +88,7 @@ public final class ModelAssembler {
    *                       {@code tokenizer.json}, and {@code config.json}.
    * @return The assembly result.
    * @throws IllegalArgumentException Thrown if {@code modelDirectory} is {@code null}, is not a
-   *     directory, is missing a required distillation file, or is a SentencePiece model without
-   *     its {@code .model} file.
+   *     directory, or is missing a required distillation file.
    * @throws InvalidFormatException Thrown if a model file is malformed, its tokenizer family is
    *     unsupported, or the directory does not load after assembly.
    * @throws IOException Thrown if reading or writing a file fails.
@@ -109,7 +108,7 @@ public final class ModelAssembler {
     final TokenizerJson tokenizer = readTokenizerJson(tokenizerJson);
     return switch (tokenizer.modelType()) {
       case FAMILY_WORDPIECE -> assembleWordpiece(modelDirectory, tokenizer);
-      case FAMILY_UNIGRAM -> assembleSentencePiece(modelDirectory);
+      case FAMILY_UNIGRAM -> assembleUnigram(modelDirectory);
       default -> throw new InvalidFormatException(tokenizerJson + " has a '"
           + tokenizer.modelType() + "' tokenizer model; only " + FAMILY_WORDPIECE + " and "
           + FAMILY_UNIGRAM + " (" + FAMILY_SENTENCEPIECE + ") distillations are supported");
@@ -152,26 +151,13 @@ public final class ModelAssembler {
         model.termCount(), wroteVocabulary, wroteTokenizerConfig);
   }
 
-  /**
-   * Assembles a SentencePiece directory: it only needs the trained {@code .model} file to be
-   * present, which the distillation does not ship, so a missing one is an actionable error.
-   *
-   * @param modelDirectory The model directory.
-   * @return The assembly result.
-   * @throws IOException Thrown if loading fails to read a file.
-   */
-  private static Result assembleSentencePiece(Path modelDirectory) throws IOException {
-    if (ModelFileNames.firstRegularFile(modelDirectory,
-        ModelFileNames.SENTENCEPIECE_MODELS) == null) {
-      throw new IllegalArgumentException("Model directory " + modelDirectory + " is a "
-          + FAMILY_SENTENCEPIECE + " model but has no trained model file (one of "
-          + String.join(", ", ModelFileNames.SENTENCEPIECE_MODELS) + "); copy it from the "
-          + "teacher model's repository (it is named sentencepiece.bpe.model there) into this "
-          + "directory");
-    }
+  /** Loads and verifies a self-contained Model2Vec Unigram directory. */
+  private static Result assembleUnigram(Path modelDirectory) throws IOException {
     final StaticEmbeddingModel model = load(modelDirectory);
-    return new Result(FAMILY_SENTENCEPIECE, model.dimension(), model.vocabularySize(),
-        model.termCount(), false, false);
+    final boolean legacySentencePiece = ModelFileNames.firstRegularFile(modelDirectory,
+        ModelFileNames.SENTENCEPIECE_MODELS) != null;
+    return new Result(legacySentencePiece ? FAMILY_SENTENCEPIECE : FAMILY_UNIGRAM,
+        model.dimension(), model.vocabularySize(), model.termCount(), false, false);
   }
 
   /**

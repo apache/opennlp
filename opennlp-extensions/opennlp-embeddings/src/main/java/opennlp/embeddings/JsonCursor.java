@@ -250,6 +250,43 @@ final class JsonCursor {
   }
 
   /**
+   * {@return the finite JSON number starting at the cursor, parsed as a {@code double}}
+   *
+   * @throws InvalidFormatException Thrown if no JSON number is present or its value is not
+   *     finite.
+   */
+  double parseDouble() throws InvalidFormatException {
+    final int start = position;
+    skipNumber();
+    final String number = text.substring(start, position);
+    try {
+      final double value = Double.parseDouble(number);
+      if (!Double.isFinite(value)) {
+        throw malformed("Number is not finite: " + number);
+      }
+      return value;
+    } catch (NumberFormatException e) {
+      throw malformed("Malformed number: " + number);
+    }
+  }
+
+  /**
+   * {@return the JSON boolean starting at the cursor}
+   *
+   * @throws InvalidFormatException Thrown if the next value is not {@code true} or
+   *     {@code false}.
+   */
+  boolean parseBoolean() throws InvalidFormatException {
+    if (consumeLiteral("true")) {
+      return true;
+    }
+    if (consumeLiteral("false")) {
+      return false;
+    }
+    throw malformed("Expected a boolean");
+  }
+
+  /**
    * Skips one JSON value of any type (string, number, array, object, true/false/null), so a
    * reader tolerates fields it does not care about.
    */
