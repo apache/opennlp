@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.tokenize.BertTokenizer;
+import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -52,8 +52,8 @@ public class CreateTokenizerTest {
   }
 
   @Test
-  void testCreatesLowerCasingBertTokenizer() {
-    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(bertVocab(), true);
+  void testCreatesLowerCasingPipelineTokenizer() {
+    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(bertVocab(), true);
 
     // Capitalized input must be lower cased before the wordpiece lookup.
     assertArrayEquals(new String[] {
@@ -62,8 +62,8 @@ public class CreateTokenizerTest {
   }
 
   @Test
-  void testCreatesCasePreservingBertTokenizer() {
-    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(bertVocab(), false);
+  void testCreatesCasePreservingPipelineTokenizer() {
+    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(bertVocab(), false);
 
     // Without lower casing, capitalized words miss the lowercase-only vocabulary.
     assertArrayEquals(new String[] {
@@ -74,7 +74,7 @@ public class CreateTokenizerTest {
 
   @Test
   void testSelectsRobertaSpecialTokens() {
-    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(robertaVocab(), false);
+    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(robertaVocab(), false);
 
     assertArrayEquals(new String[] {
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.ROBERTA_UNK_TOKEN,
@@ -88,7 +88,7 @@ public class CreateTokenizerTest {
     vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
     vocab.put(WordpieceTokenizer.BERT_UNK_TOKEN, 2);
 
-    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(vocab, false);
+    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(vocab, false);
 
     assertArrayEquals(new String[] {
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.BERT_UNK_TOKEN,
@@ -101,8 +101,24 @@ public class CreateTokenizerTest {
     final Map<String, Integer> vocab = robertaVocab();
     vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
 
-    assertThrows(IllegalArgumentException.class, () -> AbstractDL.createBertTokenizer(vocab, false));
+    assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.createPipelineTokenizer(vocab, false));
     assertThrows(IllegalArgumentException.class, () -> AbstractDL.createWordpieceTokenizer(vocab));
+  }
+
+  @Test
+  void testTokenizePosIsUnsupported() {
+    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(bertVocab(), true);
+    assertThrows(UnsupportedOperationException.class, () -> tokenizer.tokenizePos("the fox"));
+  }
+
+  @Test
+  void testRejectsBertVocabularyMissingSpecialTokensAtCreation() {
+    final Map<String, Integer> vocab = bertVocab();
+    vocab.remove(WordpieceTokenizer.BERT_UNK_TOKEN);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.createPipelineTokenizer(vocab, true));
   }
 
   @Test
