@@ -131,7 +131,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
       if (line.charAt(0) == '#') {
         continue;
       }
-      final String[] fields = line.split("\t", -1);
+      final String[] fields = splitFields(line);
       if (fields.length < COLUMNS) {
         throw new IOException("not a CoNLL-U word line: " + line);
       }
@@ -141,6 +141,25 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
       }
     }
     return words;
+  }
+
+  /**
+   * Splits a CoNLL-U word line into its tab-delimited fields, retaining empty fields.
+   *
+   * @param line The line to split.
+   * @return The fields in source order. Never {@code null}.
+   */
+  private String[] splitFields(String line) {
+    final List<String> fields = new ArrayList<>();
+    int fieldStart = 0;
+    for (int i = 0; i < line.length(); i++) {
+      if (line.charAt(i) == '\t') {
+        fields.add(line.substring(fieldStart, i));
+        fieldStart = i + 1;
+      }
+    }
+    fields.add(line.substring(fieldStart));
+    return fields.toArray(String[]::new);
   }
 
   /**
