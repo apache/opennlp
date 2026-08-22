@@ -155,6 +155,9 @@ written by an OpenNLP version that predates this behaviour has no stored checksu
 for those the published checksum is fetched once and then stored, and if it cannot
 be retrieved the model is loaded and a warning is logged.
 
+Treat the cache directory (`~/.opennlp` by default) as trusted storage and protect
+it accordingly.
+
 The base URL can be overridden with the `OPENNLP_DOWNLOAD_BASE_URL` system
 property. That property is **operator configuration**. Pointing it at a host you
 do not control, and then receiving a malicious model, is not a vulnerability in
