@@ -272,13 +272,16 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     requireVocabularyCoverage(tokenizer, vocabulary, tokenizerJsonFile);
     final Matrix matrix = readMatrix(vocabulary, terms.size(), safetensorsFile,
         tokenizerJsonFile.toString());
+    final TableAndWeights tableAndWeights = new TableAndWeights(
+        new FloatEmbeddingTable(matrix.embeddings(), matrix.dimension(),
+            vocabulary.size() + terms.size()),
+        matrix.weights());
     final IntPredicate skipPieceId =
         id -> tokenizer.isUnknown(id) || tokenizer.isControl(id);
-    return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
+    return new StaticEmbeddingModel(tableAndWeights.table(), tableAndWeights.weights(),
         vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
-        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size() + terms.size()),
         specialRows(vocabulary, SENTENCEPIECE_SPECIAL_TOKENS,
-            vocabulary.size() + terms.size()),
+            tableAndWeights.table().rowCount()),
         terms);
   }
 
