@@ -101,4 +101,13 @@ public final class POSTaggerAnnotator implements DocumentAnnotator {
   public Set<LayerKey<?>> provides() {
     return Set.of(Layers.POS_TAGS);
   }
+
+  /**
+   * {@return the adapter's simple class name, which names it in pipeline validation
+   * messages}
+   */
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }

@@ -21,53 +21,57 @@
 		<title>Introduction</title>
 		<para>
 			The package <code>opennlp.tools.document</code> provides an immutable container
-			that carries the original text of one document together with any number of typed
-			annotation layers over it. Every annotation is anchored to a
-			<code>Span</code> of the text exactly as the caller supplied it, never to a
-			normalized or otherwise derived form, so any result of any pipeline step can be
-			highlighted in the source text.
+			that carries the original text of one document together with any number of
+			annotation layers over it. A layer is a list of <code>Annotation</code> values,
+			each pairing a <code>Span</code> with a value. A span's offsets count Java
+			chars (UTF-16 units, so a supplementary-plane character counts as two) from
+			the beginning of the text exactly as the caller supplied it, never a
+			normalized or derived form, so every annotation can be highlighted in
+			the source text. The value's Java type is part of the layer's identity: a token
+			layer reads back as <code>List&lt;Annotation&lt;String&gt;&gt;</code>, for
+			example the token <code>The</code> paired with the span <code>[0..3)</code>.
+		</para>
+		<example xml:id="tools.document.introduction.stacked">
+			<title>A document with three annotation layers</title>
+			<literallayout class="monospaced">
+text:      The dog barks. It naps.
+           0         1         2
+           01234567890123456789012
+
+sentences: [0..14) "The dog barks."   [15..23) "It naps."
+tokens:    [0..3) "The" [4..7) "dog" [8..14) "barks." [15..17) "It" [18..23) "naps."
+pos-tags:  [0..3) "DT"  [4..7) "NN"  [8..14) "VBZ"    [15..17) "PRP" [18..23) "VBZ"</literallayout>
+		</example>
+		<para>
+			Each layer in the figure above is identified by a <code>LayerKey</code> that
+			names the layer and declares the type of its values:
+			<code>Layers.TOKENS</code> is a <code>LayerKey&lt;String&gt;</code>, so
+			<code>document.get(Layers.TOKENS)</code> returns the token annotations with
+			string values. Two keys are equal when their id, their value type, and their
+			scope are equal, so independently created constants for the same layer
+			interoperate. The keys of the core linguistic layers live in
+			<code>Layers</code>; a capability-specific layer's key lives on the annotator
+			that provides it, and adding a capability never changes the container.
 		</para>
 		<para>
-			The design follows three rules:
+			Key ids are namespaced. Keys OpenNLP defines start with the
+			<code>opennlp:</code> prefix; a user extension must use its own prefix. A
+			bare id, like the <code>token-lengths</code> key below, is legal for an
+			application-local layer. Toolkit keys are created through
+			<code>Layers.key</code> and <code>Layers.documentKey</code>, which apply the
+			prefix.
 		</para>
-		<itemizedlist>
-			<listitem>
-				<para>
-					<emphasis role="bold">Offset-anchored.</emphasis> A layer is a list of
-					<code>Annotation</code> values, each pairing a <code>Span</code> in original
-					text coordinates with a typed value. Annotations reference other annotations
-					by index within their layer, never by object identity.
-				</para>
-			</listitem>
-			<listitem>
-				<para>
-					<emphasis role="bold">Open key space.</emphasis> A layer is identified by a
-					<code>LayerKey</code> that also carries the type of its values, so reading a
-					layer back is statically typed. Two keys are equal when their id, their
-					value type, and their scope are equal, so independently created constants
-					for the same layer interoperate. The keys of the core linguistic layers live in
-					<code>Layers</code>; a capability-specific layer's key lives on the annotator
-					that provides it, and adding a capability never changes the container. Ids
-					are namespaced: keys the toolkit defines carry the <code>opennlp:</code>
-					prefix, an extension uses its own prefix, and a bare id, like the
-					<code>token-lengths</code> key below, is legal for an application-local
-					layer. Toolkit keys are created through <code>Layers.key</code> and
-					<code>Layers.documentKey</code>, which apply the prefix.
-				</para>
-			</listitem>
-			<listitem>
-				<para>
-					<emphasis role="bold">Immutable.</emphasis> Adding a layer returns a new
-					document that shares the unchanged layers with its ancestor. Documents
-					created through <code>Document.of</code> capture their text at construction
-					and are safe to share between threads. Three invariants make index references
-					sound: a layer preserves its insertion order and is never sorted or
-					reordered, a layer is immutable once added and detached from the caller's
-					input list, and providing a layer that already exists is rejected, so an
-					index reference stays valid for the lifetime of the document.
-				</para>
-			</listitem>
-		</itemizedlist>
+		<para>
+			A document is never modified in place: adding a layer returns a new document
+			that shares the unchanged layers with its ancestor. Documents created through
+			<code>Document.of</code> capture their text at construction and are safe to
+			share between threads. Annotations reference other annotations by index within
+			their layer, never by object identity. Three invariants make those index
+			references sound: a layer keeps its insertion order, a layer is immutable once
+			added and detached from the caller's input list, and providing a layer that
+			already exists is rejected, so an index reference stays valid for the lifetime
+			of the document.
+		</para>
 		<para>
 			A key declares its scope. Keys are positional by default: every annotation
 			carries a span, and consumers never null-check it. A document-scoped key
@@ -105,9 +109,10 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 			<code>SentenceDetectorAnnotator</code>, <code>TokenizerAnnotator</code>,
 			<code>POSTaggerAnnotator</code>, <code>NameFinderAnnotator</code>,
 			<code>LemmatizerAnnotator</code>, and <code>StemmerAnnotator</code>. Each wraps
-			the existing single-task API, which stays the primary API for single-task use.
-			The following pipeline combines three adapters with one custom annotator and
-			analyzes a two-sentence text; the components behind the adapters are any
+			one of the existing component APIs; an application that needs only one task
+			can keep using that component's API directly. The following pipeline combines
+			three adapters with one custom annotator and analyzes the text from the
+			introduction's figure; the components behind the adapters are any
 			<code>SentenceDetector</code>, <code>Tokenizer</code>, and
 			<code>POSTagger</code>, for example the ME implementations loaded from models:
 		</para>
@@ -126,8 +131,9 @@ Document document = analyzer.analyze("The dog barks. It naps.");]]>
 			round-trip shown here.
 		</para>
 		<para>
-			The resulting document carries exactly the four layers the pipeline provides.
-			The sentence layer holds two annotations, <code>[0..14)</code> covering
+			The resulting document carries exactly the four layers the pipeline provides:
+			the figure's three plus the custom token-lengths layer. The sentence
+			layer holds two annotations, <code>[0..14)</code> covering
 			<code>The dog barks.</code> and <code>[15..23)</code> covering
 			<code>It naps.</code>. The token layer holds five tokens whose spans refer to
 			the document text even inside the second sentence, so
@@ -148,14 +154,24 @@ for (Annotation<String> token : tokens) {
   CharSequence covered = token.span().getCoveredText(document.text());
 }]]>
 		</programlisting>
+		<para>
+			Because a document is immutable, independent pipelines can process the same
+			text in parallel, each starting from its own <code>Document.of(text)</code>,
+			and their results can be joined afterwards: <code>merge</code> returns a new
+			document carrying the layers of both. The texts must match, and by default a
+			layer key present on both documents is rejected, so two branches that both
+			run a tokenizer collide on <code>opennlp:tokens</code>. When the branches
+			rebuild a shared prefix identically, passing
+			<code>DuplicateLayerPolicy.KEEP_EQUAL</code> keeps one copy of each agreeing
+			layer; copies whose contents differ are still rejected.
+		</para>
 	</section>
 
 	<section xml:id="tools.document.custom">
 		<title>Writing a custom annotator</title>
 		<para>
-			A new capability contributes its results as one more layer without any change to
-			the container. The annotator below defines its own key in its own code, reads
-			the token layer, and provides one integer annotation per token; the analyzer's
+			The annotator below defines its own key in its own code, reads the token
+			layer, and provides one integer annotation per token; the analyzer's
 			build-time validation guarantees a tokenizer ran earlier:
 		</para>
 		<programlisting language="java"><![CDATA[
@@ -187,8 +203,8 @@ class TokenLengthAnnotator implements DocumentAnnotator {
 }]]>
 		</programlisting>
 		<para>
-			Reading the layer back is statically typed by the key, so the values are used as
-			numbers without a cast; for the text above the five values are
+			Because the key declares the value type, the values come back as numbers
+			without a cast; for the text above the five values are
 			<code>3, 3, 6, 2, 5</code>, each on its token's span:
 		</para>
 		<programlisting language="java"><![CDATA[

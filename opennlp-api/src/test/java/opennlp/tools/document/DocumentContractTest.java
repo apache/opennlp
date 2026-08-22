@@ -413,4 +413,204 @@ public class DocumentContractTest {
     assertEquals("value of type java.lang.String does not match layer counts2<Integer>",
         e.getMessage());
   }
+
+  /**
+   * Verifies that merge joins two documents grown independently over the same text and
+   * leaves both sources untouched. Text content decides equality, not the
+   * {@link CharSequence} implementation.
+   */
+  @Test
+  void testMergeJoinsLayersOfDocumentsOverTheSameText() {
+    final LayerKey<Integer> lengths = LayerKey.of("lengths", Integer.class);
+    final Document words = Document.of("the dog")
+        .with(WORDS, List.of(
+            new Annotation<>(new Span(0, 3), "the"),
+            new Annotation<>(new Span(4, 7), "dog")));
+    final Document counted = Document.of(new StringBuilder("the dog"))
+        .with(lengths, List.of(
+            new Annotation<>(new Span(0, 3), 3),
+            new Annotation<>(new Span(4, 7), 3)));
+
+    final Document merged = words.merge(counted);
+
+    assertEquals("the dog", merged.text().toString());
+    assertEquals(Set.of(WORDS, lengths), merged.layers());
+    assertEquals("the", merged.get(WORDS).get(0).value());
+    assertEquals(3, merged.get(lengths).get(0).value().intValue());
+    assertEquals(Set.of(WORDS), words.layers());
+    assertEquals(Set.of(lengths), counted.layers());
+  }
+
+  /**
+   * Verifies that merge rejects a null argument, a document over a different text even
+   * when their layers are disjoint, and a layer key present on both documents, naming
+   * the offending key.
+   */
+  @Test
+  void testMergeRejectsNullDifferentTextAndDuplicateLayers() {
+    final Document words = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 3), "the")));
+
+    final IllegalArgumentException nullOther = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(null));
+    assertEquals("other must not be null", nullOther.getMessage());
+
+    final IllegalArgumentException differentText = assertThrows(
+        IllegalArgumentException.class, () -> words.merge(Document.of("the cat")));
+    assertEquals("merge requires both documents to carry the same text",
+        differentText.getMessage());
+
+    final IllegalArgumentException duplicate = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(words));
+    assertEquals("layer is already present: words<String>", duplicate.getMessage());
+  }
+
+  /**
+   * Verifies that {@link Document.DuplicateLayerPolicy#KEEP_EQUAL} keeps one copy of a
+   * layer both documents rebuilt identically while still joining the disjoint layers.
+   */
+  @Test
+  void testMergeKeepingEqualLayersToleratesIdenticalCopies() {
+    final List<Annotation<String>> tokens = List.of(
+        new Annotation<>(new Span(0, 3), "the"),
+        new Annotation<>(new Span(4, 7), "dog"));
+    final LayerKey<Integer> lengths = LayerKey.of("lengths", Integer.class);
+    final Document words = Document.of("the dog").with(WORDS, tokens);
+    final Document recounted = Document.of("the dog")
+        .with(WORDS, tokens)
+        .with(lengths, List.of(
+            new Annotation<>(new Span(0, 3), 3),
+            new Annotation<>(new Span(4, 7), 3)));
+
+    final Document merged = words.merge(recounted, Document.DuplicateLayerPolicy.KEEP_EQUAL);
+
+    assertEquals(Set.of(WORDS, lengths), merged.layers());
+    // The shared layer is kept once, not concatenated.
+    assertEquals(2, merged.get(WORDS).size());
+    assertEquals(2, merged.get(lengths).size());
+  }
+
+  /**
+   * Verifies that {@link Document.DuplicateLayerPolicy#KEEP_EQUAL} still rejects a layer
+   * whose two copies differ, naming the key, and rejects a null policy.
+   */
+  @Test
+  void testMergeKeepingEqualLayersRejectsDifferingCopiesAndNullPolicy() {
+    final Document words = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 3), "the")));
+    final Document retokenized = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 7), "the dog")));
+
+    final IllegalArgumentException differing = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(retokenized, Document.DuplicateLayerPolicy.KEEP_EQUAL));
+    assertEquals("layer is present on both documents with differing contents: words<String>",
+        differing.getMessage());
+
+    final IllegalArgumentException nullPolicy = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(Document.of("the dog"), null));
+    assertEquals("duplicateLayers must not be null", nullPolicy.getMessage());
+  }
+
+  /**
+   * Verifies that a document implementation that does not override merge gets the same
+   * semantics from the interface default: disjoint layers join, a layer both documents
+   * rebuilt identically is kept once under KEEP_EQUAL, and differing copies are rejected
+   * with the same message the default implementation produces.
+   */
+  @Test
+  void testMergeDefaultImplementationServesForeignDocuments() {
+    final List<Annotation<String>> tokens = List.of(new Annotation<>(new Span(0, 3), "the"));
+    final LayerKey<Integer> lengths = LayerKey.of("lengths", Integer.class);
+    final Document words = new DelegatingDocument(Document.of("the dog").with(WORDS, tokens));
+    final Document counted = Document.of("the dog")
+        .with(WORDS, tokens)
+        .with(lengths, List.of(new Annotation<>(new Span(0, 3), 3)));
+
+    final Document merged = words.merge(counted, Document.DuplicateLayerPolicy.KEEP_EQUAL);
+    assertEquals(Set.of(WORDS, lengths), merged.layers());
+    assertEquals(1, merged.get(WORDS).size());
+
+    final Document retokenized = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 7), "the dog")));
+    final IllegalArgumentException differing = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(retokenized, Document.DuplicateLayerPolicy.KEEP_EQUAL));
+    assertEquals("layer is present on both documents with differing contents: words<String>",
+        differing.getMessage());
+  }
+
+  /**
+   * Verifies that merge validates the layers it takes from the other document instead of
+   * trusting them: a foreign implementation can hand out annotations that were never
+   * checked, and an out-of-bounds span among them is rejected by name.
+   */
+  @Test
+  void testMergeRevalidatesLayersOfForeignDocuments() {
+    final Document words = Document.of("the dog")
+        .with(WORDS, List.of(new Annotation<>(new Span(0, 3), "the")));
+    final LayerKey<String> stale = LayerKey.of("stale", String.class);
+    final Document unvalidated = new UnvalidatedDocument("the dog", stale,
+        List.of(new Annotation<>(new Span(0, 99), "out of bounds")));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(unvalidated));
+    assertEquals("span [0..99) exceeds the text length 7 in layer stale<String>",
+        e.getMessage());
+  }
+
+  /**
+   * A pass-through wrapper that overrides none of the interface defaults, so calling
+   * merge on it runs the interface's default implementation.
+   */
+  private record DelegatingDocument(Document delegate) implements Document {
+
+    @Override
+    public CharSequence text() {
+      return delegate.text();
+    }
+
+    @Override
+    public <T> List<Annotation<T>> get(LayerKey<T> layer) {
+      return delegate.get(layer);
+    }
+
+    @Override
+    public Set<LayerKey<?>> layers() {
+      return delegate.layers();
+    }
+
+    @Override
+    public <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations) {
+      return new DelegatingDocument(delegate.with(layer, annotations));
+    }
+  }
+
+  /**
+   * A document whose single layer bypassed all validation, standing in for a foreign
+   * implementation that does not enforce the layer contract itself.
+   */
+  private record UnvalidatedDocument(String rawText, LayerKey<String> key,
+                                     List<Annotation<String>> annotations)
+      implements Document {
+
+    @Override
+    public CharSequence text() {
+      return rawText;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> List<Annotation<T>> get(LayerKey<T> layer) {
+      return key.equals(layer) ? (List<Annotation<T>>) (List<?>) annotations : List.of();
+    }
+
+    @Override
+    public Set<LayerKey<?>> layers() {
+      return Set.of(key);
+    }
+
+    @Override
+    public <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations) {
+      throw new UnsupportedOperationException();
+    }
+  }
 }

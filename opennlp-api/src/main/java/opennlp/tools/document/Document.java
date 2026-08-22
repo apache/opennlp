@@ -100,4 +100,97 @@ public interface Document {
    * @throws IllegalArgumentException Thrown if any of the above constraints is violated.
    */
   <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations);
+
+  /**
+   * How {@link #merge(Document, DuplicateLayerPolicy)} treats a layer key that is
+   * present on both documents.
+   */
+  enum DuplicateLayerPolicy {
+
+    /** Reject any layer key present on both documents. */
+    REJECT,
+
+    /**
+     * Keep one copy of a layer key present on both documents when the two layers are
+     * structurally equal, for example when two parallel branches ran the same
+     * tokenizer. Layers whose contents differ are rejected as with {@link #REJECT}.
+     * Equality is {@link Annotation} equality: spans compare by offsets and type,
+     * never by probability, and values by their own {@code equals}.
+     */
+    KEEP_EQUAL
+  }
+
+  /**
+   * Returns a new document combining this document's layers with another document's
+   * layers over the same text, joining documents grown independently, for example by
+   * pipelines that ran in parallel.
+   *
+   * @param other The document whose layers are added on top of this document's layers.
+   *              Must not be {@code null}, must carry the same text content, and must
+   *              not provide a layer this document already has.
+   * @return A new {@link Document} carrying the layers of both documents. Never
+   *         {@code null}; both source documents are left untouched.
+   * @throws IllegalArgumentException Thrown if {@code other} is {@code null}, if its
+   *         text content differs, or if a layer key is present on both documents; the
+   *         exception names the offending key.
+   */
+  default Document merge(Document other) {
+    return merge(other, DuplicateLayerPolicy.REJECT);
+  }
+
+  /**
+   * Returns a new document combining this document's layers with another document's
+   * layers over the same text, resolving duplicate layer keys with
+   * {@code duplicateLayers}.
+   *
+   * @param other The document whose layers are added on top of this document's layers.
+   *              Must not be {@code null} and must carry the same text content.
+   * @param duplicateLayers How to treat a layer key present on both documents. Must
+   *                        not be {@code null}.
+   * @return A new {@link Document} carrying the layers of both documents. Never
+   *         {@code null}; both source documents are left untouched.
+   * @throws IllegalArgumentException Thrown if either argument is {@code null}, if the
+   *         text content differs, or if a layer key is present on both documents and
+   *         the policy does not keep it; the exception names the offending key.
+   */
+  default Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
+    if (other == null) {
+      throw new IllegalArgumentException("other must not be null");
+    }
+    if (duplicateLayers == null) {
+      throw new IllegalArgumentException("duplicateLayers must not be null");
+    }
+    if (!text().toString().contentEquals(other.text())) {
+      throw new IllegalArgumentException(
+          "merge requires both documents to carry the same text");
+    }
+    Document merged = this;
+    for (final LayerKey<?> layer : other.layers()) {
+      if (duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
+          && merged.layers().contains(layer)) {
+        if (layersEqual(merged, layer, other)) {
+          continue;
+        }
+        throw new IllegalArgumentException(
+            "layer is present on both documents with differing contents: " + layer);
+      }
+      merged = addLayer(merged, layer, other);
+    }
+    return merged;
+  }
+
+  /**
+   * @return Whether the two documents carry structurally equal contents for the layer.
+   */
+  private static <T> boolean layersEqual(Document first, LayerKey<T> layer, Document second) {
+    return first.get(layer).equals(second.get(layer));
+  }
+
+  /**
+   * Adds one layer of {@code from} to {@code base} through {@link #with(LayerKey, List)},
+   * capturing the key's value type.
+   */
+  private static <T> Document addLayer(Document base, LayerKey<T> layer, Document from) {
+    return base.with(layer, from.get(layer));
+  }
 }

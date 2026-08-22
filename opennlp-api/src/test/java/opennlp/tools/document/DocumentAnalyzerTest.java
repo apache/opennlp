@@ -83,6 +83,20 @@ public class DocumentAnalyzerTest {
     }
   };
 
+  /**
+   * Verifies that the adapters identify themselves by their simple class name, which is
+   * how a pipeline validation message names the offending annotator.
+   */
+  @Test
+  void testAdaptersNameThemselvesByClassName() {
+    assertEquals("SentenceDetectorAnnotator",
+        new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER).toString());
+    assertEquals("TokenizerAnnotator",
+        new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER).toString());
+    assertEquals("POSTaggerAnnotator", new POSTaggerAnnotator(TAGGER).toString());
+    assertEquals("NameFinderAnnotator", new NameFinderAnnotator(NO_NAMES).toString());
+  }
+
   @Test
   void testPipelineProducesAlignedLayersInOriginalCoordinates() {
     final Document document = DocumentAnalyzer.builder()

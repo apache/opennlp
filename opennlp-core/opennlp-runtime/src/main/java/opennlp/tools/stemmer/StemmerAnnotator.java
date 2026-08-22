@@ -95,4 +95,13 @@ public final class StemmerAnnotator implements DocumentAnnotator {
   public Set<LayerKey<?>> provides() {
     return Set.of(STEMS);
   }
+
+  /**
+   * {@return the adapter's simple class name, which names it in pipeline validation
+   * messages}
+   */
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }

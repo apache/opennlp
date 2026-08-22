@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
+import opennlp.tools.document.DocumentAnalyzer;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 
@@ -55,6 +56,19 @@ public class StemmerAnnotatorTest {
         () -> new StemmerAnnotator(null));
     final StemmerAnnotator annotator = new StemmerAnnotator(new PorterStemmer());
     assertThrows(IllegalArgumentException.class, () -> annotator.annotate(null));
+  }
+
+  /**
+   * Verifies that a misordered pipeline names the adapter by its simple class name, not
+   * by its default identity string.
+   */
+  @Test
+  void testPipelineValidationNamesTheAdapter() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentAnalyzer.builder()
+            .add(new StemmerAnnotator(new PorterStemmer())).build());
+    assertEquals("annotator StemmerAnnotator requires layer opennlp:tokens<String>,"
+        + " which no earlier annotator provides", e.getMessage());
   }
 
   /**
