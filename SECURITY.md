@@ -148,10 +148,12 @@ JVM arguments, or the `OPENNLP_MAX_ENTRIES` setting.
 CDN (`https://dlcdn.apache.org/opennlp/`) and verifies each download against the
 published SHA-512 checksum before use. A mismatch fails the load.
 
-Note that verification happens at **download** time. A model already present in
-the local download cache is currently not re-verified when it is loaded again, so
-treat the cache directory (`~/.opennlp` by default) as trusted storage and protect
-it accordingly.
+The published checksum is stored next to the model in the download cache, and a
+model already present in that cache is re-verified against it on every load. This
+check is performed locally and does not contact the CDN again. A cache entry
+written by an OpenNLP version that predates this behaviour has no stored checksum;
+for those the published checksum is fetched once and then stored, and if it cannot
+be retrieved the model is loaded and a warning is logged.
 
 The base URL can be overridden with the `OPENNLP_DOWNLOAD_BASE_URL` system
 property. That property is **operator configuration**. Pointing it at a host you

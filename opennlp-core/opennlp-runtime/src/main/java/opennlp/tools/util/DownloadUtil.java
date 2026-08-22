@@ -62,6 +62,7 @@ public class DownloadUtil {
   private static final String MODEL_URI_PATH =
       System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.3/");
   private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
+  private static final String CHECKSUM_EXTENSION = ".sha512";
 
   private static Map<String, Map<ModelType, URL>> availableModels;
 
@@ -89,7 +90,7 @@ public class DownloadUtil {
         boolean exists;
         if (Files.exists(localFile)) {
           // if this does not throw the requested model is valid!
-          validateModel(url + ".sha512", localFile);
+          validateCachedModel(url + CHECKSUM_EXTENSION, localFile);
           exists = true;
         } else {
           exists = false;
@@ -130,7 +131,8 @@ public class DownloadUtil {
    * The model is saved to an {@code .opennlp/} directory
    * located in the user's home directory. This directory will be created
    * if it does not already exist. If a model to be downloaded already
-   * exists in that directory, the model will not be re-downloaded.
+   * exists in that directory, the model will not be re-downloaded, but it is
+   * verified against its SHA-512 checksum before it is loaded.
    *
    * @param url  The model's {@link URL}.
    * @param type The class of the resulting model {@link T}.
@@ -159,10 +161,11 @@ public class DownloadUtil {
       try (final InputStream in = url.openStream()) {
         Files.copy(in, localFile, StandardCopyOption.REPLACE_EXISTING);
       }
-      validateModel(url + ".sha512", localFile);
+      validateModel(url + CHECKSUM_EXTENSION, localFile);
       logger.debug("Download complete.");
     } else {
       logger.debug("Model file '{}' already exists. Skipping download.", filename);
+      validateCachedModel(url + CHECKSUM_EXTENSION, localFile);
     }
 
     try {
@@ -185,35 +188,106 @@ public class DownloadUtil {
   }
 
   /**
-   * Validates a downloaded model via the specified {@link Path downloadedModel path}.
+   * Validates a freshly downloaded model via the specified {@link Path downloadedModel path}
+   * and stores the expected checksum next to it, so that subsequent loads of the cached file
+   * can be verified without contacting the CDN again.
    *
    * @param sha512          the url to get the sha512 hash
    * @param downloadedModel the model file to check
-   * @throws IOException thrown if the checksum could not be computed
+   * @throws IOException thrown if the checksum could not be computed or did not match
    */
   private static void validateModel(String sha512, Path downloadedModel) throws IOException {
-    String expectedChecksum;
+    final String checksumFile = downloadChecksumFile(sha512, downloadedModel);
+    verifyChecksum(downloadedModel, parseChecksum(checksumFile));
+    storeChecksumFile(downloadedModel, checksumFile);
+  }
+
+  /**
+   * Validates a model that is already present in the download home.
+   * <p>
+   * The expected checksum stored by a previous download is used, so no network access is
+   * required on this path. When no checksum was stored - the download home was populated by
+   * an OpenNLP version that predates this check - the published checksum is fetched once and
+   * then stored. If it cannot be retrieved, the model is loaded and a warning is logged,
+   * which preserves the behaviour of those earlier versions for offline environments.
+   *
+   * @param sha512      the url to get the sha512 hash
+   * @param cachedModel the cached model file to check
+   * @throws IOException thrown if the checksum could not be computed or did not match
+   */
+  private static void validateCachedModel(String sha512, Path cachedModel) throws IOException {
+    final Path checksumFile = checksumPathFor(cachedModel);
+
+    if (Files.exists(checksumFile)) {
+      verifyChecksum(cachedModel, parseChecksum(Files.readString(checksumFile, StandardCharsets.UTF_8)));
+      return;
+    }
+
+    final String publishedChecksumFile;
+    try {
+      publishedChecksumFile = downloadChecksumFile(sha512, cachedModel);
+    } catch (IOException e) {
+      logger.warn("Could not retrieve the expected checksum for cached model '{}'. "
+          + "Its integrity has not been verified.", cachedModel.getFileName(), e);
+      return;
+    }
+
+    verifyChecksum(cachedModel, parseChecksum(publishedChecksumFile));
+    storeChecksumFile(cachedModel, publishedChecksumFile);
+  }
+
+  /**
+   * Retrieves the published {@code ".sha512"} file. Its content is returned unmodified so that
+   * the copy stored next to the model stays interchangeable with the published one.
+   */
+  private static String downloadChecksumFile(String sha512, Path model) throws IOException {
     try {
       // Download SHA512 checksum file
       final URL hashSum = new URI(sha512).toURL();
       try (BufferedReader reader = new BufferedReader(new InputStreamReader(hashSum.openStream()))) {
-        expectedChecksum = reader.readLine();
-
-        if (expectedChecksum != null) {
-          expectedChecksum = expectedChecksum.split("\\s")[0].trim();
-        }
+        return reader.readLine();
       }
     } catch (URISyntaxException use) {
       throw new IOException("Expected SHA512 checksum could not be retrieved for " +
-          downloadedModel.getFileName(), use);
+          model.getFileName(), use);
     }
+  }
 
-    // Validate SHA512 checksum
-    final String actualChecksum = calculateSHA512(downloadedModel);
+  /**
+   * Extracts the hash from the content of a checksum file, which holds the hash followed by the
+   * name of the file it applies to.
+   */
+  private static String parseChecksum(String checksumFileContent) {
+    if (checksumFileContent == null) {
+      return null;
+    }
+    final String trimmed = checksumFileContent.trim();
+    return trimmed.isEmpty() ? null : trimmed.split("\\s")[0];
+  }
+
+  private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
+    final String actualChecksum = calculateSHA512(model);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
-      throw new IOException("SHA512 checksum validation failed for " + downloadedModel.getFileName() +
+      throw new IOException("SHA512 checksum validation failed for " + model.getFileName() +
           ". Expected: " + expectedChecksum + ", but got: " + actualChecksum);
     }
+  }
+
+  /**
+   * Stores the published checksum file alongside the model. A failure to do so is not fatal:
+   * it only means the next load falls back to retrieving the published checksum again.
+   */
+  private static void storeChecksumFile(Path model, String checksumFileContent) {
+    final Path checksumFile = checksumPathFor(model);
+    try {
+      Files.writeString(checksumFile, checksumFileContent, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      logger.warn("Could not store the expected checksum at {}.", checksumFile, e);
+    }
+  }
+
+  private static Path checksumPathFor(Path model) {
+    return model.resolveSibling(model.getFileName() + CHECKSUM_EXTENSION);
   }
 
   private static String calculateSHA512(Path file) throws IOException {
