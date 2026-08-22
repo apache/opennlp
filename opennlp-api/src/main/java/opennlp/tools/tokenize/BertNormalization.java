@@ -19,7 +19,7 @@ package opennlp.tools.tokenize;
 
 /**
  * Character classifications and text transforms of the reference BERT
- * {@code BasicTokenizer}, shared by {@link BertTokenizer} and
+ * {@code BasicTokenizer}, shared by {@link WordpieceEncoder} and
  * {@link WordpieceTokenizer}.
  */
 final class BertNormalization {

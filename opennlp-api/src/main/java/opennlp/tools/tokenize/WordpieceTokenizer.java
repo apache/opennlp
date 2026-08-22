@@ -34,7 +34,7 @@ import opennlp.tools.util.Span;
  * of BERT tokenization. It does not normalize the input text: no lower casing,
  * no accent stripping, no control character removal. Text that does not match
  * the vocabulary's casing - for uncased models that includes every capitalized
- * word - is mapped to the unknown token. Use {@link BertTokenizer} for the
+ * word - is mapped to the unknown token. Use {@link WordpieceEncoder} for the
  * full BERT tokenization pipeline.
  * <p>
  * As of OpenNLP 3.0.0 the behavior matches the reference BERT wordpiece
@@ -58,7 +58,7 @@ import opennlp.tools.util.Span;
  *  </li>
  * </ul>
  *
- * @see BertTokenizer
+ * @see WordpieceEncoder
  */
 public class WordpieceTokenizer implements Tokenizer {
 
