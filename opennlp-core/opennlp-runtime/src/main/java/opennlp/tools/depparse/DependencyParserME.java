@@ -1,0 +1,180 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.depparse;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.TrainerFactory;
+import opennlp.tools.ml.TrainerFactory.TrainerType;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
+
+/**
+ * A greedy transition-based {@link DependencyParser}: a maximum entropy classifier picks
+ * the next arc-standard {@link Transition} for each configuration until the parse is
+ * complete, always taking the highest scoring transition that is applicable.
+ *
+ * <p>The parser holds an immutable model and no per-parse state, so one instance can be
+ * shared between threads.</p>
+ *
+ * @see DependencyParser
+ * @since 3.0.0
+ */
+public class DependencyParserME implements DependencyParser {
+
+  private final MaxentModel model;
+  private final DependencyContextGenerator contextGenerator;
+  private final Transition[] transitions;
+
+  /**
+   * Initializes a {@link DependencyParserME} from a {@link DependencyModel}.
+   *
+   * @param model The model to parse with. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or an
+   *         outcome of the model does not decode to a transition.
+   */
+  public DependencyParserME(DependencyModel model) {
+    if (model == null) {
+      throw new IllegalArgumentException("model must not be null");
+    }
+    this.model = model.getParserModel();
+    this.contextGenerator = new DependencyContextGenerator();
+    this.transitions = decodeOutcomes(this.model);
+  }
+
+  /**
+   * Initializes a {@link DependencyParserME} with a raw transition model.
+   *
+   * @param model The transition classification model. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or an
+   *         outcome of the model does not decode to a transition.
+   */
+  public DependencyParserME(MaxentModel model) {
+    if (model == null) {
+      throw new IllegalArgumentException("model must not be null");
+    }
+    this.model = model;
+    this.contextGenerator = new DependencyContextGenerator();
+    this.transitions = decodeOutcomes(model);
+  }
+
+  /**
+   * Decodes the outcome inventory once, so that decoding a sentence indexes it instead
+   * of parsing an outcome string per configuration and outcome.
+   *
+   * @param model The transition classification model.
+   * @return The transitions by outcome index. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if an outcome does not decode to a
+   *         transition, which means the model is not a dependency parser model.
+   */
+  private static Transition[] decodeOutcomes(MaxentModel model) {
+    final Transition[] decoded = new Transition[model.getNumOutcomes()];
+    for (int i = 0; i < decoded.length; i++) {
+      final String outcome = model.getOutcome(i);
+      try {
+        decoded[i] = Transition.decode(outcome);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("model outcome is not a transition: " + outcome, e);
+      }
+    }
+    return decoded;
+  }
+
+  @Override
+  public DependencyGraph parse(String[] tokens, String[] tags) {
+    if (tokens == null || tags == null) {
+      throw new IllegalArgumentException("tokens and tags must not be null");
+    }
+    if (tokens.length == 0) {
+      throw new IllegalArgumentException("tokens must not be empty");
+    }
+    if (tokens.length != tags.length) {
+      throw new IllegalArgumentException("tokens and tags must have the same length: "
+          + tokens.length + " != " + tags.length);
+    }
+    final ArcStandardState state = new ArcStandardState(tokens.length);
+    while (!state.isTerminal()) {
+      state.apply(bestApplicable(state, tokens, tags));
+    }
+    return state.toGraph();
+  }
+
+  /**
+   * Scores all outcomes for the current configuration and picks the best transition that
+   * is applicable; inapplicable outcomes are passed over regardless of score.
+   */
+  private Transition bestApplicable(ArcStandardState state, String[] tokens, String[] tags) {
+    final double[] probabilities = model.eval(contextGenerator.getContext(state, tokens, tags));
+    Transition best = null;
+    double bestProbability = Double.NEGATIVE_INFINITY;
+    for (int i = 0; i < probabilities.length; i++) {
+      if (probabilities[i] <= bestProbability) {
+        continue;
+      }
+      if (state.canApply(transitions[i])) {
+        best = transitions[i];
+        bestProbability = probabilities[i];
+      }
+    }
+    if (best == null) {
+      throw new IllegalStateException(
+          "no applicable transition among the model outcomes in " + state);
+    }
+    return best;
+  }
+
+  /**
+   * Trains a greedy arc-standard parser model from dependency samples.
+   *
+   * <p>Non-projective samples have no arc-standard derivation and are skipped during
+   * event generation.</p>
+   *
+   * @param languageCode The ISO language code of the training data. Must not be
+   *                     {@code null}.
+   * @param samples The training samples. Must not be {@code null}.
+   * @param parameters The {@link TrainingParameters}. Must not be {@code null} and must
+   *                   select an event model trainer.
+   * @return A trained {@link DependencyModel}. Never {@code null}.
+   * @throws IOException Thrown if reading the samples fails.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null} or the
+   *         configured trainer is not an event model trainer.
+   */
+  public static DependencyModel train(String languageCode,
+      ObjectStream<DependencySample> samples, TrainingParameters parameters)
+      throws IOException {
+    if (languageCode == null || samples == null || parameters == null) {
+      throw new IllegalArgumentException(
+          "languageCode, samples and parameters must not be null");
+    }
+    final TrainerType trainerType = TrainerFactory.getTrainerType(parameters);
+    if (!TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
+      throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);
+    }
+    final Map<String, String> manifestInfoEntries = new HashMap<>();
+    final EventTrainer<TrainingParameters> trainer =
+        TrainerFactory.getEventTrainer(parameters, manifestInfoEntries);
+    final ObjectStream<Event> events =
+        new DependencyEventStream(samples, new DependencyContextGenerator());
+    return new DependencyModel(languageCode, trainer.train(events), manifestInfoEntries);
+  }
+}
