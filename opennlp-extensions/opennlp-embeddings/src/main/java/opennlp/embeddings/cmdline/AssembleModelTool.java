@@ -30,10 +30,9 @@ import opennlp.tools.util.InvalidFormatException;
  *
  * <p>A Model2Vec distillation writes {@code model.safetensors}, {@code tokenizer.json}, and
  * {@code config.json}. For a WordPiece model this tool derives the missing {@code vocab.txt} and
- * {@code tokenizer_config.json} from {@code tokenizer.json}. For a SentencePiece model it checks
- * that the trained {@code .model} file, which comes from the teacher, is present, and it names the
- * fix if it is not. Either way it loads the assembled directory and prints its family, dimension,
- * and vocabulary size, so a run that prints a summary is a directory that works.</p>
+ * {@code tokenizer_config.json} from {@code tokenizer.json}. A Model2Vec Unigram model is already
+ * self-contained. The tool loads the assembled directory and prints its family, dimension, and
+ * vocabulary size, so a run that prints a summary is a directory that works.</p>
  */
 public class AssembleModelTool extends BasicCmdLineTool {
 
