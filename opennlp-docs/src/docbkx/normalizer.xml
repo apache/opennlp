@@ -198,7 +198,7 @@ String hyphen = DashCharSequenceNormalizer.getInstance()
 	<section xml:id="tools.normalizer.pipeline">
 		<title>Composing a pipeline</title>
 		<para>
-			<code>TextNormalizer</code> is a fluent builder that composes the rungs, in the order
+			<code>TextNormalizer</code> is a fluent builder that composes the normalizers, in the order
 			they are added, into a single <code>CharSequenceNormalizer</code>:
 		</para>
 		<programlisting language="java">
@@ -259,7 +259,7 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 			<code>CharSequenceNormalizer</code> and adds <code>normalizeAligned</code>, so a caller tests
 			for it with a plain <code>instanceof</code>, the same pattern the name finder uses for
 			<code>OffsetMappingNameFinder</code>. Every per-code-point fold implements it: whitespace, the
-			line-break-preserving whitespace rung, dashes, invisible-control stripping, quotes, digits,
+			line-break-preserving whitespace normalizer, dashes, invisible-control stripping, quotes, digits,
 			ellipsis, bullets, the German umlaut transliteration, Unicode full case folding
 			(<code>fullCaseFold()</code>, whose expansions come from a bundled table with known lengths,
 			so it reports its edits), and the emoji/emoticon folds (<code>emojiToEmoticon()</code> and

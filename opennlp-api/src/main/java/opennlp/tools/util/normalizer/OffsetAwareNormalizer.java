@@ -22,16 +22,16 @@ package opennlp.tools.util.normalizer;
  * character offsets of the original.
  *
  * <p>Length-changing folds move offsets: collapsing a run of whitespace, folding a supplementary
- * dash to one ASCII hyphen, or stripping invisible controls all shift every later character. A rung
+ * dash to one ASCII hyphen, or stripping invisible controls all shift every later character. A normalizer
  * that performs such a fold over the cursor-based {@link CharClass} engine can record those edits
- * and expose them through {@link #normalizeAligned(CharSequence)}. A rung that delegates to
+ * and expose them through {@link #normalizeAligned(CharSequence)}. A normalizer that delegates to
  * {@link java.text.Normalizer} (NFC/NFKC) or to a stemmer cannot report its edits, so it does not
  * implement this interface; that is a deliberate capability split rather than an oversight.</p>
  *
  * <p>{@code TextNormalizer.Builder.buildAligned()} composes a chain of these into a single
  * offset-aware pipeline whose {@link AlignedText} maps a match all the way back to the original
  * input. An interface-typed caller tests for the capability
- * ({@code normalizer instanceof OffsetAwareNormalizer}) instead of depending on a concrete rung,
+ * ({@code normalizer instanceof OffsetAwareNormalizer}) instead of depending on a concrete normalizer,
  * the same plain {@code instanceof} pattern used by
  * {@code OffsetMappingNameFinder} (in the DL layer) rather than reflection.</p>
  */

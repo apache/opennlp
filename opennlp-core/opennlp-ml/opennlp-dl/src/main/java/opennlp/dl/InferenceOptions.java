@@ -88,7 +88,7 @@ public class InferenceOptions {
    * produces still align with the input. Off by default.
    *
    * <p>This is a one-for-one replacement, not the collapse-and-trim whitespace fold of the runtime
-   * {@code TextNormalizer.whitespace()} rung: runs of whitespace are not merged and leading or
+   * {@code TextNormalizer.whitespace()} normalizer: runs of whitespace are not merged and leading or
    * trailing whitespace is not removed, so offsets are preserved.</p>
    *
    * @param normalizeWhitespace Whether to normalize whitespace.

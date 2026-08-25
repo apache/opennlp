@@ -17,11 +17,11 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * An {@link OffsetAwareNormalizer} that applies a chain of offset-aware rungs in order and composes
+ * An {@link OffsetAwareNormalizer} that applies a chain of offset-aware normalizers in order and composes
  * their per-stage {@link Alignment}s with {@link Alignment#andThen(Alignment)}, so the result maps a
  * span found in the fully normalized text back to the original input through every stage.
  *
- * <p>Produced by {@code TextNormalizer.Builder.buildAligned()}, which validates that every rung is
+ * <p>Produced by {@code TextNormalizer.Builder.buildAligned()}, which validates that every normalizer is
  * offset-aware before constructing this.</p>
  */
 final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormalizer {
