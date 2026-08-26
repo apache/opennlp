@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.document;
+package opennlp.tools.namefind;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +25,9 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.TokenNameFinder;
+import opennlp.tools.document.Annotation;
+import opennlp.tools.document.Document;
+import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

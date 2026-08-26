@@ -25,6 +25,9 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerAnnotator;
+import opennlp.tools.sentdetect.SentenceDetectorAnnotator;
+import opennlp.tools.tokenize.TokenizerAnnotator;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 

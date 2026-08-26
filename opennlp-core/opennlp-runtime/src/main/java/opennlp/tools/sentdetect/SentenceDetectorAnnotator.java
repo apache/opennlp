@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
-package opennlp.tools.document;
+package opennlp.tools.sentdetect;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.document.Annotation;
+import opennlp.tools.document.Document;
+import opennlp.tools.document.DocumentAnnotator;
+import opennlp.tools.document.LayerKey;
+import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 
 /**

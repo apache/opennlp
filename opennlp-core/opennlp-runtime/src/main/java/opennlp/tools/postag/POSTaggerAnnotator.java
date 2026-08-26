@@ -15,13 +15,18 @@
  * limitations under the License.
  */
 
-package opennlp.tools.document;
+package opennlp.tools.postag;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.postag.POSTagger;
+import opennlp.tools.document.Annotation;
+import opennlp.tools.document.Document;
+import opennlp.tools.document.DocumentAnnotator;
+import opennlp.tools.document.DocumentAnnotators;
+import opennlp.tools.document.LayerKey;
+import opennlp.tools.document.Layers;
 
 /**
  * Adapts a {@link POSTagger} to the document pipeline: reads {@link Layers#SENTENCES}

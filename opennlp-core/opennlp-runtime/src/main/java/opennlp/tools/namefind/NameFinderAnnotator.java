@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-package opennlp.tools.document;
+package opennlp.tools.namefind;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.TokenNameFinder;
+import opennlp.tools.document.Annotation;
+import opennlp.tools.document.Document;
+import opennlp.tools.document.DocumentAnnotator;
+import opennlp.tools.document.DocumentAnnotators;
+import opennlp.tools.document.LayerKey;
+import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 
 /**

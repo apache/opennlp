@@ -385,6 +385,34 @@ public class DocumentContractTest {
   }
 
   /**
+   * Verifies that a caller can add a new layer type without changing the document
+   * container.
+   */
+  @Test
+  void testCustomLayerNeedsNoContainerChange() {
+    record Sentiment(String polarity, double score) {
+    }
+    final LayerKey<Sentiment> sentiment = LayerKey.of("sentiment", Sentiment.class);
+    final DocumentAnnotator annotator = new DocumentAnnotator() {
+
+      @Override
+      public Document annotate(Document document) {
+        final Span all = new Span(0, document.text().length());
+        return document.with(sentiment,
+            List.of(new Annotation<>(all, new Sentiment("positive", 0.9d))));
+      }
+
+      @Override
+      public Set<LayerKey<?>> provides() {
+        return Set.of(sentiment);
+      }
+    };
+    final Document document = DocumentAnalyzer.builder().add(annotator).build()
+        .analyze("good dog");
+    assertEquals("positive", document.get(sentiment).get(0).value().polarity());
+  }
+
+  /**
    * Verifies that the value type travels through {@link LayerKey}: a layer added under
    * an {@code Integer} key reads back as {@code Annotation<Integer>}, so its values
    * participate in arithmetic without a cast, and a mismatched value can never enter

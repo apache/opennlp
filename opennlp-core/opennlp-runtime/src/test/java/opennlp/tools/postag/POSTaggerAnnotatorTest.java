@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.document;
+package opennlp.tools.postag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,9 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.postag.POSTagger;
+import opennlp.tools.document.Annotation;
+import opennlp.tools.document.Document;
+import opennlp.tools.document.Layers;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 

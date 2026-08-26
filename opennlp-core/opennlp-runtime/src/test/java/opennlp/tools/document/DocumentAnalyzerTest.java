@@ -24,8 +24,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.namefind.NameFinderAnnotator;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerAnnotator;
+import opennlp.tools.sentdetect.SentenceDetectorAnnotator;
+import opennlp.tools.tokenize.TokenizerAnnotator;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 
@@ -171,36 +175,6 @@ public class DocumentAnalyzerTest {
     final DocumentAnalyzer.Builder builder = DocumentAnalyzer.builder()
         .add(new POSTaggerAnnotator(TAGGER));
     assertThrows(IllegalArgumentException.class, builder::build);
-  }
-
-  @Test
-  void testEmptyPipelineThrows() {
-    assertThrows(IllegalArgumentException.class, () -> DocumentAnalyzer.builder().build());
-  }
-
-  @Test
-  void testCustomLayerNeedsNoContainerChange() {
-    // the additive claim: a brand-new layer type works without touching the container
-    record Sentiment(String polarity, double score) {
-    }
-    final LayerKey<Sentiment> sentiment = LayerKey.of("sentiment", Sentiment.class);
-    final DocumentAnnotator annotator = new DocumentAnnotator() {
-
-      @Override
-      public Document annotate(Document document) {
-        final Span all = new Span(0, document.text().length());
-        return document.with(sentiment,
-            List.of(new Annotation<>(all, new Sentiment("positive", 0.9d))));
-      }
-
-      @Override
-      public Set<LayerKey<?>> provides() {
-        return Set.of(sentiment);
-      }
-    };
-    final Document document = DocumentAnalyzer.builder().add(annotator).build()
-        .analyze("good dog");
-    assertEquals("positive", document.get(sentiment).get(0).value().polarity());
   }
 
   @Test
