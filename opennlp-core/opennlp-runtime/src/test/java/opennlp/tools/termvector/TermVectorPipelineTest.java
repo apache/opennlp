@@ -26,7 +26,7 @@ import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnalyzer;
 import opennlp.tools.document.Layers;
-import opennlp.tools.document.TokenizerAnnotator;
+import opennlp.tools.tokenize.TokenizerAnnotator;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
