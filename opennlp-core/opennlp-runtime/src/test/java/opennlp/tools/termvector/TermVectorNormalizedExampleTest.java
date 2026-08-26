@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnalyzer;
-import opennlp.tools.document.TokenizerAnnotator;
+import opennlp.tools.tokenize.TokenizerAnnotator;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
