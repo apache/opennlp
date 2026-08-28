@@ -16,8 +16,21 @@
  */
 package opennlp.embeddings.index;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.java.Experimental;
 
 /**
@@ -29,10 +42,23 @@ import opennlp.tools.util.java.Experimental;
  * <p>Follows the {@link VectorIndex} lifecycle: single-threaded build, then
  * {@link #freeze()}, then concurrent queries.</p>
  *
+ * <p>A frozen index can be persisted: {@link #write(Path)} stores the full-precision
+ * row-major floats ({@value #VECTORS_FILE}) and the ids in row order ({@value #IDS_FILE});
+ * {@link #read(Path)} loads them back into a frozen index that scores identically.</p>
+ *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
 @Experimental
 public final class FlatFloatIndex implements VectorIndex {
+
+  /** File name of the row-major float vectors inside a written index directory. */
+  public static final String VECTORS_FILE = "vectors.f32";
+
+  /** File name of the row ids, one per line in row order, inside a written index directory. */
+  public static final String IDS_FILE = "ids.txt";
+
+  /** Leading marker of {@value #VECTORS_FILE}, "ONF1" in ASCII. */
+  private static final int MAGIC = 0x4F4E4631;
 
   private static final double NORM_EPSILON = 1e-12;
 
@@ -53,6 +79,21 @@ public final class FlatFloatIndex implements VectorIndex {
     this.dimension = dimension;
   }
 
+  /**
+   * Creates a frozen index over rows read back from disk.
+   *
+   * @param dimension The vector dimension, at least 1.
+   * @param ids The row ids in row order.
+   * @param rowMajor The vectors, {@code ids.size() * dimension} floats in row-major order.
+   */
+  private FlatFloatIndex(int dimension, List<String> ids, float[] rowMajor) {
+    this.dimension = dimension;
+    this.ids = ids;
+    this.rowMajor = rowMajor;
+    this.norms = new double[ids.size()];
+    computeNorms();
+  }
+
   /** {@inheritDoc} */
   @Override
   public void add(String id, float[] vector) {
@@ -71,6 +112,12 @@ public final class FlatFloatIndex implements VectorIndex {
     ids = buffer.ids();
     rowMajor = buffer.rowMajor();
     norms = new double[ids.size()];
+    computeNorms();
+    buffer = null;
+  }
+
+  /** Fills {@link #norms} with the Euclidean norm of every frozen row. */
+  private void computeNorms() {
     for (int row = 0; row < norms.length; row++) {
       final int base = row * dimension;
       double sumOfSquares = 0;
@@ -80,7 +127,108 @@ public final class FlatFloatIndex implements VectorIndex {
       }
       norms[row] = Math.sqrt(sumOfSquares);
     }
-    buffer = null;
+  }
+
+  /**
+   * Writes this frozen, non-empty index as a directory of {@value #VECTORS_FILE} and
+   * {@value #IDS_FILE}. The directory is created when missing; the two files are replaced.
+   *
+   * @param directory The directory to write. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code directory} is {@code null}.
+   * @throws IllegalStateException Thrown if the index is not frozen or is empty.
+   * @throws IOException Thrown if writing fails.
+   */
+  public void write(Path directory) throws IOException {
+    if (directory == null) {
+      throw new IllegalArgumentException("Directory must not be null");
+    }
+    if (buffer != null) {
+      throw new IllegalStateException("The index is not frozen; freeze() ends the build phase");
+    }
+    if (ids.isEmpty()) {
+      throw new IllegalStateException("An empty index has nothing to persist");
+    }
+    Files.createDirectories(directory);
+    try (OutputStream out = Files.newOutputStream(directory.resolve(VECTORS_FILE));
+         DataOutputStream data = new DataOutputStream(new BufferedOutputStream(out))) {
+      data.writeInt(MAGIC);
+      data.writeInt(dimension);
+      data.writeInt(ids.size());
+      for (final float value : rowMajor) {
+        data.writeFloat(value);
+      }
+    }
+    Files.write(directory.resolve(IDS_FILE), ids);
+  }
+
+  /**
+   * Reads an index a previous {@link #write(Path)} persisted. The loaded index is frozen.
+   *
+   * @param directory The index directory. Must not be {@code null} and must be a directory
+   *                  holding {@value #VECTORS_FILE} and {@value #IDS_FILE}.
+   * @return The loaded index.
+   * @throws IllegalArgumentException Thrown if {@code directory} is {@code null}, is not a
+   *     directory, or lacks one of the two files.
+   * @throws InvalidFormatException Thrown if a file is malformed or truncated, an id repeats
+   *     or is blank, or the id count and the vector row count disagree.
+   * @throws IOException Thrown if reading fails.
+   */
+  public static FlatFloatIndex read(Path directory) throws IOException {
+    if (directory == null) {
+      throw new IllegalArgumentException("Directory must not be null");
+    }
+    if (!Files.isDirectory(directory)) {
+      throw new IllegalArgumentException(
+          "Index directory does not exist or is not a directory: " + directory);
+    }
+    final Path vectorsFile = directory.resolve(VECTORS_FILE);
+    final Path idsFile = directory.resolve(IDS_FILE);
+    if (!Files.isRegularFile(vectorsFile) || !Files.isRegularFile(idsFile)) {
+      throw new IllegalArgumentException("Index directory " + directory + " does not hold "
+          + VECTORS_FILE + " and " + IDS_FILE);
+    }
+    final List<String> ids = Files.readAllLines(idsFile);
+    final Set<String> seen = new HashSet<>(ids.size() * 2);
+    for (final String id : ids) {
+      if (id.isBlank()) {
+        throw new InvalidFormatException(idsFile + " holds a blank id");
+      }
+      if (!seen.add(id)) {
+        throw new InvalidFormatException(idsFile + " holds id '" + id + "' more than once");
+      }
+    }
+    try (InputStream in = Files.newInputStream(vectorsFile);
+         DataInputStream data = new DataInputStream(new BufferedInputStream(in))) {
+      final int magic = data.readInt();
+      if (magic != MAGIC) {
+        throw new InvalidFormatException(vectorsFile + " is not a flat float vector file "
+            + "(magic 0x" + Integer.toHexString(magic) + ", expected 0x"
+            + Integer.toHexString(MAGIC) + ")");
+      }
+      final int dimension = data.readInt();
+      final int rows = data.readInt();
+      if (dimension < 1 || rows < 0 || rows > Integer.MAX_VALUE / dimension) {
+        throw new InvalidFormatException(vectorsFile + " declares an invalid shape: " + rows
+            + " rows of dimension " + dimension);
+      }
+      if (rows != ids.size()) {
+        throw new InvalidFormatException(idsFile + " holds " + ids.size() + " ids but "
+            + vectorsFile + " holds " + rows + " rows; these files do not belong to the same "
+            + "index");
+      }
+      final float[] rowMajor = new float[rows * dimension];
+      try {
+        for (int i = 0; i < rowMajor.length; i++) {
+          rowMajor[i] = data.readFloat();
+        }
+      } catch (EOFException e) {
+        throw new InvalidFormatException(vectorsFile + " is truncated", e);
+      }
+      if (data.read() != -1) {
+        throw new InvalidFormatException(vectorsFile + " holds trailing bytes");
+      }
+      return new FlatFloatIndex(dimension, List.copyOf(ids), rowMajor);
+    }
   }
 
   /** {@inheritDoc} */

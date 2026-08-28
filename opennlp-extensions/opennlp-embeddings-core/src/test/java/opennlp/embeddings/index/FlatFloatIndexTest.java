@@ -16,11 +16,20 @@
  */
 package opennlp.embeddings.index;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The exact index's scores: hand-computed cosine similarities, exact ordering, and the
@@ -66,5 +75,81 @@ class FlatFloatIndexTest {
     // Query along the last coordinate only: the dot is exactly the tail's contribution.
     final float[] query = new float[] {0f, 0f, 0f, 0f, 2f};
     assertEquals(5.0 * 2 / (2 * norm), index.topK(query, 1).get(0).score(), 1e-12);
+  }
+
+  @Test
+  void testWriteReadRoundTripAnswersIdentically(@TempDir Path dir) throws IOException {
+    final FlatFloatIndex index = new FlatFloatIndex(3);
+    index.add("x", new float[] {1f, 0f, 0f});
+    index.add("diagonal", new float[] {1f, 1f, 0f});
+    index.add("zero", new float[] {0f, 0f, 0f});
+    index.freeze();
+    index.write(dir);
+
+    final FlatFloatIndex reloaded = FlatFloatIndex.read(dir);
+    assertEquals(index.size(), reloaded.size());
+    assertEquals(index.dimension(), reloaded.dimension());
+    // The file stores the full-precision floats, so a reloaded index scores identically.
+    assertEquals(index.topK(new float[] {1f, 0.5f, 0f}, 3),
+        reloaded.topK(new float[] {1f, 0.5f, 0f}, 3));
+    assertEquals(List.of("x", "diagonal", "zero"),
+        Files.readAllLines(dir.resolve(FlatFloatIndex.IDS_FILE)));
+  }
+
+  @Test
+  void testWritingRequiresAFrozenNonEmptyIndex(@TempDir Path dir) {
+    final FlatFloatIndex building = new FlatFloatIndex(2);
+    building.add("a", new float[] {1f, 0f});
+    assertThrows(IllegalStateException.class, () -> building.write(dir));
+
+    final FlatFloatIndex empty = new FlatFloatIndex(2);
+    empty.freeze();
+    assertThrows(IllegalStateException.class, () -> empty.write(dir));
+    assertThrows(IllegalArgumentException.class, () -> empty.write(null));
+  }
+
+  @Test
+  void testReadRejectsAMissingFile(@TempDir Path dir) {
+    assertThrows(IllegalArgumentException.class, () -> FlatFloatIndex.read(dir));
+    assertThrows(IllegalArgumentException.class, () -> FlatFloatIndex.read(null));
+  }
+
+  @Test
+  void testReadRejectsADuplicateId(@TempDir Path dir) throws IOException {
+    final FlatFloatIndex index = new FlatFloatIndex(2);
+    index.add("a", new float[] {1f, 0f});
+    index.add("b", new float[] {0f, 1f});
+    index.freeze();
+    index.write(dir);
+    Files.write(dir.resolve(FlatFloatIndex.IDS_FILE), List.of("a", "a"));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+  }
+
+  @Test
+  void testReadRejectsAnIdCountMismatch(@TempDir Path dir) throws IOException {
+    final FlatFloatIndex index = new FlatFloatIndex(2);
+    index.add("a", new float[] {1f, 0f});
+    index.freeze();
+    index.write(dir);
+    Files.write(dir.resolve(FlatFloatIndex.IDS_FILE), List.of("one-extra-id"),
+        StandardOpenOption.APPEND);
+
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+    assertTrue(e.getMessage().contains("do not belong"), e.getMessage());
+  }
+
+  @Test
+  void testReadRejectsATruncatedVectorsFile(@TempDir Path dir) throws IOException {
+    final FlatFloatIndex index = new FlatFloatIndex(2);
+    index.add("a", new float[] {1f, 0f});
+    index.freeze();
+    index.write(dir);
+    final Path vectors = dir.resolve(FlatFloatIndex.VECTORS_FILE);
+    final byte[] bytes = Files.readAllBytes(vectors);
+    Files.write(vectors, java.util.Arrays.copyOf(bytes, bytes.length - 1));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
   }
 }
