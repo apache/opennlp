@@ -102,10 +102,13 @@ public class RegexNameFinderFactoryTest {
     final String emailDomainBlowup = "x@a" + "-a".repeat(60_000) + " ";
     final String urlPathRecursion = "http://a.com/" + "a".repeat(100_000) + " ";
     final String urlNestedBlowup = "http://a.com" + "/a".repeat(50_000) + "%z";
+    // The reported StackOverflowError repro: a long ?a&a&a&... query string, which
+    // drove the nested (&(...)+ ... )* group in the old URL pattern into deep recursion.
+    final String urlQueryRecursion = "http://a.com/p?a" + "&a".repeat(50_000) + "= ";
 
     Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
       for (String attack : new String[] {
-          emailLocalBlowup, emailDomainBlowup, urlPathRecursion, urlNestedBlowup}) {
+          emailLocalBlowup, emailDomainBlowup, urlPathRecursion, urlNestedBlowup, urlQueryRecursion}) {
         String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(attack);
         regexNameFinder.find(tokens);
       }
