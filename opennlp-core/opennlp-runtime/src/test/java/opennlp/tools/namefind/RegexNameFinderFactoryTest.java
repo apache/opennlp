@@ -115,6 +115,33 @@ public class RegexNameFinderFactoryTest {
     });
   }
 
+  /**
+   * The hardened URL pattern must still match a URL that is followed by a trailing
+   * delimiter (a path slash, a sentence-final period, {@code #} or {@code &}), stopping
+   * the span before the delimiter rather than abandoning the match.
+   */
+  @Test
+  void testUrlTrailingDelimiters() {
+    assertFirstUrl("http://a.com", "http://a.com/");
+    assertFirstUrl("http://example.com/path", "http://example.com/path/");
+    assertFirstUrl("ftp://files.example.com/pub", "ftp://files.example.com/pub/");
+    assertFirstUrl("www.google.com", "check www.google.com/ now");
+    assertFirstUrl("http://example.com", "I saw http://example.com. Then");
+    assertFirstUrl("www.google.com", "www.google.com.");
+    assertFirstUrl("http://a.com/path", "http://a.com/path.");
+    assertFirstUrl("http://a.com", "http://a.com/#");
+    assertFirstUrl("http://example.com:8080", "http://example.com:8080/");
+    assertFirstUrl("http://a.com/p?q=1", "http://a.com/p?q=1&");
+  }
+
+  private static void assertFirstUrl(String expected, String input) {
+    RegexNameFinder urlFinder = RegexNameFinderFactory.getDefaultRegexNameFinders(
+        RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.URL);
+    Span[] spans = urlFinder.find(input);
+    Assertions.assertTrue(spans.length > 0, "no URL match for: " + input);
+    Assertions.assertEquals(expected, input.substring(spans[0].getStart(), spans[0].getEnd()));
+  }
+
   @Test
   void testMgrs() {
     String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
