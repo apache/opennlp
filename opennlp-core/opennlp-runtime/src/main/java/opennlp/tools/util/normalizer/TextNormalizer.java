@@ -105,6 +105,16 @@ public final class TextNormalizer {
       return add(LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance());
     }
 
+    /**
+     * {@return this builder with hard-wrap unwrapping that preserves paragraph breaks appended}
+     * Within each whitespace run, a single line break (including {@code CRLF}) collapses to a space;
+     * two or more collapse to a single newline, so Gutenberg-style wraps unwrap without losing
+     * blank-line paragraph boundaries.
+     */
+    public Builder whitespacePreservingParagraphs() {
+      return add(ParagraphPreservingWhitespaceCharSequenceNormalizer.getInstance());
+    }
+
     /** {@return this builder with quotation-mark folding appended} */
     public Builder quotes() {
       return add(QuoteCharSequenceNormalizer.getInstance());

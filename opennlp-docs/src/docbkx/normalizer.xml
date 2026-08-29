@@ -107,6 +107,14 @@
 							survives; trims the edges.</entry>
 					</row>
 					<row>
+						<entry><code>ParagraphPreservingWhitespaceCharSequenceNormalizer</code></entry>
+						<entry>Unwraps hard-wrapped prose (Gutenberg-style fixed-width lines): a
+							whitespace run with at most one line break collapses to a space, two or
+							more collapse to a single newline, and <code>CRLF</code> counts as one
+							break; trims the edges. Use before sentence detection on plain text, not
+							on raw markdown with lists or code blocks.</entry>
+					</row>
+					<row>
 						<entry><code>DashCharSequenceNormalizer</code></entry>
 						<entry>Maps every Unicode dash to the ASCII hyphen-minus. The mathematical
 							minus signs and the soft hyphen are not affected.</entry>
@@ -419,6 +427,15 @@ dash.normalize("a—b");                // "a-b"]]>
 					you squish horizontal whitespace while keeping line breaks.
 				</para>
 			</listitem>
+			<listitem>
+				<para>
+					<code>collapseParagraphPreserving(text, lineBreaks, paragraphReplacement)</code>
+					collapses runs but emits <code>paragraphReplacement</code> only when a run contains
+					two or more logical line breaks (a single break, including <code>CRLF</code>, becomes
+					the usual replacement). This is the hard-wrap unwrap used by
+					<code>ParagraphPreservingWhitespaceCharSequenceNormalizer</code>.
+				</para>
+			</listitem>
 		</itemizedlist>
 		<para>
 			So the replacement is your choice and the method picks the behavior. Folding tabs and
@@ -434,7 +451,8 @@ ws.collapsePreserving(text, CodePointSet.of('\n'), '\n');   // squish spaces, ke
 		<para>
 			When you need the normalized form together with a map back to the original, the
 			<code>normalizeAligned</code>, <code>collapseAligned</code>,
-			<code>collapsePreservingAligned</code>, <code>trimAligned</code>, and
+			<code>collapsePreservingAligned</code>, <code>collapseParagraphPreservingAligned</code>,
+			<code>trimAligned</code>, and
 			<code>removeAllAligned</code> variants return an <code>AlignedText</code> that carries an
 			<code>Alignment</code>. The alignment maps spans between the two forms with
 			<code>toOriginalSpan</code> and <code>toNormalizedSpan</code>, staying correct across
