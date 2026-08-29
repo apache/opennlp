@@ -17,6 +17,7 @@
 
 package opennlp.tools.namefind;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -88,6 +89,27 @@ public class RegexNameFinderFactoryTest {
     Assertions.assertTrue(spanList.contains(latLongSpan2));
     Assertions.assertEquals("528", tokens[latLongSpan1.getStart()]);
     Assertions.assertEquals("45", tokens[latLongSpan2.getStart()]);
+  }
+
+  /**
+   * Crafted inputs that used to drive the built-in EMAIL and URL patterns into
+   * catastrophic backtracking / deep recursion (ReDoS, CWE-1333 / CWE-400 / CWE-674).
+   * The hardened patterns must finish quickly regardless of input length.
+   */
+  @Test
+  void testBuiltinPatternsAreNotVulnerableToReDoS() {
+    final String emailLocalBlowup = "a".repeat(100_000) + "@ ";
+    final String emailDomainBlowup = "x@a" + "-a".repeat(60_000) + " ";
+    final String urlPathRecursion = "http://a.com/" + "a".repeat(100_000) + " ";
+    final String urlNestedBlowup = "http://a.com" + "/a".repeat(50_000) + "%z";
+
+    Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
+      for (String attack : new String[] {
+          emailLocalBlowup, emailDomainBlowup, urlPathRecursion, urlNestedBlowup}) {
+        String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(attack);
+        regexNameFinder.find(tokens);
+      }
+    });
   }
 
   @Test
