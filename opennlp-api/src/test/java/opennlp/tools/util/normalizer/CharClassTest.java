@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.normalizer.UnicodeWhitespace.WhitespaceCharacter;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,8 +51,7 @@ public class CharClassTest {
   }
 
   private static CodePointSet lineBreaks() {
-    return CodePointSet.of(UnicodeWhitespace.lineBreaks().stream()
-        .mapToInt(WhitespaceCharacter::codePoint).toArray());
+    return UnicodeWhitespace.lineBreakCodePointSet();
   }
 
   // --- membership --------------------------------------------------------------------------

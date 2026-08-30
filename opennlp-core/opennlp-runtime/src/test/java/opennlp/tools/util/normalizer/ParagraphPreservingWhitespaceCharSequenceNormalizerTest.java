@@ -16,7 +16,16 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.Span;
 
@@ -34,9 +43,25 @@ public class ParagraphPreservingWhitespaceCharSequenceNormalizerTest {
     return new String(Character.toChars(codePoint));
   }
 
+  static Stream<Arguments> unicodeLineBreakCodePoints() {
+    return UnicodeWhitespace.lineBreaks().stream()
+        .map(ws -> Arguments.of(ws.codePoint(), ws.abbreviation()));
+  }
+
   @Test
   void getInstanceReturnsTheSharedSingleton() {
     assertSame(norm(), norm());
+  }
+
+  @Test
+  void deserializationReturnsTheSharedSingleton() throws Exception {
+    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+      oos.writeObject(norm());
+    }
+    try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()))) {
+      assertSame(norm(), ois.readObject());
+    }
   }
 
   @Test
@@ -50,11 +75,32 @@ public class ParagraphPreservingWhitespaceCharSequenceNormalizerTest {
     assertEquals("on the bank", norm().normalize("on the\nbank").toString());
   }
 
+  @ParameterizedTest(name = "single {1} break unwraps to a space")
+  @MethodSource("unicodeLineBreakCodePoints")
+  void singleUnicodeLineBreakInRunCollapsesToSpace(int codePoint, String abbreviation) {
+    if (codePoint == 0x000D) {
+      assertEquals("a b", norm().normalize("a\rb").toString());
+      assertEquals("a b", norm().normalize("a\r\nb").toString());
+    } else {
+      assertEquals("a b", norm().normalize("a" + cp(codePoint) + "b").toString());
+    }
+  }
+
   @Test
   void twoOrMoreLineBreaksInRunCollapseToOneNewline() {
     assertEquals("a\nb", norm().normalize("a\n\nb").toString());
     assertEquals("a\nb", norm().normalize("a\n\n\n\nb").toString());
     assertEquals("Hello world\nfoo bar", norm().normalize("Hello   world\n\n\tfoo  bar").toString());
+  }
+
+  @ParameterizedTest(name = "doubled {1} break keeps a paragraph boundary")
+  @MethodSource("unicodeLineBreakCodePoints")
+  void twoUnicodeLineBreaksInRunCollapseToNewline(int codePoint, String abbreviation) {
+    if (codePoint == 0x000D) {
+      assertEquals("a\nb", norm().normalize("a\r\n\r\nb").toString());
+    } else {
+      assertEquals("a\nb", norm().normalize("a" + cp(codePoint) + cp(codePoint) + "b").toString());
+    }
   }
 
   @Test
@@ -100,6 +146,7 @@ public class ParagraphPreservingWhitespaceCharSequenceNormalizerTest {
   @Test
   void alignedNormalizedMatchesNormalize() {
     final String in = "  one \t two\r\n\r\nthree " + cp(0x2028) + " four  ";
+    assertEquals("one two\nthree four", norm().normalize(in).toString());
     assertEquals(norm().normalize(in).toString(), norm().normalizeAligned(in).normalizedString());
   }
 

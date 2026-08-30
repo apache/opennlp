@@ -34,24 +34,13 @@ package opennlp.tools.util.normalizer;
  */
 public class ParagraphPreservingWhitespaceCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 8923746519823746519L;
+  private static final long serialVersionUID = 7597314924708767414L;
 
   private static final int NEWLINE = 0x000A;
 
   private static final CharClass WHITESPACE = CharClass.whitespace();
 
-  // The Unicode mandatory break code points (UAX #14 classes BK/CR/LF/NL): line feed, vertical tab,
-  // form feed, carriage return, next line, line separator, and paragraph separator. Two or more
-  // logical breaks in a whitespace run collapse to a single newline; a single break collapses to a
-  // space so hard wraps unwrap without splitting sentences.
-  private static final CodePointSet LINE_BREAKS = CodePointSet.of(
-      0x000A,   // line feed
-      0x000B,   // vertical tab
-      0x000C,   // form feed
-      0x000D,   // carriage return
-      0x0085,   // next line
-      0x2028,   // line separator
-      0x2029);  // paragraph separator
+  private static final CodePointSet LINE_BREAKS = UnicodeWhitespace.lineBreakCodePointSet();
 
   private static final ParagraphPreservingWhitespaceCharSequenceNormalizer INSTANCE =
       new ParagraphPreservingWhitespaceCharSequenceNormalizer();
@@ -61,11 +50,21 @@ public class ParagraphPreservingWhitespaceCharSequenceNormalizer implements Offs
     return INSTANCE;
   }
 
+  private Object readResolve() {
+    return INSTANCE;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public CharSequence normalize(CharSequence text) {
     return WHITESPACE.trim(WHITESPACE.collapseParagraphPreserving(text, LINE_BREAKS, NEWLINE));
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     final AlignedText collapsed =
