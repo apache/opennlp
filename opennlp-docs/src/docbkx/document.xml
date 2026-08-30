@@ -108,6 +108,7 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 			Adapters for the toolkit's own components are provided:
 			<code>SentenceDetectorAnnotator</code>, <code>TokenizerAnnotator</code>,
 			<code>POSTaggerAnnotator</code>, <code>NameFinderAnnotator</code>,
+			<code>ChunkerAnnotator</code>, <code>ParserAnnotator</code>,
 			<code>LemmatizerAnnotator</code>, and <code>StemmerAnnotator</code>. Each wraps
 			one of the existing component APIs; an application that needs only one task
 			can keep using that component's API directly. The following pipeline combines
