@@ -36,18 +36,7 @@ public class LineBreakPreservingWhitespaceCharSequenceNormalizer implements Offs
 
   private static final CharClass WHITESPACE = CharClass.whitespace();
 
-  // The Unicode mandatory break code points (UAX #14 classes BK/CR/LF/NL): line feed, vertical tab,
-  // form feed, carriage return, next line, line separator, and paragraph separator. A whitespace run
-  // that contains any of these collapses to a single newline rather than a space, so line and
-  // paragraph structure survives while horizontal runs are squished.
-  private static final CodePointSet LINE_BREAKS = CodePointSet.of(
-      0x000A,   // line feed
-      0x000B,   // vertical tab
-      0x000C,   // form feed
-      0x000D,   // carriage return
-      0x0085,   // next line
-      0x2028,   // line separator
-      0x2029);  // paragraph separator
+  private static final CodePointSet LINE_BREAKS = UnicodeWhitespace.lineBreakCodePointSet();
 
   private static final LineBreakPreservingWhitespaceCharSequenceNormalizer INSTANCE =
       new LineBreakPreservingWhitespaceCharSequenceNormalizer();

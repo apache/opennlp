@@ -149,6 +149,15 @@ public class UnicodeWhitespaceTest {
   }
 
   @Test
+  void testLineBreakCodePointSetMatchesLineBreaks() {
+    final CodePointSet lineBreaks = UnicodeWhitespace.lineBreakCodePointSet();
+    assertEquals(UnicodeWhitespace.lineBreaks().size(), lineBreaks.size());
+    for (final WhitespaceCharacter ws : UnicodeWhitespace.lineBreaks()) {
+      assertTrue(lineBreaks.contains(ws.codePoint()));
+    }
+  }
+
+  @Test
   void testNonBreakingAreExactlyTheThree() {
     final Set<Integer> expected = Set.of(0x00A0, 0x2007, 0x202F);
     assertEquals(expected, UnicodeWhitespace.nonBreaking().stream()

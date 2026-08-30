@@ -713,9 +713,15 @@ public final class CharClass {
   /**
    * Counts logical line breaks in a whitespace run. A carriage return immediately followed by a
    * line feed counts as one break.
+   *
+   * @param text The text containing the run.
+   * @param runStart The index where the whitespace run starts.
+   * @param runEnd The index of the first code point after the run.
+   * @param lineBreaks The code points that count as a line break when tallying the run.
+   * @return The number of logical line breaks in {@code text[runStart..runEnd)}.
    */
-  private static int countLogicalLineBreaks(CharSequence text, int runStart, int runEnd,
-                                            CodePointSet lineBreaks) {
+  private int countLogicalLineBreaks(CharSequence text, int runStart, int runEnd,
+                                     CodePointSet lineBreaks) {
     int count = 0;
     int k = runStart;
     while (k < runEnd) {
