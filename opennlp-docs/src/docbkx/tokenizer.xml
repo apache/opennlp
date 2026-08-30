@@ -554,13 +554,16 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				dimensions plus lexicon size are bounded by the shared
 				<code>ResourceLimits.MAX_ENTRIES</code> limit and the matrix cell count
 				by <code>ResourceLimits.MAX_MATRIX_CELLS</code>.
-				Extraction caps per-entry size, total bytes, entry count, and gzip expansion;
-				the byte ceilings default to 512 MiB per download and entry and 2 GiB total,
-				and can be raised at JVM startup via
+				Fetching, verification, and unpacking go through the bounded
+				<code>ResourceInstaller</code> path described in the model loading chapter,
+				whose ceilings default to a 1 GiB download, 4 GiB unpacked, and 100000
+				archive entries and can be raised at JVM startup via
 				<code>opennlp.download.max.bytes</code>,
-				<code>opennlp.install.max.entry.bytes</code>, and
-				<code>opennlp.install.max.total.bytes</code> for larger dictionaries such as
-				UniDic.
+				<code>opennlp.install.max.total.bytes</code>, and
+				<code>opennlp.install.max.entries</code> for larger dictionaries such as
+				UniDic. Installed files are flattened to their base names; a file that
+				already exists in the target is refused, so refreshing a dictionary means
+				removing its old files first.
 				Load also rejects an <code>unk.def</code> template for a category
 				<code>char.def</code> never defined, and accepts MeCab-quoted CSV fields.
 				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and

@@ -28,7 +28,8 @@ The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and K
 
 Pinned download URLs and SHA-512 digests for those ids live in
 `opennlp/tools/util/dictionary-catalog.properties`. Both archives are
-gzip-compressed ustar tars, the format `MecabDictionaryInstaller` reads.
+gzip-compressed tars; `MecabDictionaryInstaller` reads the ustar, pax, and GNU
+formats through `ResourceInstaller`.
 
 The installer extracts only the dictionary payload: the `*.csv` and `*.def` files a
 `MecabDictionary` reads, plus the `dicrc` configuration file the distributions ship
@@ -71,18 +72,19 @@ Any other URI scheme requires the digest.
 
 ## Size budgets for larger dictionaries
 
-Downloads and extraction are bounded so a crafted archive cannot fill the disk: by
-default one download is capped at 512 MiB, one extracted tar entry at 512 MiB, and
-the total extracted payload at 2 GiB. IPADIC and mecab-ko-dic fit comfortably. For
-larger dictionaries, such as UniDic, raise the ceilings at JVM startup:
+Fetching and unpacking go through `ResourceInstaller` and are bounded so a crafted
+archive cannot fill the disk: by default one download is capped at 1 GiB, the
+unpacked payload at 4 GiB, and the archive at 100000 entries. IPADIC and
+mecab-ko-dic fit comfortably. For larger dictionaries, such as UniDic, raise the
+ceilings at JVM startup:
 
 ```bash
 -Dopennlp.download.max.bytes=4294967296 \
--Dopennlp.install.max.entry.bytes=4294967296 \
--Dopennlp.install.max.total.bytes=8589934592
+-Dopennlp.install.max.total.bytes=8589934592 \
+-Dopennlp.install.max.entries=200000
 ```
 
-Values must be positive byte counts; anything absent or invalid falls back to the
+Values must be positive counts; anything absent or invalid falls back to the
 default.
 
 ## Load and tokenize
