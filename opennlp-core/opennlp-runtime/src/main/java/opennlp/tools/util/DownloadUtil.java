@@ -99,6 +99,34 @@ public class DownloadUtil {
   private static final int SHA512_HEX_LENGTH = 128;
   private static final String DOWNLOAD_SUFFIX = ".download";
 
+  /**
+   * System property that must be {@code true} before a
+   * {@link DictionaryCatalog} entry may be fetched. Explicit
+   * {@link #download(URI, Path, String)} calls do not require it: the caller already
+   * supplied the URI and digest.
+   */
+  public static final String REMOTE_DOWNLOAD_PROPERTY = "opennlp.download.remote";
+
+  /**
+   * System property for overriding {@link #MAX_DOWNLOAD_BYTES}. Set at JVM startup,
+   * e.g. {@code -Dopennlp.download.max.bytes=2147483648} for dictionaries larger than
+   * the default ceiling. Falls back to the default if absent, non-numeric, or not
+   * positive.
+   */
+  public static final String MAX_DOWNLOAD_BYTES_PROPERTY = "opennlp.download.max.bytes";
+
+  /**
+   * Inclusive ceiling on bytes buffered for one {@link #download(URI, Path, String)},
+   * 512 MiB unless overridden via {@link #MAX_DOWNLOAD_BYTES_PROPERTY}.
+   */
+  public static final long MAX_DOWNLOAD_BYTES =
+      configuredLimit(MAX_DOWNLOAD_BYTES_PROPERTY, 512L * 1024 * 1024);
+
+  private static final int CONNECT_TIMEOUT_MS = 30_000;
+  private static final int READ_TIMEOUT_MS = 300_000;
+  private static final int SHA512_HEX_LENGTH = 128;
+  private static final String DOWNLOAD_SUFFIX = ".download";
+
   private static Map<String, Map<ModelType, URL>> availableModels;
 
   /**
