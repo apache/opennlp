@@ -142,7 +142,7 @@ public final class ParserAnnotator implements DocumentAnnotator {
   }
 
   /** Emits a node and, in pre-order, every phrase node below it. */
-  private static void collect(Parse node, int first, int[] starts, int length,
+  private void collect(Parse node, int first, int[] starts, int length,
       List<Annotation<String>> tokens, List<Annotation<Phrase>> phrases) {
     if (node.isPosTag() || Parser.TOK_NODE.equals(node.getType())) {
       return;
@@ -166,7 +166,7 @@ public final class ParserAnnotator implements DocumentAnnotator {
    * Maps an offset in the parse text, the tokens joined by single spaces, to the index
    * of the token it lies in or, for a span end, ends.
    */
-  private static int tokenIndex(int[] starts, int length, int offset, Parse node) {
+  private int tokenIndex(int[] starts, int length, int offset, Parse node) {
     if (offset < 0 || offset > length) {
       throw new IllegalArgumentException("parser returned node " + node.getType()
           + " at " + node.getSpan() + " outside the sentence's " + starts.length
