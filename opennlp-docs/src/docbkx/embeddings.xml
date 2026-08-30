@@ -262,6 +262,29 @@ List<VectorIndex.Hit> hits = index.topK(model.embed("king"), 5);]]>
 				family, row count, and dimension, along with a line for every file it wrote.
 			</para>
 		</section>
+		<section xml:id="tools.embeddings.cmdline.eval-vector-search">
+			<title>Evaluate Vector Search Tool</title>
+			<para>
+				The <code>EvalVectorSearch</code> tool evaluates a static embedding model over
+				a normalized passage corpus and dictionary. It builds an exact float index and
+				a TurboQuant index, then reports index fidelity, definition-to-headword
+				retrieval, half-passage retrieval, single-thread throughput, and storage per
+				vector.
+				<screen>
+<![CDATA[$ bin/embeddings EvalVectorSearch -model dir -passages file -dictionary file -out file [-bits num] [-seed num] [-topK num]]]>
+				</screen>
+				The bit width defaults to 4, the rotation seed defaults to 42, and the
+				evaluation depth defaults to 10. The tool writes a human-readable markdown
+				report and a key-value TSV carrying the same metrics.
+			</para>
+			<para>
+				A text that embeds to a zero vector has no search direction, so the evaluator
+				does not index or query it. The report distinguishes total inputs from
+				indexable passage and headword embeddings. Fidelity recall divides by the
+				number of exact results actually returned, so it remains valid when the
+				requested depth exceeds the index size.
+			</para>
+		</section>
 	</section>
 
 	<section xml:id="tools.embeddings.quantized">
