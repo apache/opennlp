@@ -107,12 +107,16 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-        p[0] = Pattern.compile("([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*" +
-            "|\"([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09" +
-            "\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]" +
-            "*[a-z0-9])?|\\[((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]" +
-            "?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]" +
-            "|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])", Pattern.CASE_INSENSITIVE);
+        // Bounded, possessive quantifiers to avoid catastrophic backtracking (ReDoS).
+        // Limits follow RFC 5321: local part <= 64 chars, each domain label <= 63 chars.
+        p[0] = Pattern.compile(
+            "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]{1,64}+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]{1,64}+){0,10}+" +
+            "|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]" +
+            "|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f]){0,255}+\")" +
+            "@(?:(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.){1,10}+" +
+            "[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?" +
+            "|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}" +
+            "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\])", Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
         return regexMap;
@@ -127,16 +131,17 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-        p[0] = Pattern.compile("\\b(((ht|f)tp(s?)\\:\\/\\/|~\\/|\\/)|www.)"
-            + "(\\w+:\\w+@)?(([-\\w]+\\.)+(com|org|net|gov"
+        // Flattened, single-level possessive quantifiers to avoid the nested-quantifier
+        // backtracking and deep recursion (StackOverflowError) of the previous pattern.
+        p[0] = Pattern.compile("\\b(?:(?:ht|f)tps?://|~/|/|www\\.)"
+            + "(?:\\w+:\\w+@)?"
+            + "(?:[-\\w]+\\.){1,20}+(?:com|org|net|gov"
             + "|mil|biz|info|mobi|name|aero|jobs|museum"
-            + "|travel|[a-z]{2}))(:[\\d]{1,5})?"
-            + "(((\\/([-\\w~!$+|.,=]|%[a-f\\d]{2})+)+|\\/)+|\\?|#)?"
-            + "((\\?([-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?"
-            + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)"
-            + "(&(?:[-\\w~!$+|.,*:]|%[a-f\\d{2}])+=?"
-            + "([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)*)*"
-            + "(#([-\\w~!$+|.,*:=]|%[a-f\\d]{2})*)?\\b", Pattern.CASE_INSENSITIVE);
+            + "|travel|[a-z]{2})(?::\\d{1,5})?"
+            + "(?:/(?:[-\\w~!$+|.,=]|%[a-f\\d]{2})*+){0,50}+/?"
+            + "(?:\\?(?:[-\\w~!$+|.,*:=]|%[a-f\\d]{2})*+"
+            + "(?:&(?:[-\\w~!$+|.,*:=]|%[a-f\\d]{2})*+){0,50}+)?"
+            + "(?:#(?:[-\\w~!$+|.,*:=]|%[a-f\\d]{2})*+)?\\b", Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
         return regexMap;
