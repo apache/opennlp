@@ -111,10 +111,11 @@ public class RegexNameFinderFactory {
         // backtracking and the recursion depth that made the old pattern a ReDoS vector.
         // Limits follow RFC 5321: local part <= 64 chars, each domain label <= 63 chars.
         p[0] = Pattern.compile(
+            "(?<![a-z0-9!#$%&'*+/=?^_`{|}~.-])" +
             "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]{1,64}(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]{1,64}){0,10}" +
             "|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]" +
             "|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f]){0,255}\")" +
-            "@(?:(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.){1,10}" +
+            "@(?:(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.){1,20}" +
             "[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?" +
             "|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}" +
             "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\])", Pattern.CASE_INSENSITIVE);
