@@ -681,21 +681,29 @@ public class StringUtilTest {
   }
 
   /**
-   * Verifies the blank check against the toolkit's whitespace definition: the
-   * no-break space is blank here although the JDK's own check does not cover it,
-   * whitespace-only and empty values are blank, and any non-whitespace code point,
-   * supplementary ones included, makes a value non-blank.
+   * Verifies the accepting side of the blank check against the toolkit's whitespace
+   * definition: empty and JDK-whitespace values are blank, and so are the no-break
+   * spaces U+00A0 and U+2007, which {@link String#isBlank()} does not cover.
    */
+  @ParameterizedTest
+  @ValueSource(strings = {"", " \t\n", "\u00A0", " \u00A0\u2007 "})
+  void testIsBlankAcceptsWhitespaceOnlyValues(String input) {
+    Assertions.assertTrue(StringUtil.isBlank(input));
+  }
+
+  /**
+   * Verifies the rejecting side of the blank check: any non-whitespace code point
+   * makes a value non-blank, including the supplementary-plane letter U+10428, which
+   * must be read as one code point rather than two chars.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"a", " a ", "\uD801\uDC28"})
+  void testIsBlankRejectsValuesWithContent(String input) {
+    Assertions.assertFalse(StringUtil.isBlank(input));
+  }
+
   @Test
-  void testIsBlankFollowsTheToolkitWhitespaceDefinition() {
-    Assertions.assertTrue(StringUtil.isBlank(""));
-    Assertions.assertTrue(StringUtil.isBlank(" \t\n"));
-    // U+00A0 no-break space and U+2007 figure space: JDK String.isBlank says false
-    Assertions.assertTrue(StringUtil.isBlank("\u00A0"));
-    Assertions.assertTrue(StringUtil.isBlank(" \u00A0\u2007 "));
-    Assertions.assertFalse(StringUtil.isBlank("a"));
-    Assertions.assertFalse(StringUtil.isBlank(" a "));
-    // U+10428, a supplementary-plane letter read as one code point, not two chars
-    Assertions.assertFalse(StringUtil.isBlank("\uD801\uDC28"));
+  void testIsBlankWithNullString() {
+    Assertions.assertThrows(NullPointerException.class, () -> StringUtil.isBlank(null));
   }
 }
