@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +44,6 @@ public class BeamSearchTest {
       return new String[] {outcomeSequence[index]};
     }
   }
-
 
   static class IdentityModel implements MaxentModel {
 
@@ -134,10 +134,123 @@ public class BeamSearchTest {
   }
 
   /**
+   * Uniform model: every outcome is equally probable in every context, so all
+   * candidates at a given depth tie on score exactly.
+   */
+  static class UniformModel implements MaxentModel {
+
+    private final String[] outcomes;
+
+    UniformModel(String[] outcomes) {
+      this.outcomes = outcomes;
+    }
+
+    public double[] eval(String[] context) {
+      double[] probs = new double[outcomes.length];
+      Arrays.fill(probs, 1.0d / outcomes.length);
+      return probs;
+    }
+
+    public double[] eval(String[] context, double[] probs) {
+      Arrays.fill(probs, 1.0d / outcomes.length);
+      return probs;
+    }
+
+    public double[] eval(String[] context, float[] values) {
+      return eval(context);
+    }
+
+    public String getAllOutcomes(double[] outcomes) {
+      return null;
+    }
+
+    public String getBestOutcome(double[] outcomes) {
+      return null;
+    }
+
+    public int getIndex(String outcome) {
+      return 0;
+    }
+
+    public int getNumOutcomes() {
+      return outcomes.length;
+    }
+
+    public String getOutcome(int i) {
+      return outcomes[i];
+    }
+  }
+
+  /**
+   * A two-outcome model that follows the first context feature and, like a trained
+   * model, writes its scores into the caller's buffer.
+   */
+  static class ContextModel implements MaxentModel {
+
+    private static final String[] OUTCOMES = {"a", "b"};
+
+    public double[] eval(String[] context) {
+      return eval(context, new double[2]);
+    }
+
+    public double[] eval(String[] context, double[] probs) {
+      boolean first = "x".equals(context[0]);
+      probs[0] = first ? 0.9d : 0.1d;
+      probs[1] = first ? 0.1d : 0.9d;
+      return probs;
+    }
+
+    public double[] eval(String[] context, float[] values) {
+      return eval(context);
+    }
+
+    public String getAllOutcomes(double[] outcomes) {
+      return null;
+    }
+
+    public String getBestOutcome(double[] outcomes) {
+      return null;
+    }
+
+    public int getIndex(String outcome) {
+      return Arrays.asList(OUTCOMES).indexOf(outcome);
+    }
+
+    public int getNumOutcomes() {
+      return OUTCOMES.length;
+    }
+
+    public String getOutcome(int i) {
+      return OUTCOMES[i];
+    }
+  }
+
+  /**
+   * Tests that a cached score array is not overwritten by a later evaluation into the
+   * shared buffer: the third token reuses the first token's context instance, so it
+   * hits the cache and must still see the scores of that context.
+   */
+  @Test
+  void testCachedScoresSurviveLaterEvaluations() {
+    String[] sequence = {"x", "y", "x"};
+    String[] contextX = {"x"};
+    String[] contextY = {"y"};
+    BeamSearchContextGenerator<String> cg = (index, seq, priorDecisions, additionalContext) ->
+        "x".equals(seq[index]) ? contextX : contextY;
+
+    Sequence best = new BeamSearch(1, new ContextModel(), 64)
+        .bestSequence(sequence, null, cg, (i, seq, outcomes, outcome) -> true);
+
+    Assertions.assertEquals(Arrays.asList("a", "b", "a"), best.getOutcomes());
+    Assertions.assertEquals(0.9d, best.getProbs()[2], 0d);
+  }
+
+  /**
    * Tests finding a sequence of length one.
    */
   @Test
   void testBestSequenceOneElementInput() {
+
     String[] sequence = {"1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
