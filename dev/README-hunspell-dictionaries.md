@@ -23,21 +23,33 @@ The Hunspell stemmer (`opennlp.tools.stemmer.hunspell`) implements the documente
 
 The LibreOffice project maintains a large collection of Hunspell dictionaries, one directory per language, at `github.com/LibreOffice/dictionaries`. Licenses differ per dictionary, which is why nothing is bundled: for example, the `en_US` dictionary derives from SCOWL and states its terms in `README_en_US.txt` in the same directory. Many other sources work too; the engine only cares that the pair follows the Hunspell format.
 
-Pinned URLs and SHA-512 digests for the cataloged `en_US` pair live in
-`opennlp/tools/util/dictionary-catalog.properties` (LibreOffice commit `208a9fd8`).
+OpenNLP does not ship a URL catalog. Applications that manage downloads can keep a
+properties file with an entry id followed by `.url`, `.sha512`, and optionally
+`.filename` keys. Pin each URL to a stable release or commit.
 
-## Option A: opt-in catalog download
+## Option A: application catalog
 
-Catalog URLs stay inactive until you set `-Dopennlp.download.remote=true`. That flag
-is the explicit user action that enables the built-in URLs.
+Catalog downloads stay inactive until you set `-Dopennlp.download.remote=true`.
 
 ```java
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import opennlp.tools.stemmer.hunspell.HunspellDictionaryDownload;
+import opennlp.tools.util.DictionaryCatalog;
 
 // JVM flag: -Dopennlp.download.remote=true
-HunspellDictionaryDownload.downloadFromCatalog("en_US", Path.of("/tmp/hunspell-en_US"));
+try (InputStream in = Files.newInputStream(Path.of("dictionary-catalog.properties"))) {
+  DictionaryCatalog catalog = DictionaryCatalog.load(in);
+  HunspellDictionaryDownload.downloadFromCatalog(
+      catalog, "en_US", Path.of("/tmp/hunspell-en_US"));
+}
 ```
+
+For `en_US`, the catalog ids are `hunspell.en_US.aff`, `hunspell.en_US.dic`, and
+optionally `hunspell.en_US.readme`. A complete catalog example lives at
+`opennlp-core/opennlp-runtime/src/test/resources/opennlp/tools/util/dictionary-catalog.properties`.
+The download test uses local file URLs to exercise this flow without network access.
 
 ## Option B: your own files
 

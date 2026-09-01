@@ -73,10 +73,16 @@ import opennlp.tools.util.StringUtil;
 @ThreadSafe
 public final class HunspellDictionary {
 
+  /** The file suffix for a Hunspell affix file. */
+  public static final String AFFIX_FILE_SUFFIX = ".aff";
+
+  /** The file suffix for a Hunspell word-list file. */
+  public static final String DICTIONARY_FILE_SUFFIX = ".dic";
+
   /**
    * Inclusive upper bound on bytes buffered from one affix or dictionary stream
-   * during {@link #load(InputStream, InputStream)}. Larger streams fail with
-   * {@link IOException}.
+   * during {@link #load(InputStream, InputStream)}. The limit is 64 MiB. Larger
+   * streams fail with {@link IOException}.
    */
   public static final int MAX_STREAM_BYTES = 64 * 1024 * 1024;
 
@@ -127,6 +133,18 @@ public final class HunspellDictionary {
 
   /** The line tag of a suffix block and of every rule line inside it. */
   private static final String SUFFIX_TAG = "SFX";
+
+  /** Prefix used by comment lines. */
+  private static final String COMMENT_PREFIX = "#";
+
+  /** The affix-file directive that declares the character encoding. */
+  private static final String SET_TAG = "SET";
+
+  /** The {@code SET} directive followed by a space. */
+  private static final String SET_PREFIX = SET_TAG + " ";
+
+  /** The {@code SET} directive followed by a tab. */
+  private static final String SET_TAB_PREFIX = SET_TAG + "\t";
 
   /** The affix format's marker for absent strip or affix material. */
   private static final String NO_MATERIAL = "0";
@@ -684,8 +702,8 @@ public final class HunspellDictionary {
     final String ascii = new String(affixBytes, StandardCharsets.US_ASCII);
     for (final String line : splitLines(ascii)) {
       final String trimmed = trim(line);
-      if (trimmed.startsWith("SET ") || trimmed.startsWith("SET\t")) {
-        final String name = trim(trimmed.substring(4));
+      if (trimmed.startsWith(SET_PREFIX) || trimmed.startsWith(SET_TAB_PREFIX)) {
+        final String name = trim(trimmed.substring(SET_PREFIX.length()));
         try {
           return Charset.forName(name);
         } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
@@ -753,7 +771,7 @@ public final class HunspellDictionary {
     int i = 0;
     while (i < lines.length) {
       final String[] fields = split(lines[i]);
-      if (fields.length == 0 || fields[0].startsWith("#")) {
+      if (fields.length == 0 || fields[0].startsWith(COMMENT_PREFIX)) {
         i++;
         continue;
       }

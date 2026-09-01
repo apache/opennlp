@@ -94,9 +94,9 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			published dictionary yields for a given form is decided by that dictionary.
 			Acquisition helpers and the supported affix feature set live in
 			<code>dev/README-hunspell-dictionaries.md</code>.
-			An opt-in catalog download
-			(<code>HunspellDictionaryDownload.downloadFromCatalog</code>) needs
-			<code>-Dopennlp.download.remote=true</code> and verifies SHA-512 digests.
+			An opt-in catalog download accepts an application-supplied
+			<code>DictionaryCatalog</code>, needs
+			<code>-Dopennlp.download.remote=true</code>, and verifies SHA-512 digests.
 			Directives that would change stems when ignored
 			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>,
 			<code>COMPOUNDRULE</code>, <code>IGNORE</code>, <code>KEEPCASE</code>)

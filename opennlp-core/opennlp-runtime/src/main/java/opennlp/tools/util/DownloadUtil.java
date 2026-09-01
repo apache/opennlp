@@ -89,10 +89,10 @@ public class DownloadUtil {
 
   /**
    * Inclusive ceiling on bytes buffered for one {@link #download(URI, Path, String)},
-   * 512 MiB unless overridden via {@link #MAX_DOWNLOAD_BYTES_PROPERTY}.
+   * 64 MiB unless overridden via {@link #MAX_DOWNLOAD_BYTES_PROPERTY}.
    */
   public static final long MAX_DOWNLOAD_BYTES =
-      configuredLimit(MAX_DOWNLOAD_BYTES_PROPERTY, 512L * 1024 * 1024);
+      configuredLimit(MAX_DOWNLOAD_BYTES_PROPERTY, 64L * 1024 * 1024);
 
   private static final int CONNECT_TIMEOUT_MS = 30_000;
   private static final int READ_TIMEOUT_MS = 300_000;

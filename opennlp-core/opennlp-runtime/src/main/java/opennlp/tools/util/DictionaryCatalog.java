@@ -28,38 +28,18 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Opt-in catalog of remote dictionary archives and companion files. The catalog
- * ships URLs and SHA-512 digests only; it never bundles the data itself. Fetching
- * an entry requires {@link DownloadUtil#REMOTE_DOWNLOAD_PROPERTY} to be
- * {@code true}, so enabling a built-in URL is an explicit user action.
+ * Opt-in catalog of remote dictionary archives and companion files, loaded from
+ * application-supplied properties containing URLs and SHA-512 digests. Fetching an
+ * entry requires {@link DownloadUtil#REMOTE_DOWNLOAD_PROPERTY} to be {@code true}.
  *
  * @since 3.0.0
  */
 public final class DictionaryCatalog {
 
-  private static final String DEFAULT_RESOURCE =
-      "opennlp/tools/util/dictionary-catalog.properties";
-
   private final Properties properties;
 
   private DictionaryCatalog(Properties properties) {
     this.properties = properties;
-  }
-
-  /**
-   * Loads the catalog shipped on the classpath.
-   *
-   * @return The catalog. Never {@code null}.
-   * @throws IOException Thrown if the resource is missing or cannot be read.
-   */
-  public static DictionaryCatalog loadDefault() throws IOException {
-    try (InputStream in = DictionaryCatalog.class.getClassLoader()
-        .getResourceAsStream(DEFAULT_RESOURCE)) {
-      if (in == null) {
-        throw new IOException("missing classpath resource " + DEFAULT_RESOURCE);
-      }
-      return load(in);
-    }
   }
 
   /**

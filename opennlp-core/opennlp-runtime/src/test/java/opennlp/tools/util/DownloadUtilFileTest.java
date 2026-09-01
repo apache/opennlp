@@ -169,9 +169,9 @@ public class DownloadUtilFileTest {
     }
   }
 
-  /** Pins the default download ceiling of 512 MiB when no override property is set. */
+  /** Pins the default download ceiling of 64 MiB when no override property is set. */
   @Test
   void testDefaultBudgetsWithoutOverrides() {
-    Assertions.assertEquals(512L * 1024 * 1024, DownloadUtil.MAX_DOWNLOAD_BYTES);
+    Assertions.assertEquals(64L * 1024 * 1024, DownloadUtil.MAX_DOWNLOAD_BYTES);
   }
 }
