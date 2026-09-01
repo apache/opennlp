@@ -55,6 +55,8 @@ class CharSequenceNormalizerContractTest {
         Arguments.of("invisible", InvisibleCharSequenceNormalizer.getInstance()),
         Arguments.of("lineBreakPreservingWhitespace",
             LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance()),
+        Arguments.of("paragraphPreservingWhitespace",
+            ParagraphPreservingWhitespaceCharSequenceNormalizer.getInstance()),
         Arguments.of("quote", QuoteCharSequenceNormalizer.getInstance()),
         Arguments.of("whitespace", WhitespaceCharSequenceNormalizer.getInstance()));
   }

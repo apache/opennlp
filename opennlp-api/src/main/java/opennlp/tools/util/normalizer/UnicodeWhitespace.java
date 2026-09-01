@@ -161,8 +161,11 @@ public final class UnicodeWhitespace {
   private static final int[] CODE_POINTS = new int[WHITESPACE.size()];
   private static final List<WhitespaceCharacter> LINE_BREAKS = new ArrayList<>();
   private static final List<WhitespaceCharacter> NON_BREAKING = new ArrayList<>();
+  private static final CodePointSet LINE_BREAK_CODE_POINT_SET;
 
   static {
+    final int[] lineBreakCodePointBuffer = new int[WHITESPACE.size()];
+    int lineBreakCodePointCount = 0;
     for (int i = 0; i < WHITESPACE.size(); i++) {
       final WhitespaceCharacter ws = WHITESPACE.get(i);
       BY_CODE_POINT.put(ws.codePoint(), ws);
@@ -170,6 +173,7 @@ public final class UnicodeWhitespace {
       CODE_POINTS[i] = ws.codePoint();
       if (ws.isLineBreak()) {
         LINE_BREAKS.add(ws);
+        lineBreakCodePointBuffer[lineBreakCodePointCount++] = ws.codePoint();
       }
       if (ws.isNonBreaking()) {
         NON_BREAKING.add(ws);
@@ -178,6 +182,10 @@ public final class UnicodeWhitespace {
     for (final RelatedCharacter related : LOOKALIKES) {
       LOOKALIKE_MEMBERSHIP.set(related.codePoint());
     }
+
+    final int[] lineBreakCodePoints = new int[lineBreakCodePointCount];
+    System.arraycopy(lineBreakCodePointBuffer, 0, lineBreakCodePoints, 0, lineBreakCodePointCount);
+    LINE_BREAK_CODE_POINT_SET = CodePointSet.of(lineBreakCodePoints);
   }
 
   private UnicodeWhitespace() {
@@ -228,6 +236,14 @@ public final class UnicodeWhitespace {
   /** {@return the whitespace characters that force a line or paragraph break} */
   public static List<WhitespaceCharacter> lineBreaks() {
     return List.copyOf(LINE_BREAKS);
+  }
+
+  /**
+   * {@return the {@link CodePointSet} of whitespace characters that force a line or paragraph
+   * break}
+   */
+  public static CodePointSet lineBreakCodePointSet() {
+    return LINE_BREAK_CODE_POINT_SET;
   }
 
   /** {@return the non-breaking whitespace characters} */

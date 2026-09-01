@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.normalizer.UnicodeWhitespace.WhitespaceCharacter;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,8 +51,7 @@ public class CharClassTest {
   }
 
   private static CodePointSet lineBreaks() {
-    return CodePointSet.of(UnicodeWhitespace.lineBreaks().stream()
-        .mapToInt(WhitespaceCharacter::codePoint).toArray());
+    return UnicodeWhitespace.lineBreakCodePointSet();
   }
 
   // --- membership --------------------------------------------------------------------------
@@ -139,6 +137,33 @@ public class CharClassTest {
     // Single-char inputs: a lone newline stays a newline, a lone tab becomes a space.
     assertEquals("\n", WS.collapsePreserving("\n", keep, '\n'));
     assertEquals(" ", WS.collapsePreserving("\t", keep, '\n'));
+  }
+
+  // --- paragraph unwrap (collapseParagraphPreserving) --------------------------------------
+
+  @Test
+  void testCollapseParagraphPreservingUnwrapsSingleBreaks() {
+    final CodePointSet breaks = lineBreaks();
+    assertEquals("a b", WS.collapseParagraphPreserving("a \n b", breaks, '\n'));
+    assertEquals("a b", WS.collapseParagraphPreserving("a\r\nb", breaks, '\n'));
+    assertEquals("on the bank", WS.collapseParagraphPreserving("on the\nbank", breaks, '\n'));
+  }
+
+  @Test
+  void testCollapseParagraphPreservingKeepsBlankLines() {
+    final CodePointSet breaks = lineBreaks();
+    assertEquals("a\nb", WS.collapseParagraphPreserving("a\n\nb", breaks, '\n'));
+    assertEquals("a\nb", WS.collapseParagraphPreserving("a\n\n\n\nb", breaks, '\n'));
+    assertEquals("a\nb", WS.collapseParagraphPreserving("a\r\n\r\nb", breaks, '\n'));
+  }
+
+  @Test
+  void testCollapseParagraphPreservingEdgeCases() {
+    final CodePointSet breaks = lineBreaks();
+    assertEquals("a b", WS.collapseParagraphPreserving("a \t b", breaks, '\n'));
+    assertEquals("\nabc", WS.collapseParagraphPreserving("\n\nabc", breaks, '\n'));
+    assertEquals(" ", WS.collapseParagraphPreserving("\n", breaks, '\n'));
+    assertEquals(" ", WS.collapseParagraphPreserving("\t", breaks, '\n'));
   }
 
   // --- trim / removeAll --------------------------------------------------------------------
@@ -447,6 +472,13 @@ public class CharClassTest {
     assertSpan(1, 4, at.toOriginalSpan(1, 2));
   }
 
+  @Test
+  void testCollapseParagraphPreservingAligned() {
+    final AlignedText at = WS.collapseParagraphPreservingAligned("a\n\n\t\tb", lineBreaks(), '\n');
+    assertEquals("a\nb", at.normalized());
+    assertSpan(1, 5, at.toOriginalSpan(1, 2)); // the paragraph break covers the whole run
+  }
+
   // Every aligned operation must produce exactly the same string as its plain counterpart; only the
   // alignment is extra. This pins that contract across a battery of inputs so the two code paths
   // cannot drift apart.
@@ -480,6 +512,9 @@ public class CharClassTest {
         assertEquals(charClass.collapsePreserving(input, keep, '\n'),
             charClass.collapsePreservingAligned(input, keep, '\n').normalized(),
             "collapsePreserving vs collapsePreservingAligned for [" + input + "]");
+        assertEquals(charClass.collapseParagraphPreserving(input, keep, '\n'),
+            charClass.collapseParagraphPreservingAligned(input, keep, '\n').normalized(),
+            "collapseParagraphPreserving vs collapseParagraphPreservingAligned for [" + input + "]");
       }
     }
   }
@@ -495,6 +530,8 @@ public class CharClassTest {
     assertThrows(IllegalArgumentException.class, () -> ws.collapse(null));
     assertThrows(IllegalArgumentException.class, () -> ws.collapsePreserving(null, nl, '\n'));
     assertThrows(IllegalArgumentException.class, () -> ws.collapsePreserving("x", null, '\n'));
+    assertThrows(IllegalArgumentException.class, () -> ws.collapseParagraphPreserving(null, nl, '\n'));
+    assertThrows(IllegalArgumentException.class, () -> ws.collapseParagraphPreserving("x", null, '\n'));
     assertThrows(IllegalArgumentException.class, () -> ws.trim(null));
     assertThrows(IllegalArgumentException.class, () -> ws.removeAll(null));
     assertThrows(IllegalArgumentException.class, () -> ws.normalizeAligned(null));
@@ -503,6 +540,10 @@ public class CharClassTest {
         () -> ws.collapsePreservingAligned(null, nl, '\n'));
     assertThrows(IllegalArgumentException.class,
         () -> ws.collapsePreservingAligned("x", null, '\n'));
+    assertThrows(IllegalArgumentException.class,
+        () -> ws.collapseParagraphPreservingAligned(null, nl, '\n'));
+    assertThrows(IllegalArgumentException.class,
+        () -> ws.collapseParagraphPreservingAligned("x", null, '\n'));
     assertThrows(IllegalArgumentException.class, () -> ws.trimAligned(null));
     assertThrows(IllegalArgumentException.class, () -> ws.removeAllAligned(null));
     assertThrows(IllegalArgumentException.class, () -> CharClass.substitute(null, cp -> null));

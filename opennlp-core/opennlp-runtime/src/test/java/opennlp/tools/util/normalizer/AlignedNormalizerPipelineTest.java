@@ -54,6 +54,7 @@ public class AlignedNormalizerPipelineTest {
     final OffsetAwareNormalizer[] normalizers = {
         WhitespaceCharSequenceNormalizer.getInstance(),
         LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance(),
+        ParagraphPreservingWhitespaceCharSequenceNormalizer.getInstance(),
         DashCharSequenceNormalizer.getInstance(),
         InvisibleCharSequenceNormalizer.getInstance(),
         QuoteCharSequenceNormalizer.getInstance(),
@@ -180,6 +181,8 @@ public class AlignedNormalizerPipelineTest {
     assertTrue(BulletCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(GermanUmlautCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(FullCaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertTrue(ParagraphPreservingWhitespaceCharSequenceNormalizer.getInstance()
+        instanceof OffsetAwareNormalizer);
     // The folds that route through java.text.Normalizer or JDK case mapping cannot, by design.
     assertFalse(NfkcCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertFalse(CaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
@@ -269,6 +272,37 @@ public class AlignedNormalizerPipelineTest {
     assertEquals("p\nq", normalizer.normalize("p" + cp(0x2029) + "q").toString()); // paragraph separator
     // A horizontal run still collapses to a space even when mixed with a break-bearing run.
     assertEquals("a b\nc", normalizer.normalize("a  b \n c").toString());
+  }
+
+  @Test
+  void paragraphPreservingUnwrapsHardWrapsButKeepsBlankLines() {
+    final ParagraphPreservingWhitespaceCharSequenceNormalizer normalizer =
+        ParagraphPreservingWhitespaceCharSequenceNormalizer.getInstance();
+    final String original = "Hello   world\n\n\tfoo  bar";
+    assertEquals("Hello world\nfoo bar", normalizer.normalize(original).toString());
+    assertEquals("on the bank", normalizer.normalize("on the\nbank").toString());
+    assertEquals("a\nb", LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance()
+        .normalize("a\nb").toString());
+
+    final AlignedText aligned = normalizer.normalizeAligned(original);
+    assertEquals(normalizer.normalize(original).toString(), aligned.normalized());
+    assertEquals(original.indexOf("bar"), aligned.toOriginalSpan(16, 19).getStart());
+    assertEquals("bar", covered(aligned, 16, 19));
+    assertEquals("\n\n\t", covered(aligned, 11, 12));
+  }
+
+  @Test
+  void paragraphPreservingComposesInAnAlignedPipeline() {
+    assertTrue(ParagraphPreservingWhitespaceCharSequenceNormalizer.getInstance()
+        instanceof OffsetAwareNormalizer);
+    final String original = "a" + cp(ZERO_WIDTH_SPACE) + "  b\n\nc" + cp(EM_DASH) + "d";
+    final OffsetAwareNormalizer pipeline = TextNormalizer.builder()
+        .stripInvisible().whitespacePreservingParagraphs().dashes().buildAligned();
+
+    final AlignedText aligned = pipeline.normalizeAligned(original);
+    assertEquals("a b\nc-d", aligned.normalized());
+    assertEquals(pipeline.normalize(original).toString(), aligned.normalized());
+    assertEquals("c" + cp(EM_DASH) + "d", covered(aligned, 4, 7));
   }
 
   @Test

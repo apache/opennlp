@@ -432,6 +432,97 @@ public final class CharClass {
   }
 
   /**
+   * Collapses runs of members like {@link #collapse(CharSequence)}, but emits
+   * {@code paragraphReplacement} when a run contains two or more logical line breaks, or the usual
+   * {@code replacement} when it contains at most one. A carriage return immediately followed by a
+   * line feed counts as one break, not two. The hard-wrap unwrap for Gutenberg-style prose uses
+   * this with the line-break code points as {@code lineBreaks} and {@code '\n'} as
+   * {@code paragraphReplacement}.
+   *
+   * @param text The text to collapse.
+   * @param lineBreaks The member code points that count as a line break when tallying a run.
+   * @param paragraphReplacement The replacement emitted for a run with two or more logical breaks.
+   * @return The collapsed text.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code lineBreaks} is {@code null},
+   *     or {@code paragraphReplacement} is not a valid code point.
+   */
+  public String collapseParagraphPreserving(CharSequence text, CodePointSet lineBreaks,
+                                            int paragraphReplacement) {
+    requireNonNullArg(text, "text");
+    requireNonNullArg(lineBreaks, "lineBreaks");
+    requireValidCodePoint(paragraphReplacement);
+    final StringBuilder out = new StringBuilder(text.length());
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
+        int j = cp.nextIndex(i);
+        while (j < length) {
+          final At next = CodePoints.at(text, j);
+          if (!members.contains(next.codePoint())) {
+            break;
+          }
+          j = next.nextIndex(j);
+        }
+        final int emitted = countLogicalLineBreaks(text, i, j, lineBreaks) >= 2
+            ? paragraphReplacement : replacement;
+        out.appendCodePoint(emitted);
+        i = j;
+      } else {
+        out.appendCodePoint(cp.codePoint());
+        i = cp.nextIndex(i);
+      }
+    }
+    return out.toString();
+  }
+
+  /**
+   * Like {@link #collapseParagraphPreserving(CharSequence, CodePointSet, int)} but also produces
+   * the {@link Alignment} back to the original text.
+   *
+   * @param text The text to collapse.
+   * @param lineBreaks The member code points that count as a line break when tallying a run.
+   * @param paragraphReplacement The replacement emitted for a run with two or more logical breaks.
+   * @return The collapsed text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code lineBreaks} is {@code null},
+   *     or {@code paragraphReplacement} is not a valid code point.
+   */
+  public AlignedText collapseParagraphPreservingAligned(CharSequence text, CodePointSet lineBreaks,
+                                                        int paragraphReplacement) {
+    requireNonNullArg(text, "text");
+    requireNonNullArg(lineBreaks, "lineBreaks");
+    requireValidCodePoint(paragraphReplacement);
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
+        int j = cp.nextIndex(i);
+        while (j < length) {
+          final At next = CodePoints.at(text, j);
+          if (!members.contains(next.codePoint())) {
+            break;
+          }
+          j = next.nextIndex(j);
+        }
+        final int emitted = countLogicalLineBreaks(text, i, j, lineBreaks) >= 2
+            ? paragraphReplacement : replacement;
+        out.appendCodePoint(emitted);
+        alignment.replace(j - i, Character.charCount(emitted));
+        i = j;
+      } else {
+        out.appendCodePoint(cp.codePoint());
+        alignment.equal(cp.charCount());
+        i = cp.nextIndex(i);
+      }
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
    * Like {@link #trim(CharSequence)} but also produces the {@link Alignment} back to the original
    * text. The trimmed leading and trailing members appear as deletions, so a span never reports
    * through them.
@@ -617,6 +708,41 @@ public final class CharClass {
       i = cp.nextIndex(i);
     }
     return i;
+  }
+
+  /**
+   * Counts logical line breaks in a whitespace run. A carriage return immediately followed by a
+   * line feed counts as one break.
+   *
+   * @param text The text containing the run.
+   * @param runStart The index where the whitespace run starts.
+   * @param runEnd The index of the first code point after the run.
+   * @param lineBreaks The code points that count as a line break when tallying the run.
+   * @return The number of logical line breaks in {@code text[runStart..runEnd)}.
+   */
+  private int countLogicalLineBreaks(CharSequence text, int runStart, int runEnd,
+                                     CodePointSet lineBreaks) {
+    int count = 0;
+    int k = runStart;
+    while (k < runEnd) {
+      final At cp = CodePoints.at(text, k);
+      if (lineBreaks.contains(cp.codePoint())) {
+        if (cp.codePoint() == 0x000D) {
+          final int next = cp.nextIndex(k);
+          if (next < runEnd && CodePoints.at(text, next).codePoint() == 0x000A) {
+            k = CodePoints.at(text, next).nextIndex(next);
+          } else {
+            k = next;
+          }
+        } else {
+          k = cp.nextIndex(k);
+        }
+        count++;
+      } else {
+        k = cp.nextIndex(k);
+      }
+    }
+    return count;
   }
 
   /**
