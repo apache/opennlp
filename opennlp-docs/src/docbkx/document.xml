@@ -20,6 +20,15 @@
 	<section xml:id="tools.document.introduction">
 		<title>Introduction</title>
 		<para>
+			The task APIs of OpenNLP each return one kind of result: a tokenizer returns
+			spans, a tagger returns tags, a name finder returns names. An application that
+			runs several of them over one text has to keep those results aligned itself,
+			and structured results such as coreference chains or dependency arcs, which
+			refer to other results, have no place to live at all. The document container
+			gives them one. It adds a small API next to the task APIs and replaces none of
+			them: a task that needs only one component keeps calling it directly.
+		</para>
+		<para>
 			The package <code>opennlp.tools.document</code> provides an immutable container
 			that carries the original text of one document together with any number of
 			annotation layers over it. A layer is a list of <code>Annotation</code> values,
@@ -91,6 +100,108 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 			since adding a layer is once-only, competing versions always live under
 			distinct keys and never replace each other.
 		</para>
+		<para>
+			Each rule above is pinned by a test in <code>DocumentContractTest</code>:
+			<code>testKeysWithSameIdButDifferentTypesAreDifferentLayers</code>,
+			<code>testToolkitKeysCarryTheNamespacePrefix</code>,
+			<code>testDocumentScopedLayersCarrySpanlessValues</code>,
+			<code>testLayerPreservesInsertionOrder</code>,
+			<code>testDuplicateLayerIsRejectedWithExactMessage</code>,
+			<code>testGoldLayerLivesBesideThePredictedLayer</code>, and
+			<code>testCustomLayerNeedsNoContainerChange</code>.
+		</para>
+		<para>
+			None of this is new architecture, and that is intended. Standoff annotations
+			over an unchanged original text are how the UIMA CAS works; typed keys that let
+			any module add a layer without the container knowing about it are the pattern of
+			Stanford CoreNLP's annotation map; and annotators that declare what they require
+			and provide, checked when the pipeline is assembled, follow spaCy's pipeline
+			analysis. The container takes the lightweight end of each: string ids with a
+			namespace instead of class identity, and no type system descriptors.
+		</para>
+	</section>
+
+	<section xml:id="tools.document.layers">
+		<title>What the layers contain</title>
+		<para>
+			A layer has one value type and one annotation per unit, anchored on the span
+			of that unit in the original text. The toolkit's own adapters provide these
+			layers:
+		</para>
+		<table xml:id="tools.document.layers.table">
+			<title>Layers provided by the toolkit's adapters</title>
+			<tgroup cols="4">
+				<thead>
+					<row>
+						<entry>Key</entry>
+						<entry>Value</entry>
+						<entry>One annotation per</entry>
+						<entry>Provided by</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><code>opennlp:sentences</code></entry>
+						<entry><code>String</code>, the sentence text</entry>
+						<entry>sentence</entry>
+						<entry><code>SentenceDetectorAnnotator</code></entry>
+					</row>
+					<row>
+						<entry><code>opennlp:tokens</code></entry>
+						<entry><code>String</code>, the token</entry>
+						<entry>token</entry>
+						<entry><code>TokenizerAnnotator</code></entry>
+					</row>
+					<row>
+						<entry><code>opennlp:pos</code></entry>
+						<entry><code>String</code>, the tag</entry>
+						<entry>token, on the token's span</entry>
+						<entry><code>POSTaggerAnnotator</code></entry>
+					</row>
+					<row>
+						<entry><code>opennlp:lemmas</code></entry>
+						<entry><code>String</code>, the lemma</entry>
+						<entry>token, on the token's span</entry>
+						<entry><code>LemmatizerAnnotator</code></entry>
+					</row>
+					<row>
+						<entry><code>opennlp:stems</code></entry>
+						<entry><code>String</code>, the stem</entry>
+						<entry>token, on the token's span</entry>
+						<entry><code>StemmerAnnotator</code></entry>
+					</row>
+					<row>
+						<entry><code>opennlp:entities</code></entry>
+						<entry><code>String</code>, the entity type</entry>
+						<entry>name, on the name's span</entry>
+						<entry><code>NameFinderAnnotator</code></entry>
+					</row>
+					<row>
+						<entry><code>opennlp:chunks</code></entry>
+						<entry><code>String</code>, the chunk type</entry>
+						<entry>chunk</entry>
+						<entry><code>ChunkerAnnotator</code></entry>
+					</row>
+					<row>
+						<entry><code>opennlp:phrases</code></entry>
+						<entry><code>Phrase</code>: the label and the head span</entry>
+						<entry>constituent</entry>
+						<entry><code>ParserAnnotator</code></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</table>
+		<para>
+			The keys of the first four layers in the table live in <code>Layers</code>;
+			the others live on the annotator that provides them, which is also where an
+			extension puts its key. Layers that refer to other layers do so by index into
+			them, which the invariants above keep valid: a coreference layer, for example,
+			puts one annotation on each mention's span with the chain it belongs to, and a
+			dependency layer puts one annotation on each token's span naming the head token
+			by its index in <code>opennlp:tokens</code>. Adding such a layer requires no change
+			in this package; <code>testCustomLayerNeedsNoContainerChange</code> pins that,
+			and the section below shows how it is done.
+		</para>
 	</section>
 
 	<section xml:id="tools.document.pipeline">
@@ -129,7 +240,8 @@ Document document = analyzer.analyze("The dog barks. It naps.");]]>
 		</programlisting>
 		<para>
 			<code>DocumentPipelineExampleTest</code> asserts the pipeline and layer
-			round-trip shown here.
+			round-trip shown here; <code>DocumentAnalyzerTest</code> covers the build-time
+			checks, for example <code>testMisorderedPipelineFailsAtBuildTime</code>.
 		</para>
 		<para>
 			The resulting document carries exactly the four layers the pipeline provides:
