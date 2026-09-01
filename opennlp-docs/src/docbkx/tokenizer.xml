@@ -555,6 +555,30 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 			both implementations described below are immutable and safe for concurrent use by
 			multiple threads.
 		</para>
+		<para>
+			The interface and <code>SubwordPiece</code> live in <code>opennlp-api</code>, so
+			any component can accept a subword tokenizer without depending on a particular
+			model format. The two implementations differ in where they live:
+			<code>WordpieceEncoder</code> needs only a vocabulary list and stays in
+			<code>opennlp-api</code>; <code>SentencePieceTokenizer</code> reads a trained model
+			file and ships as its own artifact, <code>opennlp-subword</code>, which depends only on
+			<code>opennlp-api</code>. No model is bundled with either; the model file is the
+			user's.
+		</para>
+		<para>
+			A <code>SubwordPiece</code> has three parts: the piece string as the vocabulary
+			spells it (for SentencePiece models with the word-boundary marker, so
+			<code>&#x2581;world</code> for the word that opens with a space), the vocabulary
+			id the embedding layer expects, and the span of the caller's original text the
+			piece came from. Pieces that produce no surface of their own, such as control
+			symbols and the fill bytes of a byte-fallback expansion, report an empty span. The
+			span is a <code>Span</code> through <code>SubwordPiece.span</code>, so pieces can
+			be laid over the original text like any other annotation.
+			<code>SentencePieceAlignmentTest</code> pins the span rules, including
+			supplementary-plane characters, collapsed whitespace, and ligature replacement,
+			and <code>SentencePieceParityTest</code> checks pieces, ids, and spans against
+			fixtures produced by the reference implementation.
+		</para>
 		<section xml:id="tools.tokenizer.subword.sentencepiece">
 			<title>SentencePiece</title>
 			<para>
