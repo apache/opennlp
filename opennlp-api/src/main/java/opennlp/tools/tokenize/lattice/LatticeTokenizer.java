@@ -47,7 +47,7 @@ import opennlp.tools.util.StringUtil;
  *
  * @since 3.0.0
  */
-public class LatticeTokenizer implements Tokenizer {
+public final class LatticeTokenizer implements Tokenizer {
 
   /** The context id of the beginning and end of text. */
   private static final int BOUNDARY_CONTEXT = 0;

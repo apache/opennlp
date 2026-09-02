@@ -37,7 +37,7 @@ import opennlp.tools.util.Span;
  *
  * <p>Source strings are written as Unicode escapes to keep this file ASCII-only; the
  * class works over the same miniature Chinese frequency lexicon as the sibling usage
- * example, whose javadoc spells out each fixture word.</p>
+ * example, and its Javadoc spells out each fixture word.</p>
  */
 public class UnigramSegmenterTest {
 
@@ -166,6 +166,26 @@ public class UnigramSegmenterTest {
   }
 
   @Test
+  void testEntryLimit() {
+    final String lexicon = "first 1\nsecond 1\n";
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> UnigramSegmenter.load(
+            new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
+            StandardCharsets.UTF_8, 1));
+    Assertions.assertEquals("lexicon entry count exceeds safe limit of 1", e.getMessage());
+  }
+
+  @Test
+  void testCountTotalOverflow() {
+    final String lexicon = "first " + Long.MAX_VALUE + "\nsecond 1\n";
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> UnigramSegmenter.load(
+            new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
+            StandardCharsets.UTF_8));
+    Assertions.assertEquals("lexicon count total overflows at line 2", e.getMessage());
+  }
+
+  @Test
   void testInvalidArguments() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> UnigramSegmenter.load((Path) null));
@@ -184,10 +204,9 @@ public class UnigramSegmenterTest {
   }
 
   /**
-   * Verifies that the unknown-character fallback advances one code point, never one
-   * code unit: a supplementary character absent from the lexicon comes back as one
-   * span over both of its surrogate halves, and no span boundary ever lands between
-   * them.
+   * Verifies that the unknown-character fallback advances one code point instead of one
+   * code unit: a supplementary character absent from the lexicon comes back as one span
+   * over its surrogate pair, and no span boundary occurs inside it.
    */
   @Test
   void testUnknownSupplementaryCharacterIsNeverSplit() {

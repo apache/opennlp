@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import opennlp.tools.util.DigestTestUtil;
 import opennlp.tools.util.Span;
 
 /**
@@ -88,11 +87,10 @@ public class LatticeUsageExampleTest {
     final Path archiveFile = work.resolve("mini-dict-0.1.tar.gz");
     Files.write(archiveFile, archive);
 
-    // Install: fetch the archive from the user-chosen location, verify its digest,
-    // and unpack the payload.
+    // Install the local archive and unpack the payload.
     final Path dictionaryDirectory = work.resolve("dictionary");
     final int extracted = MecabDictionaryInstaller.install(
-        archiveFile.toUri(), dictionaryDirectory, DigestTestUtil.sha512(archive));
+        archiveFile.toUri(), dictionaryDirectory);
     Assertions.assertEquals(4, extracted);
 
     // Load and tokenize; both views must agree and stay in original coordinates.
