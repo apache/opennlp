@@ -52,8 +52,8 @@ public class HunspellRealDictionaryTest {
     final String dir = System.getProperty(DICT_DIR_PROPERTY);
     Assumptions.assumeTrue(dir != null && !dir.isBlank(),
         "no " + DICT_DIR_PROPERTY + " given");
-    final Path affix = Path.of(dir, name + ".aff");
-    final Path words = Path.of(dir, name + ".dic");
+    final Path affix = Path.of(dir, name + HunspellDictionary.AFFIX_FILE_SUFFIX);
+    final Path words = Path.of(dir, name + HunspellDictionary.DICTIONARY_FILE_SUFFIX);
     Assumptions.assumeTrue(Files.isReadable(affix) && Files.isReadable(words),
         name + " pair not present under " + dir);
     return new HunspellStemmer(HunspellDictionary.load(affix, words));

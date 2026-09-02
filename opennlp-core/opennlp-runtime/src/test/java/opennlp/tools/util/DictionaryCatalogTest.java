@@ -19,6 +19,7 @@ package opennlp.tools.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +27,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import opennlp.tools.stemmer.hunspell.HunspellDictionary;
 
 /**
  * Tests the opt-in dictionary catalog against an in-memory properties file and a
@@ -86,19 +89,41 @@ public class DictionaryCatalogTest {
   }
 
   /**
-   * Verifies that the shipped catalog holds the MeCab and Hunspell entries, each with
-   * a full-length SHA-512 digest.
+   * Verifies that the example catalog holds the MeCab and Hunspell entries, each with
+   * a full-length SHA-512 digest. Applications load their own catalog through the same
+   * {@link DictionaryCatalog#load(InputStream)} entry point.
    *
-   * @throws IOException Thrown if the shipped catalog fails to load.
+   * @throws IOException Thrown if the example catalog fails to load.
    */
   @Test
-  void testDefaultCatalogContainsMecabAndHunspellEntries() throws IOException {
-    final DictionaryCatalog catalog = DictionaryCatalog.loadDefault();
+  void testExampleCatalogContainsMecabAndHunspellEntries() throws IOException {
+    final DictionaryCatalog catalog = loadExampleCatalog();
     Assertions.assertTrue(catalog.ids().contains("mecab.ipadic"));
     Assertions.assertTrue(catalog.ids().contains("mecab.ko-dic"));
-    Assertions.assertTrue(catalog.ids().contains("hunspell.en_US.aff"));
+    Assertions.assertTrue(catalog.ids().contains(
+        "hunspell.en_US" + HunspellDictionary.AFFIX_FILE_SUFFIX));
     Assertions.assertEquals(128, catalog.get("mecab.ipadic").sha512().length());
-    Assertions.assertEquals(128, catalog.get("hunspell.en_US.dic").sha512().length());
+    Assertions.assertEquals(128, catalog.get(
+        "hunspell.en_US"
+            + HunspellDictionary.DICTIONARY_FILE_SUFFIX)
+        .sha512().length());
+  }
+
+  /**
+   * Loads the example catalog from test resources rather than a production classpath
+   * default.
+   *
+   * @return The example catalog. Never {@code null}.
+   * @throws IOException Thrown if the resource is absent or cannot be read.
+   */
+  private static DictionaryCatalog loadExampleCatalog() throws IOException {
+    try (InputStream in = DictionaryCatalogTest.class.getResourceAsStream(
+        "/opennlp/tools/util/dictionary-catalog.properties")) {
+      if (in == null) {
+        throw new IOException("missing example dictionary catalog");
+      }
+      return DictionaryCatalog.load(in);
+    }
   }
 
   /**

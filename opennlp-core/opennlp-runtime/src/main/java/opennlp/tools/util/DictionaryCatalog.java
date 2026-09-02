@@ -28,10 +28,9 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Opt-in catalog of remote dictionary archives and companion files. The catalog
- * ships URLs and SHA-512 digests only; it never bundles the data itself. Fetching
- * an entry requires {@link #REMOTE_DOWNLOAD_PROPERTY} to be {@code true}, so
- * enabling a built-in URL is an explicit user action.
+ * Opt-in catalog of remote dictionary archives and companion files, loaded from
+ * application-supplied properties containing URLs and SHA-512 digests. Fetching an
+ * entry requires {@link #REMOTE_DOWNLOAD_PROPERTY} to be {@code true}.
  *
  * @since 3.0.0
  */
@@ -43,30 +42,10 @@ public final class DictionaryCatalog {
    * caller already supplied the URI and digest.
    */
   public static final String REMOTE_DOWNLOAD_PROPERTY = "opennlp.download.remote";
-
-  private static final String DEFAULT_RESOURCE =
-      "opennlp/tools/util/dictionary-catalog.properties";
-
   private final Properties properties;
 
   private DictionaryCatalog(Properties properties) {
     this.properties = properties;
-  }
-
-  /**
-   * Loads the catalog shipped on the classpath.
-   *
-   * @return The catalog. Never {@code null}.
-   * @throws IOException Thrown if the resource is missing or cannot be read.
-   */
-  public static DictionaryCatalog loadDefault() throws IOException {
-    try (InputStream in = DictionaryCatalog.class.getClassLoader()
-        .getResourceAsStream(DEFAULT_RESOURCE)) {
-      if (in == null) {
-        throw new IOException("missing classpath resource " + DEFAULT_RESOURCE);
-      }
-      return load(in);
-    }
   }
 
   /**
@@ -116,8 +95,9 @@ public final class DictionaryCatalog {
     if (url == null || sha512 == null) {
       throw new IOException("unknown or incomplete dictionary catalog entry: " + id);
     }
+    final String filename = properties.getProperty(id + ".filename");
     try {
-      return new Entry(id, new URI(url), sha512.trim());
+      return new Entry(id, new URI(url), sha512.trim(), filename);
     } catch (URISyntaxException e) {
       throw new IOException("malformed catalog URI for " + id, e);
     }
@@ -146,7 +126,12 @@ public final class DictionaryCatalog {
           + REMOTE_DOWNLOAD_PROPERTY + "=true to enable");
     }
     final Entry entry = get(id);
-    ResourceInstaller.install(entry.uri(), targetDirectory, entry.sha512());
+    if (entry.filename() == null) {
+      ResourceInstaller.install(entry.uri(), targetDirectory, entry.sha512());
+    } else {
+      ResourceInstaller.installNamed(
+          entry.uri(), targetDirectory, entry.sha512(), entry.filename());
+    }
   }
 
   /**
@@ -155,12 +140,14 @@ public final class DictionaryCatalog {
    * @param id The catalog id.
    * @param uri The absolute download URI.
    * @param sha512 The expected SHA-512 hex digest.
+   * @param filename An optional preferred local file name; may be {@code null}.
    */
-  public record Entry(String id, URI uri, String sha512) {
+  public record Entry(String id, URI uri, String sha512, String filename) {
     /**
      * @param id The catalog id. Must not be {@code null}.
      * @param uri The absolute download URI. Must not be {@code null}.
      * @param sha512 The expected SHA-512 hex digest. Must not be {@code null}.
+     * @param filename An optional preferred local file name; may be {@code null}.
      */
     public Entry {
       if (id == null) {

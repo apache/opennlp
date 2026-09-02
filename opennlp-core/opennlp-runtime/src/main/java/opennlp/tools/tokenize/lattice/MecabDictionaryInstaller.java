@@ -41,7 +41,8 @@ import opennlp.tools.util.ResourceInstaller;
  * {@link ResourceInstaller} under {@link ResourceInstaller.Limits#DEFAULT} and its
  * startup property overrides: an {@code http} or {@code https} archive requires an
  * expected checksum, and the ustar, pax, and GNU tar formats are all read. Built-in
- * catalog URLs are opt-in via {@link #installFromCatalog(String, Path)}.
+ * catalog URLs are opt-in via
+ * {@link #installFromCatalog(DictionaryCatalog, String, Path)}.
  *
  * <p>Only the dictionary payload is installed: the {@code *.csv} lexicon files and
  * {@code *.def} definition files that a {@link MecabDictionary} reads, plus the
@@ -122,9 +123,11 @@ public final class MecabDictionaryInstaller {
   }
 
   /**
-   * Downloads a dictionary named in {@link DictionaryCatalog} and unpacks it. Requires
+   * Downloads a dictionary named in an application-supplied
+   * {@link DictionaryCatalog} and unpacks it. Requires
    * {@code -Dopennlp.download.remote=true}.
    *
+   * @param catalog The application-supplied catalog. Must not be {@code null}.
    * @param dictionaryId The catalog id, for example {@code mecab.ipadic} or
    *                     {@code mecab.ko-dic}. Must not be {@code null}.
    * @param targetDirectory The directory to unpack into; created when absent. Must not
@@ -134,8 +137,11 @@ public final class MecabDictionaryInstaller {
    *         disabled, or install fails.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
-  public static int installFromCatalog(String dictionaryId, Path targetDirectory)
-      throws IOException {
+  public static int installFromCatalog(DictionaryCatalog catalog, String dictionaryId,
+      Path targetDirectory) throws IOException {
+    if (catalog == null) {
+      throw new IllegalArgumentException("catalog must not be null");
+    }
     if (dictionaryId == null) {
       throw new IllegalArgumentException("dictionaryId must not be null");
     }
@@ -144,7 +150,7 @@ public final class MecabDictionaryInstaller {
     }
     final Path unpacked = Files.createTempDirectory("mecab-dict-");
     try {
-      DictionaryCatalog.loadDefault().install(dictionaryId, unpacked);
+      catalog.install(dictionaryId, unpacked);
       return promoteDictionaryFiles(unpacked, targetDirectory);
     } finally {
       deleteRecursively(unpacked);

@@ -40,16 +40,18 @@ returned count is the number of dictionary files extracted.
 ## Option A: opt-in catalog install
 
 Catalog URLs stay inactive until you set `-Dopennlp.download.remote=true` (or the
-equivalent system property in code). That flag is the explicit user action that
-enables the built-in URLs; OpenNLP never fetches them by default.
+equivalent system property in code). Applications supply the catalog, and OpenNLP
+never fetches its entries by default.
 
 ```java
 import java.nio.file.Path;
 import opennlp.tools.tokenize.lattice.MecabDictionaryInstaller;
+import opennlp.tools.util.DictionaryCatalog;
 
 // JVM flag: -Dopennlp.download.remote=true
+DictionaryCatalog catalog = DictionaryCatalog.load(catalogProperties);
 int files = MecabDictionaryInstaller.installFromCatalog(
-    "mecab.ipadic", Path.of("ipadic"));
+    catalog, "mecab.ipadic", Path.of("ipadic"));
 ```
 
 ## Option B: your own URL and digest

@@ -17,6 +17,7 @@
 
 package opennlp.tools.tokenize.lattice;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -198,13 +199,16 @@ public class MecabDictionaryInstallerTest {
   }
 
   @Test
-  void testInstallFromCatalogRequiresRemoteProperty(@TempDir Path target) {
+  void testInstallFromCatalogRequiresRemoteProperty(@TempDir Path target)
+      throws IOException {
+    final DictionaryCatalog catalog = emptyCatalog();
     final String previous =
         System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
       final IOException e = Assertions.assertThrows(IOException.class,
-          () -> MecabDictionaryInstaller.installFromCatalog("mecab.ipadic", target));
+          () -> MecabDictionaryInstaller.installFromCatalog(
+              catalog, "mecab.ipadic", target));
       Assertions.assertTrue(
           e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
     } finally {
@@ -227,15 +231,22 @@ public class MecabDictionaryInstallerTest {
   }
 
   @Test
-  void testInvalidArguments(@TempDir Path target) {
+  void testInvalidArguments(@TempDir Path target) throws IOException {
+    final DictionaryCatalog catalog = emptyCatalog();
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> MecabDictionaryInstaller.install(null, target));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> MecabDictionaryInstaller.install(target.toUri(), null));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.installFromCatalog(null, target));
+        () -> MecabDictionaryInstaller.installFromCatalog(null, "mecab.ipadic", target));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.installFromCatalog("mecab.ipadic", null));
+        () -> MecabDictionaryInstaller.installFromCatalog(catalog, null, target));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MecabDictionaryInstaller.installFromCatalog(catalog, "mecab.ipadic", null));
+  }
+
+  private static DictionaryCatalog emptyCatalog() throws IOException {
+    return DictionaryCatalog.load(new ByteArrayInputStream(new byte[0]));
   }
 
   /**

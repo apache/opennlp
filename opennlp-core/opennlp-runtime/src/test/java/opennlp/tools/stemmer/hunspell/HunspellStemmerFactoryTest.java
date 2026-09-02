@@ -82,8 +82,10 @@ public class HunspellStemmerFactoryTest {
    * @throws IOException Thrown if writing or loading fails.
    */
   private static HunspellDictionary writeAndLoadFixture(Path directory) throws IOException {
-    final Path affixFile = directory.resolve("fixture.aff");
-    final Path dictionaryFile = directory.resolve("fixture.dic");
+    final Path affixFile = directory.resolve(
+        "fixture" + HunspellDictionary.AFFIX_FILE_SUFFIX);
+    final Path dictionaryFile = directory.resolve(
+        "fixture" + HunspellDictionary.DICTIONARY_FILE_SUFFIX);
     Files.write(affixFile, AFFIX.getBytes(StandardCharsets.UTF_8));
     Files.write(dictionaryFile, WORDS.getBytes(StandardCharsets.UTF_8));
     return HunspellDictionary.load(affixFile, dictionaryFile);
@@ -169,7 +171,7 @@ public class HunspellStemmerFactoryTest {
    */
   @Test
   void testNullPathsAreRejected(@TempDir Path tempDir) {
-    final Path present = tempDir.resolve("present.aff");
+    final Path present = tempDir.resolve("present" + HunspellDictionary.AFFIX_FILE_SUFFIX);
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> HunspellDictionary.load(null, present));
     Assertions.assertEquals("affixFile must not be null", e.getMessage());

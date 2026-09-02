@@ -400,6 +400,22 @@ public final class ResourceInstaller {
    */
   public static Path install(URI source, Path targetDirectory, String checksum,
       Limits limits) throws IOException {
+    return install(source, targetDirectory, checksum, null, limits);
+  }
+
+  /**
+   * Installs a catalog entry under its preferred file name when it is not an archive.
+   */
+  static Path installNamed(URI source, Path targetDirectory, String checksum,
+      String name) throws IOException {
+    if (name == null) {
+      throw new IllegalArgumentException("name must not be null");
+    }
+    return install(source, targetDirectory, checksum, name, Limits.DEFAULT);
+  }
+
+  private static Path install(URI source, Path targetDirectory, String checksum,
+      String name, Limits limits) throws IOException {
     if (source == null) {
       throw new IllegalArgumentException("source must not be null");
     }
@@ -422,7 +438,9 @@ public final class ResourceInstaller {
       if (expected != null) {
         verify(downloaded, expected);
       }
-      installStaged(downloaded, sourceName(source), targetDirectory, limits);
+      installStaged(downloaded,
+          name == null ? sourceName(source) : validateSourceName(name),
+          targetDirectory, limits);
       return targetDirectory;
     } finally {
       Files.deleteIfExists(downloaded);
@@ -1031,6 +1049,19 @@ public final class ResourceInstaller {
     final int slash = path.lastIndexOf('/');
     final String name = slash < 0 ? path : path.substring(slash + 1);
     return name.isEmpty() ? DEFAULT_RESOURCE_NAME : name;
+  }
+
+  private static String validateSourceName(String name) {
+    if (name.isEmpty() || ".".equals(name) || "..".equals(name)) {
+      throw new IllegalArgumentException("name must be a file name");
+    }
+    for (int i = 0; i < name.length(); i++) {
+      final char c = name.charAt(i);
+      if (c == '/' || c == '\\' || c == 0) {
+        throw new IllegalArgumentException("name must be a file name");
+      }
+    }
+    return name;
   }
 
   /**
