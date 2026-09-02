@@ -28,7 +28,7 @@ import java.util.zip.GZIPOutputStream;
  */
 final class TarGzArchives {
 
-  /** The tar block size; headers, content, and padding are all whole blocks. */
+  /** The tar block size; headers, content, and padding are all complete blocks. */
   private static final int BLOCK = 512;
 
   /** The header field offsets and lengths this builder writes, in bytes. */
@@ -59,11 +59,11 @@ final class TarGzArchives {
   record Entry(String name, byte[] content, long declaredSize) {
 
     /**
-     * Builds an entry whose declared size matches its UTF-8 content length.
+     * Builds an entry with a declared size that matches its UTF-8 content length.
      *
      * @param name The entry name.
      * @param content The entry text.
-     * @return The entry. Never {@code null}.
+     * @return The entry. Not {@code null}.
      */
     static Entry of(String name, String content) {
       final byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
@@ -71,25 +71,25 @@ final class TarGzArchives {
     }
 
     /**
-     * Builds an entry whose declared size matches its content length.
+     * Builds an entry with a declared size that matches its content length.
      *
      * @param name The entry name.
      * @param content The entry bytes.
-     * @return The entry. Never {@code null}.
+     * @return The entry. Not {@code null}.
      */
     static Entry of(String name, byte[] content) {
       return new Entry(name, content, content.length);
     }
 
     /**
-     * Builds an entry whose header size field is set independently of the stored
+     * Builds an entry with a header size field that is set independently of the stored
      * content, for oversized-entry budget tests.
      *
      * @param name The entry name.
      * @param content The bytes stored after the header; typically empty for header-only
      *                oversized cases.
      * @param declaredSize The size field written into the header.
-     * @return The entry. Never {@code null}.
+     * @return The entry. Not {@code null}.
      */
     static Entry withDeclaredSize(String name, byte[] content, long declaredSize) {
       return new Entry(name, content, declaredSize);
@@ -102,7 +102,7 @@ final class TarGzArchives {
    *
    * @param entries The entries as {@code {name, content}} pairs. Must not be
    *                {@code null}.
-   * @return The compressed archive bytes. Never {@code null}.
+   * @return The compressed archive bytes. Not {@code null}.
    * @throws IOException Thrown if writing to the in-memory streams fails.
    */
   static byte[] gzippedTar(String[][] entries) throws IOException {
@@ -117,19 +117,54 @@ final class TarGzArchives {
    * Builds a gzip-compressed tar archive from typed entries.
    *
    * @param entries The entries to store. Must not be {@code null}.
-   * @return The compressed archive bytes. Never {@code null}.
+   * @return The compressed archive bytes. Not {@code null}.
    * @throws IOException Thrown if writing to the in-memory streams fails.
    */
   static byte[] gzippedTar(Entry... entries) throws IOException {
+    return gzip(tar(entries));
+  }
+
+  /**
+   * Builds an archive with an incorrect checksum in its first header.
+   *
+   * @param entries The entries to store. Must not be {@code null} or empty.
+   * @return The compressed archive bytes. Not {@code null}.
+   * @throws IOException Thrown if writing to the in-memory streams fails.
+   */
+  static byte[] gzippedTarWithInvalidHeaderChecksum(Entry... entries) throws IOException {
+    final byte[] tar = tar(entries);
+    tar[CHECKSUM_OFFSET] = tar[CHECKSUM_OFFSET] == '0' ? (byte) '1' : (byte) '0';
+    return gzip(tar);
+  }
+
+  /**
+   * Builds the uncompressed tar image.
+   *
+   * @param entries The entries to store. Must not be {@code null}.
+   * @return The tar bytes. Not {@code null}.
+   * @throws IOException Thrown if writing to the in-memory stream fails.
+   */
+  private static byte[] tar(Entry... entries) throws IOException {
     final ByteArrayOutputStream tar = new ByteArrayOutputStream();
     for (final Entry entry : entries) {
       tarEntry(tar, entry);
     }
     // Two zero blocks end a tar archive.
     tar.write(new byte[2 * BLOCK]);
+    return tar.toByteArray();
+  }
+
+  /**
+   * Compresses a tar image with gzip.
+   *
+   * @param tar The tar bytes. Must not be {@code null}.
+   * @return The compressed bytes. Not {@code null}.
+   * @throws IOException Thrown if compression fails.
+   */
+  private static byte[] gzip(byte[] tar) throws IOException {
     final ByteArrayOutputStream compressed = new ByteArrayOutputStream();
     try (GZIPOutputStream gzip = new GZIPOutputStream(compressed)) {
-      gzip.write(tar.toByteArray());
+      gzip.write(tar);
     }
     return compressed.toByteArray();
   }

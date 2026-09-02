@@ -25,7 +25,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,6 +76,12 @@ public final class MecabDictionary {
   private static final String CHAR_DEF = "char.def";
   private static final String UNK_DEF = "unk.def";
 
+  static final String LEXICON_EXTENSION = ".csv";
+  static final String DEFINITION_EXTENSION = ".def";
+  static final String CONFIGURATION_FILE = "dicrc";
+  private static final String LEXICON_GLOB = "*" + LEXICON_EXTENSION;
+  private static final char COMMENT_MARKER = '#';
+
   /** The prefix a {@code char.def} code point field carries, in either letter case. */
   private static final String HEX_PREFIX = "0x";
 
@@ -111,407 +116,6 @@ public final class MecabDictionary {
    * @param length How many leading characters of the run are offered as candidates.
    */
   record Category(String name, boolean invoke, boolean group, int length) {
-  }
-
-  /**
-   * The lexicon as a double-array trie: one transition is one array read and one
-   * comparison. Characters are recoded into dense labels ordered by descending
-   * frequency before the array is built, which keeps the array compact; a character
-   * the lexicon never uses misses in the recode table before the array is consulted.
-   *
-   * <p>The layout is the classic base/check pair: from state {@code s}, label
-   * {@code c} leads to {@code t = base[s] + c} exactly when {@code check[t] == s}.
-   * Label {@code 0} terminates a surface and leads to a state whose negative base
-   * encodes the index of the surface's entry list.</p>
-   */
-  private static final class DoubleArrayLexicon {
-
-    private final int[] base;
-    private final int[] check;
-    private final int[] codeOf;
-    private final List<WordEntry>[] values;
-
-    private DoubleArrayLexicon(int[] base, int[] check, int[] codeOf,
-        List<WordEntry>[] values) {
-      this.base = base;
-      this.check = check;
-      this.codeOf = codeOf;
-      this.values = values;
-    }
-
-    /**
-     * Builds the trie from the surface-keyed lexicon.
-     *
-     * @param lexicon The entries keyed by surface form.
-     * @return The built trie. Never {@code null}.
-     */
-    @SuppressWarnings("unchecked")
-    private static DoubleArrayLexicon build(Map<String, List<WordEntry>> lexicon) {
-      final String[] surfaces = lexicon.keySet().toArray(new String[0]);
-      Arrays.sort(surfaces);
-      final List<WordEntry>[] values = new List[surfaces.length];
-      for (int i = 0; i < surfaces.length; i++) {
-        values[i] = List.copyOf(lexicon.get(surfaces[i]));
-      }
-
-      // Dense recode: labels ordered by descending frequency get the small codes, so
-      // busy transitions cluster at the low end of the array.
-      final int[] frequency = new int[Character.MAX_VALUE + 1];
-      for (final String surface : surfaces) {
-        for (int i = 0; i < surface.length(); i++) {
-          frequency[surface.charAt(i)]++;
-        }
-      }
-      final Integer[] chars = new Integer[Character.MAX_VALUE + 1];
-      int distinct = 0;
-      for (int c = 0; c <= Character.MAX_VALUE; c++) {
-        if (frequency[c] > 0) {
-          chars[distinct++] = c;
-        }
-      }
-      final Integer[] ordered = Arrays.copyOf(chars, distinct);
-      Arrays.sort(ordered, (a, b) -> frequency[b] - frequency[a]);
-      final int[] codeOf = new int[Character.MAX_VALUE + 1];
-      Arrays.fill(codeOf, -1);
-      for (int rank = 0; rank < ordered.length; rank++) {
-        codeOf[ordered[rank]] = rank + 1;
-      }
-
-      final Builder builder = new Builder(surfaces, codeOf);
-      builder.insert(0, surfaces.length, 0, Builder.ROOT);
-      return new DoubleArrayLexicon(Arrays.copyOf(builder.base, builder.high + 1),
-          Arrays.copyOf(builder.check, builder.high + 1), codeOf, values);
-    }
-
-    /**
-     * Reports every surface starting at a text position, walking the array once.
-     *
-     * @param text The text being segmented.
-     * @param from The position surfaces must start at.
-     * @param to The exclusive end of the searchable stretch.
-     * @param consumer Receives each match length with its entries.
-     */
-    private void prefixMatches(String text, int from, int to,
-        PrefixMatchConsumer consumer) {
-      int state = Builder.ROOT;
-      for (int i = from; i < to; i++) {
-        final char c = text.charAt(i);
-        final int code = codeOf[c];
-        if (code < 0) {
-          return;
-        }
-        final int next = base[state] + code;
-        if (next >= check.length || check[next] != state) {
-          return;
-        }
-        state = next;
-        final int terminal = base[state];
-        if (terminal < check.length && check[terminal] == state && base[terminal] < 0) {
-          consumer.accept(i - from + 1, values[-base[terminal] - 1]);
-        }
-      }
-    }
-
-    /**
-     * The recursive sorted-range builder: each call places one node's children by
-     * finding a base at which every child label lands on a free slot, then recurses
-     * per child range. A moving watermark keeps the free-slot search near-linear over
-     * real lexicons.
-     */
-    private static final class Builder {
-
-      private static final int ROOT = 1;
-      private static final int EMPTY = -1;
-
-      private final String[] surfaces;
-      private final int[] codeOf;
-      private int[] base;
-      private int[] check;
-      private int high = ROOT;
-      private int watermark = ROOT + 1;
-      private int valueIndex;
-
-      private Builder(String[] surfaces, int[] codeOf) {
-        this.surfaces = surfaces;
-        this.codeOf = codeOf;
-        base = new int[1 << 16];
-        check = new int[1 << 16];
-        Arrays.fill(check, EMPTY);
-      }
-
-      /**
-       * Places the children of one trie node.
-       *
-       * @param left The first surface of the node's range.
-       * @param right The exclusive last surface of the node's range.
-       * @param depth The character depth of the node.
-       * @param state The node's own slot.
-       */
-      private void insert(int left, int right, int depth, int state) {
-        // gather the distinct child labels of this range, terminator first
-        final int[] labels = new int[right - left];
-        int labelCount = 0;
-        int previous = -2;
-        for (int k = left; k < right; k++) {
-          final int label = surfaces[k].length() == depth
-              ? 0 : codeOf[surfaces[k].charAt(depth)];
-          if (label != previous) {
-            labels[labelCount++] = label;
-            previous = label;
-          }
-        }
-        final int found = findBase(labels, labelCount);
-        base[state] = found;
-        for (int k = 0; k < labelCount; k++) {
-          final int child = found + labels[k];
-          check[child] = state;
-          if (child > high) {
-            high = child;
-          }
-        }
-        // recurse over each child's sub-range
-        int start = left;
-        for (int k = 0; k < labelCount; k++) {
-          final int label = labels[k];
-          int end = start;
-          while (end < right && (surfaces[end].length() == depth
-              ? 0 : codeOf[surfaces[end].charAt(depth)]) == label) {
-            end++;
-          }
-          final int child = found + label;
-          if (label == 0) {
-            base[child] = -(++valueIndex);
-          } else {
-            insert(start, end, depth + 1, child);
-          }
-          start = end;
-        }
-      }
-
-      /**
-       * Finds the lowest base at which every label lands on a free slot. Labels
-       * arrive in surface-character order, not numeric order, so the smallest and
-       * largest label are computed rather than assumed positional.
-       *
-       * @param labels The child labels to place.
-       * @param labelCount How many leading elements of {@code labels} are in use.
-       * @return The base offset every label fits at.
-       */
-      private int findBase(int[] labels, int labelCount) {
-        int smallest = labels[0];
-        int largest = labels[0];
-        for (int k = 1; k < labelCount; k++) {
-          smallest = Math.min(smallest, labels[k]);
-          largest = Math.max(largest, labels[k]);
-        }
-        int candidate = Math.max(1, watermark - smallest);
-        while (true) {
-          ensureCapacity(candidate + largest);
-          boolean fits = true;
-          for (int k = 0; fits && k < labelCount; k++) {
-            fits = check[candidate + labels[k]] == EMPTY;
-          }
-          if (fits) {
-            while (watermark < check.length && check[watermark] != EMPTY) {
-              watermark++;
-            }
-            return candidate;
-          }
-          candidate++;
-        }
-      }
-
-      /**
-       * Grows the base and check arrays until a slot is addressable.
-       *
-       * @param slot The highest slot index that has to be writable.
-       */
-      private void ensureCapacity(int slot) {
-        if (slot >= check.length) {
-          int capacity = check.length;
-          while (capacity <= slot) {
-            capacity += capacity >> 1;
-          }
-          base = Arrays.copyOf(base, capacity);
-          final int old = check.length;
-          check = Arrays.copyOf(check, capacity);
-          Arrays.fill(check, old, capacity, EMPTY);
-        }
-      }
-    }
-  }
-
-  /**
-   * The {@code char.def} code point to category name mapping, over the whole Unicode
-   * code point range.
-   *
-   * <p>The Basic Multilingual Plane is held in a directly indexed array. The
-   * supplementary planes are held as a sorted, non-overlapping range table searched by
-   * binary search, because dictionaries map them in a handful of large blocks.</p>
-   */
-  private static final class CategoryTable {
-
-    private final Category[] bmp;
-    private final int[] rangeStart;
-    private final int[] rangeEnd;
-    private final Category[] rangeCategory;
-
-    private CategoryTable(Category[] bmp, int[] rangeStart, int[] rangeEnd,
-        Category[] rangeCategory) {
-      this.bmp = bmp;
-      this.rangeStart = rangeStart;
-      this.rangeEnd = rangeEnd;
-      this.rangeCategory = rangeCategory;
-    }
-
-    /**
-     * Looks up the category a {@code char.def} mapping gives a code point. The table
-     * holds the {@link Category} instances themselves, and two code points of one
-     * category share one instance, so categories may be compared by identity.
-     *
-     * @param codePoint The code point to classify.
-     * @return The category, or {@code null} when no mapping covers the code point.
-     */
-    private Category categoryOf(int codePoint) {
-      if (codePoint <= Character.MAX_VALUE) {
-        return bmp[codePoint];
-      }
-      int low = 0;
-      int high = rangeStart.length - 1;
-      while (low <= high) {
-        final int middle = (low + high) >>> 1;
-        if (codePoint < rangeStart[middle]) {
-          high = middle - 1;
-        } else if (codePoint > rangeEnd[middle]) {
-          low = middle + 1;
-        } else {
-          return rangeCategory[middle];
-        }
-      }
-      return null;
-    }
-  }
-
-  /**
-   * Collects {@code char.def} mappings in file order and folds them into a
-   * {@link CategoryTable}, giving a later mapping precedence over an earlier one that
-   * covers the same code point, which is what direct indexing does for the BMP.
-   */
-  private static final class CategoryTableBuilder {
-
-    private final String[] bmp = new String[Character.MAX_VALUE + 1];
-    private final List<int[]> bounds = new ArrayList<>();
-    private final List<String> names = new ArrayList<>();
-
-    /**
-     * Records one inclusive code point range's category.
-     *
-     * @param from The first code point of the range.
-     * @param to The last code point of the range, inclusive.
-     * @param category The category name to give the range. Must not be {@code null}.
-     */
-    private void map(int from, int to, String category) {
-      for (int c = from; c <= Math.min(to, Character.MAX_VALUE); c++) {
-        bmp[c] = category;
-      }
-      if (to > Character.MAX_VALUE) {
-        bounds.add(new int[] {Math.max(from, Character.MAX_VALUE + 1), to});
-        names.add(category);
-      }
-    }
-
-    /**
-     * Folds the recorded mappings into their lookup table.
-     *
-     * @param categories The categories the {@code char.def} category section defined,
-     *                   keyed by name.
-     * @return The table. Never {@code null}.
-     * @throws IOException Thrown if a mapping names a category that was never defined.
-     */
-    private CategoryTable build(Map<String, Category> categories) throws IOException {
-      // Cut the supplementary ranges at every boundary they introduce, so that each
-      // resulting elementary interval is covered by a single winning range and the
-      // table stays sorted and non-overlapping for binary search.
-      final int[] edges = new int[bounds.size() * 2];
-      for (int i = 0; i < bounds.size(); i++) {
-        edges[i * 2] = bounds.get(i)[0];
-        edges[i * 2 + 1] = bounds.get(i)[1] + 1;
-      }
-      Arrays.sort(edges);
-      final List<int[]> intervals = new ArrayList<>();
-      final List<String> winners = new ArrayList<>();
-      for (int i = 0; i < edges.length - 1; i++) {
-        if (edges[i] == edges[i + 1]) {
-          continue;
-        }
-        final String winner = lastCovering(edges[i]);
-        if (winner == null) {
-          continue;
-        }
-        final int previous = intervals.size() - 1;
-        if (previous >= 0 && intervals.get(previous)[1] == edges[i] - 1
-            && winners.get(previous).equals(winner)) {
-          intervals.get(previous)[1] = edges[i + 1] - 1;
-        } else {
-          intervals.add(new int[] {edges[i], edges[i + 1] - 1});
-          winners.add(winner);
-        }
-      }
-      final int[] starts = new int[intervals.size()];
-      final int[] ends = new int[intervals.size()];
-      for (int i = 0; i < intervals.size(); i++) {
-        starts[i] = intervals.get(i)[0];
-        ends[i] = intervals.get(i)[1];
-      }
-      final Category[] resolvedBmp = new Category[bmp.length];
-      for (int c = 0; c < bmp.length; c++) {
-        if (bmp[c] != null) {
-          resolvedBmp[c] = resolve(bmp[c], categories, c);
-        }
-      }
-      final Category[] resolvedRanges = new Category[winners.size()];
-      for (int i = 0; i < winners.size(); i++) {
-        resolvedRanges[i] = resolve(winners.get(i), categories, starts[i]);
-      }
-      return new CategoryTable(resolvedBmp, starts, ends, resolvedRanges);
-    }
-
-    /**
-     * Resolves a mapped category name against the defined categories. A mapping to a
-     * name the {@code char.def} category section never defined fails at load and names
-     * the offending code point.
-     *
-     * @param name The category name a mapping line gave.
-     * @param categories The defined categories, keyed by name.
-     * @param codePoint A code point the mapping covers, for the error message.
-     * @return The resolved category. Never {@code null}.
-     * @throws IOException Thrown if no category of that name was defined.
-     */
-    private Category resolve(String name, Map<String, Category> categories,
-        int codePoint) throws IOException {
-      final Category category = categories.get(name);
-      if (category == null) {
-        throw new IOException(String.format(
-            CHAR_DEF + " maps U+%04X to the undefined category %s", codePoint, name));
-      }
-      return category;
-    }
-
-    /**
-     * Finds the category of the last recorded range covering a code point.
-     *
-     * @param codePoint The code point to look up.
-     * @return The category name, or {@code null} when no recorded range covers it.
-     */
-    private String lastCovering(int codePoint) {
-      for (int i = bounds.size() - 1; i >= 0; i--) {
-        final int[] range = bounds.get(i);
-        if (codePoint >= range[0] && codePoint <= range[1]) {
-          return names.get(i);
-        }
-      }
-      return null;
-    }
   }
 
   /** Receives one common-prefix match during {@link #prefixMatches}. */
@@ -667,7 +271,7 @@ public final class MecabDictionary {
 
     final Map<String, List<WordEntry>> lexicon = new HashMap<>();
     final List<Path> csvFiles = new ArrayList<>();
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, "*.csv")) {
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, LEXICON_GLOB)) {
       for (final Path csv : stream) {
         csvFiles.add(csv);
       }
@@ -682,7 +286,7 @@ public final class MecabDictionary {
     }
 
     final Map<String, Category> categories = new HashMap<>();
-    final CategoryTableBuilder categoryTable = new CategoryTableBuilder();
+    final CategoryTable.Builder categoryTable = new CategoryTable.Builder();
     readCharacterDefinition(directory.resolve(CHAR_DEF), charset, categories,
         categoryTable);
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
@@ -776,7 +380,7 @@ public final class MecabDictionary {
    *         no {@code DEFAULT} category.
    */
   private static void readCharacterDefinition(Path file, Charset charset,
-      Map<String, Category> categories, CategoryTableBuilder categoryTable)
+      Map<String, Category> categories, CategoryTable.Builder categoryTable)
       throws IOException {
     if (!Files.exists(file)) {
       throw new IOException("required dictionary file is missing: " + file);
@@ -896,7 +500,7 @@ public final class MecabDictionary {
    *         there is none.
    */
   private static String stripComment(String line) {
-    final int hash = line.indexOf('#');
+    final int hash = line.indexOf(COMMENT_MARKER);
     return hash < 0 ? line : line.substring(0, hash);
   }
 
