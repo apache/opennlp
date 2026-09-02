@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
@@ -39,7 +40,7 @@ import opennlp.tools.util.StringUtil;
  * Frequency-driven segmentation for Chinese and similar scripts: a Viterbi search that
  * maximizes the summed log-probability of the words in a user-supplied frequency
  * lexicon, with unlisted characters falling back to single-character words. This is the
- * unigram model behind common Chinese segmenters; it carries no connection costs, so it
+ * unigram model behind common Chinese segmenters; it uses no connection costs, so it
  * is lighter than the {@link LatticeTokenizer} and fits lexicons that list only words
  * and counts.
  *
@@ -51,7 +52,7 @@ import opennlp.tools.util.StringUtil;
  *
  * @since 3.0.0
  */
-public class UnigramSegmenter implements Tokenizer {
+public final class UnigramSegmenter implements Tokenizer {
 
   /** The log-probability charged to a character the lexicon does not know. */
   private final double unknownLogProbability;
@@ -60,7 +61,7 @@ public class UnigramSegmenter implements Tokenizer {
 
   /**
    * One immutable trie node: children are a sorted character array with a parallel
-   * node array, found by binary search, so a descent never boxes a {@link Character}.
+   * node array, found by binary search, so a descent avoids boxing a {@link Character}.
    */
   private static final class WordTrie {
 
@@ -116,7 +117,7 @@ public class UnigramSegmenter implements Tokenizer {
    * Loads a frequency lexicon encoded in UTF-8.
    *
    * @param lexicon The lexicon file. Must not be {@code null}.
-   * @return The segmenter. Never {@code null}.
+   * @return The segmenter. Not {@code null}.
    * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
    * @throws IllegalArgumentException Thrown if {@code lexicon} is {@code null}.
    */
@@ -130,7 +131,7 @@ public class UnigramSegmenter implements Tokenizer {
    * @param lexicon The lexicon file: one word, its count, and an optional tag per
    *                line. Must not be {@code null}.
    * @param charset The lexicon encoding. Must not be {@code null}.
-   * @return The segmenter. Never {@code null}.
+   * @return The segmenter. Not {@code null}.
    * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
@@ -151,17 +152,35 @@ public class UnigramSegmenter implements Tokenizer {
    *
    * @param lexiconStream The lexicon content. Must not be {@code null}. Not closed.
    * @param charset The lexicon encoding. Must not be {@code null}.
-   * @return The segmenter. Never {@code null}.
+   * @return The segmenter. Not {@code null}.
    * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static UnigramSegmenter load(InputStream lexiconStream, Charset charset)
       throws IOException {
+    return loadInternal(lexiconStream, charset, ResourceLimits.MAX_ENTRIES);
+  }
+
+  /**
+   * Loads a frequency lexicon under an entry limit.
+   *
+   * @param lexiconStream The lexicon content. Must not be {@code null}. Not closed.
+   * @param charset The lexicon encoding. Must not be {@code null}.
+   * @param maxEntries The inclusive limit on distinct lexicon entries.
+   * @return The segmenter. Not {@code null}.
+   * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
+   * @throws IllegalArgumentException Thrown if a parameter is invalid.
+   */
+  private static UnigramSegmenter loadInternal(InputStream lexiconStream, Charset charset,
+      int maxEntries) throws IOException {
     if (lexiconStream == null) {
       throw new IllegalArgumentException("lexiconStream must not be null");
     }
     if (charset == null) {
       throw new IllegalArgumentException("charset must not be null");
+    }
+    if (maxEntries < 1) {
+      throw new IllegalArgumentException("maxEntries must be positive");
     }
     final Map<String, Long> counts = new HashMap<>();
     long total = 0;
@@ -197,8 +216,16 @@ public class UnigramSegmenter implements Tokenizer {
       if (count <= 0) {
         throw new IOException("count must be positive at lexicon line " + lineNumber);
       }
+      if (!counts.containsKey(word) && counts.size() >= maxEntries) {
+        throw new IOException(
+            "lexicon entry count exceeds safe limit of " + maxEntries);
+      }
       counts.merge(word, count, Long::sum);
-      total += count;
+      try {
+        total = Math.addExact(total, count);
+      } catch (ArithmeticException e) {
+        throw new IOException("lexicon count total overflows at line " + lineNumber, e);
+      }
     }
     if (counts.isEmpty()) {
       throw new IOException("the lexicon lists no words");
@@ -218,6 +245,21 @@ public class UnigramSegmenter implements Tokenizer {
     // rarer than any listed word: every listed count is at least one.
     final double unknown = Math.log(0.5) - logTotal;
     return new UnigramSegmenter(root.freeze(), unknown);
+  }
+
+  /**
+   * Loads a frequency lexicon under a caller-supplied entry limit.
+   *
+   * @param lexiconStream The lexicon content. Must not be {@code null}. Not closed.
+   * @param charset The lexicon encoding. Must not be {@code null}.
+   * @param maxEntries The inclusive limit on distinct lexicon entries.
+   * @return The segmenter. Not {@code null}.
+   * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
+   * @throws IllegalArgumentException Thrown if a parameter is invalid.
+   */
+  static UnigramSegmenter load(InputStream lexiconStream, Charset charset, int maxEntries)
+      throws IOException {
+    return loadInternal(lexiconStream, charset, maxEntries);
   }
 
   /**
@@ -283,8 +325,8 @@ public class UnigramSegmenter implements Tokenizer {
       }
       // A single-character step at the unknown log-probability keeps every position
       // reachable even where no lexicon word matches. The step advances one code
-      // point, never one code unit, so an unknown supplementary character is stepped
-      // over whole and no span boundary can land between its surrogate halves.
+      // point instead of one code unit, so an unknown supplementary character is advanced
+      // over as one unit and no span boundary can occur inside its surrogate pair.
       final int width = Character.charCount(text.codePointAt(from + i));
       final double fallback = best[i] + unknownLogProbability;
       if (i + width <= length && fallback > best[i + width]) {

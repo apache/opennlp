@@ -20,6 +20,8 @@ package opennlp.tools.util;
 /**
  * Shared upper bounds for counts read from user-supplied resources, so a crafted
  * file cannot force an outsized allocation before validation completes.
+ *
+ * @since 3.0.0
  */
 public final class ResourceLimits {
 
@@ -39,10 +41,10 @@ public final class ResourceLimits {
 
   /**
    * System property for overriding {@link #MAX_MATRIX_CELLS}.
-   * Set at JVM startup, e.g. {@code -DOPENNLP_MAX_MATRIX_CELLS=20000000}.
+   * Set at JVM startup, e.g. {@code -Dopennlp.max.matrix.cells=20000000}.
    * Falls back to {@code 134_217_728} if absent or invalid.
    */
-  public static final String MAX_MATRIX_CELLS_PROPERTY = "OPENNLP_MAX_MATRIX_CELLS";
+  public static final String MAX_MATRIX_CELLS_PROPERTY = "opennlp.max.matrix.cells";
 
   /**
    * Upper bound on the cell count of a two-dimensional cost table, whose entries
@@ -56,6 +58,22 @@ public final class ResourceLimits {
   public static final int MAX_MATRIX_CELLS =
       initLimit(MAX_MATRIX_CELLS_PROPERTY, 134_217_728);
 
+  /** System property for the maximum size of one extracted archive entry. */
+  public static final String MAX_ARCHIVE_ENTRY_BYTES_PROPERTY =
+      "opennlp.install.max.entry.bytes";
+
+  /** Maximum size of one extracted archive entry, 512 MiB by default. */
+  public static final long MAX_ARCHIVE_ENTRY_BYTES =
+      initLimit(MAX_ARCHIVE_ENTRY_BYTES_PROPERTY, 512L * 1024 * 1024);
+
+  /** System property for the maximum total size extracted from one archive. */
+  public static final String MAX_ARCHIVE_TOTAL_BYTES_PROPERTY =
+      "opennlp.install.max.total.bytes";
+
+  /** Maximum total size extracted from one archive, 2 GiB by default. */
+  public static final long MAX_ARCHIVE_TOTAL_BYTES =
+      initLimit(MAX_ARCHIVE_TOTAL_BYTES_PROPERTY, 2L * 1024 * 1024 * 1024);
+
   private ResourceLimits() {
   }
 
@@ -66,7 +84,7 @@ public final class ResourceLimits {
    * @param defaultValue The value used when the property is absent or invalid.
    * @return The configured limit, or {@code defaultValue}.
    */
-  private static int initLimit(String property, int defaultValue) {
+  static int initLimit(String property, int defaultValue) {
     final String prop = System.getProperty(property, "").trim();
     if (!prop.isEmpty()) {
       try {
@@ -76,6 +94,28 @@ public final class ResourceLimits {
         }
       } catch (NumberFormatException ignore) {
         // Fall through to the default.
+      }
+    }
+    return defaultValue;
+  }
+
+  /**
+   * Reads a positive long limit from a system property.
+   *
+   * @param property The system property name. Must not be {@code null}.
+   * @param defaultValue The value used when the property is absent or invalid.
+   * @return The configured limit, or {@code defaultValue}.
+   */
+  static long initLimit(String property, long defaultValue) {
+    final String prop = System.getProperty(property, "").trim();
+    if (!prop.isEmpty()) {
+      try {
+        final long val = Long.parseLong(prop);
+        if (val > 0) {
+          return val;
+        }
+      } catch (NumberFormatException ignore) {
+        // Use the default value.
       }
     }
     return defaultValue;
