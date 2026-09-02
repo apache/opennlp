@@ -24,6 +24,8 @@
 			<code>DependencyParserME</code> trains on <code>DependencySample</code> streams
 			and returns a <code>DependencyGraph</code> of heads and relations. CoNLL-U
 			treebanks are read through <code>ConlluDependencySampleStream</code>.
+			<code>ConlluDependencyParserUsageTest</code> asserts the train-parse-evaluate
+			workflow shown here.
 		</para>
 	</section>
 
