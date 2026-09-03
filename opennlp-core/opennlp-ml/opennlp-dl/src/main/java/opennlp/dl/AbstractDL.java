@@ -105,7 +105,7 @@ public abstract class AbstractDL implements AutoCloseable {
       final OrtSession createdSession = env.createSession(model.getPath(), sessionOptions);
       try {
         this.vocab = Map.copyOf(loadVocabFile(vocabulary));
-        this.tokenizer = createBertTokenizer(vocab, lowerCase);
+        this.tokenizer = createPipelineTokenizer(vocab, lowerCase);
       } catch (IOException | RuntimeException e) {
         // Vocabulary/tokenizer init failed after the native session was created; close it
         // so a partially constructed instance never leaks the ONNX session.
@@ -136,7 +136,7 @@ public abstract class AbstractDL implements AutoCloseable {
     this.env = env;
     this.session = session;
     this.vocab = vocab;
-    this.tokenizer = createBertTokenizer(vocab, lowerCase);
+    this.tokenizer = createPipelineTokenizer(vocab, lowerCase);
   }
 
   /**
@@ -247,16 +247,28 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param lowerCase {@code true} for uncased models (lower casing and accent
    *     stripping), {@code false} for cased models.
    * @return A configured {@link BertTokenizer}.
-   * @throws IllegalArgumentException Thrown if a RoBERTa-style vocabulary
-   *     contains no supported unknown token.
+   * @throws IllegalArgumentException Thrown if the selected special tokens
+   *     are not all present in the vocabulary.
    */
+  @SuppressWarnings("removal")
   protected BertTokenizer createTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
 
-    return createBertTokenizer(vocab, lowerCase);
+    return createPipelineTokenizer(vocab, lowerCase);
   }
 
-  static BertTokenizer createBertTokenizer(
+  /**
+   * Builds the pipeline tokenizer, selecting the RoBERTa special tokens when present and the BERT
+   * defaults otherwise.
+   *
+   * @param vocab     The vocabulary map.
+   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
+   * @return A configured {@link BertTokenizer}.
+   * @throws IllegalArgumentException Thrown if the selected special tokens are not all present in
+   *     the vocabulary.
+   */
+  @SuppressWarnings("removal")
+  static BertTokenizer createPipelineTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
     if (vocab.containsKey(
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
