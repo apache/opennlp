@@ -335,4 +335,60 @@ int firstTokenLength = lengths.get(0).value(); // 3, for "The" at [0..3)]]>
 			adapters use.
 		</para>
 	</section>
+
+	<section xml:id="tools.document.termvectors">
+		<title>Term vectors</title>
+		<para>
+			<code>TermVectorAnnotator</code> rolls the token layer up into a document-scoped
+			term vector layer for index consumers: one <code>TermVector</code> per distinct
+			term, carrying the term string, its occurrence count, and the occurrence spans in
+			original text coordinates. Term identity comes from the annotator's inputs: without
+			a normalizer the term is the token's covered text as-is; with a plain
+			<code>CharSequenceNormalizer</code>, the general path, each token's covered text is
+			normalized on its own to become the term; with an
+			<code>OffsetAwareNormalizer</code> the document text is normalized once and each
+			token's covered normalized text becomes the term. On every path tokens differing
+			only by a normalization fold group together while their spans keep pointing into
+			the original text. A token whose normalized form is empty is omitted from the
+			layer. The layer preserves first-occurrence order.
+			<code>TermVectorPipelineTest#testTokenizerAndTermVectorPipeline</code> asserts the
+			behavior shown here.
+			<programlisting language="java"><![CDATA[
+DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
+    .add(new TokenizerAnnotator(tokenizer))
+    .add(new TermVectorAnnotator())
+    .build();
+
+Document document = analyzer.analyze("The dog barks. The dog naps.");
+List<Annotation<TermVector>> vectors = document.get(TermVectorAnnotator.TERM_VECTORS);
+// vectors.get(1).value() is ("dog", 2, [[4..7), [19..22)])]]>
+			</programlisting>
+		</para>
+		<para>
+			The normalized-term workflow passes any shipped
+			<code>CharSequenceNormalizer</code> to the plain-normalizer constructor: the
+			normalizer is applied to each token's covered text to produce the term, so the
+			case, NFC, and accent folds that <code>buildAligned()</code> rejects all work
+			here, and every occurrence span stays the token's own span in the original text.
+			<code>TermVectorNormalizedExampleTest#testCaseFoldedTermsKeepOriginalSpans</code>
+			asserts the behavior shown here.
+			<programlisting language="java"><![CDATA[
+CharSequenceNormalizer folder = TextNormalizer.builder().caseFold().build();
+DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
+    .add(new TokenizerAnnotator(WhitespaceTokenizer.INSTANCE))
+    .add(new TermVectorAnnotator(folder))
+    .build();
+
+Document document = analyzer.analyze("Word word WORD");
+List<Annotation<TermVector>> vectors = document.get(TermVectorAnnotator.TERM_VECTORS);
+// vectors.get(0).value() is ("word", 3, [[0..4), [5..9), [10..14)])]]>
+			</programlisting>
+		</para>
+		<para>
+			Scoring-only consumers that never read offsets can skip storing them:
+			<code>new TermVectorAnnotator(TermVectorAnnotator.Mode.SCORING_ONLY)</code> emits
+			vectors that carry counts but no spans, and
+			<code>TermVector.count("dog", 2)</code> builds the matching expectation in tests.
+		</para>
+	</section>
 </chapter>
