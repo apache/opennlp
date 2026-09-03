@@ -23,8 +23,8 @@ import java.util.List;
  * vocabulary id and the exact span of the original text it covers.
  *
  * <p>The segmentation is vocabulary-driven rather than linguistic, and each piece is in the
- * model's normalized form, so a piece is generally not a substring of the input. The offsets
- * carried by each {@link SubwordPiece} always refer to the caller's original text.</p>
+ * model's normalized form, so a piece is generally not a substring of the input. The offsets in
+ * each {@link SubwordPiece} always refer to the caller's original text.</p>
  *
  * <p>Thread safety is implementation specific.</p>
  */
@@ -33,18 +33,18 @@ public interface SubwordTokenizer {
   /**
    * Encodes text into subword pieces.
    *
-   * @param text The text to encode; must not be null.
-   * @return The pieces in text order; empty when the text contains nothing encodable.
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   * @param text The text to encode; must not be {@code null}.
+   * @return The pieces in text order; empty when no units can be encoded.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   List<SubwordPiece> encode(CharSequence text);
 
   /**
    * Encodes text into vocabulary ids.
    *
-   * @param text The text to encode; must not be null.
-   * @return The ids in text order; empty when the text contains nothing encodable.
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   * @param text The text to encode; must not be {@code null}.
+   * @return The ids in text order; empty when no units can be encoded.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   default int[] encodeToIds(CharSequence text) {
     final List<SubwordPiece> pieces = encode(text);
@@ -58,9 +58,9 @@ public interface SubwordTokenizer {
   /**
    * Encodes text into piece strings in the vocabulary's normalized form.
    *
-   * @param text The text to encode; must not be null.
-   * @return The pieces in text order; empty when the text contains nothing encodable.
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   * @param text The text to encode; must not be {@code null}.
+   * @return The pieces in text order; empty when no units can be encoded.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   default String[] encodeToPieces(CharSequence text) {
     final List<SubwordPiece> pieces = encode(text);

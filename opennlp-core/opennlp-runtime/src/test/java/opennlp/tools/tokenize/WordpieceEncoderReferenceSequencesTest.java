@@ -52,7 +52,7 @@ class WordpieceEncoderReferenceSequencesTest {
    *
    * @return The (input, expected pieces) pairs.
    */
-  static Stream<Arguments> referenceSequences() {
+  private static Stream<Arguments> referenceSequences() {
     return Stream.of(
         // Lower cases capitalized words.
         Arguments.of("The quick brown fox jumps over the lazy dog.",

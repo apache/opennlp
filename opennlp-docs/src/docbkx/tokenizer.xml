@@ -542,87 +542,24 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 	<section xml:id="tools.tokenizer.subword">
 		<title>Subword Tokenization</title>
 		<para>
-			Neural models usually operate on subword units drawn from a fixed vocabulary rather than
-			on words. The <code>SubwordTokenizer</code> interface in
-			<code>opennlp.tools.tokenize</code> covers this case: <code>encode</code> splits text into
-			pieces, and every returned <code>SubwordPiece</code> carries the piece string in the
-			model's normalized form, its vocabulary id, and the exact span of the original text it
-			came from. Because the segmentation runs after the model's own normalization, a piece is
-			generally not a substring of the input; the spans always refer to the caller's original
-			text, so annotations computed over the pieces can be mapped back without guesswork. The
-			<code>encodeToIds</code> and <code>encodeToPieces</code> methods return just the ids or
-			the piece strings when the spans are not needed. Thread safety is implementation specific;
-			both implementations described below are immutable and safe for concurrent use by
-			multiple threads.
+			Neural models commonly use subword units from a fixed vocabulary. The
+			<code>SubwordTokenizer</code> interface encodes text as <code>SubwordPiece</code> values.
+			Each value contains the normalized piece string, vocabulary id, and UTF-16 span in the
+			original text. The span remains valid when model normalization changes the piece text.
+			<code>encodeToIds</code> and <code>encodeToPieces</code> return only the ids or strings.
+			Thread safety is implementation specific.
 		</para>
 		<para>
-			The interface and <code>SubwordPiece</code> live in <code>opennlp-api</code>, so
-			any component can accept a subword tokenizer without depending on a particular
-			model format. The two implementations differ in where they live:
-			<code>WordpieceEncoder</code> needs only a vocabulary list and stays in
-			<code>opennlp-api</code>; <code>SentencePieceTokenizer</code> reads a trained model
-			file and ships as its own artifact, <code>opennlp-subword</code>, which depends only on
-			<code>opennlp-api</code>. No model is bundled with either; the model file is the
-			user's.
+			The interface, <code>SubwordPiece</code>, and vocabulary-based
+			<code>WordpieceEncoder</code> are in <code>opennlp-api</code>. Implementations that read
+			trained model formats can implement the same contract. The SentencePiece implementation is in
+			<link xlink:href="https://github.com/apache/opennlp-addons">opennlp-addons</link>
+			and does not bundle a model.
 		</para>
 		<para>
-			A <code>SubwordPiece</code> has three parts: the piece string as the vocabulary
-			spells it (for SentencePiece models with the word-boundary marker, so
-			<code>&#x2581;world</code> for the word that opens with a space), the vocabulary
-			id the embedding layer expects, and the span of the caller's original text the
-			piece came from. Pieces that produce no surface of their own, such as control
-			symbols and the fill bytes of a byte-fallback expansion, report an empty span. The
-			span is a <code>Span</code> through <code>SubwordPiece.span</code>, so pieces can
-			be laid over the original text like any other annotation.
-			<code>SentencePieceAlignmentTest</code> pins the span rules, including
-			supplementary-plane characters, collapsed whitespace, and ligature replacement,
-			and <code>SentencePieceParityTest</code> checks pieces, ids, and spans against
-			fixtures produced by the reference implementation.
+			A piece without source text, such as a control symbol, has an empty span.
+			<code>SubwordPiece.span</code> returns the range as a <code>Span</code>.
 		</para>
-		<section xml:id="tools.tokenizer.subword.sentencepiece">
-			<title>SentencePiece</title>
-			<para>
-				<code>SentencePieceTokenizer</code> in the <code>opennlp-subword</code> artifact
-				(package <code>opennlp.subword.sentencepiece</code>) runs a trained SentencePiece
-				<code>.model</code> file purely in Java, with no native library. The file itself
-				carries everything the class needs: the vocabulary with piece scores and types, the
-				segmentation algorithm (unigram language model or byte-pair encoding), and the text
-				normalizer the model was trained with. Loading is a one-time cost and the resulting
-				instance is immutable, so one tokenizer can be shared by any number of threads.
-				<programlisting language="java">
-<![CDATA[SentencePieceTokenizer tokenizer = SentencePieceTokenizer.load(Path.of("spiece.model"));
-
-for (SubwordPiece piece : tokenizer.encode("Subword pieces keep their original offsets.")) {
-  System.out.println(piece.piece() + " -> id " + piece.id()
-      + ", original text [" + piece.start() + ", " + piece.end() + ")");
-}
-
-int[] ids = tokenizer.encodeToIds("Ready for the embedding layer.");]]>
-				</programlisting>
-				<code>SentencePieceUsageExampleTest</code> asserts the load-and-encode workflow
-				shown here. The vocabulary can be inspected through
-				<code>vocabularySize</code>, <code>idToPiece</code>, <code>pieceToId</code>, and
-				<code>score</code>, and the <code>algorithm</code> method reports whether the
-				model uses the unigram or the byte-pair encoding algorithm.
-			</para>
-			<para>
-				The model's own normalizer is also exposed directly:
-				<code>SentencePieceTokenizer</code> implements <code>OffsetAwareNormalizer</code>, so
-				<code>normalize</code> applies the model's normalization rules to arbitrary text and
-				<code>normalizeAligned</code> additionally returns the character alignment described
-				in <xref linkend="tools.normalizer"/>. This is useful when other processing must see
-				text exactly as the subword model does.
-			</para>
-			<para>
-				Output parity with the reference implementation is pinned by test fixtures whose
-				expected pieces, ids, and spans are produced by the reference
-				<link xlink:href="https://github.com/google/sentencepiece">sentencepiece</link>
-				package rather than by the Java code under test. The fixtures README at
-				<code>opennlp-extensions/opennlp-subword/src/test/resources/opennlp/subword/sentencepiece/README.md</code>
-				documents how the bundled test models were created and walks through regenerating
-				them and validating the implementation, including against real published models.
-			</para>
-		</section>
 		<section xml:id="tools.tokenizer.subword.wordpiece">
 			<title>WordPiece</title>
 			<para>
@@ -641,15 +578,13 @@ WordpieceEncoder cased = new WordpieceEncoder(vocabulary, false);   // cased mod
 List<SubwordPiece> pieces = encoder.encode("OpenNLP encodes text for BERT models.");
 int[] ids = encoder.encodeToIds("OpenNLP encodes text for BERT models.");]]>
 				</programlisting>
-				Every encoding is framed by the classification and separator pieces, which carry empty
+				Each encoding is framed by the classification and separator pieces, which use empty
 				spans at the text's boundaries, and words the vocabulary cannot cover become the
 				unknown piece. Models with other special tokens or with non-contiguous ids are
 				supported through the constructors taking explicit special tokens or a piece-to-id
-				map. The older <code>BertTokenizer</code> is deprecated and scheduled for removal:
-				its <code>tokenize</code> method returns the same piece sequence that
-				<code>encodeToPieces</code> returns. Migrating means passing the vocabulary as a
-				<code>List</code> or a piece-to-id map instead of a <code>Set</code>; the output
-				is unchanged.
+				map. <code>BertTokenizer</code> is deprecated and delegates tokenization to
+				<code>WordpieceEncoder</code>. New code can pass the vocabulary as a <code>List</code>
+				or a piece-to-id map and call <code>encodeToPieces</code> for the piece sequence.
 			</para>
 		</section>
 	</section>

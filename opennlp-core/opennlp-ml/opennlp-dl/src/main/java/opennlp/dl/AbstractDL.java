@@ -250,8 +250,6 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws IllegalArgumentException Thrown if the selected special tokens
    *     are not all present in the vocabulary.
    */
-  // The deprecated BertTokenizer stays the return type until its removal in 3.1, so that
-  // already-compiled subclasses overriding this method keep overriding it.
   @SuppressWarnings("removal")
   protected BertTokenizer createTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
@@ -260,8 +258,8 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Builds the pipeline tokenizer, selecting the RoBERTa special tokens when the vocabulary
-   * carries them and the BERT defaults otherwise.
+   * Builds the pipeline tokenizer, selecting the RoBERTa special tokens when present and the BERT
+   * defaults otherwise.
    *
    * @param vocab     The vocabulary map.
    * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
@@ -269,7 +267,6 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws IllegalArgumentException Thrown if the selected special tokens are not all present in
    *     the vocabulary.
    */
-  // BertTokenizer is deprecated for removal in 3.1; built here until then.
   @SuppressWarnings("removal")
   static BertTokenizer createPipelineTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
