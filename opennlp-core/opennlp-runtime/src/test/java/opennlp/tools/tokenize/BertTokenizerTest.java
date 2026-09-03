@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * {@link WordpieceEncoder#encodeToPieces(CharSequence)}, the default special tokens, and
  * the unsupported {@link BertTokenizer#tokenizePos(String)}.
  */
-@SuppressWarnings("removal") // Exercises BertTokenizer deliberately until its removal in 3.1.
+@SuppressWarnings("removal")
 class BertTokenizerTest {
 
   private static final List<String> VOCABULARY = List.of(
@@ -65,7 +65,7 @@ class BertTokenizerTest {
   }
 
   @Test
-  void testCasedTokenizerKeepsCase() {
+  void testCasedTokenizerPreservesCase() {
     // Without lower casing, the capitalized word misses the lowercase-only vocabulary.
     assertArrayEquals(new String[] {"[CLS]", "[UNK]", "[SEP]"},
         new BertTokenizer(vocabularySet(), false).tokenize("Hello"));
