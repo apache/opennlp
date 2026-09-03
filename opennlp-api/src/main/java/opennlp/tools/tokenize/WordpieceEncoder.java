@@ -22,32 +22,33 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.StringUtil;
 
 /**
- * A {@link SubwordTokenizer} running the full BERT tokenization pipeline of the reference
- * implementation: basic tokenization (control removal, whitespace normalization, CJK
- * isolation, optional lower casing with accent stripping, punctuation isolation) followed by
- * greedy longest-match wordpiece segmentation.
+ * A {@link SubwordTokenizer} implementing the BERT tokenization stages: basic tokenization
+ * (control removal, whitespace normalization, CJK isolation, optional lower casing with accent
+ * stripping, punctuation isolation) followed by greedy longest-match wordpiece segmentation.
  *
- * <p>Every piece carries its vocabulary id and the span of the <i>original</i> text it came
- * from, surviving the normalization steps that change, insert, and remove characters. The
- * classification and separator pieces frame every encoding, carrying empty spans at the
- * text's boundaries, so {@link #encode(CharSequence)} is never empty.</p>
+ * <p>Each result includes its vocabulary id and its range in the <i>original</i> text. The range
+ * refers to the input before normalization. Classification and separator entries use empty
+ * ranges at the text boundaries, so {@link #encode(CharSequence)} returns at least those two
+ * entries.</p>
  *
  * <p>Ids follow the line-number convention of BERT {@code vocab.txt} files: with the list
  * constructors a piece's id is its index, and with the map constructor the ids are given
  * explicitly. The classification, separator, and unknown tokens must all be present in the
- * vocabulary, because every emitted piece must have an id. Vocabulary entries starting with
+ * vocabulary, because each emitted piece must have an id. Vocabulary entries starting with
  * {@code ##} are continuation pieces, matching a word's interior rather than its start.</p>
  *
  * <p>Instances are immutable and safe for concurrent use by multiple threads.</p>
  *
  * @see WordpieceTokenizer
+ * @see <a href="https://github.com/google-research/bert/blob/master/tokenization.py">
+ *     BERT tokenization reference</a>
  */
 @ThreadSafe
 public final class WordpieceEncoder implements SubwordTokenizer {
@@ -72,10 +73,10 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   /**
    * Instantiates an encoder for an <i>uncased</i> BERT model with the BERT special tokens.
    *
-   * @param vocabulary The ordered vocabulary; a piece's id is its index. Must not be null,
-   *                   must not contain nulls or duplicates.
-   * @throws IllegalArgumentException Thrown if the vocabulary is null, contains a null or
-   *     duplicate entry, or a BERT special token is missing from it.
+   * @param vocabulary The ordered vocabulary; a piece's id is its index. Must not be {@code null}
+   *                   or contain {@code null}, empty, or duplicate entries.
+   * @throws IllegalArgumentException Thrown if the vocabulary is {@code null}, contains a
+   *     {@code null}, empty, or duplicate entry, or is missing a BERT special token.
    */
   public WordpieceEncoder(List<String> vocabulary) {
     this(vocabulary, true);
@@ -84,12 +85,12 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   /**
    * Instantiates an encoder with the BERT special tokens.
    *
-   * @param vocabulary The ordered vocabulary; a piece's id is its index. Must not be null,
-   *                   must not contain nulls or duplicates.
-   * @param lowerCase  True for uncased models (lower casing and accent stripping), false for
-   *                   cased models.
-   * @throws IllegalArgumentException Thrown if the vocabulary is null, contains a null or
-   *     duplicate entry, or a BERT special token is missing from it.
+   * @param vocabulary The ordered vocabulary; a piece's id is its index. Must not be {@code null}
+   *                   or contain {@code null}, empty, or duplicate entries.
+   * @param lowerCase  {@code true} for uncased models (lower casing and accent stripping),
+   *                   {@code false} for cased models.
+   * @throws IllegalArgumentException Thrown if the vocabulary is {@code null}, contains a
+   *     {@code null}, empty, or duplicate entry, or is missing a BERT special token.
    */
   public WordpieceEncoder(List<String> vocabulary, boolean lowerCase) {
     this(vocabulary, lowerCase, WordpieceTokenizer.BERT_CLS_TOKEN,
@@ -101,14 +102,14 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    * defaults.
    *
    * @param vocabulary          The ordered vocabulary; a piece's id is its index. Must not be
-   *                            null, must not contain nulls or duplicates.
-   * @param lowerCase           True for uncased models (lower casing and accent stripping),
-   *                            false for cased models.
+   *                            {@code null} or contain {@code null}, empty, or duplicate entries.
+   * @param lowerCase           {@code true} for uncased models (lower casing and accent stripping),
+   *                            {@code false} for cased models.
    * @param classificationToken The CLS token; must be in the vocabulary.
    * @param separatorToken      The SEP token; must be in the vocabulary.
    * @param unknownToken        The UNK token; must be in the vocabulary.
-   * @throws IllegalArgumentException Thrown if any argument is null, the vocabulary contains
-   *     a null or duplicate entry, or a special token is missing from the vocabulary.
+   * @throws IllegalArgumentException Thrown if any argument is {@code null}, the vocabulary
+   *     contains a {@code null}, empty, or duplicate entry, or a special token is missing.
    */
   public WordpieceEncoder(List<String> vocabulary, boolean lowerCase,
                           String classificationToken, String separatorToken,
@@ -117,18 +118,18 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   }
 
   /**
-   * Instantiates an encoder from an explicit piece-to-id mapping, for vocabularies whose ids
-   * are not contiguous line numbers.
+   * Instantiates an encoder from an explicit piece-to-id mapping for vocabularies with
+   * noncontiguous ids.
    *
-   * @param vocabularyIds       The piece-to-id mapping. Must not be null, must not contain
-   *                            null keys or values.
-   * @param lowerCase           True for uncased models (lower casing and accent stripping),
-   *                            false for cased models.
+   * @param vocabularyIds       The piece-to-id mapping. Must not be {@code null} or contain
+   *                            {@code null} or empty keys, {@code null} values, or negative ids.
+   * @param lowerCase           {@code true} for uncased models (lower casing and accent stripping),
+   *                            {@code false} for cased models.
    * @param classificationToken The CLS token; must be in the vocabulary.
    * @param separatorToken      The SEP token; must be in the vocabulary.
    * @param unknownToken        The UNK token; must be in the vocabulary.
-   * @throws IllegalArgumentException Thrown if any argument is null, the mapping contains a
-   *     null key or value, or a special token is missing from the vocabulary.
+   * @throws IllegalArgumentException Thrown if any argument is {@code null}, the mapping contains
+   *     a {@code null} or empty key, {@code null} value, or negative id, or a special token is missing.
    */
   public WordpieceEncoder(Map<String, Integer> vocabularyIds, boolean lowerCase,
                           String classificationToken, String separatorToken,
@@ -151,6 +152,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
         throw new IllegalArgumentException(
             "The vocabulary must not contain null pieces or ids: " + entry);
       }
+      if (entry.getKey().isEmpty()) {
+        throw new IllegalArgumentException("The vocabulary must not contain an empty piece");
+      }
+      if (entry.getValue() < 0) {
+        throw new IllegalArgumentException(
+            "The vocabulary id for '" + entry.getKey() + "' must not be negative");
+      }
       byPiece.put(entry.getKey(), entry.getValue());
     }
     this.vocabulary = new HashSet<>(byPiece.keySet());
@@ -170,8 +178,8 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    *
    * @param vocabulary The ordered vocabulary.
    * @return The piece-to-id mapping.
-   * @throws IllegalArgumentException Thrown if the list is null or contains a null or duplicate
-   *     entry.
+   * @throws IllegalArgumentException Thrown if the list is {@code null} or contains a {@code null},
+   *     empty, or duplicate entry.
    */
   private static Map<String, Integer> byPiece(List<String> vocabulary) {
     if (vocabulary == null) {
@@ -182,6 +190,9 @@ public final class WordpieceEncoder implements SubwordTokenizer {
       final String piece = vocabulary.get(id);
       if (piece == null) {
         throw new IllegalArgumentException("The vocabulary contains null at index " + id + ".");
+      }
+      if (piece.isEmpty()) {
+        throw new IllegalArgumentException("The vocabulary contains an empty piece at index " + id);
       }
       if (byPiece.putIfAbsent(piece, id) != null) {
         throw new IllegalArgumentException("The vocabulary contains '" + piece
@@ -199,11 +210,11 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    * @return The token's id.
    * @throws IllegalArgumentException Thrown if the token is not in the vocabulary.
    */
-  private static int requiredId(Map<String, Integer> ids, String specialToken) {
+  private int requiredId(Map<String, Integer> ids, String specialToken) {
     final Integer id = ids.get(specialToken);
     if (id == null) {
       throw new IllegalArgumentException("The special token '" + specialToken
-          + "' is not in the vocabulary; every emitted piece must have an id.");
+          + "' is not in the vocabulary; each emitted piece must have an id.");
     }
     return id;
   }
@@ -216,8 +227,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     }
     final String original = text.toString();
 
-    // The normalized text, one original-text range per char, built through the reference
-    // pipeline's transformations in the reference order.
+    // Stores an original-text range for each normalized char.
     MappedText mapped = cleanAndIsolateCjk(original);
     if (lowerCase) {
       mapped = lowerCaseAndStripAccents(mapped);
@@ -245,8 +255,8 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   }
 
   /**
-   * Greedily longest-match segments one whitespace-delimited word; the pieces are emitted only if
-   * the whole word is representable, otherwise the word becomes a single unknown piece.
+   * Greedily longest-match segments one whitespace-delimited word; pieces are emitted only if
+   * the complete word is representable, otherwise the word becomes a single unknown piece.
    *
    * @param mapped The normalized text with per-character original-text ranges.
    * @param from   The inclusive start of the word in {@code mapped}.
@@ -256,7 +266,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   private void encodeWord(MappedText mapped, int from, int to, List<SubwordPiece> pieces) {
     final int wordStart = mapped.starts[from];
     final int wordEnd = mapped.ends[to - 1];
-    if (to - from > MAX_WORD_CHARACTERS) {
+    if (Character.codePointCount(mapped.chars, from, to - from) > MAX_WORD_CHARACTERS) {
       pieces.add(new SubwordPiece(unknownToken, unknownId, wordStart, wordEnd));
       return;
     }
@@ -292,8 +302,8 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   }
 
   /**
-   * The normalized text with, for every char, the original-text range it came from. Characters
-   * inserted by the pipeline (isolation spaces) carry an empty range at the insertion point.
+   * The normalized text with the original-text range for each character. Characters inserted by
+   * the pipeline (isolation spaces) use an empty range at the insertion point.
    */
   private static final class MappedText {
     private char[] chars;
@@ -333,7 +343,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     }
 
     /**
-     * Appends every char of a string, all sharing one original-text range.
+     * Appends each char of a string with one shared original-text range.
      *
      * @param s             The string to append.
      * @param originalStart The inclusive original-text start shared by all chars.
@@ -348,12 +358,12 @@ public final class WordpieceEncoder implements SubwordTokenizer {
 
   /**
    * Cleans the text (control and whitespace normalization) and isolates CJK code points in one
-   * pass, recording the original-text range of every output character.
+   * pass, recording the original-text range of each output character.
    *
    * @param original The original input text.
    * @return The cleaned, CJK-isolated text with per-character ranges.
    */
-  private static MappedText cleanAndIsolateCjk(String original) {
+  private MappedText cleanAndIsolateCjk(String original) {
     final MappedText out = new MappedText(original.length() + 16);
     int i = 0;
     while (i < original.length()) {
@@ -390,19 +400,19 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    * @param codePoint The code point to classify.
    * @return True if the code point is a line or paragraph separator.
    */
-  private static boolean isLineOrParagraphSeparator(int codePoint) {
+  private boolean isLineOrParagraphSeparator(int codePoint) {
     final int type = Character.getType(codePoint);
     return type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR;
   }
 
   /**
    * Isolates punctuation, surrounding each punctuation code point with spaces, preserving the
-   * original-text range of every character.
+   * original-text range of each character.
    *
    * @param in The input text with per-character ranges.
    * @return The punctuation-isolated text with per-character ranges.
    */
-  private static MappedText isolatePunctuation(MappedText in) {
+  private MappedText isolatePunctuation(MappedText in) {
     final MappedText out = new MappedText(in.length + 16);
     int i = 0;
     while (i < in.length) {
@@ -425,14 +435,12 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   }
 
   /**
-   * Lower cases and strips accents, preserving the original-text range of every character. When a
-   * contextual case mapping prevents a per-character range from being recovered, the whole
-   * whitespace run falls back to its full range, which widens spans but never misplaces them.
+   * Lower cases and strips accents while preserving the original-text range of each character.
    *
    * @param in The input text with per-character ranges.
    * @return The lower-cased, accent-stripped text with per-character ranges.
    */
-  private static MappedText lowerCaseAndStripAccents(MappedText in) {
+  private MappedText lowerCaseAndStripAccents(MappedText in) {
     final MappedText out = new MappedText(in.length + 16);
     int from = 0;
     while (from < in.length) {
@@ -460,40 +468,15 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    * @param to   The exclusive end of the run in {@code in}.
    * @param out  The output text to append to.
    */
-  private static void transformRun(MappedText in, int from, int to, MappedText out) {
-    final String run = new String(in.chars, from, to - from);
-    // Locale.ROOT lower casing is the reference behavior of BERT's do_lower_case: the reference
-    // pipeline applies the full locale-independent Unicode case mappings (including one-to-many
-    // ones like the dotted capital I), which a per-code-point mapping cannot reproduce.
-    final String content = stripAccents(run.toLowerCase(Locale.ROOT));
-
-    // Rerun per code point to learn how many output chars each input code point produces.
-    final StringBuilder rerun = new StringBuilder(content.length());
-    final int[] produced = new int[to - from];
+  private void transformRun(MappedText in, int from, int to, MappedText out) {
     int i = from;
     while (i < to) {
       final int codePoint = codePointAt(in, i);
       final int width = Character.charCount(codePoint);
       final String transformed = stripAccents(
-          new String(Character.toChars(codePoint)).toLowerCase(Locale.ROOT));
-      rerun.append(transformed);
-      produced[i - from] = transformed.length();
+          StringUtil.toLowerCase(new String(Character.toChars(codePoint))));
+      out.add(transformed, in.starts[i], in.ends[i + width - 1]);
       i += width;
-    }
-
-    if (rerun.toString().equals(content)) {
-      int at = from;
-      int emitted = 0;
-      while (at < to) {
-        final int width = Character.charCount(codePointAt(in, at));
-        for (int c = 0; c < produced[at - from]; c++) {
-          out.add(content.charAt(emitted++), in.starts[at], in.ends[at + width - 1]);
-        }
-        at += width;
-      }
-    } else {
-      // Contextual case mapping changed the content; the run's chars share the run's range.
-      out.add(content, in.starts[from], in.ends[to - 1]);
     }
   }
 
@@ -504,7 +487,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    * @param text The text to strip.
    * @return The text without non-spacing marks.
    */
-  private static String stripAccents(String text) {
+  private String stripAccents(String text) {
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder stripped = new StringBuilder(decomposed.length());
     decomposed.codePoints().forEach(codePoint -> {
@@ -522,7 +505,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    * @param index The char index to read at.
    * @return The code point at {@code index}.
    */
-  private static int codePointAt(MappedText text, int index) {
+  private int codePointAt(MappedText text, int index) {
     final char c = text.chars[index];
     if (Character.isHighSurrogate(c) && index + 1 < text.length
         && Character.isLowSurrogate(text.chars[index + 1])) {

@@ -35,9 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The encoder held against the deprecated {@link BertTokenizer} for piece-sequence parity (the
- * shim's contract is "the encoder's piece sequence, nothing more"), plus exact hand-computed span
- * assertions through every normalization step that changes, inserts, or removes characters.
+ * Compares the encoder with the deprecated {@link BertTokenizer} for piece-sequence parity.
+ * Hand-computed assertions check source ranges through normalization.
  */
 class WordpieceEncoderTest {
 
@@ -47,7 +46,7 @@ class WordpieceEncoderTest {
   private static final List<String> VOCAB = List.of(
       "[PAD]", "[UNK]", "[CLS]", "[SEP]", "hello", "world", "##s", "won", "##der", "##ful",
       "ca", "##fe", "istanbul", "\u4E2D", "\u56FD", ".", ",", "!", "he", "##llo",
-      "\u03C3\u03BF\u03C6\u03BF\u03C2");
+      "\u03C3\u03BF\u03C6\u03BF\u03C3");
 
   private static WordpieceEncoder uncased() {
     return new WordpieceEncoder(VOCAB);
@@ -67,7 +66,7 @@ class WordpieceEncoderTest {
    *
    * @return The inputs.
    */
-  static Stream<String> curatedInputs() {
+  private static Stream<String> curatedInputs() {
     return Stream.of(
         "",
         "   ",
@@ -80,7 +79,7 @@ class WordpieceEncoderTest {
         "\u0130stanbul",
         // CJK ideographs are isolated into single-character tokens.
         "\u4E2D\u56FD is CJK",
-        // Greek upper case: the trailing sigma takes the contextual final-sigma mapping.
+        // Greek upper case uses locale-independent code-point case mapping.
         "\u03A3\u039F\u03A6\u039F\u03A3",
         // The NBSP is whitespace in the BERT sense.
         "hello\u00A0world",
@@ -95,7 +94,7 @@ class WordpieceEncoderTest {
 
   @ParameterizedTest
   @MethodSource("curatedInputs")
-  @SuppressWarnings("removal") // BertTokenizer is pinned to the encoder until its removal in 3.1.
+  @SuppressWarnings("removal")
   void testPieceSequenceMatchesBertTokenizerOnCuratedInputs(String input) {
     final BertTokenizer bertTokenizer = new BertTokenizer(new HashSet<>(VOCAB), true);
     final WordpieceEncoder encoder = uncased();
@@ -104,7 +103,7 @@ class WordpieceEncoderTest {
   }
 
   @Test
-  @SuppressWarnings("removal") // BertTokenizer is pinned to the encoder until its removal in 3.1.
+  @SuppressWarnings("removal")
   void testPieceSequenceMatchesBertTokenizerOnRandomInputs() {
     final int[] pool = {'a', 'b', 'A', 'B', 'z', ' ', ' ', '\t', 0x00A0, '.', '!', ',',
         0x0301, 0x00E9, 0x0130, 0x03A3, 0x03C3, 0x03BF, 0x4E2D, 0xFFFD, 0x200B, 0x1F600, 0};
@@ -122,7 +121,7 @@ class WordpieceEncoderTest {
         assertArrayEquals(bertTokenizer.tokenize(input), encoder.encodeToPieces(input),
             "parity broke on: " + input);
 
-        // Span invariants: within bounds and never moving backwards.
+        // Range checks: within bounds and nondecreasing starts.
         int previousStart = 0;
         for (final SubwordPiece piece : encoder.encode(input)) {
           assertTrue(piece.start() >= previousStart && piece.end() <= input.length(),
@@ -134,7 +133,7 @@ class WordpieceEncoderTest {
   }
 
   @Test
-  void testSpansSurvivePunctuationIsolationAndCaseFolding() {
+  void testSpansPreservePunctuationIsolationAndCaseMapping() {
     final List<SubwordPiece> pieces = uncased().encode("Hello, WORLD!");
     assertEquals(6, pieces.size());
     assertPiece(pieces.get(0), "[CLS]", 2, 0, 0);
@@ -146,7 +145,7 @@ class WordpieceEncoderTest {
   }
 
   @Test
-  void testSpansSurviveAccentStripping() {
+  void testSpansPreserveAccentStripping() {
     // The accent is stripped by NFD, yet ##fe still covers the accented surface.
     final List<SubwordPiece> pieces = uncased().encode("Caf\u00E9");
     assertEquals(4, pieces.size());
@@ -155,7 +154,7 @@ class WordpieceEncoderTest {
   }
 
   @Test
-  void testSpansSurviveLengthChangingLowerCasing() {
+  void testSpansPreserveLengthChangingLowerCasing() {
     // The Turkish dotted capital I lower cases to two chars before the combining dot strips;
     // the piece still covers the original eight chars.
     final List<SubwordPiece> pieces = uncased().encode("\u0130stanbul");
@@ -174,8 +173,7 @@ class WordpieceEncoderTest {
   @Test
   void testLineAndParagraphSeparatorsSplitWords() {
     // Zl and Zp are not whitespace in the BERT _is_whitespace sense, but the reference
-    // pipeline's whitespace_tokenize (Python's str.split()) breaks words on them, as did the
-    // previous OpenNLP pipeline via WhitespaceTokenizer.
+    // pipeline's whitespace_tokenize (Python's str.split()) breaks words on them.
     final List<SubwordPiece> pieces = uncased().encode("hello\u2028world\u2029hello");
     assertEquals(5, pieces.size());
     assertPiece(pieces.get(1), "hello", 4, 0, 5);
@@ -184,7 +182,7 @@ class WordpieceEncoderTest {
   }
 
   @Test
-  void testUnknownWordCoversItsWholeSurfaceIncludingRemovedChars() {
+  void testUnknownWordCoversItsCompleteSourceRangeIncludingRemovedChars() {
     // NUL and the zero-width space are removed by cleaning, so one word "abc" remains; it is
     // not representable and becomes the unknown piece spanning the full original surface.
     final List<SubwordPiece> pieces = uncased().encode("a\u0000b\u200Bc");
@@ -193,24 +191,35 @@ class WordpieceEncoderTest {
   }
 
   @Test
-  void testContextualCaseMappingFallsBackToWordWideSpans() {
-    // Greek final sigma is a contextual mapping the per-char rerun cannot reproduce, so the
-    // word's pieces fall back to spanning the whole word; the piece content is asserted
-    // exactly below.
+  void testCodePointCaseMappingPreservesSourceRange() {
     final List<SubwordPiece> pieces =
         uncased().encode("\u03A3\u039F\u03A6\u039F\u03A3");
     assertEquals(3, pieces.size());
     assertPiece(pieces.get(1),
-        "\u03C3\u03BF\u03C6\u03BF\u03C2", 20, 0, 5);
+        "\u03C3\u03BF\u03C6\u03BF\u03C3", 20, 0, 5);
   }
 
   @Test
-  void testEncodeToIdsCarriesVocabularyLineNumbers() {
+  void testEncodeToIdsReturnsVocabularyLineNumbers() {
     assertArrayEquals(new int[] {2, 4, 5, 6, 3}, uncased().encodeToIds("Hello worldS"));
   }
 
   @Test
-  void testCasedEncoderKeepsCase() {
+  void testMaximumWordLengthCountsUnicodeCodePoints() {
+    final String face = "\uD83D\uDE00";
+    final WordpieceEncoder encoder = new WordpieceEncoder(
+        List.of("[UNK]", "[CLS]", "[SEP]", face, "##" + face), false);
+
+    final String input = face.repeat(100);
+    final List<SubwordPiece> pieces = encoder.encode(input);
+
+    assertEquals(102, pieces.size());
+    assertPiece(pieces.get(1), face, 3, 0, 2);
+    assertPiece(pieces.get(100), "##" + face, 4, 198, 200);
+  }
+
+  @Test
+  void testCasedEncoderPreservesCase() {
     final List<String> vocabulary = new ArrayList<>(VOCAB);
     vocabulary.add("Hello");
     final WordpieceEncoder cased = new WordpieceEncoder(vocabulary, false);
@@ -229,15 +238,26 @@ class WordpieceEncoderTest {
   }
 
   @Test
-  void testValidationFailsLoudly() {
+  void testValidationRejectsInvalidInput() {
     assertThrows(IllegalArgumentException.class, () -> new WordpieceEncoder(null));
     assertThrows(IllegalArgumentException.class,
         () -> new WordpieceEncoder(List.of("[CLS]", "[SEP]")));
     assertThrows(IllegalArgumentException.class,
         () -> new WordpieceEncoder(List.of("[CLS]", "[SEP]", "[UNK]", "dup", "dup")));
+    assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceEncoder(List.of("[CLS]", "[SEP]", "[UNK]", "")));
     final List<String> withNull = new ArrayList<>(VOCAB);
     withNull.add(null);
     assertThrows(IllegalArgumentException.class, () -> new WordpieceEncoder(withNull));
     assertThrows(IllegalArgumentException.class, () -> uncased().encode(null));
+    assertThrows(IllegalArgumentException.class, () -> new SubwordPiece("piece", -1, 0, 1));
+    assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceEncoder(
+            java.util.Map.of("[CLS]", 0, "[SEP]", 1, "[UNK]", -1), true,
+            "[CLS]", "[SEP]", "[UNK]"));
+    assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceEncoder(
+            java.util.Map.of("[CLS]", 0, "[SEP]", 1, "[UNK]", 2, "", 3), true,
+            "[CLS]", "[SEP]", "[UNK]"));
   }
 }

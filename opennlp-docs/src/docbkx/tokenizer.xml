@@ -583,4 +583,53 @@ String[] words = segmenter.tokenize(text);]]>
 			</para>
 		</section>
 	</section>
+	<section xml:id="tools.tokenizer.subword">
+		<title>Subword Tokenization</title>
+		<para>
+			Neural models commonly use subword units from a fixed vocabulary. The
+			<code>SubwordTokenizer</code> interface encodes text as <code>SubwordPiece</code> values.
+			Each value contains the normalized piece string, vocabulary id, and UTF-16 span in the
+			original text. The span remains valid when model normalization changes the piece text.
+			<code>encodeToIds</code> and <code>encodeToPieces</code> return only the ids or strings.
+			Thread safety is implementation specific.
+		</para>
+		<para>
+			The interface, <code>SubwordPiece</code>, and vocabulary-based
+			<code>WordpieceEncoder</code> are in <code>opennlp-api</code>. Implementations that read
+			trained model formats can implement the same contract. The SentencePiece implementation is in
+			<link xlink:href="https://github.com/apache/opennlp-addons">opennlp-addons</link>
+			and does not bundle a model.
+		</para>
+		<para>
+			A piece without source text, such as a control symbol, has an empty span.
+			<code>SubwordPiece.span</code> returns the range as a <code>Span</code>.
+		</para>
+		<section xml:id="tools.tokenizer.subword.wordpiece">
+			<title>WordPiece</title>
+			<para>
+				<code>WordpieceEncoder</code> in <code>opennlp.tools.tokenize</code> runs the full
+				BERT tokenization pipeline: control character removal, whitespace normalization, CJK
+				isolation, optional lower casing with accent stripping, punctuation isolation, and
+				greedy longest-match wordpiece segmentation. It is constructed from the model's
+				vocabulary, conventionally the lines of a <code>vocab.txt</code> file, where a piece's
+				id is its line number.
+				<programlisting language="java">
+<![CDATA[List<String> vocabulary = Files.readAllLines(Path.of("vocab.txt"));
+
+WordpieceEncoder encoder = new WordpieceEncoder(vocabulary);        // uncased model
+WordpieceEncoder cased = new WordpieceEncoder(vocabulary, false);   // cased model
+
+List<SubwordPiece> pieces = encoder.encode("OpenNLP encodes text for BERT models.");
+int[] ids = encoder.encodeToIds("OpenNLP encodes text for BERT models.");]]>
+				</programlisting>
+				Each encoding is framed by the classification and separator pieces, which use empty
+				spans at the text's boundaries, and words the vocabulary cannot cover become the
+				unknown piece. Models with other special tokens or with non-contiguous ids are
+				supported through the constructors taking explicit special tokens or a piece-to-id
+				map. <code>BertTokenizer</code> is deprecated and delegates tokenization to
+				<code>WordpieceEncoder</code>. New code can pass the vocabulary as a <code>List</code>
+				or a piece-to-id map and call <code>encodeToPieces</code> for the piece sequence.
+			</para>
+		</section>
+	</section>
 </chapter>

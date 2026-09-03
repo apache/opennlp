@@ -28,9 +28,8 @@ import opennlp.tools.util.Span;
  *
  * @deprecated Use {@link WordpieceEncoder} instead:
  *     {@link WordpieceEncoder#encodeToPieces(CharSequence)} returns the same
- *     {@code String[]} as {@link #tokenize(String)}, and {@code encode} additionally
- *     carries vocabulary ids and original-text spans. This class is scheduled for
- *     removal after one stable release.
+ *     {@code String[]} as {@link #tokenize(String)}, while
+ *     {@link WordpieceEncoder#encode(CharSequence)} also returns ids and source spans.
  *
  * @see WordpieceEncoder
  */
@@ -87,30 +86,22 @@ public class BertTokenizer implements Tokenizer {
     if (vocabulary == null) {
       throw new IllegalArgumentException("vocabulary must not be null");
     }
-    // The encoder assigns each piece its list index as the id. Ids are unused on the
-    // tokenize() path, so synthesizing them from an arbitrary set order is fine.
+    // Set iteration order does not affect the piece strings returned by tokenize().
     this.encoder = new WordpieceEncoder(new ArrayList<>(vocabulary), lowerCase,
         classificationToken, separatorToken, unknownToken);
   }
 
-  /**
-   * Tokenizes the given text into wordpieces, surrounded by the classification
-   * and separator tokens.
-   *
-   * @param text The text to tokenize. Must not be {@code null}.
-   *
-   * @return The wordpiece tokens.
-   *
-   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
-   */
+  /** {@inheritDoc} */
   @Override
   public String[] tokenize(String text) {
     return encoder.encodeToPieces(text);
   }
 
   /**
-   * Not supported: wordpiece tokens (subwords, {@code ##} continuations and
-   * special tokens) have no faithful character spans in the original text.
+   * {@inheritDoc}
+   *
+   * <p>Wordpiece tokens (subwords, {@code ##} continuations and special tokens) do not have
+   * character ranges that satisfy the {@link Tokenizer} input-span contract.
    * Use {@link WordpieceEncoder#encode(CharSequence)} for pieces with
    * original-text spans.
    *

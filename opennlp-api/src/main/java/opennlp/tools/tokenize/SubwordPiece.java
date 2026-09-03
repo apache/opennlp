@@ -19,17 +19,17 @@ package opennlp.tools.tokenize;
 import opennlp.tools.util.Span;
 
 /**
- * One subword unit produced by a {@link SubwordTokenizer}, carrying both the vocabulary view
- * (the piece string and its id) and the exact place in the caller's text it came from.
+ * One subword unit produced by a {@link SubwordTokenizer}, with its vocabulary representation
+ * and source range.
  *
  * <p>The piece string is in the tokenizer's normalized form, so it is generally not a substring of
  * the input. {@code start} and {@code end} are UTF-16 offsets into the original text, so the
- * surface that produced this piece is {@code text.subSequence(start, end)}. Pieces that carry no
- * surface of their own, such as control symbols or the fill bytes of a byte-fallback expansion,
+ * surface that produced this piece is {@code text.subSequence(start, end)}. Pieces without source
+ * text, such as control symbols or the fill bytes of a byte-fallback expansion,
  * report an empty span with {@code start == end}.</p>
  *
- * @param piece The piece in the vocabulary's normalized form; never null or empty.
- * @param id    The vocabulary id of the piece.
+ * @param piece The piece in the vocabulary's normalized form; must not be {@code null} or empty.
+ * @param id    The non-negative vocabulary id of the piece.
  * @param start The inclusive start offset in the original text.
  * @param end   The exclusive end offset in the original text; not less than {@code start}.
  */
@@ -38,16 +38,21 @@ public record SubwordPiece(String piece, int id, int start, int end) {
   /**
    * Instantiates a {@link SubwordPiece}.
    *
-   * @throws IllegalArgumentException Thrown if {@code piece} is null or empty, or the span is
-   *     negative or inverted.
+   * @throws IllegalArgumentException Thrown if {@code piece} is {@code null} or empty, {@code id} is
+   *     negative, or the span is negative or inverted.
    */
   public SubwordPiece {
     if (piece == null || piece.isEmpty()) {
       throw new IllegalArgumentException("piece must not be null or empty");
     }
-    if (start < 0 || end < start) {
-      throw new IllegalArgumentException(
-          "The span [" + start + ", " + end + ") must not be negative or inverted.");
+    if (id < 0) {
+      throw new IllegalArgumentException("id must not be negative");
+    }
+    if (start < 0) {
+      throw new IllegalArgumentException("start must not be negative");
+    }
+    if (end < start) {
+      throw new IllegalArgumentException("end must not be less than start");
     }
   }
 
