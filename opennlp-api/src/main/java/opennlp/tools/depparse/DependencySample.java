@@ -20,6 +20,8 @@ package opennlp.tools.depparse;
 import java.util.Arrays;
 import java.util.Objects;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * One dependency-annotated sentence: tokens, their part-of-speech tags, and the gold
  * {@link DependencyGraph} over them. Used for training and evaluating a
@@ -29,6 +31,7 @@ import java.util.Objects;
  *
  * @since 3.0.0
  */
+@ThreadSafe
 public class DependencySample {
 
   private final String[] tokens;

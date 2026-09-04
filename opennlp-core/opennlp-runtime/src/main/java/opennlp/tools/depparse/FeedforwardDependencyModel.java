@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -60,6 +61,7 @@ import opennlp.tools.util.StringUtil;
  * @see FeedforwardDependencyTrainer
  * @since 3.0.0
  */
+@ThreadSafe
 public class FeedforwardDependencyModel {
 
   private static final String MAGIC = "ONLP-FFDP-1";

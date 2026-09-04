@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * The pure-Java neural {@link DependencyParser}: an arc-standard decoder over the
  * {@link FeedforwardDependencyModel}, greedy by default and beamed when constructed
@@ -42,6 +44,7 @@ import java.util.List;
  * @see FeedforwardDependencyTrainer
  * @since 3.0.0
  */
+@ThreadSafe
 public class FeedforwardDependencyParser implements DependencyParser {
 
   private final FeedforwardDependencyModel model;

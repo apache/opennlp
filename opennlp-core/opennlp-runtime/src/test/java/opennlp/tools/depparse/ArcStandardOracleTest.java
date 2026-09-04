@@ -87,6 +87,63 @@ public class ArcStandardOracleTest {
   }
 
   @Test
+  void testAllTreesThroughFiveTokens() {
+    for (int size = 1; size <= 5; size++) {
+      final int[] heads = new int[size];
+      checkHeadAssignments(heads, 0);
+    }
+  }
+
+  /**
+   * Enumerates every head assignment and checks each valid tree against the
+   * arc-crossing definition of projectivity.
+   */
+  private static void checkHeadAssignments(int[] heads, int index) {
+    if (index < heads.length) {
+      for (int head = DependencyArc.ROOT_HEAD; head < heads.length; head++) {
+        heads[index] = head;
+        checkHeadAssignments(heads, index + 1);
+      }
+      return;
+    }
+
+    final String[] relations = new String[heads.length];
+    for (int i = 0; i < relations.length; i++) {
+      relations[i] = heads[i] == DependencyArc.ROOT_HEAD ? "root" : "dep";
+    }
+    final DependencyGraph graph;
+    try {
+      graph = DependencyGraph.of(heads, relations);
+    } catch (IllegalArgumentException e) {
+      return;
+    }
+
+    if (isProjective(graph)) {
+      assertEquals(graph, replay(graph), graph.toString());
+    } else {
+      assertThrows(IllegalArgumentException.class,
+          () -> ArcStandardOracle.transitions(graph), graph.toString());
+    }
+  }
+
+  /** Returns whether no pair of arcs crosses in token order. */
+  private static boolean isProjective(DependencyGraph graph) {
+    for (int first = 0; first < graph.size(); first++) {
+      final int firstLow = Math.min(first, graph.headOf(first));
+      final int firstHigh = Math.max(first, graph.headOf(first));
+      for (int second = first + 1; second < graph.size(); second++) {
+        final int secondLow = Math.min(second, graph.headOf(second));
+        final int secondHigh = Math.max(second, graph.headOf(second));
+        if (firstLow < secondLow && secondLow < firstHigh && firstHigh < secondHigh
+            || secondLow < firstLow && firstLow < secondHigh && secondHigh < firstHigh) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  @Test
   void testNullGraphThrows() {
     assertThrows(IllegalArgumentException.class, () -> ArcStandardOracle.transitions(null));
   }

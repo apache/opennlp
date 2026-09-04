@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
@@ -40,6 +41,7 @@ import opennlp.tools.util.TrainingParameters;
  * @see DependencyParser
  * @since 3.0.0
  */
+@ThreadSafe
 public class DependencyParserME implements DependencyParser {
 
   private final MaxentModel model;

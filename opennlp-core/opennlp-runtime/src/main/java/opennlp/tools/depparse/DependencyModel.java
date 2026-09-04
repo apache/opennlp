@@ -20,6 +20,7 @@ package opennlp.tools.depparse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class DependencyModel extends BaseModel {
 
+  @Serial
   private static final long serialVersionUID = -2928968185269611443L;
 
   private static final String COMPONENT_NAME = "DependencyParserME";

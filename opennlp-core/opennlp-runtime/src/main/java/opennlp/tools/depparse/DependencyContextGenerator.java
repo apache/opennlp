@@ -20,6 +20,8 @@ package opennlp.tools.depparse;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * Generates the classification features for one arc-standard configuration: words and
  * tags of the topmost stack and frontmost buffer positions, their pairings, the partial
@@ -30,6 +32,7 @@ import java.util.List;
  *
  * @since 3.0.0
  */
+@ThreadSafe
 public class DependencyContextGenerator {
 
   private static final String ROOT_VALUE = "*ROOT*";

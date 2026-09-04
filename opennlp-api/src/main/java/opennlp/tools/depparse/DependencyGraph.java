@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -34,6 +35,7 @@ import opennlp.tools.util.StringUtil;
  *
  * @since 3.0.0
  */
+@ThreadSafe
 public final class DependencyGraph {
 
   private final int[] heads;
