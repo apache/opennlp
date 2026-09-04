@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -73,6 +74,10 @@ public class ResourceInstallerTest {
   private static final String COLLISION_ERROR = "target already contains: ";
   private static final String DUPLICATE_ENTRY_ERROR =
       "archive contains duplicate file entry: ";
+  private static final String GZIP_RATIO_ERROR =
+      "gzip content expands beyond 100 times its compressed size";
+  private static final String ZIP_MISMATCH_ERROR =
+      "zip local headers and central directory list different files";
 
   /** The property name used by the parser tests; never read by the installer. */
   private static final String TEST_LIMIT_PROPERTY = "opennlp.test.limit";
@@ -1240,5 +1245,130 @@ public class ResourceInstallerTest {
     } finally {
       Files.deleteIfExists(downloaded);
     }
+  }
+
+  @Test
+  void testGzipExpansionRatioIsBounded(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    // Four mebibytes of zeros compress to a few kibibytes: far beyond the ratio ceiling,
+    // far below the absolute expansion limit.
+    final Path file = source.resolve("zeros.txt.gz");
+    Files.write(file, gzip(new byte[4 << 20]));
+
+    assertInstallFails(file, target, GZIP_RATIO_ERROR);
+  }
+
+  @Test
+  void testMoveIntoPlaceDoesNotReplaceAnExistingFile(@TempDir Path directory)
+      throws Exception {
+    final Path staged = directory.resolve("staged.txt");
+    final Path destination = directory.resolve("installed.txt");
+    Files.writeString(staged, "new");
+    Files.writeString(destination, "old");
+
+    Assertions.assertThrows(FileAlreadyExistsException.class,
+        () -> ResourceInstaller.moveIntoPlace(staged, destination));
+
+    Assertions.assertEquals("old", Files.readString(destination));
+    Assertions.assertEquals("new", Files.readString(staged));
+  }
+
+  @Test
+  void testModelSuffixIsMatchedIgnoringCase(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+      zip.putNextEntry(new ZipEntry("manifest.properties"));
+      zip.write("OpenNLP-Version: 0.0.0\n".getBytes(StandardCharsets.UTF_8));
+      zip.closeEntry();
+    }
+    final Path file = source.resolve("en-ner-person.BIN");
+    Files.write(file, out.toByteArray());
+
+    ResourceInstaller.install(file.toUri(), target);
+
+    Assertions.assertEquals(List.of("en-ner-person.BIN"), installedFiles(target));
+  }
+
+  @Test
+  void testGzipSuffixIsStrippedIgnoringCase(@TempDir Path source, @TempDir Path target)
+      throws Exception {
+    final Path file = source.resolve("lexicon.tsv.GZ");
+    Files.write(file, gzip("word\tlemma\n".getBytes(StandardCharsets.UTF_8)));
+
+    ResourceInstaller.install(file.toUri(), target);
+
+    Assertions.assertEquals(List.of("lexicon.tsv"), installedFiles(target));
+  }
+
+  @Test
+  void testStaleWorkFilesOfAKilledInstallAreRemoved(@TempDir Path source,
+      @TempDir Path target) throws Exception {
+    final Path staleStaging = Files.createDirectory(target.resolve(".opennlp-stagingOLD"));
+    Files.writeString(staleStaging.resolve("partial.txt"), "half");
+    Files.writeString(target.resolve(".opennlp-downloadOLD.part"), "half");
+    final Path file = source.resolve("corpus.tar.gz");
+    Files.write(file, tarGz(new String[][] {{"corpus/data.txt", "content"}}));
+
+    ResourceInstaller.install(file.toUri(), target);
+
+    try (Stream<Path> entries = Files.list(target)) {
+      Assertions.assertEquals(List.of("corpus"),
+          entries.map(path -> path.getFileName().toString()).sorted().toList());
+    }
+  }
+
+  @Test
+  void testFailedInstallRemovesTheTargetDirectoryItCreated(@TempDir Path source,
+      @TempDir Path parent) throws Exception {
+    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "content"}});
+    final Path file = source.resolve("corpus.tar.gz");
+    Files.write(file, archive);
+    final Path target = parent.resolve("fresh");
+
+    Assertions.assertThrows(IOException.class, () -> ResourceInstaller.install(
+        file.toUri(), target, sha256("other".getBytes(StandardCharsets.UTF_8))));
+
+    Assertions.assertTrue(Files.notExists(target));
+  }
+
+  @Test
+  void testZipLocalHeadersMustMatchTheCentralDirectory(@TempDir Path source,
+      @TempDir Path target) throws Exception {
+    // The same content under two names, so the local file sections are the same size and
+    // one archive's central directory fits the other's local headers.
+    final byte[] first = zipOf("a.txt", "content");
+    final byte[] second = zipOf("b.txt", "content");
+    final int centralFirst = centralDirectoryStart(first);
+    final int centralSecond = centralDirectoryStart(second);
+    final byte[] hybrid = new byte[centralFirst + second.length - centralSecond];
+    System.arraycopy(first, 0, hybrid, 0, centralFirst);
+    System.arraycopy(second, centralSecond, hybrid, centralFirst,
+        second.length - centralSecond);
+    final Path file = source.resolve("hybrid.zip");
+    Files.write(file, hybrid);
+
+    assertInstallFails(file, target, ZIP_MISMATCH_ERROR);
+  }
+
+  /** Builds a zip archive holding one text entry. */
+  private static byte[] zipOf(String name, String content) throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+      zip.putNextEntry(new ZipEntry(name));
+      zip.write(content.getBytes(StandardCharsets.UTF_8));
+      zip.closeEntry();
+    }
+    return out.toByteArray();
+  }
+
+  /** Finds the first central directory header signature in a zip archive. */
+  private static int centralDirectoryStart(byte[] zip) {
+    for (int i = 0; i + 3 < zip.length; i++) {
+      if (zip[i] == 'P' && zip[i + 1] == 'K' && zip[i + 2] == 1 && zip[i + 3] == 2) {
+        return i;
+      }
+    }
+    throw new AssertionError("no central directory");
   }
 }

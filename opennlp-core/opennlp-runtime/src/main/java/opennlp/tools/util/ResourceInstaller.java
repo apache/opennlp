@@ -826,12 +826,23 @@ public final class ResourceInstaller {
       ensureVacant(target, staging.relativize(file));
     }
     for (final Path file : files) {
-      final Path destination = destination(target, staging.relativize(file));
-      try {
-        Files.move(file, destination, StandardCopyOption.ATOMIC_MOVE);
-      } catch (AtomicMoveNotSupportedException e) {
-        Files.move(file, destination);
-      }
+      moveIntoPlace(file, destination(target, staging.relativize(file)));
+    }
+  }
+
+  /**
+   * Moves one staged file to its destination. Moves are attempted atomically and fall
+   * back to a plain move where the filesystem does not support it.
+   *
+   * @param file The staged file.
+   * @param destination The destination beneath the target.
+   * @throws IOException Thrown if the move fails.
+   */
+  static void moveIntoPlace(Path file, Path destination) throws IOException {
+    try {
+      Files.move(file, destination, StandardCopyOption.ATOMIC_MOVE);
+    } catch (AtomicMoveNotSupportedException e) {
+      Files.move(file, destination);
     }
   }
 

@@ -26,7 +26,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -310,5 +312,22 @@ public class MecabDictionaryInstallerTest {
     final Path archiveFile = directory.resolve("dict.tar.gz");
     Files.write(archiveFile, TarArchives.gzippedTar(entries));
     return archiveFile;
+  }
+
+  @Test
+  void testStaleScratchOfAKilledInstallIsRemoved(@TempDir Path source,
+      @TempDir Path target) throws IOException {
+    final Path stale = Files.createDirectories(target.resolve(".mecab-dict-OLD"));
+    Files.writeString(stale.resolve("words.csv"), "half");
+    final Path archiveFile = archive(source, new String[][] {
+        {"d/words.csv", "cat,0,0,100,noun\n"}});
+
+    Assertions.assertEquals(1,
+        MecabDictionaryInstaller.install(archiveFile.toUri(), target));
+
+    try (Stream<Path> entries = Files.list(target)) {
+      Assertions.assertEquals(List.of("words.csv"),
+          entries.map(path -> path.getFileName().toString()).sorted().toList());
+    }
   }
 }
