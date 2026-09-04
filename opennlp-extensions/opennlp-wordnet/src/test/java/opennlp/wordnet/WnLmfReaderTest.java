@@ -139,7 +139,7 @@ public class WnLmfReaderTest {
   }
 
   @Test
-  void testSenseRelationsAreLiftedToSynsetLevel() {
+  void testSenseRelationsAreRepresentedAtSynsetLevel() {
     final LexicalKnowledgeBase lexicon = fixture();
     assertEquals(List.of("mini-a2"), lexicon.related("mini-a1", WordNetRelation.ANTONYM));
     assertEquals(List.of("mini-a1"), lexicon.related("mini-a2", WordNetRelation.ANTONYM));
@@ -206,6 +206,24 @@ public class WnLmfReaderTest {
     assertThrows(IllegalArgumentException.class, () -> WnLmfReader.read(null, "x"));
     assertThrows(IllegalArgumentException.class,
         () -> WnLmfReader.read(new ByteArrayInputStream(new byte[0]), null));
+  }
+
+  @Test
+  void testReadDoesNotCloseInputStream() throws IOException {
+    final boolean[] closed = {false};
+    final InputStream in = new ByteArrayInputStream(wrap("").getBytes(StandardCharsets.UTF_8)) {
+      @Override
+      public void close() throws IOException {
+        closed[0] = true;
+        super.close();
+      }
+    };
+
+    WnLmfReader.read(in, "inline.xml");
+
+    assertFalse(closed[0]);
+    in.close();
+    assertTrue(closed[0]);
   }
 
   @Test
