@@ -33,12 +33,7 @@ import opennlp.tools.wordnet.WordNetRelation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-/**
- * Runs the manual's WordNet examples (docbkx {@code wordnet.xml}) verbatim: every value
- * the chapter states is asserted here, so a change breaking this test breaks the manual.
- * The lexicon is the classpath fixture {@code mini-wn-lmf.xml}; exception lists come from
- * the sibling {@code mini-wndb} directory.
- */
+/** Runs the examples from the WordNet manual chapter against the test fixtures. */
 public class WordNetUsageExampleTest {
 
   /**
@@ -62,7 +57,7 @@ public class WordNetUsageExampleTest {
   }
 
   /**
-   * Load through the Path entry points exactly as the chapter's loading listing shows:
+   * Loads through the Path entry points shown in the manual:
    * {@code WnLmfReader.read(Path)} on a file named {@code en-wordnet.xml} (a temp-dir copy of
    * the fixture) and {@code WndbReader.read(Path)} on a WNDB {@code dict} directory.
    */

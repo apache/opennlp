@@ -27,6 +27,8 @@ package opennlp.tools.wordnet;
  * <p>The vocabulary includes every typed synset and sense relation in the
  * <a href="https://globalwordnet.github.io/schemas/WN-LMF-1.4.dtd">Global WordNet Association
  * WN-LMF 1.4 format</a>. Format-specific readers document any contextual mapping.</p>
+ *
+ * @since 3.0.0
  */
 public enum WordNetRelation {
 

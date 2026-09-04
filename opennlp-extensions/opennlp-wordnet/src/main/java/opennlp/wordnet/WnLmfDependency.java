@@ -24,6 +24,7 @@ import opennlp.tools.commons.ThreadSafe;
  *
  * @param ref     The required lexicon id. Must not be {@code null} or empty.
  * @param version The required lexicon version. Must not be {@code null} or empty.
+ * @since 3.0.0
  */
 @ThreadSafe
 public record WnLmfDependency(String ref, String version) {
@@ -35,10 +36,10 @@ public record WnLmfDependency(String ref, String version) {
    */
   public WnLmfDependency {
     if (ref == null || ref.isEmpty()) {
-      throw new IllegalArgumentException("Ref must not be null or empty");
+      throw new IllegalArgumentException("ref must not be null or empty");
     }
     if (version == null || version.isEmpty()) {
-      throw new IllegalArgumentException("Version must not be null or empty");
+      throw new IllegalArgumentException("version must not be null or empty");
     }
   }
 }

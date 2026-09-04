@@ -20,9 +20,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
@@ -36,9 +38,8 @@ import opennlp.tools.wordnet.WordNetRelation;
  * public entry point; consumers hold it as {@link LexicalKnowledgeBase}.
  *
  * <p>Keys and queries are folded identically (see {@link LemmaFolding}). Construction verifies
- * referential integrity: every relation target of every synset must resolve to a synset in the
- * table, so a lexicon can never hand out a dangling identifier. After construction all state is
- * immutable, making instances safe for concurrent lookups.</p>
+ * referential integrity: each relation target must resolve to a synset in the table. After
+ * construction all state is immutable, making instances safe for concurrent lookups.</p>
  */
 @ThreadSafe
 final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
@@ -60,12 +61,12 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
    */
   InMemoryWordNetLexicon(Map<String, Synset> synsetsById, Map<LemmaKey, List<String>> senseOrder) {
     if (synsetsById == null) {
-      throw new IllegalArgumentException("SynsetsById must not be null");
+      throw new IllegalArgumentException("synsetsById must not be null");
     }
     if (senseOrder == null) {
-      throw new IllegalArgumentException("SenseOrder must not be null");
+      throw new IllegalArgumentException("senseOrder must not be null");
     }
-    final Map<String, Synset> byId = new HashMap<>(synsetsById.size() * 2);
+    final Map<String, Synset> byId = HashMap.newHashMap(synsetsById.size());
     for (final Map.Entry<String, Synset> entry : synsetsById.entrySet()) {
       if (entry.getValue() == null || !entry.getValue().id().equals(entry.getKey())) {
         throw new IllegalArgumentException(
@@ -84,10 +85,22 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
         }
       }
     }
-    final Map<LemmaKey, List<Synset>> index = new HashMap<>(senseOrder.size() * 2);
+    final Map<LemmaKey, List<Synset>> index = HashMap.newHashMap(senseOrder.size());
     for (final Map.Entry<LemmaKey, List<String>> entry : senseOrder.entrySet()) {
-      final List<Synset> senses = new ArrayList<>(entry.getValue().size());
-      for (final String synsetId : entry.getValue()) {
+      if (entry.getKey() == null) {
+        throw new IllegalArgumentException("senseOrder key must not be null");
+      }
+      final List<String> orderedIds = entry.getValue();
+      if (orderedIds == null) {
+        throw new IllegalArgumentException("senseOrder value must not be null");
+      }
+      final List<Synset> senses = new ArrayList<>(orderedIds.size());
+      final Set<String> seen = HashSet.newHashSet(orderedIds.size());
+      for (final String synsetId : orderedIds) {
+        if (!seen.add(synsetId)) {
+          throw new IllegalArgumentException("Sense index entry " + entry.getKey().lemma()
+              + " (" + entry.getKey().pos() + ") contains duplicate synset " + synsetId);
+        }
         final Synset synset = byId.get(synsetId);
         if (synset == null) {
           throw new IllegalArgumentException("Sense index entry " + entry.getKey().lemma()
@@ -105,10 +118,10 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
   @Override
   public List<Synset> lookup(String lemma, WordNetPOS pos) {
     if (lemma == null) {
-      throw new IllegalArgumentException("Lemma must not be null");
+      throw new IllegalArgumentException("lemma must not be null");
     }
     if (pos == null) {
-      throw new IllegalArgumentException("Pos must not be null");
+      throw new IllegalArgumentException("pos must not be null");
     }
     final List<Synset> senses = senseIndex.get(LemmaKey.of(lemma, pos));
     return senses == null ? List.of() : senses;
@@ -118,7 +131,7 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
   @Override
   public Optional<Synset> synset(String synsetId) {
     if (synsetId == null) {
-      throw new IllegalArgumentException("SynsetId must not be null");
+      throw new IllegalArgumentException("synsetId must not be null");
     }
     return Optional.ofNullable(synsetsById.get(synsetId));
   }
@@ -134,16 +147,26 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
   }
 
   /**
-   * A folded sense-index key. Build with {@link #of(String, WordNetPOS)} so every key passes
-   * through the same fold as every query.
+   * A folded sense-index key. Build with {@link #of(String, WordNetPOS)} to apply the same fold
+   * to stored keys and queries.
    *
    * @param lemma The folded lemma.
    * @param pos   The part of speech.
    */
   record LemmaKey(String lemma, WordNetPOS pos) {
 
+    LemmaKey {
+      if (lemma == null) {
+        throw new IllegalArgumentException("lemma must not be null");
+      }
+      if (pos == null) {
+        throw new IllegalArgumentException("pos must not be null");
+      }
+    }
+
     /**
-     * Folds a written form into a key: lowercase with the root locale, underscore as space.
+     * Folds a written form into a key using locale-independent lowercase and spaces for
+     * underscores.
      *
      * @param writtenForm The lemma as written in the source or query. Must not be {@code null}.
      * @param pos         The part of speech. Must not be {@code null}.
