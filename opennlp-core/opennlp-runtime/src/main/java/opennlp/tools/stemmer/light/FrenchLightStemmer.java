@@ -77,6 +77,9 @@ import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 @ThreadSafe
 public final class FrenchLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
+
+  private static final String IVE_SUFFIX = "ive";
+
   /** {@inheritDoc} */
   @Override
   public Stemmer newStemmer() {
@@ -109,7 +112,7 @@ public final class FrenchLightStemmer extends AbstractCharArrayStemmer
 
     if (len > 6 && endsWith(s, len, "ement")) {
       len -= 4;
-      if (len > 3 && endsWith(s, len, "ive")) {
+      if (len > 3 && endsWith(s, len, IVE_SUFFIX)) {
         len--;
         s[len - 1] = 'f';
       }
@@ -191,7 +194,7 @@ public final class FrenchLightStemmer extends AbstractCharArrayStemmer
       return norm(s, len);
     }
 
-    if (len > 7 && endsWith(s, len, "ive")) {
+    if (len > 7 && endsWith(s, len, IVE_SUFFIX)) {
       len--;
       s[len - 1] = 'f';
       return norm(s, len);
@@ -233,6 +236,7 @@ public final class FrenchLightStemmer extends AbstractCharArrayStemmer
     return norm(s, len);
   }
 
+  /** Normalizes terminal letters after suffix removal and returns the remaining length. */
   private int norm(char[] s, int len) {
     if (len > 4) {
       for (int i = 0; i < len; i++)

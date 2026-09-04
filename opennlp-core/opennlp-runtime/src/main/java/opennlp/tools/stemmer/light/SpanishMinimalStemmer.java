@@ -233,10 +233,12 @@ public final class SpanishMinimalStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Returns whether {@code c} is an unaccented Spanish vowel. */
   private boolean isVowel(char c) {
     return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
   }
 
+  /** Replaces accented vowels in the stem with their unaccented forms. */
   private void removeAccents(char[] s, int len) {
     for (int i = 0; i < len; i++) {
       switch (s[i]) {

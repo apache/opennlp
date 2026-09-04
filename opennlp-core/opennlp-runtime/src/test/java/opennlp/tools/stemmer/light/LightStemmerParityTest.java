@@ -67,6 +67,18 @@ class LightStemmerParityTest {
         .map(e -> Arguments.of(e.getKey(), e.getValue()));
   }
 
+  static Stream<Arguments> norwegianFactoryCases() {
+    return Stream.of(
+        Arguments.of("light Bokmaal", new NorwegianLightStemmer(NorwegianVariety.BOKMAAL),
+            "billigere", "billig"),
+        Arguments.of("light Nynorsk", new NorwegianLightStemmer(NorwegianVariety.NYNORSK),
+            "billegare", "billeg"),
+        Arguments.of("minimal Bokmaal", new NorwegianMinimalStemmer(NorwegianVariety.BOKMAAL),
+            "bibliotekar", "bibliotekar"),
+        Arguments.of("minimal Nynorsk", new NorwegianMinimalStemmer(NorwegianVariety.NYNORSK),
+            "gutar", "gut"));
+  }
+
   @ParameterizedTest(name = "{0}")
   @MethodSource("fixtures")
   void testVocabularyParity(String fixture, Stemmer stemmer) throws IOException {
@@ -98,5 +110,12 @@ class LightStemmerParityTest {
     assertNotSame(stemmer, first);
     assertNotSame(first, second);
     assertEquals(stemmer.stem("examples").toString(), first.stem("examples").toString());
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("norwegianFactoryCases")
+  void testNorwegianFactoryPreservesVariety(
+      String description, StemmerFactory factory, String word, String expected) {
+    assertEquals(expected, factory.newStemmer().stem(word).toString(), description);
   }
 }

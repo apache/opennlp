@@ -119,6 +119,7 @@ public final class HungarianLightStemmer extends AbstractCharArrayStemmer
     return normalize(s, len);
   }
 
+  /** Removes case endings and returns the remaining length. */
   private int removeCase(char[] s, int len) {
     if (len > 6 && endsWith(s, len, "kent")) return len - 4;
 
@@ -172,6 +173,7 @@ public final class HungarianLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Removes possessive endings and returns the remaining length. */
   private int removePossessive(char[] s, int len) {
     if (len > 6) {
       if (!isVowel(s[len - 5])
@@ -227,6 +229,7 @@ public final class HungarianLightStemmer extends AbstractCharArrayStemmer
   }
 
   @SuppressWarnings("fallthrough")
+  /** Removes plural endings and returns the remaining length. */
   private int removePlural(char[] s, int len) {
     if (len > 3 && s[len - 1] == 'k')
       switch (s[len - 2]) {
@@ -240,6 +243,7 @@ public final class HungarianLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Normalizes terminal vowels and returns the remaining length. */
   private int normalize(char[] s, int len) {
     if (len > 3)
       switch (s[len - 1]) {

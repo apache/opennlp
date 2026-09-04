@@ -114,6 +114,7 @@ public final class GermanLightStemmer extends AbstractCharArrayStemmer
     return step2(s, len);
   }
 
+  /** Returns whether {@code ch} can precede the suffix {@code st}. */
   private boolean stEnding(char ch) {
     switch (ch) {
       case 'b':
@@ -132,6 +133,7 @@ public final class GermanLightStemmer extends AbstractCharArrayStemmer
     }
   }
 
+  /** Applies the first suffix-removal pass and returns the remaining length. */
   private int step1(char[] s, int len) {
     if (len > 5 && s[len - 3] == 'e' && s[len - 2] == 'r' && s[len - 1] == 'n') return len - 3;
 
@@ -151,6 +153,7 @@ public final class GermanLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Applies the second suffix-removal pass and returns the remaining length. */
   private int step2(char[] s, int len) {
     if (len > 5 && s[len - 3] == 'e' && s[len - 2] == 's' && s[len - 1] == 't') return len - 3;
 

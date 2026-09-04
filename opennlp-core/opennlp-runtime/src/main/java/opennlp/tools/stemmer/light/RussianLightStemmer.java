@@ -89,6 +89,7 @@ public final class RussianLightStemmer extends AbstractCharArrayStemmer
     return normalize(s, len);
   }
 
+  /** Normalizes terminal characters and returns the remaining length. */
   private int normalize(char[] s, int len) {
     if (len > 3)
       switch (s[len - 1]) {
@@ -101,6 +102,7 @@ public final class RussianLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Removes case endings and returns the remaining length. */
   private int removeCase(char[] s, int len) {
     if (len > 6
         && (endsWith(s, len, "\u0438\u044F\u043C\u0438")

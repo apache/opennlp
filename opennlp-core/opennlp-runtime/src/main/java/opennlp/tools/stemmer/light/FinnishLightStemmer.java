@@ -78,6 +78,9 @@ import static opennlp.tools.stemmer.light.StemmerUtil.isVowel;
 @ThreadSafe
 public final class FinnishLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
+
+  private static final String LLA_SUFFIX = "lla";
+
   /** {@inheritDoc} */
   @Override
   public Stemmer newStemmer() {
@@ -108,6 +111,7 @@ public final class FinnishLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Applies the first suffix-removal pass and returns the remaining length. */
   private int step1(char[] s, int len) {
     if (len > 8) {
       if (endsWith(s, len, "kin")) return step1(s, len - 3);
@@ -121,9 +125,10 @@ public final class FinnishLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Applies the second suffix-removal pass and returns the remaining length. */
   private int step2(char[] s, int len) {
     if (len > 5) {
-      if (endsWith(s, len, "lla") || endsWith(s, len, "tse") || endsWith(s, len, "sti"))
+      if (endsWith(s, len, LLA_SUFFIX) || endsWith(s, len, "tse") || endsWith(s, len, "sti"))
         return len - 3;
 
       if (endsWith(s, len, "ni")) return len - 2;
@@ -134,6 +139,7 @@ public final class FinnishLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Applies the final suffix-removal pass and returns the remaining length. */
   private int step3(char[] s, int len) {
     if (len > 8) {
       if (endsWith(s, len, "nnen")) {
@@ -172,7 +178,7 @@ public final class FinnishLightStemmer extends AbstractCharArrayStemmer
 
       if (endsWith(s, len, "ssa")
           || endsWith(s, len, "sta")
-          || endsWith(s, len, "lla")
+          || endsWith(s, len, LLA_SUFFIX)
           || endsWith(s, len, "lta")
           || endsWith(s, len, "tta")
           || endsWith(s, len, "ksi")
@@ -198,6 +204,7 @@ public final class FinnishLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Applies the first terminal-character normalization and returns the remaining length. */
   private int norm1(char[] s, int len) {
     if (len > 5 && endsWith(s, len, "hde")) {
       s[len - 3] = 'k';
@@ -223,6 +230,7 @@ public final class FinnishLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Applies the final terminal-character normalization and returns the remaining length. */
   private int norm2(char[] s, int len) {
     if (len > 8) {
       if (s[len - 1] == 'e' || s[len - 1] == 'o' || s[len - 1] == 'u') len--;

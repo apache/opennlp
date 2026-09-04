@@ -93,6 +93,7 @@ public final class NorwegianMinimalStemmer extends AbstractCharArrayStemmer
     useNynorsk = varieties.contains(NorwegianVariety.NYNORSK);
   }
 
+  /** Initializes a stemmer from validated variety flags. */
   private NorwegianMinimalStemmer(boolean useBokmaal, boolean useNynorsk) {
     this.useBokmaal = useBokmaal;
     this.useNynorsk = useNynorsk;

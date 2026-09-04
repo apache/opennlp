@@ -94,6 +94,7 @@ public final class NorwegianLightStemmer extends AbstractCharArrayStemmer
     useNynorsk = varieties.contains(NorwegianVariety.NYNORSK);
   }
 
+  /** Initializes a stemmer from validated variety flags. */
   private NorwegianLightStemmer(boolean useBokmaal, boolean useNynorsk) {
     this.useBokmaal = useBokmaal;
     this.useNynorsk = useNynorsk;

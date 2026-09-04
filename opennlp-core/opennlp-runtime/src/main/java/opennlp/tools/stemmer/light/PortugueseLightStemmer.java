@@ -142,6 +142,7 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Removes a plural suffix and returns the remaining length. */
   private int removeSuffix(char[] s, int len) {
     if (len > 4 && endsWith(s, len, "es"))
       switch (s[len - 3]) {
@@ -192,6 +193,7 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
+  /** Normalizes feminine endings and returns the remaining length. */
   private int normFeminine(char[] s, int len) {
     if (len > 7
         && (endsWith(s, len, "inha") || endsWith(s, len, "iaca") || endsWith(s, len, "eira"))) {

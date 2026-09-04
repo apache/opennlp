@@ -32,6 +32,7 @@ import opennlp.tools.stemmer.Stemmer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The shared API contract of the light and minimal stemmers: null rejection, identity on empty
@@ -88,6 +89,15 @@ class LightStemmerContractTest {
   void testDoesNotNormalizeDecomposedInput(Stemmer stemmer) {
     final String decomposed = "x\u0301q";
     assertEquals(decomposed, stemmer.stem(decomposed).toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("stemmers")
+  void testSupplementaryPrefixRemainsIntact(Stemmer stemmer) {
+    final String result = stemmer.stem("\uD83D\uDE00tests").toString();
+    assertTrue(result.length() >= 2);
+    assertTrue(Character.isSurrogatePair(result.charAt(0), result.charAt(1)));
+    assertEquals(0x1F600, result.codePointAt(0));
   }
 
   @ParameterizedTest
