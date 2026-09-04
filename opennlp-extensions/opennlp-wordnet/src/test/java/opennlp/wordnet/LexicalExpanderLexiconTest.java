@@ -29,11 +29,7 @@ import static opennlp.wordnet.ExpansionAssertions.find;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-/**
- * End-to-end expansion over the miniature lexicon fixtures: the WN-LMF and WNDB readers each
- * feed the expander, and the Morphy lemmatizer bridges inflected input, exercising the whole
- * stack the way a consumer wires it.
- */
+/** Exercises expansion and Morphy lemmatization over the WN-LMF and WNDB fixtures. */
 public class LexicalExpanderLexiconTest {
 
   @Test
@@ -63,9 +59,7 @@ public class LexicalExpanderLexiconTest {
 
   @Test
   void testUnderscoreQueryFoldsToTheMultiwordLexiconEntry() {
-    // The WNDB index stores the entry as "domestic_dog"; the reader folds it to "domestic dog"
-    // at load time. The expander must fold the underscore query the same way, so the entry's
-    // own synset expands and the query never surfaces as its own synonym.
+    // The WNDB index stores "domestic_dog" and the reader indexes it as "domestic dog".
     final List<Expansion> expansions = LexicalExpander.builder(WndbReaderTest.fixture())
         .build().expand("domestic_dog", WordNetPOS.NOUN);
 

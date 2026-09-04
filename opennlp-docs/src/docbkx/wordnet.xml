@@ -25,10 +25,9 @@
 			of speech. Two readers are provided: <code>WnLmfReader</code> for the
 			Global WordNet Association WN-LMF XML interchange format, and
 			<code>WndbReader</code> for the classic Princeton WordNet database file
-			layout. Both return an immutable, thread-safe knowledge base. On top of
-			lookup, the module can Morphy-lemmatize, expand a term through synonym and
-			hypernym links, score synset similarity on the hypernym graph, and type
-			nouns by their nearest anchored hypernym.
+			layout. Both return an immutable, thread-safe knowledge base. The module also
+			provides Morphy lemmatization, lexical expansion, synset similarity, and noun
+			typing through caller-defined hypernym anchors.
 		</para>
 	</section>
 
@@ -214,16 +213,13 @@ lemmatizer.lemmatize(new String[] {"dogs"}, new String[] {"NNS"})[0];  // "dog"]
 			<code>LexicalExpander</code> turns a term into related terms from the
 			knowledge base: synonyms sharing its synsets, hypernym ancestors up to a
 			configured depth, and optionally direct hyponyms. Each
-			<code>Expansion</code> carries a heuristic weight in
+			<code>Expansion</code> includes a heuristic weight in
 			<code>(0, 1]</code>: the first sense starts at <code>1.0</code>, later
 			senses multiply by the sense decay, and each hypernym or hyponym step
-			multiplies by the depth decay. The input term itself is never returned.
+			multiplies by the depth decay. The result excludes the input term.
 			Defaults use depth <code>1</code>, sense decay <code>0.5</code>, and
-			depth decay <code>0.5</code>. The example runs against the two-sense
-			miniature taxonomy in the leading comment, not the lookup fixture above:
-			the mini fixture carries only one sense of <code>dog</code>, so it cannot
-			show the sense decay. <code>LexicalExpansionUsageExampleTest</code>
-			builds exactly that taxonomy and asserts the behavior shown here.
+			depth decay <code>0.5</code>. The example uses a two-sense noun taxonomy and
+			is checked by <code>LexicalExpansionUsageExampleTest</code>.
 			<programlisting language="java"><![CDATA[
 // dog sense 1 = {dog, domestic dog}, hypernym {canid}
 // dog sense 2 = {dog, frank, hot dog}, hypernym {sausage}
@@ -245,13 +241,13 @@ List<Expansion> expansions = LexicalExpander.builder(lexicon)
 			hypernym graph. Path similarity is <code>1 / (1 + d)</code> for the
 			shortest distance <code>d</code> through a common ancestor. Wu-Palmer
 			similarity relates the depth of the deepest common ancestor to the depths
-			of both synsets, with depths counted in nodes so the root sits at depth
-			one and any shared ancestor scores above <code>0</code>. Only unrelated
-			synsets score <code>0</code>. The example runs
-			against the miniature taxonomy in the leading comment, with synset ids
-			<code>n1</code> to <code>n9</code>;
-			<code>LexicalExpansionUsageExampleTest</code> builds exactly that
-			taxonomy and asserts the behavior shown here.
+			of both synsets, with depths counted in nodes so the root has depth
+			one. A synset's depth uses its longest acyclic route to a root, and any
+			shared ancestor scores above <code>0</code>. Only unrelated
+			synsets score <code>0</code>. Leacock-Chodorow similarity uses the shortest
+			path and a caller-supplied taxonomy depth. The example uses synset ids
+			<code>n1</code> to <code>n9</code> and is checked by
+			<code>LexicalExpansionUsageExampleTest</code>.
 			<programlisting language="java"><![CDATA[
 // entity (n1) > physical (n2) > organism (n3) > person (n4)
 //     > scientist (n5) > chemist (n6)
@@ -261,7 +257,8 @@ SynsetSimilarity similarity = new SynsetSimilarity(lexicon);
 
 similarity.path("n6", "n5");       // 0.5      (chemist to scientist)
 similarity.wuPalmer("n5", "n6");   // 10.0/11.0 (deep shared ancestry)
-similarity.path("n6", "n8");       // 1.0/7.0  (chemist to city, six edges)]]>
+similarity.path("n6", "n8");       // 1.0/7.0  (chemist to city, six edges)
+similarity.leacockChodorow("n6", "n5", 6); // log(6)]]>
 			</programlisting>
 		</para>
 	</section>
@@ -269,15 +266,13 @@ similarity.path("n6", "n8");       // 1.0/7.0  (chemist to city, six edges)]]>
 	<section xml:id="tools.wordnet.typing">
 		<title>Hypernym-anchored typing</title>
 		<para>
-			<code>HypernymTyper</code> types a noun by walking its hypernym chain to
-			the nearest registered anchor: the caller maps anchor lemmas to the
+			<code>HypernymTyper</code> types a noun using the nearest registered anchor
+			in its hypernym graph. The caller maps anchor lemmas to the
 			labels they confer, and any noun whose senses lead up to an anchor
 			receives that anchor's label. Instance hypernyms count, so named
 			entities reach their class anchors. The walk is upward only, and a noun
-			reaching no anchor gets no type. The example runs against the taxonomy
-			of the previous section; <code>HypernymTyperTest</code> and
-			<code>LexicalExpansionUsageExampleTest</code> assert the behavior shown
-			here.
+			reaching no anchor gets no type. The example uses the taxonomy from the
+			previous section and is checked by <code>LexicalExpansionUsageExampleTest</code>.
 			<programlisting language="java"><![CDATA[
 HypernymTyper typer = new HypernymTyper(lexicon,
     Map.of("person", "person", "location", "location"));

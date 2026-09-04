@@ -35,12 +35,7 @@ import opennlp.wordnet.LexicalExpander.Kind;
 
 import static opennlp.wordnet.ExpansionAssertions.find;
 
-/**
- * Runs the manual's lexical expansion, synset similarity, and hypernym-anchored typing
- * examples (docbkx {@code wordnet.xml}) verbatim: every value the chapter states is asserted
- * here, so a change breaking this test breaks the manual. The taxonomies are the hand-built
- * miniatures the chapter shows in its listing comments.
- */
+/** Checks the lexical expansion, similarity, and typing examples in {@code wordnet.xml}. */
 public class LexicalExpansionUsageExampleTest {
 
   /**
@@ -122,9 +117,7 @@ public class LexicalExpansionUsageExampleTest {
     byLemma.computeIfAbsent(lemma, key -> new ArrayList<>()).add(synset);
   }
 
-  /**
-   * Default expansion of noun {@code dog}: synonym and depth-1 hypernym weights.
-   */
+  /** Checks the default synonym and hypernym weights for noun {@code dog}. */
   @Test
   void testExpandDogNoun() {
     final List<Expansion> expansions =
@@ -149,23 +142,18 @@ public class LexicalExpansionUsageExampleTest {
     Assertions.assertEquals(0.5, frank.weight());
   }
 
-  /**
-   * Path and Wu-Palmer scores on the miniature scientist/city taxonomy, exactly as the
-   * chapter's similarity listing prints them.
-   */
+  /** Checks the similarity scores shown in the manual. */
   @Test
   void testSynsetSimilarityScores() {
     final SynsetSimilarity similarity = new SynsetSimilarity(similarityTaxonomy());
     Assertions.assertEquals(0.5, similarity.path("n6", "n5"), 1e-9);
     Assertions.assertEquals(10.0 / 11.0, similarity.wuPalmer("n5", "n6"), 1e-9);
     Assertions.assertEquals(1.0 / 7.0, similarity.path("n6", "n8"), 1e-9);
+    Assertions.assertEquals(Math.log(6.0),
+        similarity.leacockChodorow("n6", "n5", 6), 1e-9);
   }
 
-  /**
-   * Hypernym-anchored typing over the same taxonomy, exactly as the chapter's typing
-   * listing prints it: a chemist is a person, paris reaches location through instance
-   * hypernymy, and an ancestor of an anchor is never typed because the walk is upward only.
-   */
+  /** Checks hypernym typing through direct and instance relations. */
   @Test
   void testHypernymAnchoredTyping() {
     final HypernymTyper typer = new HypernymTyper(similarityTaxonomy(),
