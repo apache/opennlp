@@ -44,6 +44,9 @@ public class ArcStandardStateTest {
     assertEquals(1, state.stackSize());
     assertEquals(3, state.bufferSize());
     assertFalse(state.isTerminal());
+
+    state.apply(Transition.SHIFT);
+    assertEquals(ArcStandardState.NONE, state.buffer(Integer.MAX_VALUE));
   }
 
   @Test

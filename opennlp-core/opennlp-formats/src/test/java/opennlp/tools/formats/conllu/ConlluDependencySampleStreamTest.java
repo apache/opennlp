@@ -18,6 +18,7 @@
 package opennlp.tools.formats.conllu;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -158,6 +159,32 @@ public class ConlluDependencySampleStreamTest {
       assertArrayEquals(new String[] {"Fine"}, onlyValid.getTokens());
       assertEquals(DependencyArc.ROOT_HEAD, onlyValid.getGraph().headOf(0));
       assertNull(samples.read());
+    }
+  }
+
+  @Test
+  void testNonSequentialWordIdsAreSkipped() throws IOException {
+    final String content = line("2", "Dogs", "dog", "NOUN", "NNS", "_", "0",
+        "root", "_", "_") + "\n";
+    final InputStreamFactory in = () -> new ByteArrayInputStream(
+        content.getBytes(StandardCharsets.UTF_8));
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      assertNull(samples.read());
+    }
+  }
+
+  @Test
+  void testMalformedUtf8Throws() throws IOException {
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    bytes.writeBytes("1\t".getBytes(StandardCharsets.UTF_8));
+    bytes.write(0xc3);
+    bytes.writeBytes("\t_\tNOUN\tNNS\t_\t0\troot\t_\t_\n"
+        .getBytes(StandardCharsets.UTF_8));
+    final InputStreamFactory in = () -> new ByteArrayInputStream(bytes.toByteArray());
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      assertThrows(IOException.class, samples::read);
     }
   }
 

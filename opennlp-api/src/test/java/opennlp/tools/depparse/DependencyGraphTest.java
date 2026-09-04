@@ -104,6 +104,13 @@ public class DependencyGraphTest {
   }
 
   @Test
+  void testDisconnectedCycleThrows() {
+    assertThrows(IllegalArgumentException.class,
+        () -> DependencyGraph.of(new int[] {-1, 2, 1},
+            new String[] {"root", "dep", "dep"}));
+  }
+
+  @Test
   void testSelfHeadThrows() {
     assertThrows(IllegalArgumentException.class,
         () -> DependencyGraph.of(new int[] {0, -1}, new String[] {"a", "root"}));

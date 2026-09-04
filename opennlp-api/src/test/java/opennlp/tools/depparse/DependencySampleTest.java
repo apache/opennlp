@@ -62,6 +62,14 @@ public class DependencySampleTest {
   }
 
   @Test
+  void testNullTokenOrTagThrows() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencySample(new String[] {"the", null, "barks"}, TAGS, graph()));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencySample(TOKENS, new String[] {"DT", null, "VBZ"}, graph()));
+  }
+
+  @Test
   void testLengthMismatchThrows() {
     assertThrows(IllegalArgumentException.class,
         () -> new DependencySample(new String[] {"one"}, TAGS, graph()));

@@ -95,6 +95,26 @@ public class DependencyParserEdgeCaseTest {
   }
 
   @Test
+  void testNullTokenOrTagIsRejectedByBothParsers() {
+    assertThrows(IllegalArgumentException.class,
+        () -> maxentParser.parse(new String[] {null}, new String[] {"NN"}));
+    assertThrows(IllegalArgumentException.class,
+        () -> maxentParser.parse(new String[] {"word"}, new String[] {null}));
+    assertThrows(IllegalArgumentException.class,
+        () -> feedforwardParser.parse(new String[] {null}, new String[] {"NN"}));
+    assertThrows(IllegalArgumentException.class,
+        () -> feedforwardParser.parse(new String[] {"word"}, new String[] {null}));
+  }
+
+  @Test
+  void testContextGeneratorRejectsMisalignedInput() {
+    final DependencyContextGenerator generator = new DependencyContextGenerator();
+    final ArcStandardState state = new ArcStandardState(2);
+    assertThrows(IllegalArgumentException.class,
+        () -> generator.getContext(state, new String[] {"one"}, new String[] {"NN"}));
+  }
+
+  @Test
   void testSingleTokenSentenceAttachesToTheRoot() {
     // A single token permits only the derivation shift then right-arc, so the head is
     // forced to the artificial root and the model only chooses the relation label.
@@ -127,6 +147,22 @@ public class DependencyParserEdgeCaseTest {
             new String[] {"nsubj", "root", "obj"}),
         parser.parse(new String[] {"she", "eats", "fish"},
             new String[] {"PRP", "VBZ", "NN"}));
+  }
+
+  @Test
+  void testFeedforwardTrainingOmitsNonProjectiveLabels() throws IOException {
+    final List<DependencySample> mixed = new ArrayList<>(corpus());
+    mixed.add(sample(new String[] {"a", "b", "c", "d"},
+        new String[] {"DT", "NN", "VBZ", "RB"}, new int[] {2, 3, -1, 2},
+        new String[] {"det", "dislocated", "root", "obj"}));
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(8, 8, 1, 32, 0.05, 0.0, 0.0, 1, 17L);
+
+    final FeedforwardDependencyModel trained = FeedforwardDependencyTrainer.train(
+        ObjectStreamUtils.createObjectStream(mixed), settings);
+
+    assertEquals(0, List.of(trained.transitions()).stream()
+        .filter(transition -> transition.contains("dislocated")).count());
   }
 
   @Test
