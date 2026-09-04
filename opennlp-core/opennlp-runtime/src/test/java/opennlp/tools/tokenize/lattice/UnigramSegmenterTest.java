@@ -240,4 +240,23 @@ public class UnigramSegmenterTest {
         StandardCharsets.UTF_8);
     Assertions.assertArrayEquals(new String[] {"\u6211"}, loaded.tokenize("\u6211"));
   }
+
+  @Test
+  void testRejectsMalformedLexiconEncoding() {
+    final byte[] malformed = {'w', (byte) 0xC3, ' ', '1', '\n'};
+
+    Assertions.assertThrows(IOException.class, () -> UnigramSegmenter.load(
+        new ByteArrayInputStream(malformed), StandardCharsets.UTF_8));
+  }
+
+  @Test
+  void testLongLexiconWordLoads() throws IOException {
+    final String word = "a".repeat(20_000);
+
+    final UnigramSegmenter loaded = UnigramSegmenter.load(
+        new ByteArrayInputStream((word + " 1\n").getBytes(StandardCharsets.UTF_8)),
+        StandardCharsets.UTF_8);
+
+    Assertions.assertNotNull(loaded);
+  }
 }
