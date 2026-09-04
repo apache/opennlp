@@ -33,7 +33,7 @@ import opennlp.tools.stemmer.StemmerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -92,9 +92,12 @@ class LightStemmerParityTest {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("fixtures")
-  void testStemmerIsItsOwnFactory(String fixture, Stemmer stemmer) {
+  void testFactoryCreatesNewStemmer(String fixture, Stemmer stemmer) {
     final StemmerFactory factory = (StemmerFactory) stemmer;
-    assertSame(stemmer, factory.newStemmer(),
-        "newStemmer() must return the same instance");
+    final Stemmer first = factory.newStemmer();
+    final Stemmer second = factory.newStemmer();
+    assertNotSame(stemmer, first);
+    assertNotSame(first, second);
+    assertEquals(stemmer.stem("examples").toString(), first.stem("examples").toString());
   }
 }
