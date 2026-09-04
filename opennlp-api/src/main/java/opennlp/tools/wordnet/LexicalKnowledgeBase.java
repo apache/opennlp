@@ -66,6 +66,9 @@ public interface LexicalKnowledgeBase {
    *     {@code null}.
    */
   default List<String> related(String synsetId, WordNetRelation relation) {
+    if (synsetId == null) {
+      throw new IllegalArgumentException("synsetId must not be null");
+    }
     if (relation == null) {
       throw new IllegalArgumentException("relation must not be null");
     }
@@ -82,6 +85,12 @@ public interface LexicalKnowledgeBase {
    * @throws IllegalArgumentException Thrown if {@code lemma} or {@code pos} is {@code null}.
    */
   default boolean contains(String lemma, WordNetPOS pos) {
+    if (lemma == null) {
+      throw new IllegalArgumentException("lemma must not be null");
+    }
+    if (pos == null) {
+      throw new IllegalArgumentException("pos must not be null");
+    }
     return !lookup(lemma, pos).isEmpty();
   }
 }

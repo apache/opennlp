@@ -90,6 +90,7 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
       if (entry.getKey() == null) {
         throw new IllegalArgumentException("senseOrder key must not be null");
       }
+      final LemmaKey key = entry.getKey();
       final List<String> orderedIds = entry.getValue();
       if (orderedIds == null) {
         throw new IllegalArgumentException("senseOrder value must not be null");
@@ -103,12 +104,24 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
         }
         final Synset synset = byId.get(synsetId);
         if (synset == null) {
-          throw new IllegalArgumentException("Sense index entry " + entry.getKey().lemma()
-              + " (" + entry.getKey().pos() + ") references unknown synset " + synsetId);
+          throw new IllegalArgumentException("Sense index entry " + key.lemma()
+              + " (" + key.pos() + ") references unknown synset " + synsetId);
+        }
+        boolean containsLemma = false;
+        for (final String lemma : synset.lemmas()) {
+          if (key.lemma().equals(LemmaFolding.fold(lemma))) {
+            containsLemma = true;
+            break;
+          }
+        }
+        if (synset.pos() != key.pos() || !containsLemma) {
+          throw new IllegalArgumentException("Sense index entry " + key.lemma()
+              + " (" + key.pos() + ") references synset " + synsetId
+              + ", which does not contain that lemma and part of speech");
         }
         senses.add(synset);
       }
-      index.put(entry.getKey(), List.copyOf(senses));
+      index.put(key, List.copyOf(senses));
     }
     this.synsetsById = byId;
     this.senseIndex = index;
