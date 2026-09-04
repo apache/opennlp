@@ -196,6 +196,10 @@ public class FeedforwardDependencyParserTest {
         FeedforwardDependencyModel.normalize("\u039F\u0301\u03A3"));
     assertEquals("\u03BF\u03C3\u0301\u03B1",
         FeedforwardDependencyModel.normalize("\u039F\u03A3\u0301\u0391"));
+    assertEquals("\u03BF\u2019\u03C2",
+        FeedforwardDependencyModel.normalize("\u039F\u2019\u03A3"));
+    assertEquals("\u03BF\u03C3\u2019\u03B1",
+        FeedforwardDependencyModel.normalize("\u039F\u03A3\u2019\u0391"));
   }
 
   @Test
