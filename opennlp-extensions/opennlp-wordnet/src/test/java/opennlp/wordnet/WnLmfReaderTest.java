@@ -99,6 +99,19 @@ public class WnLmfReaderTest {
   }
 
   @Test
+  void testPreservesMultipleDefinitions() throws IOException {
+    final LexicalKnowledgeBase lexicon = parse(
+        wrap("<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+            + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
+            + "<Synset id=\"t-1\" partOfSpeech=\"n\">"
+            + "<Definition>a feline</Definition>"
+            + "<Definition>a domesticated cat</Definition></Synset>"));
+
+    assertEquals("a feline; a domesticated cat",
+        lexicon.lookup("cat", WordNetPOS.NOUN).get(0).gloss());
+  }
+
+  @Test
   void testLookupIsPosScoped() {
     final LexicalKnowledgeBase lexicon = fixture();
     assertEquals(1, lexicon.lookup("run", WordNetPOS.VERB).size());
@@ -329,12 +342,34 @@ public class WnLmfReaderTest {
         Arguments.of(Named.of("lemma outside lexical entry",
             "<Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"),
             List.of("Lemma outside a LexicalEntry")),
+        Arguments.of(Named.of("duplicate lemma",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Lemma writtenForm=\"dog\" partOfSpeech=\"n\"/></LexicalEntry>"),
+            List.of("Duplicate Lemma in LexicalEntry t-cat-n")),
+        Arguments.of(Named.of("nested lexical entry",
+            "<LexicalEntry id=\"t-outer-n\"><Lemma writtenForm=\"outer\" partOfSpeech=\"n\"/>"
+                + "<LexicalEntry id=\"t-inner-n\"><Lemma writtenForm=\"inner\" "
+                + "partOfSpeech=\"n\"/></LexicalEntry></LexicalEntry>"),
+            List.of("Nested LexicalEntry inside t-outer-n")),
         Arguments.of(Named.of("sense before lemma",
             "<LexicalEntry id=\"t-cat-n\"><Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
                 + "<Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/></LexicalEntry>"
                 + "<Synset id=\"t-1\" partOfSpeech=\"n\"><Definition>a feline</Definition>"
                 + "</Synset>"),
             List.of("Sense before its entry's Lemma")),
+        Arguments.of(Named.of("nested sense",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\">"
+                + "<Sense id=\"t-cat-n-2\" synset=\"t-1\"/></Sense></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\"/>"),
+            List.of("Nested Sense inside t-cat-n-1")),
+        Arguments.of(Named.of("nested synset",
+            "<Synset id=\"t-1\" partOfSpeech=\"n\">"
+                + "<Synset id=\"t-2\" partOfSpeech=\"n\"/></Synset>"),
+            List.of("Nested Synset inside t-1")),
+        Arguments.of(Named.of("definition outside synset",
+            "<Definition>orphaned definition</Definition>"),
+            List.of("Definition outside a Synset")),
         Arguments.of(Named.of("sense relation outside sense",
             "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
                 + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/>"
