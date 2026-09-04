@@ -160,6 +160,7 @@ public class MorphyLemmatizerTest {
       "ADP, none",
       "SCONJ, none",
       "SYM, none",
+      "ß, none",
   })
   void testPosFromTagMapping(String tag, WordNetPOS pos) {
     assertEquals(pos, MorphyLemmatizer.posFromTag(tag));
