@@ -44,9 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests the pure-Java neural tier end to end: training on a tiny corpus must let the
- * greedy feedforward parser reproduce the training sentences, and a model must survive
- * the serialization round trip bit-for-bit in behavior.
+ * Tests feedforward training, parsing, refinement, and model serialization.
  */
 public class FeedforwardDependencyParserTest {
 
@@ -55,7 +53,7 @@ public class FeedforwardDependencyParserTest {
 
   /**
    * Trains the shared model once for all tests, with dropout off and a fixed seed so
-   * the tiny network memorizes the corpus deterministically.
+   * the test network memorizes the corpus deterministically.
    *
    * @throws IOException Thrown if reading the in-memory samples fails.
    */
@@ -145,10 +143,7 @@ public class FeedforwardDependencyParserTest {
   }
 
   @Test
-  void testRefineWithAnUnknownRelationFailsLoud() throws IOException {
-    // A refinement corpus may carry a relation label the original training set never
-    // used; the transition inventory is fixed at training time, so refinement cannot
-    // score it and must say which transition it does not know.
+  void testRefineRejectsAnUnknownRelation() throws IOException {
     final FeedforwardDependencyTrainer.Settings settings =
         new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
     final List<DependencySample> unseenRelation = List.of(
@@ -178,21 +173,13 @@ public class FeedforwardDependencyParserTest {
     final FeedforwardDependencyModel refined = FeedforwardDependencyTrainer.refine(
         local, ObjectStreamUtils.createObjectStream(corpus()), refineSettings, 2);
 
-    // refinement produces a distinct model, so a model already shared between threads
-    // cannot change underneath them
     assertNotSame(local, refined);
     assertArrayEquals(before, local.score(features));
-    // and the returned model really carries the refinement
     assertFalse(Arrays.equals(before, refined.score(features)));
   }
 
   /**
-   * Pins the one contextual rule layered over the per-code-point mapping: a Greek
-   * capital sigma preceded by a letter and not followed by one lowercases to the
-   * final form U+03C2, the way natural lowercase Greek spells it and the way every
-   * treebank-derived vocabulary key spells it, so an uppercase Greek word normalizes
-   * to a key the vocabulary can actually contain. The plain per-code-point mapping
-   * would produce the medial sigma there and miss the vocabulary.
+   * Checks the final-sigma rule applied after code-point case mapping.
    */
   @Test
   void testNormalizeAppliesTheFinalSigmaRule() {
@@ -207,9 +194,7 @@ public class FeedforwardDependencyParserTest {
   }
 
   /**
-   * Pins the allocation-free fast path: a word the mapping leaves unchanged, the
-   * overwhelming majority of parse-time input, is returned as the same instance
-   * rather than a fresh copy built on every lookup of the scoring loop.
+   * Checks that normalization reuses a string when no case mapping is needed.
    */
   @Test
   void testNormalizeReturnsTheSameInstanceForLowercaseWords() {
@@ -221,11 +206,7 @@ public class FeedforwardDependencyParserTest {
   }
 
   /**
-   * Pins the refinement contract for the sample kind the unknown-transition check
-   * never sees: a non-projective gold graph has no arc-standard derivation and is
-   * skipped before the transition inventory is consulted, so an unknown relation
-   * riding on it must not trigger the unknown-transition failure, and refinement
-   * proceeds on the remaining projective samples.
+   * Checks that non-projective samples are skipped before transition validation.
    */
   @Test
   void testNonProjectiveSampleWithUnknownRelationIsSkippedNotFatal() throws IOException {
@@ -245,9 +226,7 @@ public class FeedforwardDependencyParserTest {
   }
 
   /**
-   * Pins the serialized vocabulary order: entries are written in ascending id order,
-   * not in the iteration order of the underlying immutable maps, which the JDK salts
-   * per launch, so serializing the same model produces the same bytes on every run.
+   * Checks that serialized vocabulary entries follow their numeric ids.
    */
   @Test
   void testSerializedVocabulariesAreWrittenInAscendingIdOrder() throws IOException {
@@ -271,11 +250,7 @@ public class FeedforwardDependencyParserTest {
   }
 
   /**
-   * Pins the scoring cache against the direct path: the parser built in setup turned
-   * the cache on for the shared model, so scoring the same configuration through a
-   * fresh uncached copy must agree to float rounding, and the winning transition must
-   * be identical. Repeated scoring exercises the cache-hit path as well as the
-   * first-sight fill.
+   * Compares cached and direct scoring, including repeated cache reads.
    */
   @Test
   void testScoringCacheMatchesTheDirectPath() {
@@ -351,7 +326,7 @@ public class FeedforwardDependencyParserTest {
   }
 
   @Test
-  void testCorruptModelFailsLoud() {
+  void testCorruptModelIsRejected() {
     assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream("not a model".getBytes(StandardCharsets.UTF_8))));
   }

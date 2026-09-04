@@ -28,14 +28,12 @@ import opennlp.tools.commons.ThreadSafe;
  * {@link FeedforwardDependencyModel}, greedy by default and beamed when constructed
  * with a beam size above one.
  *
- * <p>With a beam, the decoder keeps the highest scoring transition sequences side by
- * side, scored by summed log-probabilities, so a single locally attractive but globally
- * wrong transition can still be recovered while the correct parse remains inside the
- * beam. Every complete arc-standard derivation of a sentence has the same length, which
- * keeps the summed scores comparable without length normalization.</p>
+ * <p>Beam decoding retains the highest scoring transition sequences by summed
+ * log-probability. Complete arc-standard derivations for a sentence have equal length,
+ * so their scores need no length normalization.</p>
  *
  * <p>Inference is ordinary array arithmetic with no native runtime involved, so this
- * parser deploys exactly like the classical one while scoring configurations with
+ * parser has the same input and output API as the classical parser while scoring with
  * learned dense representations instead of sparse feature conjunctions.</p>
  *
  * <p>The parser holds an immutable model and no per-parse state, so one instance can be
@@ -66,7 +64,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
    * Initializes a {@link FeedforwardDependencyParser} with a beam.
    *
    * @param model The model to parse with. Must not be {@code null}.
-   * @param beamSize The number of transition sequences to keep side by side. Must be
+   * @param beamSize The number of transition sequences to retain. Must be
    *                 greater than zero; {@code 1} decodes greedily.
    * @throws IllegalArgumentException Thrown if {@code model} is {@code null},
    *         {@code beamSize} is not positive, or an outcome of the model does not
@@ -81,8 +79,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
     }
     this.model = model;
     this.beamSize = beamSize;
-    // A parser only ever reads a frozen model, so the scoring cache is safe to turn
-    // on here; training and refinement work on uncached copies.
+    // Parser instances read immutable models. Training and refinement use uncached copies.
     model.enableScoringCache();
     final String[] outcomes = model.transitions();
     this.transitions = new Transition[outcomes.length];
@@ -135,8 +132,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
   }
 
   /**
-   * Decodes with a beam: the {@code beamSize} best transition sequences advance side by
-   * side and the best complete one wins.
+   * Decodes with a beam and returns its highest scoring complete sequence.
    *
    * @param tokens The sentence tokens.
    * @param tags The POS tags, aligned with {@code tokens}.

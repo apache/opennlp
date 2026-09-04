@@ -45,17 +45,14 @@ import opennlp.tools.util.StringUtil;
  * architecture follows
  * <a href="https://aclanthology.org/D14-1082/">Chen and Manning (2014)</a>.
  *
- * <p>This is the pure-Java neural tier: the network is executed with ordinary array
- * arithmetic, so parsing needs no native runtime, and the same class scores
- * configurations for training and decoding. Unknown words fall back to a learned
- * unknown symbol; words are matched case-insensitively after
+ * <p>The network runs with Java arrays and requires no native runtime. The same class
+ * scores configurations during training and decoding. Unknown words use a learned
+ * fallback row; words are matched case-insensitively after
  * {@link #normalize(String) normalization}.</p>
  *
- * <p>An instance is immutable and safe to share between threads once it has been handed
- * to a caller. {@link FeedforwardDependencyTrainer} fills the weights while building a
- * model and before that model escapes, and
- * {@link FeedforwardDependencyTrainer#refine refine} trains a copy rather than the model
- * it is given, so no model a caller holds ever changes underneath it.</p>
+ * <p>Instances returned by {@link FeedforwardDependencyTrainer} are immutable and safe
+ * to share between threads. {@link FeedforwardDependencyTrainer#refine refine} updates
+ * an independent copy.</p>
  *
  * @see FeedforwardDependencyParser
  * @see FeedforwardDependencyTrainer
@@ -212,7 +209,7 @@ public class FeedforwardDependencyModel {
    * slot per (template position, embedding row) pair, filled on first use. Filling is
    * idempotent, so concurrent readers may compute a contribution twice but never see
    * a partial one, and a shared budget bounds the total memory; pairs beyond the
-   * budget simply keep the direct path.
+   * budget use direct scoring.
    */
   private static final class ContributionCache {
 
@@ -236,7 +233,7 @@ public class FeedforwardDependencyModel {
      * Returns the cached hidden-layer contribution of one pair, computing and
      * publishing it on first sight while the budget lasts.
      *
-     * @param model The frozen model the contributions derive from.
+     * @param model The immutable model the contributions derive from.
      * @param position The template position.
      * @param row The embedding row at that position.
      * @return The contribution vector, or {@code null} when the budget is spent and

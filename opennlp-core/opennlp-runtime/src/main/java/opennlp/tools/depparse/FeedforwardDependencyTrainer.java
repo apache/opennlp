@@ -35,9 +35,8 @@ import opennlp.tools.util.ObjectStream;
  * Trains the {@link FeedforwardDependencyModel} entirely in Java: oracle-derived
  * transition examples, minibatch AdaGrad over a softmax cross-entropy loss, cube
  * activation, and inverted dropout on the hidden layer, the training recipe of
- * <a href="https://aclanthology.org/D14-1082/">Chen and Manning (2014)</a>. No external
- * training framework is involved, so the whole neural tier, training and inference, is
- * plain array arithmetic inside the JVM.
+ * <a href="https://aclanthology.org/D14-1082/">Chen and Manning (2014)</a>. Training and
+ * inference use Java arrays and require no external training framework.
  *
  * <p>Words below the frequency cutoff share a learned unknown embedding; absent
  * template positions share a learned padding embedding. Non-projective samples have no
@@ -183,20 +182,13 @@ public final class FeedforwardDependencyTrainer {
   }
 
   /**
-   * Fine-tunes a locally trained model globally: sentences are decoded with a beam, the
-   * gold derivation is tracked through it, and the moment the gold prefix falls out of
-   * the beam an early update, in the sense of
-   * <a href="https://aclanthology.org/P04-1015/">Collins and Roark (2004)</a>, pushes
-   * the model toward keeping it. The loss is a conditional likelihood over the beam's
-   * candidate paths, scored exactly like the beamed parser scores them, summed
-   * log-probabilities, so training optimizes the quantity decoding uses.
+   * Refines a locally trained model with beam search and the early-update method of
+   * <a href="https://aclanthology.org/P04-1015/">Collins and Roark (2004)</a>. The loss
+   * is conditional likelihood over candidate paths scored by summed log-probabilities.
    *
-   * <p>The refined weights are a copy: {@code model} itself is never written to, so a
-   * model already being parsed with, possibly by several threads, keeps behaving exactly
-   * as before while a refined successor is trained from it. The copy is updated with
-   * per-sentence AdaGrad steps and no dropout; {@link Settings#epochs()} counts the
-   * refinement passes. Refinement is deterministic for a fixed {@link Settings#seed()}.
-   * Parse afterwards with the same beam size.</p>
+   * <p>Refinement updates a copy with per-sentence AdaGrad steps and no dropout.
+   * {@link Settings#epochs()} sets the number of refinement passes. Use the same beam
+   * size for parsing the result.</p>
    *
    * <p>The transition inventory comes from {@code model} and is not extended, because
    * its size is the width of the trained output layer. A refinement corpus using a
@@ -404,14 +396,14 @@ public final class FeedforwardDependencyTrainer {
         expansions.sort((a, b) -> Double.compare(b.score, a.score));
         final List<BeamNode> survivors =
             new ArrayList<>(expansions.subList(0, Math.min(beamSize, expansions.size())));
-        boolean goldSurvives = false;
+        boolean goldRetained = false;
         for (final BeamNode survivor : survivors) {
           if (survivor.gold) {
-            goldSurvives = true;
+            goldRetained = true;
             break;
           }
         }
-        if (!goldSurvives) {
+        if (!goldRetained) {
           if (goldChild == null) {
             // The gold transition was not applicable in the gold configuration, so
             // this sentence yields no update.

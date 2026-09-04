@@ -94,8 +94,7 @@ public final class ArcStandardState {
   }
 
   /**
-   * Creates an independent copy of this configuration, so alternatives can be advanced
-   * side by side during search.
+   * Creates an independent copy for advancing a search alternative.
    *
    * @return A copy that can be advanced without affecting this state. Never {@code null}.
    */

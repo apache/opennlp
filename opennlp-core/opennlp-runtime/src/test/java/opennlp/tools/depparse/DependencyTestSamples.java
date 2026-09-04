@@ -47,8 +47,7 @@ final class DependencyTestSamples {
   }
 
   /**
-   * Builds the projective training corpus: three tiny sentences, each repeated so both
-   * trainers see enough evidence to memorize them.
+   * Builds three repeated projective samples for deterministic parser tests.
    *
    * @return The training samples. Never {@code null}.
    */

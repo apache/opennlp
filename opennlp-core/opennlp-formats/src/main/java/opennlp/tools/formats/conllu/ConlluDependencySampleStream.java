@@ -39,13 +39,10 @@ import opennlp.tools.util.StringUtil;
  * <a href="https://universaldependencies.org/format.html">CoNLL-U</a> content, mapping
  * the {@code HEAD} and {@code DEPREL} columns of the basic dependency annotation.
  *
- * <p>The file is parsed raw, deliberately not through {@link ConlluStream}: that stream
- * merges multiword token ranges with their syntactic words, which suits the token and
- * lemma views but destroys the dependency annotation of every sentence containing a
- * contraction. Here range lines and empty nodes are dropped while their syntactic words
- * are kept, so contraction-bearing sentences train and evaluate normally. Sentences
- * whose annotation is incomplete or invalid, for example an underscore head, are
- * skipped and counted; the count is logged once the stream is exhausted.</p>
+ * <p>This reader does not use {@link ConlluStream}, which merges multiword token ranges
+ * with their syntactic words for token and lemma samples. Dependency samples instead
+ * omit range lines and empty nodes while retaining the syntactic word rows. Sentences
+ * with incomplete or invalid basic dependencies are skipped and counted.</p>
  *
  * @since 3.0.0
  */

@@ -68,7 +68,7 @@ public class DependencyParserEdgeCaseTest {
 
   /**
    * Trains one classical and one neural model on the shared corpus. The feedforward
-   * settings disable dropout and fix the seed, so the tiny network memorizes the corpus
+   * settings disable dropout and fix the seed, so the test network memorizes the corpus
    * deterministically.
    *
    * @throws IOException Thrown if reading the in-memory samples fails.
@@ -177,14 +177,13 @@ public class DependencyParserEdgeCaseTest {
     final DependencyGraph parsed = maxentParser.parse(gold.getTokens(), gold.getTags());
     assertNotEquals(gold.getGraph(), parsed);
     assertEquals(0, crossingArcCount(parsed));
-    // The unseen final token becomes the root and the verb attaches under it; the
-    // familiar determiner and subject arcs survive from the training evidence.
+    // The expected projective result is deterministic for the test model.
     assertEquals(DependencyGraph.of(new int[] {1, 2, 3, -1},
         new String[] {"det", "nsubj", "nsubj", "root"}), parsed);
   }
 
   @Test
-  void testFeedforwardTrainingFailsLoudWithoutProjectiveSamples() {
+  void testFeedforwardTrainingRejectsNoProjectiveSamples() {
     final FeedforwardDependencyTrainer.Settings settings =
         new FeedforwardDependencyTrainer.Settings(8, 8, 1, 32, 0.05, 0.0, 0.0, 1, 17L);
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
@@ -195,7 +194,7 @@ public class DependencyParserEdgeCaseTest {
   }
 
   @Test
-  void testRefinementFailsLoudWithoutProjectiveSamples() {
+  void testRefinementRejectsNoProjectiveSamples() {
     final FeedforwardDependencyTrainer.Settings settings =
         new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,

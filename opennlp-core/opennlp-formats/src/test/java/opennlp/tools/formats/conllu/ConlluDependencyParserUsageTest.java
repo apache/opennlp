@@ -46,10 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * gold sentences from CoNLL-U content, train a {@link DependencyParserME}, parse a
  * sentence, inspect the resulting {@link DependencyGraph}, and persist the model.
  *
- * <p>The fixture holds three tiny sentences inline, so the test needs no external data.
- * A real treebank provides thousands of sentences; here each fixture sentence is
- * repeated to give the trainer the same evidence many times, which lets the model
- * memorize the fixture and makes every expected value exact.</p>
+ * <p>The fixture contains four sentences and needs no external data. Repetition makes
+ * the expected training results deterministic.</p>
  */
 public class ConlluDependencyParserUsageTest {
 
@@ -64,7 +62,7 @@ public class ConlluDependencyParserUsageTest {
   }
 
   /**
-   * The training fixture: three gold sentences in CoNLL-U form. The {@code HEAD} column
+   * The training fixture: four gold sentences in CoNLL-U form. The {@code HEAD} column
    * is one-based with {@code 0} marking the root; the reader converts it to the
    * zero-based convention of {@link DependencyGraph}.
    */
@@ -82,6 +80,13 @@ public class ConlluDependencyParserUsageTest {
       line("1", "she", "she", "PRON", "PRP", "_", "2", "nsubj", "_", "_"),
       line("2", "eats", "eat", "VERB", "VBZ", "_", "0", "root", "_", "_"),
       line("3", "fish", "fish", "NOUN", "NN", "_", "2", "obj", "_", "_"),
+      "",
+      "# text = Alice sent Bob a message",
+      line("1", "Alice", "Alice", "PROPN", "NNP", "_", "2", "nsubj", "_", "_"),
+      line("2", "sent", "send", "VERB", "VBD", "_", "0", "root", "_", "_"),
+      line("3", "Bob", "Bob", "PROPN", "NNP", "_", "2", "iobj", "_", "_"),
+      line("4", "a", "a", "DET", "DT", "_", "5", "det", "_", "_"),
+      line("5", "message", "message", "NOUN", "NN", "_", "2", "obj", "_", "_"),
       "") + "\n";
 
   private static DependencyModel model;
@@ -130,7 +135,7 @@ public class ConlluDependencyParserUsageTest {
   @Test
   void testReaderDeliversTheGoldAnnotation() throws IOException {
     final List<DependencySample> fixture = readFixture();
-    assertEquals(3, fixture.size());
+    assertEquals(4, fixture.size());
     final DependencySample first = fixture.get(0);
     assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
         new String[] {"det", "nsubj", "root"}), first.getGraph());
@@ -153,14 +158,23 @@ public class ConlluDependencyParserUsageTest {
   }
 
   @Test
+  void testParseAliceSentence() {
+    final DependencyGraph parse = parser.parse(
+        new String[] {"Alice", "sent", "Bob", "a", "message"},
+        new String[] {"PROPN", "VERB", "PROPN", "DET", "NOUN"});
+    assertEquals(DependencyGraph.of(new int[] {1, -1, 1, 4, 1},
+        new String[] {"nsubj", "root", "iobj", "det", "obj"}), parse);
+  }
+
+  @Test
   void testEvaluatorScoresTheParserAgainstGoldSamples() throws IOException {
     // The evaluator parses each gold sentence and accumulates the two standard scores;
-    // on its own training fixture the memorizing model is exact on all eight tokens.
+    // The expected score is exact because the parser is evaluated on its training data.
     final DependencyEvaluator evaluator = new DependencyEvaluator(parser);
     evaluator.evaluate(ObjectStreamUtils.createObjectStream(readFixture()));
     assertEquals(1.0d, evaluator.getUas());
     assertEquals(1.0d, evaluator.getLas());
-    assertEquals(8, evaluator.getWordCount());
+    assertEquals(13, evaluator.getWordCount());
   }
 
   @Test

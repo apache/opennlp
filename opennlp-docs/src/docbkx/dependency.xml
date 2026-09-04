@@ -21,37 +21,90 @@
 		<title>Introduction</title>
 		<para>
 			Dependency parsing assigns each token a syntactic head and a relation label.
-			<code>DependencyParserME</code> trains on <code>DependencySample</code> streams
-			and returns a <code>DependencyGraph</code> of heads and relations. CoNLL-U
-			treebanks are read through <code>ConlluDependencySampleStream</code>.
-			<code>ConlluDependencyParserUsageTest</code> asserts the train-parse-evaluate
-			workflow shown here.
+			Both parser implementations accept tokens with aligned part-of-speech tags and
+			return a <code>DependencyGraph</code>. <code>DependencyParserME</code> uses a
+			maximum entropy model. <code>FeedforwardDependencyParser</code> uses a neural
+			model implemented in Java.
 		</para>
 	</section>
 
-	<section xml:id="tools.dependency.api">
-		<title>Training and parsing</title>
+	<section xml:id="tools.dependency.training-data">
+		<title>Training data</title>
 		<para>
-			Open a CoNLL-U sample stream, train a model, and parse tokens with their
-			part-of-speech tags:
+			<code>ConlluDependencySampleStream</code> reads the basic <code>HEAD</code> and
+			<code>DEPREL</code> columns of a CoNLL-U treebank. Select
+			<code>ConlluTagset.U</code> for universal tags or <code>ConlluTagset.X</code>
+			for language-specific tags. The reader retains syntactic words from multiword
+			tokens and skips sentences without a complete dependency tree.
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.maxent">
+		<title>Maximum entropy parser</title>
+		<para>
+			Train and save the standard OpenNLP model:
 			<programlisting language="java">
-<![CDATA[ObjectStream<DependencySample> samples =
-    new ConlluDependencySampleStream(conlluInput, ConlluTagset.U);
+<![CDATA[InputStreamFactory trainingData =
+    () -> Files.newInputStream(Path.of("train.conllu"));
 
 TrainingParameters parameters = TrainingParameters.defaultParams();
 parameters.put(Parameters.CUTOFF_PARAM, 0);
-DependencyModel model = DependencyParserME.train("eng", samples, parameters);
-DependencyParserME parser = new DependencyParserME(model);
+DependencyModel model;
+try (ObjectStream<DependencySample> samples =
+    new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+  model = DependencyParserME.train("eng", samples, parameters);
+}
+model.serialize(Path.of("en-depparse.bin"));
 
-DependencyGraph graph = parser.parse(
-    new String[] {"the", "dog", "barks"},
-    new String[] {"DET", "NOUN", "VERB"});
-// graph.headOf(0) == 1, graph.relationOf(0) == "det"
-// graph.root() is the index of the root token]]>
+DependencyParser parser =
+    new DependencyParserME(new DependencyModel(Path.of("en-depparse.bin")));]]>
 			</programlisting>
-			A trained model serializes like any other tool model. Evaluation accumulates
-			unlabeled and labeled attachment scores through
-			<code>DependencyEvaluator</code>.
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.feedforward">
+		<title>Feedforward parser</title>
+		<para>
+			The feedforward trainer has its own versioned model format. This example trains,
+			saves, reloads, and creates a parser with a beam size of four:
+			<programlisting language="java">
+<![CDATA[FeedforwardDependencyModel model;
+try (ObjectStream<DependencySample> samples =
+    new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+  model = FeedforwardDependencyTrainer.train(
+      samples, FeedforwardDependencyTrainer.Settings.defaults());
+}
+try (OutputStream out = Files.newOutputStream(Path.of("en-depparse-ff.bin"))) {
+  model.serialize(out);
+}
+
+DependencyParser parser = new FeedforwardDependencyParser(
+    FeedforwardDependencyModel.load(Path.of("en-depparse-ff.bin")), 4);]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.parsing">
+		<title>Parsing and evaluation</title>
+		<para>
+			Both implementations use the same parsing API. Graph indices refer to the input
+			token array:
+			<programlisting language="java">
+<![CDATA[String[] tokens = {"Alice", "sent", "Bob", "a", "message", "."};
+String[] tags = {"PROPN", "VERB", "PROPN", "DET", "NOUN", "PUNCT"};
+DependencyGraph graph = parser.parse(tokens, tags);
+
+for (DependencyArc arc : graph.arcs()) {
+  String dependent = tokens[arc.dependent()];
+  String head = arc.head() == DependencyArc.ROOT_HEAD
+      ? "ROOT" : tokens[arc.head()];
+  System.out.println(dependent + " -> " + head + " (" + arc.relation() + ")");
+}]]>
+			</programlisting>
+			<code>DependencyEvaluator</code> reports unlabeled and labeled attachment scores.
+			The arc-standard trainers skip non-projective training samples. The evaluation
+			helper and its pinned treebank instructions are in
+			<code>opennlp-formats/dev</code>.
 		</para>
 	</section>
 </chapter>

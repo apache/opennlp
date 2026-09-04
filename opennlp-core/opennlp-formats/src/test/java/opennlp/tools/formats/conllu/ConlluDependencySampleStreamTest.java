@@ -129,7 +129,7 @@ public class ConlluDependencySampleStreamTest {
   }
 
   @Test
-  void testMalformedLineFailsLoud() {
+  void testMalformedLineIsRejected() {
     final InputStreamFactory bad = () -> new ByteArrayInputStream(
         "1\ttoo\tfew\tcolumns\n".getBytes(StandardCharsets.UTF_8));
     assertThrows(IOException.class,
@@ -137,7 +137,7 @@ public class ConlluDependencySampleStreamTest {
   }
 
   @Test
-  void testExtraColumnFailsLoud() {
+  void testExtraColumnIsRejected() {
     final InputStreamFactory bad = () -> new ByteArrayInputStream(
         (line("1", "word", "word", "NOUN", "NN", "_", "0", "root", "_", "_",
             "extra") + "\n").getBytes(StandardCharsets.UTF_8));

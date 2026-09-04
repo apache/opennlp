@@ -44,7 +44,7 @@ produces `/tmp/ud-ewt/train.conllu` and `/tmp/ud-ewt/test.conllu`. Any treebank 
 
 Without the property the test reports as skipped, which is why a plain build never needs network access or external data.
 
-Two properties of the parser worth knowing when reading the numbers: multiword-token sentences are kept because the CoNLL-U reader recovers their dependency rows, and non-projective training sentences are skipped, since the arc-standard transition system cannot derive them; the skip count is inherent to the algorithm, not data loss in the reader.
+The reader retains the syntactic rows of multiword tokens. The arc-standard trainer skips non-projective trees because that transition system cannot derive them.
 
 ## Licensing
 

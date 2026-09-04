@@ -24,9 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Tests the outcome encoding of {@link Transition}: every transition must render to a
- * unique outcome string and decode back to an equal transition, and every malformed
- * outcome must be rejected loudly.
+ * Tests valid transition encodings and rejection of malformed outcomes.
  */
 public class TransitionTest {
 
@@ -46,8 +44,7 @@ public class TransitionTest {
 
   @Test
   void testLabelContainingTheSeparatorRoundTrips() {
-    // Only the first separator splits type from label, so a label containing the
-    // separator character itself survives the round trip unchanged.
+    // Only the first separator divides the type from the label.
     final Transition transition = Transition.leftArc("nmod:poss");
     assertEquals("LEFT_ARC:nmod:poss", transition.encode());
     assertEquals(transition, Transition.decode(transition.encode()));

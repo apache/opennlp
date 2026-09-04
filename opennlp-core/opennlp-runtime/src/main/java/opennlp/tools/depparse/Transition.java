@@ -23,8 +23,8 @@ import opennlp.tools.util.StringUtil;
  * One action of the arc-standard transition system: shift the next buffer token onto the
  * stack, or attach one of the two topmost stack tokens to the other under a relation label.
  *
- * <p>A transition doubles as a classification outcome: {@link #encode()} renders it as the
- * outcome string a model is trained on, and {@link #decode(String)} restores it.</p>
+ * <p>{@link #encode()} renders a transition as a classification outcome and
+ * {@link #decode(String)} restores it.</p>
  *
  * @param type The kind of action. Must not be {@code null}.
  * @param label The relation label for arc actions, {@code null} for {@link Type#SHIFT}.

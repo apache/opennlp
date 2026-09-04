@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Tests {@link DependencyParserME} end to end: training on a tiny corpus must let the
+ * Tests {@link DependencyParserME} end to end: training on a small corpus must let the
  * greedy parser reproduce the training sentences, which proves the oracle, event stream,
  * feature generation, and decode loop agree with each other.
  */
@@ -45,7 +45,7 @@ public class DependencyParserMETest {
 
   /**
    * Trains the shared model once for all tests; the zero cutoff keeps every feature of
-   * the tiny corpus.
+   * the test corpus.
    *
    * @throws IOException Thrown if reading the in-memory samples fails.
    */
