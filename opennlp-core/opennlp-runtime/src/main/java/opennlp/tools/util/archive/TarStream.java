@@ -36,6 +36,8 @@ import opennlp.tools.commons.Internal;
  * names, pax {@code path} and {@code size} records, and GNU base-256 sizes. Sparse
  * entries and global pax records that change paths or sizes are rejected because this
  * reader cannot reproduce their content or global semantics.</p>
+ *
+ * @since 3.0.0
  */
 @Internal
 public final class TarStream {
@@ -68,12 +70,14 @@ public final class TarStream {
   private static final int BASE_256_FIRST_BYTE_BITS = 0x7F;
 
   private final InputStream in;
+  private final long maxEntries;
   private final byte[] header = new byte[BLOCK];
 
   private String name;
   private long size;
   private char type;
   private long remaining;
+  private long entries;
   private boolean ended;
 
   /** The name an extension header supplied for the entry that follows it, else null. */
@@ -89,10 +93,27 @@ public final class TarStream {
    * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    */
   public TarStream(InputStream in) {
+    this(in, Long.MAX_VALUE);
+  }
+
+  /**
+   * Initializes a reader with an archive-entry limit. Extension headers count toward the
+   * limit.
+   *
+   * @param in The tar content. Not {@code null}. Not closed by this class.
+   * @param maxEntries The maximum number of archive headers to read. Must be positive.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null} or
+   *         {@code maxEntries} is not positive.
+   */
+  public TarStream(InputStream in, long maxEntries) {
     if (in == null) {
       throw new IllegalArgumentException("in must not be null");
     }
+    if (maxEntries <= 0) {
+      throw new IllegalArgumentException("maxEntries must be positive");
+    }
     this.in = in;
+    this.maxEntries = maxEntries;
   }
 
   /**
@@ -140,6 +161,11 @@ public final class TarStream {
       if (!readBlock() || isEndBlock()) {
         ended = true;
         return false;
+      }
+      entries++;
+      if (entries > maxEntries) {
+        throw new IOException("archive entry count exceeds the limit of "
+            + maxEntries + " entries");
       }
       if (!hasValidChecksum(header)) {
         throw new IOException("malformed tar header checksum");

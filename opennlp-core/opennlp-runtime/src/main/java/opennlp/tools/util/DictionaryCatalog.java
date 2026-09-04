@@ -38,6 +38,7 @@ import java.util.Set;
 public final class DictionaryCatalog {
 
   private static final int SHA_512_HEX_LENGTH = 128;
+  private static final String URL_SUFFIX = ".url";
 
   /**
    * System property that must be {@code true} before a catalog entry may be
@@ -79,8 +80,8 @@ public final class DictionaryCatalog {
   public Set<String> ids() {
     final Set<String> ids = new LinkedHashSet<>();
     for (final String key : properties.stringPropertyNames()) {
-      if (key.endsWith(".url")) {
-        ids.add(key.substring(0, key.length() - ".url".length()));
+      if (key.endsWith(URL_SUFFIX)) {
+        ids.add(key.substring(0, key.length() - URL_SUFFIX.length()));
       }
     }
     return Collections.unmodifiableSet(ids);
@@ -98,7 +99,7 @@ public final class DictionaryCatalog {
     if (id == null) {
       throw new IllegalArgumentException("id must not be null");
     }
-    final String url = properties.getProperty(id + ".url");
+    final String url = properties.getProperty(id + URL_SUFFIX);
     final String sha512 = properties.getProperty(id + ".sha512");
     if (url == null || sha512 == null) {
       throw new IOException("unknown or incomplete dictionary catalog entry: " + id);
@@ -160,7 +161,8 @@ public final class DictionaryCatalog {
      * @param sha512 The expected SHA-512 hex digest. Must not be {@code null}.
      * @param filename An optional preferred local file name; may be {@code null}.
      * @throws IllegalArgumentException Thrown if a required value is {@code null},
-     *         {@code uri} is relative, or {@code sha512} is not 128 hex digits.
+     *         {@code uri} is relative, {@code sha512} is not 128 hex digits, or
+     *         {@code filename} is not a local file name.
      */
     public Entry {
       if (id == null) {
@@ -182,6 +184,13 @@ public final class DictionaryCatalog {
         HexFormat.of().parseHex(sha512);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException("sha512 must be 128 hex digits", e);
+      }
+      if (filename != null) {
+        try {
+          ResourceInstaller.validateSourceName(filename);
+        } catch (IllegalArgumentException e) {
+          throw new IllegalArgumentException("filename must be a file name", e);
+        }
       }
     }
   }

@@ -26,16 +26,16 @@ The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and K
 | `mecab.ipadic` | IPADIC 2.7.0 | Japanese | EUC-JP |
 | `mecab.ko-dic` | mecab-ko-dic 2.1.1 | Korean | UTF-8 |
 
-Pinned download URLs and SHA-512 digests for those ids live in
+Example download URLs and SHA-512 digests for those ids live in
 `opennlp/tools/util/dictionary-catalog.properties`. Both archives are
 gzip-compressed tars; `MecabDictionaryInstaller` reads the ustar, pax, and GNU
 formats through `ResourceInstaller`.
 
 The installer extracts only the dictionary payload: the `*.csv` and `*.def` files a
 `MecabDictionary` reads, plus the `dicrc` configuration file the distributions ship
-alongside them. It flattens the entries into the target directory, and by the same
-flattening makes it impossible for an archive path to escape that directory. The
-returned count is the number of dictionary files extracted.
+alongside them. `ResourceInstaller` rejects paths outside the staging directory,
+then `MecabDictionaryInstaller` flattens the selected files into the target. The
+returned value is the number of dictionary files installed.
 
 ## Option A: opt-in catalog install
 
@@ -69,7 +69,7 @@ int files = MecabDictionaryInstaller.install(
 
 A local `file:` URI may omit the digest:
 `MecabDictionaryInstaller.install(localArchive.toUri(), targetDirectory)`.
-Any other URI scheme requires the digest.
+HTTP and HTTPS sources require a digest. Other URI schemes are rejected.
 
 ## Size budgets for larger dictionaries
 
@@ -85,8 +85,7 @@ limits at JVM startup:
 -Dopennlp.install.max.entries=200000
 ```
 
-Values must be positive counts; anything absent or invalid falls back to the
-default.
+Missing, invalid, and nonpositive property values use the default limits.
 
 ## Load and tokenize
 

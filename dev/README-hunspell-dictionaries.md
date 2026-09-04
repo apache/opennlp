@@ -23,11 +23,15 @@ data. The dictionary's readme states its license.
 
 ## Where dictionaries come from
 
-The LibreOffice project maintains a large collection of Hunspell dictionaries, one directory per language, at `github.com/LibreOffice/dictionaries`. Licenses differ per dictionary, which is why OpenNLP bundles no data: for example, the `en_US` dictionary derives from SCOWL and states its terms in `README_en_US.txt` in the same directory. Many other sources work too; the engine only cares that the pair follows the Hunspell format.
+The LibreOffice project maintains Hunspell dictionaries by language at
+`github.com/LibreOffice/dictionaries`. Each dictionary has a separate license.
+For example, SCOWL is the source for the `en_US` dictionary, with terms in
+`README_en_US.txt`. Other sources can be used when the `.aff` and `.dic` files
+follow the Hunspell format.
 
 OpenNLP does not ship a URL catalog. Applications that manage downloads can keep a
 properties file with an entry id followed by `.url`, `.sha512`, and optionally
-`.filename` keys. Pin each URL to a stable release or commit.
+`.filename` keys. Use a URL for a stable release or commit.
 
 ## Option A: application catalog
 

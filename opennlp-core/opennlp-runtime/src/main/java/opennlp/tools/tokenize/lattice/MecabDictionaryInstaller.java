@@ -40,8 +40,8 @@ import opennlp.tools.util.ResourceInstaller;
  * No dictionary data is bundled. Fetching, verification, and unpacking are done by
  * {@link ResourceInstaller} under {@link ResourceInstaller.Limits#DEFAULT}, including
  * startup property overrides. An {@code http} or {@code https} archive requires an
- * expected checksum, and the ustar, pax, and GNU tar formats are all read. Built-in
- * catalog URLs are opt-in via
+ * expected checksum, and the ustar, pax, and GNU tar formats are all read. Catalog
+ * installs are opt-in via
  * {@link #installFromCatalog(DictionaryCatalog, String, Path)}.
  *
  * <p>Only the dictionary payload is installed: the {@code *.csv} lexicon files and
@@ -60,6 +60,7 @@ public final class MecabDictionaryInstaller {
 
   /** The deepest entry path, relative to the archive root, that holds payload. */
   private static final int MAX_PAYLOAD_DEPTH = 2;
+  private static final String TEMP_DIRECTORY_PREFIX = "mecab-dict-";
 
   /** Prevents construction of this utility class. */
   private MecabDictionaryInstaller() {
@@ -78,7 +79,7 @@ public final class MecabDictionaryInstaller {
    *         dictionary file, an installation limit is exceeded, or the target already
    *         contains one of the files.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null} or
-   *         {@code archive} is not a readable {@code file:} URI.
+   *         {@code archive} does not use the {@code file} scheme.
    */
   public static int install(URI archive, Path targetDirectory) throws IOException {
     return install(archive, targetDirectory, null);
@@ -113,7 +114,7 @@ public final class MecabDictionaryInstaller {
     if (targetDirectory == null) {
       throw new IllegalArgumentException("targetDirectory must not be null");
     }
-    final Path unpacked = Files.createTempDirectory("mecab-dict-");
+    final Path unpacked = Files.createTempDirectory(TEMP_DIRECTORY_PREFIX);
     try {
       ResourceInstaller.install(archive, unpacked, expectedChecksum);
       return promoteDictionaryFiles(unpacked, targetDirectory);
@@ -148,7 +149,7 @@ public final class MecabDictionaryInstaller {
     if (targetDirectory == null) {
       throw new IllegalArgumentException("targetDirectory must not be null");
     }
-    final Path unpacked = Files.createTempDirectory("mecab-dict-");
+    final Path unpacked = Files.createTempDirectory(TEMP_DIRECTORY_PREFIX);
     try {
       catalog.install(dictionaryId, unpacked);
       return promoteDictionaryFiles(unpacked, targetDirectory);

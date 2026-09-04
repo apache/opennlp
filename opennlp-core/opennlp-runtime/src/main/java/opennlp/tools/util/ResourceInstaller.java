@@ -25,11 +25,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.ProviderNotFoundException;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -58,7 +61,7 @@ import opennlp.tools.util.archive.TarStream;
  * The content format is detected from the bytes, not from the name: gzip-compressed
  * tar archives and zip archives are unpacked with their relative structure. Invalid,
  * escaping, and duplicate file paths are rejected. Plain gzip files are decompressed,
- * and anything else is stored as a file under its source name. One name rule overrides
+ * and other content is stored as a file under the source name. One name rule overrides
  * byte detection: a {@code *.bin} source is always stored packed because an OpenNLP
  * model file is itself a zip archive that its consumers load packed.</p>
  *
@@ -118,6 +121,7 @@ public final class ResourceInstaller {
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
   private static final String SCHEME_FILE = "file";
+  private static final String MALFORMED_ZIP_ERROR = "malformed zip archive";
 
   /**
    * Safety limits and network behavior for one installation.
@@ -202,10 +206,16 @@ public final class ResourceInstaller {
      */
     public Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
         long maxDownloadBytes, long maxExpandedBytes, long maxEntries) {
-      if (connectTimeout == null || connectTimeout.isZero() || connectTimeout.isNegative()) {
+      if (connectTimeout == null) {
+        throw new IllegalArgumentException("connectTimeout must not be null");
+      }
+      if (connectTimeout.isZero() || connectTimeout.isNegative()) {
         throw new IllegalArgumentException("connectTimeout must be positive");
       }
-      if (readTimeout == null || readTimeout.isZero() || readTimeout.isNegative()) {
+      if (readTimeout == null) {
+        throw new IllegalArgumentException("readTimeout must not be null");
+      }
+      if (readTimeout.isZero() || readTimeout.isNegative()) {
         throw new IllegalArgumentException("readTimeout must be positive");
       }
       if (maxRedirects < 0) {
@@ -912,10 +922,9 @@ public final class ResourceInstaller {
    * Detects the content format from its leading bytes and unpacks accordingly,
    * bounding the total expanded bytes against the expansion limit. One exception: a
    * source named {@code *.bin} is stored verbatim even when its bytes are a zip
-   * archive, because that is exactly what an OpenNLP model file is: a zipped artifact
-   * that consumers load packed. Unpacking it would deliver its innards
-   * ({@code manifest.properties}, {@code *.model}) where the operator requested the
-   * model.
+   * archive. OpenNLP model consumers load the packed zip artifact. Unpacking it would
+   * place the internal entries ({@code manifest.properties}, {@code *.model}) in the
+   * target instead of the model.
    *
    * @param downloaded The fetched file.
    * @param name The file name derived from the source location.
@@ -942,8 +951,8 @@ public final class ResourceInstaller {
         unpackGzip(raw, name, staging, budget, entryBudget);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_LOCAL_HEADER_THIRD, ZIP_LOCAL_HEADER_FOURTH)) {
-        validateZip(downloaded);
         unpackZip(raw, staging, budget, entryBudget);
+        validateZip(downloaded);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_END_HEADER_THIRD, ZIP_END_HEADER_FOURTH)) {
         validateEmptyZip(raw);
@@ -973,16 +982,34 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Checks that a zip archive contains a valid central directory before extraction.
+   * Checks that a zip archive contains a valid central directory before staged content
+   * is promoted.
    *
    * @param archive The downloaded archive.
    * @throws IOException Thrown if the archive is malformed or cannot be read.
    */
   private static void validateZip(Path archive) throws IOException {
-    try (ZipFile zip = new ZipFile(archive.toFile())) {
-      zip.size();
+    try (ZipFile ignored = new ZipFile(archive.toFile())) {
+      // Construction validates the central directory.
+    } catch (UnsupportedOperationException e) {
+      validateZipOnNonDefaultFileSystem(archive);
     } catch (ZipException e) {
-      throw new IOException("malformed zip archive", e);
+      throw new IOException(MALFORMED_ZIP_ERROR, e);
+    }
+  }
+
+  /**
+   * Validates an archive stored by a file-system provider that cannot supply a
+   * {@link java.io.File} to {@link ZipFile}.
+   *
+   * @param archive The downloaded archive.
+   * @throws IOException Thrown if the archive is malformed or cannot be read.
+   */
+  private static void validateZipOnNonDefaultFileSystem(Path archive) throws IOException {
+    try (FileSystem ignored = FileSystems.newFileSystem(archive)) {
+      // Construction validates the central directory.
+    } catch (ZipException | ProviderNotFoundException e) {
+      throw new IOException(MALFORMED_ZIP_ERROR, e);
     }
   }
 
@@ -1003,11 +1030,11 @@ public final class ResourceInstaller {
         || littleEndianShort(header, ZIP_TOTAL_ENTRIES_OFFSET) != 0
         || littleEndianInt(header, ZIP_CENTRAL_SIZE_OFFSET) != 0
         || littleEndianInt(header, ZIP_CENTRAL_OFFSET_OFFSET) != 0) {
-      throw new IOException("malformed zip archive");
+      throw new IOException(MALFORMED_ZIP_ERROR);
     }
     final int commentLength = littleEndianShort(header, ZIP_COMMENT_LENGTH_OFFSET);
     if (raw.readNBytes(commentLength).length != commentLength || raw.read() >= 0) {
-      throw new IOException("malformed zip archive");
+      throw new IOException(MALFORMED_ZIP_ERROR);
     }
   }
 
@@ -1095,16 +1122,14 @@ public final class ResourceInstaller {
    *
    * @param decompressed The uncompressed tar content.
    * @param staging The staging directory to unpack into.
-   * @param entryBudget The entry-count budget, charged for every entry including
-   *                    directories.
+   * @param entryBudget The archive-header limit.
    * @throws IOException Thrown if the archive is malformed, an entry escapes the
    *         staging directory, or the entry limit is exceeded.
    */
   private static void unpackTar(InputStream decompressed, Path staging,
       Budget entryBudget) throws IOException {
-    final TarStream entries = new TarStream(decompressed);
+    final TarStream entries = new TarStream(decompressed, entryBudget.limit());
     while (entries.next()) {
-      entryBudget.spend(1);
       if (!entries.isFile()) {
         safeChild(staging, entries.name());
         continue;
@@ -1143,7 +1168,7 @@ public final class ResourceInstaller {
       copyBounded(zip, file, budget);
     }
     if (!foundEntry) {
-      throw new IOException("malformed zip archive");
+      throw new IOException(MALFORMED_ZIP_ERROR);
     }
   }
 
@@ -1251,7 +1276,7 @@ public final class ResourceInstaller {
    * @return The validated name.
    * @throws IllegalArgumentException Thrown if {@code name} is not a file name.
    */
-  private static String validateSourceName(String name) {
+  static String validateSourceName(String name) {
     if (name.isEmpty() || ".".equals(name) || "..".equals(name)) {
       throw new IllegalArgumentException("name must be a file name");
     }
@@ -1283,6 +1308,11 @@ public final class ResourceInstaller {
     Budget(long limit, String message) {
       this.limit = limit;
       this.message = message;
+    }
+
+    /** {@return the maximum number of units accepted} */
+    long limit() {
+      return limit;
     }
 
     /**
