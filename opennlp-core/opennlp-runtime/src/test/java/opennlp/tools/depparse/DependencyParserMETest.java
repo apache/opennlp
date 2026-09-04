@@ -152,6 +152,13 @@ public class DependencyParserMETest {
   }
 
   @Test
+  void testDuplicateActionsAreRejectedAtConstruction() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyParserME(
+            new OutcomeOnlyModel("SHIFT", "SHIFT", "RIGHT_ARC:root")));
+  }
+
+  @Test
   void testModelScoreCountIsValidated() {
     final DependencyParserME invalid = new DependencyParserME(
         new OutcomeOnlyModel(new double[] {1.0}, "SHIFT", "RIGHT_ARC:root"));
