@@ -325,6 +325,14 @@ public class WnLmfReaderTest {
                 + "<Synset id=\"t-1\" partOfSpeech=\"v\"><Definition>a feline</Definition>"
                 + "</Synset>"),
             List.of("t-cat-n", "VERB", "NOUN")),
+        Arguments.of(Named.of("synset member assigned to another synset",
+            "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-cat-n-1\" synset=\"t-1\"/></LexicalEntry>"
+                + "<LexicalEntry id=\"t-dog-n\"><Lemma writtenForm=\"dog\" partOfSpeech=\"n\"/>"
+                + "<Sense id=\"t-dog-n-1\" synset=\"t-2\"/></LexicalEntry>"
+                + "<Synset id=\"t-1\" partOfSpeech=\"n\" members=\"t-dog-n-1\"/>"
+                + "<Synset id=\"t-2\" partOfSpeech=\"n\" members=\"t-dog-n-1\"/>"),
+            List.of("t-dog-n-1", "t-1", "t-2")),
         Arguments.of(Named.of("sense relation to undeclared sense",
             "<LexicalEntry id=\"t-cat-n\"><Lemma writtenForm=\"cat\" partOfSpeech=\"n\"/>"
                 + "<Sense id=\"t-cat-n-1\" synset=\"t-1\">"
