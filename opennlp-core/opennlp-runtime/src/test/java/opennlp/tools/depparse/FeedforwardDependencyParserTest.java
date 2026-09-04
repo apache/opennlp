@@ -519,6 +519,12 @@ public class FeedforwardDependencyParserTest {
         .Settings(16, 32, 10, 32, Double.NaN, 0.0, 0.0, 1, 17L));
     assertThrows(IllegalArgumentException.class, () -> new FeedforwardDependencyTrainer
         .Settings(16, 32, 10, 32, 0.05, Double.POSITIVE_INFINITY, 0.0, 1, 17L));
+    assertThrows(IllegalArgumentException.class, () -> new FeedforwardDependencyTrainer
+        .Settings(4097, 32, 10, 32, 0.05, 0.0, 0.0, 1, 17L));
+    assertThrows(IllegalArgumentException.class, () -> new FeedforwardDependencyTrainer
+        .Settings(16, 65537, 10, 32, 0.05, 0.0, 0.0, 1, 17L));
+    assertThrows(IllegalArgumentException.class, () -> new FeedforwardDependencyTrainer
+        .Settings(1000, 3000, 10, 32, 0.05, 0.0, 0.0, 1, 17L));
   }
 
   @Test
