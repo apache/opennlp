@@ -94,14 +94,15 @@ public final class NorwegianMinimalStemmer extends AbstractCharArrayStemmer
     useNynorsk = varieties.contains(NorwegianVariety.NYNORSK);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
-   */
+  private NorwegianMinimalStemmer(boolean useBokmaal, boolean useNynorsk) {
+    this.useBokmaal = useBokmaal;
+    this.useNynorsk = useNynorsk;
+  }
+
+  /** {@inheritDoc} */
   @Override
   public Stemmer newStemmer() {
-    return this;
+    return new NorwegianMinimalStemmer(useBokmaal, useNynorsk);
   }
 
   /** {@inheritDoc} */

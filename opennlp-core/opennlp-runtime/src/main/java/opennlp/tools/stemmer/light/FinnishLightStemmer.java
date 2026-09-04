@@ -80,14 +80,10 @@ import static opennlp.tools.stemmer.light.StemmerUtil.isVowel;
 @ThreadSafe
 public final class FinnishLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
-   */
+  /** {@inheritDoc} */
   @Override
   public Stemmer newStemmer() {
-    return this;
+    return new FinnishLightStemmer();
   }
 
   /** {@inheritDoc} */

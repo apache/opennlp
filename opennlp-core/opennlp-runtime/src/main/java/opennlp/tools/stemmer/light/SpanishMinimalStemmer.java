@@ -165,14 +165,10 @@ public final class SpanishMinimalStemmer extends AbstractCharArrayStemmer
       "sies",
       "yoes");
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
-   */
+  /** {@inheritDoc} */
   @Override
   public Stemmer newStemmer() {
-    return this;
+    return new SpanishMinimalStemmer();
   }
 
   /** {@inheritDoc} */

@@ -78,14 +78,10 @@ import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 @ThreadSafe
 public final class RussianLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
-   */
+  /** {@inheritDoc} */
   @Override
   public Stemmer newStemmer() {
-    return this;
+    return new RussianLightStemmer();
   }
 
   /** {@inheritDoc} */

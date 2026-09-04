@@ -74,14 +74,10 @@ import opennlp.tools.stemmer.StemmerFactory;
 @ThreadSafe
 public final class ItalianLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
-   */
+  /** {@inheritDoc} */
   @Override
   public Stemmer newStemmer() {
-    return this;
+    return new ItalianLightStemmer();
   }
 
   /** {@inheritDoc} */
