@@ -28,8 +28,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
@@ -61,6 +63,21 @@ import opennlp.tools.util.StringUtil;
 public class FeedforwardDependencyModel {
 
   private static final String MAGIC = "ONLP-FFDP-1";
+
+  /** Maximum combined entries across the word, tag, and label maps. */
+  private static final int MAX_VOCABULARY_ENTRIES = 2_000_000;
+
+  /** Maximum transitions accepted from a serialized model. */
+  private static final int MAX_TRANSITIONS = 100_000;
+
+  /** Maximum embedding width accepted from a serialized model. */
+  private static final int MAX_EMBEDDING_SIZE = 4_096;
+
+  /** Maximum hidden-layer width accepted from a serialized model. */
+  private static final int MAX_HIDDEN_SIZE = 65_536;
+
+  /** Maximum float values allocated while loading a serialized model. */
+  private static final long MAX_MODEL_FLOAT_VALUES = 100_000_000L;
 
   /** U+03A3, GREEK CAPITAL LETTER SIGMA, the one code point with a contextual lowering. */
   private static final int GREEK_CAPITAL_SIGMA = 0x03A3;
@@ -395,7 +412,7 @@ public class FeedforwardDependencyModel {
    *
    * @param in The stream to read from. Must not be {@code null}. Not closed.
    * @return The loaded model. Never {@code null}.
-   * @throws IOException Thrown if reading fails or the content is not this format.
+   * @throws IOException Thrown if reading fails or the content is malformed.
    */
   public static FeedforwardDependencyModel load(InputStream in) throws IOException {
     if (in == null) {
@@ -406,17 +423,42 @@ public class FeedforwardDependencyModel {
     if (!MAGIC.equals(magic)) {
       throw new IOException("not a feedforward dependency model: " + magic);
     }
-    final Map<String, Integer> wordIds = readVocabulary(data);
-    final Map<String, Integer> tagIds = readVocabulary(data);
-    final Map<String, Integer> labelIds = readVocabulary(data);
-    final String[] transitions = new String[data.readInt()];
+    final Map<String, Integer> wordIds = readVocabulary(data, "word vocabulary");
+    final Map<String, Integer> tagIds = readVocabulary(data, "tag vocabulary");
+    final Map<String, Integer> labelIds = readVocabulary(data, "label vocabulary");
+    final int embeddingRows = validateVocabularies(wordIds, tagIds, labelIds);
+    final String[] transitions = new String[
+        readCount(data, "transition count", MAX_TRANSITIONS, false)];
+    final Set<String> transitionSet = new HashSet<>();
     for (int i = 0; i < transitions.length; i++) {
       transitions[i] = data.readUTF();
+      if (!transitionSet.add(transitions[i])) {
+        throw new IOException("duplicate transition: " + transitions[i]);
+      }
+      try {
+        Transition.decode(transitions[i]);
+      } catch (IllegalArgumentException e) {
+        throw new IOException("invalid transition: " + transitions[i], e);
+      }
     }
-    final int embeddingSize = data.readInt();
+    final int embeddingSize = readCount(data, "embedding size", MAX_EMBEDDING_SIZE, false);
+    final long[] remainingFloats = {MAX_MODEL_FLOAT_VALUES};
+    final float[][] embeddings = readMatrix(data, embeddingRows, embeddingSize,
+        MAX_VOCABULARY_ENTRIES, remainingFloats, "embedding matrix");
+    final int inputSize = FeedforwardContext.FEATURE_COUNT * embeddingSize;
+    final float[][] hiddenWeights = readMatrix(data, -1, inputSize,
+        MAX_HIDDEN_SIZE, remainingFloats, "hidden matrix");
+    final float[] hiddenBias = readVector(data, hiddenWeights.length,
+        remainingFloats, "hidden bias");
+    final float[][] outputWeights = readMatrix(data, transitions.length,
+        hiddenWeights.length, MAX_TRANSITIONS, remainingFloats, "output matrix");
+    final float[] outputBias = readVector(data, transitions.length,
+        remainingFloats, "output bias");
+    if (data.read() != -1) {
+      throw new IOException("trailing data after feedforward dependency model");
+    }
     return new FeedforwardDependencyModel(wordIds, tagIds, labelIds, transitions,
-        embeddingSize, readMatrix(data), readMatrix(data), readVector(data),
-        readMatrix(data), readVector(data));
+        embeddingSize, embeddings, hiddenWeights, hiddenBias, outputWeights, outputBias);
   }
 
   /**
@@ -455,15 +497,60 @@ public class FeedforwardDependencyModel {
   /**
    * Reads one vocabulary written by {@link #writeVocabulary}.
    */
-  private static Map<String, Integer> readVocabulary(DataInputStream data)
+  private static Map<String, Integer> readVocabulary(DataInputStream data, String label)
       throws IOException {
-    final int size = data.readInt();
+    final int size = readCount(data, label + " size", MAX_VOCABULARY_ENTRIES, true);
     final Map<String, Integer> ids = new HashMap<>(size * 2);
     for (int i = 0; i < size; i++) {
       final String symbol = data.readUTF();
-      ids.put(symbol, data.readInt());
+      final int id = data.readInt();
+      if (ids.put(symbol, id) != null) {
+        throw new IOException("duplicate symbol in " + label + ": " + symbol);
+      }
     }
     return ids;
+  }
+
+  /**
+   * Checks that all vocabulary ids form one consecutive embedding index range and that
+   * each map has its required special symbols.
+   */
+  private static int validateVocabularies(Map<String, Integer> wordIds,
+      Map<String, Integer> tagIds, Map<String, Integer> labelIds) throws IOException {
+    final long total = (long) wordIds.size() + tagIds.size() + labelIds.size();
+    if (total > MAX_VOCABULARY_ENTRIES) {
+      throw new IOException("combined vocabulary size exceeds " + MAX_VOCABULARY_ENTRIES);
+    }
+    final boolean[] present = new boolean[(int) total];
+    validateVocabulary(wordIds, present, "word vocabulary", UNKNOWN, ABSENT, ROOT_SYMBOL);
+    validateVocabulary(tagIds, present, "tag vocabulary", UNKNOWN, ABSENT, ROOT_SYMBOL);
+    validateVocabulary(labelIds, present, "label vocabulary", UNKNOWN, ABSENT);
+    for (int i = 0; i < present.length; i++) {
+      if (!present[i]) {
+        throw new IOException("missing embedding id: " + i);
+      }
+    }
+    return present.length;
+  }
+
+  /** Checks one vocabulary's required symbols and embedding ids. */
+  private static void validateVocabulary(Map<String, Integer> ids, boolean[] present,
+      String label, String... requiredSymbols) throws IOException {
+    for (final String required : requiredSymbols) {
+      if (!ids.containsKey(required)) {
+        throw new IOException(label + " has no " + required + " symbol");
+      }
+    }
+    for (final Map.Entry<String, Integer> entry : ids.entrySet()) {
+      final int id = entry.getValue();
+      if (id < 0 || id >= present.length) {
+        throw new IOException(label + " id out of range for " + entry.getKey() + ": " + id);
+      }
+      if (present[id]) {
+        throw new IOException("duplicate embedding id: " + id);
+      }
+      present[id] = true;
+    }
   }
 
   /**
@@ -483,13 +570,23 @@ public class FeedforwardDependencyModel {
   /**
    * Reads a matrix written by {@link #writeMatrix}.
    */
-  private static float[][] readMatrix(DataInputStream data) throws IOException {
-    final int rows = data.readInt();
-    final int columns = data.readInt();
+  private static float[][] readMatrix(DataInputStream data, int expectedRows,
+      int expectedColumns, int maxRows, long[] remainingFloats, String label)
+      throws IOException {
+    final int rows = readCount(data, label + " rows", maxRows, false);
+    final int columns = readCount(data, label + " columns", Integer.MAX_VALUE, false);
+    if (expectedRows >= 0 && rows != expectedRows) {
+      throw new IOException(label + " row count is " + rows + ", expected " + expectedRows);
+    }
+    if (columns != expectedColumns) {
+      throw new IOException(label + " column count is " + columns
+          + ", expected " + expectedColumns);
+    }
+    reserveFloats(remainingFloats, (long) rows * columns, label);
     final float[][] matrix = new float[rows][columns];
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < columns; c++) {
-        matrix[r][c] = data.readFloat();
+        matrix[r][c] = readFiniteFloat(data, label);
       }
     }
     return matrix;
@@ -508,12 +605,47 @@ public class FeedforwardDependencyModel {
   /**
    * Reads a vector written by {@link #writeVector}.
    */
-  private static float[] readVector(DataInputStream data) throws IOException {
-    final float[] vector = new float[data.readInt()];
+  private static float[] readVector(DataInputStream data, int expectedLength,
+      long[] remainingFloats, String label) throws IOException {
+    final int length = readCount(data, label + " length", Integer.MAX_VALUE, false);
+    if (length != expectedLength) {
+      throw new IOException(label + " length is " + length + ", expected " + expectedLength);
+    }
+    reserveFloats(remainingFloats, length, label);
+    final float[] vector = new float[length];
     for (int i = 0; i < vector.length; i++) {
-      vector[i] = data.readFloat();
+      vector[i] = readFiniteFloat(data, label);
     }
     return vector;
+  }
+
+  /** Reads a nonnegative bounded count from the model. */
+  private static int readCount(DataInputStream data, String label, int maximum,
+      boolean allowZero) throws IOException {
+    final int value = data.readInt();
+    if (value < 0 || !allowZero && value == 0 || value > maximum) {
+      throw new IOException(label + " out of range: " + value);
+    }
+    return value;
+  }
+
+  /** Reserves float entries before allocating a matrix or vector. */
+  private static void reserveFloats(long[] remaining, long count, String label)
+      throws IOException {
+    if (count > remaining[0]) {
+      throw new IOException(label + " exceeds the model allocation limit");
+    }
+    remaining[0] -= count;
+  }
+
+  /** Reads one finite model weight. */
+  private static float readFiniteFloat(DataInputStream data, String label)
+      throws IOException {
+    final float value = data.readFloat();
+    if (!Float.isFinite(value)) {
+      throw new IOException(label + " contains a non-finite value");
+    }
+    return value;
   }
 
   /**
