@@ -21,7 +21,7 @@
 		<title>Introduction</title>
 		<para>
 			A stemmer reduces a word form to a shorter root. OpenNLP ships rule-based
-			engines such as Snowball, Porter, and the UniNE light and minimal stemmers
+			engines such as Snowball, Porter, and the light and minimal stemmers
 			through the <code>opennlp.tools.stemmer.Stemmer</code> interface. Stemming
 			is language-specific and lossy: it is useful for search and feature
 			reduction, not as a substitute for lemmatization when a dictionary form is
@@ -65,7 +65,7 @@ new SharingStemmer(factory).stem("running");   // "run"
 new CachingStemmer(factory).stem("running");   // "run"]]>
 			</programlisting>
 			Thread-safe stemmers such as the shareable <code>SnowballStemmer</code>
-			class and the UniNE light stemmers do not need <code>SharingStemmer</code>.
+			class and the light stemmers do not need <code>SharingStemmer</code>.
 			Long-running containers should call <code>clearThreadLocalState()</code>
 			when a pooled thread no longer uses a sharing or caching stemmer.
 		</para>
@@ -112,15 +112,14 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 	</section>
 
 	<section xml:id="tools.stemmer.light">
-		<title>Light and minimal UniNE stemmers</title>
+		<title>Light and minimal stemmers</title>
 		<para>
-			The package <code>opennlp.tools.stemmer.light</code> ports Jacques Savoy's
-			UniNE light and minimal stemming algorithms (the same family Apache Lucene
-			ships in analysis-common). Light stemmers strip a modest set of endings;
-			minimal stemmers strip fewer. Instances are immutable, safe for concurrent
-			use, and each instance is also its own <code>StemmerFactory</code>. Input
-			is expected to use lowercase NFC; the stemmers do not apply case folding
-			or Unicode normalization.
+			The package <code>opennlp.tools.stemmer.light</code> provides light and minimal
+			stemmers based on algorithms in Apache Lucene's analysis-common module.
+			Light stemmers remove a modest set of endings; minimal stemmers remove fewer.
+			Instances are immutable, safe for concurrent use, and implement
+			<code>StemmerFactory</code>. Input must use lowercase NFC. The stemmers do not
+			apply case folding or Unicode normalization.
 		</para>
 		<para>
 			Languages with a light stemmer include German, Spanish, Finnish, French,
@@ -128,7 +127,7 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			stemmers are available for German, English, Spanish, French, Norwegian, and
 			Swedish. Norwegian variants are selected through
 			<code>NorwegianVariety</code>.
-			<code>LightStemmerUsageExampleTest</code> asserts the behavior shown here.
+			<code>LightStemmerUsageExampleTest</code> checks these results.
 			<programlisting language="java"><![CDATA[
 GermanLightStemmer light = new GermanLightStemmer();
 light.stem("häusern");                           // "haus"

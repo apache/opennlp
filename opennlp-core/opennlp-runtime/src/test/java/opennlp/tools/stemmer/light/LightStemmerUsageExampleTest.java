@@ -21,9 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Runs the manual's light stemmer examples (docbkx {@code stemmer.xml}) verbatim: every
- * value the chapter states is asserted here, so a change breaking this test breaks the
- * manual.
+ * Checks the light-stemmer examples in the manual. Behavior changes must update both locations.
  */
 class LightStemmerUsageExampleTest {
 

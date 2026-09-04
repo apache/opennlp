@@ -37,9 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Asserts every stemmer against its bundled vocabulary fixture: word and expected stem pairs
- * sampled from the vocabulary data of the algorithms' original test suites, regenerated against
- * the source implementations (see the fixture README for regeneration).
+ * Checks each stemmer with bundled word and expected-stem pairs sampled from the algorithms'
+ * original test data. See the fixture README for sources and regeneration instructions.
  */
 class LightStemmerParityTest {
 

@@ -63,10 +63,9 @@ import opennlp.tools.stemmer.StemmerFactory;
  * <i>A Stemming Procedure and Stopword List for General French Corpora</i></a> by Jacques Savoy
  * (JASIS 50(10), 1999).
  *
- * <p>Adapted from the identically named algorithm in Apache Lucene's analysis-common module.
- * Instances are stateless and safe for concurrent use by multiple threads; each instance is also
- * its own {@link StemmerFactory}. Input is expected to use lowercase NFC; the stemmer does not
- * apply case folding or Unicode normalization.</p>
+ * <p>Based on Apache Lucene's implementation. Instances are stateless, thread-safe, and implement
+ * {@link StemmerFactory}. Input must use lowercase NFC; the stemmer does not apply case folding or
+ * Unicode normalization.</p>
  *
  * @see <a href="https://github.com/apache/lucene/blob/4965e8d4d960445a0522fae512c60c6d8f11fc29/lucene/analysis/common/src/java/org/apache/lucene/analysis/fr/FrenchMinimalStemmer.java">
  *     Apache Lucene FrenchMinimalStemmer</a>

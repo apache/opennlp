@@ -62,14 +62,12 @@ import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 /**
  * Light Stemmer for Norwegian.
  *
- * <p>Parts of this stemmer are adapted from the {@link SwedishLightStemmer}; while the Swedish
- * algorithm has a pre-defined rule set and a corresponding corpus to validate against, the
- * Norwegian one is hand crafted.
+ * <p>Parts of this stemmer derive from {@link SwedishLightStemmer}. The Lucene source does not
+ * identify a published Norwegian reference corpus.
  *
- * <p>Adapted from the identically named algorithm in Apache Lucene's analysis-common module.
- * Instances are immutable and safe for concurrent use by multiple threads; each instance is also
- * its own {@link StemmerFactory}. Input is expected to use lowercase NFC; the stemmer does not
- * apply case folding or Unicode normalization.</p>
+ * <p>Based on Apache Lucene's implementation. Instances are immutable, thread-safe, and implement
+ * {@link StemmerFactory}. Input must use lowercase NFC; the stemmer does not apply case folding or
+ * Unicode normalization.</p>
  *
  * @see <a href="https://github.com/apache/lucene/blob/4965e8d4d960445a0522fae512c60c6d8f11fc29/lucene/analysis/common/src/java/org/apache/lucene/analysis/no/NorwegianLightStemmer.java">
  *     Apache Lucene NorwegianLightStemmer</a>
