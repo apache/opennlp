@@ -273,6 +273,7 @@ public final class FeedforwardDependencyTrainer {
           updates++;
         }
       }
+      checkFinite(refined);
       logger.info("refine epoch {}: loss {} over {} updates in {} ms", epoch,
           loss / Math.max(updates, 1), updates, System.currentTimeMillis() - epochStart);
     }
@@ -925,6 +926,7 @@ public final class FeedforwardDependencyTrainer {
           }
         }
       }
+      checkFinite(model);
       logger.info("epoch {}: loss {} in {} ms", epoch, loss / exampleCount,
           System.currentTimeMillis() - epochStart);
     }
@@ -954,6 +956,31 @@ public final class FeedforwardDependencyTrainer {
       accumulators[i] += gradient * gradient;
       weights[i] -= settings.learningRate() * gradient
           / (Math.sqrt(accumulators[i]) + ADAGRAD_EPSILON);
+    }
+  }
+
+  /** Rejects numerical overflow before returning or continuing to train a model. */
+  private static void checkFinite(FeedforwardDependencyModel model) {
+    checkFinite(model.embeddings());
+    checkFinite(model.hiddenWeights());
+    checkFinite(model.hiddenBias());
+    checkFinite(model.outputWeights());
+    checkFinite(model.outputBias());
+  }
+
+  /** Rejects a non-finite value in a matrix. */
+  private static void checkFinite(float[][] matrix) {
+    for (final float[] row : matrix) {
+      checkFinite(row);
+    }
+  }
+
+  /** Rejects a non-finite value in a vector. */
+  private static void checkFinite(float[] vector) {
+    for (final float value : vector) {
+      if (!Float.isFinite(value)) {
+        throw new IllegalStateException("training produced a non-finite model parameter");
+      }
     }
   }
 
