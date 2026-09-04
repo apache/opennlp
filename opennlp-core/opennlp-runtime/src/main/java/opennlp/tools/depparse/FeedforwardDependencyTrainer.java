@@ -53,6 +53,12 @@ public final class FeedforwardDependencyTrainer {
 
   private static final double ADAGRAD_EPSILON = 1e-6;
 
+  /** Special-symbol rows present before any training vocabulary is added. */
+  private static final int MIN_VOCABULARY_ROWS = 8;
+
+  /** SHIFT and at least one RIGHT_ARC are required to parse a sentence. */
+  private static final int MIN_TRANSITIONS = 2;
+
   private FeedforwardDependencyTrainer() {
     // This class only exposes static training methods and is never instantiated.
   }
@@ -83,6 +89,20 @@ public final class FeedforwardDependencyTrainer {
     public Settings {
       if (embeddingSize <= 0 || hiddenSize <= 0 || epochs <= 0 || batchSize <= 0) {
         throw new IllegalArgumentException("sizes, epochs and batch must be positive");
+      }
+      if (embeddingSize > FeedforwardDependencyModel.MAX_EMBEDDING_SIZE) {
+        throw new IllegalArgumentException("embeddingSize exceeds the model format limit: "
+            + embeddingSize);
+      }
+      if (hiddenSize > FeedforwardDependencyModel.MAX_HIDDEN_SIZE) {
+        throw new IllegalArgumentException("hiddenSize exceeds the model format limit: "
+            + hiddenSize);
+      }
+      final long minimumModelValues = modelFloatValues(MIN_VOCABULARY_ROWS,
+          MIN_TRANSITIONS, embeddingSize, hiddenSize);
+      if (minimumModelValues > FeedforwardDependencyModel.MAX_MODEL_FLOAT_VALUES) {
+        throw new IllegalArgumentException("embeddingSize and hiddenSize exceed the model "
+            + "format allocation limit");
       }
       if (!Double.isFinite(learningRate) || learningRate <= 0.0
           || !Double.isFinite(l2) || l2 < 0.0) {
@@ -672,6 +692,14 @@ public final class FeedforwardDependencyTrainer {
     final String[] transitions = transitionIds.keySet().toArray(String[]::new);
     Arrays.sort(transitions);
 
+    final long modelValues = modelFloatValues(row, transitions.length,
+        settings.embeddingSize(), settings.hiddenSize());
+    if (modelValues > FeedforwardDependencyModel.MAX_MODEL_FLOAT_VALUES) {
+      throw new IllegalArgumentException("training vocabulary and settings require "
+          + modelValues + " model values, limit is "
+          + FeedforwardDependencyModel.MAX_MODEL_FLOAT_VALUES);
+    }
+
     final Random random = new Random(settings.seed());
     final int inputSize =
         (2 * FeedforwardContext.POSITIONS + FeedforwardContext.LABEL_POSITIONS)
@@ -702,6 +730,17 @@ public final class FeedforwardDependencyTrainer {
       next++;
     }
     return next;
+  }
+
+  /** Returns the number of float values stored by a model of the given shape. */
+  private static long modelFloatValues(int vocabularyRows, int transitionCount,
+      int embeddingSize, int hiddenSize) {
+    final long inputSize = (long) FeedforwardContext.FEATURE_COUNT * embeddingSize;
+    return (long) vocabularyRows * embeddingSize
+        + (long) hiddenSize * inputSize
+        + hiddenSize
+        + (long) transitionCount * hiddenSize
+        + transitionCount;
   }
 
   /** Replays the oracle over every projective sample, emitting one example per step. */

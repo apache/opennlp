@@ -73,13 +73,13 @@ public class FeedforwardDependencyModel {
   private static final int MAX_TRANSITIONS = 100_000;
 
   /** Maximum embedding width accepted from a serialized model. */
-  private static final int MAX_EMBEDDING_SIZE = 4_096;
+  static final int MAX_EMBEDDING_SIZE = 4_096;
 
   /** Maximum hidden-layer width accepted from a serialized model. */
-  private static final int MAX_HIDDEN_SIZE = 65_536;
+  static final int MAX_HIDDEN_SIZE = 65_536;
 
   /** Maximum float values allocated while loading a serialized model. */
-  private static final long MAX_MODEL_FLOAT_VALUES = 100_000_000L;
+  static final long MAX_MODEL_FLOAT_VALUES = 100_000_000L;
 
   /** U+03A3, GREEK CAPITAL LETTER SIGMA, the one code point with a contextual lowering. */
   private static final int GREEK_CAPITAL_SIGMA = 0x03A3;
