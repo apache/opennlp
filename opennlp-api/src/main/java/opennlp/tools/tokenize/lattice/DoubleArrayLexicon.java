@@ -132,7 +132,12 @@ final class DoubleArrayLexicon {
     }
   }
 
-  /** Builds the trie from sorted surface ranges. */
+  /**
+   * Builds the trie from sorted surface ranges. Each node places children at a common
+   * free base, and a moving watermark makes that search near-linear over real
+   * lexicons. The traversal uses an explicit stack so a long surface cannot exhaust
+   * the thread stack.
+   */
   private static final class Builder {
 
     private static final int ROOT = 1;

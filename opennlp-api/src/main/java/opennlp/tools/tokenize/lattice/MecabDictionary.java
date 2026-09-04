@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.tokenize.lattice.CategoryTable.CategoryAssignment;
 import opennlp.tools.util.ResourceLimits;
@@ -51,13 +52,15 @@ import opennlp.tools.util.StringUtil;
  * through this one reader, with the feature columns passed through untouched because
  * their schemas differ.</p>
  *
- * <p>Load once and share an instance. Lexicon CSV files are read in sorted path order
- * so tie-breaking is stable across file systems. Connection costs must cover all
- * matrix cells; missing and duplicate entries are rejected. Matrix dimensions
- * and the lexicon entry count are bounded by {@link ResourceLimits#MAX_ENTRIES}, and
- * the matrix cell count by {@link ResourceLimits#MAX_MATRIX_CELLS}. Lexicon CSV fields
- * may be MeCab-quoted with {@code ""} escapes. Word and connection costs must fit in a
- * signed 16-bit integer. An {@code unk.def} template must name a category defined by
+ * <p>Each instance uses about 0.75 MB for category tables indexed by the 16-bit
+ * code-unit space, so load once and share. Lexicon CSV files under the directory are
+ * read in sorted path order so tie-breaking is stable across file systems. Connection
+ * costs must cover all matrix cells; missing and duplicate entries are
+ * rejected instead of being treated as cost zero. Matrix dimensions and the lexicon
+ * entry count are bounded by {@link ResourceLimits#MAX_ENTRIES}, and the matrix cell
+ * count by {@link ResourceLimits#MAX_MATRIX_CELLS}. Lexicon CSV fields may be
+ * MeCab-quoted with {@code ""} escapes. Word and connection costs must fit in a signed
+ * 16-bit integer. An {@code unk.def} template must name a category defined by
  * {@code char.def}.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
@@ -76,6 +79,20 @@ public final class MecabDictionary {
   private static final String MATRIX_DEF = "matrix.def";
   static final String CHAR_DEF = "char.def";
   private static final String UNK_DEF = "unk.def";
+
+  /**
+   * Maximum category count accepted by MeCab's
+   * <a href="https://github.com/taku910/mecab/blob/61b90ba6e669dc2d7d533d4a80d206f3b31d52b1/mecab/src/char_property.cpp#L205">
+   * character-property compiler</a>.
+   */
+  private static final int MAX_CATEGORY_COUNT = 17;
+
+  /**
+   * Maximum value of MeCab's
+   * <a href="https://github.com/taku910/mecab/blob/61b90ba6e669dc2d7d533d4a80d206f3b31d52b1/mecab/src/char_property.h#L14-L20">
+   * 4-bit category length field</a>.
+   */
+  private static final int MAX_CATEGORY_LENGTH = 15;
 
   static final String LEXICON_EXTENSION = ".csv";
   static final String DEFINITION_EXTENSION = ".def";
@@ -109,14 +126,15 @@ public final class MecabDictionary {
   /**
    * One character category's unknown-word behavior from {@code char.def}.
    *
+   * @param id The dense zero-based category id.
    * @param name The category name.
    * @param invoke Whether unknown-word candidates are generated even where the lexicon
    *               matched.
-   * @param group Whether a complete run of characters sharing a category is emitted as
-   *              one candidate.
+   * @param group Whether a full run connected by overlapping category assignments is
+   *              emitted as one candidate.
    * @param length How many leading characters of the run are offered as candidates.
    */
-  record Category(String name, boolean invoke, boolean group, int length) {
+  record Category(int id, String name, boolean invoke, boolean group, int length) {
   }
 
   /** Receives one common-prefix match during {@link #prefixMatches}. */
@@ -155,8 +173,10 @@ public final class MecabDictionary {
     this.connectionCosts = connectionCosts;
     this.rightSize = rightSize;
     this.categoryTable = categoryTable;
+    final Category defaultCategory = Objects.requireNonNull(
+        categories.get(DEFAULT_CATEGORY), "DEFAULT category");
     this.defaultCategories = new CategoryAssignment(
-        new Category[] {categories.get(DEFAULT_CATEGORY)});
+        new Category[] {defaultCategory});
     final Map<String, List<WordEntry>> copy = new HashMap<>(unknownEntries.size());
     for (final Map.Entry<String, List<WordEntry>> entry : unknownEntries.entrySet()) {
       copy.put(entry.getKey(), List.copyOf(entry.getValue()));
@@ -399,7 +419,8 @@ public final class MecabDictionary {
    * @param categoryTable Receives the code point to category name mappings.
    * @throws IOException Thrown if the file is missing, a line is malformed, a code
    *         point is outside the Unicode range, a range descends, a category is
-   *         duplicated, or the file defines no {@code DEFAULT} category.
+   *         duplicated, category count or length exceeds the MeCab format, or the file
+   *         defines no {@code DEFAULT} category.
    */
   private static void readCharacterDefinition(Path file, Charset charset,
       Map<String, Category> categories, CategoryTable.Builder categoryTable)
@@ -450,17 +471,22 @@ public final class MecabDictionary {
                 "malformed category flag at " + file + " line " + lineNumber);
           }
           final int length = parseInt(fields[3], file.toString(), lineNumber);
-          if (length < 0) {
+          if (length < 0 || length > MAX_CATEGORY_LENGTH) {
             throw new IOException(
-                "category LENGTH must not be negative at " + file + " line "
-                    + lineNumber);
+                "category LENGTH must be between 0 and " + MAX_CATEGORY_LENGTH + " at "
+                    + file + " line " + lineNumber);
           }
-          final Category category = new Category(fields[0],
-              FLAG_ON.equals(fields[1]), FLAG_ON.equals(fields[2]), length);
-          if (categories.putIfAbsent(fields[0], category) != null) {
+          if (categories.containsKey(fields[0])) {
             throw new IOException("duplicate " + CHAR_DEF + " category "
                 + fields[0] + " at line " + lineNumber);
           }
+          if (categories.size() >= MAX_CATEGORY_COUNT) {
+            throw new IOException(CHAR_DEF + " defines " + (categories.size() + 1)
+                + " categories; MeCab supports at most " + MAX_CATEGORY_COUNT);
+          }
+          final Category category = new Category(categories.size(), fields[0],
+              FLAG_ON.equals(fields[1]), FLAG_ON.equals(fields[2]), length);
+          categories.put(fields[0], category);
         }
       }
     }

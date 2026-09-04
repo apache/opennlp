@@ -558,25 +558,35 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				<code>opennlp.install.max.entry.bytes</code> and
 				<code>opennlp.install.max.total.bytes</code> for larger dictionaries such as
 				UniDic.
-				Load also rejects an <code>unk.def</code> template for a category
-				<code>char.def</code> did not define, and accepts MeCab-quoted CSV fields.
-				If a <code>char.def</code> mapping lists multiple categories, the first
-				provides unknown-word settings and all listed categories can extend the
-				character run.
+					Dictionary loading rejects empty lexicon surfaces, duplicate
+					<code>matrix.def</code> entries, duplicate <code>char.def</code>
+					categories, costs outside the signed 16-bit range, malformed text in the
+					selected encoding, and <code>unk.def</code> templates for undefined
+					categories. MeCab-quoted CSV fields are accepted.
+					A <code>char.def</code> may define up to 17 categories, and category
+					lengths range from 0 through 15, matching the MeCab character-property
+					compiler.
+					If a <code>char.def</code> mapping lists multiple categories, the first
+					provides unknown-word settings. Grouping continues while successive
+					assignments overlap. Unknown words use their category's <code>unk.def</code>
+					template first, with <code>DEFAULT</code> used when no category template exists.
 				Tar headers are checksum-validated before extraction. Files are staged on
 				the target filesystem and published after the archive passes validation. The
 				installer does not replace files already present in the target directory.
-				<programlisting language="java">
-<![CDATA[MecabDictionaryInstaller.install(localArchive.toUri(), dictionaryDirectory);
+					<programlisting language="java">
+<![CDATA[Path localArchive = Path.of("mecab-ipadic.tar.gz");
+Path dictionaryDirectory = Path.of("mecab-ipadic");
+MecabDictionaryInstaller.install(localArchive.toUri(), dictionaryDirectory);
 LatticeTokenizer tokenizer =
     new LatticeTokenizer(MecabDictionary.load(dictionaryDirectory));
 
+String text = "東京に行く";
 String[] tokens = tokenizer.tokenize(text);
 Span[] spans = tokenizer.tokenizePos(text);
 List<Morpheme> morphemes = tokenizer.analyze(text);
 
-UnigramSegmenter segmenter = UnigramSegmenter.load(Path.of("words.txt"));
-String[] words = segmenter.tokenize(text);]]>
+UnigramSegmenter segmenter = UnigramSegmenter.load(Path.of("chinese-words.txt"));
+String[] words = segmenter.tokenize("我来到北京清华大学");]]>
 				</programlisting>
 			</para>
 		</section>

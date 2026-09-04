@@ -41,8 +41,10 @@ import opennlp.tools.util.StringUtil;
 /**
  * Frequency-driven segmentation for Chinese and similar scripts: a Viterbi search that
  * maximizes the summed log-probability of the words in a user-supplied frequency
- * lexicon, with unlisted characters falling back to single-character words. It uses no
- * connection costs and accepts lexicons that list only words and counts.
+ * lexicon, with unlisted characters falling back to single-character words. This is the
+ * unigram model behind common Chinese segmenters. It omits the connection costs used
+ * by {@link LatticeTokenizer}, making it suitable for lexicons containing words and
+ * counts.
  *
  * <p>The lexicon format is one entry per line: the word, its count, and optionally a
  * tag, separated by whitespace. The lexicon file is user-supplied; no lexicon data is
@@ -110,7 +112,11 @@ public final class UnigramSegmenter implements Tokenizer {
     private record BuildStep(WordTrieBuilder node, boolean childrenBuilt) {
     }
 
-    /** Copies the mutable tree without consuming the thread stack. */
+    /**
+     * Copies the mutable tree without consuming the thread stack. Each mutable node
+     * uses a step before child visits and a step afterward, preserving post-order
+     * construction for surfaces of any supported length.
+     */
     private WordTrie build() {
       final ArrayDeque<BuildStep> pending = new ArrayDeque<>();
       pending.push(new BuildStep(this, false));
@@ -132,11 +138,15 @@ public final class UnigramSegmenter implements Tokenizer {
         Arrays.sort(keys);
         final WordTrie[] nodes = new WordTrie[keys.length];
         for (int k = 0; k < keys.length; k++) {
-          nodes[k] = node.children.get(keys[k]).built;
+          final WordTrieBuilder child = node.children.get(keys[k]);
+          nodes[k] = child.built;
+          child.built = null;
         }
         node.built = new WordTrie(keys, nodes, node.logProbability);
       }
-      return built;
+      final WordTrie result = built;
+      built = null;
+      return result;
     }
   }
 

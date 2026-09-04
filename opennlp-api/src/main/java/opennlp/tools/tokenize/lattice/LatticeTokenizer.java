@@ -18,9 +18,7 @@
 package opennlp.tools.tokenize.lattice;
 
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.lattice.CategoryTable.CategoryAssignment;
@@ -33,17 +31,18 @@ import opennlp.tools.util.StringUtil;
  * Dictionary-driven segmentation for languages written without spaces: a Viterbi
  * search over the word lattice of a {@link MecabDictionary}, minimizing the sum of
  * word costs and connection costs. This is the segmentation approach behind Japanese
- * and Korean morphological analysis. The user-supplied dictionary provides the
- * language-specific entries and costs.
+ * and Korean morphological analysis. A single decoder serves both because the supplied
+ * dictionary provides the language-specific data.
  *
  * <p>Unknown text is handled through the dictionary's character categories: where the
  * lexicon has no entry, or a category always invokes them, unknown-word candidates are
- * generated per category template, grouping adjacent characters that share a category
- * when the primary category requests grouping. Whitespace is omitted from morphemes.
+ * generated per category template, grouping runs of same-category characters when the
+ * category requests it. A multi-category run continues while successive assignments
+ * overlap. Whitespace cannot join or appear as a morpheme.
  * Every reported span is in original text coordinates.</p>
  *
  * <p>{@link #analyze(String)} returns full morphemes with their dictionary features;
- * the {@link Tokenizer} methods return surfaces and spans only.</p>
+ * the {@link Tokenizer} view reports just the surfaces and spans.</p>
  *
  * <p>The tokenizer reads only immutable dictionary state and is safe to share between
  * threads.</p>
@@ -107,7 +106,7 @@ public final class LatticeTokenizer implements Tokenizer {
    *         omitted. Never {@code null}; empty for empty or all-whitespace input.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    * @throws IllegalStateException Thrown if the dictionary offers no candidate at some
-   *         position. A missing {@code DEFAULT} template can cause this.
+   *         position, which a {@code unk.def} without a {@code DEFAULT} template does.
    */
   public List<Morpheme> analyze(String text) {
     if (text == null) {
@@ -254,30 +253,31 @@ public final class LatticeTokenizer implements Tokenizer {
   }
 
   /**
-   * Computes the per-position categories and overlapping-category run end for one stretch,
-   * in one right-to-left pass over the code points. Positions inside a surrogate sequence
-   * keep a {@code null} assignment; candidates do not start there.
+   * Computes the per-position categories and connected-category run end for one
+   * stretch, in one right-to-left pass over the code points. Positions inside a
+   * surrogate sequence have a {@code null} assignment; candidates do not start there.
    *
    * @param text The text being segmented.
    * @param from The stretch start.
    * @param to The exclusive stretch end.
    * @param categoryAt Receives each position's categories, indexed by {@code
    *                   position - from}.
-   * @param runEndAt Receives each position's exclusive overlapping-category run end,
+   * @param runEndAt Receives each position's exclusive connected-category run end,
    *                 indexed the same way.
    */
   private void computeCategoryRuns(String text, int from, int to,
       CategoryAssignment[] categoryAt, int[] runEndAt) {
-    final Map<Category, Integer> runEndByCategory = new IdentityHashMap<>();
     CategoryAssignment next = null;
+    int nextRunEnd = to;
     for (int position = to; position > from; ) {
       final int codePoint = text.codePointBefore(position);
       position -= Character.charCount(codePoint);
       final int index = position - from;
       categoryAt[index] = dictionary.categoriesOf(codePoint);
-      runEndAt[index] = categoryAt[index].runEnd(next, runEndByCategory,
+      runEndAt[index] = categoryAt[index].continuedRunEnd(next, nextRunEnd,
           position + Character.charCount(codePoint));
       next = categoryAt[index];
+      nextRunEnd = runEndAt[index];
     }
   }
 
@@ -314,7 +314,7 @@ public final class LatticeTokenizer implements Tokenizer {
       // Only a lexicon surface ending inside a surrogate pair can make such a
       // position reachable; classify the stray code unit on the spot so the lattice
       // stays connected.
-      category = dictionary.categoriesOf(codePoint).primary();
+      category = dictionary.categoryOf(codePoint);
       runEnd = position + Character.charCount(codePoint);
     } else {
       category = positionCategories.primary();
@@ -349,13 +349,13 @@ public final class LatticeTokenizer implements Tokenizer {
   /**
    * Emits unknown-word candidates per the category's grouping and length settings.
    *
-   * <p>Candidates remain inside a run of characters sharing a category. Lengths
-   * count code points, not UTF-16 code units.</p>
+   * <p>Candidates remain inside a run connected by overlapping category assignments.
+   * Lengths count code points, not UTF-16 code units.</p>
    *
    * @param candidates Receives the candidates.
    * @param text The text being segmented.
    * @param position The position the candidates start at.
-   * @param runEnd The exclusive end of the overlapping-category run starting at
+   * @param runEnd The exclusive end of the connected-category run starting at
    *               {@code position}.
    * @param category The category of that run.
    * @param templates The category's unknown-word templates.

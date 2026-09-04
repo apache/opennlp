@@ -85,20 +85,31 @@ final class CategoryTable {
   }
 
   /**
-   * The categories assigned to one code point. Category instances come from the
-   * dictionary's shared category map, so identity comparisons are sufficient.
+   * The categories assigned to one code point, stored both in mapping order and as a
+   * mask over the dictionary's dense category ids.
    */
   static final class CategoryAssignment {
 
     private final Category[] categories;
+    private final int categoryMask;
 
     /**
      * Creates an assignment with the first entry as the primary category.
      *
      * @param categories The categories in mapping order. Must not be empty.
+     * @throws IllegalArgumentException Thrown if {@code categories} is {@code null} or
+     *         empty.
      */
     CategoryAssignment(Category[] categories) {
-      this.categories = categories;
+      if (categories == null || categories.length == 0) {
+        throw new IllegalArgumentException("categories must not be null or empty");
+      }
+      this.categories = categories.clone();
+      int mask = 0;
+      for (final Category category : categories) {
+        mask |= 1 << category.id();
+      }
+      this.categoryMask = mask;
     }
 
     /**
@@ -111,34 +122,22 @@ final class CategoryTable {
     }
 
     /**
-     * Extends each of this assignment's category runs through the next character.
+     * Computes the run end after comparing this assignment with the next character.
+     * MeCab's
+     * <a href="https://github.com/taku910/mecab/blob/61b90ba6e669dc2d7d533d4a80d206f3b31d52b1/mecab/src/char_property.h#L37-L48">
+     * {@code seekToOtherType}</a> replaces the current mask after each accepted
+     * character, so successive assignments must overlap.
      *
      * @param next The next character's assignment, or {@code null} at the end of text.
-     * @param runEndByCategory The run end calculated at the next character for each
-     *                         category.
+     * @param nextRunEnd The run end calculated at the next character.
      * @param characterEnd The exclusive end of the current character.
-     * @return The furthest run end of any category assigned to this character.
+     * @return {@code nextRunEnd} when the assignments intersect;
+     *         {@code characterEnd} otherwise.
      */
-    int runEnd(CategoryAssignment next, Map<Category, Integer> runEndByCategory,
+    int continuedRunEnd(CategoryAssignment next, int nextRunEnd,
         int characterEnd) {
-      int furthest = characterEnd;
-      for (final Category category : categories) {
-        final int categoryEnd = next != null && next.contains(category)
-            ? runEndByCategory.getOrDefault(category, characterEnd) : characterEnd;
-        runEndByCategory.put(category, categoryEnd);
-        furthest = Math.max(furthest, categoryEnd);
-      }
-      return furthest;
-    }
-
-    /** Returns whether this assignment contains a category instance. */
-    private boolean contains(Category category) {
-      for (final Category candidate : categories) {
-        if (candidate == category) {
-          return true;
-        }
-      }
-      return false;
+      return next != null && (categoryMask & next.categoryMask) != 0
+          ? nextRunEnd : characterEnd;
     }
   }
 
@@ -152,10 +151,11 @@ final class CategoryTable {
     /**
      * One mapping line retained for validation after all categories have been read.
      *
-     * @param from A code point covered by the mapping, used in error messages.
+     * @param sourceStart The first code point on the mapping line, used in error
+     *                    messages even if a later mapping replaces it.
      * @param categories The category names from the mapping, primary first.
      */
-    private record Mapping(int from, String[] categories) {
+    private record Mapping(int sourceStart, String[] categories) {
     }
 
     private final String[][] bmp = new String[Character.MAX_VALUE + 1][];
@@ -172,6 +172,8 @@ final class CategoryTable {
      *                   be {@code null} or empty.
      */
     void map(int from, int to, String[] categories) {
+      // All positions written by this mapping store this array reference. build()
+      // relies on array identity to resolve one CategoryAssignment per mapping line.
       mappings.add(new Mapping(from, categories));
       for (int c = from; c <= Math.min(to, Character.MAX_VALUE); c++) {
         bmp[c] = categories;
@@ -227,8 +229,11 @@ final class CategoryTable {
       }
       final Map<String[], CategoryAssignment> resolvedAssignments =
           new IdentityHashMap<>();
+      // Validate mappings in file order, including mappings replaced across their
+      // ranges. This makes typo detection independent of range precedence.
       for (final Mapping mapping : mappings) {
-        resolve(mapping.categories(), categories, resolvedAssignments, mapping.from());
+        resolve(mapping.categories(), categories, resolvedAssignments,
+            mapping.sourceStart());
       }
       final CategoryAssignment[] resolvedBmp = new CategoryAssignment[bmp.length];
       for (int c = 0; c < bmp.length; c++) {
@@ -268,8 +273,8 @@ final class CategoryTable {
         resolved[i] = categories.get(names[i]);
         if (resolved[i] == null) {
           throw new IOException(String.format(Locale.ROOT,
-              MecabDictionary.CHAR_DEF + " maps U+%04X to the undefined category %s",
-              codePoint, names[i]));
+              MecabDictionary.CHAR_DEF + " declaration at U+%04X names the"
+                  + " undefined category %s", codePoint, names[i]));
         }
       }
       final CategoryAssignment assignment = new CategoryAssignment(resolved);

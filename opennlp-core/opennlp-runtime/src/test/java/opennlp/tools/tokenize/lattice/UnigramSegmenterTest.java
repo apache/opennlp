@@ -42,8 +42,8 @@ import opennlp.tools.util.Span;
  */
 public class UnigramSegmenterTest {
 
-  /** Invalid leading byte for a two-byte UTF-8 sequence with no continuation byte. */
-  private static final byte TRUNCATED_UTF8_LEAD = (byte) 0xC3;
+  /** UTF-8 lead byte with the required continuation byte omitted. */
+  private static final byte TRUNCATED_UTF8_LEAD_BYTE = (byte) 0xC3;
 
   private static final String LEXICON = String.join("\n",
       "\u6211 5000 r",
@@ -247,7 +247,7 @@ public class UnigramSegmenterTest {
 
   @Test
   void testRejectsMalformedLexiconEncoding() {
-    final byte[] malformed = {'w', TRUNCATED_UTF8_LEAD, ' ', '1', '\n'};
+    final byte[] malformed = {'w', TRUNCATED_UTF8_LEAD_BYTE, ' ', '1', '\n'};
 
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> UnigramSegmenter.load(
@@ -265,6 +265,6 @@ public class UnigramSegmenterTest {
         new ByteArrayInputStream((word + " 1\n").getBytes(StandardCharsets.UTF_8)),
         StandardCharsets.UTF_8);
 
-    Assertions.assertNotNull(loaded);
+    Assertions.assertArrayEquals(new String[] {word}, loaded.tokenize(word));
   }
 }
