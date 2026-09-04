@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,10 +41,8 @@ import opennlp.tools.util.StringUtil;
 /**
  * Frequency-driven segmentation for Chinese and similar scripts: a Viterbi search that
  * maximizes the summed log-probability of the words in a user-supplied frequency
- * lexicon, with unlisted characters falling back to single-character words. This is the
- * unigram model behind common Chinese segmenters; it uses no connection costs, so it
- * is lighter than the {@link LatticeTokenizer} and fits lexicons that list only words
- * and counts.
+ * lexicon, with unlisted characters falling back to single-character words. It uses no
+ * connection costs and accepts lexicons that list only words and counts.
  *
  * <p>The lexicon format is one entry per line: the word, its count, and optionally a
  * tag, separated by whitespace. The lexicon file is user-supplied; no lexicon data is
@@ -69,6 +69,13 @@ public final class UnigramSegmenter implements Tokenizer {
     private final WordTrie[] nodes;
     private final double logProbability;
 
+    /**
+     * Creates an immutable trie node.
+     *
+     * @param keys The sorted child labels.
+     * @param nodes The child nodes, parallel to {@code keys}.
+     * @param logProbability The word score, or {@link Double#NaN} for a nonterminal node.
+     */
     private WordTrie(char[] keys, WordTrie[] nodes, double logProbability) {
       this.keys = keys;
       this.nodes = nodes;
@@ -92,22 +99,53 @@ public final class UnigramSegmenter implements Tokenizer {
 
     private final Map<Character, WordTrieBuilder> children = new HashMap<>();
     private double logProbability = Double.NaN;
+    private WordTrie built;
 
-    private WordTrie freeze() {
-      final char[] keys = new char[children.size()];
-      int i = 0;
-      for (final Character key : children.keySet()) {
-        keys[i++] = key;
+    /**
+     * One pending post-order traversal step.
+     *
+     * @param node The mutable node.
+     * @param childrenBuilt Whether the node's children have been copied.
+     */
+    private record BuildStep(WordTrieBuilder node, boolean childrenBuilt) {
+    }
+
+    /** Copies the mutable tree without consuming the thread stack. */
+    private WordTrie build() {
+      final ArrayDeque<BuildStep> pending = new ArrayDeque<>();
+      pending.push(new BuildStep(this, false));
+      while (!pending.isEmpty()) {
+        final BuildStep step = pending.pop();
+        final WordTrieBuilder node = step.node();
+        if (!step.childrenBuilt()) {
+          pending.push(new BuildStep(node, true));
+          for (final WordTrieBuilder child : node.children.values()) {
+            pending.push(new BuildStep(child, false));
+          }
+          continue;
+        }
+        final char[] keys = new char[node.children.size()];
+        int i = 0;
+        for (final Character key : node.children.keySet()) {
+          keys[i++] = key;
+        }
+        Arrays.sort(keys);
+        final WordTrie[] nodes = new WordTrie[keys.length];
+        for (int k = 0; k < keys.length; k++) {
+          nodes[k] = node.children.get(keys[k]).built;
+        }
+        node.built = new WordTrie(keys, nodes, node.logProbability);
       }
-      Arrays.sort(keys);
-      final WordTrie[] nodes = new WordTrie[keys.length];
-      for (int k = 0; k < keys.length; k++) {
-        nodes[k] = children.get(keys[k]).freeze();
-      }
-      return new WordTrie(keys, nodes, logProbability);
+      return built;
     }
   }
 
+  /**
+   * Creates a segmenter from a word trie and the unknown-character score.
+   *
+   * @param trie The word trie.
+   * @param unknownLogProbability The score for an unlisted character.
+   */
   private UnigramSegmenter(WordTrie trie, double unknownLogProbability) {
     this.trie = trie;
     this.unknownLogProbability = unknownLogProbability;
@@ -184,8 +222,10 @@ public final class UnigramSegmenter implements Tokenizer {
     }
     final Map<String, Long> counts = new HashMap<>();
     long total = 0;
-    final BufferedReader reader =
-        new BufferedReader(new InputStreamReader(lexiconStream, charset));
+    final BufferedReader reader = new BufferedReader(new InputStreamReader(
+        lexiconStream, charset.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)));
     int lineNumber = 0;
     String raw;
     while ((raw = reader.readLine()) != null) {
@@ -244,7 +284,7 @@ public final class UnigramSegmenter implements Tokenizer {
     // Charge an unlisted character half of one count out of the total, which makes it
     // rarer than any listed word: every listed count is at least one.
     final double unknown = Math.log(0.5) - logTotal;
-    return new UnigramSegmenter(root.freeze(), unknown);
+    return new UnigramSegmenter(root.build(), unknown);
   }
 
   /**

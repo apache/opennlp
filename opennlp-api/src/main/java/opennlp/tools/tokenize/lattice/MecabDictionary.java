@@ -25,12 +25,14 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.tokenize.lattice.CategoryTable.CategoryAssignment;
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.StringUtil;
 
@@ -49,15 +51,14 @@ import opennlp.tools.util.StringUtil;
  * through this one reader, with the feature columns passed through untouched because
  * their schemas differ.</p>
  *
- * <p>Each instance keeps about 0.75 MB of category tables keyed by the 16-bit code-unit
- * space, so load once and share. Lexicon CSV files under the dictionary directory are
- * read in sorted path order so tie-breaking is stable across file systems. Connection
- * costs must cover every declared matrix cell; missing pairs are rejected rather than
- * treated as cost zero. Matrix dimensions and the lexicon entry count are bounded by
- * {@link ResourceLimits#MAX_ENTRIES}, and the matrix cell count by
- * {@link ResourceLimits#MAX_MATRIX_CELLS}. Lexicon CSV fields may be
- * MeCab-quoted with {@code ""} escapes. An {@code unk.def} template must name a
- * category {@code char.def} defined.</p>
+ * <p>Load once and share an instance. Lexicon CSV files are read in sorted path order
+ * so tie-breaking is stable across file systems. Connection costs must cover all
+ * matrix cells; missing and duplicate entries are rejected. Matrix dimensions
+ * and the lexicon entry count are bounded by {@link ResourceLimits#MAX_ENTRIES}, and
+ * the matrix cell count by {@link ResourceLimits#MAX_MATRIX_CELLS}. Lexicon CSV fields
+ * may be MeCab-quoted with {@code ""} escapes. Word and connection costs must fit in a
+ * signed 16-bit integer. An {@code unk.def} template must name a category defined by
+ * {@code char.def}.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -73,7 +74,7 @@ public final class MecabDictionary {
   static final String DEFAULT_CATEGORY = "DEFAULT";
 
   private static final String MATRIX_DEF = "matrix.def";
-  private static final String CHAR_DEF = "char.def";
+  static final String CHAR_DEF = "char.def";
   private static final String UNK_DEF = "unk.def";
 
   static final String LEXICON_EXTENSION = ".csv";
@@ -82,7 +83,7 @@ public final class MecabDictionary {
   private static final String LEXICON_GLOB = "*" + LEXICON_EXTENSION;
   private static final char COMMENT_MARKER = '#';
 
-  /** The prefix a {@code char.def} code point field carries, in either letter case. */
+  /** The code point prefix used by {@code char.def}, in either letter case. */
   private static final String HEX_PREFIX = "0x";
 
   /** The separator between the two ends of a {@code char.def} code point range. */
@@ -111,8 +112,8 @@ public final class MecabDictionary {
    * @param name The category name.
    * @param invoke Whether unknown-word candidates are generated even where the lexicon
    *               matched.
-   * @param group Whether a whole run of same-category characters is offered as one
-   *              candidate.
+   * @param group Whether a complete run of characters sharing a category is emitted as
+   *              one candidate.
    * @param length How many leading characters of the run are offered as candidates.
    */
   record Category(String name, boolean invoke, boolean group, int length) {
@@ -134,9 +135,19 @@ public final class MecabDictionary {
   private final short[] connectionCosts;
   private final int rightSize;
   private final CategoryTable categoryTable;
-  private final Category defaultCategory;
+  private final CategoryAssignment defaultCategories;
   private final Map<String, List<WordEntry>> unknownEntries;
 
+  /**
+   * Creates an immutable dictionary from parsed lexicon and definition data.
+   *
+   * @param lexicon The surface lexicon.
+   * @param connectionCosts The flattened connection matrix.
+   * @param rightSize The number of left-context columns in each matrix record.
+   * @param categories The character categories by name.
+   * @param categoryTable The code point category assignments.
+   * @param unknownEntries The unknown-word templates by category.
+   */
   private MecabDictionary(DoubleArrayLexicon lexicon,
       short[] connectionCosts, int rightSize, Map<String, Category> categories,
       CategoryTable categoryTable, Map<String, List<WordEntry>> unknownEntries) {
@@ -144,7 +155,8 @@ public final class MecabDictionary {
     this.connectionCosts = connectionCosts;
     this.rightSize = rightSize;
     this.categoryTable = categoryTable;
-    this.defaultCategory = categories.get(DEFAULT_CATEGORY);
+    this.defaultCategories = new CategoryAssignment(
+        new Category[] {categories.get(DEFAULT_CATEGORY)});
     final Map<String, List<WordEntry>> copy = new HashMap<>(unknownEntries.size());
     for (final Map.Entry<String, List<WordEntry>> entry : unknownEntries.entrySet()) {
       copy.put(entry.getKey(), List.copyOf(entry.getValue()));
@@ -259,6 +271,10 @@ public final class MecabDictionary {
               + " format defines");
         }
         final int index = right * rightSize + left;
+        if (filled.get(index)) {
+          throw new IOException("duplicate " + MATRIX_DEF + " entry " + right + " "
+              + left + " at line " + lineNumber);
+        }
         costs[index] = (short) cost;
         filled.set(index);
       }
@@ -304,7 +320,7 @@ public final class MecabDictionary {
   }
 
   /**
-   * Reads one lexicon-format CSV file, rejecting any entry whose context ids the
+   * Parses one lexicon-format CSV file, rejecting entries with context ids the
    * connection matrix cannot be indexed with.
    *
    * @param file The file to read.
@@ -316,9 +332,9 @@ public final class MecabDictionary {
    *                  ids.
    * @param entryCount A one-element running total of entries read so far, shared across
    *                   the lexicon files of one load.
-   * @throws IOException Thrown if the file is missing, an entry is malformed, an
-   *         entry's context id is outside the matrix dimensions, or the running entry
-   *         count exceeds {@link ResourceLimits#MAX_ENTRIES}.
+   * @throws IOException Thrown if the file is missing, an entry is malformed or has
+   *         an empty surface, an entry's context id is outside the matrix dimensions,
+   *         or the running entry count exceeds {@link ResourceLimits#MAX_ENTRIES}.
    */
   private static void readLexicon(Path file, Charset charset,
       Map<String, List<WordEntry>> target, int leftSize, int rightSize, int[] entryCount)
@@ -340,7 +356,8 @@ public final class MecabDictionary {
         }
         final String surface = fields.get(0);
         if (surface.isEmpty()) {
-          continue;
+          throw new IOException("malformed entry at " + file + " line " + lineNumber
+              + ": surface must not be empty");
         }
         final int leftId = parseInt(fields.get(1), file.toString(), lineNumber);
         final int rightId = parseInt(fields.get(2), file.toString(), lineNumber);
@@ -359,8 +376,13 @@ public final class MecabDictionary {
               + ResourceLimits.MAX_ENTRIES);
         }
         entryCount[0]++;
-        final WordEntry entry = new WordEntry(leftId, rightId,
-            parseInt(fields.get(3), file.toString(), lineNumber),
+        final int cost = parseInt(fields.get(3), file.toString(), lineNumber);
+        if (cost < Short.MIN_VALUE || cost > Short.MAX_VALUE) {
+          throw new IOException("malformed entry at " + file + " line " + lineNumber
+              + ": word cost " + cost
+              + " is outside the 16-bit range the format defines");
+        }
+        final WordEntry entry = new WordEntry(leftId, rightId, cost,
             List.copyOf(fields.subList(4, fields.size())));
         target.computeIfAbsent(surface, key -> new ArrayList<>(1)).add(entry);
       }
@@ -376,8 +398,8 @@ public final class MecabDictionary {
    * @param categories Receives the defined categories, keyed by name.
    * @param categoryTable Receives the code point to category name mappings.
    * @throws IOException Thrown if the file is missing, a line is malformed, a code
-   *         point is outside the Unicode range, a range descends, or the file defines
-   *         no {@code DEFAULT} category.
+   *         point is outside the Unicode range, a range descends, a category is
+   *         duplicated, or the file defines no {@code DEFAULT} category.
    */
   private static void readCharacterDefinition(Path file, Charset charset,
       Map<String, Category> categories, CategoryTable.Builder categoryTable)
@@ -417,7 +439,7 @@ public final class MecabDictionary {
             throw new IOException("code point range descends at " + file + " line "
                 + lineNumber);
           }
-          categoryTable.map(from, to, fields[1]);
+          categoryTable.map(from, to, Arrays.copyOfRange(fields, 1, fields.length));
         } else {
           if (fields.length < 4) {
             throw new IOException(
@@ -433,8 +455,12 @@ public final class MecabDictionary {
                 "category LENGTH must not be negative at " + file + " line "
                     + lineNumber);
           }
-          categories.put(fields[0], new Category(fields[0],
-              FLAG_ON.equals(fields[1]), FLAG_ON.equals(fields[2]), length));
+          final Category category = new Category(fields[0],
+              FLAG_ON.equals(fields[1]), FLAG_ON.equals(fields[2]), length);
+          if (categories.putIfAbsent(fields[0], category) != null) {
+            throw new IOException("duplicate " + CHAR_DEF + " category "
+                + fields[0] + " at line " + lineNumber);
+          }
         }
       }
     }
@@ -469,17 +495,29 @@ public final class MecabDictionary {
   }
 
   /**
-   * Classifies a character by code point, so that a character outside the Basic
-   * Multilingual Plane is classified as the one character it is rather than as its two
-   * surrogates.
+   * Classifies a character by code point, so a character outside the Basic Multilingual
+   * Plane is classified once, not as separate surrogate code units.
    *
    * @param codePoint The code point to classify.
    * @return Its category, falling back to {@code DEFAULT} when no {@code char.def}
    *         mapping covers the code point. Never {@code null}.
    */
   Category categoryOf(int codePoint) {
-    final Category category = categoryTable.categoryOf(codePoint);
-    return category != null ? category : defaultCategory;
+    return categoriesOf(codePoint).primary();
+  }
+
+  /**
+   * Classifies a character into all categories assigned by {@code char.def}. The first
+   * category supplies unknown-word behavior and all categories participate in run
+   * grouping.
+   *
+   * @param codePoint The code point to classify.
+   * @return The category assignment, falling back to {@code DEFAULT} when no mapping
+   *         covers the code point.
+   */
+  CategoryAssignment categoriesOf(int codePoint) {
+    final CategoryAssignment categories = categoryTable.categoriesOf(codePoint);
+    return categories != null ? categories : defaultCategories;
   }
 
   /**
@@ -496,7 +534,7 @@ public final class MecabDictionary {
    * Removes a trailing {@code #} comment from a {@code char.def} line.
    *
    * @param line The raw line.
-   * @return The line up to but excluding the first {@code #}, or the whole line when
+   * @return The line up to but excluding the first {@code #}, or the complete line when
    *         there is none.
    */
   private static String stripComment(String line) {

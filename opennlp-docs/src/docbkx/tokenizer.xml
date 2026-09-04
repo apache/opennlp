@@ -560,6 +560,9 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				UniDic.
 				Load also rejects an <code>unk.def</code> template for a category
 				<code>char.def</code> did not define, and accepts MeCab-quoted CSV fields.
+				If a <code>char.def</code> mapping lists multiple categories, the first
+				provides unknown-word settings and all listed categories can extend the
+				character run.
 				Tar headers are checksum-validated before extraction. Files are staged on
 				the target filesystem and published after the archive passes validation. The
 				installer does not replace files already present in the target directory.
