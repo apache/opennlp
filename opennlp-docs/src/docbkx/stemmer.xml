@@ -119,7 +119,8 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			ships in analysis-common). Light stemmers strip a modest set of endings;
 			minimal stemmers strip fewer. Instances are immutable, safe for concurrent
 			use, and each instance is also its own <code>StemmerFactory</code>. Input
-			is expected to be lowercase; the stemmers do not fold case.
+			is expected to use lowercase NFC; the stemmers do not apply case folding
+			or Unicode normalization.
 		</para>
 		<para>
 			Languages with a light stemmer include German, Spanish, Finnish, French,

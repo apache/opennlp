@@ -79,6 +79,19 @@ class LightStemmerContractTest {
 
   @ParameterizedTest
   @MethodSource("stemmers")
+  void testDoesNotFoldUppercaseInput(Stemmer stemmer) {
+    assertEquals("TESTS", stemmer.stem("TESTS").toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("stemmers")
+  void testDoesNotNormalizeDecomposedInput(Stemmer stemmer) {
+    final String decomposed = "x\u0301q";
+    assertEquals(decomposed, stemmer.stem(decomposed).toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("stemmers")
   void testConcurrentCallsMatchSerialResults(Stemmer stemmer) throws Exception {
     final List<String> words = List.of(
         "running", "h\u00E4usern", "maisons", "h\u00E1zak",
