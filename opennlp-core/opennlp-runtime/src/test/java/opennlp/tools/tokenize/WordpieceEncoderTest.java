@@ -34,8 +34,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import opennlp.tools.util.Span;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -67,6 +65,7 @@ class WordpieceEncoderTest {
     assertEquals(expectedId, piece.id());
     assertEquals(expectedStart, piece.start(), "start of " + piece);
     assertEquals(expectedEnd, piece.end(), "end of " + piece);
+<<<<<<< HEAD
     assertEquals(new Span(expectedStart, expectedEnd), piece.span(), "span of " + piece);
   }
 
@@ -174,6 +173,114 @@ class WordpieceEncoderTest {
   }
 
   @Test
+=======
+  }
+
+  @Test
+  void testGeneratedInputsMatchReferenceNormalizationOrder() {
+    final int[] pool = {'a', 'B', ' ', '\t', '\n', 0x00A0, 0x00C9, 0x0130, 0x0301,
+        0x0391, 0x03BF, 0x1715, 0x200B, 0x2028, 0x2029, 0x302E, 0x4E2D, 0x20000,
+        '.', '\'', 0x10100, 0x1F600, 0xFFFD, 0};
+    final Random random = new Random(REFERENCE_RANDOM_SEED);
+    for (final boolean lowerCase : new boolean[] {true, false}) {
+      for (int sampleIndex = 0; sampleIndex < REFERENCE_SAMPLE_COUNT; sampleIndex++) {
+        final StringBuilder input = new StringBuilder();
+        final int length = random.nextInt(24);
+        for (int i = 0; i < length; i++) {
+          input.appendCodePoint(pool[random.nextInt(pool.length)]);
+        }
+
+        final List<String> expectedWords = referenceBasicTokens(input, lowerCase);
+        final Set<String> vocabulary = new LinkedHashSet<>(
+            List.of("[UNK]", "[CLS]", "[SEP]"));
+        vocabulary.addAll(expectedWords);
+        final WordpieceEncoder encoder = new WordpieceEncoder(
+            new ArrayList<>(vocabulary), lowerCase);
+
+        final List<String> expected = new ArrayList<>(expectedWords.size() + 2);
+        expected.add("[CLS]");
+        expected.addAll(expectedWords);
+        expected.add("[SEP]");
+        assertEquals(expected, List.of(encoder.encodeToPieces(input)),
+            "unexpected normalization for: " + codePointList(input));
+      }
+    }
+  }
+
+  private static List<String> codePointList(CharSequence text) {
+    return text.codePoints()
+        .mapToObj(codePoint -> "U+" + Integer.toHexString(codePoint).toUpperCase(Locale.ROOT))
+        .toList();
+  }
+
+  private static List<String> referenceBasicTokens(CharSequence input, boolean lowerCase) {
+    final StringBuilder cleaned = new StringBuilder(input.length() + 16);
+    input.codePoints().forEach(codePoint -> {
+      if (codePoint == 0 || codePoint == 0xFFFD || BertNormalization.isControl(codePoint)) {
+        return;
+      }
+      if (BertNormalization.isWhitespace(codePoint)) {
+        cleaned.append(' ');
+      } else if (BertNormalization.isCjk(codePoint)) {
+        cleaned.append(' ').appendCodePoint(codePoint).append(' ');
+      } else {
+        cleaned.appendCodePoint(codePoint);
+      }
+    });
+
+    final List<String> words = splitReferenceWhitespace(cleaned);
+    final List<String> pieces = new ArrayList<>();
+    for (String word : words) {
+      if (lowerCase) {
+        word = stripReferenceAccents(word.toLowerCase(Locale.ROOT));
+      }
+      final StringBuilder current = new StringBuilder();
+      word.codePoints().forEach(codePoint -> {
+        if (BertNormalization.isPunctuation(codePoint)) {
+          addIfNotEmpty(pieces, current);
+          pieces.add(new String(Character.toChars(codePoint)));
+        } else {
+          current.appendCodePoint(codePoint);
+        }
+      });
+      addIfNotEmpty(pieces, current);
+    }
+    return pieces;
+  }
+
+  private static List<String> splitReferenceWhitespace(CharSequence text) {
+    final List<String> words = new ArrayList<>();
+    final StringBuilder current = new StringBuilder();
+    text.codePoints().forEach(codePoint -> {
+      if (codePoint == ' ' || codePoint == 0x2028 || codePoint == 0x2029) {
+        addIfNotEmpty(words, current);
+      } else {
+        current.appendCodePoint(codePoint);
+      }
+    });
+    addIfNotEmpty(words, current);
+    return words;
+  }
+
+  private static String stripReferenceAccents(String text) {
+    final StringBuilder stripped = new StringBuilder(text.length());
+    Normalizer.normalize(text, Normalizer.Form.NFD).codePoints().forEach(codePoint -> {
+      if (Character.getType(codePoint) != Character.NON_SPACING_MARK) {
+        stripped.appendCodePoint(codePoint);
+      }
+    });
+    return stripped.toString();
+  }
+
+  private static void addIfNotEmpty(List<String> words, StringBuilder current) {
+    if (!current.isEmpty()) {
+      words.add(current.toString());
+      current.setLength(0);
+    }
+  }
+
+  @Test
+>>>>>>> c7ebfce13 (OPENNLP-1885: Cover WordPiece parity and model ids)
   void testGeneratedUnicodeProducesOrderedBoundedSpans() {
     final int[] pool = {'a', 'b', 'A', 'B', 'z', ' ', ' ', '\t', 0x00A0, '.', '!', ',',
         0x0301, 0x00E9, 0x0130, 0x03A3, 0x03C3, 0x03BF, 0x4E2D, 0xFFFD, 0x200B, 0x1F600, 0};
@@ -354,6 +461,7 @@ class WordpieceEncoderTest {
 
     final List<SubwordPiece> pieces = encoder.encode(text);
 
+<<<<<<< HEAD
     // The manual's WordPiece example prints one line per piece: id, piece, and source text.
     final List<String> lines = new ArrayList<>();
     for (final SubwordPiece piece : pieces) {
@@ -364,6 +472,8 @@ class WordpieceEncoderTest {
         "1\t[CLS]\t", "3\talice\tAlice", "4\twas\twas", "5\tbegin\tbegin", "6\t##ning\tning",
         "7\tto\tto", "8\tget\tget", "9\tvery\tvery", "10\ttired\ttired", "11\t.\t.",
         "2\t[SEP]\t"), lines);
+=======
+>>>>>>> c7ebfce13 (OPENNLP-1885: Cover WordPiece parity and model ids)
     assertArrayEquals(new String[] {
         "[CLS]", "alice", "was", "begin", "##ning", "to", "get", "very", "tired", ".",
         "[SEP]"}, encoder.encodeToPieces(text));

@@ -35,6 +35,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateTokenizerTest {
 
+  private static final class TestDL extends AbstractDL {
+
+    private TestDL(Map<String, Integer> vocab) {
+      super(null, null, vocab, true);
+    }
+
+    private Tokens encode(String text) {
+      return encodeTokens(text);
+    }
+  }
+
   private static Map<String, Integer> bertVocab() {
     final Map<String, Integer> vocab = new HashMap<>();
     vocab.put(WordpieceTokenizer.BERT_CLS_TOKEN, 0);
@@ -140,7 +151,11 @@ public class CreateTokenizerTest {
         WordpieceTokenizer.BERT_UNK_TOKEN, 999,
         "hello", 42);
 
+<<<<<<< HEAD
     final Tokens tokens = new ModelFreeDL(vocab, true).encode("Hello");
+=======
+    final Tokens tokens = new TestDL(vocab).encode("Hello");
+>>>>>>> c7ebfce13 (OPENNLP-1885: Cover WordPiece parity and model ids)
 
     assertArrayEquals(new String[] {"[CLS]", "hello", "[SEP]"}, tokens.tokens());
     assertArrayEquals(new long[] {101, 42, 205}, tokens.ids());
