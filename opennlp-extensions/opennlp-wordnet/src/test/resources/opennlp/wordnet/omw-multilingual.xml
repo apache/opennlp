@@ -17,8 +17,8 @@
    specific language governing permissions and limitations
    under the License.
 
-   Project-authored interoperability fixture based on the public OMW 2.0 release shape.
-   The source identifiers and the factual dog lemmas mirror the omw-it, omw-es, and omw-sv
+   Project-authored interoperability fixture based on the public OMW 2.0 format.
+   The source identifiers and the factual dog lemmas match the omw-it, omw-es, and omw-sv
    packages at https://github.com/omwn/omw-data/releases/tag/v2.0. No source definitions or
    relation graph are copied. Each source package declares CC BY 3.0 metadata. The fixture
    combines one reduced lexicon from each language to exercise the WN-LMF multi-lexicon form.

@@ -60,7 +60,7 @@ class WnLmfRelationCoverageTest {
   @Test
   void testCoverageTablesMatchWnLmf14Cardinality() {
     // WN-LMF 1.4 declares 85 SynsetRelation values and 48 SenseRelation values.
-    // The untyped escape hatch "other" is intentionally skipped, leaving these counts.
+    // The untyped "other" relation has no WordNetRelation value and is skipped.
     assertEquals(84, SYNSET_RELATIONS.size());
     assertEquals(47, SENSE_RELATIONS.size());
   }

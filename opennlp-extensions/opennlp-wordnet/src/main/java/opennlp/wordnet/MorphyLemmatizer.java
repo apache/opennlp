@@ -53,6 +53,11 @@ public final class MorphyLemmatizer implements Lemmatizer {
    */
   public static final String UNKNOWN_LEMMA = "O";
 
+  private static final String TOKENS_NULL = "toks must not be null";
+  private static final String TAGS_NULL = "tags must not be null";
+  private static final String TOKEN_ELEMENT_NULL = "toks must not contain a null element";
+  private static final String TAG_ELEMENT_NULL = "tags must not contain a null element";
+
   private static final String[][] NOUN_RULES = {
       {"s", ""}, {"ses", "s"}, {"xes", "x"}, {"zes", "z"},
       {"ches", "ch"}, {"shes", "sh"}, {"men", "man"}, {"ies", "y"},
@@ -101,10 +106,10 @@ public final class MorphyLemmatizer implements Lemmatizer {
   @Override
   public String[] lemmatize(String[] toks, String[] tags) {
     if (toks == null) {
-      throw new IllegalArgumentException("toks must not be null");
+      throw new IllegalArgumentException(TOKENS_NULL);
     }
     if (tags == null) {
-      throw new IllegalArgumentException("tags must not be null");
+      throw new IllegalArgumentException(TAGS_NULL);
     }
     if (toks.length != tags.length) {
       throw new IllegalArgumentException("toks and tags must have the same length, got "
@@ -113,10 +118,10 @@ public final class MorphyLemmatizer implements Lemmatizer {
     final String[] lemmas = new String[toks.length];
     for (int i = 0; i < toks.length; i++) {
       if (toks[i] == null) {
-        throw new IllegalArgumentException("toks must not contain a null element");
+        throw new IllegalArgumentException(TOKEN_ELEMENT_NULL);
       }
       if (tags[i] == null) {
-        throw new IllegalArgumentException("tags must not contain a null element");
+        throw new IllegalArgumentException(TAG_ELEMENT_NULL);
       }
       final List<String> candidates = lemmasOf(toks[i], tags[i]);
       lemmas[i] = candidates.isEmpty() ? UNKNOWN_LEMMA : candidates.get(0);
@@ -133,10 +138,10 @@ public final class MorphyLemmatizer implements Lemmatizer {
   @Override
   public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
     if (toks == null) {
-      throw new IllegalArgumentException("toks must not be null");
+      throw new IllegalArgumentException(TOKENS_NULL);
     }
     if (tags == null) {
-      throw new IllegalArgumentException("tags must not be null");
+      throw new IllegalArgumentException(TAGS_NULL);
     }
     if (toks.size() != tags.size()) {
       throw new IllegalArgumentException("toks and tags must have the same size, got "
@@ -145,10 +150,10 @@ public final class MorphyLemmatizer implements Lemmatizer {
     final List<List<String>> lemmas = new ArrayList<>(toks.size());
     for (int i = 0; i < toks.size(); i++) {
       if (toks.get(i) == null) {
-        throw new IllegalArgumentException("toks must not contain a null element");
+        throw new IllegalArgumentException(TOKEN_ELEMENT_NULL);
       }
       if (tags.get(i) == null) {
-        throw new IllegalArgumentException("tags must not contain a null element");
+        throw new IllegalArgumentException(TAG_ELEMENT_NULL);
       }
       final List<String> candidates = lemmasOf(toks.get(i), tags.get(i));
       lemmas.add(candidates.isEmpty() ? List.of(UNKNOWN_LEMMA) : candidates);

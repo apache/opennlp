@@ -17,7 +17,7 @@
    specific language governing permissions and limitations
    under the License.
 
-   Project-authored miniature WN-LMF fixture. The content mirrors the miniature WNDB fixture in
+   Project-authored miniature WN-LMF fixture. It represents the same entries as the WNDB fixture in
    this directory (see mini-wndb/): the same lemmas, glosses, and relations, so reader
    equivalence can be asserted structurally.
 -->

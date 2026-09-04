@@ -17,12 +17,12 @@
 package opennlp.tools.wordnet;
 
 /**
- * The typed relations a wordnet-style lexicon draws between {@link Synset synsets}. Readers map
+ * The typed relations between {@link Synset synsets} in a WordNet-style lexicon. Readers map
  * their source format's relation names onto these values.
  *
  * <p>Relations that a source format draws between individual word senses (antonymy and
- * derivation, for example) surface here at the synset level: the synset containing the source
- * sense carries the relation to the synset containing the target sense.</p>
+ * derivation, for example) are represented at the synset level: the synset containing the source
+ * sense has the relation to the synset containing the target sense.</p>
  *
  * <p>The vocabulary includes every typed synset and sense relation in the
  * <a href="https://globalwordnet.github.io/schemas/WN-LMF-1.4.dtd">Global WordNet Association
@@ -83,7 +83,7 @@ public enum WordNetRelation {
   /** The cause of this verb; the inverse of {@link #CAUSE}. */
   CAUSED_BY,
 
-  /** A related synset worth consulting. */
+  /** A related synset referenced by a see-also relation. */
   ALSO_SEE,
 
   /** A verb sense grouped with this one. */

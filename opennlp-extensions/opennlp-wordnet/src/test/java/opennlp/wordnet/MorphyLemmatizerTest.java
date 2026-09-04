@@ -132,7 +132,7 @@ public class MorphyLemmatizerTest {
   }
 
   @Test
-  void testWorksIdenticallyOverTheWnLmfLexicon() {
+  void testMatchesWnLmfLexicon() {
     final MorphyLemmatizer lmfMorphy =
         new MorphyLemmatizer(WnLmfReaderTest.fixture(), MorphyExceptionsTest.fixture());
     assertArrayEquals(new String[] {"mouse", "box", "walk", "large", "O"},

@@ -45,10 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WndbReaderTest {
 
-  /** The minted id of the fixture's dog synset, shared with the other tests over this fixture. */
+  /** The id of the fixture's dog synset, shared with the other fixture tests. */
   static final String DOG_ID = "wndb-00001075-n";
 
-  /** The minted id of the fixture's canid synset, the hypernym of {@link #DOG_ID}. */
+  /** The id of the fixture's canid synset, the hypernym of {@link #DOG_ID}. */
   static final String CANID_ID = "wndb-00001160-n";
 
   /**

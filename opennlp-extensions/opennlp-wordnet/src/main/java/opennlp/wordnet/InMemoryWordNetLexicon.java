@@ -37,12 +37,16 @@ import opennlp.tools.wordnet.WordNetRelation;
  * folded (lemma, part of speech) index. Package-private because it is a reader product, not a
  * public entry point; consumers hold it as {@link LexicalKnowledgeBase}.
  *
- * <p>Keys and queries are folded identically (see {@link LemmaFolding}). Construction verifies
+ * <p>Stored keys and queries use {@link LemmaFolding}. Construction verifies
  * referential integrity: each relation target must resolve to a synset in the table. After
  * construction all state is immutable, making instances safe for concurrent lookups.</p>
  */
 @ThreadSafe
 final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
+
+  private static final String LEMMA_NULL = "lemma must not be null";
+  private static final String POS_NULL = "pos must not be null";
+  private static final String SENSE_INDEX_PREFIX = "Sense index entry ";
 
   private final Map<String, Synset> synsetsById;
   private final Map<LemmaKey, List<Synset>> senseIndex;
@@ -99,12 +103,12 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
       final Set<String> seen = HashSet.newHashSet(orderedIds.size());
       for (final String synsetId : orderedIds) {
         if (!seen.add(synsetId)) {
-          throw new IllegalArgumentException("Sense index entry " + entry.getKey().lemma()
+          throw new IllegalArgumentException(SENSE_INDEX_PREFIX + entry.getKey().lemma()
               + " (" + entry.getKey().pos() + ") contains duplicate synset " + synsetId);
         }
         final Synset synset = byId.get(synsetId);
         if (synset == null) {
-          throw new IllegalArgumentException("Sense index entry " + key.lemma()
+          throw new IllegalArgumentException(SENSE_INDEX_PREFIX + key.lemma()
               + " (" + key.pos() + ") references unknown synset " + synsetId);
         }
         boolean containsLemma = false;
@@ -115,7 +119,7 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
           }
         }
         if (synset.pos() != key.pos() || !containsLemma) {
-          throw new IllegalArgumentException("Sense index entry " + key.lemma()
+          throw new IllegalArgumentException(SENSE_INDEX_PREFIX + key.lemma()
               + " (" + key.pos() + ") references synset " + synsetId
               + ", which does not contain that lemma and part of speech");
         }
@@ -131,10 +135,10 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
   @Override
   public List<Synset> lookup(String lemma, WordNetPOS pos) {
     if (lemma == null) {
-      throw new IllegalArgumentException("lemma must not be null");
+      throw new IllegalArgumentException(LEMMA_NULL);
     }
     if (pos == null) {
-      throw new IllegalArgumentException("pos must not be null");
+      throw new IllegalArgumentException(POS_NULL);
     }
     final List<Synset> senses = senseIndex.get(LemmaKey.of(lemma, pos));
     return senses == null ? List.of() : senses;
@@ -170,10 +174,10 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
 
     LemmaKey {
       if (lemma == null) {
-        throw new IllegalArgumentException("lemma must not be null");
+        throw new IllegalArgumentException(LEMMA_NULL);
       }
       if (pos == null) {
-        throw new IllegalArgumentException("pos must not be null");
+        throw new IllegalArgumentException(POS_NULL);
       }
     }
 

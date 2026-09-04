@@ -29,7 +29,7 @@ final class LemmaFolding {
   }
 
   /**
-   * Folds a written form into its canonical shape: lowercase with the locale-independent
+   * Converts a written form to the lookup form: lowercase with the locale-independent
    * one-to-one mapping of {@link StringUtil#toLowerCase(CharSequence)}, with the underscore
    * some formats store in multiword lemmas treated as a space.
    *

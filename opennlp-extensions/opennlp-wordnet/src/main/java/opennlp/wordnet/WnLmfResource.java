@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * An ordered WN-LMF lexical resource containing one or more independently queryable lexicons.
- * Each lexicon has its own lookup index.
+ * Each lexicon has an independent lookup index.
  *
  * @param lexicons The lexicons in document order. Must not be {@code null} or empty, must not
  *                 contain {@code null}, and ids must be unique.
@@ -57,7 +57,7 @@ public record WnLmfResource(List<WnLmfLexicon> lexicons) {
    * Finds a lexicon by its WN-LMF id.
    *
    * @param id The exact lexicon id. Must not be {@code null}.
-   * @return The lexicon, or empty when no lexicon carries the id.
+   * @return The lexicon, or empty when no lexicon has the id.
    * @throws IllegalArgumentException Thrown if {@code id} is {@code null}.
    */
   public Optional<WnLmfLexicon> lexicon(String id) {
