@@ -626,8 +626,9 @@ public final class FeedforwardDependencyTrainer {
     final Map<String, Integer> labelIds = new HashMap<>();
     final Map<String, Integer> transitionIds = new HashMap<>();
     for (final DependencySample s : corpus) {
+      final List<Transition> oracle;
       try {
-        ArcStandardOracle.transitions(s.getGraph());
+        oracle = ArcStandardOracle.transitions(s.getGraph());
       } catch (IllegalArgumentException e) {
         continue;
       }
@@ -641,13 +642,9 @@ public final class FeedforwardDependencyTrainer {
       for (int i = 0; i < graph.size(); i++) {
         labelIds.putIfAbsent(graph.relationOf(i), 0);
       }
-    }
-    // The outcome space is the shift transition plus both arc directions for every
-    // relation label observed in the training data.
-    transitionIds.putIfAbsent(Transition.SHIFT.encode(), 0);
-    for (final String label : labelIds.keySet()) {
-      transitionIds.putIfAbsent(Transition.leftArc(label).encode(), 0);
-      transitionIds.putIfAbsent(Transition.rightArc(label).encode(), 0);
+      for (final Transition transition : oracle) {
+        transitionIds.putIfAbsent(transition.encode(), 0);
+      }
     }
 
     int row = 0;
@@ -672,12 +669,8 @@ public final class FeedforwardDependencyTrainer {
       labels.put(label, row++);
     }
 
-    int transitionIndex = 0;
-    final String[] transitions = new String[transitionIds.size()];
-    for (final String encoded : transitionIds.keySet()) {
-      transitions[transitionIndex] = encoded;
-      transitionIds.put(encoded, transitionIndex++);
-    }
+    final String[] transitions = transitionIds.keySet().toArray(String[]::new);
+    Arrays.sort(transitions);
 
     final Random random = new Random(settings.seed());
     final int inputSize =
