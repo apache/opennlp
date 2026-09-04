@@ -426,5 +426,40 @@ public class ContainmentSpineTest {
         () -> ContainmentSpine.builder().add(null, null, "n", "t"));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> parkSlopeSpine().ancestors(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ContainmentSpine.builder().add("child", " ", "Child", "locality"));
+  }
+
+  @Test
+  void testNeutralTableRejectsExtraColumns(@TempDir Path dir) throws IOException {
+    final Path table = dir.resolve("extra-column.tsv");
+    Files.writeString(table, "x\t\tPlace\tlocality\textra\n", StandardCharsets.UTF_8);
+
+    Assertions.assertThrows(InvalidFormatException.class,
+        () -> ContainmentSpine.builder().addTable(table));
+  }
+
+  @Test
+  void testNeutralTableRejectsMalformedUtf8(@TempDir Path dir) throws IOException {
+    final Path table = dir.resolve("malformed-utf8.tsv");
+    Files.write(table, new byte[] {'x', '\t', '\t', (byte) 0xc3, '\t', 't', '\n'});
+
+    Assertions.assertThrows(IOException.class,
+        () -> ContainmentSpine.builder().addTable(table));
+  }
+
+  @Test
+  void testWofMetaRejectsMalformedUtf8(@TempDir Path dir) throws IOException {
+    final Path table = dir.resolve("malformed-utf8.csv");
+    final byte[] header = "id,parent_id,name,placetype\n1,-1,".getBytes(StandardCharsets.UTF_8);
+    final byte[] suffix = ",locality\n".getBytes(StandardCharsets.UTF_8);
+    final byte[] content = new byte[header.length + 1 + suffix.length];
+    System.arraycopy(header, 0, content, 0, header.length);
+    content[header.length] = (byte) 0xc3;
+    System.arraycopy(suffix, 0, content, header.length + 1, suffix.length);
+    Files.write(table, content);
+
+    Assertions.assertThrows(IOException.class,
+        () -> ContainmentSpine.builder().addWofMeta(table));
   }
 }

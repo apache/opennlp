@@ -134,6 +134,22 @@ public class GeoNamesGazetteerTest {
         new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
   }
 
+  @Test
+  void testRejectsExtraColumns() {
+    final String content = row("5", "Nowhere", "Nowhere", "", "1", "2", "P", "DE", "1")
+        + "\textra\n";
+    assertThrows(InvalidFormatException.class, () -> GeoNamesGazetteer.load(
+        new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
+  }
+
+  @Test
+  void testRejectsDuplicateRecordIds() {
+    final String content = row("5", "First", "First", "", "1", "2", "P", "DE", "1")
+        + "\n" + row("5", "Second", "Second", "", "3", "4", "P", "DE", "1") + "\n";
+    assertThrows(InvalidFormatException.class, () -> GeoNamesGazetteer.load(
+        new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
+  }
+
   private static List<String> malformedContent() {
     return List.of(
         "too\tfew\tcolumns\n",

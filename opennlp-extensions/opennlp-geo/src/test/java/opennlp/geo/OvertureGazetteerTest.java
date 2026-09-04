@@ -133,6 +133,22 @@ public class OvertureGazetteerTest {
         new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
   }
 
+  @Test
+  void testRejectsExtraColumns() {
+    final String content = row("d9", "Nowhere", "", "1", "2", "DE", "region", "1")
+        + "\textra\n";
+    assertThrows(InvalidFormatException.class, () -> OvertureGazetteer.load(
+        new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
+  }
+
+  @Test
+  void testRejectsDuplicateRecordIds() {
+    final String content = row("d9", "First", "", "1", "2", "DE", "region", "1")
+        + "\n" + row("d9", "Second", "", "3", "4", "DE", "region", "1") + "\n";
+    assertThrows(InvalidFormatException.class, () -> OvertureGazetteer.load(
+        new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
+  }
+
   private static List<String> malformedContent() {
     return List.of(
         "too\tfew\n",
