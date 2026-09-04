@@ -115,6 +115,21 @@ public class SynsetSimilarityTest {
     Assertions.assertEquals(0.8, similarity.wuPalmer("left", "right"), 1e-9);
   }
 
+  @Test
+  void testWuPalmerUsesEachSynsetsOwnDepth() {
+    final FixtureKnowledgeBase kb = new FixtureKnowledgeBase();
+    kb.add("root", "root", WordNetRelation.HYPERNYM);
+    kb.add("common", "common", WordNetRelation.HYPERNYM, "root");
+    kb.add("right", "right", WordNetRelation.HYPERNYM, "common");
+    kb.add("branch-1", "branch-1", WordNetRelation.HYPERNYM, "root");
+    kb.add("branch-2", "branch-2", WordNetRelation.HYPERNYM, "branch-1");
+    kb.add("branch-3", "branch-3", WordNetRelation.HYPERNYM, "branch-2");
+    kb.add("left", "left", WordNetRelation.HYPERNYM, "common", "branch-3");
+
+    final SynsetSimilarity similarity = new SynsetSimilarity(kb);
+    Assertions.assertEquals(0.5, similarity.wuPalmer("left", "right"), 1e-9);
+  }
+
   /**
    * Verifies that Wu-Palmer distinguishes synsets that share only the taxonomy root from
    * synsets that share no ancestor at all. The documented return is {@code 0} only when
@@ -211,5 +226,17 @@ public class SynsetSimilarityTest {
     Assertions.assertEquals(0.0, similarity.wuPalmer("missing", "missing"), 1e-9);
     Assertions.assertEquals(0.0,
         similarity.leacockChodorow("missing", "missing", 10), 1e-9);
+  }
+
+  @Test
+  void testSharedMissingParentDoesNotRelateKnownSynsets() {
+    final FixtureKnowledgeBase kb = new FixtureKnowledgeBase();
+    kb.add("left", "left", WordNetRelation.HYPERNYM, "missing-parent");
+    kb.add("right", "right", WordNetRelation.HYPERNYM, "missing-parent");
+
+    final SynsetSimilarity similarity = new SynsetSimilarity(kb);
+    Assertions.assertEquals(-1, similarity.shortestDistance("left", "right"));
+    Assertions.assertEquals(0.0, similarity.path("left", "right"), 1e-9);
+    Assertions.assertEquals(0.0, similarity.wuPalmer("left", "right"), 1e-9);
   }
 }
