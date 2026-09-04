@@ -101,6 +101,20 @@ public class SynsetSimilarityTest {
     Assertions.assertEquals(0.0, similarity.wuPalmer("n6", "n12"), 1e-9);
   }
 
+  @Test
+  void testWuPalmerUsesTheLongestRouteToTheTaxonomyRoot() {
+    final FixtureKnowledgeBase kb = new FixtureKnowledgeBase();
+    kb.add("root", "root", WordNetRelation.HYPERNYM);
+    kb.add("middle-1", "middle-1", WordNetRelation.HYPERNYM, "root");
+    kb.add("middle-2", "middle-2", WordNetRelation.HYPERNYM, "middle-1");
+    kb.add("common", "common", WordNetRelation.HYPERNYM, "root", "middle-2");
+    kb.add("left", "left", WordNetRelation.HYPERNYM, "common");
+    kb.add("right", "right", WordNetRelation.HYPERNYM, "common");
+
+    final SynsetSimilarity similarity = new SynsetSimilarity(kb);
+    Assertions.assertEquals(0.8, similarity.wuPalmer("left", "right"), 1e-9);
+  }
+
   /**
    * Verifies that Wu-Palmer distinguishes synsets that share only the taxonomy root from
    * synsets that share no ancestor at all. The documented return is {@code 0} only when
@@ -192,5 +206,10 @@ public class SynsetSimilarityTest {
     Assertions.assertEquals(0.0, similarity.path("n5", "missing"), 1e-9);
     Assertions.assertEquals(0.0, similarity.wuPalmer("n5", "missing"), 1e-9);
     Assertions.assertEquals(0.0, similarity.leacockChodorow("n5", "missing", 10), 1e-9);
+    Assertions.assertEquals(-1, similarity.shortestDistance("missing", "missing"));
+    Assertions.assertEquals(0.0, similarity.path("missing", "missing"), 1e-9);
+    Assertions.assertEquals(0.0, similarity.wuPalmer("missing", "missing"), 1e-9);
+    Assertions.assertEquals(0.0,
+        similarity.leacockChodorow("missing", "missing", 10), 1e-9);
   }
 }

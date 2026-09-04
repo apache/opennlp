@@ -90,6 +90,16 @@ public class HypernymTyperTest {
     Assertions.assertEquals(Optional.empty(), typer.type("organism"));
   }
 
+  @Test
+  void testConflictingLabelsForTheSameSynsetAreRejected() {
+    final Map<String, String> anchors = new LinkedHashMap<>();
+    anchors.put("dog", "animal");
+    anchors.put("domestic dog", "pet");
+
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new HypernymTyper(WnLmfReaderTest.fixture(), anchors));
+  }
+
   /**
    * Verifies that invalid construction and query arguments are rejected: null or
    * empty inputs, blank anchor entries, and an anchor lemma the knowledge base does
