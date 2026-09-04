@@ -545,19 +545,25 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				<code>LatticeTokenizer</code> scores paths over a MeCab-format dictionary and
 				emits the cheapest segmentation with spans in original text coordinates.
 				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
-				Install a trusted local dictionary archive with
-				<code>MecabDictionaryInstaller</code>, load it as a
-				<code>MecabDictionary</code>, and tokenize.
+				Install a dictionary archive with <code>MecabDictionaryInstaller</code>, load it
+				as a <code>MecabDictionary</code>, and tokenize. Remote archives require an
+				expected SHA-512 digest; an application-supplied opt-in catalog
+				(<code>installFromCatalog</code>) also needs
+				<code>-Dopennlp.download.remote=true</code>.
 				<code>matrix.def</code> must list a cost for every declared cell; matrix
 				dimensions plus lexicon size are bounded by the shared
 				<code>ResourceLimits.MAX_ENTRIES</code> limit and the matrix cell count
 				by <code>ResourceLimits.MAX_MATRIX_CELLS</code>.
-				Extraction limits per-entry size, total bytes, entry count, and gzip expansion.
-				The byte limits default to 512 MiB per entry and 2 GiB total and can be raised
-				at JVM startup via
-				<code>opennlp.install.max.entry.bytes</code> and
-				<code>opennlp.install.max.total.bytes</code> for larger dictionaries such as
-				UniDic.
+				Fetching, verification, and unpacking go through the bounded
+				<code>ResourceInstaller</code> path described in the model loading chapter,
+				whose ceilings default to a 1 GiB download, 4 GiB unpacked, and 100000
+				archive entries and can be raised at JVM startup via
+				<code>opennlp.download.max.bytes</code>,
+				<code>opennlp.install.max.total.bytes</code>, and
+				<code>opennlp.install.max.entries</code> for larger dictionaries such as
+				UniDic. Installed files are flattened to their base names; a file that
+				already exists in the target is refused, so refreshing a dictionary means
+				removing its old files first.
 					Dictionary loading rejects empty lexicon surfaces, duplicate
 					<code>matrix.def</code> entries, duplicate <code>char.def</code>
 					categories, costs outside the signed 16-bit range, malformed text in the
@@ -570,13 +576,10 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 					provides unknown-word settings. Grouping continues while successive
 					assignments overlap. Unknown words use their category's <code>unk.def</code>
 					template first, with <code>DEFAULT</code> used when no category template exists.
-				Tar headers are checksum-validated before extraction. Files are staged on
-				the target filesystem and published after the archive passes validation. The
-				installer does not replace files already present in the target directory.
-					<programlisting language="java">
-<![CDATA[Path localArchive = Path.of("mecab-ipadic.tar.gz");
-Path dictionaryDirectory = Path.of("mecab-ipadic");
-MecabDictionaryInstaller.install(localArchive.toUri(), dictionaryDirectory);
+				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and
+				lexicon flows shown here.
+				<programlisting language="java">
+<![CDATA[MecabDictionaryInstaller.install(archiveUri, dictionaryDirectory, sha512);
 LatticeTokenizer tokenizer =
     new LatticeTokenizer(MecabDictionary.load(dictionaryDirectory));
 

@@ -29,7 +29,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.util.DictionaryCatalog;
 import opennlp.tools.util.DigestTestUtil;
-import opennlp.tools.util.DownloadUtil;
 
 /**
  * Pins the Hunspell catalog download gate; network fetches are not exercised here.
@@ -42,16 +41,18 @@ public class HunspellDictionaryDownloadTest {
    *
    * @param target A scratch directory managed by the test framework.
    * @throws IOException Thrown if the local catalog cannot be prepared.
-   */
+  */
   @Test
   void testDownloadRequiresRemoteProperty(@TempDir Path target) throws IOException {
     final DictionaryCatalog catalog = localCatalog(target);
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
       final IOException e = Assertions.assertThrows(IOException.class,
           () -> HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", target));
-      Assertions.assertTrue(e.getMessage().contains(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY));
+      Assertions.assertTrue(
+          e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
     } finally {
       restore(previous);
     }
@@ -68,8 +69,9 @@ public class HunspellDictionaryDownloadTest {
   void testDownloadsFromApplicationCatalog(@TempDir Path target) throws IOException {
     final DictionaryCatalog catalog = localCatalog(target);
     final Path output = target.resolve("output");
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, "true");
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, "true");
     try {
       HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", output);
       Assertions.assertEquals("SET UTF-8\n",
@@ -140,9 +142,9 @@ public class HunspellDictionaryDownloadTest {
   /** Restores the remote-download property to its previous value. */
   private static void restore(String previous) {
     if (previous == null) {
-      System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+      System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     } else {
-      System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, previous);
+      System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, previous);
     }
   }
 }

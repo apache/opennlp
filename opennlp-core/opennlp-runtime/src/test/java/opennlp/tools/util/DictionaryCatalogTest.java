@@ -20,6 +20,7 @@ package opennlp.tools.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,47 +37,119 @@ import opennlp.tools.stemmer.hunspell.HunspellDictionary;
  */
 public class DictionaryCatalogTest {
 
+  private static final String SHA_512 = "0".repeat(128);
+
+  /** Checks the validation promised by the public catalog entry record. */
+  @Test
+  void testEntryValidatesItsDocumentedFields() {
+    final URI absolute = URI.create("https://example.invalid/dictionary.tar.gz");
+
+    Assertions.assertDoesNotThrow(() ->
+        new DictionaryCatalog.Entry("demo", absolute, "A".repeat(128), null));
+    Assertions.assertAll(
+        () -> Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new DictionaryCatalog.Entry(null, absolute, SHA_512, null)),
+        () -> Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new DictionaryCatalog.Entry("demo", null, SHA_512, null)),
+        () -> Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new DictionaryCatalog.Entry("demo", URI.create("dictionary.tar.gz"),
+                SHA_512, null)),
+        () -> Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new DictionaryCatalog.Entry("demo", absolute, null, null)),
+        () -> Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new DictionaryCatalog.Entry("demo", absolute, "not-a-digest", null)));
+  }
+
   /**
-   * Verifies that a catalog download without the remote-download property fails with
-   * the property name in the message.
+   * Checks that invalid property values are reported as catalog I/O errors.
    *
-   * @param dir A scratch directory managed by the test framework.
-   * @throws Exception Thrown if the fixture catalog cannot be prepared.
+   * @throws IOException Thrown if a fixture catalog cannot be loaded.
    */
   @Test
-  void testDownloadRequiresRemoteProperty(@TempDir Path dir) throws Exception {
-    final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
-    final DictionaryCatalog loaded = demoCatalog(dir, payload);
+  void testGetRejectsInvalidCatalogValues() throws IOException {
+    final DictionaryCatalog relativeUri = DictionaryCatalog.load(new ByteArrayInputStream(
+        ("demo.url=dictionary.tar.gz\ndemo.sha512=" + SHA_512 + "\n")
+            .getBytes(StandardCharsets.UTF_8)));
+    final DictionaryCatalog invalidDigest = DictionaryCatalog.load(new ByteArrayInputStream(
+        "demo.url=https://example.invalid/dictionary.tar.gz\ndemo.sha512=invalid\n"
+            .getBytes(StandardCharsets.UTF_8)));
 
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    Assertions.assertAll(
+        () -> Assertions.assertThrows(IOException.class, () -> relativeUri.get("demo")),
+        () -> Assertions.assertThrows(IOException.class, () -> invalidDigest.get("demo")));
+  }
+
+  /**
+   * Checks argument validation before the opt-in remote setting is read.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws IOException Thrown if the fixture catalog cannot be loaded.
+   */
+  @Test
+  void testInstallValidatesArgumentsBeforeTheRemoteSetting(@TempDir Path dir)
+      throws IOException {
+    final DictionaryCatalog catalog = DictionaryCatalog.load(
+        new ByteArrayInputStream(new byte[0]));
+    final String previous = System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
-      final IOException e = Assertions.assertThrows(IOException.class,
-          () -> loaded.download("demo", dir.resolve("out.bin")));
-      Assertions.assertTrue(e.getMessage().contains(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY));
+      Assertions.assertAll(
+          () -> Assertions.assertThrows(IllegalArgumentException.class,
+              () -> catalog.install(null, dir)),
+          () -> Assertions.assertThrows(IllegalArgumentException.class,
+              () -> catalog.install("demo", null)));
     } finally {
       restore(previous);
     }
   }
 
   /**
-   * Verifies that an enabled catalog download fetches the entry and writes the
-   * digest-verified bytes to the target.
+   * Verifies that a catalog install without the remote-download property fails with
+   * the property name in the message, before anything is fetched or created.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared.
+   */
+  @Test
+  void testInstallRequiresRemoteProperty(@TempDir Path dir) throws Exception {
+    final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
+    final DictionaryCatalog loaded = demoCatalog(dir, payload);
+    final Path target = dir.resolve("out");
+
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    try {
+      final IOException e = Assertions.assertThrows(IOException.class,
+          () -> loaded.install("demo", target));
+      Assertions.assertTrue(
+          e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
+      Assertions.assertTrue(Files.notExists(target));
+    } finally {
+      restore(previous);
+    }
+  }
+
+  /**
+   * Verifies that an enabled catalog install fetches the entry and stores its
+   * digest-verified bytes under the source name in the target directory.
    *
    * @param dir A scratch directory managed by the test framework.
    * @throws Exception Thrown if the fixture catalog cannot be prepared or fetched.
    */
   @Test
-  void testDownloadWithRemotePropertyEnabled(@TempDir Path dir) throws Exception {
+  void testInstallStoresTheEntryUnderItsSourceName(@TempDir Path dir) throws Exception {
     final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
     final DictionaryCatalog loaded = demoCatalog(dir, payload);
-    final Path target = dir.resolve("out.bin");
+    final Path target = dir.resolve("out");
 
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, "true");
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, "true");
     try {
-      loaded.download("demo", target);
-      Assertions.assertArrayEquals(payload, Files.readAllBytes(target));
+      loaded.install("demo", target);
+      Assertions.assertArrayEquals(payload,
+          Files.readAllBytes(target.resolve("dict.bin")));
     } finally {
       restore(previous);
     }
@@ -146,9 +219,9 @@ public class DictionaryCatalogTest {
    */
   private static void restore(String previous) {
     if (previous == null) {
-      System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+      System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     } else {
-      System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, previous);
+      System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, previous);
     }
   }
 }
