@@ -538,5 +538,44 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				</programlisting>
 			</para>
 		</section>
+		<section xml:id="tools.tokenizer.lattice">
+			<title>Lattice tokenization for CJK</title>
+			<para>
+				Languages written without spaces need a dictionary-backed segmenter.
+				<code>LatticeTokenizer</code> scores paths over a MeCab-format dictionary and
+				emits the cheapest segmentation with spans in original text coordinates.
+				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
+				Install a trusted local dictionary archive with
+				<code>MecabDictionaryInstaller</code>, load it as a
+				<code>MecabDictionary</code>, and tokenize.
+				<code>matrix.def</code> must list a cost for every declared cell; matrix
+				dimensions plus lexicon size are bounded by the shared
+				<code>ResourceLimits.MAX_ENTRIES</code> limit and the matrix cell count
+				by <code>ResourceLimits.MAX_MATRIX_CELLS</code>.
+				Extraction limits per-entry size, total bytes, entry count, and gzip expansion.
+				The byte limits default to 512 MiB per entry and 2 GiB total and can be raised
+				at JVM startup via
+				<code>opennlp.install.max.entry.bytes</code> and
+				<code>opennlp.install.max.total.bytes</code> for larger dictionaries such as
+				UniDic.
+				Load also rejects an <code>unk.def</code> template for a category
+				<code>char.def</code> did not define, and accepts MeCab-quoted CSV fields.
+				Tar headers are checksum-validated before extraction. Files are staged on
+				the target filesystem and published after the archive passes validation. The
+				installer does not replace files already present in the target directory.
+				<programlisting language="java">
+<![CDATA[MecabDictionaryInstaller.install(localArchive.toUri(), dictionaryDirectory);
+LatticeTokenizer tokenizer =
+    new LatticeTokenizer(MecabDictionary.load(dictionaryDirectory));
+
+String[] tokens = tokenizer.tokenize(text);
+Span[] spans = tokenizer.tokenizePos(text);
+List<Morpheme> morphemes = tokenizer.analyze(text);
+
+UnigramSegmenter segmenter = UnigramSegmenter.load(Path.of("words.txt"));
+String[] words = segmenter.tokenize(text);]]>
+				</programlisting>
+			</para>
+		</section>
 	</section>
 </chapter>
