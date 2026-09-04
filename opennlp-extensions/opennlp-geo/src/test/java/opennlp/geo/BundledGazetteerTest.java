@@ -184,7 +184,7 @@ public class BundledGazetteerTest {
   }
 
   @Test
-  void testLookupNullFailsLoud() {
+  void testLookupRejectsNull() {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> fixture().lookup(null));
     assertTrue(e.getMessage().startsWith("name must not be null"), e.getMessage());
@@ -198,7 +198,7 @@ public class BundledGazetteerTest {
   }
 
   @Test
-  void testByIdNullFailsLoud() {
+  void testByIdRejectsNull() {
     final BundledGazetteer gazetteer = fixture();
     assertThrows(IllegalArgumentException.class, () -> gazetteer.byId(null, "1"));
     assertThrows(IllegalArgumentException.class, () -> gazetteer.byId("naturalearth", null));
@@ -222,13 +222,13 @@ public class BundledGazetteerTest {
   }
 
   @Test
-  void testByRegionNullFailsLoud() {
+  void testByRegionRejectsNull() {
     assertThrows(IllegalArgumentException.class, () -> fixture().byRegion(null));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"", "C", "CHE", "C1"})
-  void testByRegionMalformedCodeFailsLoud(String malformed) {
+  void testByRegionRejectsMalformedCode(String malformed) {
     final BundledGazetteer gazetteer = fixture();
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> gazetteer.byRegion(malformed));
@@ -298,7 +298,7 @@ public class BundledGazetteerTest {
   }
 
   @Test
-  void testDuplicateRecordIdFailsLoud() {
+  void testRejectsDuplicateRecordId() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> gazetteer(ROWS[0], "naturalearth;1;Zurich;;47.4;8.5;CH;;1108000;CITY;"));
     assertTrue(e.getMessage().startsWith("Duplicate gazetteer record"), e.getMessage());
@@ -336,7 +336,7 @@ public class BundledGazetteerTest {
   }
 
   @Test
-  void testNameWithoutWordTokensFailsLoudAtLoadTime() {
+  void testRejectsNameWithoutWordTokensAtLoadTime() {
     // A row that parses but whose name folds to an empty match key would be unreachable by
     // lookup; the loader rejects it instead of silently skipping the index entry.
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
@@ -346,7 +346,7 @@ public class BundledGazetteerTest {
   }
 
   @Test
-  void testAlternateNameWithoutWordTokensFailsLoudAtLoadTime() {
+  void testRejectsAlternateNameWithoutWordTokensAtLoadTime() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> gazetteer("naturalearth;1;Zurich;...;47.4;8.5;CH;;1108000;CITY;"));
     assertTrue(e.getMessage().contains("folds to an empty match key"), e.getMessage());

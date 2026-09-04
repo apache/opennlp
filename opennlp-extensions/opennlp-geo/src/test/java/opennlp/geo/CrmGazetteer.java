@@ -19,20 +19,20 @@ package opennlp.geo;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The manual's reference example of bringing your own {@link Gazetteer}: a minimal, correct
  * implementation over an application-internal store. Two maps are enough to implement it, and
- * there is no registration anywhere; the instance is handed to whatever consumes the interface.
+ * there is no registration; consumers receive the instance through the interface.
  * The geo chapter of the manual shows this implementation, and
- * {@link CustomGazetteerExampleTest} asserts the behavior the chapter states.
+ * {@link CustomGazetteerExampleTest} covers the behavior described in that chapter.
  *
  * <p>Lookup matches the canonical name case-insensitively; alternate names are not indexed,
  * which is this implementation's documented matching choice. Instances are immutable and
@@ -59,7 +59,7 @@ final class CrmGazetteer implements Gazetteer {
     final Map<String, GazetteerEntry> names = new HashMap<>();
     final Map<String, GazetteerEntry> ids = new HashMap<>();
     for (final GazetteerEntry entry : entries) {
-      names.put(entry.name().toLowerCase(Locale.ROOT), entry);
+      names.put(StringUtil.toLowerCase(entry.name()), entry);
       ids.put(entry.recordId(), entry);
     }
     this.byName = Map.copyOf(names);
@@ -72,7 +72,7 @@ final class CrmGazetteer implements Gazetteer {
     if (name == null) {
       throw new IllegalArgumentException("name must not be null");
     }
-    final GazetteerEntry found = byName.get(name.toString().toLowerCase(Locale.ROOT));
+    final GazetteerEntry found = byName.get(StringUtil.toLowerCase(name));
     return found == null ? List.of() : List.of(found);
   }
 
@@ -100,7 +100,7 @@ final class CrmGazetteer implements Gazetteer {
       throw new IllegalArgumentException(
           "isoCountryCode must be two ASCII letters, got: " + isoCountryCode);
     }
-    final String code = isoCountryCode.toUpperCase(Locale.ROOT);
+    final String code = StringUtil.toUpperCase(isoCountryCode);
     GazetteerEntry best = null;
     for (final GazetteerEntry entry : byId.values()) {
       if (code.equals(entry.countryCode())
@@ -118,7 +118,7 @@ final class CrmGazetteer implements Gazetteer {
   }
 
   /** {@return {@code true} if {@code c} is an ASCII letter} */
-  private boolean isAsciiLetter(char c) {
+  private static boolean isAsciiLetter(char c) {
     return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
   }
 }

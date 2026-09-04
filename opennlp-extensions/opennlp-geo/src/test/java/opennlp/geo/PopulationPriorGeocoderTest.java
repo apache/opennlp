@@ -170,8 +170,7 @@ public class PopulationPriorGeocoderTest {
 
   @Test
   void testDoesNotDependOnTheGazetteerReturnOrder() throws IOException {
-    // A gazetteer that returns candidates worst-first: the geocoder re-ranks and still picks
-    // the most populous entry.
+    // The geocoder re-ranks candidates even when the gazetteer returns lowest priority first.
     final GazetteerEntry small = new GazetteerEntry("stub", "small", "Springfield", List.of(),
         new GeoPoint(0.0, 0.0), null, List.of(), 1000L,
         GazetteerEntry.FEATURE_CLASS_CITY, Map.of());

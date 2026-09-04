@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 
@@ -46,7 +45,6 @@ import opennlp.tools.geo.GazetteerEntry;
  *
  * <p>Instances are immutable and thread-safe when the composed gazetteers are.</p>
  */
-@ThreadSafe
 public final class OverlayGazetteer implements Gazetteer {
 
   private final Gazetteer base;

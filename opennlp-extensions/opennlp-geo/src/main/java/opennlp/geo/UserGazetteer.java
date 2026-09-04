@@ -68,7 +68,7 @@ import opennlp.tools.util.StringUtil;
  *
  * <p>A row needs either both coordinates or a bounding box; with only a bounding box the point
  * location becomes the box's {@link GeoBoundingBox#center() center}. Free-text metadata such as
- * a postal address belongs in an attribute column; it is carried verbatim and never parsed or
+ * a postal address belongs in an attribute column; it is stored as provided and is not parsed or
  * matched. Lines whose first character is {@code #} and blank lines are skipped. The file is
  * read as UTF-8. Names containing a tab or {@code |} are not representable in this format.</p>
  *

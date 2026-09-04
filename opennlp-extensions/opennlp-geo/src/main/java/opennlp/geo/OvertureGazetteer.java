@@ -42,12 +42,11 @@ import opennlp.tools.util.InvalidFormatException;
  * <p>The upstream <a href="https://docs.overturemaps.org/guides/divisions/">divisions
  * theme</a> is published under the
  * <a href="https://opendatacommons.org/licenses/odbl/1-0/">Open Database License</a>, whose
- * attribution and database share-alike terms follow the derived table; it is
- * distributed as partitioned Parquet, which this module deliberately does not parse.
- * The derivation script flattens the division features into this plain table, and the
- * script's output header carries the derivation record. Because divisions include countries and
- * regions, not only settlements, a derived table also resolves mentions like
- * {@code Australia} or {@code Bavaria} that place-only gazetteers miss.</p>
+ * attribution and database share-alike terms follow the derived table. The upstream data uses
+ * partitioned Parquet; the derivation script flattens the division features into this plain table.
+ * Its output header records the source. Because divisions include countries and regions, not only
+ * settlements, a derived table also resolves mentions like {@code Australia} or {@code Bavaria}
+ * that place-only gazetteers miss.</p>
  *
  * <p>Lookup matches the primary and every alternate name case-insensitively;
  * candidates are ranked by population descending. Subtypes map coarsely:

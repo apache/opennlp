@@ -68,7 +68,7 @@ public class OverlayGazetteerTest {
     final List<GazetteerEntry> candidates = overlay.lookup("Paris");
     assertEquals(3, candidates.size());
     assertEquals("plant-3", candidates.get(0).recordId(),
-        "the user's alternate name outranks the millions of Paris, France");
+        "the user's alternate name ranks before Paris, France");
     assertEquals("paris-fr", candidates.get(1).recordId());
     assertEquals("paris-us", candidates.get(2).recordId());
   }

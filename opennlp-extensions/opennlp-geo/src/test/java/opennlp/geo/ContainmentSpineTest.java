@@ -76,12 +76,7 @@ public class ContainmentSpineTest {
     Assertions.assertEquals(1, cyclic.ancestors("a").size());
   }
 
-  /**
-   * Asserts the traversal stop at a dangling parent reference: a parent identifier the
-   * spine does not know contributes no ancestor and ends the chain, so a place whose
-   * only parent is missing has an empty chain, and a longer chain keeps exactly the
-   * places up to the dangling reference.
-   */
+  /** Verifies that traversal stops at a missing parent reference. */
   @Test
   void testMissingParentReferenceEndsTheChain() {
     final ContainmentSpine spine = ContainmentSpine.builder()
@@ -94,11 +89,7 @@ public class ContainmentSpineTest {
     Assertions.assertTrue(spine.ancestors("y").isEmpty());
   }
 
-  /**
-   * Asserts the duplicate identifier behavior of the builder: adding an identifier
-   * again replaces the earlier place, so a chain through that identifier reports the
-   * name and type of the last addition.
-   */
+  /** Verifies that the last addition replaces an existing identifier. */
   @Test
   void testDuplicateIdsKeepTheLastAddition() {
     final ContainmentSpine spine = ContainmentSpine.builder()
@@ -111,12 +102,7 @@ public class ContainmentSpineTest {
         spine.ancestors("child"));
   }
 
-  /**
-   * Asserts the exact traversal stop inside cycles of the user-supplied table: the walk
-   * halts at the first identifier it has already seen, so a self-parented place has no
-   * ancestors at all, and a three-place cycle yields exactly the two other places
-   * before the walk would revisit the starting place.
-   */
+  /** Verifies that traversal stops before repeating an identifier in a cycle. */
   @Test
   void testCyclesStopAtTheFirstRepeatedIdentifier() {
     final ContainmentSpine selfLoop = ContainmentSpine.builder()
@@ -135,11 +121,7 @@ public class ContainmentSpineTest {
         triangle.ancestors("a"));
   }
 
-  /**
-   * Asserts the internal depth cap on acyclic chains: a chain of seventy places stops
-   * after sixty-four ancestors, nearest first, so a pathologically deep table cannot
-   * produce an unbounded walk.
-   */
+  /** Verifies that an acyclic chain stops at the 64-ancestor limit. */
   @Test
   void testDepthCapBoundsVeryDeepChains() {
     final ContainmentSpine.Builder builder = ContainmentSpine.builder();
@@ -186,11 +168,7 @@ public class ContainmentSpineTest {
     Assertions.assertEquals("locality", chain.get(0).type());
   }
 
-  /**
-   * Asserts that a quoted field carrying an embedded newline stays one record, as RFC
-   * 4180 requires: the place name keeps its newline, the row keeps its columns, and the
-   * remainder of the name never becomes a record of its own.
-   */
+  /** Verifies that a quoted newline stays within its RFC 4180 record. */
   @Test
   void testWofMetaCsvKeepsQuotedNewlinesInOneRecord(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("wof-locality-latest.csv");
@@ -209,12 +187,9 @@ public class ContainmentSpineTest {
         spine.ancestors("999"));
   }
 
-  /**
-   * Asserts that a quoted field the file never closes fails loud and names the line the
-   * quoted field started on, instead of silently swallowing the rest of the table.
-   */
+  /** Verifies that an unterminated quoted field reports its starting line. */
   @Test
-  void testWofMetaCsvUnterminatedQuoteFailsLoud(@TempDir Path dir) throws IOException {
+  void testWofMetaCsvRejectsUnterminatedQuote(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("unterminated.csv");
     Files.write(meta, String.join("\n",
         "id,parent_id,name,placetype",
@@ -229,13 +204,9 @@ public class ContainmentSpineTest {
     Assertions.assertTrue(e.getMessage().contains("line 2"), e.getMessage());
   }
 
-  /**
-   * Asserts that a row whose name column is empty fails loud and names the offending
-   * row and identifier, rather than being dropped so that every chain through that
-   * place silently ends at a dangling parent.
-   */
+  /** Verifies that an empty name reports its row and identifier. */
   @Test
-  void testWofMetaRowWithEmptyNameFailsLoud(@TempDir Path dir) throws IOException {
+  void testWofMetaRowRejectsEmptyName(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("empty-name.csv");
     Files.write(meta, String.join("\n",
         "id,parent_id,name,placetype",
@@ -249,12 +220,9 @@ public class ContainmentSpineTest {
     Assertions.assertTrue(e.getMessage().contains("line 2"), e.getMessage());
   }
 
-  /**
-   * Asserts that a row whose placetype column is empty fails loud and names the
-   * offending row and identifier.
-   */
+  /** Verifies that an empty place type reports its row and identifier. */
   @Test
-  void testWofMetaRowWithEmptyPlacetypeFailsLoud(@TempDir Path dir) throws IOException {
+  void testWofMetaRowRejectsEmptyPlacetype(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("empty-type.csv");
     Files.write(meta, String.join("\n",
         "id,parent_id,name,placetype",
@@ -267,13 +235,9 @@ public class ContainmentSpineTest {
     Assertions.assertTrue(e.getMessage().contains("857"), e.getMessage());
   }
 
-  /**
-   * Asserts that a row whose id column is empty fails loud and names the offending
-   * line, like its name and placetype siblings, instead of surfacing as a generic
-   * builder rejection without any file context.
-   */
+  /** Verifies that an empty identifier reports its line. */
   @Test
-  void testWofMetaRowWithEmptyIdFailsLoud(@TempDir Path dir) throws IOException {
+  void testWofMetaRowRejectsEmptyId(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("empty-id.csv");
     Files.write(meta, String.join("\n",
         "id,parent_id,name,placetype",
@@ -286,13 +250,9 @@ public class ContainmentSpineTest {
     Assertions.assertTrue(e.getMessage().contains("line 2"), e.getMessage());
   }
 
-  /**
-   * Asserts that a stray quote inside an unquoted field fails loud with its line
-   * instead of opening a phantom quoted field that would silently splice the following
-   * rows into one record and drop their places.
-   */
+  /** Verifies that a quote in an unquoted field reports its line. */
   @Test
-  void testStrayQuoteInUnquotedFieldFailsLoud(@TempDir Path dir) throws IOException {
+  void testRejectsStrayQuoteInUnquotedField(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("stray-quote.csv");
     Files.write(meta, String.join("\n",
         "id,parent_id,name,placetype",
@@ -306,13 +266,9 @@ public class ContainmentSpineTest {
     Assertions.assertTrue(e.getMessage().contains("line 2"), e.getMessage());
   }
 
-  /**
-   * Asserts that content directly after a field's closing quote fails loud with its
-   * line, since accepting it would concatenate quoted and unquoted material into one
-   * silently altered field.
-   */
+  /** Verifies that content after a closing quote reports its line. */
   @Test
-  void testContentAfterClosingQuoteFailsLoud(@TempDir Path dir) throws IOException {
+  void testRejectsContentAfterClosingQuote(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("after-quote.csv");
     Files.write(meta, String.join("\n",
         "id,parent_id,name,placetype",
@@ -326,11 +282,7 @@ public class ContainmentSpineTest {
     Assertions.assertTrue(e.getMessage().contains("line 2"), e.getMessage());
   }
 
-  /**
-   * Asserts that CRLF line endings parse exactly like LF, through all three CRLF
-   * branches: between rows, at the end of the final row, and inside a quoted field,
-   * where the quoted break is kept in the field as a single LF.
-   */
+  /** Verifies CRLF endings between rows, at EOF, and inside a quoted field. */
   @Test
   void testCrlfRowsParseLikeLf(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("crlf.csv");
@@ -349,10 +301,7 @@ public class ContainmentSpineTest {
         spine.ancestors("999"));
   }
 
-  /**
-   * Asserts the doubled-quote escape of RFC 4180: a doubled quote inside a quoted
-   * field reads as one literal quote character in the place name.
-   */
+  /** Verifies the RFC 4180 doubled-quote escape. */
   @Test
   void testDoubledQuoteReadsAsOneLiteralQuote(@TempDir Path dir) throws IOException {
     final Path meta = dir.resolve("doubled-quote.csv");
@@ -369,11 +318,7 @@ public class ContainmentSpineTest {
         spine.ancestors("999"));
   }
 
-  /**
-   * Asserts that error line numbers stay correct after a quoted field spanning lines:
-   * the row after a two-line quoted field starts on file line 4, and a defect in it is
-   * reported there, pinning the line bookkeeping inside quoted fields.
-   */
+  /** Verifies line numbers after a quoted field spans more than one line. */
   @Test
   void testErrorLineNumberAfterMultiLineQuotedField(@TempDir Path dir)
       throws IOException {
@@ -391,7 +336,7 @@ public class ContainmentSpineTest {
   }
 
   @Test
-  void testMalformedTablesFailLoud(@TempDir Path dir) throws IOException {
+  void testRejectsMalformedTables(@TempDir Path dir) throws IOException {
     final Path bad = dir.resolve("bad.tsv");
     Files.write(bad, "onlyone\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(InvalidFormatException.class,
@@ -403,13 +348,9 @@ public class ContainmentSpineTest {
         () -> ContainmentSpine.builder().addWofMeta(noColumns));
   }
 
-  /**
-   * Asserts that a neutral-table row whose required column is blank fails as malformed
-   * content, naming the offending line, rather than as a bare argument rejection
-   * without any file context.
-   */
+  /** Verifies that a blank required value in a neutral table reports its line. */
   @Test
-  void testNeutralTableRowWithBlankNameFailsLoud(@TempDir Path dir) throws IOException {
+  void testNeutralTableRowRejectsBlankName(@TempDir Path dir) throws IOException {
     final Path blankName = dir.resolve("blank-name.tsv");
     Files.write(blankName, "x1\t\t \tregion\n".getBytes(StandardCharsets.UTF_8));
 

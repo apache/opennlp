@@ -49,7 +49,7 @@ public class BundledDataAuditTest {
 
   private static final String RESOURCE = "naturalearth-populated-places.txt";
 
-  /** Attribute keys the derivation may emit; a new key must be added here deliberately. */
+  /** Attribute keys the derivation may emit. Add new derivation keys here. */
   private static final Set<String> ALLOWED_ATTRIBUTE_KEYS = Set.of(
       GazetteerEntry.ATTRIBUTE_KEY_WIKIDATA,
       GazetteerEntry.ATTRIBUTE_KEY_GEONAMES,
@@ -75,7 +75,7 @@ public class BundledDataAuditTest {
   static void parseBundledTable() throws IOException {
     try (InputStream in = BundledGazetteer.class.getResourceAsStream(RESOURCE)) {
       assertNotNull(in, "Missing bundled data resource: " + RESOURCE);
-      // Every row parses: parse() fails loud on the first malformed one.
+      // Parsing the whole resource verifies every row and reports the first malformed one.
       entries = BundledGazetteer.parse(in, RESOURCE);
     }
   }
@@ -144,8 +144,7 @@ public class BundledDataAuditTest {
 
   @Test
   void testEveryNameFoldsToANonEmptyMatchKey() {
-    // The loader fails loud on an unreachable name; asserted here directly so the audit does
-    // not depend on indexing order.
+    // Check each name directly so this audit does not depend on indexing order.
     for (final GazetteerEntry entry : entries) {
       assertFalse(BundledGazetteer.foldKey(entry.name()).isEmpty(),
           "Name folds to an empty match key: " + entry.recordId());
@@ -173,7 +172,7 @@ public class BundledDataAuditTest {
       assertEquals("naturalearth", entry.source(), entry.recordId());
       assertEquals(GazetteerEntry.FEATURE_CLASS_CITY, entry.featureClass(), entry.recordId());
       assertTrue(entry.containment().size() <= 1,
-          "v1 carries at most the admin-1 containment element: " + entry.recordId());
+          "v1 has at most the admin-1 containment element: " + entry.recordId());
       // GazetteerEntry and GeoPoint validate these at construction; asserted here so the audit
       // stands on its own if those validations ever loosen.
       assertTrue(entry.population() >= 0, entry.recordId());

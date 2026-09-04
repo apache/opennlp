@@ -79,7 +79,7 @@ public class OverlayGazetteerExampleTest {
     assertFalse(gazetteer.lookup("Tokyo").isEmpty(),
         "unaffected base entries stay visible");
 
-    // The premise behind the suppression rule: the base alone does know the city.
+    // Confirm that the city exists before applying the suppression rule.
     final GazetteerEntry mobile = base.lookup("Mobile").get(0);
     assertEquals("US", mobile.countryCode());
     assertEquals(GazetteerEntry.FEATURE_CLASS_CITY, mobile.featureClass());

@@ -37,17 +37,17 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * An immutable, in-memory containment hierarchy over user-supplied place tables: each
- * place carries its parent, name, and type, and {@link #ancestors(String)} walks the
+ * place stores its parent, name, and type, and {@link #ancestors(String)} walks the
  * chain outward. No hierarchy data is bundled; the user supplies the tables, and the
  * license of a supplied table stays with its files.
  *
  * <p>Two table formats load through the builder. The neutral tab-separated format
- * carries {@code id}, {@code parent_id}, {@code name}, and {@code type} columns, one
+ * has {@code id}, {@code parent_id}, {@code name}, and {@code type} columns, one
  * place per line, empty parent for roots; a containment table derived from any source,
  * for example an administrative-territory query result, fits it. The Who's On First
  * meta CSV format is read directly by its header columns, so the published per-placetype
  * tables load without conversion; non-positive parent identifiers mean no usable
-     * parent, as in the source data. Parent identifiers must be signed decimal integers.</p>
+ * parent, as in the source data. Parent identifiers must be signed decimal integers.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  */
@@ -139,7 +139,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
      * earlier place, so the last addition wins.
      *
      * @param id The place identifier. Must not be {@code null} or blank.
-     * @param parentId The parent identifier, or {@code null} for a root.
+     * @param parentId The non-blank parent identifier, or {@code null} for a root.
      * @param name The place name. Must not be {@code null} or blank.
      * @param type The place type. Must not be {@code null} or blank.
      * @return This builder.
@@ -171,7 +171,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
      * @param table The table file, UTF-8. Must not be {@code null}.
      * @return This builder.
      * @throws IOException Thrown if reading fails.
-     * @throws InvalidFormatException Thrown if a line is malformed: too few columns, or
+     * @throws InvalidFormatException Thrown if a line is malformed: not exactly four columns, or
      *         a blank id, name, or type column.
      * @throws IllegalArgumentException Thrown if {@code table} is {@code null}.
      */
@@ -213,11 +213,9 @@ public final class ContainmentSpine implements PlaceHierarchy {
      * carry commas, doubled quotes, and line breaks, and such a field stays part of the
      * single row it belongs to.</p>
      *
-     * <p>Every row of the file must describe a usable place. A row that is too short to
-     * reach a required column, a row whose name or placetype column is empty, and a
-     * quoted field the file never closes each fail loud, naming the line the offending
-     * row starts on; no row is dropped silently, because a dropped row would end every
-     * containment chain running through that place at a dangling parent.</p>
+     * <p>Every row must describe a usable place. Malformed rows report the line where the row
+     * starts. This includes short rows, empty required fields, invalid parent identifiers, and
+     * unterminated quoted fields.</p>
      *
      * @param metaCsv The meta CSV file, UTF-8. Must not be {@code null}.
      * @return This builder.
@@ -287,7 +285,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
   }
 
   /**
-   * Reads a file as UTF-8 lines, ending a line on {@code LF} or {@code CRLF}.
+   * Reads a file as UTF-8 lines, accepting {@code LF}, {@code CRLF}, or {@code CR} endings.
    *
    * @param file The file to read.
    * @return The lines without their terminators.
@@ -405,11 +403,10 @@ public final class ContainmentSpine implements PlaceHierarchy {
   /**
    * Parses a CSV file row by row, with double-quote quoting, doubled-quote escapes,
    * and quoted fields that may span lines, so a row is only ended by a line break
-   * outside a quoted field. Blank lines between rows are dropped. Both {@code LF} and
-   * {@code CRLF} end a line, inside a quoted field as well as outside, and a quoted
-   * line break is kept in the field as a single {@code LF}. A quote inside an unquoted
-   * field and content after a field's closing quote both fail loud, because either
-   * would otherwise splice neighboring fields or rows together silently.
+   * outside a quoted field. Blank lines between rows are dropped. {@code LF} and {@code CRLF} end
+   * a line, inside a quoted field as well as outside, and a quoted line break is kept in the field
+   * as a single {@code LF}. A quote inside an unquoted field and content after a field's closing
+   * quote are rejected.
    *
    * <p>The file is streamed, never materialized whole, so a table of any size parses
    * in memory proportional to its longest row.</p>
@@ -502,7 +499,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
     }
   }
 
-  /** Hands the row to the consumer unless it is a blank line, which carries no fields. */
+  /** Passes a nonblank row to the consumer. */
   private static void emitRow(CsvRows consumer, int line, List<String> fields)
       throws InvalidFormatException {
     if (fields.size() == 1 && fields.get(0).isEmpty()) {

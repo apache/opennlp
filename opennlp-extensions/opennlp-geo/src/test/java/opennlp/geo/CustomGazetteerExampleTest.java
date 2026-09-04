@@ -36,9 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Runs the manual's bring-your-own-gazetteer example (docbkx {@code geo.xml}, section
- * {@code tools.geo.custom}): {@link CrmGazetteer} is the implementation the chapter shows, and
- * this test asserts the composition results the chapter states plus the contract corners every
- * implementation must honor. A change breaking this test breaks the manual.
+ * {@code tools.geo.custom}). It checks the documented composition and interface contract.
  */
 public class CustomGazetteerExampleTest {
 

@@ -121,14 +121,14 @@ public class OvertureGazetteerTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"", "C", "CHE", "C1"})
-  void testByRegionMalformedCodeFailsLoud(String malformed) throws IOException {
+  void testByRegionRejectsMalformedCode(String malformed) throws IOException {
     final OvertureGazetteer gazetteer = gazetteer();
     assertThrows(IllegalArgumentException.class, () -> gazetteer.byRegion(malformed));
   }
 
   @ParameterizedTest
   @MethodSource("malformedContent")
-  void testMalformedContentFailsLoud(String content) {
+  void testRejectsMalformedContent(String content) {
     assertThrows(InvalidFormatException.class, () -> OvertureGazetteer.load(
         new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
   }
@@ -167,7 +167,7 @@ public class OvertureGazetteerTest {
   }
 
   @Test
-  void testNullStreamFailsLoud() {
+  void testRejectsNullStream() {
     assertThrows(IllegalArgumentException.class,
         () -> OvertureGazetteer.load((InputStream) null));
   }

@@ -31,8 +31,8 @@ import opennlp.tools.util.StringUtil;
  * <p>The {@link #countryCode() country code} is an
  * <a href="https://www.iso.org/iso-3166-country-codes.html">ISO 3166-1</a> alpha-2 code.
  * Attribute keys follow the {@code ATTRIBUTE_KEY_*} convention published as constants on this
- * record; an entry only carries the keys its source actually provides, each with provenance in
- * {@link AttributeValue#source()}, and a key is never fabricated.</p>
+ * record. An entry contains only keys supplied by its source, each with provenance in
+ * {@link AttributeValue#source()}.</p>
  *
  * <p>Instances are immutable and thread-safe: the list and map components are defensively copied
  * to immutable views at construction.</p>
@@ -54,9 +54,9 @@ import opennlp.tools.util.StringUtil;
  *                       present it must be exactly two ASCII capital letters.
  * @param containment    The administrative containment chain, outermost first, possibly empty.
  *                       Must not be {@code null} or contain {@code null} or blank elements.
- * @param population     The population, {@code 0} when unknown or genuinely zero. Must not be
+ * @param population     The population, {@code 0} when unknown or zero. Must not be
  *                       negative. Consumers that rank or score by population must treat {@code 0}
- *                       as absent evidence, never as a confirmed empty place.
+ *                       as absent evidence, not as a confirmed empty place.
  * @param featureClass   The coarse, dataset-neutral feature class, conventionally one of the
  *                       {@code FEATURE_CLASS_*} constants on this record ({@link
  *                       #FEATURE_CLASS_CITY}, {@link #FEATURE_CLASS_ADMIN},

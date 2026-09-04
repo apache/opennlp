@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoResolution;
@@ -43,7 +42,6 @@ import opennlp.tools.util.Span;
  * omitted from the result. Instances are immutable and thread-safe when the supplied
  * {@link Gazetteer} is.</p>
  */
-@ThreadSafe
 public final class PopulationPriorGeocoder implements Geocoder {
 
   private static final double SINGLE_CANDIDATE_CONFIDENCE = 0.9;
@@ -75,7 +73,7 @@ public final class PopulationPriorGeocoder implements Geocoder {
       final CharSequence mentionText = text.subSequence(mention.getStart(), mention.getEnd());
       final List<GazetteerEntry> found = gazetteer.lookup(mentionText);
       if (found.isEmpty()) {
-        continue; // unresolved mentions are omitted, never fabricated
+        continue;
       }
       final List<GazetteerEntry> candidates;
       if (found.size() == 1) {
@@ -97,7 +95,7 @@ public final class PopulationPriorGeocoder implements Geocoder {
    * relative population separation between the winner and the runner-up and is clamped to the
    * {@code [0, 1]} contract of {@link GeoResolution}.
    */
-  private double confidence(List<GazetteerEntry> rankedCandidates) {
+  private static double confidence(List<GazetteerEntry> rankedCandidates) {
     if (rankedCandidates.size() == 1) {
       return SINGLE_CANDIDATE_CONFIDENCE;
     }

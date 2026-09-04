@@ -41,7 +41,7 @@ derive-populated-places.py <ne_10m_populated_places.geojson> [output.txt]
 2. Run the script. It needs only the Python 3 standard library.
 3. The output is `naturalearth-populated-places.txt`, the semicolon-separated, pure-ASCII, LF-terminated table read by `BundledGazetteer`. Copy it over `src/main/resources/opennlp/geo/naturalearth-populated-places.txt` and review the diff.
 
-The upstream GeoJSON carries encoding damage in some name fields (an accented letter replaced by `?` or by a wrong ASCII letter). The script detects damage by character-class artifacts and repairs it through explicit, audited replacement tables in the script source; values it cannot verify are omitted and counted, never carried. It hard-fails on any anomaly it does not recognize, so refreshing to a newer Natural Earth release forces a reviewed decision instead of silently importing new corruption.
+Some upstream GeoJSON name fields have encoding damage (an accented letter replaced by `?` or by a wrong ASCII letter). The script detects these artifacts and repairs them through explicit, audited replacement tables. Unverified values are omitted and counted. An unrecognized anomaly stops generation so a Natural Earth update requires review before new data is imported.
 
 ## `derive-overture-divisions.py`
 
@@ -58,7 +58,7 @@ derive-overture-divisions.py 2026-06-18.0 overture-divisions.txt 10000
 ```
 
 1. Requires the `duckdb` Python package with the `httpfs` and `spatial` extensions, and network access; it reads the divisions theme (Point features of type `division`) as Parquet directly from the Overture release bucket.
-2. The output is a tab-separated table, one row per division: id, primary name, comma-separated alternate names, latitude, longitude, ISO 3166-1 alpha-2 country code, subtype, population. A `#` header line carries the derivation record (release, date, filters), and rows are ordered by id so a regeneration diffs cleanly against the previous run.
+2. The output is a tab-separated table, one row per division: id, primary name, comma-separated alternate names, latitude, longitude, ISO 3166-1 alpha-2 country code, subtype, population. A `#` header line records the release, date, and filters. Rows are ordered by id so regenerated output can be compared with the previous version.
 3. Divisions include countries and regions, not only settlements, which is why a derived table also resolves mentions like `Australia` or `Bavaria` that place-only gazetteers miss.
 
 ## GeoNames data (no script needed)

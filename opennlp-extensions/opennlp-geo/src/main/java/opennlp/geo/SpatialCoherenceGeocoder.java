@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
@@ -45,10 +44,9 @@ import opennlp.tools.util.Span;
  * <p>Confidence reflects how decisive the choice was: a single candidate scores high,
  * and an ambiguous one scores by the separation between the best and second-best mean
  * distance, or between the top population priors when no coherence evidence exists.
- * Unresolved mentions are omitted, never fabricated. Instances hold no per-call state
- * and are safe to share between threads.</p>
+ * Unresolved mentions are omitted. Instances are immutable and thread-safe when the supplied
+ * {@link Gazetteer} is.</p>
  */
-@ThreadSafe
 public final class SpatialCoherenceGeocoder implements Geocoder {
 
   /** An unambiguous mention scores high but never certain, since gazetteers are incomplete. */
@@ -91,7 +89,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
       final CharSequence mentionText = text.subSequence(mention.getStart(), mention.getEnd());
       final List<GazetteerEntry> found = gazetteer.lookup(mentionText);
       if (found.isEmpty()) {
-        continue; // unresolved mentions are omitted, never fabricated
+        continue;
       }
       final List<GazetteerEntry> ranked = new ArrayList<>(found);
       ranked.sort(CandidateRanking.BY_PRIOR);
@@ -120,7 +118,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
   }
 
   /** Chooses among candidates by mean distance to the context, prior as tie-breaker. */
-  private GeoResolution resolveAmbiguous(Span mention,
+  private static GeoResolution resolveAmbiguous(Span mention,
       List<GazetteerEntry> candidates, List<GeoPoint> context) {
     if (context.isEmpty()) {
       return new GeoResolution(mention, candidates.get(0),
@@ -146,14 +144,14 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
   }
 
   /** How decisively the top population beats the runner-up, in {@code [0, 1]}. */
-  private double populationSeparation(List<GazetteerEntry> candidates) {
+  private static double populationSeparation(List<GazetteerEntry> candidates) {
     final double first = candidates.get(0).population();
     final double second = candidates.get(1).population();
     return first <= 0.0 ? 0.0 : 1.0 - (second / first);
   }
 
   /** {@return the mean great-circle distance from {@code from} to the context points, in km} */
-  private double meanDistanceKm(GeoPoint from, List<GeoPoint> context) {
+  private static double meanDistanceKm(GeoPoint from, List<GeoPoint> context) {
     double sum = 0.0;
     for (final GeoPoint to : context) {
       sum += distanceKm(from, to);
@@ -162,7 +160,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
   }
 
   /** The great-circle distance via the haversine formula. */
-  private double distanceKm(GeoPoint from, GeoPoint to) {
+  private static double distanceKm(GeoPoint from, GeoPoint to) {
     final double latDelta = Math.toRadians(to.latitude() - from.latitude());
     final double lonDelta = Math.toRadians(to.longitude() - from.longitude());
     final double a = Math.sin(latDelta / 2) * Math.sin(latDelta / 2)

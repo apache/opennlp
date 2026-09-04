@@ -2,7 +2,7 @@
 # Natural Earth "Populated Places" dataset (loaded by opennlp.geo.BundledGazetteer).
 # 7342 rows. Regenerated with dev/derive-populated-places.py in the project source tree; the
 # underlying data is in the public domain (see the derivation record below), so this file
-# carries the derivation record instead of a source license header. See the Natural Earth
+# records the derivation details instead of a source license header. See the Natural Earth
 # section of the LICENSE file.
 #
 # Derivation record:
@@ -42,15 +42,15 @@
 #   featureClass  Always CITY: every record in this dataset is a populated place.
 #   attributes    Pipe separated key=value pairs of stable external identifiers as provided
 #                 by Natural Earth, possibly empty: wikidata (WIKIDATAID), geonames
-#                 (GEONAMESID where positive), whosonfirst (WOF_ID). Keys the source does not
-#                 provide are never fabricated.
+#                 (GEONAMESID where positive), whosonfirst (WOF_ID). Absent source values do not
+#                 produce attributes.
 #
-# ASCII note: this file is deliberately pure ASCII. Names and admin-1 values are accent-stripped
+# ASCII note: this file is pure ASCII. Names and admin-1 values are accent-stripped
 # to ASCII; a display name that is not ASCII after the fold falls back to the upstream
 # transliteration. Accented queries still match because BundledGazetteer folds queries and index
 # keys through the same chain.
 #
-# Mojibake note: the upstream distribution carries encoding damage in some fields (an accented
+# Mojibake note: the upstream distribution has encoding damage in some fields (an accented
 # letter replaced by '?' or by a wrong ASCII letter). This derivation never emits a value it knows
 # to be damaged: such values are omitted, or repaired against an accent-bearing upstream sibling
 # using the audited tables in the generation script, which hard-fails on unrecognized anomalies.

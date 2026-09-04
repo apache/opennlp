@@ -73,8 +73,9 @@ public interface Gazetteer {
   Optional<GazetteerEntry> byRegion(String isoCountryCode) throws IOException;
 
   /**
-   * {@return the dataset identifiers this gazetteer serves; never {@code null} or empty} Every
-   * {@link GazetteerEntry#source()} returned by the other methods is a member of this set.
+   * {@return the dataset identifiers this gazetteer serves; never {@code null}} The set may be
+   * empty when the gazetteer contains no entries. Every {@link GazetteerEntry#source()} returned
+   * by the other methods is a member of this set.
    */
   Set<String> sources();
 }

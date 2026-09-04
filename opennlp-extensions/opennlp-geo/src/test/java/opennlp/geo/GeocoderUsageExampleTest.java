@@ -64,11 +64,7 @@ public class GeocoderUsageExampleTest {
     }
   }
 
-  /**
-   * Resolves the ambiguous {@code Springfield} mention and asserts that the
-   * population-prior geocoder returns the single most populous candidate, the Illinois
-   * row, on the mention's original span.
-   */
+  /** Resolves {@code Springfield} to the most populous candidate on its original span. */
   @Test
   void testPopulationPriorResolvesAmbiguousMention() throws IOException {
     final Geocoder geocoder = new PopulationPriorGeocoder(fixtureGazetteer());

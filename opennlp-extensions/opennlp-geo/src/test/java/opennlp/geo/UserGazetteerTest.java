@@ -43,8 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the user-file loader over synthetic customer-site rows: the format positions, the
- * bounding-box and attribute columns, the location fallback, and the fail-loud paths with their
- * line numbers.
+ * bounding-box and attribute columns, the location fallback, and malformed-input diagnostics.
  */
 public class UserGazetteerTest {
 

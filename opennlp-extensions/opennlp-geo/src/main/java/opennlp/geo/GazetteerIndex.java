@@ -54,7 +54,7 @@ final class GazetteerIndex {
      * Parses one data line.
      *
      * @param line       The data line; never blank and never a skipped comment line.
-     * @param lineNumber The one-based line number, for fail-loud messages.
+     * @param lineNumber The one-based line number, for format-error messages.
      * @return The parsed entry. Never {@code null}.
      * @throws InvalidFormatException Thrown if the line is not a valid row.
      */
@@ -67,9 +67,10 @@ final class GazetteerIndex {
 
   /**
    * Indexes one entry under its canonical and alternate names, its record id, and, when it
-   * carries a country code, as that country's candidate representative.
+   * has a country code, as that country's candidate representative.
    *
    * @param entry The entry to index.
+   * @return {@code true} if the entry was added, or {@code false} if its record id was present.
    */
   boolean add(GazetteerEntry entry) {
     if (byId.putIfAbsent(entry.recordId(), entry) != null) {
@@ -87,7 +88,7 @@ final class GazetteerIndex {
   }
 
   /**
-   * Reads a table into a frozen index: every line is handed to {@code parser} with its
+   * Reads a table into a frozen index: every line is passed to {@code parser} with its
    * one-based line number, except blank lines and, when {@code skipComments} is set,
    * lines starting with {@code #}.
    *
@@ -150,7 +151,7 @@ final class GazetteerIndex {
    * Finds the entry with a record id.
    *
    * @param recordId The record id to look up.
-   * @return The entry, or empty when no entry carries that id.
+   * @return The entry, or empty when no entry has that id.
    */
   Optional<GazetteerEntry> byId(String recordId) {
     return Optional.ofNullable(byId.get(recordId));
