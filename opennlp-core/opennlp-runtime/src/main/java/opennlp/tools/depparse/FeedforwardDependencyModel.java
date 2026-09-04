@@ -305,16 +305,11 @@ public class FeedforwardDependencyModel {
   /**
    * Lowercases a word symbol; special symbols and absences pass through.
    *
-   * <p>Case is mapped per code point through UnicodeData, the same mapping as
-   * {@link StringUtil#toLowerCase(CharSequence)}, with one contextual rule on top: a
-   * Greek capital sigma preceded by a letter and not followed by one lowercases to
-   * the final form U+03C2, the Final_Sigma condition of the Unicode
+   * <p>Case is mapped per code point like
+   * {@link StringUtil#toLowerCase(CharSequence)}. Greek capital sigma also applies the
+   * cased-letter and case-ignorable context defined by the Unicode
    * <a href="https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt">SpecialCasing</a>
-   * file restricted to a single token. Natural lowercase Greek text, and with it
-   * every vocabulary key derived from a treebank, spells a word-final sigma that
-   * way, so without the rule an uppercase Greek word would normalize to a spelling
-   * the vocabulary never contains. A word that is already lowercase, the common
-   * case at parse time, is returned unchanged without allocating.</p>
+   * data within one token. An unchanged word is returned without allocating.</p>
    *
    * @param word The word to normalize. May be {@code null}.
    * @return The vocabulary key of {@code word}, or {@code null} if {@code word} is
@@ -343,10 +338,8 @@ public class FeedforwardDependencyModel {
     while (i < word.length()) {
       final int cp = word.codePointAt(i);
       final int width = Character.charCount(cp);
-      if (cp == GREEK_CAPITAL_SIGMA && i > 0
-          && Character.isLetter(word.codePointBefore(i))
-          && (i + width >= word.length()
-              || !Character.isLetter(word.codePointAt(i + width)))) {
+      if (cp == GREEK_CAPITAL_SIGMA && hasCasedLetterBefore(word, i)
+          && !hasCasedLetterAfter(word, i + width)) {
         lowered.append(GREEK_SMALL_FINAL_SIGMA);
       } else {
         lowered.appendCodePoint(Character.toLowerCase(cp));
@@ -354,6 +347,56 @@ public class FeedforwardDependencyModel {
       i += width;
     }
     return lowered.toString();
+  }
+
+  /** Checks the final-sigma prefix context, skipping case-ignorable code points. */
+  private static boolean hasCasedLetterBefore(String word, int index) {
+    int current = index;
+    while (current > 0) {
+      final int cp = word.codePointBefore(current);
+      current -= Character.charCount(cp);
+      if (!isCaseIgnorable(cp)) {
+        return isCased(cp);
+      }
+    }
+    return false;
+  }
+
+  /** Checks the final-sigma suffix context, skipping case-ignorable code points. */
+  private static boolean hasCasedLetterAfter(String word, int index) {
+    int current = index;
+    while (current < word.length()) {
+      final int cp = word.codePointAt(current);
+      if (!isCaseIgnorable(cp)) {
+        return isCased(cp);
+      }
+      current += Character.charCount(cp);
+    }
+    return false;
+  }
+
+  /** Returns whether a code point has uppercase, lowercase, or titlecase. */
+  private static boolean isCased(int cp) {
+    return Character.isUpperCase(cp) || Character.isLowerCase(cp)
+        || Character.isTitleCase(cp);
+  }
+
+  /** Returns whether a code point may be ignored when finding cased neighbors. */
+  private static boolean isCaseIgnorable(int cp) {
+    final boolean categoryMatches = switch (Character.getType(cp)) {
+      case Character.NON_SPACING_MARK, Character.ENCLOSING_MARK,
+          Character.FORMAT, Character.MODIFIER_LETTER, Character.MODIFIER_SYMBOL -> true;
+      default -> false;
+    };
+    if (categoryMatches) {
+      return true;
+    }
+    return switch (cp) {
+      case '\'', '.', ':', '\u00B7', '\u0387', '\u055F', '\u05F4',
+          '\u2018', '\u2019', '\u2024', '\u2027', '\uFE13', '\uFE52',
+          '\uFE55', '\uFF07', '\uFF0E', '\uFF1A' -> true;
+      default -> false;
+    };
   }
 
   /** Returns whether a symbol is reserved for the model's internal feature values. */
