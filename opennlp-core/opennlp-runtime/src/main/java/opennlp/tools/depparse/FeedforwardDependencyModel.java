@@ -309,7 +309,7 @@ public class FeedforwardDependencyModel {
    * {@link StringUtil#toLowerCase(CharSequence)}. Greek capital sigma also applies the
    * cased-letter and case-ignorable context defined by the Unicode
    * <a href="https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt">SpecialCasing</a>
-   * data within one token. An unchanged word is returned without allocating.</p>
+   * data within one token.</p>
    *
    * @param word The word to normalize. May be {@code null}.
    * @return The vocabulary key of {@code word}, or {@code null} if {@code word} is
@@ -322,31 +322,32 @@ public class FeedforwardDependencyModel {
     if (isSpecialSymbol(word)) {
       return word;
     }
-    int i = 0;
-    while (i < word.length()) {
-      final int cp = word.codePointAt(i);
-      if (Character.toLowerCase(cp) != cp) {
-        break;
-      }
-      i += Character.charCount(cp);
-    }
-    if (i == word.length()) {
+    final String simple = StringUtil.toLowerCase(word);
+    if (simple.equals(word)) {
       return word;
     }
-    final StringBuilder lowered = new StringBuilder(word.length());
-    lowered.append(word, 0, i);
-    while (i < word.length()) {
-      final int cp = word.codePointAt(i);
+    StringBuilder contextual = null;
+    int sourceIndex = 0;
+    int loweredIndex = 0;
+    while (sourceIndex < word.length()) {
+      final int cp = word.codePointAt(sourceIndex);
       final int width = Character.charCount(cp);
-      if (cp == GREEK_CAPITAL_SIGMA && hasCasedLetterBefore(word, i)
-          && !hasCasedLetterAfter(word, i + width)) {
-        lowered.append(GREEK_SMALL_FINAL_SIGMA);
-      } else {
-        lowered.appendCodePoint(Character.toLowerCase(cp));
+      final int loweredCp = simple.codePointAt(loweredIndex);
+      final int loweredWidth = Character.charCount(loweredCp);
+      if (cp == GREEK_CAPITAL_SIGMA && hasCasedLetterBefore(word, sourceIndex)
+          && !hasCasedLetterAfter(word, sourceIndex + width)) {
+        if (contextual == null) {
+          contextual = new StringBuilder(simple.length());
+          contextual.append(simple, 0, loweredIndex);
+        }
+        contextual.append(GREEK_SMALL_FINAL_SIGMA);
+      } else if (contextual != null) {
+        contextual.appendCodePoint(loweredCp);
       }
-      i += width;
+      sourceIndex += width;
+      loweredIndex += loweredWidth;
     }
-    return lowered.toString();
+    return contextual == null ? simple : contextual.toString();
   }
 
   /** Checks the final-sigma prefix context, skipping case-ignorable code points. */
