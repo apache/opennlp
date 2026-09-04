@@ -144,6 +144,14 @@ public class DependencyParserMETest {
   }
 
   @Test
+  void testIncompleteActionInventoriesAreRejectedAtConstruction() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyParserME(new OutcomeOnlyModel("SHIFT")));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyParserME(new OutcomeOnlyModel("RIGHT_ARC:root")));
+  }
+
+  @Test
   void testModelScoreCountIsValidated() {
     final DependencyParserME invalid = new DependencyParserME(
         new OutcomeOnlyModel(new double[] {1.0}, "SHIFT", "RIGHT_ARC:root"));
