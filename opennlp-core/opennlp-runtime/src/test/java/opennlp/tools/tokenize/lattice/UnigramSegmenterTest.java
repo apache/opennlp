@@ -20,6 +20,7 @@ package opennlp.tools.tokenize.lattice;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -40,6 +41,9 @@ import opennlp.tools.util.Span;
  * example, and its Javadoc spells out each fixture word.</p>
  */
 public class UnigramSegmenterTest {
+
+  /** Invalid leading byte for a two-byte UTF-8 sequence with no continuation byte. */
+  private static final byte TRUNCATED_UTF8_LEAD = (byte) 0xC3;
 
   private static final String LEXICON = String.join("\n",
       "\u6211 5000 r",
@@ -243,10 +247,14 @@ public class UnigramSegmenterTest {
 
   @Test
   void testRejectsMalformedLexiconEncoding() {
-    final byte[] malformed = {'w', (byte) 0xC3, ' ', '1', '\n'};
+    final byte[] malformed = {'w', TRUNCATED_UTF8_LEAD, ' ', '1', '\n'};
 
-    Assertions.assertThrows(IOException.class, () -> UnigramSegmenter.load(
-        new ByteArrayInputStream(malformed), StandardCharsets.UTF_8));
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> UnigramSegmenter.load(
+            new ByteArrayInputStream(malformed), StandardCharsets.UTF_8));
+
+    Assertions.assertInstanceOf(MalformedInputException.class, e);
+    Assertions.assertEquals("Input length = 1", e.getMessage());
   }
 
   @Test
