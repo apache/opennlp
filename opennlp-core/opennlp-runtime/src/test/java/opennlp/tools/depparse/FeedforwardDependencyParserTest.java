@@ -313,7 +313,8 @@ public class FeedforwardDependencyParserTest {
     assertEquals(StringUtil.toLowerCase("\u0130STANBUL"),
         FeedforwardDependencyModel.normalize("\u0130STANBUL"));
     assertEquals("istanbul", FeedforwardDependencyModel.normalize("\u0130STANBUL"));
-    // special symbols still pass through untouched
+    assertEquals("*hello", FeedforwardDependencyModel.normalize("*HELLO"));
+    // reserved symbols still pass through untouched
     assertEquals(FeedforwardDependencyModel.UNKNOWN,
         FeedforwardDependencyModel.normalize(FeedforwardDependencyModel.UNKNOWN));
     assertNull(FeedforwardDependencyModel.normalize(null));
