@@ -83,13 +83,13 @@ import opennlp.tools.util.StringUtil;
 public final class UserGazetteer implements Gazetteer {
 
   /** The separator between the fields of one row. */
-  private static final String FIELD_SEPARATOR = "\t";
+  private static final char FIELD_SEPARATOR = '\t';
 
   /** The separator between the elements of the alternate-names and containment fields. */
   private static final char LIST_SEPARATOR = '|';
 
   /** The separator between the edges of the bounding-box field. */
-  private static final String BOX_SEPARATOR = ",";
+  private static final char BOX_SEPARATOR = ',';
 
   /** The separator between an attribute key and its value. */
   private static final char ATTRIBUTE_SEPARATOR = '=';
@@ -204,7 +204,7 @@ public final class UserGazetteer implements Gazetteer {
       if (StringUtil.isUnicodeBlank(line) || line.charAt(0) == '#') {
         continue;
       }
-      final String[] fields = line.split(FIELD_SEPARATOR, -1);
+      final String[] fields = GazetteerIndex.split(line, FIELD_SEPARATOR);
       if (fields.length > 3) {
         throw new InvalidFormatException("line " + lineNumber + " has " + fields.length
             + " columns, expected at most 3");
@@ -254,10 +254,10 @@ public final class UserGazetteer implements Gazetteer {
     return Set.of(source);
   }
 
-  /** Parses one row into an entry, failing loud with the line number. */
+  /** Parses one row into an entry and includes the line number in format errors. */
   private static GazetteerEntry parseRow(String line, int lineNumber, String source)
       throws InvalidFormatException {
-    final String[] fields = line.split(FIELD_SEPARATOR, -1);
+    final String[] fields = GazetteerIndex.split(line, FIELD_SEPARATOR);
     if (fields.length < 2) {
       throw new InvalidFormatException("line " + lineNumber + " has " + fields.length
           + " columns, expected at least record id and name");
@@ -322,7 +322,7 @@ public final class UserGazetteer implements Gazetteer {
    * @throws IllegalArgumentException Thrown if the field does not hold four valid edges.
    */
   private static GeoBoundingBox parseBox(String field) {
-    final String[] edges = field.split(BOX_SEPARATOR, -1);
+    final String[] edges = GazetteerIndex.split(field, BOX_SEPARATOR);
     if (edges.length != BOX_EDGES) {
       throw new IllegalArgumentException(
           "a bounding box must read west,south,east,north, got: " + field);

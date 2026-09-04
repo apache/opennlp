@@ -70,16 +70,19 @@ final class GazetteerIndex {
    *
    * @param entry The entry to index.
    */
-  void add(GazetteerEntry entry) {
+  boolean add(GazetteerEntry entry) {
+    if (byId.putIfAbsent(entry.recordId(), entry) != null) {
+      return false;
+    }
     index(entry.name(), entry);
     for (final String alternate : entry.alternateNames()) {
       index(alternate, entry);
     }
-    byId.put(entry.recordId(), entry);
     if (entry.countryCode() != null) {
       byCountry.merge(entry.countryCode(), entry,
           (a, b) -> a.population() >= b.population() ? a : b);
     }
+    return true;
   }
 
   /**
@@ -107,7 +110,11 @@ final class GazetteerIndex {
       if (StringUtil.isUnicodeBlank(line) || (skipComments && line.charAt(0) == '#')) {
         continue;
       }
-      index.add(parser.parse(line, lineNumber));
+      final GazetteerEntry entry = parser.parse(line, lineNumber);
+      if (!index.add(entry)) {
+        throw new InvalidFormatException(
+            "line " + lineNumber + " repeats record id: " + entry.recordId());
+      }
     }
     if (index.isEmpty()) {
       throw new InvalidFormatException("the table contains no rows");
@@ -183,6 +190,37 @@ final class GazetteerIndex {
     }
     return new String(new char[] {upperAscii(isoCountryCode.charAt(0)),
         upperAscii(isoCountryCode.charAt(1))});
+  }
+
+  /**
+   * Splits a value at each occurrence of a separator and retains empty fields, including a final
+   * empty field.
+   *
+   * @param value The value to split. Must not be {@code null}.
+   * @param separator The separator character.
+   * @return The fields in input order.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
+   */
+  static String[] split(String value, char separator) {
+    if (value == null) {
+      throw new IllegalArgumentException("value must not be null");
+    }
+    int fieldCount = 1;
+    for (int i = 0; i < value.length(); i++) {
+      if (value.charAt(i) == separator) {
+        fieldCount++;
+      }
+    }
+    final String[] fields = new String[fieldCount];
+    int field = 0;
+    int start = 0;
+    for (int i = 0; i <= value.length(); i++) {
+      if (i == value.length() || value.charAt(i) == separator) {
+        fields[field++] = value.substring(start, i);
+        start = i + 1;
+      }
+    }
+    return fields;
   }
 
   /**

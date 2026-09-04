@@ -64,10 +64,10 @@ public final class GeoNamesGazetteer implements Gazetteer {
   private static final int COLUMNS = 19;
 
   /** The separator between the fields of one row. */
-  private static final String FIELD_SEPARATOR = "\t";
+  private static final char FIELD_SEPARATOR = '\t';
 
   /** The separator between the elements of the alternate-names field. */
-  private static final String LIST_SEPARATOR = ",";
+  private static final char LIST_SEPARATOR = ',';
 
   private final GazetteerIndex index;
 
@@ -146,11 +146,11 @@ public final class GeoNamesGazetteer implements Gazetteer {
     return Set.of(SOURCE);
   }
 
-  /** Parses one main-format row into an entry, failing loud with the line number. */
+  /** Parses one main-format row into an entry and includes the line number in format errors. */
   private static GazetteerEntry parseRow(String line, int lineNumber)
       throws InvalidFormatException {
-    final String[] fields = line.split(FIELD_SEPARATOR, -1);
-    if (fields.length < COLUMNS) {
+    final String[] fields = GazetteerIndex.split(line, FIELD_SEPARATOR);
+    if (fields.length != COLUMNS) {
       throw new InvalidFormatException("line " + lineNumber + " has " + fields.length
           + " columns, expected " + COLUMNS);
     }
@@ -162,7 +162,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
       if (!ascii.isEmpty() && !ascii.equals(name)) {
         alternates.add(ascii);
       }
-      for (final String alternate : fields[3].split(LIST_SEPARATOR)) {
+      for (final String alternate : GazetteerIndex.split(fields[3], LIST_SEPARATOR)) {
         final String trimmed = alternate.trim();
         if (!trimmed.isEmpty() && !trimmed.equals(name)) {
           alternates.add(trimmed);

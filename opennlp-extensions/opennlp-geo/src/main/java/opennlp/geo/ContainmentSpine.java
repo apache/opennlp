@@ -19,7 +19,6 @@ package opennlp.geo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.CodingErrorAction;
@@ -160,6 +159,9 @@ public final class ContainmentSpine implements PlaceHierarchy {
       if (StringUtil.isUnicodeBlank(type)) {
         throw new IllegalArgumentException("type must not be null or blank");
       }
+      if (parentId != null && StringUtil.isUnicodeBlank(parentId)) {
+        throw new IllegalArgumentException("parentId must be null or non-blank");
+      }
       places.put(id, new Node(parentId, name, type));
       return this;
     }
@@ -183,11 +185,11 @@ public final class ContainmentSpine implements PlaceHierarchy {
       int lineNumber = 0;
       for (final String line : readLines(table)) {
         lineNumber++;
-        if (line.isEmpty() || line.startsWith("#")) {
+        if (StringUtil.isUnicodeBlank(line) || line.startsWith("#")) {
           continue;
         }
         final List<String> fields = splitOn(line, '\t');
-        if (fields.size() < 4) {
+        if (fields.size() != 4) {
           throw new InvalidFormatException("malformed containment line " + lineNumber
               + " in " + table);
         }
@@ -276,20 +278,14 @@ public final class ContainmentSpine implements PlaceHierarchy {
    * @throws IOException Thrown if reading fails.
    */
   private static List<String> readLines(Path file) throws IOException {
-    final String content;
-    try (InputStream in = Files.newInputStream(file)) {
-      content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-    }
     final List<String> lines = new ArrayList<>();
-    int start = 0;
-    for (int i = 0; i <= content.length(); i++) {
-      if (i == content.length() || content.charAt(i) == '\n') {
-        int end = i;
-        if (end > start && content.charAt(end - 1) == '\r') {
-          end--;
-        }
-        lines.add(content.substring(start, end));
-        start = i + 1;
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+        Files.newInputStream(file), StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        lines.add(line);
       }
     }
     return lines;
@@ -405,13 +401,10 @@ public final class ContainmentSpine implements PlaceHierarchy {
    *         appears inside an unquoted field, or content follows a closing quote.
    */
   private static void parseCsv(Path file, CsvRows consumer) throws IOException {
-    // The file streams through a replacing UTF-8 decoder, so tables larger than any
-    // in-memory buffer parse in constant memory and stray malformed bytes read as
-    // replacement characters instead of aborting the load.
     try (Reader in = new BufferedReader(new InputStreamReader(Files.newInputStream(file),
         StandardCharsets.UTF_8.newDecoder()
-            .onMalformedInput(CodingErrorAction.REPLACE)
-            .onUnmappableCharacter(CodingErrorAction.REPLACE)))) {
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)))) {
       final StringBuilder field = new StringBuilder();
       List<String> fields = new ArrayList<>();
       boolean quoted = false;

@@ -68,10 +68,10 @@ public final class OvertureGazetteer implements Gazetteer {
   private static final int COLUMNS = 8;
 
   /** The separator between the fields of one row. */
-  private static final String FIELD_SEPARATOR = "\t";
+  private static final char FIELD_SEPARATOR = '\t';
 
   /** The separator between the elements of the alternate-names field. */
-  private static final String LIST_SEPARATOR = ",";
+  private static final char LIST_SEPARATOR = ',';
 
   private static final Set<String> SUB_LOCALITY_SUBTYPES =
       Set.of("borough", "macrohood", "neighborhood", "microhood");
@@ -154,11 +154,11 @@ public final class OvertureGazetteer implements Gazetteer {
     return Set.of(SOURCE);
   }
 
-  /** Parses one derived row into an entry, failing loud with the line number. */
+  /** Parses one derived row into an entry and includes the line number in format errors. */
   private static GazetteerEntry parseRow(String line, int lineNumber)
       throws InvalidFormatException {
-    final String[] fields = line.split(FIELD_SEPARATOR, -1);
-    if (fields.length < COLUMNS) {
+    final String[] fields = GazetteerIndex.split(line, FIELD_SEPARATOR);
+    if (fields.length != COLUMNS) {
       throw new InvalidFormatException("line " + lineNumber + " has " + fields.length
           + " columns, expected " + COLUMNS);
     }
@@ -166,7 +166,7 @@ public final class OvertureGazetteer implements Gazetteer {
       final String id = fields[0].trim();
       final String name = fields[1].trim();
       final Set<String> alternates = new LinkedHashSet<>();
-      for (final String alternate : fields[2].split(LIST_SEPARATOR)) {
+      for (final String alternate : GazetteerIndex.split(fields[2], LIST_SEPARATOR)) {
         final String trimmed = alternate.trim();
         if (!trimmed.isEmpty() && !trimmed.equals(name)) {
           alternates.add(trimmed);
