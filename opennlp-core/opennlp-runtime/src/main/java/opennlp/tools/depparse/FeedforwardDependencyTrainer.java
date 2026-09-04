@@ -58,8 +58,8 @@ public final class FeedforwardDependencyTrainer {
   /** SHIFT and at least one RIGHT_ARC are required to parse a sentence. */
   private static final int MIN_TRANSITIONS = 2;
 
+  /** Prevents construction of this utility class. */
   private FeedforwardDependencyTrainer() {
-    // This class only exposes static training methods and is never instantiated.
   }
 
   /**
@@ -599,7 +599,16 @@ public final class FeedforwardDependencyTrainer {
     return corpus;
   }
 
-  /** Overwrites the random word rows with pretrained vectors where available. */
+  /**
+   * Overwrites the random word rows with pretrained vectors where available.
+   *
+   * @param model The freshly initialized model whose word rows are seeded.
+   * @param pretrained The pretrained vector source, returning {@code null} for a word it
+   *                   does not cover.
+   * @param settings The hyperparameters, which fix the expected vector width.
+   * @throws IllegalArgumentException Thrown if a pretrained vector has a different width
+   *         than the embedding size or contains a non-finite value.
+   */
   private static void seed(FeedforwardDependencyModel model,
       Function<String, float[]> pretrained, Settings settings) {
     int seeded = 0;
@@ -631,7 +640,15 @@ public final class FeedforwardDependencyTrainer {
         model.wordIds().size());
   }
 
-  /** Builds the vocabularies and randomly initialized weights. */
+  /**
+   * Builds the vocabularies and randomly initialized weights.
+   *
+   * @param corpus The training samples.
+   * @param settings The hyperparameters.
+   * @return The untrained model. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if the vocabularies and settings would
+   *         produce more model values than the model format can store.
+   */
   private static FeedforwardDependencyModel initialize(List<DependencySample> corpus,
       Settings settings) {
     final Map<String, Integer> wordCounts = new HashMap<>();

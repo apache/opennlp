@@ -34,8 +34,8 @@ import java.util.List;
  */
 public final class ArcStandardOracle {
 
+  /** Prevents construction of this utility class. */
   private ArcStandardOracle() {
-    // This class only exposes static derivation methods and is never instantiated.
   }
 
   /**

@@ -108,6 +108,21 @@ public class FeedforwardDependencyModel {
   private final float[][] outputWeights;
   private final float[] outputBias;
 
+  /**
+   * Assembles a model from its vocabularies and weights, copying the maps so later
+   * changes by the caller do not reach the model.
+   *
+   * @param wordIds The word vocabulary, mapping each normalized word to its row.
+   * @param tagIds The tag vocabulary.
+   * @param labelIds The dependency label vocabulary.
+   * @param transitions The transition inventory, indexed by output row.
+   * @param embeddingSize The embedding dimensionality.
+   * @param embeddings The embedding rows for words, tags, and labels.
+   * @param hiddenWeights The hidden layer weights.
+   * @param hiddenBias The hidden layer bias.
+   * @param outputWeights The output layer weights.
+   * @param outputBias The output layer bias.
+   */
   FeedforwardDependencyModel(Map<String, Integer> wordIds, Map<String, Integer> tagIds,
       Map<String, Integer> labelIds, String[] transitions, int embeddingSize,
       float[][] embeddings, float[][] hiddenWeights, float[] hiddenBias,
@@ -221,6 +236,12 @@ public class FeedforwardDependencyModel {
     private final AtomicReferenceArray<float[]>[] byPosition;
     private final AtomicInteger remaining = new AtomicInteger(MAX_PAIRS);
 
+    /**
+     * Creates an empty cache.
+     *
+     * @param positions The number of feature positions.
+     * @param rows The number of embedding rows a position can hold.
+     */
     @SuppressWarnings("unchecked")
     private ContributionCache(int positions, int rows) {
       byPosition = new AtomicReferenceArray[positions];

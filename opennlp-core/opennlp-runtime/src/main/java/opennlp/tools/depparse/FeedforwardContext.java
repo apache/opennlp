@@ -43,8 +43,8 @@ final class FeedforwardContext {
   /** The index of the first dependent position; the stack and buffer items precede it. */
   private static final int FIRST_DEPENDENT_POSITION = 6;
 
+  /** Prevents construction of this utility class. */
   private FeedforwardContext() {
-    // This class only exposes the static feature template and is never instantiated.
   }
 
   /**
