@@ -23,31 +23,53 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 <treebank-repository> <target-dir>" >&2
+  echo "usage: $0 <treebank-repository> <commit> <target-dir>" >&2
   echo "" >&2
   echo "  treebank-repository  a repository name under github.com/UniversalDependencies," >&2
   echo "                       for example UD_English-EWT" >&2
+  echo "  commit               the full lowercase commit SHA to download" >&2
   echo "  target-dir           where train.conllu and test.conllu are placed" >&2
   exit 2
 }
 
-[ $# -ne 2 ] && usage
+[ $# -ne 3 ] && usage
 treebank="$1"
-target="$2"
+commit="$2"
+target="$3"
 
-# Clone shallowly into a temporary directory; only the .conllu files are kept.
-clone="$(mktemp -d)"
-trap 'rm -rf "${clone}"' EXIT
-echo "cloning ${treebank}"
-git clone --quiet --depth 1 "https://github.com/UniversalDependencies/${treebank}.git" \
-  "${clone}/${treebank}"
+if [ "${#commit}" -ne 40 ]; then
+  echo "commit must be a full 40-character lowercase SHA" >&2
+  exit 2
+fi
+case "${commit}" in
+  *[!0-9a-f]*)
+    echo "commit must be a full 40-character lowercase SHA" >&2
+    exit 2
+    ;;
+esac
+
+# Fetch only the selected commit into a temporary checkout. Only the .conllu files
+# are copied to the target directory.
+checkout="$(mktemp -d)"
+trap 'rm -rf "${checkout}"' EXIT
+git init --quiet "${checkout}/${treebank}"
+git -C "${checkout}/${treebank}" remote add origin \
+  "https://github.com/UniversalDependencies/${treebank}.git"
+echo "fetching ${treebank} at ${commit}"
+git -C "${checkout}/${treebank}" fetch --quiet --depth 1 origin "${commit}"
+actual_commit="$(git -C "${checkout}/${treebank}" rev-parse FETCH_HEAD)"
+if [ "${actual_commit}" != "${commit}" ]; then
+  echo "fetched ${actual_commit}, expected ${commit}" >&2
+  exit 1
+fi
+git -C "${checkout}/${treebank}" checkout --quiet --detach FETCH_HEAD
 
 mkdir -p "${target}"
 for split in train test; do
   # UD names its files <lang_code>-ud-<split>.conllu; the code prefix varies per
   # treebank, so match on the stable -ud-<split> suffix.
   found=""
-  for f in "${clone}/${treebank}/"*"-ud-${split}.conllu"; do
+  for f in "${checkout}/${treebank}/"*"-ud-${split}.conllu"; do
     [ -e "$f" ] && found="$f" && break
   done
   if [ -z "${found}" ]; then

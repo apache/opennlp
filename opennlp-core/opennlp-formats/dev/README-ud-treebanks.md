@@ -21,10 +21,13 @@ The dependency parser's unit tests are fully self-contained, but its accuracy ev
 
 ## Getting a treebank
 
-Every UD treebank lives in its own repository under `github.com/UniversalDependencies`, with its splits named `<lang_code>-ud-train.conllu`, `-dev`, and `-test`. The helper next to this file clones one shallowly and lays the splits out under the names the evaluation expects:
+Every UD treebank lives in its own repository under `github.com/UniversalDependencies`, with its splits named `<lang_code>-ud-train.conllu`, `-dev`, and `-test`. Pass the helper a full commit SHA so later runs use the same data. This example selects the official `r2.18` commit of `UD_English-EWT`:
 
 ```
-./download-ud-treebank.sh UD_English-EWT /tmp/ud-ewt
+./download-ud-treebank.sh \
+    UD_English-EWT \
+    b7711cce01cdd4f5fcc0a8199b8a50d951b16c0c \
+    /tmp/ud-ewt
 ```
 
 produces `/tmp/ud-ewt/train.conllu` and `/tmp/ud-ewt/test.conllu`. Any treebank that publishes both splits works the same way.
