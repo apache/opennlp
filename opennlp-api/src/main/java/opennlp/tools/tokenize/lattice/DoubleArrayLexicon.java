@@ -17,6 +17,7 @@
 
 package opennlp.tools.tokenize.lattice;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,14 @@ final class DoubleArrayLexicon {
   private final int[] codeOf;
   private final List<WordEntry>[] values;
 
+  /**
+   * Creates a lexicon from completed double-array tables and entry lists.
+   *
+   * @param base The transition offsets.
+   * @param check The parent state for each occupied index.
+   * @param codeOf The dense label for each UTF-16 character.
+   * @param values The entries for each surface.
+   */
   private DoubleArrayLexicon(int[] base, int[] check, int[] codeOf,
       List<WordEntry>[] values) {
     this.base = base;
@@ -124,10 +133,10 @@ final class DoubleArrayLexicon {
   }
 
   /**
-   * The recursive sorted-range builder: each call places one node's children by
-   * finding a base at which every child label uses a free slot, then recurses
-   * per child range. A moving watermark keeps the free-slot search near-linear over
-   * real lexicons.
+   * Builds the trie from sorted surface ranges. Each node places children at a common
+   * free base, and a moving watermark makes that search near-linear over real
+   * lexicons. The traversal uses an explicit stack so a long surface cannot exhaust
+   * the thread stack.
    */
   private static final class Builder {
 
@@ -142,6 +151,12 @@ final class DoubleArrayLexicon {
     private int watermark = ROOT + 1;
     private int valueIndex;
 
+    /**
+     * Initializes storage for the sorted surfaces and their dense character codes.
+     *
+     * @param surfaces The sorted surface forms.
+     * @param codeOf The dense label for each UTF-16 character.
+     */
     private Builder(String[] surfaces, int[] codeOf) {
       this.surfaces = surfaces;
       this.codeOf = codeOf;
@@ -151,7 +166,18 @@ final class DoubleArrayLexicon {
     }
 
     /**
-     * Places the children of one trie node.
+     * A surface range with children waiting to be placed.
+     *
+     * @param left The first surface in the range.
+     * @param right The exclusive end of the range.
+     * @param depth The character depth of the node.
+     * @param state The node's array index.
+     */
+    private record PendingNode(int left, int right, int depth, int state) {
+    }
+
+    /**
+     * Places one trie and the descendants without consuming the thread stack.
      *
      * @param left The first surface of the node's range.
      * @param right The exclusive last surface of the node's range.
@@ -159,50 +185,55 @@ final class DoubleArrayLexicon {
      * @param state The node's own slot.
      */
     private void insert(int left, int right, int depth, int state) {
-      // gather the distinct child labels of this range, terminator first
-      final int[] labels = new int[right - left];
-      int labelCount = 0;
-      int previous = -2;
-      for (int k = left; k < right; k++) {
-        final int label = surfaces[k].length() == depth
-            ? 0 : codeOf[surfaces[k].charAt(depth)];
-        if (label != previous) {
-          labels[labelCount++] = label;
-          previous = label;
+      final ArrayDeque<PendingNode> pending = new ArrayDeque<>();
+      pending.push(new PendingNode(left, right, depth, state));
+      while (!pending.isEmpty()) {
+        final PendingNode node = pending.pop();
+        final int[] labels = new int[node.right() - node.left()];
+        int labelCount = 0;
+        int previous = -2;
+        for (int k = node.left(); k < node.right(); k++) {
+          final int label = surfaces[k].length() == node.depth()
+              ? 0 : codeOf[surfaces[k].charAt(node.depth())];
+          if (label != previous) {
+            labels[labelCount++] = label;
+            previous = label;
+          }
         }
-      }
-      final int found = findBase(labels, labelCount);
-      base[state] = found;
-      for (int k = 0; k < labelCount; k++) {
-        final int child = found + labels[k];
-        check[child] = state;
-        if (child > high) {
-          high = child;
+        final int found = findBase(labels, labelCount);
+        base[node.state()] = found;
+        for (int k = 0; k < labelCount; k++) {
+          final int child = found + labels[k];
+          check[child] = node.state();
+          if (child > high) {
+            high = child;
+          }
         }
-      }
-      // recurse over each child's sub-range
-      int start = left;
-      for (int k = 0; k < labelCount; k++) {
-        final int label = labels[k];
-        int end = start;
-        while (end < right && (surfaces[end].length() == depth
-            ? 0 : codeOf[surfaces[end].charAt(depth)]) == label) {
-          end++;
+
+        int childEnd = node.right();
+        for (int k = labelCount - 1; k >= 0; k--) {
+          final int label = labels[k];
+          int childStart = childEnd - 1;
+          while (childStart > node.left()
+              && (surfaces[childStart - 1].length() == node.depth()
+                  ? 0 : codeOf[surfaces[childStart - 1].charAt(node.depth())]) == label) {
+            childStart--;
+          }
+          final int child = found + label;
+          if (label == 0) {
+            base[child] = -(++valueIndex);
+          } else {
+            pending.push(new PendingNode(
+                childStart, childEnd, node.depth() + 1, child));
+          }
+          childEnd = childStart;
         }
-        final int child = found + label;
-        if (label == 0) {
-          base[child] = -(++valueIndex);
-        } else {
-          insert(start, end, depth + 1, child);
-        }
-        start = end;
       }
     }
 
     /**
-     * Finds the lowest base at which every label uses a free slot. Labels
-     * arrive in surface-character order, not numeric order, so the smallest and
-     * largest label are computed rather than assumed positional.
+     * Finds the lowest base at which all labels use free indices. Labels are in
+     * surface-character order, so this method computes the numeric bounds.
      *
      * @param labels The child labels to place.
      * @param labelCount How many leading elements of {@code labels} are in use.

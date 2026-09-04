@@ -18,6 +18,7 @@
 package opennlp.tools.tokenize.lattice;
 
 import java.io.IOException;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +49,9 @@ public class LatticeTokenizerTest {
   private static final String MATRIX_DEF = "matrix.def";
   private static final String CHAR_DEF = "char.def";
   private static final String UNK_DEF = "unk.def";
+
+  /** UTF-8 lead byte with the required continuation byte omitted. */
+  private static final byte TRUNCATED_UTF8_LEAD_BYTE = (byte) 0xC3;
 
   /** A one by one connection matrix charging cost zero, for single-context fixtures. */
   private static final String UNIT_MATRIX = "1 1\n0 0 0\n";
@@ -709,8 +713,8 @@ public class LatticeTokenizerTest {
 
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(ghost));
-    Assertions.assertEquals("char.def maps U+0100 to the undefined category GHOST",
-        e.getMessage());
+    Assertions.assertEquals("char.def declaration at U+0100 names the undefined"
+        + " category GHOST", e.getMessage());
   }
 
   /**
@@ -822,5 +826,276 @@ public class LatticeTokenizerTest {
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("malformed matrix.def line 2: context ids 2 0 are outside"
         + " the declared dimensions 1 1", e.getMessage());
+  }
+
+  @Test
+  void testZeroLengthCategoryUsesItsUnknownTemplate(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
+        "SINGLE 1 0 0",
+        "",
+        "0x2460 SINGLE",
+        ""));
+    write(dictionary, UNK_DEF, String.join("\n",
+        DEFAULT_UNKNOWN_TEMPLATE,
+        "SINGLE,0,0,1000,symbol,single",
+        ""));
+
+    final Morpheme morpheme = new LatticeTokenizer(MecabDictionary.load(dictionary))
+        .analyze("\u2460").get(0);
+
+    Assertions.assertEquals(List.of("symbol", "single"), morpheme.features());
+  }
+
+  @Test
+  void testRejectsEmptyLexiconSurface(@TempDir Path dictionary) throws IOException {
+    writeUnitMatrixDictionary(dictionary);
+    write(dictionary, LEXICON_CSV, String.join("\n",
+        "\u6771,0,0,3000,noun",
+        ",0,0,3000,noun",
+        ""));
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("malformed entry at " + dictionary.resolve(LEXICON_CSV)
+        + " line 2: surface must not be empty", e.getMessage());
+  }
+
+  @ParameterizedTest(name = "word cost {0}")
+  @ValueSource(ints = {-32769, 32768})
+  void testRejectsLexiconCostOutsideShortRange(int cost, @TempDir Path dictionary)
+      throws IOException {
+    writeUnitMatrixDictionary(dictionary);
+    write(dictionary, LEXICON_CSV, "\u6771,0,0," + cost + ",noun\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("malformed entry at " + dictionary.resolve(LEXICON_CSV)
+        + " line 1: word cost " + cost
+        + " is outside the 16-bit range the format defines", e.getMessage());
+  }
+
+  @Test
+  void testRejectsDuplicateCharacterCategory(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\nDEFAULT 1 0 2\n");
+    write(dictionary, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("duplicate char.def category DEFAULT at line 2",
+        e.getMessage());
+  }
+
+  @Test
+  void testRejectsDuplicateMatrixEntry(@TempDir Path dictionary) throws IOException {
+    writeUnitMatrixDictionary(dictionary);
+    write(dictionary, MATRIX_DEF, "1 1\n0 0 1\n0 0 2\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("duplicate matrix.def entry 0 0 at line 3", e.getMessage());
+  }
+
+  @Test
+  void testRejectsMalformedDictionaryEncoding(@TempDir Path dictionary)
+      throws IOException {
+    writeUnitMatrixDictionary(dictionary);
+    Files.write(dictionary.resolve(LEXICON_CSV),
+        new byte[] {TRUNCATED_UTF8_LEAD_BYTE, ',', '0', ',', '0', ',', '1', '\n'});
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertInstanceOf(MalformedInputException.class, e);
+    Assertions.assertEquals("Input length = 1", e.getMessage());
+  }
+
+  @Test
+  void testLongLexiconSurfaceLoads(@TempDir Path dictionary) throws IOException {
+    writeUnitMatrixDictionary(dictionary);
+    final String surface = "a".repeat(20_000);
+    write(dictionary, LEXICON_CSV, surface + ",0,0,3000,fixture\n");
+
+    final LatticeTokenizer longSurfaceTokenizer =
+        new LatticeTokenizer(MecabDictionary.load(dictionary));
+
+    Assertions.assertArrayEquals(new String[] {surface},
+        longSurfaceTokenizer.tokenize(surface));
+  }
+
+  @Test
+  void testSecondaryCharacterCategoryExtendsUnknownRun(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "\u6771,0,0,6000,noun\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
+        "KANJI 1 0 1",
+        "KANJINUMERIC 1 1 0",
+        "",
+        "0x4E00 KANJINUMERIC KANJI",
+        "0x5C71 KANJI",
+        ""));
+    write(dictionary, UNK_DEF, String.join("\n",
+        DEFAULT_UNKNOWN_TEMPLATE,
+        "KANJI,0,0,5000,noun,unknown",
+        "KANJINUMERIC,0,0,1000,number,unknown",
+        ""));
+
+    final List<Morpheme> morphemes = new LatticeTokenizer(
+        MecabDictionary.load(dictionary)).analyze("\u4E00\u5C71");
+
+    Assertions.assertEquals(1, morphemes.size());
+    Assertions.assertEquals("\u4E00\u5C71", morphemes.get(0).surface());
+    Assertions.assertEquals(List.of("number", "unknown"), morphemes.get(0).features());
+  }
+
+  /**
+   * Verifies MeCab's category-chain grouping. Character A has X and Y, B has X, and C
+   * has Y. A and B intersect, while B and C do not, so the initial unknown word covers
+   * {@code ab}.
+   */
+  @Test
+  void testMultipleCategoriesUsePairwiseGrouping(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "z,0,0,6000,fixture\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
+        "X 1 1 0",
+        "Y 1 1 0",
+        "",
+        "0x0061 X Y",
+        "0x0062 X",
+        "0x0063 Y",
+        ""));
+    write(dictionary, UNK_DEF, String.join("\n",
+        DEFAULT_UNKNOWN_TEMPLATE,
+        "X,0,0,1000,x,unknown",
+        "Y,0,0,1000,y,unknown",
+        ""));
+
+    final LatticeTokenizer groupingTokenizer =
+        new LatticeTokenizer(MecabDictionary.load(dictionary));
+
+    Assertions.assertArrayEquals(new String[] {"ab", "c"},
+        groupingTokenizer.tokenize("abc"));
+  }
+
+  /**
+   * Verifies that an intermediate multi-category character can connect a run.
+   * Character A has X, B has X and Y, and C has Y. MeCab advances the active
+   * assignment at each position, allowing B to connect both portions.
+   */
+  @Test
+  void testCategoryOverlapCanConnectRun(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "z,0,0,6000,fixture\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
+        "X 1 1 0",
+        "Y 1 1 0",
+        "",
+        "0x0061 X",
+        "0x0062 X Y",
+        "0x0063 Y",
+        ""));
+    write(dictionary, UNK_DEF, String.join("\n",
+        DEFAULT_UNKNOWN_TEMPLATE,
+        "X,0,0,1000,x,unknown",
+        "Y,0,0,1000,y,unknown",
+        ""));
+
+    final LatticeTokenizer groupingTokenizer =
+        new LatticeTokenizer(MecabDictionary.load(dictionary));
+
+    Assertions.assertArrayEquals(new String[] {"abc"},
+        groupingTokenizer.tokenize("abc"));
+  }
+
+  @Test
+  void testRejectsTooManyCharacterCategories(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "z,0,0,6000,fixture\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    final StringBuilder charDef = new StringBuilder(DEFAULT_CATEGORY_LINE).append('\n');
+    for (int i = 1; i < 18; i++) {
+      charDef.append('C').append(i).append(" 0 0 1\n");
+    }
+    write(dictionary, CHAR_DEF, charDef.toString());
+    write(dictionary, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("char.def defines 18 categories; MeCab supports at most 17",
+        e.getMessage());
+  }
+
+  @Test
+  void testRejectsCharacterCategoryLengthAboveMecabLimit(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "z,0,0,6000,fixture\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, "DEFAULT 0 1 16\n");
+    write(dictionary, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("category LENGTH must be between 0 and 15 at "
+        + dictionary.resolve(CHAR_DEF) + " line 1", e.getMessage());
+  }
+
+  @Test
+  void testRejectsUndefinedSecondaryCharacterCategory(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "\u6771,0,0,6000,noun\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
+        "KANJINUMERIC 1 1 0",
+        "",
+        "0x4E00 KANJINUMERIC GHOST",
+        ""));
+    write(dictionary, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("char.def declaration at U+4E00 names the undefined"
+        + " category GHOST", e.getMessage());
+  }
+
+  @Test
+  void testRejectsUndefinedCategoryOnShadowedMapping(@TempDir Path dictionary)
+      throws IOException {
+    write(dictionary, LEXICON_CSV, "z,0,0,6000,fixture\n");
+    write(dictionary, MATRIX_DEF, UNIT_MATRIX);
+    write(dictionary, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
+        "LATIN 1 1 0",
+        "",
+        "0x0061 GHOST",
+        "0x0061 LATIN",
+        ""));
+    write(dictionary, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("char.def declaration at U+0061 names the undefined"
+        + " category GHOST", e.getMessage());
   }
 }
