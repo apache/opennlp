@@ -45,7 +45,7 @@ import opennlp.tools.wordnet.WordNetRelation;
  * {@code *.exc} exception lists are the {@link MorphyLemmatizer} companion input, read
  * separately.</p>
  *
- * <p>Synset ids are minted as {@code wndb-}<i>offset</i>{@code -}<i>pos</i> from the data file's
+ * <p>Synset ids use {@code wndb-}<i>offset</i>{@code -}<i>pos</i>, formed from the data file's
  * 8-digit byte offset and part-of-speech letter, for example {@code wndb-00001740-n}; the id is
  * opaque to consumers. Adjective satellite lines normalize to {@link WordNetPOS#ADJECTIVE}, the
  * syntactic markers the adjective files append ({@code (p)}, {@code (a)}, {@code (ip)}) are
@@ -68,7 +68,7 @@ public final class WndbReader {
       "!", "@", "~", "#m", "#s", "#p", "%m", "%s", "%p", "=", "+", "*", ">", "^",
       "$", "&", "<", "\\", ";", "-");
 
-  /** The prefix of every synset id this reader mints. */
+  /** The prefix used for every synset id returned by this reader. */
   private static final String SYNSET_ID_PREFIX = "wndb-";
 
   /** The failure detail for a synset offset field that is not exactly 8 digits. */
@@ -79,12 +79,12 @@ public final class WndbReader {
   }
 
   /**
-   * Mints a synset id in this reader's scheme: the {@code wndb-} prefix, the 8-digit data-file
+   * Builds a synset id in this reader's scheme: the {@code wndb-} prefix, the 8-digit data-file
    * byte offset, a hyphen, and the part-of-speech letter, for example {@code wndb-00001740-n}.
    *
    * @param offset  The 8-digit synset offset field.
    * @param posChar The WNDB part-of-speech letter.
-   * @return The minted synset id.
+   * @return The synset id.
    */
   private static String synsetId(String offset, char posChar) {
     return SYNSET_ID_PREFIX + offset + '-' + posChar;
@@ -148,7 +148,7 @@ public final class WndbReader {
   }
 
   /**
-   * Parses one {@code data.*} file, collecting its synsets keyed by minted id.
+   * Parses one {@code data.*} file, collecting its synsets by id.
    *
    * @param directory  The database directory.
    * @param filePos    The part-of-speech file pair.
@@ -442,7 +442,8 @@ public final class WndbReader {
    * @param lineNumber The 1-based line number.
    * @param filePos    The part-of-speech file being parsed.
    * @return The cleaned lemma.
-   * @throws InvalidFormatException Thrown if the word carries an unknown marker or is empty.
+   * @throws InvalidFormatException Thrown if the word is empty, contains an unknown marker, or
+   *     uses an adjective marker outside {@code data.adj}.
    */
   private static String cleanLemma(String word, String fileName, int lineNumber, FilePos filePos)
       throws InvalidFormatException {
@@ -756,7 +757,7 @@ public final class WndbReader {
     /**
      * Creates a raw synset gathered while parsing a data file.
      *
-     * @param id         The minted synset id.
+     * @param id         The synset id.
      * @param pos        The part of speech.
      * @param lemmas     The member lemmas.
      * @param gloss      The gloss text.

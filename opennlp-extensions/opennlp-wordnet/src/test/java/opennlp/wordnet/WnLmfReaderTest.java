@@ -161,7 +161,7 @@ public class WnLmfReaderTest {
   @Test
   void testSimilarOnVerbSynsetMapsToVerbGroup() throws IOException {
     // Documents derived from Princeton data express verb groups as similar on verb synsets;
-    // the fixture only carries similar on adjectives, so this pins the verb branch directly.
+    // the fixture only defines similar on adjectives, so this pins the verb branch directly.
     final LexicalKnowledgeBase lexicon = parse(wrap(
         "<LexicalEntry id=\"t-sing-v\"><Lemma writtenForm=\"sing\" partOfSpeech=\"v\"/>"
             + "<Sense id=\"t-sing-v-1\" synset=\"t-v1\"/></LexicalEntry>"

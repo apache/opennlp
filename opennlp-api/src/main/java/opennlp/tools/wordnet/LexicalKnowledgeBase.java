@@ -21,7 +21,7 @@ import java.util.Optional;
 
 /**
  * Lemma and synset lookup over a loaded lexical-semantic resource in the WordNet family. Synset
- * identity is opaque and source-qualified (see {@link Synset#id()}). Lookups return their matches
+ * identifiers are opaque and source-qualified (see {@link Synset#id()}). Lookups return matches
  * in the source's sense order. Lookup results are non-{@code null} lists.
  *
  * <p>How a queried lemma is matched against the source's written forms is implementation
@@ -49,7 +49,7 @@ public interface LexicalKnowledgeBase {
   /**
    * Finds a synset by its opaque identifier.
    *
-   * @param synsetId The synset identifier, as minted by this lexicon. Must not be {@code null}.
+   * @param synsetId A synset identifier returned by this lexicon. Must not be {@code null}.
    * @return The synset, or empty when this lexicon has no synset with that identifier.
    * @throws IllegalArgumentException Thrown if {@code synsetId} is {@code null}.
    */
