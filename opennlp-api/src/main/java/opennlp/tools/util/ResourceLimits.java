@@ -58,22 +58,6 @@ public final class ResourceLimits {
   public static final int MAX_MATRIX_CELLS =
       initLimit(MAX_MATRIX_CELLS_PROPERTY, 134_217_728);
 
-  /** System property for the maximum size of one extracted archive entry. */
-  public static final String MAX_ARCHIVE_ENTRY_BYTES_PROPERTY =
-      "opennlp.install.max.entry.bytes";
-
-  /** Maximum size of one extracted archive entry, 512 MiB by default. */
-  public static final long MAX_ARCHIVE_ENTRY_BYTES =
-      initLimit(MAX_ARCHIVE_ENTRY_BYTES_PROPERTY, 512L * 1024 * 1024);
-
-  /** System property for the maximum total size extracted from one archive. */
-  public static final String MAX_ARCHIVE_TOTAL_BYTES_PROPERTY =
-      "opennlp.install.max.total.bytes";
-
-  /** Maximum total size extracted from one archive, 2 GiB by default. */
-  public static final long MAX_ARCHIVE_TOTAL_BYTES =
-      initLimit(MAX_ARCHIVE_TOTAL_BYTES_PROPERTY, 2L * 1024 * 1024 * 1024);
-
   private ResourceLimits() {
   }
 
