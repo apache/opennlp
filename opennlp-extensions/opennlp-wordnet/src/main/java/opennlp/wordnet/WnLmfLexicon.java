@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
-import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 
 /**
@@ -31,8 +30,8 @@ import opennlp.tools.wordnet.LexicalKnowledgeBase;
  * except {@code id}, {@code label}, {@code language}, and {@code version}. Keys are namespace-aware
  * {@link QName} values, so Dublin Core attributes do not collide with unqualified attributes.
  * The dependency list preserves the source order of WN-LMF {@code Requires} declarations. It is
- * descriptive metadata only; parsing does not resolve or load the referenced lexicons. The list,
- * map, and knowledge base are immutable and safe to share between threads.</p>
+ * descriptive metadata only; parsing does not resolve or load the referenced lexicons. The list
+ * and map are immutable. Thread safety of the knowledge base depends on its implementation.</p>
  *
  * @param id            The WN-LMF lexicon id. Must not be {@code null} or empty.
  * @param label         The human-readable label. Must not be {@code null} or empty.
@@ -44,8 +43,8 @@ import opennlp.tools.wordnet.LexicalKnowledgeBase;
  * @param dependencies  The required lexicons in source order. Must not be {@code null} and must
  *                      not contain null elements.
  * @param knowledgeBase The independently queryable lexicon. Must not be {@code null}.
+ * @since 3.0.0
  */
-@ThreadSafe
 public record WnLmfLexicon(
     String id,
     String label,
@@ -62,35 +61,35 @@ public record WnLmfLexicon(
    */
   public WnLmfLexicon {
     if (id == null || id.isEmpty()) {
-      throw new IllegalArgumentException("Id must not be null or empty");
+      throw new IllegalArgumentException("id must not be null or empty");
     }
     if (label == null || label.isEmpty()) {
-      throw new IllegalArgumentException("Label must not be null or empty");
+      throw new IllegalArgumentException("label must not be null or empty");
     }
     if (language == null || language.isEmpty()) {
-      throw new IllegalArgumentException("Language must not be null or empty");
+      throw new IllegalArgumentException("language must not be null or empty");
     }
     if (version == null || version.isEmpty()) {
-      throw new IllegalArgumentException("Version must not be null or empty");
+      throw new IllegalArgumentException("version must not be null or empty");
     }
     if (metadata == null) {
-      throw new IllegalArgumentException("Metadata must not be null");
+      throw new IllegalArgumentException("metadata must not be null");
     }
     for (final Map.Entry<QName, String> entry : metadata.entrySet()) {
       if (entry.getKey() == null || entry.getValue() == null) {
-        throw new IllegalArgumentException("Metadata must not contain null keys or values");
+        throw new IllegalArgumentException("metadata must not contain null keys or values");
       }
     }
     if (dependencies == null) {
-      throw new IllegalArgumentException("Dependencies must not be null");
+      throw new IllegalArgumentException("dependencies must not be null");
     }
     for (final WnLmfDependency dependency : dependencies) {
       if (dependency == null) {
-        throw new IllegalArgumentException("Dependencies must not contain null");
+        throw new IllegalArgumentException("dependencies must not contain null");
       }
     }
     if (knowledgeBase == null) {
-      throw new IllegalArgumentException("KnowledgeBase must not be null");
+      throw new IllegalArgumentException("knowledgeBase must not be null");
     }
     metadata = Map.copyOf(metadata);
     dependencies = List.copyOf(dependencies);

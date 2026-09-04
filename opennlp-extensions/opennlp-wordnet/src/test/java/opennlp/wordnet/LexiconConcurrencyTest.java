@@ -31,10 +31,7 @@ import opennlp.tools.wordnet.WordNetRelation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Exercises the immutable-after-load contract: one loaded lexicon serves many threads issuing
- * concurrent lookups, and every thread observes exactly the single-threaded results.
- */
+/** Tests concurrent lookups on an immutable loaded lexicon. */
 public class LexiconConcurrencyTest {
 
   private static final int THREADS = 8;

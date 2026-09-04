@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
@@ -51,14 +52,21 @@ import opennlp.tools.wordnet.WordNetRelation;
  * stripped, and underscores in lemmas become spaces. Sense order per lemma follows the index
  * file's offset order.</p>
  *
- * <p>Malformed content fails loud with an {@link InvalidFormatException} naming the file and
- * line; I/O failures propagate as {@link IOException}. The returned lexicon is immutable and safe
- * for concurrent lookups.</p>
+ * <p>Malformed content causes an {@link InvalidFormatException} naming the file and line; I/O
+ * failures propagate as {@link IOException}. The returned lexicon is immutable and safe for
+ * concurrent lookups.</p>
+ *
+ * @since 3.0.0
  */
 public final class WndbReader {
 
   /** The WNDB pointer symbols this reader accepts, mapped to the contract relations. */
   private static final Map<String, WordNetRelation> POINTER_SYMBOLS = pointerSymbols();
+
+  /** Pointer symbols used by index files, where instance and domain subtypes are collapsed. */
+  private static final Set<String> INDEX_POINTER_SYMBOLS = Set.of(
+      "!", "@", "~", "#m", "#s", "#p", "%m", "%s", "%p", "=", "+", "*", ">", "^",
+      "$", "&", "<", "\\", ";", "-");
 
   /** The prefix of every synset id this reader mints. */
   private static final String SYNSET_ID_PREFIX = "wndb-";
@@ -96,11 +104,11 @@ public final class WndbReader {
    */
   public static LexicalKnowledgeBase read(Path directory) throws IOException {
     if (directory == null) {
-      throw new IllegalArgumentException("Directory must not be null");
+      throw new IllegalArgumentException("directory must not be null");
     }
     if (!Files.isDirectory(directory)) {
       throw new IllegalArgumentException(
-          "Directory does not exist or is not a directory: " + directory);
+          "directory does not exist or is not a directory: " + directory);
     }
     final Map<String, RawSynset> rawSynsets = new LinkedHashMap<>();
     for (final FilePos filePos : FilePos.values()) {
@@ -190,7 +198,12 @@ public final class WndbReader {
       throw malformed(fileName, lineNumber, "Synset offset field " + offsetField
           + " disagrees with the actual byte position " + byteOffset);
     }
-    tokens.next("lex_filenum (lexicographer file number)");
+    final int lexicographerFile = tokens.nextFixedInt(
+        "lex_filenum", 10, 2);
+    if (lexicographerFile > 44) {
+      throw malformed(fileName, lineNumber,
+          "lex_filenum must be between 00 and 44, got: " + lexicographerFile);
+    }
     final String ssType = tokens.next("ss_type (synset type)");
     final boolean validType = switch (filePos) {
       case ADJECTIVE -> "a".equals(ssType) || "s".equals(ssType);
@@ -200,19 +213,21 @@ public final class WndbReader {
       throw malformed(fileName, lineNumber,
           "Synset type " + ssType + " does not belong in " + fileName);
     }
-    final int wordCount = tokens.nextInt("w_cnt (word count)", 16);
+    final int wordCount = tokens.nextFixedCount(
+        "w_cnt", 16, 2, "Word count");
     if (wordCount < 1) {
       throw malformed(fileName, lineNumber, "Word count must be at least 1, got: " + wordCount);
     }
     final List<String> lemmas = new ArrayList<>(wordCount);
     for (int i = 0; i < wordCount; i++) {
       final String lemma = cleanLemma(tokens.next("word"), fileName, lineNumber);
-      tokens.nextInt("lex_id (sense id within the lexicographer file)", 16);
+      tokens.nextFixedInt("lex_id", 16, 1);
       if (!lemmas.contains(lemma)) {
         lemmas.add(lemma);
       }
     }
-    final int pointerCount = tokens.nextInt("p_cnt (pointer count)", 10);
+    final int pointerCount = tokens.nextFixedCount(
+        "p_cnt", 10, 3, "Pointer count");
     final List<RawPointer> pointers = new ArrayList<>(pointerCount);
     for (int i = 0; i < pointerCount; i++) {
       final String symbol = tokens.next("pointer_symbol");
@@ -223,15 +238,39 @@ public final class WndbReader {
       final String targetOffset = tokens.next("pointer synset_offset");
       parseOffset(targetOffset, tokens);
       final char targetPos = posChar(tokens.next("pointer pos"), tokens);
-      tokens.next("pointer source/target");
-      pointers.add(new RawPointer(relation, synsetId(targetOffset, targetPos), lineNumber));
+      final int sourceTarget = tokens.nextFixedInt("pointer source/target", 16, 4);
+      final int sourceWord = sourceTarget >>> 8;
+      final int targetWord = sourceTarget & 0xff;
+      if (sourceWord > wordCount) {
+        throw malformed(fileName, lineNumber, "Pointer source word " + sourceWord
+            + " exceeds word count " + wordCount);
+      }
+      if ((sourceWord == 0) != (targetWord == 0)) {
+        throw malformed(fileName, lineNumber,
+            "Pointer source and target words must both be zero or nonzero");
+      }
+      pointers.add(new RawPointer(relation, synsetId(targetOffset, targetPos),
+          targetWord, lineNumber));
     }
     if (filePos == FilePos.VERB) {
-      final int frameCount = tokens.nextInt("f_cnt (verb frame count)", 10);
+      final int frameCount = tokens.nextFixedCount(
+          "f_cnt", 10, 2, "Verb frame count");
       for (int i = 0; i < frameCount; i++) {
-        tokens.next("frame marker");
-        tokens.next("f_num (verb frame number)");
-        tokens.next("w_num (word number)");
+        final String marker = tokens.next("verb frame marker");
+        if (!"+".equals(marker)) {
+          throw malformed(fileName, lineNumber,
+              "Expected + before a verb frame, got: " + marker);
+        }
+        final int frameNumber = tokens.nextFixedInt("f_num", 10, 2);
+        if (frameNumber < 1 || frameNumber > 35) {
+          throw malformed(fileName, lineNumber,
+              "f_num must be between 01 and 35, got: " + frameNumber);
+        }
+        final int wordNumber = tokens.nextFixedInt("w_num", 16, 2);
+        if (wordNumber > wordCount) {
+          throw malformed(fileName, lineNumber, "Verb frame word " + wordNumber
+              + " exceeds word count " + wordCount);
+        }
       }
     }
     final String gloss = tokens.gloss();
@@ -249,7 +288,8 @@ public final class WndbReader {
    */
   private static Map<String, Synset> resolve(Map<String, RawSynset> rawSynsets)
       throws InvalidFormatException {
-    final Map<String, Synset> synsetsById = new LinkedHashMap<>(rawSynsets.size() * 2);
+    final Map<String, Synset> synsetsById =
+        LinkedHashMap.newLinkedHashMap(rawSynsets.size());
     for (final RawSynset raw : rawSynsets.values()) {
       final Map<WordNetRelation, LinkedHashSet<String>> typed = new LinkedHashMap<>();
       for (final RawPointer pointer : raw.pointers) {
@@ -258,11 +298,16 @@ public final class WndbReader {
           throw malformed(raw.fileName, pointer.lineNumber, "Synset " + raw.id + " has a "
               + pointer.relation + " pointer to nonexistent synset " + pointer.targetId);
         }
+        if (pointer.targetWord > target.lemmas.size()) {
+          throw malformed(raw.fileName, pointer.lineNumber, "Pointer target word "
+              + pointer.targetWord + " exceeds target word count " + target.lemmas.size());
+        }
         // Share the synset table's id instance so only one copy of each id is retained.
         typed.computeIfAbsent(pointer.relation, unused -> new LinkedHashSet<>())
             .add(target.id);
       }
-      final Map<WordNetRelation, List<String>> relations = new LinkedHashMap<>(typed.size() * 2);
+      final Map<WordNetRelation, List<String>> relations =
+          LinkedHashMap.newLinkedHashMap(typed.size());
       for (final Map.Entry<WordNetRelation, LinkedHashSet<String>> entry : typed.entrySet()) {
         relations.put(entry.getKey(), List.copyOf(entry.getValue()));
       }
@@ -326,18 +371,34 @@ public final class WndbReader {
       throw malformed(fileName, lineNumber, "Index pos " + pos + " does not belong in "
           + fileName);
     }
-    final int synsetCount = tokens.nextInt("synset_cnt (synset count)", 10);
+    final int synsetCount = tokens.nextNonNegativeInt("synset count", "Synset count");
     if (synsetCount < 1) {
       throw malformed(fileName, lineNumber,
           "Synset count must be at least 1, got: " + synsetCount);
     }
-    final int pointerTypeCount = tokens.nextInt("p_cnt (pointer count)", 10);
+    final int pointerTypeCount = tokens.nextNonNegativeInt("pointer count", "Pointer count");
+    final LinkedHashSet<String> pointerTypes = new LinkedHashSet<>();
     for (int i = 0; i < pointerTypeCount; i++) {
       // The summary symbols are informational; the data file's pointers are authoritative.
-      tokens.next("ptr_symbol (pointer symbol)");
+      final String symbol = tokens.next("ptr_symbol (pointer symbol)");
+      if (!INDEX_POINTER_SYMBOLS.contains(symbol)) {
+        throw malformed(fileName, lineNumber, "Undeclared pointer symbol: " + symbol);
+      }
+      if (!pointerTypes.add(symbol)) {
+        throw malformed(fileName, lineNumber, "Duplicate pointer symbol: " + symbol);
+      }
     }
-    tokens.next("sense_cnt (sense count)");
-    tokens.next("tagsense_cnt (tagged-sense count)");
+    final int senseCount = tokens.nextNonNegativeInt("sense count", "Sense count");
+    if (senseCount != synsetCount) {
+      throw malformed(fileName, lineNumber, "Sense count " + senseCount
+          + " does not match synset count " + synsetCount);
+    }
+    final int taggedSenseCount = tokens.nextNonNegativeInt(
+        "tagged-sense count", "Tagged-sense count");
+    if (taggedSenseCount > senseCount) {
+      throw malformed(fileName, lineNumber, "Tagged-sense count " + taggedSenseCount
+          + " exceeds sense count " + senseCount);
+    }
     final List<String> order = new ArrayList<>(synsetCount);
     for (int i = 0; i < synsetCount; i++) {
       final String offset = tokens.next("synset_offset");
@@ -347,10 +408,12 @@ public final class WndbReader {
         throw malformed(fileName, lineNumber, "Lemma " + lemma + " references offset " + offset
             + " with no data." + filePos.suffix + " line");
       }
-      if (!order.contains(synsetId)) {
-        order.add(synsetId);
+      if (order.contains(synsetId)) {
+        throw malformed(fileName, lineNumber, "Duplicate synset offset " + offset);
       }
+      order.add(synsetId);
     }
+    tokens.requireEnd("synset offsets");
     final InMemoryWordNetLexicon.LemmaKey key =
         InMemoryWordNetLexicon.LemmaKey.of(lemma, filePos.pos);
     final List<String> existing = senses.get(key);
@@ -517,20 +580,114 @@ public final class WndbReader {
     }
 
     /**
-     * Reads the next field as an integer in the given radix.
+     * Reads a non-negative decimal field.
      *
-     * @param field The field name, for error reporting.
-     * @param radix The numeric radix.
+     * @param field The field name used when parsing fails.
+     * @param label The field label used for a negative value.
      * @return The parsed value.
-     * @throws InvalidFormatException Thrown if the field is missing or not a valid integer.
+     * @throws InvalidFormatException Thrown if the field is missing, invalid, or negative.
      */
-    int nextInt(String field, int radix) throws InvalidFormatException {
+    int nextNonNegativeInt(String field, String label) throws InvalidFormatException {
       final String token = next(field);
-      try {
-        return Integer.parseInt(token, radix);
-      } catch (NumberFormatException e) {
-        throw new InvalidFormatException(malformedMessage(fileName, lineNumber,
-            "Field " + field + " is not a base-" + radix + " integer: " + token), e);
+      if (token.charAt(0) == '-') {
+        throw malformed(fileName, lineNumber,
+            label + " must not be negative, got: " + token);
+      }
+      int value = 0;
+      for (int i = 0; i < token.length(); i++) {
+        final char c = token.charAt(i);
+        final int digit = c - '0';
+        if (digit < 0 || digit > 9 || value > (Integer.MAX_VALUE - digit) / 10) {
+          throw malformed(fileName, lineNumber,
+              field + " is not an unsigned decimal integer: " + token);
+        }
+        value = value * 10 + digit;
+      }
+      return value;
+    }
+
+    /**
+     * Reads a fixed-width ASCII integer.
+     *
+     * @param field The field name used when parsing fails.
+     * @param radix The numeric radix, either 10 or 16.
+     * @param width The required field width.
+     * @return The parsed value.
+     * @throws InvalidFormatException Thrown if the field has the wrong width or contains a digit
+     *     outside the radix.
+     */
+    int nextFixedInt(String field, int radix, int width) throws InvalidFormatException {
+      final String token = next(field);
+      return parseFixedInt(field, radix, width, token);
+    }
+
+    /** Parses a fixed-width ASCII integer already read from the line. */
+    private int parseFixedInt(String field, int radix, int width, String token)
+        throws InvalidFormatException {
+      if (token.length() != width) {
+        throw malformed(fileName, lineNumber, fixedIntegerMessage(field, radix, width, token));
+      }
+      int value = 0;
+      for (int i = 0; i < token.length(); i++) {
+        final char c = token.charAt(i);
+        final int digit;
+        if (c >= '0' && c <= '9') {
+          digit = c - '0';
+        } else if (c >= 'a' && c <= 'f') {
+          digit = c - 'a' + 10;
+        } else if (c >= 'A' && c <= 'F') {
+          digit = c - 'A' + 10;
+        } else {
+          throw malformed(fileName, lineNumber,
+              fixedIntegerMessage(field, radix, width, token));
+        }
+        if (digit >= radix) {
+          throw malformed(fileName, lineNumber,
+              fixedIntegerMessage(field, radix, width, token));
+        }
+        value = value * radix + digit;
+      }
+      return value;
+    }
+
+    /**
+     * Reads a non-negative fixed-width count.
+     *
+     * @param field The field name used when parsing fails.
+     * @param radix The numeric radix.
+     * @param width The required field width.
+     * @param label The field label used for a negative value.
+     * @return The parsed count.
+     * @throws InvalidFormatException Thrown if the field is negative or malformed.
+     */
+    int nextFixedCount(String field, int radix, int width, String label)
+        throws InvalidFormatException {
+      final String token = next(field);
+      if (!token.isEmpty() && token.charAt(0) == '-') {
+        throw malformed(fileName, lineNumber, label + " must not be negative, got: " + token);
+      }
+      return parseFixedInt(field, radix, width, token);
+    }
+
+    /** Returns the standard fixed-width integer error detail. */
+    private String fixedIntegerMessage(String field, int radix, int width, String token) {
+      return field + " must be a " + width + "-digit base-" + radix
+          + " integer, got: " + token;
+    }
+
+    /**
+     * Rejects fields after a complete index entry.
+     *
+     * @param parsedFields The fields already consumed.
+     * @throws InvalidFormatException Thrown if another field remains.
+     */
+    void requireEnd(String parsedFields) throws InvalidFormatException {
+      while (position < line.length() && line.charAt(position) == ' ') {
+        position++;
+      }
+      if (position < line.length()) {
+        throw malformed(fileName, lineNumber,
+            "Unexpected field after " + parsedFields + ": " + next("field"));
       }
     }
 
@@ -568,7 +725,8 @@ public final class WndbReader {
   }
 
   /** A parsed pointer line, kept until the target synset is known. */
-  private record RawPointer(WordNetRelation relation, String targetId, int lineNumber) {
+  private record RawPointer(WordNetRelation relation, String targetId, int targetWord,
+                            int lineNumber) {
   }
 
   /** A parsed data-file synset, kept until its pointer targets can be resolved. */

@@ -32,12 +32,7 @@ import opennlp.tools.wordnet.WordNetRelation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-/**
- * Asserts that the WN-LMF fixture and the WNDB fixture, which encode the same miniature
- * wordnet, load into equivalent lexicon views. Synset ids are reader-minted and intentionally
- * differ, so the comparison is structural, joining synsets on their glosses (unique within the
- * fixtures) and comparing everything else through that join.
- */
+/** Compares equivalent WN-LMF and WNDB fixtures by their unique glosses. */
 public class ReaderEquivalenceTest {
 
   @Test
@@ -100,7 +95,6 @@ public class ReaderEquivalenceTest {
     return byGloss;
   }
 
-  // A synset's relations with targets replaced by their glosses, id-scheme independent.
   private static Map<WordNetRelation, Set<String>> relationsByGloss(Synset synset,
                                                                     LexicalKnowledgeBase lexicon) {
     final Map<WordNetRelation, Set<String>> result = new HashMap<>();

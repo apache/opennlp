@@ -25,15 +25,11 @@ import opennlp.tools.wordnet.WordNetPOS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Pins the shared fold and split behavior every user of {@link LemmaFolding} depends on:
- * the exception lists, the sense index keys, and the WN-LMF members parsing all fold and
- * split through this one implementation.
- */
+/** Tests lemma folding shared by the readers, exception lists, and lookup index. */
 public class LemmaFoldingTest {
 
   @Test
-  void testFoldLowercasesWithRootLocaleAndTreatsUnderscoreAsSpace() {
+  void testFoldUsesLocaleIndependentLowercaseAndSpacesForUnderscores() {
     assertEquals("mice", LemmaFolding.fold("MICE"));
     assertEquals("domestic dog", LemmaFolding.fold("Domestic_Dog"));
     assertEquals("attorney general", LemmaFolding.fold("attorney_general"));
@@ -53,8 +49,6 @@ public class LemmaFoldingTest {
 
   @Test
   void testLemmaKeyAndExceptionLookupAgreeOnTheFold() {
-    // The agreement that makes Morphy correct: a key built from a stored written form and a
-    // query folded at lookup time land on the same canonical shape.
     assertEquals(InMemoryWordNetLexicon.LemmaKey.of("Domestic_Dog", WordNetPOS.NOUN),
         InMemoryWordNetLexicon.LemmaKey.of(LemmaFolding.fold("DOMESTIC_DOG"), WordNetPOS.NOUN));
   }
