@@ -22,8 +22,6 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import opennlp.tools.depparse.DependencyEvaluator;
 import opennlp.tools.depparse.DependencyModel;
@@ -47,9 +45,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class ConlluDependencyParserEvalTest {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(ConlluDependencyParserEvalTest.class);
-
   @Test
   @EnabledIfSystemProperty(named = "opennlp.depparse.ud.dir", matches = ".+")
   void testTrainAndScoreOnUniversalDependencies() throws IOException {
@@ -62,17 +57,18 @@ public class ConlluDependencyParserEvalTest {
     try (ConlluDependencySampleStream train = samples(dir.resolve("train.conllu"))) {
       model = DependencyParserME.train("eng", train, parameters);
     }
-    logger.info("trained in {} ms", System.currentTimeMillis() - trainStart);
+    System.out.println("Training time: " + (System.currentTimeMillis() - trainStart) + " ms");
 
     final DependencyEvaluator evaluator =
         new DependencyEvaluator(new DependencyParserME(model));
     try (ConlluDependencySampleStream test = samples(dir.resolve("test.conllu"))) {
       evaluator.evaluate(test);
     }
-    logger.info("UAS {} LAS {} over {} tokens",
-        evaluator.getUas(), evaluator.getLas(), evaluator.getWordCount());
+    System.out.println("UAS: " + evaluator.getUas());
+    System.out.println("LAS: " + evaluator.getLas());
+    System.out.println("Tokens: " + evaluator.getWordCount());
 
-    // Detect a substantial accuracy regression while logging the exact scores above.
+    // Detect a substantial accuracy regression while reporting the exact scores above.
     assertTrue(evaluator.getUas() > 0.6d, "UAS regressed below the floor");
     assertTrue(evaluator.getLas() > 0.5d, "LAS regressed below the floor");
   }
