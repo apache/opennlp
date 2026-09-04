@@ -503,6 +503,16 @@ public class FeedforwardDependencyParserTest {
   }
 
   @Test
+  void testTrainingRejectsNonFiniteWeights() {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(
+            4, 4, 2, 1, Double.MAX_VALUE, 0.0, 0.0, 1, 17L);
+    assertThrows(IllegalStateException.class,
+        () -> FeedforwardDependencyTrainer.train(
+            ObjectStreamUtils.createObjectStream(corpus()), settings));
+  }
+
+  @Test
   void testModelRejectsInvalidFeatureArrays() {
     assertThrows(IllegalArgumentException.class, () -> model.featureIds(new String[0]));
     assertThrows(IllegalArgumentException.class, () -> model.score(new int[0]));
