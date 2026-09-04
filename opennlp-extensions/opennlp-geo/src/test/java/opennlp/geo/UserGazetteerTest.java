@@ -154,6 +154,15 @@ public class UserGazetteerTest {
   }
 
   @Test
+  void testRejectsMalformedUtf8() {
+    final byte[] content = "a\tPlace\t\t1.0\t2.0\n".getBytes(StandardCharsets.UTF_8);
+    content[2] = (byte) 0xc3;
+
+    assertThrows(IOException.class,
+        () -> UserGazetteer.load(new ByteArrayInputStream(content), "customer"));
+  }
+
+  @Test
   void testRejectsInvalidArguments() {
     assertThrows(IllegalArgumentException.class,
         () -> UserGazetteer.load((InputStream) null, "customer"));
@@ -187,6 +196,15 @@ public class UserGazetteerTest {
   void testSuppressionFileMayBeEmpty() throws IOException {
     assertEquals(List.of(), UserGazetteer.loadSuppressions(
         new ByteArrayInputStream("# nothing\n".getBytes(StandardCharsets.UTF_8))));
+  }
+
+  @Test
+  void testSuppressionFileRejectsMalformedUtf8() {
+    final byte[] content = "Place\tUS\n".getBytes(StandardCharsets.UTF_8);
+    content[0] = (byte) 0xc3;
+
+    assertThrows(IOException.class,
+        () -> UserGazetteer.loadSuppressions(new ByteArrayInputStream(content)));
   }
 
   @ParameterizedTest

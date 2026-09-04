@@ -327,6 +327,15 @@ public class BundledGazetteerTest {
   }
 
   @Test
+  void testParseRejectsMalformedUtf8() {
+    final byte[] row = (ROWS[0] + "\n").getBytes(StandardCharsets.UTF_8);
+    row[0] = (byte) 0xc3;
+
+    assertThrows(IOException.class, () -> BundledGazetteer.parse(
+        new ByteArrayInputStream(row), "test-gazetteer.txt"));
+  }
+
+  @Test
   void testNameWithoutWordTokensFailsLoudAtLoadTime() {
     // A row that parses but whose name folds to an empty match key would be unreachable by
     // lookup; the loader rejects it instead of silently skipping the index entry.

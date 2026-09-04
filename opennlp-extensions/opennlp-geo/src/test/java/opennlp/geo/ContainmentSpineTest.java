@@ -26,6 +26,8 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.geo.PlaceAncestor;
 import opennlp.tools.util.InvalidFormatException;
@@ -460,6 +462,20 @@ public class ContainmentSpineTest {
     Files.write(table, content);
 
     Assertions.assertThrows(IOException.class,
+        () -> ContainmentSpine.builder().addWofMeta(table));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"abc", "+1", "-x"})
+  void testWofMetaRejectsNonNumericParentIds(String parentId, @TempDir Path dir)
+      throws IOException {
+    final Path table = dir.resolve("invalid-parent.csv");
+    Files.writeString(table, String.join("\n",
+        "id,parent_id,name,placetype",
+        "1," + parentId + ",Place,locality",
+        ""), StandardCharsets.UTF_8);
+
+    Assertions.assertThrows(InvalidFormatException.class,
         () -> ContainmentSpine.builder().addWofMeta(table));
   }
 }

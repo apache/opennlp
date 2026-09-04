@@ -149,6 +149,16 @@ public class OvertureGazetteerTest {
         new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
   }
 
+  @Test
+  void testRejectsMalformedUtf8() {
+    final byte[] content = (row("d9", "Nowhere", "", "1", "2", "DE", "region", "1")
+        + "\n").getBytes(StandardCharsets.UTF_8);
+    content[3] = (byte) 0xc3;
+
+    assertThrows(IOException.class,
+        () -> OvertureGazetteer.load(new ByteArrayInputStream(content)));
+  }
+
   private static List<String> malformedContent() {
     return List.of(
         "too\tfew\n",
