@@ -266,9 +266,9 @@ distributed under the BSD license:
 	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 The following license applies to the UniNE light and minimal stemmer
-algorithms in opennlp-core/opennlp-runtime, package
-opennlp.tools.stemmer.light. They are adapted from Apache Lucene, which
-based them on code by Jacques Savoy
+algorithms and their parity fixtures in opennlp-core/opennlp-runtime,
+under opennlp.tools.stemmer.light. They are adapted from Apache Lucene,
+which based them on code by Jacques Savoy
 (http://members.unine.ch/jacques.savoy/clef/index.html), distributed
 under the BSD license:
 

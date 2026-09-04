@@ -22,6 +22,8 @@ import java.util.Set;
 /**
  * The written standards of Norwegian whose endings the {@link NorwegianLightStemmer} and
  * {@link NorwegianMinimalStemmer} remove. A stemmer can handle one standard or both.
+ *
+ * @since 3.0.0
  */
 public enum NorwegianVariety {
 

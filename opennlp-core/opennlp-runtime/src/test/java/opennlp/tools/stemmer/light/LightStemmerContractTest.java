@@ -17,6 +17,11 @@
 package opennlp.tools.stemmer.light;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -29,8 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * The shared API contract of the light and minimal stemmers: fail-loud null handling, identity
- * on empty input, and single-element {@code stemAll}.
+ * The shared API contract of the light and minimal stemmers: null rejection, identity on empty
+ * input, and single-element {@code stemAll}.
  */
 class LightStemmerContractTest {
 
@@ -47,7 +52,7 @@ class LightStemmerContractTest {
 
   @ParameterizedTest
   @MethodSource("stemmers")
-  void testNullFailsLoudly(Stemmer stemmer) {
+  void testNullIsRejected(Stemmer stemmer) {
     assertThrows(IllegalArgumentException.class, () -> stemmer.stem(null));
   }
 
@@ -63,6 +68,35 @@ class LightStemmerContractTest {
     final List<CharSequence> all = stemmer.stemAll("running");
     assertEquals(1, all.size());
     assertEquals(stemmer.stem("running").toString(), all.get(0).toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("stemmers")
+  void testAcceptsNonStringCharSequences(Stemmer stemmer) {
+    final String word = "h\u00E4usern";
+    assertEquals(stemmer.stem(word).toString(), stemmer.stem(new StringBuilder(word)).toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("stemmers")
+  void testConcurrentCallsMatchSerialResults(Stemmer stemmer) throws Exception {
+    final List<String> words = List.of(
+        "running", "h\u00E4usern", "maisons", "h\u00E1zak",
+        "\u0434\u043e\u043c\u0430\u043c\u0438", "flickorna");
+    final List<String> expected = words.stream()
+        .map(word -> stemmer.stem(word).toString())
+        .toList();
+    final List<Callable<String>> calls = IntStream.range(0, 256)
+        .mapToObj(index -> (Callable<String>) () -> stemmer.stem(
+            words.get(index % words.size())).toString())
+        .toList();
+
+    try (ExecutorService executor = Executors.newFixedThreadPool(8)) {
+      final List<Future<String>> results = executor.invokeAll(calls);
+      for (int index = 0; index < results.size(); index++) {
+        assertEquals(expected.get(index % expected.size()), results.get(index).get());
+      }
+    }
   }
 
   @Test

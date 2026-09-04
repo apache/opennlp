@@ -66,6 +66,8 @@ import opennlp.tools.stemmer.StemmerFactory;
  * Instances are stateless and safe for concurrent use by multiple threads; each instance is also
  * its own {@link StemmerFactory}. Input is expected to be lowercase, as produced by a
  * case-folding normalization step; the stemmer does not fold case itself.</p>
+ *
+ * @since 3.0.0
  */
 @ThreadSafe
 public final class GermanMinimalStemmer extends AbstractCharArrayStemmer
