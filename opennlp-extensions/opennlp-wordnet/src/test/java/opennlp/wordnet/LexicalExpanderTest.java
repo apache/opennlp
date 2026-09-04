@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Behavioral tests over a hand-built lexicon whose graph shape is fully controlled: sense
+ * Behavioral tests over a hand-built lexicon whose graph structure is fully controlled: sense
  * ranking, hypernym depth and decay, hyponym opt-in, deduplication, exclusion of the input,
  * cycle termination, and configuration validation.
  */
@@ -163,7 +163,7 @@ public class LexicalExpanderTest {
   }
 
   @Test
-  void testTheInputTermIsNeverAnExpansion() {
+  void testExcludesInputTerm() {
     for (final Expansion expansion :
         LexicalExpander.builder(lexicon()).build().expand("dog", WordNetPOS.NOUN)) {
       assertFalse(expansion.term().equalsIgnoreCase("dog"), "got " + expansion);
@@ -215,7 +215,7 @@ public class LexicalExpanderTest {
 
     final Expansion beta = find(expansions, "beta");
     assertEquals(1, beta.depth());
-    // The cycle leads back to alpha's own synset, which is visited and the input besides.
+    // The cycle returns to alpha, which is both visited and excluded from the result.
     assertEquals(1, expansions.size());
   }
 
@@ -311,8 +311,8 @@ public class LexicalExpanderTest {
   }
 
   /**
-   * Pins the default {@code maxSenses} of {@code 3} against a lemma with four senses: the
-   * third sense still contributes, the fourth never does.
+   * Checks the default {@code maxSenses} of {@code 3} against a lemma with four senses: the
+   * third sense still contributes, and the fourth does not.
    */
   @Test
   void testDefaultMaxSensesIsThree() {
@@ -325,7 +325,7 @@ public class LexicalExpanderTest {
   }
 
   /**
-   * Pins the default {@code maxExpansions} of {@code 20} against a synset with 24 synonyms:
+   * Checks the default {@code maxExpansions} of {@code 20} against a synset with 24 synonyms:
    * the default build caps the result at 20, and raising the cap shows all 24 were available.
    */
   @Test
@@ -337,7 +337,7 @@ public class LexicalExpanderTest {
   }
 
   @Test
-  void testValidationFailsLoudly() {
+  void testRejectsInvalidArguments() {
     assertThrows(IllegalArgumentException.class, () -> LexicalExpander.builder(null));
     final LexicalExpander.Builder builder = LexicalExpander.builder(lexicon());
     assertThrows(IllegalArgumentException.class, () -> builder.lemmatizer(null));
@@ -358,8 +358,8 @@ public class LexicalExpanderTest {
   /**
    * Verifies that decay products which underflow to zero are dropped instead of emitted:
    * with the smallest positive depth decay, the first hypernym level keeps the smallest
-   * positive weight while the second level underflows to zero and never appears, and no
-   * reported expansion carries a weight outside the documented range.
+   * positive weight while the second level underflows to zero and is omitted, and no
+   * reported expansion has a weight outside the documented range.
    */
   @Test
   void testUnderflowedWeightsAreDropped() {
@@ -395,7 +395,7 @@ public class LexicalExpanderTest {
 
   /**
    * Verifies that the {@link Expansion} record rejects every component
-   * outside its documented range with a loud exception.
+   * outside its documented range with an {@link IllegalArgumentException}.
    */
   @ParameterizedTest
   @MethodSource("invalidExpansions")

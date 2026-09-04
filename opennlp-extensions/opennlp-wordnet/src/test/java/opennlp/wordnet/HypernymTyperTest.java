@@ -24,16 +24,11 @@ import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- * Tests that {@link HypernymTyper} labels a word by its nearest anchored hypernym over
- * the fixture taxonomy of {@link SynsetSimilarityTest}, follows instance hypernymy,
- * prefers the closer of two anchors, and validates its arguments.
- */
+/** Tests {@link HypernymTyper} against the taxonomy from {@link SynsetSimilarityTest}. */
 public class HypernymTyperTest {
 
   /**
    * @return A typer over the shared fixture taxonomy with person and location anchors.
-   *         Never {@code null}.
    */
   private static HypernymTyper typer() {
     return new HypernymTyper(taxonomy(),
@@ -41,17 +36,12 @@ public class HypernymTyperTest {
   }
 
   /**
-   * @return The taxonomy shared with {@link SynsetSimilarityTest}. Never {@code null}.
+   * @return The taxonomy shared with {@link SynsetSimilarityTest}.
    */
   private static SynsetSimilarityTest.FixtureKnowledgeBase taxonomy() {
     return SynsetSimilarityTest.taxonomy();
   }
 
-  /**
-   * Verifies that a noun whose hypernym chain reaches an anchor receives that anchor's
-   * label, both through plain and instance hypernymy, and that the anchor lemma itself
-   * is typed with its own label at distance zero.
-   */
   @Test
   void testTypesThroughHypernymAndInstanceChains() {
     final HypernymTyper typer = typer();
@@ -61,10 +51,6 @@ public class HypernymTyperTest {
     Assertions.assertEquals(Optional.of("location"), typer.typeSynset("n8"));
   }
 
-  /**
-   * Verifies that no label is produced when no sense of the word, or no ancestor of
-   * the synset, reaches an anchor.
-   */
   @Test
   void testUnreachableAnchorsYieldEmpty() {
     final HypernymTyper typer = typer();
@@ -74,10 +60,6 @@ public class HypernymTyperTest {
     Assertions.assertEquals(Optional.empty(), typer.typeSynset("missing"));
   }
 
-  /**
-   * Verifies that the nearest anchor wins: with scientist registered as its own
-   * anchor, a chemist is a scientist rather than the more distant person.
-   */
   @Test
   void testNearestAnchorWins() {
     final Map<String, String> anchors = new LinkedHashMap<>();
@@ -86,7 +68,7 @@ public class HypernymTyperTest {
     final HypernymTyper typer = new HypernymTyper(taxonomy(), anchors);
     Assertions.assertEquals(Optional.of("scientist"), typer.type("chemist"));
     Assertions.assertEquals(Optional.of("scientist"), typer.type("scientist"));
-    // the walk is upward only, so an ancestor of an anchor is never typed by it
+    // An ancestor of an anchor cannot reach that anchor through an upward relation.
     Assertions.assertEquals(Optional.empty(), typer.type("organism"));
   }
 
@@ -100,11 +82,6 @@ public class HypernymTyperTest {
         () -> new HypernymTyper(WnLmfReaderTest.fixture(), anchors));
   }
 
-  /**
-   * Verifies that invalid construction and query arguments are rejected: null or
-   * empty inputs, blank anchor entries, and an anchor lemma the knowledge base does
-   * not know.
-   */
   @Test
   void testInvalidArguments() {
     final Map<String, String> anchors = Map.of("person", "person");

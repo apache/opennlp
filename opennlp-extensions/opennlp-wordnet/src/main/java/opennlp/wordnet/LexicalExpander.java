@@ -40,14 +40,13 @@ import opennlp.tools.wordnet.WordNetRelation;
  * <p>Each {@link Expansion} has a deterministic heuristic weight, not a probability: the
  * first sense of a term starts at {@code 1.0}, each later sense is multiplied by the configurable
  * sense decay, and every hypernym or hyponym step multiplies by the configurable depth decay.
- * A decay product that underflows to zero in double arithmetic has no ranking signal, so
- * such expansions are dropped rather than emitted outside the {@code (0, 1]} weight range.
+ * A candidate is omitted when the multiplication underflows to zero.
  * When the term itself is not in the lexicon and a {@link Lemmatizer} is configured, the term is
  * lemmatized and the lemma expanded instead; the lemmatizer is invoked with the
  * {@link WordNetPOS} name as the tag.</p>
  *
  * <p>Hypernym walks follow both the direct and the instance relation, track visited synsets so
- * malformed cyclic data cannot loop, and never report the term itself. Results are deduplicated
+ * malformed cyclic data cannot loop, and exclude the term itself. Results are deduplicated
  * case-insensitively, keeping the highest weight, and ordered by weight descending, then kind,
  * then term, so output is stable across runs.</p>
  *
@@ -257,14 +256,13 @@ public final class LexicalExpander {
   }
 
   /**
-   * Offers the synonyms, hypernym ancestors, and optional hyponyms of one sense into the running
-   * best-expansion map.
+   * Adds the synonyms, hypernym ancestors, and optional hyponyms of one sense to the result map.
    *
    * @param sense       The sense to expand. Must not be {@code null}.
    * @param rank        The zero-based salience rank of the sense.
    * @param senseWeight The weight of the sense itself; each relation step decays from it.
    * @param best        The best expansion seen so far per folded term; updated in place.
-   * @param excluded    The folded terms that are never reported, such as the input term.
+   * @param excluded    The folded terms excluded from the result, such as the input term.
    */
   private void expandSense(Synset sense, int rank, double senseWeight,
                            Map<String, Expansion> best, Set<String> excluded) {
@@ -341,12 +339,12 @@ public final class LexicalExpander {
   }
 
   /**
-   * Records the candidate under its folded term when it is not excluded and it beats the current
-   * best weight for that term. Folding through {@link LemmaFolding#fold(String)} keeps the
+   * Records the candidate under its folded term when it is not excluded and has a higher weight
+   * than the current value. Folding through {@link LemmaFolding#fold(String)} keeps the
    * exclusion and deduplication keys aligned with the lexicon's own lemma keys.
    *
    * @param best      The best expansion seen so far per folded term; updated in place.
-   * @param excluded  The folded terms that are never reported.
+   * @param excluded  The folded terms excluded from the result.
    * @param candidate The expansion to offer. Must not be {@code null}.
    */
   private void offer(Map<String, Expansion> best, Set<String> excluded,
@@ -407,7 +405,7 @@ public final class LexicalExpander {
     }
 
     /**
-     * Configures how many senses of the term are expanded, most salient first.
+     * Configures how many senses are expanded per part of speech, most salient first.
      *
      * @param maxSenses The sense count; must be positive. The default is {@code 3}.
      * @return This builder.

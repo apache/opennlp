@@ -32,11 +32,9 @@ import opennlp.tools.wordnet.WordNetPOS;
 import opennlp.tools.wordnet.WordNetRelation;
 
 /**
- * Types a noun by walking its hypernym chain to the nearest registered anchor: the
- * caller names anchor concepts by lemma, {@code person}, {@code organization},
- * {@code location}, and any word whose senses lead up to an anchor's synsets receives
- * that anchor's label. The nearest anchor wins, so a more specific registered concept
- * beats a general one.
+ * Types a noun using the nearest caller-defined anchor in its hypernym graph. The caller maps
+ * anchor lemmas, such as {@code person}, {@code organization}, or {@code location}, to labels.
+ * The nearest anchor wins, so a specific registered concept takes precedence over a general one.
  *
  * <p>Anchors are resolved against the knowledge base at construction and follow its
  * sense inventory. Words with no
@@ -99,7 +97,7 @@ public final class HypernymTyper {
   }
 
   /**
-   * Types a noun by its nearest anchored hypernym.
+   * Types a noun using the nearest anchor in its hypernym graph.
    *
    * @param lemma The noun lemma to type. Must not be {@code null} or blank.
    * @return The label of the nearest anchor over all senses, or empty when no sense
@@ -124,10 +122,11 @@ public final class HypernymTyper {
   }
 
   /**
-   * Types a specific synset by its nearest anchored hypernym.
+   * Types a synset using the nearest anchor in its hypernym graph.
    *
    * @param synsetId The synset identifier. Must not be {@code null}.
-   * @return The nearest anchor's label, or empty when no ancestor is anchored.
+   * @return The nearest anchor's label, or empty when neither the synset nor an ancestor is
+   *     anchored.
    * @throws IllegalArgumentException Thrown if {@code synsetId} is {@code null}.
    */
   public Optional<String> typeSynset(String synsetId) {

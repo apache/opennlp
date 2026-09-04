@@ -62,7 +62,7 @@ public class SynsetSimilarityTest {
     }
   }
 
-  /** {@return the taxonomy both this test and {@link HypernymTyperTest} assert against} */
+  /** {@return the taxonomy used by this test and {@link HypernymTyperTest}} */
   static FixtureKnowledgeBase taxonomy() {
     final FixtureKnowledgeBase kb = new FixtureKnowledgeBase();
     kb.add("n1", "entity", WordNetRelation.HYPERNYM);
@@ -116,7 +116,7 @@ public class SynsetSimilarityTest {
   }
 
   @Test
-  void testWuPalmerUsesEachSynsetsOwnDepth() {
+  void testWuPalmerUsesEachSynsetDepth() {
     final FixtureKnowledgeBase kb = new FixtureKnowledgeBase();
     kb.add("root", "root", WordNetRelation.HYPERNYM);
     kb.add("common", "common", WordNetRelation.HYPERNYM, "root");
@@ -130,13 +130,7 @@ public class SynsetSimilarityTest {
     Assertions.assertEquals(0.5, similarity.wuPalmer("left", "right"), 1e-9);
   }
 
-  /**
-   * Verifies that Wu-Palmer distinguishes synsets that share only the taxonomy root from
-   * synsets that share no ancestor at all. The documented return is {@code 0} only when
-   * the synsets share no ancestor; city ({@code n8}) and company ({@code n10}) both sit
-   * under entity ({@code n1}), so their score must be positive and distinct from the
-   * disconnected chemist/abstract pair.
-   */
+  /** Checks that a shared root scores above zero while no shared ancestor scores zero. */
   @Test
   void testWuPalmerDistinguishesRootOnlyAncestryFromNoAncestry() {
     final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
@@ -147,31 +141,16 @@ public class SynsetSimilarityTest {
     Assertions.assertNotEquals(similarity.wuPalmer("n6", "n12"), rootOnly);
   }
 
-  /**
-   * Pins the self-similarity regime at the taxonomy root. Wu-Palmer counts depth in
-   * nodes from the root, so the root itself has depth one and the formula
-   * {@code 2 * depth(lcs) / (depth(a) + depth(b))} yields {@code 2 * 1 / (1 + 1)},
-   * a full {@code 1.0}, for the pair (root, root), matching path similarity's
-   * {@code 1 / (1 + 0)}. Self-similarity is {@code 1.0} everywhere, root included;
-   * this test keeps that a deliberate pin rather than a surprise.
-   */
+  /** Checks that path and Wu-Palmer self-similarity equal one, including at the root. */
   @Test
   void testRootSelfSimilarityFollowsTheFormulas() {
     final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
     Assertions.assertEquals(1.0, similarity.path("n1", "n1"), 1e-9);
     Assertions.assertEquals(1.0, similarity.wuPalmer("n1", "n1"), 1e-9);
-    // Away from the root the same formula also yields full self-similarity.
     Assertions.assertEquals(1.0, similarity.wuPalmer("n5", "n5"), 1e-9);
   }
 
-  /**
-   * Pins the sign regime of Leacock-Chodorow. The measure is
-   * {@code -log((d + 1) / (2 * taxonomyDepth))} with a caller-supplied depth; when the
-   * shortest path exceeds the stated depth budget, {@code d + 1 > 2 * taxonomyDepth},
-   * the ratio exceeds one and the score goes negative rather than clamping at zero.
-   * That is the documented formula behavior for an understated taxonomy depth, pinned
-   * here so the negative range is a deliberate contract.
-   */
+  /** Checks the documented negative result when the supplied taxonomy depth is too small. */
   @Test
   void testLeacockChodorowGoesNegativeWhenDistanceExceedsTheDepthBudget() {
     final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
@@ -215,7 +194,7 @@ public class SynsetSimilarityTest {
   }
 
   @Test
-  void testUnknownSynsetsAreUnrelatedRatherThanFatal() {
+  void testUnknownSynsetsAreUnrelated() {
     final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
     Assertions.assertEquals(-1, similarity.shortestDistance("n5", "missing"));
     Assertions.assertEquals(0.0, similarity.path("n5", "missing"), 1e-9);

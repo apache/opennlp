@@ -37,8 +37,8 @@ import opennlp.tools.wordnet.WordNetRelation;
  * {@code d} through a common ancestor. Wu-Palmer similarity relates the depth of the
  * deepest common ancestor to the depths of both synsets. Leacock-Chodorow scales the
  * shortest path against a caller-supplied taxonomy depth, since the knowledge base
- * interface does not enumerate the taxonomy. Unrelated synsets, those sharing no
- * ancestor, score zero everywhere. Information-content measures need corpus counts and
+ * interface does not enumerate the taxonomy. Synsets with no shared known ancestor score zero
+ * for all measures. Information-content measures need corpus counts and
  * are not provided here.</p>
  *
  * <p>Both plain and instance hypernyms count as taxonomy edges. The measures read only
@@ -106,8 +106,8 @@ public final class SynsetSimilarity {
       if (otherDistance == null) {
         continue;
       }
-      // Node counting: the root sits at depth one, so a shared ancestor always
-      // contributes a positive numerator and the denominator is never zero.
+      // Node counting gives the root depth one, so a shared ancestor has a positive
+      // numerator and the denominator is nonzero.
       final int lcsDepth = depthFromRoot(common.getKey()) + 1;
       final double score = 2.0 * lcsDepth / (depthA + depthB);
       best = Math.max(best, score);
@@ -125,7 +125,8 @@ public final class SynsetSimilarity {
    * @param taxonomyDepth The maximum depth of the taxonomy the synsets live in. Must
    *                      be positive.
    * @return The similarity, higher for closer synsets, or {@code 0} when the synsets
-   *         share no ancestor.
+   *         share no ancestor. The value can be negative if {@code taxonomyDepth} is smaller
+   *         than required by the shortest path.
    * @throws IllegalArgumentException Thrown if {@code synsetId} or
    *         {@code otherSynsetId} is {@code null}, or {@code taxonomyDepth} is not
    *         positive.
@@ -220,8 +221,7 @@ public final class SynsetSimilarity {
   }
 
   /**
-   * Measures a synset's depth as the distance to its farthest ancestor, which is the taxonomy
-   * root reached the long way round when several paths lead up.
+   * Measures a synset's depth as the maximum edge count on an acyclic route to a taxonomy root.
    *
    * @param synsetId The synset to measure.
    * @return The edge count to the farthest ancestor, {@code 0} for a root.
