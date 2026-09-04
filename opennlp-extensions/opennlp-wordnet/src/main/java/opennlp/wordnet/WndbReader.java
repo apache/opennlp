@@ -220,7 +220,7 @@ public final class WndbReader {
     }
     final List<String> lemmas = new ArrayList<>(wordCount);
     for (int i = 0; i < wordCount; i++) {
-      final String lemma = cleanLemma(tokens.next("word"), fileName, lineNumber);
+      final String lemma = cleanLemma(tokens.next("word"), fileName, lineNumber, filePos);
       tokens.nextFixedInt("lex_id", 16, 1);
       if (!lemmas.contains(lemma)) {
         lemmas.add(lemma);
@@ -399,6 +399,10 @@ public final class WndbReader {
       throw malformed(fileName, lineNumber, "Tagged-sense count " + taggedSenseCount
           + " exceeds sense count " + senseCount);
     }
+    if (synsetCount > tokens.remainingFixedWidthFields(8)) {
+      throw malformed(fileName, lineNumber, "Synset count " + synsetCount
+          + " exceeds the available offset fields");
+    }
     final List<String> order = new ArrayList<>(synsetCount);
     for (int i = 0; i < synsetCount; i++) {
       final String offset = tokens.next("synset_offset");
@@ -436,10 +440,11 @@ public final class WndbReader {
    * @param word       The raw word field.
    * @param fileName   The data file name, for error reporting.
    * @param lineNumber The 1-based line number.
+   * @param filePos    The part-of-speech file being parsed.
    * @return The cleaned lemma.
    * @throws InvalidFormatException Thrown if the word carries an unknown marker or is empty.
    */
-  private static String cleanLemma(String word, String fileName, int lineNumber)
+  private static String cleanLemma(String word, String fileName, int lineNumber, FilePos filePos)
       throws InvalidFormatException {
     String cleaned = word;
     if (cleaned.endsWith(")")) {
@@ -447,6 +452,10 @@ public final class WndbReader {
       final String marker = open < 0 ? "" : cleaned.substring(open);
       if (!"(p)".equals(marker) && !"(a)".equals(marker) && !"(ip)".equals(marker)) {
         throw malformed(fileName, lineNumber, "Unknown syntactic marker on word: " + word);
+      }
+      if (filePos != FilePos.ADJECTIVE) {
+        throw malformed(fileName, lineNumber,
+            "Syntactic marker " + marker + " is only valid in data.adj");
       }
       cleaned = cleaned.substring(0, open);
     }
@@ -673,6 +682,11 @@ public final class WndbReader {
     private String fixedIntegerMessage(String field, int radix, int width, String token) {
       return field + " must be a " + width + "-digit base-" + radix
           + " integer, got: " + token;
+    }
+
+    /** Returns the maximum number of space-prefixed fields of {@code width} still available. */
+    int remainingFixedWidthFields(int width) {
+      return (line.length() - position) / (width + 1);
     }
 
     /**
