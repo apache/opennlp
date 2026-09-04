@@ -96,9 +96,6 @@ public class FeedforwardDependencyModel {
   /** The vocabulary key of the artificial root node. */
   static final String ROOT_SYMBOL = "*ROOT*";
 
-  /** The prefix marking a vocabulary key as one of the special symbols above. */
-  static final String SPECIAL_SYMBOL_PREFIX = "*";
-
   /** The lazy scoring cache; {@code null} until {@link #enableScoringCache()}. */
   private volatile ContributionCache cache;
 
@@ -330,7 +327,7 @@ public class FeedforwardDependencyModel {
     if (word == null) {
       return null;
     }
-    if (word.startsWith(SPECIAL_SYMBOL_PREFIX)) {
+    if (isSpecialSymbol(word)) {
       return word;
     }
     int i = 0;
@@ -360,6 +357,11 @@ public class FeedforwardDependencyModel {
       i += width;
     }
     return lowered.toString();
+  }
+
+  /** Returns whether a symbol is reserved for the model's internal feature values. */
+  static boolean isSpecialSymbol(String symbol) {
+    return UNKNOWN.equals(symbol) || ABSENT.equals(symbol) || ROOT_SYMBOL.equals(symbol);
   }
 
   /**

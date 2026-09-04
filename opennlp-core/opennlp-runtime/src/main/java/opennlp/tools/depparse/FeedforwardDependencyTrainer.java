@@ -591,7 +591,7 @@ public final class FeedforwardDependencyTrainer {
       Function<String, float[]> pretrained, Settings settings) {
     int seeded = 0;
     for (final Map.Entry<String, Integer> entry : model.wordIds().entrySet()) {
-      if (entry.getKey().startsWith(FeedforwardDependencyModel.SPECIAL_SYMBOL_PREFIX)) {
+      if (FeedforwardDependencyModel.isSpecialSymbol(entry.getKey())) {
         // The special unknown, padding, and root symbols have no pretrained
         // counterpart, so they keep their random initialization.
         continue;
