@@ -20,6 +20,7 @@ package opennlp.tools.depparse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -347,6 +348,110 @@ public class FeedforwardDependencyParserTest {
   void testCorruptModelFailsLoud() {
     assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream("not a model".getBytes(StandardCharsets.UTF_8))));
+  }
+
+  @Test
+  void testNegativeVocabularyCountFailsWithIOException() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (DataOutputStream data = new DataOutputStream(out)) {
+      data.writeUTF("ONLP-FFDP-1");
+      data.writeInt(-1);
+    }
+    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+        new ByteArrayInputStream(out.toByteArray())));
+  }
+
+  @Test
+  void testInconsistentModelDimensionsFailDuringLoading() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (DataOutputStream data = new DataOutputStream(out)) {
+      writeMinimalModel(data, 3, 1, 0.0f);
+    }
+    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+        new ByteArrayInputStream(out.toByteArray())));
+  }
+
+  @Test
+  void testDuplicateVocabularyIdsFailDuringLoading() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (DataOutputStream data = new DataOutputStream(out)) {
+      writeMinimalModel(data, 0, FeedforwardContext.FEATURE_COUNT, 0.0f);
+    }
+    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+        new ByteArrayInputStream(out.toByteArray())));
+  }
+
+  @Test
+  void testNonFiniteWeightFailsDuringLoading() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (DataOutputStream data = new DataOutputStream(out)) {
+      writeMinimalModel(data, 3, FeedforwardContext.FEATURE_COUNT, Float.NaN);
+    }
+    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+        new ByteArrayInputStream(out.toByteArray())));
+  }
+
+  @Test
+  void testTrailingModelDataFailsDuringLoading() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    model.serialize(out);
+    out.write(1);
+    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+        new ByteArrayInputStream(out.toByteArray())));
+  }
+
+  /** Writes a test vocabulary with consecutive embedding indices. */
+  private static void writeVocabulary(DataOutputStream data, int first, String... symbols)
+      throws IOException {
+    data.writeInt(symbols.length);
+    for (int i = 0; i < symbols.length; i++) {
+      data.writeUTF(symbols[i]);
+      data.writeInt(first + i);
+    }
+  }
+
+  /** Writes the smallest complete model, with selected fields exposed for corruption. */
+  private static void writeMinimalModel(DataOutputStream data, int firstTagId,
+      int hiddenColumns, float outputBias) throws IOException {
+    data.writeUTF("ONLP-FFDP-1");
+    writeVocabulary(data, 0,
+        FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT,
+        FeedforwardDependencyModel.ROOT_SYMBOL);
+    writeVocabulary(data, firstTagId,
+        FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT,
+        FeedforwardDependencyModel.ROOT_SYMBOL);
+    writeVocabulary(data, 6,
+        FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT);
+    data.writeInt(1);
+    data.writeUTF(Transition.SHIFT.encode());
+    data.writeInt(1);
+    writeMatrix(data, 8, 1);
+    writeMatrix(data, 1, hiddenColumns);
+    writeVector(data, 1);
+    writeMatrix(data, 1, 1);
+    data.writeInt(1);
+    data.writeFloat(outputBias);
+  }
+
+  /** Writes a zero-filled matrix in the model format. */
+  private static void writeMatrix(DataOutputStream data, int rows, int columns)
+      throws IOException {
+    data.writeInt(rows);
+    data.writeInt(columns);
+    for (int i = 0; i < rows * columns; i++) {
+      data.writeFloat(0.0f);
+    }
+  }
+
+  /** Writes a zero-filled vector in the model format. */
+  private static void writeVector(DataOutputStream data, int length) throws IOException {
+    data.writeInt(length);
+    for (int i = 0; i < length; i++) {
+      data.writeFloat(0.0f);
+    }
   }
 
   @Test
