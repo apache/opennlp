@@ -137,6 +137,29 @@ public class ConlluDependencySampleStreamTest {
   }
 
   @Test
+  void testExtraColumnFailsLoud() {
+    final InputStreamFactory bad = () -> new ByteArrayInputStream(
+        (line("1", "word", "word", "NOUN", "NN", "_", "0", "root", "_", "_",
+            "extra") + "\n").getBytes(StandardCharsets.UTF_8));
+    assertThrows(IOException.class,
+        () -> new ConlluDependencySampleStream(bad, ConlluTagset.U).read());
+  }
+
+  @Test
+  void testUtf8BomIsAccepted() throws IOException {
+    final String content = "\ufeff" + line("1", "Word", "word", "NOUN", "NN", "_",
+        "0", "root", "_", "_") + "\n";
+    final InputStreamFactory in = () -> new ByteArrayInputStream(
+        content.getBytes(StandardCharsets.UTF_8));
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      final DependencySample sample = samples.read();
+      assertNotNull(sample);
+      assertArrayEquals(new String[] {"Word"}, sample.getTokens());
+    }
+  }
+
+  @Test
   void testSemanticallyInvalidAnnotationIsSkippedNotFatal() throws IOException {
     // Structurally well-formed lines whose annotation cannot form a valid tree, here an
     // out-of-range head and a rootless cycle, skip the sentence instead of failing, so
