@@ -172,7 +172,7 @@ public class MecabDictionaryInstallerTest {
         "cat,0,0,100,noun\n".getBytes(StandardCharsets.UTF_8));
     tar.write(new byte[TarArchives.TERMINATOR_SIZE]);
     final Path archiveFile = source.resolve("dict.tar.gz");
-    Files.write(archiveFile, TarGzArchives.gzip(tar.toByteArray()));
+    Files.write(archiveFile, TarArchives.gzip(tar.toByteArray()));
 
     final int installed =
         MecabDictionaryInstaller.install(archiveFile.toUri(), target);
@@ -308,7 +308,7 @@ public class MecabDictionaryInstallerTest {
    */
   private static Path archive(Path directory, String[][] entries) throws IOException {
     final Path archiveFile = directory.resolve("dict.tar.gz");
-    Files.write(archiveFile, TarGzArchives.gzippedTar(entries));
+    Files.write(archiveFile, TarArchives.gzippedTar(entries));
     return archiveFile;
   }
 }

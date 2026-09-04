@@ -26,8 +26,8 @@ The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and K
 | `mecab.ipadic` | IPADIC 2.7.0 | Japanese | EUC-JP |
 | `mecab.ko-dic` | mecab-ko-dic 2.1.1 | Korean | UTF-8 |
 
-Example download URLs and SHA-512 digests for those ids live in
-`opennlp/tools/util/dictionary-catalog.properties`. Both archives are
+Example download URLs and SHA-512 digests for those ids live in the test resource
+`opennlp-core/opennlp-runtime/src/test/resources/opennlp/tools/util/dictionary-catalog.properties`. Both archives are
 gzip-compressed tars; `MecabDictionaryInstaller` reads the ustar, pax, and GNU
 formats through `ResourceInstaller`.
 

@@ -20,6 +20,7 @@ package opennlp.tools.util.archive;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Builds tar archives byte by byte, so tests can assemble well-formed, boundary, and
@@ -306,5 +307,39 @@ public final class TarArchives {
   public static void entry(ByteArrayOutputStream tar, String name, byte[] content)
       throws IOException {
     entry(tar, name, content, TYPE_REGULAR_FILE);
+  }
+
+  /**
+   * Builds a gzip-compressed tar archive from name and content pairs, terminated by
+   * the two all-zero blocks that end a tar archive.
+   *
+   * @param entries The entries as {@code {name, content}} pairs of UTF-8 text. Must not
+   *                be {@code null}.
+   * @return The compressed archive bytes. Never {@code null}.
+   * @throws IOException Thrown if writing to the in-memory streams fails.
+   */
+  public static byte[] gzippedTar(String[][] entries) throws IOException {
+    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
+    for (final String[] entry : entries) {
+      entry(tar, entry[0], entry[1].getBytes(StandardCharsets.UTF_8));
+    }
+    tar.write(new byte[TERMINATOR_SIZE]);
+    return gzip(tar.toByteArray());
+  }
+
+  /**
+   * Compresses raw tar bytes the way a {@code .tar.gz} distribution is shipped, so
+   * tests can wrap hand-built or deliberately truncated tar content.
+   *
+   * @param content The raw tar bytes. Must not be {@code null}.
+   * @return The gzip-compressed bytes. Never {@code null}.
+   * @throws IOException Thrown if writing to the in-memory stream fails.
+   */
+  public static byte[] gzip(byte[] content) throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (GZIPOutputStream compressed = new GZIPOutputStream(out)) {
+      compressed.write(content);
+    }
+    return out.toByteArray();
   }
 }

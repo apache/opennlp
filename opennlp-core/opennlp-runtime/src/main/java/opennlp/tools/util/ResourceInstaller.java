@@ -837,10 +837,7 @@ public final class ResourceInstaller {
 
   /**
    * Checks that one staged file's destination is free to receive it, without creating
-   * anything: an existing filesystem object at the destination is a collision, and a
-   * symbolic link or a non-directory on the way to it is rejected using the same rules
-   * as {@link #destination(Path, Path)} during the move pass. A missing
-   * directory on the way proves the destination vacant.
+   * anything. A missing directory on the way proves the destination vacant.
    *
    * @param target The directory to install into.
    * @param relative The staged file's path relative to the staging directory.
@@ -848,35 +845,15 @@ public final class ResourceInstaller {
    *         the way is a symbolic link or exists as something other than a directory.
    */
   private static void ensureVacant(Path target, Path relative) throws IOException {
-    Path directory = target;
-    for (int i = 0; i < relative.getNameCount() - 1; i++) {
-      directory = directory.resolve(relative.getName(i));
-      if (Files.isSymbolicLink(directory)) {
-        throw new IOException(
-            "installation path crosses a symbolic link: " + directory);
-      }
-      if (!Files.exists(directory)) {
-        return;
-      }
-      if (!Files.isDirectory(directory)) {
-        throw new IOException(
-            "installation path crosses an existing file: " + directory);
-      }
-    }
-    final Path destination = directory.resolve(relative.getFileName());
-    if (Files.exists(destination, LinkOption.NOFOLLOW_LINKS)) {
+    final Path destination = destination(target, relative, false);
+    if (destination != null && Files.exists(destination, LinkOption.NOFOLLOW_LINKS)) {
       throw new IOException("target already contains: " + destination);
     }
   }
 
   /**
    * Resolves one staged file's destination beneath the target, creating the directories
-   * leading to it one at a time without descending through a symbolic link that is
-   * already there. An entry name that stays inside the staging directory can still land
-   * outside the target if a directory below the target is a link to somewhere else.
-   *
-   * <p>This covers links present when the installation runs. It is not a defense against
-   * a link created concurrently, between the check here and the move that follows.</p>
+   * leading to it one at a time.
    *
    * @param target The directory to install into.
    * @param relative The staged file's path relative to the staging directory.
@@ -885,6 +862,29 @@ public final class ResourceInstaller {
    *         something other than a directory, or if a directory cannot be created.
    */
   private static Path destination(Path target, Path relative) throws IOException {
+    return destination(target, relative, true);
+  }
+
+  /**
+   * Walks the directories leading to one staged file's destination without descending
+   * through a symbolic link that is already there. An entry name that stays inside the
+   * staging directory can still land outside the target if a directory below the target
+   * is a link to somewhere else.
+   *
+   * <p>This covers links present when the installation runs. It is not a defense against
+   * a link created concurrently, between the check here and the move that follows.</p>
+   *
+   * @param target The directory to install into.
+   * @param relative The staged file's path relative to the staging directory.
+   * @param create Whether to create a missing directory on the way; when {@code false},
+   *               a missing directory ends the walk.
+   * @return The destination path beneath the target, or {@code null} when a directory
+   *         on the way is missing and {@code create} is {@code false}.
+   * @throws IOException Thrown if a directory on the way is a symbolic link or exists as
+   *         something other than a directory, or if a directory cannot be created.
+   */
+  private static Path destination(Path target, Path relative, boolean create)
+      throws IOException {
     Path directory = target;
     for (int i = 0; i < relative.getNameCount() - 1; i++) {
       directory = directory.resolve(relative.getName(i));
@@ -893,6 +893,9 @@ public final class ResourceInstaller {
             "installation path crosses a symbolic link: " + directory);
       }
       if (!Files.exists(directory)) {
+        if (!create) {
+          return null;
+        }
         Files.createDirectory(directory);
       } else if (!Files.isDirectory(directory)) {
         throw new IOException(

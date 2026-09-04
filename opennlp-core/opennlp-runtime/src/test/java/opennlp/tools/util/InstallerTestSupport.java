@@ -19,12 +19,10 @@ package opennlp.tools.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-import java.util.zip.GZIPOutputStream;
 
 import opennlp.tools.util.archive.TarArchives;
 
@@ -61,36 +59,25 @@ final class InstallerTestSupport {
   }
 
   /**
-   * Builds a gzip-compressed tar archive from name and content pairs, terminated by
-   * the two all-zero blocks that end a tar archive.
+   * Builds a gzip-compressed tar archive from name and content pairs.
    *
    * @param entries Pairs of entry name and UTF-8 text content. Must not be {@code null}.
    * @return The archive bytes. Never {@code null}.
    * @throws IOException Thrown if assembling the archive fails.
    */
   static byte[] tarGz(String[][] entries) throws IOException {
-    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
-    for (final String[] entry : entries) {
-      tarEntry(tar, entry[0], entry[1].getBytes(StandardCharsets.UTF_8));
-    }
-    tar.write(new byte[TERMINATOR_SIZE]);
-    return gzip(tar.toByteArray());
+    return TarArchives.gzippedTar(entries);
   }
 
   /**
-   * Compresses the given bytes with gzip, so tests can wrap hand-built or deliberately
-   * truncated tar content.
+   * Compresses the given bytes with gzip.
    *
    * @param content The bytes to compress. Must not be {@code null}.
    * @return The gzip-compressed bytes. Never {@code null}.
    * @throws IOException Thrown if compressing fails.
    */
   static byte[] gzip(byte[] content) throws IOException {
-    final ByteArrayOutputStream compressed = new ByteArrayOutputStream();
-    try (GZIPOutputStream out = new GZIPOutputStream(compressed)) {
-      out.write(content);
-    }
-    return compressed.toByteArray();
+    return TarArchives.gzip(content);
   }
 
   /**
