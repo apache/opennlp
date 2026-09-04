@@ -116,9 +116,17 @@ public class DependencyParserME implements DependencyParser {
    */
   private Transition bestApplicable(ArcStandardState state, String[] tokens, String[] tags) {
     final double[] probabilities = model.eval(contextGenerator.getContext(state, tokens, tags));
+    if (probabilities == null || probabilities.length != transitions.length) {
+      final int count = probabilities == null ? 0 : probabilities.length;
+      throw new IllegalStateException("model returned " + count + " scores for "
+          + transitions.length + " outcomes");
+    }
     Transition best = null;
     double bestProbability = Double.NEGATIVE_INFINITY;
     for (int i = 0; i < probabilities.length; i++) {
+      if (!Double.isFinite(probabilities[i])) {
+        throw new IllegalStateException("model returned a non-finite score at index " + i);
+      }
       if (probabilities[i] <= bestProbability) {
         continue;
       }
