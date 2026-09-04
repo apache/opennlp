@@ -18,19 +18,18 @@ package opennlp.wordnet;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.lemmatizer.Lemmatizer;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 import opennlp.tools.wordnet.WordNetPOS;
 
 /**
  * A {@link Lemmatizer} implementing the Morphy algorithm: exception-list lookup first, then the
- * per-part-of-speech iterative detachment rules, with every rule-derived candidate validated
- * against a {@link LexicalKnowledgeBase} before it is returned. A token is folded (lowercase with
- * the root locale, underscore as space) before lookup, and returned lemmas are in that folded
- * form.
+ * per-part-of-speech detachment rules, with every rule-derived candidate validated
+ * against a {@link LexicalKnowledgeBase} before it is returned. A token is folded with
+ * locale-independent lowercase and spaces for underscores before lookup. Returned lemmas use
+ * that folded form.
  *
  * <p>Part-of-speech tags map to a {@link WordNetPOS} by their conventional Penn Treebank
  * prefixes ({@code N}, {@code V}, {@code J}, {@code R}), the names {@code ADJ} and {@code ADV},
@@ -41,9 +40,10 @@ import opennlp.tools.wordnet.WordNetPOS;
  * <p>Following {@code opennlp.tools.lemmatizer.DictionaryLemmatizer}, a token with no lemma
  * yields {@link #UNKNOWN_LEMMA} from {@link #lemmatize(String[], String[])} and a singleton list
  * of it from {@link #lemmatize(List, List)}. Both a lexicon and exception lists are required.
- * Instances are immutable and safe for concurrent use.</p>
+ * Concurrent use depends on the supplied {@link LexicalKnowledgeBase} implementation.</p>
+ *
+ * @since 3.0.0
  */
-@ThreadSafe
 public final class MorphyLemmatizer implements Lemmatizer {
 
   /**
@@ -83,10 +83,10 @@ public final class MorphyLemmatizer implements Lemmatizer {
    */
   public MorphyLemmatizer(LexicalKnowledgeBase lexicon, MorphyExceptions exceptions) {
     if (lexicon == null) {
-      throw new IllegalArgumentException("Lexicon must not be null");
+      throw new IllegalArgumentException("lexicon must not be null");
     }
     if (exceptions == null) {
-      throw new IllegalArgumentException("Exceptions must not be null");
+      throw new IllegalArgumentException("exceptions must not be null");
     }
     this.lexicon = lexicon;
     this.exceptions = exceptions;
@@ -101,22 +101,22 @@ public final class MorphyLemmatizer implements Lemmatizer {
   @Override
   public String[] lemmatize(String[] toks, String[] tags) {
     if (toks == null) {
-      throw new IllegalArgumentException("Toks must not be null");
+      throw new IllegalArgumentException("toks must not be null");
     }
     if (tags == null) {
-      throw new IllegalArgumentException("Tags must not be null");
+      throw new IllegalArgumentException("tags must not be null");
     }
     if (toks.length != tags.length) {
-      throw new IllegalArgumentException("Toks and tags must have the same length, got "
+      throw new IllegalArgumentException("toks and tags must have the same length, got "
           + toks.length + " and " + tags.length);
     }
     final String[] lemmas = new String[toks.length];
     for (int i = 0; i < toks.length; i++) {
       if (toks[i] == null) {
-        throw new IllegalArgumentException("Toks must not contain a null element");
+        throw new IllegalArgumentException("toks must not contain a null element");
       }
       if (tags[i] == null) {
-        throw new IllegalArgumentException("Tags must not contain a null element");
+        throw new IllegalArgumentException("tags must not contain a null element");
       }
       final List<String> candidates = lemmasOf(toks[i], tags[i]);
       lemmas[i] = candidates.isEmpty() ? UNKNOWN_LEMMA : candidates.get(0);
@@ -133,22 +133,22 @@ public final class MorphyLemmatizer implements Lemmatizer {
   @Override
   public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
     if (toks == null) {
-      throw new IllegalArgumentException("Toks must not be null");
+      throw new IllegalArgumentException("toks must not be null");
     }
     if (tags == null) {
-      throw new IllegalArgumentException("Tags must not be null");
+      throw new IllegalArgumentException("tags must not be null");
     }
     if (toks.size() != tags.size()) {
-      throw new IllegalArgumentException("Toks and tags must have the same size, got "
+      throw new IllegalArgumentException("toks and tags must have the same size, got "
           + toks.size() + " and " + tags.size());
     }
     final List<List<String>> lemmas = new ArrayList<>(toks.size());
     for (int i = 0; i < toks.size(); i++) {
       if (toks.get(i) == null) {
-        throw new IllegalArgumentException("Toks must not contain a null element");
+        throw new IllegalArgumentException("toks must not contain a null element");
       }
       if (tags.get(i) == null) {
-        throw new IllegalArgumentException("Tags must not contain a null element");
+        throw new IllegalArgumentException("tags must not contain a null element");
       }
       final List<String> candidates = lemmasOf(toks.get(i), tags.get(i));
       lemmas.add(candidates.isEmpty() ? List.of(UNKNOWN_LEMMA) : candidates);
@@ -216,12 +216,16 @@ public final class MorphyLemmatizer implements Lemmatizer {
    */
   static WordNetPOS posFromTag(String tag) {
     if (tag == null) {
-      throw new IllegalArgumentException("Tag must not be null");
+      throw new IllegalArgumentException("tag must not be null");
     }
     if (tag.isEmpty()) {
       return null;
     }
-    final String upper = tag.toUpperCase(Locale.ROOT);
+    final char first = tag.charAt(0);
+    if ((first < 'A' || first > 'Z') && (first < 'a' || first > 'z')) {
+      return null;
+    }
+    final String upper = StringUtil.toUpperCase(tag);
     if (upper.startsWith("ADJ")) {
       return WordNetPOS.ADJECTIVE;
     }

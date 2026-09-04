@@ -53,7 +53,7 @@ LexicalKnowledgeBase lexicon = WnLmfReader.read(Path.of("en-wordnet.xml"));
 			shape. It returns the lexicons in document order and keeps each language's
 			lookup index separate. The single-lexicon <code>read</code> methods reject a
 			multi-lexicon document with an error that points to
-			<code>readResource</code>; they never merge equal lemmas across languages.
+			<code>readResource</code>; equal lemmas in different languages remain separate.
 			<code>WordNetUsageExampleTest</code> mirrors this example:
 			<programlisting language="java"><![CDATA[
 WnLmfResource resource =
@@ -89,7 +89,9 @@ dog.id();  // "omw-es-02084071-n"]]>
 		<title>Lookup</title>
 		<para>
 			Lookups are scoped by part of speech and fold case and underscores the
-			same way the readers index lemmas. Against the miniature WN-LMF fixture,
+			same way the readers index lemmas. When a WN-LMF synset contains several
+			<code>Definition</code> elements, <code>gloss()</code> joins them in document
+			order with <code>; </code>. Against the miniature WN-LMF fixture,
 			the noun <code>dog</code> has one sense:
 			<programlisting language="java"><![CDATA[
 List<Synset> senses = lexicon.lookup("dog", WordNetPOS.NOUN);
@@ -159,7 +161,7 @@ lexicon.synset(instrumentId).orElseThrow().lemmas(); // ["payment card"]]]>
 	</section>
 
 	<section xml:id="tools.wordnet.real-data-test">
-		<title>Checking complete OMW releases</title>
+		<title>Checking complete releases</title>
 		<para>
 			The offline unit suite includes a reduced Italian, Spanish, and Swedish
 			multi-lexicon fixture. For a full-size compatibility check, run the
@@ -170,7 +172,17 @@ dev/test-omw-wordnets.sh]]>
 			The script downloads the pinned OMW 2.0 releases for those languages,
 			verifies each archive with SHA-512, extracts into a temporary directory,
 			runs <code>WnLmfOmwIntegrationTest</code>, and removes the downloads. The
-			archives are never added to the source tree.
+			archives are not added to the source tree.
+		</para>
+		<para>
+			Run the WNDB smoke test against a complete Princeton-style
+			<code>dict</code> directory with:
+			<programlisting language="bash"><![CDATA[
+./mvnw -pl opennlp-extensions/opennlp-wordnet -am \
+  -Dtest=WndbIntegrationTest \
+  -Dsurefire.failIfNoSpecifiedTests=false \
+  -Dopennlp.wordnet.wndbDir=/path/to/dict test]]>
+			</programlisting>
 		</para>
 	</section>
 

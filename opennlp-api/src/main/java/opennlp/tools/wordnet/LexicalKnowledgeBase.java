@@ -22,13 +22,15 @@ import java.util.Optional;
 /**
  * Lemma and synset lookup over a loaded lexical-semantic resource in the WordNet family. Synset
  * identity is opaque and source-qualified (see {@link Synset#id()}). Lookups return their matches
- * in the source's sense order and never return {@code null}.
+ * in the source's sense order. Lookup results are non-{@code null} lists.
  *
  * <p>How a queried lemma is matched against the source's written forms is implementation
  * specific and documented there. Returned {@link Synset#lemmas() lemmas} preserve the source's
  * written forms, with spaces in multiword lemmas.</p>
  *
  * <p>Thread safety is implementation specific.</p>
+ *
+ * @since 3.0.0
  */
 public interface LexicalKnowledgeBase {
 
@@ -65,7 +67,7 @@ public interface LexicalKnowledgeBase {
    */
   default List<String> related(String synsetId, WordNetRelation relation) {
     if (relation == null) {
-      throw new IllegalArgumentException("Relation must not be null");
+      throw new IllegalArgumentException("relation must not be null");
     }
     return synset(synsetId).map(s -> s.related(relation)).orElse(List.of());
   }

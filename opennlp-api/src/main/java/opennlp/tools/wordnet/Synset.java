@@ -47,6 +47,7 @@ import opennlp.tools.commons.ThreadSafe;
  * @param relations The typed relations, each mapping to the target synset ids in source order.
  *                  Must not be {@code null}; keys must not be {@code null}; each value must be
  *                  a non-empty list of non-{@code null}, non-empty target ids.
+ * @since 3.0.0
  */
 @ThreadSafe
 public record Synset(
@@ -63,31 +64,31 @@ public record Synset(
    */
   public Synset {
     if (id == null || id.isEmpty()) {
-      throw new IllegalArgumentException("Id must not be null or empty");
+      throw new IllegalArgumentException("id must not be null or empty");
     }
     if (pos == null) {
-      throw new IllegalArgumentException("Pos must not be null");
+      throw new IllegalArgumentException("pos must not be null");
     }
     if (lemmas == null) {
-      throw new IllegalArgumentException("Lemmas must not be null for synset " + id);
+      throw new IllegalArgumentException("lemmas must not be null for synset " + id);
     }
     for (final String lemma : lemmas) {
       if (lemma == null || lemma.isEmpty()) {
         throw new IllegalArgumentException(
-            "Lemmas must not contain a null or empty element for synset " + id);
+            "lemmas must not contain a null or empty element for synset " + id);
       }
     }
     if (gloss == null) {
-      throw new IllegalArgumentException("Gloss must not be null for synset " + id);
+      throw new IllegalArgumentException("gloss must not be null for synset " + id);
     }
     if (relations == null) {
-      throw new IllegalArgumentException("Relations must not be null for synset " + id);
+      throw new IllegalArgumentException("relations must not be null for synset " + id);
     }
     final Map<WordNetRelation, List<String>> copiedRelations =
         new EnumMap<>(WordNetRelation.class);
     for (final Map.Entry<WordNetRelation, List<String>> relation : relations.entrySet()) {
       if (relation.getKey() == null) {
-        throw new IllegalArgumentException("Relations must not contain a null key for synset " + id);
+        throw new IllegalArgumentException("relations must not contain a null key for synset " + id);
       }
       final List<String> targets = relation.getValue();
       if (targets == null || targets.isEmpty()) {
@@ -116,7 +117,7 @@ public record Synset(
    */
   public List<String> related(WordNetRelation relation) {
     if (relation == null) {
-      throw new IllegalArgumentException("Relation must not be null");
+      throw new IllegalArgumentException("relation must not be null");
     }
     final List<String> targets = relations.get(relation);
     return targets == null ? List.of() : targets;

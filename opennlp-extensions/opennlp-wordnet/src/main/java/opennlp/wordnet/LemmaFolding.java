@@ -21,11 +21,7 @@ import java.util.List;
 
 import opennlp.tools.util.StringUtil;
 
-/**
- * The single home of the lemma fold and the space-separated field split this package relies on.
- * {@link MorphyExceptions} keys, the {@link InMemoryWordNetLexicon.LemmaKey sense-index keys},
- * and every query must fold through {@link #fold(String)} so their canonical forms agree.
- */
+/** Shared lemma folding and space-separated field parsing for the WordNet readers. */
 final class LemmaFolding {
 
   /** Not instantiable. */
@@ -43,7 +39,7 @@ final class LemmaFolding {
    */
   static String fold(String writtenForm) {
     if (writtenForm == null) {
-      throw new IllegalArgumentException("WrittenForm must not be null");
+      throw new IllegalArgumentException("writtenForm must not be null");
     }
     return StringUtil.toLowerCase(writtenForm.replace('_', ' '));
   }
@@ -57,7 +53,7 @@ final class LemmaFolding {
    */
   static List<String> splitOnSpaces(String value) {
     if (value == null) {
-      throw new IllegalArgumentException("Value must not be null");
+      throw new IllegalArgumentException("value must not be null");
     }
     final List<String> parts = new ArrayList<>(4);
     int start = 0;

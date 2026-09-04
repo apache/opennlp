@@ -134,8 +134,7 @@ public class WnLmfReaderTest {
     final LexicalKnowledgeBase lexicon = fixture();
     final String target = lexicon.synset("mini-n1").orElseThrow()
         .related(WordNetRelation.HYPERNYM).get(0);
-    // Not just equal: the identical instance from the synset table, so a loaded lexicon keeps
-    // one copy of each id no matter how many relations point at it.
+    // Relation targets reuse the id instance from the synset table.
     assertSame(lexicon.synset("mini-n2").orElseThrow().id(), target);
   }
 
@@ -219,15 +218,13 @@ public class WnLmfReaderTest {
     };
     final IOException e =
         assertThrows(IOException.class, () -> WnLmfReader.read(failing, "failing.xml"));
-    // The I/O failure must surface as itself, not be misreported as a malformed document.
+    // Preserve an I/O failure instead of reporting malformed XML.
     assertFalse(e instanceof InvalidFormatException);
   }
 
   @Test
   void testSkipsDoctypeDeclaration() throws IOException {
-    // Real Open English WordNet releases ship exactly this shape: a DOCTYPE naming the schema
-    // DTD by an unreachable SYSTEM identifier (example.invalid is the RFC 2606 reserved domain
-    // that must never resolve). The reader must parse past it without attempting to fetch it.
+    // The reserved domain makes an attempted external DTD fetch fail the test.
     final String document = "<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE LexicalResource SYSTEM \"http://example.invalid/WN-LMF-1.3.dtd\">\n"
         + "<LexicalResource><Lexicon id=\"t\" label=\"t\" language=\"en\" version=\"1\">"
@@ -241,10 +238,7 @@ public class WnLmfReaderTest {
 
   @Test
   void testInternalSubsetEntityIsNeverExpanded(@TempDir Path tempDir) throws IOException {
-    // A DOCTYPE-declared internal-subset entity is the classic XXE payload: if the parser ever
-    // honored it, the entity reference below would be replaced by the target file's content.
-    // With SUPPORT_DTD disabled the declaration itself is never registered, so the reference is
-    // undefined and parsing must fail loud rather than silently expand it.
+    // Expanding this entity would expose the temporary file's contents.
     final Path secret = tempDir.resolve("secret.txt");
     Files.writeString(secret, "xxe-marker-should-never-appear");
     final String document = "<?xml version=\"1.0\"?>\n"

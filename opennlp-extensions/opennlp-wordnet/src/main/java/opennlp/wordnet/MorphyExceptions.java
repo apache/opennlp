@@ -41,8 +41,10 @@ import opennlp.tools.wordnet.WordNetPOS;
  * separated, with underscores standing for spaces in multiword entries. No exception data is
  * bundled; the caller supplies a directory.</p>
  *
- * <p>Lookups fold the queried word the same way the lexicon seam folds lemmas. Instances are
- * immutable after loading and safe for concurrent lookups.</p>
+ * <p>Lookups apply the same lemma folding as the WordNet readers. Instances are immutable after
+ * loading and safe for concurrent lookups.</p>
+ *
+ * @since 3.0.0
  */
 @ThreadSafe
 public final class MorphyExceptions {
@@ -73,11 +75,11 @@ public final class MorphyExceptions {
    */
   public static MorphyExceptions load(Path directory) throws IOException {
     if (directory == null) {
-      throw new IllegalArgumentException("Directory must not be null");
+      throw new IllegalArgumentException("directory must not be null");
     }
     if (!Files.isDirectory(directory)) {
       throw new IllegalArgumentException(
-          "Directory does not exist or is not a directory: " + directory);
+          "directory does not exist or is not a directory: " + directory);
     }
     final Map<WordNetPOS, Map<String, List<String>>> byPos = new EnumMap<>(WordNetPOS.class);
     byPos.put(WordNetPOS.NOUN, loadFile(directory, "noun.exc"));
@@ -97,10 +99,10 @@ public final class MorphyExceptions {
    */
   public List<String> lookup(String word, WordNetPOS pos) {
     if (word == null) {
-      throw new IllegalArgumentException("Word must not be null");
+      throw new IllegalArgumentException("word must not be null");
     }
     if (pos == null) {
-      throw new IllegalArgumentException("Pos must not be null");
+      throw new IllegalArgumentException("pos must not be null");
     }
     final List<String> lemmas = byPos.get(pos).get(LemmaFolding.fold(word));
     return lemmas == null ? List.of() : lemmas;
@@ -122,7 +124,7 @@ public final class MorphyExceptions {
       throw new InvalidFormatException("Missing exception list file: " + file);
     }
     final List<String> lines = Files.readAllLines(file, StandardCharsets.ISO_8859_1);
-    final Map<String, List<String>> entries = new HashMap<>(lines.size() * 2);
+    final Map<String, List<String>> entries = HashMap.newHashMap(lines.size());
     for (int i = 0; i < lines.size(); i++) {
       final String line = lines.get(i);
       if (line.isEmpty()) {

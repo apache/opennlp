@@ -30,11 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Exercises the constructor's referential-integrity validation directly, with deliberately
- * inconsistent maps a reader would never produce: any future reader relies on these checks,
- * so they are pinned independently of both existing readers.
- */
+/** Tests referential-integrity validation independently of the file readers. */
 public class InMemoryWordNetLexiconTest {
 
   private static Synset synset(String id, Map<WordNetRelation, List<String>> relations) {

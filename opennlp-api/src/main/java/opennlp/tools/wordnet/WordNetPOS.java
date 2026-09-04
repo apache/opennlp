@@ -23,6 +23,8 @@ package opennlp.tools.wordnet;
  * mapping from their format's codes to these values. Adjective satellites normalize to
  * {@link #ADJECTIVE}, with the cluster structure preserved through
  * {@link WordNetRelation#SIMILAR_TO}.</p>
+ *
+ * @since 3.0.0
  */
 public enum WordNetPOS {
 

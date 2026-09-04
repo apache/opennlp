@@ -119,8 +119,7 @@ public class WndbReaderTest {
     final LexicalKnowledgeBase lexicon = fixture();
     final String target = lexicon.synset(DOG_ID).orElseThrow()
         .related(WordNetRelation.HYPERNYM).get(0);
-    // Not just equal: the identical instance from the synset table, so a loaded lexicon keeps
-    // one copy of each id no matter how many pointers reference it.
+    // Pointer targets reuse the id instance from the synset table.
     assertSame(lexicon.synset(CANID_ID).orElseThrow().id(), target);
   }
 
@@ -272,7 +271,7 @@ public class WndbReaderTest {
       "data.noun, 00001160 n 0000, 00001160 q 0000, Pointer pos must be one of",
       "data.noun, 00001160 n 0000, 00001160 n zzzz, pointer source/target must be a 4-digit base-16 integer",
       "data.noun, 00001160 n 0000, 00001160 n 0300, Pointer source word 3 exceeds word count 2",
-      "data.noun, 00001160 n 0000, 00001160 n 0002, Pointer target word 2 exceeds target word count 1",
+      "data.noun, 00001160 n 0000, 00001160 n 0102, Pointer target word 2 exceeds target word count 1",
       "data.noun, 00001160 n 0000, 00001160 n 0100, must both be zero or nonzero",
       "data.verb, n 0101 01 + 02, n 0101 -1 + 02, Verb frame count must not be negative",
       "data.verb, 01 + 02 00 |, 01 ? 02 00 |, Expected + before a verb frame",
@@ -287,7 +286,7 @@ public class WndbReaderTest {
       "index.noun, berry n 1 0 1 0, berry n 1 -1 1 0, Pointer count must not be negative",
       "index.noun, dog n 1 1 @ 1 0, dog n 1 1 ? 1 0, Undeclared pointer symbol: ?",
       "index.noun, dog n 1 1 @ 1 0, dog n 1 2 @ @ 1 0, Duplicate pointer symbol: @",
-      "index.noun, berry n 1 0 1 0, berry n 1 0 x 0, sense count is not a base-10 integer",
+      "index.noun, berry n 1 0 1 0, berry n 1 0 x 0, sense count is not an unsigned decimal integer",
       "index.noun, berry n 1 0 1 0, berry n 1 0 1 -1, Tagged-sense count must not be negative",
       "index.noun, berry n 1 0 1 0, berry n 1 0 2 0, Sense count 2 does not match synset count 1",
       "index.noun, berry n 1 0 1 0, berry n 1 0 1 2, Tagged-sense count 2 exceeds sense count 1",

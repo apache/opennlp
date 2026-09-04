@@ -27,10 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Exercises the {@link LexicalKnowledgeBase} default methods against a minimal in-memory
- * implementation, so the defaults are validated independently of any reader.
- */
+/** Tests {@link LexicalKnowledgeBase} default methods without a file reader. */
 public class LexicalKnowledgeBaseTest {
 
   private static final Synset DOG = new Synset("test-1-n", WordNetPOS.NOUN, List.of("dog"),
@@ -39,16 +36,15 @@ public class LexicalKnowledgeBaseTest {
   private static final Synset CANID = new Synset("test-2-n", WordNetPOS.NOUN, List.of("canid"),
       "a carnivorous mammal", Map.of(WordNetRelation.HYPONYM, List.of("test-1-n")));
 
-  // A deliberately tiny implementation of only the two abstract methods.
   private static final LexicalKnowledgeBase LEXICON = new LexicalKnowledgeBase() {
 
     @Override
     public List<Synset> lookup(String lemma, WordNetPOS pos) {
       if (lemma == null) {
-        throw new IllegalArgumentException("Lemma must not be null");
+        throw new IllegalArgumentException("lemma must not be null");
       }
       if (pos == null) {
-        throw new IllegalArgumentException("Pos must not be null");
+        throw new IllegalArgumentException("pos must not be null");
       }
       if (pos == WordNetPOS.NOUN && "dog".equals(lemma)) {
         return List.of(DOG);
@@ -59,7 +55,7 @@ public class LexicalKnowledgeBaseTest {
     @Override
     public Optional<Synset> synset(String synsetId) {
       if (synsetId == null) {
-        throw new IllegalArgumentException("SynsetId must not be null");
+        throw new IllegalArgumentException("synsetId must not be null");
       }
       if (DOG.id().equals(synsetId)) {
         return Optional.of(DOG);
