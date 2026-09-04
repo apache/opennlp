@@ -720,6 +720,11 @@ public final class WnLmfReader {
       final List<String> lemmas = new ArrayList<>(entryIds.size());
       for (final String memberId : entryIds) {
         final String fromSense = entryIdBySenseId.get(memberId);
+        final String memberSynsetId = synsetBySenseId.get(memberId);
+        if (memberSynsetId != null && !raw.id.equals(memberSynsetId)) {
+          throw malformed(null, "Synset " + raw.id + " at line " + raw.line
+              + " lists sense " + memberId + " assigned to synset " + memberSynsetId, null);
+        }
         final String entryId = fromSense == null ? memberId : fromSense;
         final String lemma = lemmaByEntryId.get(entryId);
         if (lemma == null) {
