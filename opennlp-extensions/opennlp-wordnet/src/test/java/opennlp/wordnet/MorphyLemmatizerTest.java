@@ -161,6 +161,7 @@ public class MorphyLemmatizerTest {
       "SCONJ, none",
       "SYM, none",
       "ß, none",
+      "ſ, none",
   })
   void testPosFromTagMapping(String tag, WordNetPOS pos) {
     assertEquals(pos, MorphyLemmatizer.posFromTag(tag));
@@ -172,7 +173,7 @@ public class MorphyLemmatizerTest {
   }
 
   @Test
-  void testConstructorFailsLoudWithoutInputs() {
+  void testConstructorRejectsMissingInputs() {
     final MorphyExceptions exceptions = MorphyExceptionsTest.fixture();
     assertThrows(IllegalArgumentException.class,
         () -> new MorphyLemmatizer(null, exceptions));
