@@ -191,6 +191,11 @@ public class FeedforwardDependencyParserTest {
         FeedforwardDependencyModel.normalize("\u03A3\u039F\u03A6\u0399\u0391"));
     // a lone capital sigma has no preceding letter, so the rule does not fire
     assertEquals("\u03C3", FeedforwardDependencyModel.normalize("\u03A3"));
+    // Case-ignorable combining marks do not change the surrounding cased-letter test.
+    assertEquals("\u03BF\u0301\u03C2",
+        FeedforwardDependencyModel.normalize("\u039F\u0301\u03A3"));
+    assertEquals("\u03BF\u03C3\u0301\u03B1",
+        FeedforwardDependencyModel.normalize("\u039F\u03A3\u0301\u0391"));
   }
 
   /**
