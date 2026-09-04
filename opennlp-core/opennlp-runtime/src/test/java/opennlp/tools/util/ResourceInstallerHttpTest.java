@@ -61,6 +61,12 @@ public class ResourceInstallerHttpTest {
 
   private static final Duration GENEROUS = Duration.ofSeconds(10);
 
+  /** The limits these tests never exercise, kept at their defaults. */
+  private static final long DEFAULT_ENTRIES =
+      ResourceInstaller.Limits.DEFAULT.maxEntries();
+  private static final long DEFAULT_RATIO =
+      ResourceInstaller.Limits.DEFAULT.maxExpansionRatio();
+
   /** Long enough that a stalled route outlives any timeout a test configures. */
   private static final Duration STALL = Duration.ofSeconds(30);
 
@@ -91,7 +97,7 @@ public class ResourceInstallerHttpTest {
    */
   private static ResourceInstaller.Limits withReadTimeout(Duration readTimeout) {
     return new ResourceInstaller.Limits(GENEROUS, readTimeout, 5, MEBIBYTE, MEBIBYTE,
-        ResourceInstaller.Limits.DEFAULT.maxEntries());
+        DEFAULT_ENTRIES, DEFAULT_RATIO);
   }
 
   /**
@@ -103,7 +109,7 @@ public class ResourceInstallerHttpTest {
    */
   private static ResourceInstaller.Limits withMaxRedirects(int maxRedirects) {
     return new ResourceInstaller.Limits(GENEROUS, GENEROUS, maxRedirects,
-        MEBIBYTE, MEBIBYTE, ResourceInstaller.Limits.DEFAULT.maxEntries());
+        MEBIBYTE, MEBIBYTE, DEFAULT_ENTRIES, DEFAULT_RATIO);
   }
 
   /**
@@ -115,7 +121,7 @@ public class ResourceInstallerHttpTest {
    */
   private static ResourceInstaller.Limits withDownloadLimit(long maxDownloadBytes) {
     return new ResourceInstaller.Limits(GENEROUS, GENEROUS, 5, maxDownloadBytes,
-        MEBIBYTE, ResourceInstaller.Limits.DEFAULT.maxEntries());
+        MEBIBYTE, DEFAULT_ENTRIES, DEFAULT_RATIO);
   }
 
   /**

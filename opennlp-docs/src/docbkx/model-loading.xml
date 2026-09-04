@@ -194,15 +194,24 @@ for(ClassPathModelEntry entry : models) {
       expand to at most 100 times its compressed size, with a 1 MiB floor for small
       sources. These defaults can be set at
       JVM startup with
-      <code>opennlp.download.max.bytes</code>, <code>opennlp.install.max.total.bytes</code>, and
-      <code>opennlp.install.max.entries</code>. Use <code>ResourceInstaller.Limits</code>
-      to set limits for one call.
+      <code>opennlp.download.max.bytes</code>, <code>opennlp.install.max.total.bytes</code>,
+      <code>opennlp.install.max.entries</code>, and
+      <code>opennlp.install.max.expansion.ratio</code>. Use
+      <code>ResourceInstaller.Limits</code> to set limits for one call.
+    </para>
+    <para>
+      The expansion ratio and the expansion limit are enforced independently and the
+      tighter one applies, so raising <code>opennlp.install.max.total.bytes</code> alone
+      does not admit an archive that exceeds the ratio. A resource that legitimately
+      compresses better than 100 to 1, such as a corpus of highly repetitive text, needs
+      <code>opennlp.install.max.expansion.ratio</code> raised as well.
     </para>
     <programlisting language="java">
 <![CDATA[ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()
     .readTimeout(Duration.ofSeconds(10))
     .maxDownloadBytes(1024L * 1024)   // download limit in bytes
     .maxExpandedBytes(1024L * 1024)   // expansion limit in bytes
+    .maxExpansionRatio(500)           // expanded bytes per compressed byte
     .build();
 Path result = ResourceInstaller.install(
     corpusTarGz.toUri(), targetDirectory, expectedSha256, limits);]]>

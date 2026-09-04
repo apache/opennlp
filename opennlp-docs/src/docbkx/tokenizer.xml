@@ -559,8 +559,9 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				download, 4 GiB unpacked, and 100000 archive entries. Set higher limits at
 				JVM startup via
 				<code>opennlp.download.max.bytes</code>,
-				<code>opennlp.install.max.total.bytes</code>, and
-				<code>opennlp.install.max.entries</code> for larger dictionaries such as
+				<code>opennlp.install.max.total.bytes</code>,
+				<code>opennlp.install.max.entries</code>, and
+				<code>opennlp.install.max.expansion.ratio</code> for larger dictionaries such as
 				UniDic. Installed files are flattened to their base names. Existing target
 				files are not replaced and must be removed before a refresh.
 					Dictionary loading rejects empty lexicon surfaces, duplicate

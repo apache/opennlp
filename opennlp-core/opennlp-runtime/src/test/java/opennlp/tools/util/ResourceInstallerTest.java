@@ -141,7 +141,8 @@ public class ResourceInstallerTest {
       long maxExpandedBytes) {
     return new ResourceInstaller.Limits(Duration.ofSeconds(10), Duration.ofSeconds(10),
         5, maxDownloadBytes, maxExpandedBytes,
-        ResourceInstaller.Limits.DEFAULT.maxEntries());
+        ResourceInstaller.Limits.DEFAULT.maxEntries(),
+        ResourceInstaller.Limits.DEFAULT.maxExpansionRatio());
   }
 
   @Test
@@ -714,30 +715,33 @@ public class ResourceInstallerTest {
     final Duration valid = Duration.ofSeconds(10);
     return Stream.of(
         Arguments.of("null connectTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(null, valid, 5, 1024, 1024, 10),
+            () -> new ResourceInstaller.Limits(null, valid, 5, 1024, 1024, 10, 100),
             "connectTimeout must not be null"),
         Arguments.of("zero connectTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(Duration.ZERO, valid, 5, 1024, 1024, 10),
+            () -> new ResourceInstaller.Limits(Duration.ZERO, valid, 5, 1024, 1024, 10, 100),
             "connectTimeout must be positive"),
         Arguments.of("null readTimeout", (Executable)
-            () -> new ResourceInstaller.Limits(valid, null, 5, 1024, 1024, 10),
+            () -> new ResourceInstaller.Limits(valid, null, 5, 1024, 1024, 10, 100),
             "readTimeout must not be null"),
         Arguments.of("negative readTimeout", (Executable)
             () -> new ResourceInstaller.Limits(valid, Duration.ofSeconds(-1),
-                5, 1024, 1024, 10),
+                5, 1024, 1024, 10, 100),
             "readTimeout must be positive"),
         Arguments.of("negative maxRedirects", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, -1, 1024, 1024, 10),
+            () -> new ResourceInstaller.Limits(valid, valid, -1, 1024, 1024, 10, 100),
             "maxRedirects must not be negative"),
         Arguments.of("zero maxDownloadBytes", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, 5, 0, 1024, 10),
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 0, 1024, 10, 100),
             "maxDownloadBytes must be positive"),
         Arguments.of("zero maxExpandedBytes", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 0, 10),
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 0, 10, 100),
             "maxExpandedBytes must be positive"),
         Arguments.of("zero maxEntries", (Executable)
-            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 1024, 0),
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 1024, 0, 100),
             "maxEntries must be positive"),
+        Arguments.of("zero maxExpansionRatio", (Executable)
+            () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 1024, 10, 0),
+            "maxExpansionRatio must be positive"),
         Arguments.of("builder zero connectTimeout", (Executable) () ->
             ResourceInstaller.Limits.builder().connectTimeout(Duration.ZERO).build(),
             "connectTimeout must be positive"),
@@ -899,6 +903,7 @@ public class ResourceInstallerTest {
     Assertions.assertEquals(1L << 30, defaults.maxDownloadBytes());
     Assertions.assertEquals(4L << 30, defaults.maxExpandedBytes());
     Assertions.assertEquals(100_000L, defaults.maxEntries());
+    Assertions.assertEquals(100L, defaults.maxExpansionRatio());
   }
 
   @Test
@@ -909,6 +914,8 @@ public class ResourceInstallerTest {
         ResourceInstaller.Limits.MAX_EXPANDED_BYTES_PROPERTY);
     Assertions.assertEquals("opennlp.install.max.entries",
         ResourceInstaller.Limits.MAX_ENTRIES_PROPERTY);
+    Assertions.assertEquals("opennlp.install.max.expansion.ratio",
+        ResourceInstaller.Limits.MAX_EXPANSION_RATIO_PROPERTY);
   }
 
   @Test
@@ -1248,12 +1255,14 @@ public class ResourceInstallerTest {
   }
 
   static Stream<Arguments> expansionBombs() throws IOException {
-    // Four mebibytes of zeros compress to a few kibibytes in either format: far beyond
-    // the ratio ceiling, far below the absolute expansion limit.
-    final byte[] zeros = new byte[4 << 20];
+    // Four mebibytes of repeated text compress to a few kibibytes in either format: far
+    // beyond the ratio ceiling, far below the absolute expansion limit. Repeated text
+    // rather than zeros, because a gzip stream of zeros reads as an empty tar archive.
+    final byte[] repetitive =
+        "opennlp ".repeat(512 * 1024).getBytes(StandardCharsets.UTF_8);
     return Stream.of(
-        Arguments.of("zeros.txt.gz", gzip(zeros)),
-        Arguments.of("zeros.zip", zipOf("zeros.txt", zeros)));
+        Arguments.of("corpus.txt.gz", gzip(repetitive)),
+        Arguments.of("corpus.zip", zipOf("corpus.txt", repetitive)));
   }
 
   @ParameterizedTest
@@ -1264,6 +1273,22 @@ public class ResourceInstallerTest {
     Files.write(file, content);
 
     assertInstallFails(file, target, RATIO_ERROR);
+  }
+
+  @ParameterizedTest
+  @MethodSource("expansionBombs")
+  void testRaisingTheExpansionRatioAcceptsWhatTheDefaultRejects(String name,
+      byte[] content, @TempDir Path source, @TempDir Path target) throws Exception {
+    final Path file = source.resolve(name);
+    Files.write(file, content);
+
+    // Raising the byte limit alone cannot lift the ratio: the tighter budget wins.
+    final ResourceInstaller.Limits raised = ResourceInstaller.Limits.builder()
+        .maxExpansionRatio(2000)
+        .build();
+    ResourceInstaller.install(file.toUri(), target, null, raised);
+
+    Assertions.assertEquals(4 << 20, Files.size(target.resolve("corpus.txt")));
   }
 
   @Test

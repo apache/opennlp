@@ -71,8 +71,8 @@ import opennlp.tools.util.archive.TarStream;
  * redirects that leave the http and https schemes or downgrade https to http, and
  * abort once the download or the expanded content crosses its size limit or the
  * archive crosses its entry limit. Compressed content, gzip and zip alike, may
- * expand to at most {@value #MAX_EXPANSION_RATIO} times its compressed size, with a
- * floor of {@value #MIN_EXPANSION_BYTES} bytes for small sources. The defaults in
+ * expand to at most {@link Limits#maxExpansionRatio()} times its compressed size,
+ * with a floor of {@value #MIN_EXPANSION_BYTES} bytes for small sources. The defaults in
  * {@link Limits#DEFAULT} apply when no limits are given, and {@link Limits#builder()}
  * starts from them.</p>
  *
@@ -123,9 +123,6 @@ public final class ResourceInstaller {
   private static final int ZIP_COMMENT_LENGTH_OFFSET = 20;
   private static final int TAR_END_BLOCKS_LENGTH = 1024;
 
-  /** The largest expanded size accepted per compressed byte of a source. */
-  private static final int MAX_EXPANSION_RATIO = 100;
-
   /** The expanded size every compressed source may reach regardless of the ratio. */
   private static final long MIN_EXPANSION_BYTES = 1L << 20;
   private static final int HTTP_TEMPORARY_REDIRECT = 307;
@@ -154,9 +151,15 @@ public final class ResourceInstaller {
    *                   entry including directories, so an archive of many tiny files
    *                   cannot exhaust directory entries while staying under the byte
    *                   limits. Must be positive.
+   * @param maxExpansionRatio The largest expanded size accepted per compressed byte of
+   *                          a source, so a small archive cannot expand to the whole
+   *                          expansion limit. Applies to gzip and zip content; a source
+   *                          may always expand to {@value #MIN_EXPANSION_BYTES} bytes
+   *                          regardless of it. Must be positive.
    */
   public record Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
-                       long maxDownloadBytes, long maxExpandedBytes, long maxEntries) {
+                       long maxDownloadBytes, long maxExpandedBytes, long maxEntries,
+                       long maxExpansionRatio) {
 
     /** The system property overriding the default download limit in bytes. */
     public static final String MAX_DOWNLOAD_BYTES_PROPERTY = "opennlp.download.max.bytes";
@@ -168,12 +171,17 @@ public final class ResourceInstaller {
     /** The system property overriding the default archive entry limit. */
     public static final String MAX_ENTRIES_PROPERTY = "opennlp.install.max.entries";
 
+    /** The system property overriding the default expansion ratio. */
+    public static final String MAX_EXPANSION_RATIO_PROPERTY =
+        "opennlp.install.max.expansion.ratio";
+
     /**
      * The limits applied when none are given: 20 second connect timeout, 60 second
      * read timeout, at most 5 redirects, a 1 GiB download limit, a 4 GiB expansion
-     * limit, and 100000 archive entries. Each limit can be raised or lowered at
-     * startup through its system property ({@link #MAX_DOWNLOAD_BYTES_PROPERTY},
-     * {@link #MAX_EXPANDED_BYTES_PROPERTY}, {@link #MAX_ENTRIES_PROPERTY}), read once
+     * limit, 100000 archive entries, and an expansion ratio of 100. Each limit can be
+     * raised or lowered at startup through its system property
+     * ({@link #MAX_DOWNLOAD_BYTES_PROPERTY}, {@link #MAX_EXPANDED_BYTES_PROPERTY},
+     * {@link #MAX_ENTRIES_PROPERTY}, {@link #MAX_EXPANSION_RATIO_PROPERTY}), read once
      * at class load; a value that is absent, not a number, or not positive falls back
      * to the built-in default.
      */
@@ -181,7 +189,8 @@ public final class ResourceInstaller {
         Duration.ofSeconds(60), 5,
         longProperty(MAX_DOWNLOAD_BYTES_PROPERTY, 1L << 30),
         longProperty(MAX_EXPANDED_BYTES_PROPERTY, 4L << 30),
-        longProperty(MAX_ENTRIES_PROPERTY, 100_000L));
+        longProperty(MAX_ENTRIES_PROPERTY, 100_000L),
+        longProperty(MAX_EXPANSION_RATIO_PROPERTY, 100L));
 
     /**
      * Reads a limit override from a system property, trimmed before parsing.
@@ -214,12 +223,14 @@ public final class ResourceInstaller {
      * @param maxDownloadBytes The largest download accepted, in bytes.
      * @param maxExpandedBytes The largest expanded byte count accepted.
      * @param maxEntries The largest number of archive entries accepted.
+     * @param maxExpansionRatio The largest expanded size accepted per compressed byte.
      * @throws IllegalArgumentException Thrown if either timeout is {@code null}, zero,
      *         or negative, a limit is not positive, or the redirect limit is
      *         negative.
      */
     public Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
-        long maxDownloadBytes, long maxExpandedBytes, long maxEntries) {
+        long maxDownloadBytes, long maxExpandedBytes, long maxEntries,
+        long maxExpansionRatio) {
       if (connectTimeout == null) {
         throw new IllegalArgumentException("connectTimeout must not be null");
       }
@@ -244,17 +255,21 @@ public final class ResourceInstaller {
       if (maxEntries <= 0) {
         throw new IllegalArgumentException("maxEntries must be positive");
       }
+      if (maxExpansionRatio <= 0) {
+        throw new IllegalArgumentException("maxExpansionRatio must be positive");
+      }
       this.connectTimeout = connectTimeout;
       this.readTimeout = readTimeout;
       this.maxRedirects = maxRedirects;
       this.maxDownloadBytes = maxDownloadBytes;
       this.maxExpandedBytes = maxExpandedBytes;
       this.maxEntries = maxEntries;
+      this.maxExpansionRatio = maxExpansionRatio;
     }
 
     /**
      * Starts from {@link #DEFAULT} so a caller can state only the limits that differ
-     * from it, instead of repeating all six in the canonical constructor.
+     * from it, instead of repeating all seven in the canonical constructor.
      *
      * @return A builder holding the default limits. Not {@code null}.
      */
@@ -274,6 +289,7 @@ public final class ResourceInstaller {
       private long maxDownloadBytes = DEFAULT.maxDownloadBytes();
       private long maxExpandedBytes = DEFAULT.maxExpandedBytes();
       private long maxEntries = DEFAULT.maxEntries();
+      private long maxExpansionRatio = DEFAULT.maxExpansionRatio();
 
       /** Initializes a builder with {@link Limits#DEFAULT}. */
       private Builder() {
@@ -354,6 +370,18 @@ public final class ResourceInstaller {
       }
 
       /**
+       * Sets the largest expanded size accepted per compressed byte of a source.
+       *
+       * @param maxExpansionRatio The largest expanded size accepted per compressed
+       *                          byte of a source. Must be positive.
+       * @return This builder. Not {@code null}.
+       */
+      public Builder maxExpansionRatio(long maxExpansionRatio) {
+        this.maxExpansionRatio = maxExpansionRatio;
+        return this;
+      }
+
+      /**
        * Builds the limits.
        *
        * @return The limits collected so far. Not {@code null}.
@@ -362,7 +390,7 @@ public final class ResourceInstaller {
        */
       public Limits build() {
         return new Limits(connectTimeout, readTimeout, maxRedirects, maxDownloadBytes,
-            maxExpandedBytes, maxEntries);
+            maxExpandedBytes, maxEntries, maxExpansionRatio);
       }
     }
   }
@@ -1031,11 +1059,11 @@ public final class ResourceInstaller {
         copyBounded(raw, safeChild(staging, name), budget);
       } else if (hasMagic(magic, GZIP_MAGIC_FIRST, GZIP_MAGIC_SECOND)) {
         unpackGzip(raw, name, staging,
-            expansionBudget(Files.size(downloaded), budget), entryBudget);
+            expansionBudget(Files.size(downloaded), limits, budget), entryBudget);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_LOCAL_HEADER_THIRD, ZIP_LOCAL_HEADER_FOURTH)) {
         final Set<String> unpacked = unpackZip(raw, staging,
-            expansionBudget(Files.size(downloaded), budget), entryBudget);
+            expansionBudget(Files.size(downloaded), limits, budget), entryBudget);
         validateZip(downloaded, unpacked);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_END_HEADER_THIRD, ZIP_END_HEADER_FOURTH)) {
@@ -1052,18 +1080,21 @@ public final class ResourceInstaller {
    * the absolute limit alone lets a few megabytes fill the target filesystem.
    *
    * @param compressedSize The size of the compressed source in bytes.
+   * @param limits The limits holding the accepted expansion ratio.
    * @param budget The expansion budget under the absolute limit.
    * @return The tighter of the two budgets. Not {@code null}.
    */
-  private static Budget expansionBudget(long compressedSize, Budget budget) {
-    final long ratioCeiling = compressedSize > Long.MAX_VALUE / MAX_EXPANSION_RATIO
+  private static Budget expansionBudget(long compressedSize, Limits limits,
+      Budget budget) {
+    final long ratio = limits.maxExpansionRatio();
+    final long ratioCeiling = compressedSize > Long.MAX_VALUE / ratio
         ? Long.MAX_VALUE
-        : Math.max(MIN_EXPANSION_BYTES, compressedSize * MAX_EXPANSION_RATIO);
+        : Math.max(MIN_EXPANSION_BYTES, compressedSize * ratio);
     if (ratioCeiling >= budget.limit()) {
       return budget;
     }
     return new Budget(ratioCeiling, "content expands beyond "
-        + MAX_EXPANSION_RATIO + " times its compressed size");
+        + ratio + " times its compressed size");
   }
 
   /**
