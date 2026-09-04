@@ -83,6 +83,7 @@ done
 
 echo ""
 echo "run the gated evaluation with:"
-echo "  ./mvnw -pl opennlp-core/opennlp-formats test \\"
+echo "  ./mvnw -pl opennlp-core/opennlp-formats -am test \\"
 echo "      -Dtest=ConlluDependencyParserEvalTest \\"
+echo "      -Dopennlp.forkCount=1 \\"
 echo "      -Dopennlp.depparse.ud.dir=${target}"

@@ -41,9 +41,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>Runs only when {@code opennlp.depparse.ud.dir} names a directory containing
  * {@code train.conllu} and {@code test.conllu} (a UD treebank's splits, renamed or
- * linked). The data is downloaded by the runner and never enters the repository; check
- * the treebank's own license before training models for distribution. The assertion is
- * a low regression floor; the logged scores are the measurement.</p>
+ * linked). The score uses the treebank's sentence boundaries, tokens, and tags. The
+ * data is downloaded by the runner and is not included in the repository. Check the
+ * treebank license before distributing a trained model.</p>
  */
 public class ConlluDependencyParserEvalTest {
 
@@ -72,7 +72,7 @@ public class ConlluDependencyParserEvalTest {
     logger.info("UAS {} LAS {} over {} tokens",
         evaluator.getUas(), evaluator.getLas(), evaluator.getWordCount());
 
-    // a regression floor, far below any plausible result; the log line is the measurement
+    // Detect a substantial accuracy regression while logging the exact scores above.
     assertTrue(evaluator.getUas() > 0.6d, "UAS regressed below the floor");
     assertTrue(evaluator.getLas() > 0.5d, "LAS regressed below the floor");
   }

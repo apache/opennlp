@@ -102,8 +102,10 @@ for (DependencyArc arc : graph.arcs()) {
 }]]>
 			</programlisting>
 			<code>DependencyEvaluator</code> reports unlabeled and labeled attachment scores.
-			The arc-standard trainers skip non-projective training samples. The evaluation
-			helper and its pinned treebank instructions are in
+			The provided treebank evaluation uses gold sentence boundaries, tokens, and tags,
+			so it measures the dependency parser rather than a complete text pipeline. The
+			arc-standard trainers skip non-projective training samples. The evaluation helper
+			and its pinned treebank instructions are in
 			<code>opennlp-formats/dev</code>.
 		</para>
 	</section>

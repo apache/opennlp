@@ -37,14 +37,15 @@ produces `/tmp/ud-ewt/train.conllu` and `/tmp/ud-ewt/test.conllu`. Any treebank 
 `ConlluDependencyParserEvalTest` is disabled unless the `opennlp.depparse.ud.dir` system property points at a directory containing `train.conllu` and `test.conllu`:
 
 ```
-./mvnw -pl opennlp-core/opennlp-formats test \
+./mvnw -pl opennlp-core/opennlp-formats -am test \
     -Dtest=ConlluDependencyParserEvalTest \
+    -Dopennlp.forkCount=1 \
     -Dopennlp.depparse.ud.dir=/tmp/ud-ewt
 ```
 
 Without the property the test reports as skipped, which is why a plain build never needs network access or external data.
 
-The reader retains the syntactic rows of multiword tokens. The arc-standard trainer skips non-projective trees because that transition system cannot derive them.
+The score uses the treebank's sentence boundaries, tokens, and part-of-speech tags. It measures dependency parsing rather than the errors of an upstream text pipeline. The reader retains the syntactic rows of multiword tokens. The arc-standard trainer skips non-projective trees because that transition system cannot derive them.
 
 ## Licensing
 
