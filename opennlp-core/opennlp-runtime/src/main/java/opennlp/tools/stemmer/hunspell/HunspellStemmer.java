@@ -30,22 +30,23 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * A dictionary-backed {@link Stemmer} over a {@link HunspellDictionary}: a surface form
- * is reduced to listed dictionary words by removing one prefix and at most 2 suffixes,
- * subject to the loaded affix rules.
+ * is reduced to the dictionary words it can be derived from by removing one suffix, one
+ * prefix, a cross-product combination of both, or an additional suffix licensed by a
+ * continuation class.
  *
- * <p>{@link #stem(CharSequence)} returns the first analysis, preferring the word's
- * dictionary entry; {@link #stemAll(CharSequence)} returns all distinct analyses. A
- * word with no analysis is returned unchanged, so the stemmer returns the input for
- * unknown words. A form containing uppercase characters is also analyzed in a
+ * <p>{@link #stem(CharSequence)} returns the first analysis, preferring the word's own
+ * dictionary entry; {@link #stemAll(CharSequence)} returns every distinct analysis. A
+ * word with no analysis is returned unchanged, so the stemmer degrades to identity on
+ * unknown vocabulary. A form containing uppercase characters is also analyzed in its
  * lowercase variant, so sentence-initial capitalization does not hide an entry.
  * Entries the dictionary marks as virtual stems ({@code NEEDAFFIX}), compound-only
- * parts ({@code ONLYINCOMPOUND}), or forbidden words ({@code FORBIDDENWORD}) do not
- * count as standalone analyses.</p>
+ * parts ({@code ONLYINCOMPOUND}), or forbidden words ({@code FORBIDDENWORD}) never
+ * count as standalone analyses, matching how hunspell reads those flags.</p>
  *
- * <p>Compound part search permits at most {@value #PART_CHECK_BUDGET} part-licensing
- * attempts per input word; further compound analyses are then skipped.
- * {@link Stemmer} thread safety depends on the implementation. This implementation
- * accesses only immutable dictionary state, so a single instance is
+ * <p>Compound part search is capped at {@value #PART_CHECK_BUDGET} part-licensing
+ * attempts per input word; beyond that budget further compound analyses are skipped.
+ * The {@link Stemmer} interface leaves thread safety to the implementation. This
+ * implementation reads only the immutable dictionary state, so a single instance is
  * safe to share between threads.</p>
  *
  * @since 3.0.0
@@ -54,8 +55,11 @@ import opennlp.tools.util.StringUtil;
 public final class HunspellStemmer implements Stemmer {
 
   /**
-   * Maximum part-licensing attempts for one decomposition. The limit prevents
-   * excessive work on adversarial input with one-character compound parts.
+   * The most part-licensing attempts one decomposition search may spend. Compounding
+   * searches every split of every tail, which on adversarial input with a
+   * one-character minimum part length grows without useful bound; the budget stops
+   * the search there, missing analyses rather than stalling, in line with the
+   * engine's fail-closed posture.
    */
   private static final int PART_CHECK_BUDGET = 2048;
 
@@ -64,7 +68,7 @@ public final class HunspellStemmer implements Stemmer {
   /**
    * Initializes the stemmer.
    *
-   * @param dictionary The dictionary used for analysis. Must not be {@code null}.
+   * @param dictionary The dictionary to analyze against. Must not be {@code null}.
    * @throws IllegalArgumentException Thrown if {@code dictionary} is {@code null}.
    */
   public HunspellStemmer(HunspellDictionary dictionary) {
@@ -77,7 +81,7 @@ public final class HunspellStemmer implements Stemmer {
   /**
    * {@inheritDoc}
    *
-   * <p>Returns the first analysis, preferring a direct dictionary entry.</p>
+   * <p>Returns the first analysis, which prefers the word's own dictionary entry.</p>
    */
   @Override
   public CharSequence stem(CharSequence word) {
@@ -88,7 +92,7 @@ public final class HunspellStemmer implements Stemmer {
   /**
    * {@inheritDoc}
    *
-   * <p>Returns all distinct analyses, or a single-element list of the unchanged word
+   * <p>Returns every distinct analysis, or a single-element list of the unchanged word
    * when it has none.</p>
    */
   @Override
@@ -98,8 +102,8 @@ public final class HunspellStemmer implements Stemmer {
     }
     final String surface = word.toString();
     if (surface.isEmpty()) {
-      // A zero-length word has no morphology. The guard prevents strip-only rules from
-      // returning a non-empty stem.
+      // a zero-length word has no morphology; without this guard a strip-only rule
+      // could restore its strip string onto nothing and answer a non-empty stem
       return List.of(surface);
     }
     final Set<String> analyses = new LinkedHashSet<>();
@@ -118,12 +122,12 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Collects the case variants to analyze: the surface form first, followed by the
-   * lowercase form when different. Ordering determines the result from
-   * {@link #stem(CharSequence)}.
+   * Collects the case variants to analyze: the surface form first, then its lowercase
+   * form when the two differ. Ordering matters because the first analysis found wins
+   * in {@link #stem(CharSequence)}.
    *
    * @param surface The surface form.
-   * @return A non-empty list in analysis order.
+   * @return The variants in analysis order. Never {@code null} or empty.
    */
   private List<String> variants(String surface) {
     final String lowered = StringUtil.toLowerCase(surface);
@@ -131,11 +135,12 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Adds analyses of one case variant to the result set: the word's
+   * Adds every analysis of one case variant to the result set: the word's own
    * dictionary entry, single suffix removal, twofold suffix removal through
    * continuation classes, single prefix removal, and cross-product removal of one
-   * prefix with one or 2 suffixes. Insertion order into the set sets the preference
-   * order reported by {@link #stemAll(CharSequence)}.
+   * prefix together with one suffix and an optional continuation suffix. Insertion
+   * order into the set fixes the
+   * preference order reported by {@link #stemAll(CharSequence)}.
    *
    * @param word The case variant to analyze.
    * @param analyses The mutable, insertion-ordered set collecting the stems found.
@@ -143,12 +148,11 @@ public final class HunspellStemmer implements Stemmer {
   private void analyze(String word, Set<String> analyses) {
     final List<int[]> entries = dictionary.lookup(word);
     if (entries != null) {
-      final boolean validStandalone = dictionary.validStandalone(entries);
-      if (validStandalone) {
-        analyses.add(word);
-      }
-      if (!validStandalone && dictionary.anyForbidden(entries)) {
+      if (dictionary.anyForbidden(entries)) {
         return;
+      }
+      if (dictionary.validStandalone(entries)) {
+        analyses.add(word);
       }
     }
     for (final Affix suffix : dictionary.suffixesEndingWith(
@@ -167,12 +171,20 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Decomposes a word into listed compound parts when affix analysis has no result. Each part must
-   * meet position, length, and part-count constraints. A part can use a direct entry or one affix
-   * removal. Successful splits add part stems in text order. Forbidden entries are not decomposed.
+   * Decomposes a word into listed compound parts when the affix analysis found
+   * no result: the first part must be admitted to open a compound, and later parts
+   * to continue or close one, each at least the declared minimum length and counted
+   * against the declared maximum. A part stands on its own entry or on an entry plus
+   * one affix, the way published dictionaries position their linking forms through
+   * zero or dash suffixes. The stems of the parts of every successful splitting are
+   * reported left to right, so the head-most material comes last. A word the
+   * dictionary lists as forbidden is not decomposed; that is how one specific
+   * ill-formed compound is blocked while its parts stay productive.
    *
    * @param word The case variant to decompose.
-   * @param surface The source surface form used to check {@code CHECKCOMPOUNDCASE} boundaries.
+   * @param surface The surface form the variant was derived from; character case at
+   *                junctions is judged against it, so lowercasing a variant cannot
+   *                sidestep a {@code CHECKCOMPOUNDCASE} declaration.
    * @param analyses The mutable, insertion-ordered set collecting the part stems.
    */
   private void decompose(String word, String surface, Set<String> analyses) {
@@ -180,51 +192,63 @@ public final class HunspellStemmer implements Stemmer {
     if (entries != null && dictionary.anyForbidden(entries)) {
       return;
     }
-    if (word.codePointCount(0, word.length()) < 2L * dictionary.compoundMin()) {
+    final int codePointCount = word.codePointCount(0, word.length());
+    if (codePointCount < 2 * dictionary.compoundMin()) {
       return;
     }
+    final int[] codePointOffsets = new int[codePointCount + 1];
+    int offset = 0;
+    for (int i = 0; i < codePointCount; i++) {
+      codePointOffsets[i] = offset;
+      offset += Character.charCount(word.codePointAt(offset));
+    }
+    codePointOffsets[codePointCount] = word.length();
     // lowercasing may change the length in exceptional mappings, in which case the
-    // offsets no longer align and the variant is the usable case source
+    // offsets no longer align and the variant itself is the only usable case source
     final String caseSource = surface.length() == word.length() ? surface : word;
-    search(word, caseSource, 0, new ArrayList<>(), new ArrayList<>(), analyses,
-        new int[] {PART_CHECK_BUDGET});
+    search(word, caseSource, codePointOffsets, 0, new ArrayList<>(),
+        new ArrayList<>(), analyses, new int[] {PART_CHECK_BUDGET});
   }
 
   /**
-   * Extends a partial decomposition with the part starting at {@code from}, trying
-   * each permitted length and recursing on the remainder. The boundary into this
+   * Extends a partial decomposition with the part starting at {@code fromPoint}, trying
+   * every admissible length and recursing on the remainder. The boundary into this
    * part honors the {@code CHECKCOMPOUNDCASE} and {@code CHECKCOMPOUNDTRIPLE}
-   * declarations, a part repeating the left neighbor honors
-   * {@code CHECKCOMPOUNDDUP}, and a completed decomposition adds all part
+   * declarations, a part repeating its left neighbor honors
+   * {@code CHECKCOMPOUNDDUP}, and a completed decomposition flushes every part's
    * stems into the analyses in part order.
    *
    * @param word The case variant under decomposition.
    * @param caseSource The character-case source for junction checks, the surface
-   *                   form when offsets align with the variant.
-   * @param from The index the next part starts at.
+   *                   form when its offsets align with the variant.
+   * @param codePointOffsets UTF-16 offsets for each code point boundary.
+   * @param fromPoint The code point index where the next part starts.
    * @param surfaces The surface strings of the parts taken so far.
    * @param stems The licensed stems of the parts taken so far, one list per part.
    * @param analyses The mutable, insertion-ordered set collecting the part stems.
-   * @param budget The remaining part-licensing attempts, decremented in place.
+   * @param budget The remaining part-licensing attempts, counted down in place.
    */
-  private void search(String word, String caseSource, int from, List<String> surfaces,
-      List<List<String>> stems, Set<String> analyses, int[] budget) {
+  private void search(String word, String caseSource, int[] codePointOffsets,
+      int fromPoint, List<String> surfaces, List<List<String>> stems,
+      Set<String> analyses, int[] budget) {
+    final int from = codePointOffsets[fromPoint];
     if (from > 0 && violatesBoundaryChecks(word, caseSource, from)) {
       return;
     }
     final int min = dictionary.compoundMin();
     final int max = dictionary.compoundWordMax();
     final boolean first = from == 0;
-    final int remaining = word.codePointCount(from, word.length());
-    // Reserve enough text for another part. The opening part must also reserve a closing part.
-    if ((long) remaining >= 2L * min && (max == 0 || surfaces.size() + 2 <= max)) {
-      final int lastEnd = word.offsetByCodePoints(word.length(), -min);
-      for (int end = word.offsetByCodePoints(from, min); end <= lastEnd;
-           end = word.offsetByCodePoints(end, 1)) {
+    final int remaining = codePointOffsets.length - 1 - fromPoint;
+    // every split leaving room for a further part; a first-position part must also
+    // leave the closing part, so the complete word is not treated as one part
+    if (remaining >= 2 * min && (max == 0 || surfaces.size() + 2 <= max)) {
+      final int lastEndPoint = codePointOffsets.length - 1 - min;
+      for (int endPoint = fromPoint + min; endPoint <= lastEndPoint; endPoint++) {
         if (budget[0] <= 0) {
           return;
         }
         budget[0]--;
+        final int end = codePointOffsets[endPoint];
         final String part = word.substring(from, end);
         if (duplicatesNeighbor(part, surfaces)) {
           continue;
@@ -236,12 +260,13 @@ public final class HunspellStemmer implements Stemmer {
         }
         surfaces.add(part);
         stems.add(partStems);
-        search(word, caseSource, end, surfaces, stems, analyses, budget);
+        search(word, caseSource, codePointOffsets, endPoint, surfaces, stems,
+            analyses, budget);
         surfaces.remove(surfaces.size() - 1);
         stems.remove(stems.size() - 1);
       }
     }
-    // The closing part consumes the remainder. A compound requires multiple parts.
+    // the closing part takes the complete remainder; a compound has multiple parts
     if (first || remaining < min
         || (max > 0 && surfaces.size() + 1 > max) || budget[0] <= 0) {
       return;
@@ -262,11 +287,12 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Applies {@code CHECKCOMPOUNDDUP}: a part must not repeat the preceding part.
+   * Applies the {@code CHECKCOMPOUNDDUP} declaration: a part must not repeat the
+   * part directly before it.
    *
    * @param part The candidate part.
    * @param surfaces The surface strings of the parts taken so far.
-   * @return {@code true} if the check rejects this part.
+   * @return {@code true} if the declaration forbids this part here.
    */
   private boolean duplicatesNeighbor(String part, List<String> surfaces) {
     return dictionary.checkCompoundDup() && !surfaces.isEmpty()
@@ -275,14 +301,14 @@ public final class HunspellStemmer implements Stemmer {
 
   /**
    * Applies the character-level boundary declarations at the junction before
-   * {@code from}: {@code CHECKCOMPOUNDCASE} rejects an uppercase character on either
-   * side of the junction, and {@code CHECKCOMPOUNDTRIPLE} rejects a character repeated
-   * across the junction.
+   * {@code from}: {@code CHECKCOMPOUNDCASE} forbids an uppercase character on either
+   * side of the junction, and {@code CHECKCOMPOUNDTRIPLE} forbids the same character
+   * three times in a row across it.
    *
    * @param word The case variant under decomposition.
-   * @param caseSource The character-case source for the uppercase check.
-   * @param from The positive index where the junction begins.
-   * @return {@code true} if a configured check rejects this junction.
+   * @param caseSource The character-case source for the uppercase judgment.
+   * @param from The index the junction sits before; greater than zero.
+   * @return {@code true} if a declaration forbids this junction.
    */
   private boolean violatesBoundaryChecks(String word, String caseSource, int from) {
     final int before = word.codePointBefore(from);
@@ -304,19 +330,20 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Collects listed stems that permit a part at the requested compound position: the part
-   * as a direct entry, or an entry plus one suffix or prefix where removal produces
+   * Collects the listed stems that admit one part at its compound position: the part
+   * as its own entry, or an entry plus one suffix or one prefix whose removal leaves
    * a listed stem, zero-material rules included, because published dictionaries
    * position their linking forms through zero and dash suffixes. An affix at a
-   * compound-internal boundary must contain the permit flag, a suffix facing the next
+   * compound-internal boundary must carry the permit flag, a suffix facing the next
    * part or a prefix facing the previous one. A part not found as written is also
-   * tried with the first letter uppercased to match nouns listed with initial capitals.
+   * tried with its first letter uppercased, the way nouns listed capitalized appear
+   * lowercase inside a compound.
    *
    * @param part The part's surface text.
    * @param position The part's place in the compound.
    * @param first Whether the part opens the word.
    * @param last Whether the part closes the word.
-   * @return The matching stems in discovery order.
+   * @return The stems admitting the part, in discovery order. Never {@code null}.
    */
   private List<String> partStems(String part, CompoundPosition position,
       boolean first, boolean last) {
@@ -335,7 +362,7 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Collects direct and affixed stems for one spelling of a part.
+   * Collects the stems admitting one spelling of a part, bare and through one affix.
    *
    * @param part The part spelling to look up.
    * @param position The part's place in the compound.
@@ -372,7 +399,7 @@ public final class HunspellStemmer implements Stemmer {
    * @param affix The rule to undo.
    * @param suffix Whether the rule is a suffix rule.
    * @param position The part's place in the compound.
-   * @param atEdge Whether the part occurs at the word end the rule faces, the closing part
+   * @param atEdge Whether the part sits at the word end the rule faces, the closing part
    *               for a suffix rule and the opening part for a prefix rule; an affix
    *               facing another part instead needs the permit flag.
    * @param stems The mutable, insertion-ordered set collecting the stems.
@@ -396,8 +423,9 @@ public final class HunspellStemmer implements Stemmer {
 
   /**
    * Undoes one affix rule on a compound part. Unlike the standalone removals, a rule
-   * that adds and removes no material is undone here with the condition checked because
-   * dictionaries use such rules to position compound parts.
+   * that neither adds nor removes material is undone here, to its own spelling with
+   * the condition checked, because dictionaries position compound parts through
+   * exactly such zero rules.
    *
    * @param part The part spelling under analysis.
    * @param affix The rule to undo.
@@ -405,10 +433,9 @@ public final class HunspellStemmer implements Stemmer {
    * @return The candidate stem, or {@code null} when the rule does not apply.
    */
   private String removeAffixInCompound(String part, Affix affix, boolean suffix) {
-    if (isIdentityRule(affix)) {
-      return affix.condition().matches(part) ? part : null;
-    }
-    return suffix ? removeSuffix(part, affix) : removePrefix(part, affix);
+    return suffix
+        ? removeSuffixAllowingIdentity(part, affix)
+        : removePrefixAllowingIdentity(part, affix);
   }
 
   /**
@@ -417,7 +444,7 @@ public final class HunspellStemmer implements Stemmer {
    * only inside compounds or requires the matching circumfix member is not undone
    * because no prefix accompanies this path. A rule requiring a further affix produces
    * no single-removal analysis. An identity rule also produces no single-removal
-   * analysis, but it can complete a 2-suffix analysis through continuation classes.
+   * analysis, but it can complete a two-suffix analysis through continuation classes.
    *
    * @param word The case variant under analysis.
    * @param suffix The suffix rule to undo.
@@ -490,9 +517,7 @@ public final class HunspellStemmer implements Stemmer {
       return;
     }
     final boolean identity = isIdentityRule(prefix);
-    final String stem = identity
-        ? (prefix.condition().matches(word) ? word : null)
-        : removePrefix(word, prefix);
+    final String stem = removePrefixAllowingIdentity(word, prefix);
     if (stem == null) {
       return;
     }
@@ -516,9 +541,10 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Undoes the suffix member of a cross-product removal when both rules opt in. Prefix
-   * and suffix must agree on circumfixing, so a rule without the marker cannot combine
-   * with a marked rule.
+   * Undoes the suffix half of a cross-product removal when both rules opted in. The
+   * two rules must agree on circumfixing: a circumfix-marked affix is only valid with
+   * a marked affix of the other kind, so a pair of which exactly one is marked mixes
+   * an ordinary affix into a circumfix and is rejected.
    *
    * @param stem The intermediate stem after the prefix removal.
    * @param prefix The already-undone prefix rule.
@@ -535,10 +561,10 @@ public final class HunspellStemmer implements Stemmer {
     if (doubleStem == null) {
       return;
     }
-    // Each rule satisfies a needs-further-affix marker on the other. Both rule flags
-    // must occur in one homonym's flag set.
+    // One member can satisfy the other member's needs-further-affix marker. Both rule
+    // flags must occur in one homonym's flag set.
     final List<int[]> both = dictionary.lookup(doubleStem);
-    if (both != null && dictionary.supports(both, prefix, suffix)
+    if (both != null && dictionary.supportsCrossProduct(both, prefix, suffix)
         && !(dictionary.needsFurtherAffix(prefix)
             && dictionary.needsFurtherAffix(suffix))) {
       analyses.add(doubleStem);
@@ -576,7 +602,7 @@ public final class HunspellStemmer implements Stemmer {
       return;
     }
     final List<int[]> flagSets = dictionary.lookup(root);
-    if (flagSets != null && dictionary.supports(flagSets, prefix, inner)) {
+    if (flagSets != null && dictionary.supportsCrossProduct(flagSets, prefix, inner)) {
       analyses.add(root);
     }
   }
@@ -584,11 +610,12 @@ public final class HunspellStemmer implements Stemmer {
   /**
    * Undoes one suffix rule: cuts the affix material off the end of the word, restores
    * the strip string the rule removed on application, and checks the rule's condition
-   * on the restored stem. A strip-only rule with empty affix material is undone by
-   * restoring the strip string. Rules with no added or stripped material and candidates
-   * that produce an empty stem are rejected. A word covered completely by the affix
-   * material represents a full-strip application, supported only when the affix file
-   * specifies {@code FULLSTRIP}.
+   * against the restored stem. A strip-only rule, whose affix material is empty, is
+   * undone by restoring its strip string alone. Rules that neither add nor remove
+   * material and candidates that would leave an empty stem are rejected. A word the
+   * affix material covers entirely reverses a full-strip application, which hunspell
+   * only performs when the affix file declares {@code FULLSTRIP}; without that
+   * declaration the rule does not apply.
    *
    * @param word The surface form.
    * @param suffix The rule to undo.
@@ -622,23 +649,39 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
+   * Undoes a prefix in a continuation sequence, including a rule that changes no
+   * material. An identity rule still has to satisfy the condition.
+   *
+   * @param word The surface form at this point in the sequence.
+   * @param prefix The rule to undo.
+   * @return The candidate stem, or {@code null} when the rule does not apply.
+   */
+  private String removePrefixAllowingIdentity(String word, Affix prefix) {
+    if (isIdentityRule(prefix)) {
+      return prefix.condition().matches(word) ? word : null;
+    }
+    return removePrefix(word, prefix);
+  }
+
+  /**
    * Checks whether an affix rule adds and strips no material.
    *
    * @param affix The rule to inspect.
    * @return {@code true} if applying the rule does not change the spelling.
    */
-  private static boolean isIdentityRule(Affix affix) {
+  private boolean isIdentityRule(Affix affix) {
     return affix.affix().isEmpty() && affix.strip().isEmpty();
   }
 
   /**
    * Undoes one prefix rule: cuts the affix material off the start of the word,
    * restores the strip string the rule removed on application, and checks the rule's
-   * condition on the restored stem. A strip-only rule with empty affix material is
-   * undone by restoring the strip string. Rules with no added or stripped material and
-   * candidates that produce an empty stem are rejected. A word covered completely by
-   * the affix material represents a full-strip application, supported only when the
-   * affix file specifies {@code FULLSTRIP}.
+   * condition against the restored stem. A strip-only rule, whose affix material is
+   * empty, is undone by restoring its strip string alone. Rules that neither add nor
+   * remove material and candidates that would leave an empty stem are rejected. A
+   * word the affix material covers entirely reverses a full-strip application, which
+   * hunspell only performs when the affix file declares {@code FULLSTRIP}; without
+   * that declaration the rule does not apply.
    *
    * @param word The surface form.
    * @param prefix The rule to undo.

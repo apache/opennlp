@@ -1564,7 +1564,7 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies that 2 {@code NEEDAFFIX} markers cannot satisfy one another.
+   * Verifies that both {@code NEEDAFFIX} markers cannot satisfy one another.
    *
    * @throws IOException Thrown if the fixture fails to load.
    */
@@ -1621,7 +1621,7 @@ public class HunspellStemmerTest {
   /**
    * Verifies cross-product licensing from either member's continuation flags.
    *
-   * @param licensingRule The member that names its partner.
+   * @param licensingRule The member that identifies the partner.
    * @throws IOException Thrown if a fixture fails to load.
    */
   @ParameterizedTest
@@ -1698,7 +1698,7 @@ public class HunspellStemmerTest {
 
   /**
    * Verifies that a forbidden homonym blocks affix analysis even when another entry
-   * for the same surface is valid by itself.
+   * for the same surface is valid as a standalone entry.
    *
    * @throws IOException Thrown if the fixture fails to load.
    */
@@ -1723,7 +1723,8 @@ public class HunspellStemmerTest {
     final byte[] affix = "SET UTF-8\n".getBytes(StandardCharsets.UTF_8);
     final byte[] words = Arrays.copyOf("1\n".getBytes(StandardCharsets.UTF_8), 3);
     words[2] = TRUNCATED_UTF8_LEAD_BYTE;
-    final byte[] affixPrefix = "SET UTF-8\nSFX ".getBytes(StandardCharsets.UTF_8);
+    final byte[] affixPrefix = "SET UTF-8\nSFX A Y 1\nSFX A 0 "
+        .getBytes(StandardCharsets.UTF_8);
     final byte[] malformedAffix = Arrays.copyOf(affixPrefix, affixPrefix.length + 1);
     malformedAffix[malformedAffix.length - 1] = TRUNCATED_UTF8_LEAD_BYTE;
     final byte[] selectedAffix = "affix".equals(file) ? malformedAffix : affix;
@@ -1754,6 +1755,29 @@ public class HunspellStemmerTest {
         new ByteArrayInputStream("1\ndog\n".getBytes(StandardCharsets.UTF_8)));
 
     Assertions.assertNotNull(dictionary.lookup("dog"));
+  }
+
+  /**
+   * Verifies raw one-byte flags in a file where word text uses UTF-8.
+   *
+   * @param representation Whether the dictionary entry uses an alias or a direct flag.
+   * @throws IOException Thrown if the fixture fails to load.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"alias", "direct"})
+  void testDefaultFlagModePreservesRawBytesInUtf8File(String representation)
+      throws IOException {
+    final boolean alias = "alias".equals(representation);
+    final String aliasTable = alias ? "AF 1\nAF \u00D7\n" : "";
+    final byte[] affix = ("SET UTF-8\n" + aliasTable
+        + "SFX \u00D7 Y 1\nSFX \u00D7 0 s .\n")
+        .getBytes(StandardCharsets.ISO_8859_1);
+    final byte[] words = (alias ? "1\ndog/1\n" : "1\ndog/\u00D7\n")
+        .getBytes(alias ? StandardCharsets.UTF_8 : StandardCharsets.ISO_8859_1);
+    final HunspellStemmer stemmer = new HunspellStemmer(HunspellDictionary.load(
+        new ByteArrayInputStream(affix), new ByteArrayInputStream(words)));
+
+    Assertions.assertEquals("dog", stemmer.stem("dogs").toString());
   }
 
   /**
