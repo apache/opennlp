@@ -1249,37 +1249,38 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies that unsupported directives affecting analysis cause loading to fail.
+   * Verifies that directives outside the affix-stemming subset do not prevent use of
+   * the rules this implementation supports.
    *
-   * @param name The directive name.
    * @param line The affix file line.
    */
   @ParameterizedTest
-  @CsvSource({
-      "ICONV, ICONV 1",
-      "OCONV, OCONV 1",
-      "COMPLEXPREFIXES, COMPLEXPREFIXES",
-      "COMPOUNDRULE, COMPOUNDRULE 1",
-      "COMPOUNDMORESUFFIXES, COMPOUNDMORESUFFIXES",
-      "COMPOUNDROOT, COMPOUNDROOT R",
-      "CHECKCOMPOUNDREP, CHECKCOMPOUNDREP",
-      "SIMPLIFIEDTRIPLE, SIMPLIFIEDTRIPLE",
-      "CHECKCOMPOUNDPATTERN, CHECKCOMPOUNDPATTERN 1",
-      "FORCEUCASE, FORCEUCASE U",
-      "COMPOUNDSYLLABLE, COMPOUNDSYLLABLE 6 aeiou",
-      "SYLLABLENUM, SYLLABLENUM ABC",
-      "LANG, LANG tr",
-      "CHECKSHARPS, CHECKSHARPS",
-      "BREAK, BREAK 1",
-      "FORBIDWARN, FORBIDWARN",
-      "IGNORE, IGNORE x",
-      "KEEPCASE, KEEPCASE k"
+  @ValueSource(strings = {
+      "ICONV 1",
+      "OCONV 1",
+      "COMPLEXPREFIXES",
+      "COMPOUNDRULE 1",
+      "COMPOUNDMORESUFFIXES",
+      "COMPOUNDROOT R",
+      "CHECKCOMPOUNDREP",
+      "SIMPLIFIEDTRIPLE",
+      "CHECKCOMPOUNDPATTERN 1",
+      "FORCEUCASE U",
+      "COMPOUNDSYLLABLE 6 aeiou",
+      "SYLLABLENUM ABC",
+      "LANG tr",
+      "CHECKSHARPS",
+      "BREAK 1",
+      "FORBIDWARN",
+      "IGNORE x",
+      "KEEPCASE k"
   })
-  void testResultAlteringUnsupportedDirectiveFailsLoud(String name, String line) {
-    final IOException e = Assertions.assertThrows(IOException.class,
-        () -> load(line + "\n", "0\n"));
-    Assertions.assertEquals("unsupported affix directive '" + name + "' at line 1",
-        e.getMessage());
+  void testUnsupportedDirectiveDoesNotBlockSupportedRules(String line)
+      throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        line + "\nSFX A Y 1\nSFX A 0 s .\n", "1\ndog/A\n"));
+
+    Assertions.assertEquals("dog", stemmer.stem("dogs").toString());
   }
 
   /**
@@ -1492,30 +1493,40 @@ public class HunspellStemmerTest {
     Assertions.assertEquals("foo", stemmer.stem("unfoosbar").toString());
   }
 
-  /** Verifies that an unrecognized affix directive causes loading to fail. */
+  /** Verifies that an unrecognized directive does not block supported affix rules. */
   @Test
-  void testUnknownAffixDirectiveIsRejected() {
-    final IOException e = Assertions.assertThrows(IOException.class,
-        () -> load("UNRECOGNIZED value\n", "0\n"));
+  void testUnknownAffixDirectiveIsSkipped() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "UNRECOGNIZED value\nSFX A Y 1\nSFX A 0 s .\n", "1\ndog/A\n"));
 
-    Assertions.assertEquals("unsupported affix directive 'UNRECOGNIZED' at line 1",
-        e.getMessage());
+    Assertions.assertEquals("dog", stemmer.stem("dogs").toString());
   }
 
   /** Verifies validation of the {@code AF} count line. */
-  @Test
-  void testAliasTableCountIsValidated() {
-    IOException e = Assertions.assertThrows(IOException.class,
-        () -> load("AF 2\nAF A\n", "0\n"));
-    Assertions.assertEquals("AF header specifies 2 aliases but found 1", e.getMessage());
+  @ParameterizedTest
+  @ValueSource(strings = {"count-mismatch", "malformed", "negative"})
+  void testAliasTableCountIsValidated(String fixture) {
+    final String affix;
+    final String message;
+    switch (fixture) {
+      case "count-mismatch" -> {
+        affix = "AF 2\nAF A\n";
+        message = "AF header specifies 2 aliases but found 1";
+      }
+      case "malformed" -> {
+        affix = "AF count\n";
+        message = "malformed AF at line 1";
+      }
+      case "negative" -> {
+        affix = "AF -1\n";
+        message = "negative AF count at line 1";
+      }
+      default -> throw new AssertionError(fixture);
+    }
+    final IOException exception = Assertions.assertThrows(IOException.class,
+        () -> load(affix, "0\n"));
 
-    e = Assertions.assertThrows(IOException.class,
-        () -> load("AF count\n", "0\n"));
-    Assertions.assertEquals("malformed AF at line 1", e.getMessage());
-
-    e = Assertions.assertThrows(IOException.class,
-        () -> load("AF -1\n", "0\n"));
-    Assertions.assertEquals("negative AF count at line 1", e.getMessage());
+    Assertions.assertEquals(message, exception.getMessage());
   }
 
   /**
@@ -1608,31 +1619,36 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies cross-product licensing from prefix and suffix continuation flags.
+   * Verifies cross-product licensing from either member's continuation flags.
    *
+   * @param licensingRule The member that names its partner.
    * @throws IOException Thrown if a fixture fails to load.
    */
-  @Test
-  void testContinuationFlagLicensesCrossProductPartner() throws IOException {
-    final HunspellStemmer suffixLicensesPrefix = new HunspellStemmer(load(
-        String.join("\n",
-            "PFX P Y 1",
-            "PFX P 0 un .",
-            "SFX R Y 1",
-            "SFX R 0 able/P .",
-            ""),
-        "1\ndrink/R\n"));
-    Assertions.assertEquals("drink", suffixLicensesPrefix.stem("undrinkable").toString());
-
-    final HunspellStemmer prefixLicensesSuffix = new HunspellStemmer(load(
-        String.join("\n",
+  @ParameterizedTest
+  @ValueSource(strings = {"prefix", "suffix"})
+  void testContinuationFlagLicensesCrossProductPartner(String licensingRule)
+      throws IOException {
+    final boolean prefixLicenses = "prefix".equals(licensingRule);
+    final String affix = prefixLicenses
+        ? String.join("\n",
             "PFX P Y 1",
             "PFX P 0 un/S .",
             "SFX S Y 1",
             "SFX S 0 s .",
-            ""),
-        "1\nlock/P\n"));
-    Assertions.assertEquals("lock", prefixLicensesSuffix.stem("unlocks").toString());
+            "")
+        : String.join("\n",
+            "PFX P Y 1",
+            "PFX P 0 un .",
+            "SFX R Y 1",
+            "SFX R 0 able/P .",
+            "");
+    final String words = prefixLicenses ? "1\nlock/P\n" : "1\ndrink/R\n";
+    final String surface = prefixLicenses ? "unlocks" : "undrinkable";
+    final String expected = prefixLicenses ? "lock" : "drink";
+
+    final HunspellStemmer stemmer = new HunspellStemmer(load(affix, words));
+
+    Assertions.assertEquals(expected, stemmer.stem(surface).toString());
   }
 
   /**
@@ -1680,26 +1696,64 @@ public class HunspellStemmerTest {
     Assertions.assertEquals(List.of("foos"), stemmer.stemAll("foos"));
   }
 
-  /** Verifies that malformed UTF-8 is rejected in both input files. */
+  /**
+   * Verifies that a forbidden homonym blocks affix analysis even when another entry
+   * for the same surface is valid by itself.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
   @Test
-  void testMalformedFileEncodingIsRejected() {
+  void testForbiddenHomonymOverridesStandaloneEntry() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "FORBIDDENWORD X\nSFX A Y 1\nSFX A 0 s .\n",
+        "3\nfoo/A\nfoos\nfoos/X\n"));
+
+    Assertions.assertEquals(List.of("foos"), stemmer.stemAll("foos"));
+  }
+
+  /**
+   * Verifies that malformed UTF-8 is rejected in semantic affix content and in the
+   * dictionary file.
+   *
+   * @param file The malformed input file.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"affix", "dictionary"})
+  void testMalformedFileEncodingIsRejected(String file) {
     final byte[] affix = "SET UTF-8\n".getBytes(StandardCharsets.UTF_8);
     final byte[] words = Arrays.copyOf("1\n".getBytes(StandardCharsets.UTF_8), 3);
     words[2] = TRUNCATED_UTF8_LEAD_BYTE;
-    final byte[] affixPrefix = "SET UTF-8\n#".getBytes(StandardCharsets.UTF_8);
+    final byte[] affixPrefix = "SET UTF-8\nSFX ".getBytes(StandardCharsets.UTF_8);
     final byte[] malformedAffix = Arrays.copyOf(affixPrefix, affixPrefix.length + 1);
     malformedAffix[malformedAffix.length - 1] = TRUNCATED_UTF8_LEAD_BYTE;
+    final byte[] selectedAffix = "affix".equals(file) ? malformedAffix : affix;
+    final byte[] selectedWords = "dictionary".equals(file)
+        ? words : "0\n".getBytes(StandardCharsets.UTF_8);
 
-    final IOException dictionaryException = Assertions.assertThrows(IOException.class,
-        () -> HunspellDictionary.load(new ByteArrayInputStream(affix),
-            new ByteArrayInputStream(words)));
-    final IOException affixException = Assertions.assertThrows(IOException.class,
-        () -> HunspellDictionary.load(new ByteArrayInputStream(malformedAffix),
-            new ByteArrayInputStream("0\n".getBytes(StandardCharsets.UTF_8))));
+    final IOException exception = Assertions.assertThrows(IOException.class,
+        () -> HunspellDictionary.load(new ByteArrayInputStream(selectedAffix),
+            new ByteArrayInputStream(selectedWords)));
 
-    Assertions.assertEquals("dictionary stream is not valid UTF-8",
-        dictionaryException.getMessage());
-    Assertions.assertEquals("affix stream is not valid UTF-8", affixException.getMessage());
+    Assertions.assertEquals(file + " stream is not valid UTF-8", exception.getMessage());
+  }
+
+  /**
+   * Verifies that invalid bytes in a comment do not prevent loading an otherwise valid
+   * UTF-8 affix file.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
+  @Test
+  void testMalformedCommentEncodingIsIgnored() throws IOException {
+    final byte[] prefix = "SET UTF-8\n# ".getBytes(StandardCharsets.UTF_8);
+    final byte[] affix = Arrays.copyOf(prefix, prefix.length + 1);
+    affix[affix.length - 1] = TRUNCATED_UTF8_LEAD_BYTE;
+
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream(affix),
+        new ByteArrayInputStream("1\ndog\n".getBytes(StandardCharsets.UTF_8)));
+
+    Assertions.assertNotNull(dictionary.lookup("dog"));
   }
 
   /**
@@ -1782,6 +1836,16 @@ public class HunspellStemmerTest {
     Assertions.assertEquals("negative " + directive + " at line 1", e.getMessage());
   }
 
+  /** Verifies that {@code COMPOUNDMIN} cannot overflow the doubled length check. */
+  @Test
+  void testCompoundMinAboveSafeRangeIsRejected() {
+    final IOException exception = Assertions.assertThrows(IOException.class,
+        () -> load("COMPOUNDMIN 1073741824\n", "0\n"));
+
+    Assertions.assertEquals("COMPOUNDMIN exceeds 1073741823 at line 1",
+        exception.getMessage());
+  }
+
   /**
    * Verifies cross-product analysis with an identity prefix.
    *
@@ -1804,24 +1868,25 @@ public class HunspellStemmerTest {
   /**
    * Verifies supplementary characters in compound boundary checks.
    *
+   * @param check The boundary check to exercise.
    * @throws IOException Thrown if a fixture fails to load.
    */
-  @Test
-  void testCompoundBoundaryChecksUseCodePoints() throws IOException {
-    final String repeated = "\uD840\uDC00";
-    final String tripleWords = "2\na" + repeated + repeated + "/Z\n" + repeated
-        + "b/Z\n";
-    final HunspellStemmer tripleChecked = new HunspellStemmer(load(
-        "COMPOUNDFLAG Z\nCOMPOUNDMIN 1\nCHECKCOMPOUNDTRIPLE\n", tripleWords));
-    final String tripleSurface = "a" + repeated + repeated + repeated + "b";
-    Assertions.assertEquals(List.of(tripleSurface), tripleChecked.stemAll(tripleSurface));
+  @ParameterizedTest
+  @ValueSource(strings = {"case", "triple"})
+  void testCompoundBoundaryChecksUseCodePoints(String check) throws IOException {
+    final boolean triple = "triple".equals(check);
+    final String codePoint = triple ? "\uD840\uDC00" : "\uD801\uDC00";
+    final String words = triple
+        ? "2\na" + codePoint + codePoint + "/Z\n" + codePoint + "b/Z\n"
+        : "2\na/Z\n" + codePoint + "b/Z\n";
+    final String declaration = triple ? "CHECKCOMPOUNDTRIPLE" : "CHECKCOMPOUNDCASE";
+    final String surface = triple
+        ? "a" + codePoint + codePoint + codePoint + "b"
+        : "a" + codePoint + "b";
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 1\n" + declaration + "\n", words));
 
-    final String uppercase = "\uD801\uDC00";
-    final String caseWords = "2\na/Z\n" + uppercase + "b/Z\n";
-    final HunspellStemmer caseChecked = new HunspellStemmer(load(
-        "COMPOUNDFLAG Z\nCOMPOUNDMIN 1\nCHECKCOMPOUNDCASE\n", caseWords));
-    final String caseSurface = "a" + uppercase + "b";
-    Assertions.assertEquals(List.of(caseSurface), caseChecked.stemAll(caseSurface));
+    Assertions.assertEquals(List.of(surface), stemmer.stemAll(surface));
   }
 
 }
