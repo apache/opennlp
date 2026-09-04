@@ -102,16 +102,7 @@ public class DependencyParserME implements DependencyParser {
 
   @Override
   public DependencyGraph parse(String[] tokens, String[] tags) {
-    if (tokens == null || tags == null) {
-      throw new IllegalArgumentException("tokens and tags must not be null");
-    }
-    if (tokens.length == 0) {
-      throw new IllegalArgumentException("tokens must not be empty");
-    }
-    if (tokens.length != tags.length) {
-      throw new IllegalArgumentException("tokens and tags must have the same length: "
-          + tokens.length + " != " + tags.length);
-    }
+    DependencySample.checkTokensAndTags(tokens, tags);
     final ArcStandardState state = new ArcStandardState(tokens.length);
     while (!state.isTerminal()) {
       state.apply(bestApplicable(state, tokens, tags));

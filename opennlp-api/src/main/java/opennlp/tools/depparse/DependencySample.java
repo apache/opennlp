@@ -38,28 +38,57 @@ public class DependencySample {
   /**
    * Initializes a {@link DependencySample}.
    *
-   * @param tokens The tokens of the sentence. Must not be {@code null} or empty.
+   * @param tokens The input tokens. Must not be {@code null} or empty and must
+   *               not contain {@code null} entries.
    * @param tags The part-of-speech tags aligned with {@code tokens}. Must not be
-   *             {@code null} and must have the same length as {@code tokens}.
+   *             {@code null}, must have the same length as {@code tokens}, and must not
+   *             contain {@code null} entries.
    * @param graph The dependency graph over the tokens. Must not be {@code null} and its
    *              {@link DependencyGraph#size()} must equal the number of tokens.
    * @throws IllegalArgumentException Thrown if any parameter is {@code null} or the
    *         lengths disagree.
    */
   public DependencySample(String[] tokens, String[] tags, DependencyGraph graph) {
-    if (tokens == null || tags == null || graph == null) {
-      throw new IllegalArgumentException("tokens, tags and graph must not be null");
+    if (graph == null) {
+      throw new IllegalArgumentException("graph must not be null");
     }
-    if (tokens.length == 0) {
-      throw new IllegalArgumentException("a sample needs at least one token");
-    }
-    if (tokens.length != tags.length || tokens.length != graph.size()) {
+    checkTokensAndTags(tokens, tags);
+    if (tokens.length != graph.size()) {
       throw new IllegalArgumentException("tokens, tags and graph must agree in length: "
           + tokens.length + ", " + tags.length + ", " + graph.size());
     }
     this.tokens = tokens.clone();
     this.tags = tags.clone();
     this.graph = graph;
+  }
+
+  /**
+   * Validates token and tag arrays shared by samples and parser entry points.
+   *
+   * @param tokens The token array.
+   * @param tags The aligned tag array.
+   * @throws IllegalArgumentException Thrown if an array is null or empty, the lengths
+   *         do not match, or an entry is null.
+   */
+  static void checkTokensAndTags(String[] tokens, String[] tags) {
+    if (tokens == null || tags == null) {
+      throw new IllegalArgumentException("tokens and tags must not be null");
+    }
+    if (tokens.length == 0) {
+      throw new IllegalArgumentException("tokens must not be empty");
+    }
+    if (tokens.length != tags.length) {
+      throw new IllegalArgumentException("tokens and tags must have the same length: "
+          + tokens.length + " != " + tags.length);
+    }
+    for (int i = 0; i < tokens.length; i++) {
+      if (tokens[i] == null) {
+        throw new IllegalArgumentException("token must not be null at index " + i);
+      }
+      if (tags[i] == null) {
+        throw new IllegalArgumentException("tag must not be null at index " + i);
+      }
+    }
   }
 
   /**

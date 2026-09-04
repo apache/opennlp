@@ -118,11 +118,19 @@ public class FeedforwardDependencyModel {
    *                 {@link #featureIds(String[])}. Must not be {@code null}.
    * @return One unnormalized score per transition, indexed like
    *         {@link #transitions()}. Never {@code null}.
-   * @throws IllegalArgumentException Thrown if {@code features} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code features} does not have the
+   *         required length or contains an invalid embedding index.
    */
   public double[] score(int[] features) {
-    if (features == null) {
-      throw new IllegalArgumentException("features must not be null");
+    if (features == null || features.length != FeedforwardContext.FEATURE_COUNT) {
+      throw new IllegalArgumentException("features must contain "
+          + FeedforwardContext.FEATURE_COUNT + " embedding indices");
+    }
+    for (int i = 0; i < features.length; i++) {
+      if (features[i] < 0 || features[i] >= embeddings.length) {
+        throw new IllegalArgumentException(
+            "feature embedding out of range at index " + i + ": " + features[i]);
+      }
     }
     final int hidden = hiddenBias.length;
     final double[] h = new double[hidden];
@@ -253,11 +261,13 @@ public class FeedforwardDependencyModel {
    *
    * @param symbols The symbolic features. Must not be {@code null}.
    * @return The embedding row per feature. Never {@code null}.
-   * @throws IllegalArgumentException Thrown if {@code symbols} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code symbols} does not have the
+   *         required length.
    */
   public int[] featureIds(String[] symbols) {
-    if (symbols == null) {
-      throw new IllegalArgumentException("symbols must not be null");
+    if (symbols == null || symbols.length != FeedforwardContext.FEATURE_COUNT) {
+      throw new IllegalArgumentException("symbols must contain "
+          + FeedforwardContext.FEATURE_COUNT + " features");
     }
     final int[] ids = new int[symbols.length];
     for (int i = 0; i < FeedforwardContext.POSITIONS; i++) {

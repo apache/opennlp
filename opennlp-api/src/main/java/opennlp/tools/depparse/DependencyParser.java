@@ -37,10 +37,11 @@ public interface DependencyParser {
   /**
    * Parses a sentence into a {@link DependencyGraph}.
    *
-   * @param tokens The tokens of one sentence. Must not be {@code null} and must contain
-   *               at least one token.
+   * @param tokens The input tokens. Must not be {@code null}, must contain
+   *               at least one token, and must not contain {@code null} entries.
    * @param tags The part-of-speech tags aligned with {@code tokens}. Must not be
-   *             {@code null} and must have the same length as {@code tokens}.
+   *             {@code null}, must have the same length as {@code tokens}, and must not
+   *             contain {@code null} entries.
    * @return A {@link DependencyGraph} over the given tokens. Never {@code null}.
    * @throws IllegalArgumentException Thrown if {@code tokens} or {@code tags} is
    *         {@code null}, empty, or of mismatched length.

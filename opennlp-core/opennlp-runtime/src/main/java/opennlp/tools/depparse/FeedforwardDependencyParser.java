@@ -90,16 +90,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
 
   @Override
   public DependencyGraph parse(String[] tokens, String[] tags) {
-    if (tokens == null || tags == null) {
-      throw new IllegalArgumentException("tokens and tags must not be null");
-    }
-    if (tokens.length == 0) {
-      throw new IllegalArgumentException("tokens must not be empty");
-    }
-    if (tokens.length != tags.length) {
-      throw new IllegalArgumentException("tokens and tags must have the same length: "
-          + tokens.length + " != " + tags.length);
-    }
+    DependencySample.checkTokensAndTags(tokens, tags);
     if (beamSize == 1) {
       return greedyParse(tokens, tags);
     }

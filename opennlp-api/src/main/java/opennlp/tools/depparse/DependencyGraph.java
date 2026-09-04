@@ -89,7 +89,29 @@ public final class DependencyGraph {
     if (roots != 1) {
       throw new IllegalArgumentException("expected exactly one root, found " + roots);
     }
+    checkAcyclic(heads);
     return new DependencyGraph(heads.clone(), relations.clone());
+  }
+
+  /** Rejects a cycle that is disconnected from the single root. */
+  private static void checkAcyclic(int[] heads) {
+    final byte[] states = new byte[heads.length];
+    for (int start = 0; start < heads.length; start++) {
+      int current = start;
+      while (current != DependencyArc.ROOT_HEAD && states[current] == 0) {
+        states[current] = 1;
+        current = heads[current];
+      }
+      if (current != DependencyArc.ROOT_HEAD && states[current] == 1) {
+        throw new IllegalArgumentException(
+            "dependency graph contains a cycle at token " + current);
+      }
+      current = start;
+      while (current != DependencyArc.ROOT_HEAD && states[current] == 1) {
+        states[current] = 2;
+        current = heads[current];
+      }
+    }
   }
 
   /**

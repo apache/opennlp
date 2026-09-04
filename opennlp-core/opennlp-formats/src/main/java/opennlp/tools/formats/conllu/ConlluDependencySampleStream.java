@@ -20,6 +20,7 @@ package opennlp.tools.formats.conllu;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -177,6 +178,9 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     final String[] relations = new String[n];
     for (int i = 0; i < n; i++) {
       final String[] word = words.get(i);
+      if (!Integer.toString(i + 1).equals(word[0])) {
+        return null;
+      }
       tokens[i] = word[FORM];
       tags[i] = word[tagColumn];
       relations[i] = word[DEPREL];
@@ -213,6 +217,8 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
    */
   private BufferedReader open() throws IOException {
     return new BufferedReader(
-        new InputStreamReader(in.createInputStream(), StandardCharsets.UTF_8));
+        new InputStreamReader(in.createInputStream(), StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)));
   }
 }

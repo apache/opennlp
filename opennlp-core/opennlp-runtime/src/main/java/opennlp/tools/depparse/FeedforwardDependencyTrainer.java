@@ -84,8 +84,10 @@ public final class FeedforwardDependencyTrainer {
       if (embeddingSize <= 0 || hiddenSize <= 0 || epochs <= 0 || batchSize <= 0) {
         throw new IllegalArgumentException("sizes, epochs and batch must be positive");
       }
-      if (learningRate <= 0.0 || l2 < 0.0) {
-        throw new IllegalArgumentException("learningRate must be positive, l2 not negative");
+      if (!Double.isFinite(learningRate) || learningRate <= 0.0
+          || !Double.isFinite(l2) || l2 < 0.0) {
+        throw new IllegalArgumentException(
+            "learningRate must be finite and positive, l2 finite and not negative");
       }
       if (!(dropout >= 0.0 && dropout < 1.0)) {
         throw new IllegalArgumentException("dropout must be in [0, 1): " + dropout);
@@ -603,6 +605,12 @@ public final class FeedforwardDependencyTrainer {
             + "' has " + vector.length + " dimensions, expected "
             + settings.embeddingSize());
       }
+      for (final float value : vector) {
+        if (!Float.isFinite(value)) {
+          throw new IllegalArgumentException(
+              "pretrained vector for '" + entry.getKey() + "' contains a non-finite value");
+        }
+      }
       System.arraycopy(vector, 0, model.embeddings()[entry.getValue()], 0, vector.length);
       seeded++;
     }
@@ -618,6 +626,11 @@ public final class FeedforwardDependencyTrainer {
     final Map<String, Integer> labelIds = new HashMap<>();
     final Map<String, Integer> transitionIds = new HashMap<>();
     for (final DependencySample s : corpus) {
+      try {
+        ArcStandardOracle.transitions(s.getGraph());
+      } catch (IllegalArgumentException e) {
+        continue;
+      }
       for (final String token : s.getTokens()) {
         wordCounts.merge(FeedforwardDependencyModel.normalize(token), 1, Integer::sum);
       }

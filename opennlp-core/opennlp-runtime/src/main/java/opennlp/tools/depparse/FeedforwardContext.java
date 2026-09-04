@@ -37,6 +37,9 @@ final class FeedforwardContext {
   /** The number of dependent positions whose arc label is embedded. */
   static final int LABEL_POSITIONS = 8;
 
+  /** The number of symbolic features in one parser configuration. */
+  static final int FEATURE_COUNT = 2 * POSITIONS + LABEL_POSITIONS;
+
   /** The index of the first dependent position; the stack and buffer items precede it. */
   private static final int FIRST_DEPENDENT_POSITION = 6;
 
@@ -66,7 +69,7 @@ final class FeedforwardContext {
         leftmost(state, leftmost(state, s0)), rightmost(state, rightmost(state, s0)),
         leftmost(state, leftmost(state, s1)), rightmost(state, rightmost(state, s1))
     };
-    final String[] features = new String[2 * POSITIONS + LABEL_POSITIONS];
+    final String[] features = new String[FEATURE_COUNT];
     for (int i = 0; i < POSITIONS; i++) {
       features[i] = symbol(tokens, positions[i]);
       features[POSITIONS + i] = symbol(tags, positions[i]);
