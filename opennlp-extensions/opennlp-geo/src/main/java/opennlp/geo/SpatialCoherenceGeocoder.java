@@ -168,6 +168,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
     final double a = Math.sin(latDelta / 2) * Math.sin(latDelta / 2)
         + Math.cos(Math.toRadians(from.latitude())) * Math.cos(Math.toRadians(to.latitude()))
         * Math.sin(lonDelta / 2) * Math.sin(lonDelta / 2);
-    return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
+    final double bounded = Math.min(1.0, Math.max(0.0, a));
+    return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(bounded));
   }
 }

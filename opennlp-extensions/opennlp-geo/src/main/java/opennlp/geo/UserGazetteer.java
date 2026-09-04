@@ -119,6 +119,7 @@ public final class UserGazetteer implements Gazetteer {
     if (table == null) {
       throw new IllegalArgumentException("table must not be null");
     }
+    validateSource(source);
     try (InputStream in = Files.newInputStream(table)) {
       return load(in, source);
     }
@@ -141,9 +142,7 @@ public final class UserGazetteer implements Gazetteer {
     if (in == null) {
       throw new IllegalArgumentException("in must not be null");
     }
-    if (StringUtil.isUnicodeBlank(source)) {
-      throw new IllegalArgumentException("source must not be null or blank");
-    }
+    validateSource(source);
     final Set<String> seenIds = new HashSet<>();
     final GazetteerIndex index = GazetteerIndex.load(in, true, (line, lineNumber) -> {
       final GazetteerEntry entry = parseRow(line, lineNumber, source);
@@ -348,5 +347,17 @@ public final class UserGazetteer implements Gazetteer {
   /** {@return {@code true} if the column at {@code i} is missing or empty after trimming} */
   private static boolean absent(String[] fields, int i) {
     return fields.length <= i || fields[i].trim().isEmpty();
+  }
+
+  /**
+   * Validates the source identifier shared by both load entry points.
+   *
+   * @param source The source identifier. Must not be {@code null} or blank.
+   * @throws IllegalArgumentException Thrown if {@code source} is {@code null} or blank.
+   */
+  private static void validateSource(String source) {
+    if (StringUtil.isUnicodeBlank(source)) {
+      throw new IllegalArgumentException("source must not be null or blank");
+    }
   }
 }
