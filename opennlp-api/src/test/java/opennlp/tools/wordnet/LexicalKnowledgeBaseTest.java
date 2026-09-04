@@ -67,6 +67,19 @@ public class LexicalKnowledgeBaseTest {
     }
   };
 
+  private static final LexicalKnowledgeBase PERMISSIVE_LEXICON = new LexicalKnowledgeBase() {
+
+    @Override
+    public List<Synset> lookup(String lemma, WordNetPOS pos) {
+      return List.of();
+    }
+
+    @Override
+    public Optional<Synset> synset(String synsetId) {
+      return Optional.empty();
+    }
+  };
+
   @Test
   void testRelatedNavigatesThroughSynset() {
     assertEquals(List.of("test-2-n"), LEXICON.related("test-1-n", WordNetRelation.HYPERNYM));
@@ -97,5 +110,17 @@ public class LexicalKnowledgeBaseTest {
   void testContainsRejectsNulls() {
     assertThrows(IllegalArgumentException.class, () -> LEXICON.contains(null, WordNetPOS.NOUN));
     assertThrows(IllegalArgumentException.class, () -> LEXICON.contains("dog", null));
+  }
+
+  @Test
+  void testDefaultMethodsValidateTheirArguments() {
+    assertThrows(IllegalArgumentException.class,
+        () -> PERMISSIVE_LEXICON.related(null, WordNetRelation.HYPERNYM));
+    assertThrows(IllegalArgumentException.class,
+        () -> PERMISSIVE_LEXICON.related("test-1-n", null));
+    assertThrows(IllegalArgumentException.class,
+        () -> PERMISSIVE_LEXICON.contains(null, WordNetPOS.NOUN));
+    assertThrows(IllegalArgumentException.class,
+        () -> PERMISSIVE_LEXICON.contains("dog", null));
   }
 }

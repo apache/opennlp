@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.tools.wordnet.Synset;
 import opennlp.tools.wordnet.WordNetPOS;
@@ -75,6 +77,20 @@ public class InMemoryWordNetLexiconTest {
         () -> new InMemoryWordNetLexicon(table, senseOrder));
     assertTrue(e.getMessage().contains("missing"));
     assertTrue(e.getMessage().contains("lemma"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"other,NOUN", "lemma,VERB"})
+  void testRejectsSenseOrderEntryThatDoesNotDescribeSynset(String lemma, WordNetPOS pos) {
+    final Map<String, Synset> table = Map.of("a", synset("a", Map.of()));
+    final Map<InMemoryWordNetLexicon.LemmaKey, List<String>> senseOrder =
+        Map.of(InMemoryWordNetLexicon.LemmaKey.of(lemma, pos), List.of("a"));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new InMemoryWordNetLexicon(table, senseOrder));
+
+    assertTrue(e.getMessage().contains("a"));
+    assertTrue(e.getMessage().contains(lemma));
   }
 
   @Test
