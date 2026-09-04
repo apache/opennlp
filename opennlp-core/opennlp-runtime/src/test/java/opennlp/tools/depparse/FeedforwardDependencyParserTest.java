@@ -198,6 +198,11 @@ public class FeedforwardDependencyParserTest {
         FeedforwardDependencyModel.normalize("\u039F\u03A3\u0301\u0391"));
   }
 
+  @Test
+  void testFinalSigmaRequiresCasedLetterContext() {
+    assertEquals("\u4E2D\u03C3", FeedforwardDependencyModel.normalize("\u4E2D\u03A3"));
+  }
+
   /**
    * Checks that normalization reuses a string when no case mapping is needed.
    */
