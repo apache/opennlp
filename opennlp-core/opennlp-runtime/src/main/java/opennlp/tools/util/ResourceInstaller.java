@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
@@ -33,13 +32,15 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.ProviderNotFoundException;
-import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -69,8 +70,11 @@ import opennlp.tools.util.archive.TarStream;
  * connection and read timeouts, follow at most a fixed number of redirects, reject
  * redirects that leave the http and https schemes or downgrade https to http, and
  * abort once the download or the expanded content crosses its size limit or the
- * archive crosses its entry limit. The defaults in {@link Limits#DEFAULT} apply when
- * no limits are given, and {@link Limits#builder()} starts from them.</p>
+ * archive crosses its entry limit. Gzip content may expand to at most
+ * {@value #MAX_GZIP_EXPANSION_RATIO} times its compressed size, with a floor of
+ * {@value #MIN_GZIP_EXPANSION_BYTES} bytes for small sources. The defaults in
+ * {@link Limits#DEFAULT} apply when no limits are given, and {@link Limits#builder()}
+ * starts from them.</p>
  *
  * <p>Installation is staged: content is unpacked into a hidden staging directory on
  * the same filesystem and moved into the target only after the download was verified
@@ -78,7 +82,9 @@ import opennlp.tools.util.archive.TarStream;
  * promotes no files into the target directory.
  * Promotion does not replace a file that already exists in the target and detects
  * the collision before moving anything, so refreshing a resource means removing its
- * old files first.</p>
+ * old files first. Work files left in the target by an installation that was killed
+ * are removed at the start of the next installation into that target, so concurrent
+ * installations into one target directory are not supported.</p>
  *
  * @see DownloadUtil
  * @since 3.0.0
@@ -116,12 +122,20 @@ public final class ResourceInstaller {
   private static final int ZIP_CENTRAL_OFFSET_OFFSET = 16;
   private static final int ZIP_COMMENT_LENGTH_OFFSET = 20;
   private static final int TAR_END_BLOCKS_LENGTH = 1024;
+
+  /** The largest decompressed size accepted per compressed byte of gzip content. */
+  private static final int MAX_GZIP_EXPANSION_RATIO = 100;
+
+  /** The decompressed size every gzip source may reach regardless of the ratio. */
+  private static final long MIN_GZIP_EXPANSION_BYTES = 1L << 20;
   private static final int HTTP_TEMPORARY_REDIRECT = 307;
   private static final int HTTP_PERMANENT_REDIRECT = 308;
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
   private static final String SCHEME_FILE = "file";
   private static final String MALFORMED_ZIP_ERROR = "malformed zip archive";
+  private static final String ZIP_MISMATCH_ERROR =
+      "zip local headers and central directory list different files";
 
   /**
    * Safety limits and network behavior for one installation.
@@ -485,7 +499,9 @@ public final class ResourceInstaller {
     }
     final String resourceName = validateSourceName(
         name == null ? sourceName(source) : name);
+    final boolean createdTarget = Files.notExists(targetDirectory);
     Files.createDirectories(targetDirectory);
+    removeStaleWorkFiles(targetDirectory);
     final Path downloaded = createDownloadFile(targetDirectory);
     try {
       download(source, downloaded, limits);
@@ -494,8 +510,64 @@ public final class ResourceInstaller {
       }
       installStaged(downloaded, resourceName, targetDirectory, limits);
       return targetDirectory;
+    } catch (IOException e) {
+      Files.deleteIfExists(downloaded);
+      if (createdTarget) {
+        removeIfEmpty(targetDirectory, e);
+      }
+      throw e;
     } finally {
       Files.deleteIfExists(downloaded);
+    }
+  }
+
+  /**
+   * Removes download files and staging directories that an earlier installation left in
+   * the target because its process ended before cleanup. Only entries with the hidden
+   * work-file prefixes are touched.
+   *
+   * @param targetDirectory The directory to install into.
+   * @throws IOException Thrown if listing or deleting fails.
+   */
+  private static void removeStaleWorkFiles(Path targetDirectory) throws IOException {
+    final List<Path> stale;
+    try (Stream<Path> entries = Files.list(targetDirectory)) {
+      stale = entries.filter(ResourceInstaller::isWorkFile).toList();
+    }
+    for (final Path entry : stale) {
+      if (Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)) {
+        deleteRecursively(entry);
+      } else {
+        Files.deleteIfExists(entry);
+      }
+    }
+  }
+
+  /**
+   * Classifies a target directory entry as a work file of this class.
+   *
+   * @param entry The entry to inspect.
+   * @return {@code true} if the entry name carries a work-file prefix.
+   */
+  private static boolean isWorkFile(Path entry) {
+    final String fileName = entry.getFileName().toString();
+    return fileName.startsWith(STAGING_PREFIX) || fileName.startsWith(DOWNLOAD_PREFIX);
+  }
+
+  /**
+   * Removes a target directory this installation created when the failed installation
+   * left nothing in it, so a failed first attempt leaves the filesystem as it was.
+   *
+   * @param targetDirectory The directory this installation created.
+   * @param failure The failure being reported; a cleanup error is added to it.
+   */
+  private static void removeIfEmpty(Path targetDirectory, IOException failure) {
+    try (Stream<Path> entries = Files.list(targetDirectory)) {
+      if (entries.findAny().isEmpty()) {
+        Files.deleteIfExists(targetDirectory);
+      }
+    } catch (IOException cleanup) {
+      failure.addSuppressed(cleanup);
     }
   }
 
@@ -809,8 +881,7 @@ public final class ResourceInstaller {
    * Moves all staged regular files to their relative locations beneath the target
    * without replacing anything that already exists there. All destinations are
    * checked before the first move, so a collision leaves the target without a mix of
-   * old and new files. Moves are attempted atomically and fall back to a plain move
-   * where the filesystem does not support it.
+   * old and new files, and the move itself refuses an existing destination as well.
    *
    * @param staging The staging directory holding the fully unpacked content.
    * @param target The directory to install into.
@@ -831,19 +902,16 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Moves one staged file to its destination. Moves are attempted atomically and fall
-   * back to a plain move where the filesystem does not support it.
+   * Moves one staged file to its destination without replacing an existing file. The
+   * move is not requested atomically: on POSIX filesystems an atomic move renames over
+   * an existing destination, which would void the vacancy check.
    *
    * @param file The staged file.
    * @param destination The destination beneath the target.
-   * @throws IOException Thrown if the move fails.
+   * @throws IOException Thrown if the destination exists or the move fails.
    */
   static void moveIntoPlace(Path file, Path destination) throws IOException {
-    try {
-      Files.move(file, destination, StandardCopyOption.ATOMIC_MOVE);
-    } catch (AtomicMoveNotSupportedException e) {
-      Files.move(file, destination);
-    }
+    Files.move(file, destination);
   }
 
   /**
@@ -935,8 +1003,8 @@ public final class ResourceInstaller {
   /**
    * Detects the content format from its leading bytes and unpacks accordingly,
    * bounding the total expanded bytes against the expansion limit. One exception: a
-   * source named {@code *.bin} is stored verbatim even when its bytes are a zip
-   * archive. OpenNLP model consumers load the packed zip artifact. Unpacking it would
+   * source named {@code *.bin}, in any letter case, is stored verbatim even when its
+   * bytes are a zip archive. OpenNLP model consumers load the packed zip artifact. Unpacking it would
    * place the internal entries ({@code manifest.properties}, {@code *.model}) in the
    * target instead of the model.
    *
@@ -959,14 +1027,15 @@ public final class ResourceInstaller {
       raw.mark(MAGIC_LENGTH);
       final byte[] magic = raw.readNBytes(MAGIC_LENGTH);
       raw.reset();
-      if (name.endsWith(MODEL_SUFFIX)) {
+      if (endsWithIgnoreCase(name, MODEL_SUFFIX)) {
         copyBounded(raw, safeChild(staging, name), budget);
       } else if (hasMagic(magic, GZIP_MAGIC_FIRST, GZIP_MAGIC_SECOND)) {
-        unpackGzip(raw, name, staging, budget, entryBudget);
+        unpackGzip(raw, name, staging,
+            gzipBudget(Files.size(downloaded), budget), entryBudget);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_LOCAL_HEADER_THIRD, ZIP_LOCAL_HEADER_FOURTH)) {
-        unpackZip(raw, staging, budget, entryBudget);
-        validateZip(downloaded);
+        final Set<String> unpacked = unpackZip(raw, staging, budget, entryBudget);
+        validateZip(downloaded, unpacked);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_END_HEADER_THIRD, ZIP_END_HEADER_FOURTH)) {
         validateEmptyZip(raw);
@@ -974,6 +1043,37 @@ public final class ResourceInstaller {
         copyBounded(raw, safeChild(staging, name), budget);
       }
     }
+  }
+
+  /**
+   * Bounds gzip decompression by the expansion ratio as well as the absolute limit, so a
+   * small source cannot expand to the whole absolute limit.
+   *
+   * @param compressedSize The size of the gzip source in bytes.
+   * @param budget The expansion budget under the absolute limit.
+   * @return The tighter of the two budgets. Not {@code null}.
+   */
+  private static Budget gzipBudget(long compressedSize, Budget budget) {
+    final long ratioCeiling = compressedSize > Long.MAX_VALUE / MAX_GZIP_EXPANSION_RATIO
+        ? Long.MAX_VALUE
+        : Math.max(MIN_GZIP_EXPANSION_BYTES, compressedSize * MAX_GZIP_EXPANSION_RATIO);
+    if (ratioCeiling >= budget.limit()) {
+      return budget;
+    }
+    return new Budget(ratioCeiling, "gzip content expands beyond "
+        + MAX_GZIP_EXPANSION_RATIO + " times its compressed size");
+  }
+
+  /**
+   * Compares a name's ending with a suffix, ignoring letter case.
+   *
+   * @param name The file name.
+   * @param suffix The suffix to look for.
+   * @return {@code true} if the name ends with the suffix in any letter case.
+   */
+  private static boolean endsWithIgnoreCase(String name, String suffix) {
+    return name.length() >= suffix.length() && name.regionMatches(true,
+        name.length() - suffix.length(), suffix, 0, suffix.length());
   }
 
   /**
@@ -996,35 +1096,58 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Checks that a zip archive contains a valid central directory before staged content
-   * is promoted.
+   * Checks that a zip archive contains a valid central directory listing the same files
+   * the local headers delivered, before staged content is promoted. The two listings
+   * can disagree in a crafted archive, and the local headers are what was unpacked.
    *
    * @param archive The downloaded archive.
-   * @throws IOException Thrown if the archive is malformed or cannot be read.
+   * @param unpacked The names of the file entries read from the local headers.
+   * @throws IOException Thrown if the archive is malformed, the listings differ, or the
+   *         archive cannot be read.
    */
-  private static void validateZip(Path archive) throws IOException {
-    try (ZipFile ignored = new ZipFile(archive.toFile())) {
-      // Construction validates the central directory.
+  private static void validateZip(Path archive, Set<String> unpacked) throws IOException {
+    final Set<String> listed = new HashSet<>();
+    try (ZipFile zip = new ZipFile(archive.toFile())) {
+      final Enumeration<? extends ZipEntry> entries = zip.entries();
+      while (entries.hasMoreElements()) {
+        final ZipEntry entry = entries.nextElement();
+        if (!entry.isDirectory()) {
+          listed.add(entry.getName());
+        }
+      }
     } catch (UnsupportedOperationException e) {
-      validateZipOnNonDefaultFileSystem(archive);
+      listed.addAll(listZipOnNonDefaultFileSystem(archive));
     } catch (ZipException e) {
       throw new IOException(MALFORMED_ZIP_ERROR, e);
+    }
+    if (!listed.equals(unpacked)) {
+      throw new IOException(ZIP_MISMATCH_ERROR);
     }
   }
 
   /**
-   * Validates an archive stored by a file-system provider that cannot supply a
-   * {@link java.io.File} to {@link ZipFile}.
+   * Lists the file entries of an archive stored by a file-system provider that cannot
+   * supply a {@link java.io.File} to {@link ZipFile}.
    *
    * @param archive The downloaded archive.
+   * @return The file entry names from the central directory. Not {@code null}.
    * @throws IOException Thrown if the archive is malformed or cannot be read.
    */
-  private static void validateZipOnNonDefaultFileSystem(Path archive) throws IOException {
-    try (FileSystem ignored = FileSystems.newFileSystem(archive)) {
-      // Construction validates the central directory.
+  private static Set<String> listZipOnNonDefaultFileSystem(Path archive)
+      throws IOException {
+    final Set<String> listed = new HashSet<>();
+    try (FileSystem zip = FileSystems.newFileSystem(archive)) {
+      for (final Path root : zip.getRootDirectories()) {
+        try (Stream<Path> walk = Files.walk(root)) {
+          walk.filter(Files::isRegularFile)
+              .map(path -> root.relativize(path).toString())
+              .forEach(listed::add);
+        }
+      }
     } catch (ZipException | ProviderNotFoundException e) {
       throw new IOException(MALFORMED_ZIP_ERROR, e);
     }
+    return listed;
   }
 
   /**
@@ -1077,7 +1200,7 @@ public final class ResourceInstaller {
 
   /**
    * Unpacks gzip content: a tar archive inside when present, a plain file otherwise. A
-   * plain file omits the {@code .gz} suffix of its source name. If the source name is
+   * plain file omits the {@code .gz} suffix of its source name, in any letter case. If the source name is
    * only that suffix, the installed file is named {@value #DEFAULT_RESOURCE_NAME}.
    *
    * @param raw The gzip-compressed content.
@@ -1096,7 +1219,7 @@ public final class ResourceInstaller {
       unpackTar(decompressed, staging, entryBudget);
       decompressed.transferTo(OutputStream.nullOutputStream());
     } else {
-      final String strippedName = name.endsWith(GZIP_SUFFIX)
+      final String strippedName = endsWithIgnoreCase(name, GZIP_SUFFIX)
           ? name.substring(0, name.length() - GZIP_SUFFIX.length()) : name;
       final String plainName = strippedName.isEmpty()
           ? DEFAULT_RESOURCE_NAME : strippedName;
@@ -1162,12 +1285,14 @@ public final class ResourceInstaller {
    * @param budget The expansion budget.
    * @param entryBudget The entry-count budget, charged for every entry including
    *                    directories.
+   * @return The names of the file entries unpacked. Not {@code null}.
    * @throws IOException Thrown if the archive is malformed, an entry escapes the
    *         staging directory, or a limit is exceeded.
    */
-  private static void unpackZip(InputStream raw, Path staging, Budget budget,
+  private static Set<String> unpackZip(InputStream raw, Path staging, Budget budget,
       Budget entryBudget) throws IOException {
     final ZipInputStream zip = new ZipInputStream(raw);
+    final Set<String> unpacked = new HashSet<>();
     boolean foundEntry = false;
     ZipEntry entry;
     while ((entry = zip.getNextEntry()) != null) {
@@ -1180,10 +1305,12 @@ public final class ResourceInstaller {
       }
       final Path file = newArchiveFile(staging, entry.getName());
       copyBounded(zip, file, budget);
+      unpacked.add(entry.getName());
     }
     if (!foundEntry) {
       throw new IOException(MALFORMED_ZIP_ERROR);
     }
+    return unpacked;
   }
 
   /**

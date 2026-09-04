@@ -190,7 +190,8 @@ for(ClassPathModelEntry entry : models) {
     <para>
       Http and https requests use connection and read timeouts, follow up to five
       redirects by default, and reject an https-to-http downgrade. Default limits are 1 GiB
-      downloaded, 4 GiB expanded, and 100000 archive entries. These defaults can be set at
+      downloaded, 4 GiB expanded, and 100000 archive entries; gzip content may expand to
+      at most 100 times its compressed size, with a 1 MiB floor for small sources. These defaults can be set at
       JVM startup with
       <code>opennlp.download.max.bytes</code>, <code>opennlp.install.max.total.bytes</code>, and
       <code>opennlp.install.max.entries</code>. Use <code>ResourceInstaller.Limits</code>

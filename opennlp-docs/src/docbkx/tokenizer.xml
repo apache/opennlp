@@ -547,7 +547,7 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
 				Install a dictionary archive with <code>MecabDictionaryInstaller</code>, load it
 				as a <code>MecabDictionary</code>, and tokenize. Remote archives require an
-				expected SHA-512 digest; an application-supplied opt-in catalog
+				expected SHA-256 or SHA-512 digest; an application-supplied opt-in catalog
 				(<code>installFromCatalog</code>) also needs
 				<code>-Dopennlp.download.remote=true</code>.
 				<code>matrix.def</code> must list a cost for every declared cell; matrix

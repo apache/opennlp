@@ -52,7 +52,8 @@ import opennlp.tools.util.ResourceInstaller;
  * empty because they are input for {@code mecab-dict-index}, not loadable lexicon
  * data. Installed files are flattened to their base names. A file whose base name
  * already exists in the target is not replaced, so it must be removed before refreshing
- * a dictionary.</p>
+ * a dictionary. The archive unpacks into a hidden scratch directory beneath the target,
+ * on the target's filesystem, which is removed when the installation ends.</p>
  *
  * @since 3.0.0
  */
@@ -60,7 +61,9 @@ public final class MecabDictionaryInstaller {
 
   /** The deepest entry path, relative to the archive root, that holds payload. */
   private static final int MAX_PAYLOAD_DEPTH = 2;
-  private static final String TEMP_DIRECTORY_PREFIX = "mecab-dict-";
+
+  /** The hidden scratch directory beneath the target that the archive unpacks into. */
+  private static final String SCRATCH_PREFIX = ".mecab-dict-";
 
   /** Prevents construction of this utility class. */
   private MecabDictionaryInstaller() {
@@ -114,7 +117,7 @@ public final class MecabDictionaryInstaller {
     if (targetDirectory == null) {
       throw new IllegalArgumentException("targetDirectory must not be null");
     }
-    final Path unpacked = Files.createTempDirectory(TEMP_DIRECTORY_PREFIX);
+    final Path unpacked = createScratch(targetDirectory);
     try {
       ResourceInstaller.install(archive, unpacked, expectedChecksum);
       return promoteDictionaryFiles(unpacked, targetDirectory);
@@ -149,13 +152,37 @@ public final class MecabDictionaryInstaller {
     if (targetDirectory == null) {
       throw new IllegalArgumentException("targetDirectory must not be null");
     }
-    final Path unpacked = Files.createTempDirectory(TEMP_DIRECTORY_PREFIX);
+    final Path unpacked = createScratch(targetDirectory);
     try {
       catalog.install(dictionaryId, unpacked);
       return promoteDictionaryFiles(unpacked, targetDirectory);
     } finally {
       deleteRecursively(unpacked);
     }
+  }
+
+  /**
+   * Creates the scratch directory the archive unpacks into. It lives beneath the target
+   * so the download, the unpacked tree, and the installed files share one filesystem
+   * and a large dictionary cannot fill the system temporary directory. Scratch
+   * directories that an earlier installation left behind, because its process ended
+   * before cleanup, are removed first.
+   *
+   * @param targetDirectory The directory to install into; created when absent.
+   * @return The new scratch directory. Not {@code null}.
+   * @throws IOException Thrown if a directory cannot be created or a stale one removed.
+   */
+  private static Path createScratch(Path targetDirectory) throws IOException {
+    Files.createDirectories(targetDirectory);
+    final List<Path> stale;
+    try (Stream<Path> entries = Files.list(targetDirectory)) {
+      stale = entries.filter(entry -> entry.getFileName().toString().startsWith(SCRATCH_PREFIX)
+          && Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)).toList();
+    }
+    for (final Path entry : stale) {
+      deleteRecursively(entry);
+    }
+    return Files.createTempDirectory(targetDirectory, SCRATCH_PREFIX);
   }
 
   /**
@@ -172,7 +199,6 @@ public final class MecabDictionaryInstaller {
    */
   private static int promoteDictionaryFiles(Path unpacked, Path targetDirectory)
       throws IOException {
-    Files.createDirectories(targetDirectory);
     final List<Path> candidates;
     try (Stream<Path> files = Files.walk(unpacked, MAX_PAYLOAD_DEPTH)) {
       candidates = files.filter(Files::isRegularFile).toList();
