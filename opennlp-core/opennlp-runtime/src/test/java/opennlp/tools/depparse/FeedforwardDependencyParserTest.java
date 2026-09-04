@@ -405,6 +405,26 @@ public class FeedforwardDependencyParserTest {
         new ByteArrayInputStream(out.toByteArray())));
   }
 
+  @Test
+  void testModelWithoutShiftFailsDuringLoading() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (DataOutputStream data = new DataOutputStream(out)) {
+      writeModelWithTransitions(data, Transition.rightArc("root").encode());
+    }
+    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+        new ByteArrayInputStream(out.toByteArray())));
+  }
+
+  @Test
+  void testModelWithoutRootArcFailsDuringLoading() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try (DataOutputStream data = new DataOutputStream(out)) {
+      writeModelWithTransitions(data, Transition.SHIFT.encode());
+    }
+    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+        new ByteArrayInputStream(out.toByteArray())));
+  }
+
   /** Writes a test vocabulary with consecutive embedding indices. */
   private static void writeVocabulary(DataOutputStream data, int first, String... symbols)
       throws IOException {
@@ -439,6 +459,33 @@ public class FeedforwardDependencyParserTest {
     writeMatrix(data, 1, 1);
     data.writeInt(1);
     data.writeFloat(outputBias);
+  }
+
+  /** Writes a structurally complete model with the selected transition inventory. */
+  private static void writeModelWithTransitions(DataOutputStream data,
+      String... transitions) throws IOException {
+    data.writeUTF("ONLP-FFDP-1");
+    writeVocabulary(data, 0,
+        FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT,
+        FeedforwardDependencyModel.ROOT_SYMBOL);
+    writeVocabulary(data, 3,
+        FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT,
+        FeedforwardDependencyModel.ROOT_SYMBOL);
+    writeVocabulary(data, 6,
+        FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT);
+    data.writeInt(transitions.length);
+    for (final String transition : transitions) {
+      data.writeUTF(transition);
+    }
+    data.writeInt(1);
+    writeMatrix(data, 8, 1);
+    writeMatrix(data, 1, FeedforwardContext.FEATURE_COUNT);
+    writeVector(data, 1);
+    writeMatrix(data, transitions.length, 1);
+    writeVector(data, transitions.length);
   }
 
   /** Writes a zero-filled matrix in the model format. */
