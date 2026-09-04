@@ -23,6 +23,7 @@ package opennlp.tools.stemmer.light;
  */
 final class StemmerUtil {
 
+  /** Prevents construction of this utility class. */
   private StemmerUtil() {
   }
 
