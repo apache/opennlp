@@ -93,6 +93,11 @@ public class FeedforwardDependencyParserTest {
   }
 
   @Test
+  void testTransitionInventoryContainsOnlyObservedActions() {
+    assertFalse(List.of(model.transitions()).contains("LEFT_ARC:root"));
+  }
+
+  @Test
   void testBeamOfOneMatchesGreedy() {
     final FeedforwardDependencyParser beamed = new FeedforwardDependencyParser(model, 1);
     for (final DependencySample sample : corpus()) {
