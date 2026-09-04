@@ -28,6 +28,7 @@ import opennlp.tools.geo.GeoPoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the in-memory gazetteer over caller-supplied entries: the documented third-party
@@ -66,5 +67,15 @@ public class InMemoryGazetteerTest {
         new GeoPoint(38.0, -97.0), List.of(), 45001L);
     assertThrows(IllegalArgumentException.class,
         () -> InMemoryGazetteer.fromEntries(List.of(once, once))); // duplicate (source, recordId)
+  }
+
+  @Test
+  void testEmptyEntrySetCreatesAnEmptyGazetteer() {
+    final InMemoryGazetteer empty = InMemoryGazetteer.fromEntries(List.of());
+
+    assertTrue(empty.sources().isEmpty());
+    assertTrue(empty.lookup("Paris").isEmpty());
+    assertTrue(empty.byId("source", "record").isEmpty());
+    assertTrue(empty.byRegion("US").isEmpty());
   }
 }
