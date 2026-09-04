@@ -21,11 +21,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -172,6 +174,12 @@ public class UserGazetteerTest {
     assertThrows(IllegalArgumentException.class, () -> gazetteer().lookup(null));
     assertThrows(IllegalArgumentException.class, () -> gazetteer().byId(null, "x"));
     assertThrows(IllegalArgumentException.class, () -> gazetteer().byId("customer", null));
+  }
+
+  @Test
+  void testPathLoadValidatesSourceBeforeOpeningFile(@TempDir Path dir) {
+    assertThrows(IllegalArgumentException.class,
+        () -> UserGazetteer.load(dir.resolve("missing.tsv"), null));
   }
 
   @Test
