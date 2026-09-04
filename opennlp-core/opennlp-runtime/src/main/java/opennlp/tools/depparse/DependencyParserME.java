@@ -19,7 +19,9 @@ package opennlp.tools.depparse;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.EventTrainer;
@@ -53,7 +55,7 @@ public class DependencyParserME implements DependencyParser {
    *
    * @param model The model to parse with. Must not be {@code null}.
    * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or an
-   *         outcome of the model does not decode to a transition.
+   *         outcome inventory is invalid or cannot parse a sentence.
    */
   public DependencyParserME(DependencyModel model) {
     if (model == null) {
@@ -69,7 +71,7 @@ public class DependencyParserME implements DependencyParser {
    *
    * @param model The transition classification model. Must not be {@code null}.
    * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or an
-   *         outcome of the model does not decode to a transition.
+   *         outcome inventory is invalid or cannot parse a sentence.
    */
   public DependencyParserME(MaxentModel model) {
     if (model == null) {
@@ -91,6 +93,9 @@ public class DependencyParserME implements DependencyParser {
    */
   private static Transition[] decodeOutcomes(MaxentModel model) {
     final Transition[] decoded = new Transition[model.getNumOutcomes()];
+    final Set<Transition> seen = new HashSet<>();
+    boolean hasShift = false;
+    boolean hasRightArc = false;
     for (int i = 0; i < decoded.length; i++) {
       final String outcome = model.getOutcome(i);
       try {
@@ -98,6 +103,17 @@ public class DependencyParserME implements DependencyParser {
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException("model outcome is not a transition: " + outcome, e);
       }
+      if (!seen.add(decoded[i])) {
+        throw new IllegalArgumentException("duplicate model transition: " + outcome);
+      }
+      hasShift |= decoded[i].type() == Transition.Type.SHIFT;
+      hasRightArc |= decoded[i].type() == Transition.Type.RIGHT_ARC;
+    }
+    if (!hasShift) {
+      throw new IllegalArgumentException("model has no SHIFT action");
+    }
+    if (!hasRightArc) {
+      throw new IllegalArgumentException("model has no RIGHT_ARC action");
     }
     return decoded;
   }
