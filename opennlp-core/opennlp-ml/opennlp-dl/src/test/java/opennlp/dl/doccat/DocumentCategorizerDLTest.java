@@ -23,7 +23,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import opennlp.dl.InferenceOptions;
+import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
+import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -107,21 +109,21 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
-  void testTokenIdsMapsTokensToVocabularyIds() {
-    final long[] ids = DocumentCategorizerDL.tokenIds(
-        new String[] {WordpieceTokenizer.BERT_CLS_TOKEN, "hello", "world",
-            WordpieceTokenizer.BERT_SEP_TOKEN}, vocab());
+  void testEncodeUsesVocabularyIds() {
+    final Map<String, Integer> vocab = Map.of(
+        WordpieceTokenizer.BERT_CLS_TOKEN, 101,
+        WordpieceTokenizer.BERT_SEP_TOKEN, 205,
+        WordpieceTokenizer.BERT_UNK_TOKEN, 999,
+        "hello", 42);
+    final WordpieceEncoder encoder = new WordpieceEncoder(vocab, true,
+        WordpieceTokenizer.BERT_CLS_TOKEN,
+        WordpieceTokenizer.BERT_SEP_TOKEN,
+        WordpieceTokenizer.BERT_UNK_TOKEN);
 
-    assertArrayEquals(new long[] {0, 3, 4, 1}, ids);
-  }
+    final Tokens tokens = DocumentCategorizerDL.encode("Hello missing", encoder);
 
-  @Test
-  void testTokenIdsRejectsTokensMissingFromVocabulary() {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-        DocumentCategorizerDL.tokenIds(new String[] {"hello", "missing"}, vocab()));
-
-    assertTrue(e.getMessage().contains("missing"),
-        "the error message should name the missing token: " + e.getMessage());
+    assertArrayEquals(new String[] {"[CLS]", "hello", "[UNK]", "[SEP]"}, tokens.tokens());
+    assertArrayEquals(new long[] {101, 42, 999, 205}, tokens.ids());
   }
 
   @Test
