@@ -74,8 +74,8 @@ public class ResourceInstallerTest {
   private static final String COLLISION_ERROR = "target already contains: ";
   private static final String DUPLICATE_ENTRY_ERROR =
       "archive contains duplicate file entry: ";
-  private static final String GZIP_RATIO_ERROR =
-      "gzip content expands beyond 100 times its compressed size";
+  private static final String RATIO_ERROR =
+      "content expands beyond 100 times its compressed size";
   private static final String ZIP_MISMATCH_ERROR =
       "zip local headers and central directory list different files";
 
@@ -1247,15 +1247,23 @@ public class ResourceInstallerTest {
     }
   }
 
-  @Test
-  void testGzipExpansionRatioIsBounded(@TempDir Path source, @TempDir Path target)
-      throws Exception {
-    // Four mebibytes of zeros compress to a few kibibytes: far beyond the ratio ceiling,
-    // far below the absolute expansion limit.
-    final Path file = source.resolve("zeros.txt.gz");
-    Files.write(file, gzip(new byte[4 << 20]));
+  static Stream<Arguments> expansionBombs() throws IOException {
+    // Four mebibytes of zeros compress to a few kibibytes in either format: far beyond
+    // the ratio ceiling, far below the absolute expansion limit.
+    final byte[] zeros = new byte[4 << 20];
+    return Stream.of(
+        Arguments.of("zeros.txt.gz", gzip(zeros)),
+        Arguments.of("zeros.zip", zipOf("zeros.txt", zeros)));
+  }
 
-    assertInstallFails(file, target, GZIP_RATIO_ERROR);
+  @ParameterizedTest
+  @MethodSource("expansionBombs")
+  void testExpansionRatioIsBounded(String name, byte[] content, @TempDir Path source,
+      @TempDir Path target) throws Exception {
+    final Path file = source.resolve(name);
+    Files.write(file, content);
+
+    assertInstallFails(file, target, RATIO_ERROR);
   }
 
   @Test
@@ -1353,10 +1361,15 @@ public class ResourceInstallerTest {
 
   /** Builds a zip archive holding one text entry. */
   private static byte[] zipOf(String name, String content) throws IOException {
+    return zipOf(name, content.getBytes(StandardCharsets.UTF_8));
+  }
+
+  /** Builds a zip archive holding one entry with the given bytes. */
+  private static byte[] zipOf(String name, byte[] content) throws IOException {
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     try (ZipOutputStream zip = new ZipOutputStream(out)) {
       zip.putNextEntry(new ZipEntry(name));
-      zip.write(content.getBytes(StandardCharsets.UTF_8));
+      zip.write(content);
       zip.closeEntry();
     }
     return out.toByteArray();

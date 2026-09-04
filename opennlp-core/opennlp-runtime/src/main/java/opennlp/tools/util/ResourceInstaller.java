@@ -70,9 +70,9 @@ import opennlp.tools.util.archive.TarStream;
  * connection and read timeouts, follow at most a fixed number of redirects, reject
  * redirects that leave the http and https schemes or downgrade https to http, and
  * abort once the download or the expanded content crosses its size limit or the
- * archive crosses its entry limit. Gzip content may expand to at most
- * {@value #MAX_GZIP_EXPANSION_RATIO} times its compressed size, with a floor of
- * {@value #MIN_GZIP_EXPANSION_BYTES} bytes for small sources. The defaults in
+ * archive crosses its entry limit. Compressed content, gzip and zip alike, may
+ * expand to at most {@value #MAX_EXPANSION_RATIO} times its compressed size, with a
+ * floor of {@value #MIN_EXPANSION_BYTES} bytes for small sources. The defaults in
  * {@link Limits#DEFAULT} apply when no limits are given, and {@link Limits#builder()}
  * starts from them.</p>
  *
@@ -123,11 +123,11 @@ public final class ResourceInstaller {
   private static final int ZIP_COMMENT_LENGTH_OFFSET = 20;
   private static final int TAR_END_BLOCKS_LENGTH = 1024;
 
-  /** The largest decompressed size accepted per compressed byte of gzip content. */
-  private static final int MAX_GZIP_EXPANSION_RATIO = 100;
+  /** The largest expanded size accepted per compressed byte of a source. */
+  private static final int MAX_EXPANSION_RATIO = 100;
 
-  /** The decompressed size every gzip source may reach regardless of the ratio. */
-  private static final long MIN_GZIP_EXPANSION_BYTES = 1L << 20;
+  /** The expanded size every compressed source may reach regardless of the ratio. */
+  private static final long MIN_EXPANSION_BYTES = 1L << 20;
   private static final int HTTP_TEMPORARY_REDIRECT = 307;
   private static final int HTTP_PERMANENT_REDIRECT = 308;
   private static final String SCHEME_HTTP = "http";
@@ -1031,10 +1031,11 @@ public final class ResourceInstaller {
         copyBounded(raw, safeChild(staging, name), budget);
       } else if (hasMagic(magic, GZIP_MAGIC_FIRST, GZIP_MAGIC_SECOND)) {
         unpackGzip(raw, name, staging,
-            gzipBudget(Files.size(downloaded), budget), entryBudget);
+            expansionBudget(Files.size(downloaded), budget), entryBudget);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_LOCAL_HEADER_THIRD, ZIP_LOCAL_HEADER_FOURTH)) {
-        final Set<String> unpacked = unpackZip(raw, staging, budget, entryBudget);
+        final Set<String> unpacked = unpackZip(raw, staging,
+            expansionBudget(Files.size(downloaded), budget), entryBudget);
         validateZip(downloaded, unpacked);
       } else if (hasMagic(magic, ZIP_MAGIC_FIRST, ZIP_MAGIC_SECOND,
           ZIP_END_HEADER_THIRD, ZIP_END_HEADER_FOURTH)) {
@@ -1046,22 +1047,23 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Bounds gzip decompression by the expansion ratio as well as the absolute limit, so a
-   * small source cannot expand to the whole absolute limit.
+   * Bounds expansion by the ratio as well as the absolute limit, so a small source
+   * cannot expand to the whole absolute limit. Deflate reaches roughly 1000 to 1, so
+   * the absolute limit alone lets a few megabytes fill the target filesystem.
    *
-   * @param compressedSize The size of the gzip source in bytes.
+   * @param compressedSize The size of the compressed source in bytes.
    * @param budget The expansion budget under the absolute limit.
    * @return The tighter of the two budgets. Not {@code null}.
    */
-  private static Budget gzipBudget(long compressedSize, Budget budget) {
-    final long ratioCeiling = compressedSize > Long.MAX_VALUE / MAX_GZIP_EXPANSION_RATIO
+  private static Budget expansionBudget(long compressedSize, Budget budget) {
+    final long ratioCeiling = compressedSize > Long.MAX_VALUE / MAX_EXPANSION_RATIO
         ? Long.MAX_VALUE
-        : Math.max(MIN_GZIP_EXPANSION_BYTES, compressedSize * MAX_GZIP_EXPANSION_RATIO);
+        : Math.max(MIN_EXPANSION_BYTES, compressedSize * MAX_EXPANSION_RATIO);
     if (ratioCeiling >= budget.limit()) {
       return budget;
     }
-    return new Budget(ratioCeiling, "gzip content expands beyond "
-        + MAX_GZIP_EXPANSION_RATIO + " times its compressed size");
+    return new Budget(ratioCeiling, "content expands beyond "
+        + MAX_EXPANSION_RATIO + " times its compressed size");
   }
 
   /**
