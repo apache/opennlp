@@ -23,6 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -234,6 +238,34 @@ public class DependencyParserEdgeCaseTest {
             new String[] {"nsubj", "root", "obj"}),
         reloaded.parse(new String[] {"she", "eats", "fish"},
             new String[] {"PRP", "VBZ", "NN"}));
+  }
+
+  @Test
+  void testParserInstancesCanBeSharedBetweenThreads() throws Exception {
+    final DependencyGraph expected = DependencyGraph.of(new int[] {1, 2, -1},
+        new String[] {"det", "nsubj", "root"});
+    final List<Callable<Void>> tasks = new ArrayList<>();
+    for (int task = 0; task < 8; task++) {
+      tasks.add(() -> {
+        for (int iteration = 0; iteration < 50; iteration++) {
+          final String[] tokens = {"the", "dog", "barks"};
+          final String[] tags = {"DT", "NN", "VBZ"};
+          assertEquals(expected, maxentParser.parse(tokens, tags));
+          assertEquals(expected, feedforwardParser.parse(tokens, tags));
+        }
+        return null;
+      });
+    }
+
+    final ExecutorService executor = Executors.newFixedThreadPool(8);
+    try {
+      final List<Future<Void>> results = executor.invokeAll(tasks);
+      for (final Future<Void> result : results) {
+        result.get();
+      }
+    } finally {
+      executor.shutdownNow();
+    }
   }
 
   /**
