@@ -67,6 +67,8 @@ import opennlp.tools.stemmer.StemmerFactory;
  * its own {@link StemmerFactory}. Input is expected to be lowercase, as produced by a
  * case-folding normalization step; the stemmer does not fold case itself.</p>
  *
+ * @see <a href="https://github.com/apache/lucene/blob/4965e8d4d960445a0522fae512c60c6d8f11fc29/lucene/analysis/common/src/java/org/apache/lucene/analysis/es/SpanishLightStemmer.java">
+ *     Apache Lucene SpanishLightStemmer</a>
  * @since 3.0.0
  */
 @ThreadSafe

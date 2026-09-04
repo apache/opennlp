@@ -130,12 +130,13 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			<code>LightStemmerUsageExampleTest</code> asserts the behavior shown here.
 			<programlisting language="java"><![CDATA[
 GermanLightStemmer light = new GermanLightStemmer();
-light.stem("häusern");                         // "haus"
+light.stem("häusern");                           // "haus"
 
-Stemmer shared = new SharingStemmer(light);
-shared.stem("häusern");                        // "haus"
+new SpanishMinimalStemmer().stem("jerseis");         // "jersey"
 
-new GermanMinimalStemmer().stem("vaterhäusern"); // "vaterhauser"]]>
+NorwegianLightStemmer bokmaal =
+    new NorwegianLightStemmer(NorwegianVariety.BOKMAAL);
+bokmaal.stem("hemmeligheten");                       // "hemmelig"]]>
 			</programlisting>
 		</para>
 	</section>

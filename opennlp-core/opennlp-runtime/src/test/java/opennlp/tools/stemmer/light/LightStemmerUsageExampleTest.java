@@ -20,10 +20,6 @@ package opennlp.tools.stemmer.light;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.stemmer.SharingStemmer;
-import opennlp.tools.stemmer.Stemmer;
-import opennlp.tools.stemmer.StemmerFactory;
-
 /**
  * Runs the manual's light stemmer examples (docbkx {@code stemmer.xml}) verbatim: every
  * value the chapter states is asserted here, so a change breaking this test breaks the
@@ -31,26 +27,25 @@ import opennlp.tools.stemmer.StemmerFactory;
  */
 class LightStemmerUsageExampleTest {
 
-  /**
-   * German light stemming of a plural form, and the same result through
-   * {@link SharingStemmer}.
-   */
+  /** German light stemming of a plural form. */
   @Test
   void testGermanLightStemmerStemsPlural() {
     final GermanLightStemmer light = new GermanLightStemmer();
     Assertions.assertEquals("haus", light.stem("h\u00E4usern").toString());
-
-    final StemmerFactory factory = light;
-    final Stemmer shared = new SharingStemmer(factory);
-    Assertions.assertEquals("haus", shared.stem("h\u00E4usern").toString());
   }
 
-  /**
-   * German minimal stemming keeps more of the surface form than the light tier.
-   */
+  /** Spanish minimal stemming reduces a plural ending. */
   @Test
-  void testGermanMinimalStemmerIsShallower() {
-    Assertions.assertEquals("vaterhauser",
-        new GermanMinimalStemmer().stem("vaterh\u00E4usern").toString());
+  void testSpanishMinimalStemmerReducesPlural() {
+    Assertions.assertEquals("jersey",
+        new SpanishMinimalStemmer().stem("jerseis").toString());
+  }
+
+  /** Norwegian stemming selects a written standard at construction. */
+  @Test
+  void testNorwegianLightStemmerSelectsBokmaal() {
+    final NorwegianLightStemmer bokmaal =
+        new NorwegianLightStemmer(NorwegianVariety.BOKMAAL);
+    Assertions.assertEquals("hemmelig", bokmaal.stem("hemmeligheten").toString());
   }
 }

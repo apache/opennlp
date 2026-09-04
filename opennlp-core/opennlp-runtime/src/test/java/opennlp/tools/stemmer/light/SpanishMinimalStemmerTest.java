@@ -33,7 +33,10 @@ class SpanishMinimalStemmerTest {
       "jerseis, jersey",
       "abundantes, abundante",
       "clubes, club",
-      "voces, voz"
+      "voces, voz",
+      "cami\u00F3n, camion",
+      "contrarreloj, contrarreloj",
+      "contrarrelojes, contrarreloj"
   })
   void testCurrentSpanishPluralReferenceCases(String word, String expected) {
     assertEquals(expected, stemmer.stem(word).toString());
