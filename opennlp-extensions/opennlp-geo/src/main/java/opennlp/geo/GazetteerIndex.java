@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,8 +102,7 @@ final class GazetteerIndex {
   static GazetteerIndex load(InputStream in, boolean skipComments, RowParser parser)
       throws IOException {
     final GazetteerIndex index = new GazetteerIndex();
-    final BufferedReader reader =
-        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+    final BufferedReader reader = utf8Reader(in);
     String line;
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
@@ -221,6 +221,23 @@ final class GazetteerIndex {
       }
     }
     return fields;
+  }
+
+  /**
+   * Creates a reader that reports malformed UTF-8 instead of inserting replacement characters.
+   * Closing the reader closes the input stream.
+   *
+   * @param in The input stream. Must not be {@code null}.
+   * @return A buffered strict UTF-8 reader.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
+   */
+  static BufferedReader utf8Reader(InputStream in) {
+    if (in == null) {
+      throw new IllegalArgumentException("in must not be null");
+    }
+    return new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8.newDecoder()
+        .onMalformedInput(CodingErrorAction.REPORT)
+        .onUnmappableCharacter(CodingErrorAction.REPORT)));
   }
 
   /**

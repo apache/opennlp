@@ -19,9 +19,7 @@ package opennlp.geo;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -219,8 +217,7 @@ public final class BundledGazetteer implements Gazetteer {
    */
   static List<GazetteerEntry> parse(InputStream in, String resourceName) throws IOException {
     final List<GazetteerEntry> entries = new ArrayList<>();
-    try (BufferedReader reader =
-             new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+    try (BufferedReader reader = GazetteerIndex.utf8Reader(in)) {
       String line;
       int lineNumber = 0;
       while ((line = reader.readLine()) != null) {

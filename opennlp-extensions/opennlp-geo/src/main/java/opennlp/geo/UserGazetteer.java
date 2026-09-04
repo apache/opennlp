@@ -20,8 +20,6 @@ package opennlp.geo;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -195,8 +193,7 @@ public final class UserGazetteer implements Gazetteer {
       throw new IllegalArgumentException("in must not be null");
     }
     final List<Suppression> rules = new ArrayList<>();
-    final BufferedReader reader =
-        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+    final BufferedReader reader = GazetteerIndex.utf8Reader(in);
     String line;
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {

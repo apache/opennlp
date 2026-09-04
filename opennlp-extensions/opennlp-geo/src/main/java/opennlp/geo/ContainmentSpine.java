@@ -19,10 +19,7 @@ package opennlp.geo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -50,7 +47,7 @@ import opennlp.tools.util.StringUtil;
  * for example an administrative-territory query result, fits it. The Who's On First
  * meta CSV format is read directly by its header columns, so the published per-placetype
  * tables load without conversion; non-positive parent identifiers mean no usable
- * parent, as in the source data.</p>
+     * parent, as in the source data. Parent identifiers must be signed decimal integers.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  */
@@ -256,17 +253,36 @@ public final class ContainmentSpine implements PlaceHierarchy {
     }
 
     /**
-     * Reads a Who's On First parent identifier, where a non-positive value means the
+     * Reads a Who's On First parent identifier, where a non-positive decimal integer means the
      * row has no usable parent.
      *
      * @param parent The parent column, already trimmed.
      * @return The identifier, or {@code null} when the row is a root.
+     * @throws IllegalArgumentException Thrown if {@code parent} is not empty and is not a signed
+     *     decimal integer.
      */
     private static String positiveOrNull(String parent) {
-      if (parent.isEmpty() || parent.startsWith("-") || "0".equals(parent)) {
+      if (parent.isEmpty()) {
         return null;
       }
-      return parent;
+      int digit = 0;
+      final boolean negative = parent.charAt(0) == '-';
+      if (negative) {
+        digit++;
+      }
+      if (digit == parent.length()) {
+        throw new IllegalArgumentException("parent_id must be a signed decimal integer: " + parent);
+      }
+      boolean nonZero = false;
+      for (; digit < parent.length(); digit++) {
+        final char c = parent.charAt(digit);
+        if (c < '0' || c > '9') {
+          throw new IllegalArgumentException(
+              "parent_id must be a signed decimal integer: " + parent);
+        }
+        nonZero |= c != '0';
+      }
+      return negative || !nonZero ? null : parent;
     }
   }
 
@@ -279,10 +295,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
    */
   private static List<String> readLines(Path file) throws IOException {
     final List<String> lines = new ArrayList<>();
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-        Files.newInputStream(file), StandardCharsets.UTF_8.newDecoder()
-            .onMalformedInput(CodingErrorAction.REPORT)
-            .onUnmappableCharacter(CodingErrorAction.REPORT)))) {
+    try (BufferedReader reader = GazetteerIndex.utf8Reader(Files.newInputStream(file))) {
       String line;
       while ((line = reader.readLine()) != null) {
         lines.add(line);
@@ -378,7 +391,14 @@ public final class ContainmentSpine implements PlaceHierarchy {
             + file + ": id " + id);
       }
       final String parent = StringUtil.trimUnicodeWhitespace(fields.get(parentColumn));
-      builder.add(id, Builder.positiveOrNull(parent), name, type);
+      final String parentId;
+      try {
+        parentId = Builder.positiveOrNull(parent);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidFormatException("invalid parent_id column at line " + line + " in "
+            + file + ": " + e.getMessage(), e);
+      }
+      builder.add(id, parentId, name, type);
     }
   }
 
@@ -401,10 +421,7 @@ public final class ContainmentSpine implements PlaceHierarchy {
    *         appears inside an unquoted field, or content follows a closing quote.
    */
   private static void parseCsv(Path file, CsvRows consumer) throws IOException {
-    try (Reader in = new BufferedReader(new InputStreamReader(Files.newInputStream(file),
-        StandardCharsets.UTF_8.newDecoder()
-            .onMalformedInput(CodingErrorAction.REPORT)
-            .onUnmappableCharacter(CodingErrorAction.REPORT)))) {
+    try (Reader in = GazetteerIndex.utf8Reader(Files.newInputStream(file))) {
       final StringBuilder field = new StringBuilder();
       List<String> fields = new ArrayList<>();
       boolean quoted = false;
