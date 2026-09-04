@@ -17,6 +17,7 @@
 package opennlp.wordnet;
 
 import java.io.BufferedInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -50,9 +51,10 @@ import opennlp.tools.wordnet.WordNetRelation;
  * other language wordnets) into a {@link LexicalKnowledgeBase} using the JDK StAX parser.
  *
  * <p>It reads lexical entries, synsets with their definitions, every typed synset relation in
- * WN-LMF 1.4, and sense relations, which are lifted to the synset level as documented on
- * {@link WordNetRelation}. Elements outside that subset are skipped, as are relations of type
- * {@code other}, the format's untyped escape hatch. Other unknown relation types cause an
+ * WN-LMF 1.4, and sense relations, which are represented at the synset level as documented on
+ * {@link WordNetRelation}. Elements outside that subset are skipped. Relations of type
+ * {@code other} are also skipped because the format supplies no relation type to retain. Unknown
+ * typed relations cause an
  * {@link InvalidFormatException}. Multiple definitions are joined with {@code "; "} in document
  * order.</p>
  *
@@ -64,7 +66,7 @@ import opennlp.tools.wordnet.WordNetRelation;
  * Part-of-speech code {@code s} normalizes to {@link WordNetPOS#ADJECTIVE}, and a {@code similar}
  * relation on a verb synset maps to {@link WordNetRelation#VERB_GROUP} rather than
  * {@link WordNetRelation#SIMILAR_TO}. Use {@link #readResource(Path)} when a document contains
- * several lexicons; the single-lexicon {@code read} methods reject that shape instead of merging
+ * several lexicons; the single-lexicon {@code read} methods reject that document instead of merging
  * language-specific indexes. WN-LMF {@code Requires} declarations are preserved as dependency
  * metadata but are not resolved or loaded. Returned resources and lexicons are immutable and safe
  * for concurrent lookups.</p>
@@ -99,7 +101,7 @@ public final class WnLmfReader {
       "property", "secondary_aspect_ip", "secondary_aspect_pi", "simple_aspect_ip",
       "simple_aspect_pi", "state", "undergoer", "uses", "vehicle");
 
-  /** The format's escape-hatch relation type; carries no type the contract can express. */
+  /** The untyped relation that has no corresponding {@link WordNetRelation}. */
   private static final String OTHER_RELATION = "other";
 
   /** The element declaring a lexical entry; opened and closed by the same handlers. */
@@ -227,7 +229,8 @@ public final class WnLmfReader {
     }
     final Parser parser = new Parser(resourceName);
     try {
-      final XMLStreamReader reader = hardenedFactory().createXMLStreamReader(in);
+      final XMLStreamReader reader =
+          hardenedFactory().createXMLStreamReader(new NonClosingInputStream(in));
       try {
         parser.parse(reader);
       } finally {
@@ -276,9 +279,23 @@ public final class WnLmfReader {
     factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
     factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
     factory.setXMLResolver((publicId, systemId, baseUri, namespace) -> {
-      throw new XMLStreamException("External entity resolution is disabled, refusing " + systemId);
+      throw new XMLStreamException("External entity resolution is disabled: " + systemId);
     });
     return factory;
+  }
+
+  /** Prevents a StAX reader from closing the stream owned by its caller. */
+  private static final class NonClosingInputStream extends FilterInputStream {
+
+    /** Wraps the caller-owned stream. */
+    NonClosingInputStream(InputStream in) {
+      super(in);
+    }
+
+    /** Leaves the wrapped stream open. */
+    @Override
+    public void close() {
+    }
   }
 
   /** Holds the streaming parse state and performs post-parse resolution. */
@@ -614,8 +631,8 @@ public final class WnLmfReader {
     }
 
     /**
-     * Resolves the collected raw state into an immutable lexicon: validates sense targets, lifts
-     * sense relations to the synset level, and materializes the contract synsets.
+     * Resolves the parsed state into an immutable lexicon, validates sense targets, represents
+     * sense relations at the synset level, and builds the public synset values.
      *
      * @return The loaded lexicon.
      * @throws InvalidFormatException Thrown if a sense or relation references an undeclared
