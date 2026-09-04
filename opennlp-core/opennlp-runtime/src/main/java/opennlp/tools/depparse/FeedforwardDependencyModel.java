@@ -432,16 +432,26 @@ public class FeedforwardDependencyModel {
     final String[] transitions = new String[
         readCount(data, "transition count", MAX_TRANSITIONS, false)];
     final Set<String> transitionSet = new HashSet<>();
+    boolean hasShift = false;
+    boolean hasRightArc = false;
     for (int i = 0; i < transitions.length; i++) {
       transitions[i] = data.readUTF();
       if (!transitionSet.add(transitions[i])) {
         throw new IOException("duplicate transition: " + transitions[i]);
       }
       try {
-        Transition.decode(transitions[i]);
+        final Transition transition = Transition.decode(transitions[i]);
+        hasShift |= transition.type() == Transition.Type.SHIFT;
+        hasRightArc |= transition.type() == Transition.Type.RIGHT_ARC;
       } catch (IllegalArgumentException e) {
         throw new IOException("invalid transition: " + transitions[i], e);
       }
+    }
+    if (!hasShift) {
+      throw new IOException("transition inventory has no SHIFT action");
+    }
+    if (!hasRightArc) {
+      throw new IOException("transition inventory has no RIGHT_ARC action");
     }
     final int embeddingSize = readCount(data, "embedding size", MAX_EMBEDDING_SIZE, false);
     final long[] remainingFloats = {MAX_MODEL_FLOAT_VALUES};
