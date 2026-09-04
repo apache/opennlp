@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Builds tar archives byte by byte, so tests can assemble well-formed, boundary, and
- * deliberately corrupt archives without a third-party library. Headers carry the ustar
+ * malformed archives without an extra library. Each header has the ustar
  * magic and a valid checksum, as a real archive does; {@link #reseal(byte[])} restores
  * the checksum after a test has corrupted some other field on purpose.
  */
@@ -159,8 +159,7 @@ public final class TarArchives {
 
   /**
    * Encodes one pax extended header record, {@code "<length> <keyword>=<value>\n"}. The
-   * length counts the whole record including its own digits, the blank, and the newline,
-   * so it is solved for rather than guessed.
+   * length includes all record bytes: digits, the blank, and the newline.
    *
    * @param keyword The pax keyword.
    * @param value The keyword's value.

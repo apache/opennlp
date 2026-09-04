@@ -288,10 +288,10 @@ public class ResourceInstallerHttpTest {
 
   @Test
   void testRedirectToNonHttpSchemeFails(@TempDir Path target) throws Exception {
-    server.route("/hostile", out -> StubServer.redirect(out, "file:///etc/passwd"));
+    server.route("/non-http", out -> StubServer.redirect(out, "file:///etc/passwd"));
 
     final IOException thrown = Assertions.assertThrows(IOException.class,
-        () -> ResourceInstaller.install(server.uri("/hostile"), target,
+        () -> ResourceInstaller.install(server.uri("/non-http"), target,
             UNREACHED_CHECKSUM));
     Assertions.assertEquals(
         "redirect target is not an http or https location: file:///etc/passwd",
@@ -303,7 +303,7 @@ public class ResourceInstallerHttpTest {
   void testHttpsToHttpDowngradeIsRejected() {
     final URI https = URI.create("https://example.invalid/archive.tar.gz");
 
-    // assertAll so a wrongly rejected upgrade is not hidden by the rejection case.
+    // Cover the rejected downgrade and both accepted upgrade and same-scheme cases.
     Assertions.assertAll(
         () -> {
           final IOException thrown = Assertions.assertThrows(IOException.class,
@@ -409,25 +409,24 @@ public class ResourceInstallerHttpTest {
   @Test
   void testTimeoutBeyondTheMillisecondRangeIsCapped(@TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "patient"}});
-    server.route("/corpus.tar.gz", out -> StubServer.ok(out, archive));
+    final byte[] archive = tarGz(new String[][] {{"payload/data.txt", "content"}});
+    server.route("/payload.tar.gz", out -> StubServer.ok(out, archive));
     final Duration beyondMillis = Duration.ofSeconds(Long.MAX_VALUE / 1000 + 1);
     final ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()
         .connectTimeout(beyondMillis)
         .readTimeout(beyondMillis)
         .build();
 
-    ResourceInstaller.install(server.uri("/corpus.tar.gz"), target, sha256(archive),
+    ResourceInstaller.install(server.uri("/payload.tar.gz"), target, sha256(archive),
         limits);
 
-    Assertions.assertEquals("patient",
-        Files.readString(target.resolve("corpus/data.txt")));
+    Assertions.assertEquals("content",
+        Files.readString(target.resolve("payload/data.txt")));
   }
 
   /**
-   * A minimal scripted HTTP server on a loopback socket. Each registered route is a
-   * function from the response output stream to the raw bytes it wants on the wire,
-   * which lets tests script redirects, lies, stalls, and floods precisely.
+   * A scripted HTTP server on a loopback socket. Each registered route writes a raw
+   * response for redirect, timeout, malformed-response, and size-limit tests.
    */
   private static final class StubServer implements AutoCloseable {
 

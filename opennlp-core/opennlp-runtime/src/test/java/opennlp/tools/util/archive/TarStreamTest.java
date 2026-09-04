@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static opennlp.tools.util.archive.TarArchives.BLOCK;
 import static opennlp.tools.util.archive.TarArchives.TERMINATOR_SIZE;
@@ -285,6 +286,18 @@ public class TarStreamTest {
   @Test
   void testNullStreamIsRejected() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> new TarStream(null));
+  }
+
+  /**
+   * @param maxEntries The invalid entry limit.
+   */
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(longs = {0, -1})
+  void testInvalidEntryLimitIsRejected(long maxEntries) {
+    final IllegalArgumentException thrown = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> new TarStream(InputStream.nullInputStream(), maxEntries));
+    Assertions.assertEquals("maxEntries must be positive", thrown.getMessage());
   }
 
   @Test

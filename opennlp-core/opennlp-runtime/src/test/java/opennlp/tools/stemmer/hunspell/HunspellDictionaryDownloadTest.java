@@ -25,7 +25,10 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.DictionaryCatalog;
 import opennlp.tools.util.DigestTestUtil;
@@ -87,18 +90,28 @@ public class HunspellDictionaryDownloadTest {
   /**
    * Verifies that each required parameter is checked before a download begins.
    *
+   * @param argument The invalid method parameter.
    * @param target A scratch directory managed by the test framework.
    * @throws IOException Thrown if the local catalog cannot be prepared.
    */
-  @Test
-  void testRejectsNullParameters(@TempDir Path target) throws IOException {
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(strings = {"catalog", "dictionaryId", "targetDirectory"})
+  void testRejectsNullParameters(String argument, @TempDir Path target)
+      throws IOException {
     final DictionaryCatalog catalog = localCatalog(target);
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionaryDownload.downloadFromCatalog(null, "demo", target));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionaryDownload.downloadFromCatalog(catalog, null, target));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", null));
+    final Executable download = switch (argument) {
+      case "catalog" -> () ->
+          HunspellDictionaryDownload.downloadFromCatalog(null, "demo", target);
+      case "dictionaryId" -> () ->
+          HunspellDictionaryDownload.downloadFromCatalog(catalog, null, target);
+      case "targetDirectory" -> () ->
+          HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", null);
+      default -> throw new IllegalArgumentException("unknown argument: " + argument);
+    };
+
+    final IllegalArgumentException thrown =
+        Assertions.assertThrows(IllegalArgumentException.class, download);
+    Assertions.assertEquals(argument + " must not be null", thrown.getMessage());
   }
 
   /**

@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
@@ -28,6 +30,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -42,6 +45,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.archive.TarArchives;
 
@@ -305,6 +309,37 @@ public class ResourceInstallerTest {
         Files.readString(target.resolve("lexicon/words.txt")));
   }
 
+  /**
+   * Checks that ZIP validation works when the target uses a non-default file system.
+   *
+   * @param source The directory containing the source ZIP file.
+   * @param scratch The directory containing the target file system.
+   * @throws IOException Thrown if the fixture or installation cannot be read or written.
+   */
+  @Test
+  void testZipUnpacksIntoANonDefaultFileSystem(@TempDir Path source,
+      @TempDir Path scratch) throws IOException {
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+      zip.putNextEntry(new ZipEntry("payload/data.txt"));
+      zip.write("content".getBytes(StandardCharsets.UTF_8));
+      zip.closeEntry();
+    }
+    final Path archive = source.resolve("payload.zip");
+    Files.write(archive, bytes.toByteArray());
+    final URI targetUri = URI.create("jar:" + scratch.resolve("target.zip").toUri());
+
+    try (FileSystem fileSystem =
+             FileSystems.newFileSystem(targetUri, Map.of("create", "true"))) {
+      final Path target = fileSystem.getPath("/installed");
+
+      ResourceInstaller.install(archive.toUri(), target);
+
+      Assertions.assertEquals("content",
+          Files.readString(target.resolve("payload/data.txt")));
+    }
+  }
+
   @Test
   void testModelBinIsStoredPacked(@TempDir Path source, @TempDir Path target)
       throws Exception {
@@ -363,21 +398,29 @@ public class ResourceInstallerTest {
     Assertions.assertEquals("cat 100", Files.readString(target.resolve("frequencies.txt")));
   }
 
-  @Test
-  void testInvalidArguments(@TempDir Path target) {
-    // assertAll so an unvalidated argument does not hide the others.
-    Assertions.assertAll(
-        () -> assertArgumentError("source must not be null",
-            () -> ResourceInstaller.install(null, target)),
-        () -> assertArgumentError("targetDirectory must not be null",
-            () -> ResourceInstaller.install(target.toUri(), null)),
-        () -> assertArgumentError("limits must not be null",
-            () -> ResourceInstaller.install(target.toUri(), target, null, null)));
+  /**
+   * Checks each required installation parameter.
+   *
+   * @param argument The invalid method parameter.
+   * @param target A scratch directory managed by the test framework.
+   */
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(strings = {"source", "targetDirectory", "limits"})
+  void testInvalidArguments(String argument, @TempDir Path target) {
+    final Executable call = switch (argument) {
+      case "source" -> () -> ResourceInstaller.install(null, target);
+      case "targetDirectory" -> () -> ResourceInstaller.install(target.toUri(), null);
+      case "limits" ->
+          () -> ResourceInstaller.install(target.toUri(), target, null, null);
+      default -> throw new IllegalArgumentException("unknown argument: " + argument);
+    };
+
+    assertArgumentError(argument + " must not be null", call);
   }
 
   /**
    * Supplies checksum arguments that are neither a valid SHA-256 nor a valid SHA-512
-   * digest, so a typo cannot masquerade as a checksum mismatch.
+   * digest.
    *
    * @return One case per rejected digest. Never {@code null}.
    */
@@ -667,13 +710,13 @@ public class ResourceInstallerTest {
     return Stream.of(
         Arguments.of("null connectTimeout", (Executable)
             () -> new ResourceInstaller.Limits(null, valid, 5, 1024, 1024, 10),
-            "connectTimeout must be positive"),
+            "connectTimeout must not be null"),
         Arguments.of("zero connectTimeout", (Executable)
             () -> new ResourceInstaller.Limits(Duration.ZERO, valid, 5, 1024, 1024, 10),
             "connectTimeout must be positive"),
         Arguments.of("null readTimeout", (Executable)
             () -> new ResourceInstaller.Limits(valid, null, 5, 1024, 1024, 10),
-            "readTimeout must be positive"),
+            "readTimeout must not be null"),
         Arguments.of("negative readTimeout", (Executable)
             () -> new ResourceInstaller.Limits(valid, Duration.ofSeconds(-1),
                 5, 1024, 1024, 10),
@@ -689,6 +732,24 @@ public class ResourceInstallerTest {
             "maxExpandedBytes must be positive"),
         Arguments.of("zero maxEntries", (Executable)
             () -> new ResourceInstaller.Limits(valid, valid, 5, 1024, 1024, 0),
+            "maxEntries must be positive"),
+        Arguments.of("builder zero connectTimeout", (Executable) () ->
+            ResourceInstaller.Limits.builder().connectTimeout(Duration.ZERO).build(),
+            "connectTimeout must be positive"),
+        Arguments.of("builder null readTimeout", (Executable) () ->
+            ResourceInstaller.Limits.builder().readTimeout(null).build(),
+            "readTimeout must not be null"),
+        Arguments.of("builder negative maxRedirects", (Executable) () ->
+            ResourceInstaller.Limits.builder().maxRedirects(-1).build(),
+            "maxRedirects must not be negative"),
+        Arguments.of("builder zero maxDownloadBytes", (Executable) () ->
+            ResourceInstaller.Limits.builder().maxDownloadBytes(0).build(),
+            "maxDownloadBytes must be positive"),
+        Arguments.of("builder negative maxExpandedBytes", (Executable) () ->
+            ResourceInstaller.Limits.builder().maxExpandedBytes(-1).build(),
+            "maxExpandedBytes must be positive"),
+        Arguments.of("builder zero maxEntries", (Executable) () ->
+            ResourceInstaller.Limits.builder().maxEntries(0).build(),
             "maxEntries must be positive"));
   }
 
@@ -912,6 +973,29 @@ public class ResourceInstallerTest {
         ENTRY_LIMIT_ERROR);
   }
 
+  /**
+   * Checks that tar extension headers count toward the archive entry limit.
+   *
+   * @param source A scratch directory for the source archive.
+   * @param target A scratch installation directory.
+   * @throws Exception Thrown if the fixture cannot be created or installed.
+   */
+  @Test
+  void testTarEntryCountLimitIncludesMetadata(@TempDir Path source,
+      @TempDir Path target) throws Exception {
+    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
+    TarArchives.entry(tar, "PaxHeaders/one",
+        TarArchives.paxRecord("comment", "first"), 'x');
+    TarArchives.entry(tar, "PaxHeaders/b",
+        TarArchives.paxRecord("comment", "right"), 'x');
+    tarEntry(tar, "payload/data.txt", "content".getBytes(StandardCharsets.UTF_8));
+    tar.write(new byte[TERMINATOR_SIZE]);
+    final Path file = source.resolve("metadata-entries.tar.gz");
+    Files.write(file, gzip(tar.toByteArray()));
+
+    assertInstallFails(file, target, entryLimit(2), ENTRY_LIMIT_ERROR);
+  }
+
   @Test
   void testZipEntryCountLimitRejectsArchive(@TempDir Path source, @TempDir Path target)
       throws Exception {
@@ -1084,9 +1168,8 @@ public class ResourceInstallerTest {
   }
 
   /**
-   * Supplies source schemes the installer rejects, each of which would otherwise be
-   * handed to whatever URL handler the runtime has installed, outside the timeouts and
-   * limits this class enforces.
+   * Supplies source schemes the installer rejects because they are outside the bounded
+   * HTTP and local-file paths.
    *
    * @return One case per rejected scheme. Never {@code null}.
    */
@@ -1143,23 +1226,6 @@ public class ResourceInstallerTest {
         limits.maxRedirects());
     Assertions.assertEquals(ResourceInstaller.Limits.DEFAULT.maxEntries(),
         limits.maxEntries());
-  }
-
-  @Test
-  void testBuilderRejectsInvalidValues() {
-    Assertions.assertAll(
-        () -> assertArgumentError("connectTimeout must be positive",
-            () -> ResourceInstaller.Limits.builder().connectTimeout(Duration.ZERO).build()),
-        () -> assertArgumentError("readTimeout must be positive",
-            () -> ResourceInstaller.Limits.builder().readTimeout(null).build()),
-        () -> assertArgumentError("maxRedirects must not be negative",
-            () -> ResourceInstaller.Limits.builder().maxRedirects(-1).build()),
-        () -> assertArgumentError("maxDownloadBytes must be positive",
-            () -> ResourceInstaller.Limits.builder().maxDownloadBytes(0).build()),
-        () -> assertArgumentError("maxExpandedBytes must be positive",
-            () -> ResourceInstaller.Limits.builder().maxExpandedBytes(-1).build()),
-        () -> assertArgumentError("maxEntries must be positive",
-            () -> ResourceInstaller.Limits.builder().maxEntries(0).build()));
   }
 
   @Test

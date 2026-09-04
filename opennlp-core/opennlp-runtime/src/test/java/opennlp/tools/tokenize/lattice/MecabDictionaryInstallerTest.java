@@ -30,7 +30,10 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.DictionaryCatalog;
 import opennlp.tools.util.DigestTestUtil;
@@ -134,7 +137,7 @@ public class MecabDictionaryInstallerTest {
    * @throws IOException Thrown if creating or installing the fixture fails.
    */
   @Test
-  void testInstallStagesOnTheTargetFileSystem(@TempDir Path source, @TempDir Path scratch)
+  void testInstallIntoANonDefaultFileSystem(@TempDir Path source, @TempDir Path scratch)
       throws IOException {
     final Path archiveFile = archive(source, new String[][] {
         {"d/words.csv", "cat,0,0,100,noun\n"},
@@ -259,19 +262,36 @@ public class MecabDictionaryInstallerTest {
     Assertions.assertEquals("the archive contains no dictionary file", e.getMessage());
   }
 
-  @Test
-  void testInvalidArguments(@TempDir Path target) throws IOException {
+  /**
+   * Checks each public installer parameter independently.
+   *
+   * @param argument The invalid parameter.
+   * @param target A scratch directory managed by the test framework.
+   * @throws IOException Thrown if the empty catalog cannot be loaded.
+   */
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(strings = {"archive", "targetDirectory", "catalog", "dictionaryId",
+      "catalog targetDirectory"})
+  void testInvalidArguments(String argument, @TempDir Path target) throws IOException {
     final DictionaryCatalog catalog = emptyCatalog();
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.install(null, target));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.install(target.toUri(), null));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.installFromCatalog(null, "mecab.ipadic", target));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.installFromCatalog(catalog, null, target));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> MecabDictionaryInstaller.installFromCatalog(catalog, "mecab.ipadic", null));
+    final Executable install = switch (argument) {
+      case "archive" -> () -> MecabDictionaryInstaller.install(null, target);
+      case "targetDirectory" -> () ->
+          MecabDictionaryInstaller.install(target.toUri(), null);
+      case "catalog" -> () ->
+          MecabDictionaryInstaller.installFromCatalog(null, "mecab.ipadic", target);
+      case "dictionaryId" -> () ->
+          MecabDictionaryInstaller.installFromCatalog(catalog, null, target);
+      case "catalog targetDirectory" -> () ->
+          MecabDictionaryInstaller.installFromCatalog(catalog, "mecab.ipadic", null);
+      default -> throw new IllegalArgumentException("unknown argument: " + argument);
+    };
+
+    final IllegalArgumentException thrown =
+        Assertions.assertThrows(IllegalArgumentException.class, install);
+    final String parameter = argument.startsWith("catalog ")
+        ? argument.substring("catalog ".length()) : argument;
+    Assertions.assertEquals(parameter + " must not be null", thrown.getMessage());
   }
 
   private static DictionaryCatalog emptyCatalog() throws IOException {

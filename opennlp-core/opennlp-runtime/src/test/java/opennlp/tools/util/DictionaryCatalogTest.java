@@ -27,7 +27,10 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.stemmer.hunspell.HunspellDictionary;
 
@@ -39,25 +42,52 @@ public class DictionaryCatalogTest {
 
   private static final String SHA_512 = "0".repeat(128);
 
-  /** Checks the validation promised by the public catalog entry record. */
+  /** Checks a catalog entry with all required fields. */
   @Test
-  void testEntryValidatesItsDocumentedFields() {
+  void testEntryAcceptsItsDocumentedFields() {
     final URI absolute = URI.create("https://example.invalid/dictionary.tar.gz");
 
     Assertions.assertDoesNotThrow(() ->
         new DictionaryCatalog.Entry("demo", absolute, "A".repeat(128), null));
-    Assertions.assertAll(
-        () -> Assertions.assertThrows(IllegalArgumentException.class,
-            () -> new DictionaryCatalog.Entry(null, absolute, SHA_512, null)),
-        () -> Assertions.assertThrows(IllegalArgumentException.class,
-            () -> new DictionaryCatalog.Entry("demo", null, SHA_512, null)),
-        () -> Assertions.assertThrows(IllegalArgumentException.class,
-            () -> new DictionaryCatalog.Entry("demo", URI.create("dictionary.tar.gz"),
-                SHA_512, null)),
-        () -> Assertions.assertThrows(IllegalArgumentException.class,
-            () -> new DictionaryCatalog.Entry("demo", absolute, null, null)),
-        () -> Assertions.assertThrows(IllegalArgumentException.class,
-            () -> new DictionaryCatalog.Entry("demo", absolute, "not-a-digest", null)));
+  }
+
+  /**
+   * Checks each invalid field of the public catalog entry record.
+   *
+   * @param field The invalid record field.
+   */
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(strings = {"id", "uri", "relative uri", "sha512", "invalid sha512",
+      "empty filename", "path filename"})
+  void testEntryRejectsInvalidFields(String field) {
+    final URI absolute = URI.create("https://example.invalid/dictionary.tar.gz");
+    final Executable construction = switch (field) {
+      case "id" -> () -> new DictionaryCatalog.Entry(null, absolute, SHA_512, null);
+      case "uri" -> () -> new DictionaryCatalog.Entry("demo", null, SHA_512, null);
+      case "relative uri" -> () -> new DictionaryCatalog.Entry(
+          "demo", URI.create("dictionary.tar.gz"), SHA_512, null);
+      case "sha512" -> () -> new DictionaryCatalog.Entry("demo", absolute, null, null);
+      case "invalid sha512" ->
+          () -> new DictionaryCatalog.Entry("demo", absolute, "not-a-digest", null);
+      case "empty filename" ->
+          () -> new DictionaryCatalog.Entry("demo", absolute, SHA_512, "");
+      case "path filename" ->
+          () -> new DictionaryCatalog.Entry("demo", absolute, SHA_512, "../dict.bin");
+      default -> throw new IllegalArgumentException("unknown field: " + field);
+    };
+
+    final IllegalArgumentException thrown =
+        Assertions.assertThrows(IllegalArgumentException.class, construction);
+    final String expectedMessage = switch (field) {
+      case "id" -> "id must not be null";
+      case "uri" -> "uri must not be null";
+      case "relative uri" -> "uri must be absolute";
+      case "sha512" -> "sha512 must not be null";
+      case "invalid sha512" -> "sha512 must be 128 hex digits";
+      case "empty filename", "path filename" -> "filename must be a file name";
+      default -> throw new IllegalArgumentException("unknown field: " + field);
+    };
+    Assertions.assertEquals(expectedMessage, thrown.getMessage());
   }
 
   /**
@@ -82,22 +112,28 @@ public class DictionaryCatalogTest {
   /**
    * Checks argument validation before the opt-in remote setting is read.
    *
+   * @param argument The invalid method parameter.
    * @param dir A scratch directory managed by the test framework.
    * @throws IOException Thrown if the fixture catalog cannot be loaded.
    */
-  @Test
-  void testInstallValidatesArgumentsBeforeTheRemoteSetting(@TempDir Path dir)
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(strings = {"id", "targetDirectory"})
+  void testInstallValidatesArgumentsBeforeTheRemoteSetting(String argument,
+      @TempDir Path dir)
       throws IOException {
     final DictionaryCatalog catalog = DictionaryCatalog.load(
         new ByteArrayInputStream(new byte[0]));
     final String previous = System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
-      Assertions.assertAll(
-          () -> Assertions.assertThrows(IllegalArgumentException.class,
-              () -> catalog.install(null, dir)),
-          () -> Assertions.assertThrows(IllegalArgumentException.class,
-              () -> catalog.install("demo", null)));
+      final Executable install = switch (argument) {
+        case "id" -> () -> catalog.install(null, dir);
+        case "targetDirectory" -> () -> catalog.install("demo", null);
+        default -> throw new IllegalArgumentException("unknown argument: " + argument);
+      };
+      final IllegalArgumentException thrown =
+          Assertions.assertThrows(IllegalArgumentException.class, install);
+      Assertions.assertEquals(argument + " must not be null", thrown.getMessage());
     } finally {
       restore(previous);
     }
