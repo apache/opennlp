@@ -281,6 +281,7 @@ public class WndbReaderTest {
       "data.verb, 01 + 02 00 |, 01 + 02 02 |, Verb frame word 2 exceeds word count 1",
       "data.noun, | a domesticated canid, ! a domesticated canid, Expected the | gloss separator",
       "data.adj, short(p), short(x), Unknown syntactic marker on word: short(x)",
+      "data.noun, dog 0, dog(p) 0, Syntactic marker (p) is only valid in data.adj",
       "index.noun, berry n 1, berry v 1, Index pos v does not belong in",
       "index.noun, berry n 1 0 1 0, berry n +1 0 1 0, synset count is not an unsigned decimal integer: +1",
       "index.noun, berry n 1 0 1 0, berry n 1 -1 1 0, Pointer count must not be negative",
@@ -290,6 +291,8 @@ public class WndbReaderTest {
       "index.noun, berry n 1 0 1 0, berry n 1 0 1 -1, Tagged-sense count must not be negative",
       "index.noun, berry n 1 0 1 0, berry n 1 0 2 0, Sense count 2 does not match synset count 1",
       "index.noun, berry n 1 0 1 0, berry n 1 0 1 2, Tagged-sense count 2 exceeds sense count 1",
+      "index.noun, berry n 1 0 1 0, berry n 2147483647 0 2147483647 0, "
+          + "Synset count 2147483647 exceeds the available offset fields",
       "index.noun, 00001427 00001669, 00001427 00001427, Duplicate synset offset 00001427",
       "index.noun, 00001564  , 00001564 extra , Unexpected field after synset offsets: extra",
   })
