@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 import opennlp.tools.wordnet.Synset;
@@ -40,13 +39,14 @@ import opennlp.tools.wordnet.WordNetRelation;
  * beats a general one.
  *
  * <p>Anchors are resolved against the knowledge base at construction and follow its
- * sense inventory; nothing beyond the caller's anchor choice is built in. Words with no
+ * sense inventory. Words with no
  * sense reaching an anchor get no type.</p>
  *
- * <p>The typer reads only immutable state and is safe to share between threads.</p>
+ * <p>Concurrent use depends on the supplied knowledge base implementation.</p>
+ *
+ * @since 3.0.0
  */
-@ThreadSafe
-public class HypernymTyper {
+public final class HypernymTyper {
 
   /** The relations that lead from a synset to its generalizations. */
   private static final List<WordNetRelation> UPWARD_RELATIONS =
@@ -65,7 +65,8 @@ public class HypernymTyper {
    *                lemma or label may be blank.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null},
    *         {@code anchors} is empty or holds a blank entry, or an anchor lemma is
-   *         unknown to the knowledge base.
+   *         unknown to the knowledge base, or two anchors assign different labels to the same
+   *         synset.
    */
   public HypernymTyper(LexicalKnowledgeBase knowledgeBase, Map<String, String> anchors) {
     if (knowledgeBase == null) {
@@ -87,7 +88,11 @@ public class HypernymTyper {
             "anchor lemma is unknown to the knowledge base: " + anchor.getKey());
       }
       for (final Synset sense : senses) {
-        labels.putIfAbsent(sense.id(), anchor.getValue());
+        final String previous = labels.putIfAbsent(sense.id(), anchor.getValue());
+        if (previous != null && !previous.equals(anchor.getValue())) {
+          throw new IllegalArgumentException("anchor lemmas assign conflicting labels to synset "
+              + sense.id() + ": " + previous + " and " + anchor.getValue());
+        }
       }
     }
     this.labelBySynsetId = Map.copyOf(labels);

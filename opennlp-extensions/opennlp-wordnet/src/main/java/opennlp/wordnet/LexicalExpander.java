@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.lemmatizer.Lemmatizer;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
@@ -38,10 +37,10 @@ import opennlp.tools.wordnet.WordNetRelation;
  * sharing its synsets, the lemmas of its hypernym ancestors up to a configured depth, and
  * optionally the lemmas of its direct hyponyms.
  *
- * <p>Each {@link Expansion} carries a deterministic heuristic weight, not a probability: the
+ * <p>Each {@link Expansion} has a deterministic heuristic weight, not a probability: the
  * first sense of a term starts at {@code 1.0}, each later sense is multiplied by the configurable
  * sense decay, and every hypernym or hyponym step multiplies by the configurable depth decay.
- * A decay product that underflows to zero in double arithmetic carries no ranking signal, so
+ * A decay product that underflows to zero in double arithmetic has no ranking signal, so
  * such expansions are dropped rather than emitted outside the {@code (0, 1]} weight range.
  * When the term itself is not in the lexicon and a {@link Lemmatizer} is configured, the term is
  * lemmatized and the lemma expanded instead; the lemmatizer is invoked with the
@@ -54,11 +53,16 @@ import opennlp.tools.wordnet.WordNetRelation;
  *
  * <p>Instances are immutable and safe for concurrent use when the configured lexicon and
  * lemmatizer are.</p>
+ *
+ * @since 3.0.0
  */
-@ThreadSafe
 public final class LexicalExpander {
 
-  /** How an expansion relates to the input term. */
+  /**
+   * How an expansion relates to the input term.
+   *
+   * @since 3.0.0
+   */
   public enum Kind {
 
     /** A member of one of the term's own synsets. */
@@ -81,6 +85,7 @@ public final class LexicalExpander {
    *                  for {@link Kind#HYPERNYM}, {@code 1} for hyponyms.
    * @param senseRank The zero-based rank of the input sense this expansion came from.
    * @param weight    The heuristic weight in {@code (0, 1]}; higher is closer to the input term.
+   * @since 3.0.0
    */
   public record Expansion(String term, Kind kind, int depth, int senseRank, double weight) {
 
@@ -88,8 +93,8 @@ public final class LexicalExpander {
      * Validates every component against the documented ranges.
      *
      * @throws IllegalArgumentException Thrown if {@code term} is {@code null} or blank,
-     *         {@code kind} is {@code null}, {@code depth} or {@code senseRank} is negative, or
-     *         {@code weight} is not in {@code (0, 1]}.
+     *         {@code kind} is {@code null}, {@code depth} does not match {@code kind},
+     *         {@code senseRank} is negative, or {@code weight} is not in {@code (0, 1]}.
      */
     public Expansion {
       if (term == null || StringUtil.isBlank(term)) {
@@ -100,6 +105,15 @@ public final class LexicalExpander {
       }
       if (depth < 0) {
         throw new IllegalArgumentException("depth must not be negative: " + depth);
+      }
+      if (kind == Kind.SYNONYM && depth != 0) {
+        throw new IllegalArgumentException("depth must be 0 for a synonym: " + depth);
+      }
+      if (kind == Kind.HYPERNYM && depth == 0) {
+        throw new IllegalArgumentException("depth must be positive for a hypernym: " + depth);
+      }
+      if (kind == Kind.HYPONYM && depth != 1) {
+        throw new IllegalArgumentException("depth must be 1 for a hyponym: " + depth);
       }
       if (senseRank < 0) {
         throw new IllegalArgumentException("senseRank must not be negative: " + senseRank);
@@ -347,7 +361,11 @@ public final class LexicalExpander {
     }
   }
 
-  /** Configures and creates a {@link LexicalExpander}. */
+  /**
+   * Configures and creates a {@link LexicalExpander}.
+   *
+   * @since 3.0.0
+   */
   public static final class Builder {
 
     private final LexicalKnowledgeBase lexicon;
