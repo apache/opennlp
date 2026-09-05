@@ -1,0 +1,1031 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.depparse;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import opennlp.tools.util.ObjectStream;
+
+/**
+ * Trains the {@link FeedforwardDependencyModel} entirely in Java: oracle-derived
+ * transition examples, minibatch AdaGrad over a softmax cross-entropy loss, cube
+ * activation, and inverted dropout on the hidden layer, the training recipe of
+ * <a href="https://aclanthology.org/D14-1082/">Chen and Manning (2014)</a>. Training and
+ * inference use Java arrays and require no external training framework.
+ *
+ * <p>Words below the frequency cutoff share a learned unknown embedding; absent
+ * template positions share a learned padding embedding. Non-projective samples have no
+ * arc-standard derivation and are skipped. Training is deterministic for a fixed
+ * {@link Settings#seed()}.</p>
+ *
+ * @since 3.0.0
+ */
+public final class FeedforwardDependencyTrainer {
+
+  private static final Logger logger =
+      LoggerFactory.getLogger(FeedforwardDependencyTrainer.class);
+
+  private static final double ADAGRAD_EPSILON = 1e-6;
+
+  /** Special-symbol rows present before any training vocabulary is added. */
+  private static final int MIN_VOCABULARY_ROWS = 8;
+
+  /** SHIFT and at least one RIGHT_ARC are required to parse a sentence. */
+  private static final int MIN_TRANSITIONS = 2;
+
+  /** Prevents construction of this utility class. */
+  private FeedforwardDependencyTrainer() {
+  }
+
+  /**
+   * The training hyperparameters.
+   *
+   * @param embeddingSize The embedding dimensionality. Must be positive.
+   * @param hiddenSize The hidden layer width. Must be positive.
+   * @param epochs The number of passes over the examples. Must be positive.
+   * @param batchSize The minibatch size. Must be positive.
+   * @param learningRate The AdaGrad step size. Must be positive.
+   * @param l2 The L2 penalty applied to the dense weights. Must not be negative.
+   * @param dropout The hidden dropout probability. Must be in {@code [0, 1)}.
+   * @param wordCutoff The minimum frequency for a word to get its own embedding. Must
+   *                   not be negative.
+   * @param seed The random seed making a run reproducible.
+   */
+  public record Settings(int embeddingSize, int hiddenSize, int epochs, int batchSize,
+      double learningRate, double l2, double dropout, int wordCutoff, long seed) {
+
+    /**
+     * Validates the hyperparameters.
+     *
+     * @throws IllegalArgumentException Thrown if a value is outside its documented
+     *         range.
+     */
+    public Settings {
+      if (embeddingSize <= 0 || hiddenSize <= 0 || epochs <= 0 || batchSize <= 0) {
+        throw new IllegalArgumentException("sizes, epochs and batch must be positive");
+      }
+      if (embeddingSize > FeedforwardDependencyModel.MAX_EMBEDDING_SIZE) {
+        throw new IllegalArgumentException("embeddingSize exceeds the model format limit: "
+            + embeddingSize);
+      }
+      if (hiddenSize > FeedforwardDependencyModel.MAX_HIDDEN_SIZE) {
+        throw new IllegalArgumentException("hiddenSize exceeds the model format limit: "
+            + hiddenSize);
+      }
+      final long minimumModelValues = modelFloatValues(MIN_VOCABULARY_ROWS,
+          MIN_TRANSITIONS, embeddingSize, hiddenSize);
+      if (minimumModelValues > FeedforwardDependencyModel.MAX_MODEL_FLOAT_VALUES) {
+        throw new IllegalArgumentException("embeddingSize and hiddenSize exceed the model "
+            + "format allocation limit");
+      }
+      if (!Double.isFinite(learningRate) || learningRate <= 0.0
+          || !Double.isFinite(l2) || l2 < 0.0) {
+        throw new IllegalArgumentException(
+            "learningRate must be finite and positive, l2 finite and not negative");
+      }
+      if (!(dropout >= 0.0 && dropout < 1.0)) {
+        throw new IllegalArgumentException("dropout must be in [0, 1): " + dropout);
+      }
+      if (wordCutoff < 0) {
+        throw new IllegalArgumentException("wordCutoff must not be negative");
+      }
+    }
+
+    /**
+     * @return The default hyperparameters. Never {@code null}.
+     */
+    public static Settings defaults() {
+      return new Settings(50, 200, 10, 256, 0.02, 1e-8, 0.5, 2, 17L);
+    }
+  }
+
+  /**
+   * Trains a model from dependency samples.
+   *
+   * @param samples The training samples. Must not be {@code null}.
+   * @param settings The hyperparameters. Must not be {@code null}.
+   * @return A trained {@link FeedforwardDependencyModel}. Never {@code null}.
+   * @throws IOException Thrown if reading the samples fails.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null} or no
+   *         trainable example can be derived from the samples.
+   */
+  public static FeedforwardDependencyModel train(ObjectStream<DependencySample> samples,
+      Settings settings) throws IOException {
+    return train(samples, settings, null);
+  }
+
+  /**
+   * Trains a model from dependency samples, seeding word embeddings from a pretrained
+   * source.
+   *
+   * <p>The provider is consulted once per vocabulary word during initialization; words
+   * it returns {@code null} for keep their random initialization, and all embeddings
+   * remain trainable afterwards. The pretrained source is a training-time ingredient
+   * only: the learned embeddings ship inside the model, so parsing carries no
+   * dependency on the source.</p>
+   *
+   * @param samples The training samples. Must not be {@code null}.
+   * @param settings The hyperparameters. Must not be {@code null}.
+   * @param pretrained Maps a normalized word to its pretrained vector of exactly
+   *                   {@link Settings#embeddingSize()} dimensions, or {@code null} for
+   *                   unknown words. May be {@code null} to disable seeding.
+   * @return A trained {@link FeedforwardDependencyModel}. Never {@code null}.
+   * @throws IOException Thrown if reading the samples fails.
+   * @throws IllegalArgumentException Thrown if {@code samples} or {@code settings} is
+   *         {@code null}, no trainable example can be derived, or a pretrained vector
+   *         has the wrong dimensionality.
+   */
+  public static FeedforwardDependencyModel train(ObjectStream<DependencySample> samples,
+      Settings settings, Function<String, float[]> pretrained)
+      throws IOException {
+    if (samples == null || settings == null) {
+      throw new IllegalArgumentException("samples and settings must not be null");
+    }
+    final List<DependencySample> corpus = readAll(samples);
+    final FeedforwardDependencyModel model = initialize(corpus, settings);
+    if (pretrained != null) {
+      seed(model, pretrained, settings);
+    }
+    final List<int[]> featureList = new ArrayList<>();
+    final List<Integer> goldList = new ArrayList<>();
+    collectExamples(corpus, model, featureList, goldList);
+    if (featureList.isEmpty()) {
+      throw new IllegalArgumentException("no trainable examples in the samples");
+    }
+    optimize(model, featureList, goldList, settings);
+    return model;
+  }
+
+  /**
+   * Refines a locally trained model with beam search and the early-update method of
+   * <a href="https://aclanthology.org/P04-1015/">Collins and Roark (2004)</a>. The loss
+   * is conditional likelihood over candidate paths scored by summed log-probabilities.
+   *
+   * <p>Refinement updates a copy with per-sentence AdaGrad steps and no dropout.
+   * {@link Settings#epochs()} sets the number of refinement passes. Use the same beam
+   * size for parsing the result.</p>
+   *
+   * <p>The transition inventory comes from {@code model} and is not extended, because
+   * its size is the width of the trained output layer. A refinement corpus using a
+   * relation label the original training set lacked is therefore rejected rather than
+   * silently ignored.</p>
+   *
+   * @param model The locally trained model to refine. Left untouched. Must not be
+   *              {@code null}.
+   * @param samples The training samples. Must not be {@code null}.
+   * @param settings The hyperparameters; {@code epochs}, {@code learningRate},
+   *                 {@code l2}, and {@code seed} apply. Must not be {@code null}.
+   * @param beamSize The beam width to track the gold derivation in. Must be at least 2.
+   * @return A new refined model, distinct from {@code model}. Never {@code null}.
+   * @throws IOException Thrown if reading the samples fails.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null},
+   *         {@code beamSize} is below 2, no trainable sample can be derived, or a sample
+   *         requires a transition {@code model} does not know.
+   */
+  public static FeedforwardDependencyModel refine(FeedforwardDependencyModel model,
+      ObjectStream<DependencySample> samples, Settings settings, int beamSize)
+      throws IOException {
+    if (model == null || samples == null || settings == null) {
+      throw new IllegalArgumentException("model, samples and settings must not be null");
+    }
+    if (beamSize < 2) {
+      throw new IllegalArgumentException("beamSize must be at least 2: " + beamSize);
+    }
+    final List<DependencySample> corpus = readAll(samples);
+    final String[] outcomes = model.transitions();
+    final Map<String, Integer> transitionIds = new HashMap<>();
+    final Transition[] transitions = new Transition[outcomes.length];
+    for (int i = 0; i < transitions.length; i++) {
+      transitionIds.put(outcomes[i], i);
+      transitions[i] = Transition.decode(outcomes[i]);
+    }
+
+    final List<DependencySample> trainable = new ArrayList<>();
+    final List<int[]> oracles = new ArrayList<>();
+    for (final DependencySample s : corpus) {
+      final List<Transition> oracle;
+      try {
+        oracle = ArcStandardOracle.transitions(s.getGraph());
+      } catch (IllegalArgumentException e) {
+        continue;
+      }
+      final int[] encoded = new int[oracle.size()];
+      for (int i = 0; i < encoded.length; i++) {
+        final String outcome = oracle.get(i).encode();
+        final Integer id = transitionIds.get(outcome);
+        if (id == null) {
+          // The outcome space was fixed by the original training set, so a relation
+          // label it never saw has no output unit to push probability onto.
+          throw new IllegalArgumentException(
+              "unknown transition in the refinement samples: " + outcome);
+        }
+        encoded[i] = id;
+      }
+      trainable.add(s);
+      oracles.add(encoded);
+    }
+    if (trainable.isEmpty()) {
+      throw new IllegalArgumentException("no trainable samples for refinement");
+    }
+
+    final FeedforwardDependencyModel refined = model.copy();
+    final GlobalOptimizer optimizer = new GlobalOptimizer(refined, settings);
+    final Random random = new Random(settings.seed());
+    final int[] order = new int[trainable.size()];
+    for (int i = 0; i < order.length; i++) {
+      order[i] = i;
+    }
+    for (int epoch = 1; epoch <= settings.epochs(); epoch++) {
+      final long epochStart = System.currentTimeMillis();
+      shuffle(order, random);
+      double loss = 0.0;
+      int updates = 0;
+      for (final int index : order) {
+        final double sentenceLoss = optimizer.refineSentence(trainable.get(index),
+            oracles.get(index), transitions, beamSize);
+        if (sentenceLoss >= 0.0) {
+          loss += sentenceLoss;
+          updates++;
+        }
+      }
+      checkFinite(refined);
+      logger.info("refine epoch {}: loss {} over {} updates in {} ms", epoch,
+          loss / Math.max(updates, 1), updates, System.currentTimeMillis() - epochStart);
+    }
+    return refined;
+  }
+
+  /** One candidate path in the refinement beam: the parent link forms the history. */
+  private static final class BeamNode {
+    private final BeamNode parent;
+    private final int[] features;
+    private final int transition;
+    private final double score;
+    private final boolean gold;
+    private ArcStandardState state;
+
+    /** Extends {@code parent} by one transition; the start node passes {@code null}. */
+    private BeamNode(BeamNode parent, int[] features, int transition, double score,
+        boolean gold) {
+      this.parent = parent;
+      this.features = features;
+      this.transition = transition;
+      this.score = score;
+      this.gold = gold;
+    }
+  }
+
+  /** The forward, backward, and AdaGrad state for global refinement. */
+  private static final class GlobalOptimizer {
+    private final FeedforwardDependencyModel model;
+    private final Settings settings;
+    private final int embeddingSize;
+    private final int hiddenSize;
+    private final int outputSize;
+    private final int inputSize;
+
+    private final double[][] embeddingAccumulator;
+    private final double[][] hiddenAccumulator;
+    private final double[] hiddenBiasAccumulator;
+    private final double[][] outputAccumulator;
+    private final double[] outputBiasAccumulator;
+
+    private final double[][] hiddenGradient;
+    private final double[] hiddenBiasGradient;
+    private final double[][] outputGradient;
+    private final double[] outputBiasGradient;
+    private final Map<Integer, double[]> embeddingGradients = new HashMap<>();
+
+    private final double[] x;
+    private final double[] pre;
+    private final double[] hidden;
+    private final double[] probabilities;
+    private final double[] hiddenDelta;
+    private final double[] inputDelta;
+
+    /** Sizes the accumulators and scratch buffers for one refinement run over {@code model}. */
+    private GlobalOptimizer(FeedforwardDependencyModel model, Settings settings) {
+      this.model = model;
+      this.settings = settings;
+      this.embeddingSize = model.embeddings()[0].length;
+      this.hiddenSize = model.hiddenBias().length;
+      this.outputSize = model.outputBias().length;
+      this.inputSize =
+          (2 * FeedforwardContext.POSITIONS + FeedforwardContext.LABEL_POSITIONS)
+              * embeddingSize;
+      this.embeddingAccumulator =
+          new double[model.embeddings().length][embeddingSize];
+      this.hiddenAccumulator = new double[hiddenSize][inputSize];
+      this.hiddenBiasAccumulator = new double[hiddenSize];
+      this.outputAccumulator = new double[outputSize][hiddenSize];
+      this.outputBiasAccumulator = new double[outputSize];
+      this.hiddenGradient = new double[hiddenSize][inputSize];
+      this.hiddenBiasGradient = new double[hiddenSize];
+      this.outputGradient = new double[outputSize][hiddenSize];
+      this.outputBiasGradient = new double[outputSize];
+      this.x = new double[inputSize];
+      this.pre = new double[hiddenSize];
+      this.hidden = new double[hiddenSize];
+      this.probabilities = new double[outputSize];
+      this.hiddenDelta = new double[hiddenSize];
+      this.inputDelta = new double[inputSize];
+    }
+
+    /**
+     * Decodes one sentence with the beam, updating on the early-update point or the
+     * final beam.
+     *
+     * @param sample The sentence.
+     * @param oracle The gold transition indexes.
+     * @param transitions The decoded transition inventory.
+     * @param beamSize The beam width.
+     * @return The sentence loss, or {@code -1} when the sentence produced no update.
+     */
+    private double refineSentence(DependencySample sample, int[] oracle,
+        Transition[] transitions, int beamSize) {
+      final String[] tokens = sample.getTokens();
+      final String[] tags = sample.getTags();
+      final BeamNode root = new BeamNode(null, null, -1, 0.0, true);
+      root.state = new ArcStandardState(tokens.length);
+      List<BeamNode> beam = List.of(root);
+
+      for (int step = 0; step < oracle.length; step++) {
+        final List<BeamNode> expansions = new ArrayList<>();
+        BeamNode goldChild = null;
+        for (final BeamNode node : beam) {
+          final int[] features =
+              model.featureIds(FeedforwardContext.extract(node.state, tokens, tags));
+          forward(features);
+          logSoftmaxInPlace(probabilities);
+          for (int i = 0; i < outputSize; i++) {
+            if (node.state.canApply(transitions[i])) {
+              final boolean goldNext = node.gold && i == oracle[step];
+              final BeamNode child = new BeamNode(node, features, i,
+                  node.score + probabilities[i], goldNext);
+              expansions.add(child);
+              if (goldNext) {
+                goldChild = child;
+              }
+            }
+          }
+        }
+        expansions.sort((a, b) -> Double.compare(b.score, a.score));
+        final List<BeamNode> survivors =
+            new ArrayList<>(expansions.subList(0, Math.min(beamSize, expansions.size())));
+        boolean goldRetained = false;
+        for (final BeamNode survivor : survivors) {
+          if (survivor.gold) {
+            goldRetained = true;
+            break;
+          }
+        }
+        if (!goldRetained) {
+          if (goldChild == null) {
+            // The gold transition was not applicable in the gold configuration, so
+            // this sentence yields no update.
+            return -1.0;
+          }
+          survivors.add(goldChild);
+          return updateFromCandidates(survivors);
+        }
+        if (step == oracle.length - 1) {
+          return updateFromCandidates(survivors);
+        }
+        for (final BeamNode survivor : survivors) {
+          survivor.state = survivor.parent.state.copy();
+          survivor.state.apply(transitions[survivor.transition]);
+        }
+        beam = survivors;
+      }
+      return -1.0;
+    }
+
+    /** Applies the conditional-likelihood update over the candidate paths. */
+    private double updateFromCandidates(List<BeamNode> candidates) {
+      double max = Double.NEGATIVE_INFINITY;
+      double goldScore = Double.NEGATIVE_INFINITY;
+      for (final BeamNode candidate : candidates) {
+        max = Math.max(max, candidate.score);
+        if (candidate.gold) {
+          goldScore = candidate.score;
+        }
+      }
+      double normalizer = 0.0;
+      for (final BeamNode candidate : candidates) {
+        normalizer += Math.exp(candidate.score - max);
+      }
+      final double logNormalizer = max + Math.log(normalizer);
+
+      zero(hiddenGradient);
+      Arrays.fill(hiddenBiasGradient, 0.0);
+      zero(outputGradient);
+      Arrays.fill(outputBiasGradient, 0.0);
+      embeddingGradients.clear();
+      for (final BeamNode candidate : candidates) {
+        final double weight = Math.exp(candidate.score - logNormalizer)
+            - (candidate.gold ? 1.0 : 0.0);
+        if (weight == 0.0) {
+          continue;
+        }
+        for (BeamNode node = candidate; node.parent != null; node = node.parent) {
+          backward(node.features, node.transition, weight);
+        }
+      }
+      update(model.hiddenWeights(), hiddenGradient, hiddenAccumulator, 1, settings);
+      updateVector(model.hiddenBias(), hiddenBiasGradient, hiddenBiasAccumulator, 1,
+          settings);
+      update(model.outputWeights(), outputGradient, outputAccumulator, 1, settings);
+      updateVector(model.outputBias(), outputBiasGradient, outputBiasAccumulator, 1,
+          settings);
+      for (final Map.Entry<Integer, double[]> entry : embeddingGradients.entrySet()) {
+        final float[] embeddingRow = model.embeddings()[entry.getKey()];
+        final double[] accumulatorRow = embeddingAccumulator[entry.getKey()];
+        final double[] gradientRow = entry.getValue();
+        for (int d = 0; d < embeddingSize; d++) {
+          final double gradient = gradientRow[d];
+          accumulatorRow[d] += gradient * gradient;
+          embeddingRow[d] -= settings.learningRate() * gradient
+              / (Math.sqrt(accumulatorRow[d]) + ADAGRAD_EPSILON);
+        }
+      }
+      return logNormalizer - goldScore;
+    }
+
+    /** Computes hidden activations and raw output scores for one feature vector. */
+    private void forward(int[] features) {
+      final float[][] embeddings = model.embeddings();
+      for (int f = 0; f < features.length; f++) {
+        final float[] embedding = embeddings[features[f]];
+        final int offset = f * embeddingSize;
+        for (int d = 0; d < embeddingSize; d++) {
+          x[offset + d] = embedding[d];
+        }
+      }
+      final float[][] hiddenWeights = model.hiddenWeights();
+      final float[] hiddenBias = model.hiddenBias();
+      for (int j = 0; j < hiddenSize; j++) {
+        final float[] weightRow = hiddenWeights[j];
+        double sum = hiddenBias[j];
+        for (int k = 0; k < inputSize; k++) {
+          sum += weightRow[k] * x[k];
+        }
+        pre[j] = sum;
+        hidden[j] = sum * sum * sum;
+      }
+      final float[][] outputWeights = model.outputWeights();
+      final float[] outputBias = model.outputBias();
+      for (int o = 0; o < outputSize; o++) {
+        final float[] weightRow = outputWeights[o];
+        double sum = outputBias[o];
+        for (int j = 0; j < hiddenSize; j++) {
+          sum += weightRow[j] * hidden[j];
+        }
+        probabilities[o] = sum;
+      }
+    }
+
+    /**
+     * Accumulates gradients for one decoded step: the weighted difference between the
+     * step's softmax and its chosen transition.
+     *
+     * @param features The step's input features.
+     * @param chosen The transition the path took at this step.
+     * @param weight The path's weight in the candidate distribution.
+     */
+    private void backward(int[] features, int chosen, double weight) {
+      forward(features);
+      double max = Double.NEGATIVE_INFINITY;
+      for (int o = 0; o < outputSize; o++) {
+        max = Math.max(max, probabilities[o]);
+      }
+      double normalizer = 0.0;
+      for (int o = 0; o < outputSize; o++) {
+        probabilities[o] = Math.exp(probabilities[o] - max);
+        normalizer += probabilities[o];
+      }
+      Arrays.fill(hiddenDelta, 0.0);
+      Arrays.fill(inputDelta, 0.0);
+      final float[][] outputWeights = model.outputWeights();
+      for (int o = 0; o < outputSize; o++) {
+        // dL/dlogit for a path's step under the conditional likelihood: the path weight
+        // times how the step's log-probability responds to this logit
+        final double delta =
+            weight * ((o == chosen ? 1.0 : 0.0) - probabilities[o] / normalizer);
+        outputBiasGradient[o] += delta;
+        final double[] gradientRow = outputGradient[o];
+        final float[] weightRow = outputWeights[o];
+        for (int j = 0; j < hiddenSize; j++) {
+          gradientRow[j] += delta * hidden[j];
+          hiddenDelta[j] += delta * weightRow[j];
+        }
+      }
+      final float[][] hiddenWeights = model.hiddenWeights();
+      for (int j = 0; j < hiddenSize; j++) {
+        final double preDelta = hiddenDelta[j] * 3.0 * pre[j] * pre[j];
+        hiddenBiasGradient[j] += preDelta;
+        final double[] gradientRow = hiddenGradient[j];
+        final float[] weightRow = hiddenWeights[j];
+        for (int k = 0; k < inputSize; k++) {
+          gradientRow[k] += preDelta * x[k];
+          inputDelta[k] += preDelta * weightRow[k];
+        }
+      }
+      for (int f = 0; f < features.length; f++) {
+        final double[] embeddingGradient = embeddingGradients
+            .computeIfAbsent(features[f], key -> new double[embeddingSize]);
+        final int offset = f * embeddingSize;
+        for (int d = 0; d < embeddingSize; d++) {
+          embeddingGradient[d] += inputDelta[offset + d];
+        }
+      }
+    }
+
+    /** Turns raw scores into log-probabilities in place. */
+    private void logSoftmaxInPlace(double[] scores) {
+      double max = Double.NEGATIVE_INFINITY;
+      for (final double score : scores) {
+        max = Math.max(max, score);
+      }
+      double sum = 0.0;
+      for (final double score : scores) {
+        sum += Math.exp(score - max);
+      }
+      final double logSum = max + Math.log(sum);
+      for (int i = 0; i < scores.length; i++) {
+        scores[i] -= logSum;
+      }
+    }
+  }
+
+  /**
+   * Reads a sample stream into memory; both trainers pass over the corpus repeatedly.
+   *
+   * @param samples The stream to drain.
+   * @return All samples in stream order. Never {@code null}.
+   * @throws IOException Thrown if reading the samples fails.
+   */
+  private static List<DependencySample> readAll(ObjectStream<DependencySample> samples)
+      throws IOException {
+    final List<DependencySample> corpus = new ArrayList<>();
+    DependencySample sample;
+    while ((sample = samples.read()) != null) {
+      corpus.add(sample);
+    }
+    return corpus;
+  }
+
+  /**
+   * Overwrites the random word rows with pretrained vectors where available.
+   *
+   * @param model The freshly initialized model whose word rows are seeded.
+   * @param pretrained The pretrained vector source, returning {@code null} for a word it
+   *                   does not cover.
+   * @param settings The hyperparameters, which fix the expected vector width.
+   * @throws IllegalArgumentException Thrown if a pretrained vector has a different width
+   *         than the embedding size or contains a non-finite value.
+   */
+  private static void seed(FeedforwardDependencyModel model,
+      Function<String, float[]> pretrained, Settings settings) {
+    int seeded = 0;
+    for (final Map.Entry<String, Integer> entry : model.wordIds().entrySet()) {
+      if (FeedforwardDependencyModel.isSpecialSymbol(entry.getKey())) {
+        // The special unknown, padding, and root symbols have no pretrained
+        // counterpart, so they keep their random initialization.
+        continue;
+      }
+      final float[] vector = pretrained.apply(entry.getKey());
+      if (vector == null) {
+        continue;
+      }
+      if (vector.length != settings.embeddingSize()) {
+        throw new IllegalArgumentException("pretrained vector for '" + entry.getKey()
+            + "' has " + vector.length + " dimensions, expected "
+            + settings.embeddingSize());
+      }
+      for (final float value : vector) {
+        if (!Float.isFinite(value)) {
+          throw new IllegalArgumentException(
+              "pretrained vector for '" + entry.getKey() + "' contains a non-finite value");
+        }
+      }
+      System.arraycopy(vector, 0, model.embeddings()[entry.getValue()], 0, vector.length);
+      seeded++;
+    }
+    logger.info("seeded {} of {} word embeddings from the pretrained source", seeded,
+        model.wordIds().size());
+  }
+
+  /**
+   * Builds the vocabularies and randomly initialized weights.
+   *
+   * @param corpus The training samples.
+   * @param settings The hyperparameters.
+   * @return The untrained model. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if the vocabularies and settings would
+   *         produce more model values than the model format can store.
+   */
+  private static FeedforwardDependencyModel initialize(List<DependencySample> corpus,
+      Settings settings) {
+    final Map<String, Integer> wordCounts = new HashMap<>();
+    final Map<String, Integer> tagIds = new HashMap<>();
+    final Map<String, Integer> labelIds = new HashMap<>();
+    final Map<String, Integer> transitionIds = new HashMap<>();
+    for (final DependencySample s : corpus) {
+      final List<Transition> oracle;
+      try {
+        oracle = ArcStandardOracle.transitions(s.getGraph());
+      } catch (IllegalArgumentException e) {
+        continue;
+      }
+      for (final String token : s.getTokens()) {
+        wordCounts.merge(FeedforwardDependencyModel.normalize(token), 1, Integer::sum);
+      }
+      for (final String tag : s.getTags()) {
+        tagIds.putIfAbsent(tag, 0);
+      }
+      final DependencyGraph graph = s.getGraph();
+      for (int i = 0; i < graph.size(); i++) {
+        labelIds.putIfAbsent(graph.relationOf(i), 0);
+      }
+      for (final Transition transition : oracle) {
+        transitionIds.putIfAbsent(transition.encode(), 0);
+      }
+    }
+
+    int row = 0;
+    final Map<String, Integer> wordIds = new HashMap<>();
+    row = addSpecialSymbols(wordIds, row, FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT, FeedforwardDependencyModel.ROOT_SYMBOL);
+    for (final Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
+      if (entry.getValue() >= settings.wordCutoff() && !wordIds.containsKey(entry.getKey())) {
+        wordIds.put(entry.getKey(), row++);
+      }
+    }
+    final Map<String, Integer> tags = new HashMap<>();
+    row = addSpecialSymbols(tags, row, FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT, FeedforwardDependencyModel.ROOT_SYMBOL);
+    for (final String tag : tagIds.keySet()) {
+      tags.put(tag, row++);
+    }
+    final Map<String, Integer> labels = new HashMap<>();
+    row = addSpecialSymbols(labels, row, FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT);
+    for (final String label : labelIds.keySet()) {
+      labels.put(label, row++);
+    }
+
+    final String[] transitions = transitionIds.keySet().toArray(String[]::new);
+    Arrays.sort(transitions);
+
+    final long modelValues = modelFloatValues(row, transitions.length,
+        settings.embeddingSize(), settings.hiddenSize());
+    if (modelValues > FeedforwardDependencyModel.MAX_MODEL_FLOAT_VALUES) {
+      throw new IllegalArgumentException("training vocabulary and settings require "
+          + modelValues + " model values, limit is "
+          + FeedforwardDependencyModel.MAX_MODEL_FLOAT_VALUES);
+    }
+
+    final Random random = new Random(settings.seed());
+    final int inputSize =
+        (2 * FeedforwardContext.POSITIONS + FeedforwardContext.LABEL_POSITIONS)
+            * settings.embeddingSize();
+    final float[][] embeddings = uniform(random, row, settings.embeddingSize(), 0.01);
+    final float[][] hiddenWeights = uniform(random, settings.hiddenSize(), inputSize,
+        Math.sqrt(6.0 / (inputSize + settings.hiddenSize())));
+    final float[][] outputWeights = uniform(random, transitions.length,
+        settings.hiddenSize(),
+        Math.sqrt(6.0 / (settings.hiddenSize() + transitions.length)));
+    return new FeedforwardDependencyModel(wordIds, tags, labels, transitions,
+        settings.embeddingSize(), embeddings, hiddenWeights,
+        new float[settings.hiddenSize()], outputWeights, new float[transitions.length]);
+  }
+
+  /**
+   * Assigns the next embedding rows to the special symbols of one vocabulary.
+   *
+   * @param ids The vocabulary to fill.
+   * @param row The next free embedding row.
+   * @param symbols The special symbols, in the order they take their rows.
+   * @return The next free embedding row after the symbols.
+   */
+  private static int addSpecialSymbols(Map<String, Integer> ids, int row, String... symbols) {
+    int next = row;
+    for (final String symbol : symbols) {
+      ids.put(symbol, next);
+      next++;
+    }
+    return next;
+  }
+
+  /** Returns the number of float values stored by a model of the given shape. */
+  private static long modelFloatValues(int vocabularyRows, int transitionCount,
+      int embeddingSize, int hiddenSize) {
+    final long inputSize = (long) FeedforwardContext.FEATURE_COUNT * embeddingSize;
+    return (long) vocabularyRows * embeddingSize
+        + (long) hiddenSize * inputSize
+        + hiddenSize
+        + (long) transitionCount * hiddenSize
+        + transitionCount;
+  }
+
+  /** Replays the oracle over every projective sample, emitting one example per step. */
+  private static void collectExamples(List<DependencySample> corpus,
+      FeedforwardDependencyModel model, List<int[]> featureList, List<Integer> goldList) {
+    final Map<String, Integer> transitionIds = new HashMap<>();
+    final String[] transitions = model.transitions();
+    for (int i = 0; i < transitions.length; i++) {
+      transitionIds.put(transitions[i], i);
+    }
+    int skipped = 0;
+    for (final DependencySample sample : corpus) {
+      final List<Transition> oracle;
+      try {
+        oracle = ArcStandardOracle.transitions(sample.getGraph());
+      } catch (IllegalArgumentException e) {
+        skipped++;
+        continue;
+      }
+      final ArcStandardState state = new ArcStandardState(sample.getGraph().size());
+      final String[] tokens = sample.getTokens();
+      final String[] tags = sample.getTags();
+      for (final Transition transition : oracle) {
+        featureList.add(model.featureIds(FeedforwardContext.extract(state, tokens, tags)));
+        goldList.add(transitionIds.get(transition.encode()));
+        state.apply(transition);
+      }
+    }
+    if (skipped > 0) {
+      logger.warn("Skipped {} non-projective sample(s) without an arc-standard derivation.",
+          skipped);
+    }
+  }
+
+  /** Minibatch AdaGrad over softmax cross-entropy with cube activation and dropout. */
+  private static void optimize(FeedforwardDependencyModel model, List<int[]> featureList,
+      List<Integer> goldList, Settings settings) {
+    final int exampleCount = featureList.size();
+    final int[][] features = featureList.toArray(new int[0][]);
+    final int[] gold = new int[exampleCount];
+    for (int i = 0; i < exampleCount; i++) {
+      gold[i] = goldList.get(i);
+    }
+
+    final float[][] embeddings = model.embeddings();
+    final float[][] hiddenWeights = model.hiddenWeights();
+    final float[] hiddenBias = model.hiddenBias();
+    final float[][] outputWeights = model.outputWeights();
+    final float[] outputBias = model.outputBias();
+    final int embeddingSize = settings.embeddingSize();
+    final int hiddenSize = settings.hiddenSize();
+    final int outputSize = outputBias.length;
+    final int inputSize = features[0].length * embeddingSize;
+
+    final double[][] embeddingAccumulator =
+        new double[embeddings.length][embeddingSize];
+    final double[][] hiddenAccumulator = new double[hiddenSize][inputSize];
+    final double[] hiddenBiasAccumulator = new double[hiddenSize];
+    final double[][] outputAccumulator = new double[outputSize][hiddenSize];
+    final double[] outputBiasAccumulator = new double[outputSize];
+
+    final double[][] hiddenGradient = new double[hiddenSize][inputSize];
+    final double[] hiddenBiasGradient = new double[hiddenSize];
+    final double[][] outputGradient = new double[outputSize][hiddenSize];
+    final double[] outputBiasGradient = new double[outputSize];
+    final Map<Integer, double[]> embeddingGradients = new HashMap<>();
+
+    final Random random = new Random(settings.seed());
+    final int[] order = new int[exampleCount];
+    for (int i = 0; i < exampleCount; i++) {
+      order[i] = i;
+    }
+
+    final double keep = 1.0 - settings.dropout();
+    final double[] x = new double[inputSize];
+    final double[] pre = new double[hiddenSize];
+    final double[] hidden = new double[hiddenSize];
+    final boolean[] mask = new boolean[hiddenSize];
+    final double[] probabilities = new double[outputSize];
+    final double[] hiddenDelta = new double[hiddenSize];
+    final double[] inputDelta = new double[inputSize];
+
+    for (int epoch = 1; epoch <= settings.epochs(); epoch++) {
+      final long epochStart = System.currentTimeMillis();
+      shuffle(order, random);
+      double loss = 0.0;
+      for (int batchStart = 0; batchStart < exampleCount;
+          batchStart += settings.batchSize()) {
+        final int batchEnd = Math.min(batchStart + settings.batchSize(), exampleCount);
+        final int batch = batchEnd - batchStart;
+        zero(hiddenGradient);
+        Arrays.fill(hiddenBiasGradient, 0.0);
+        zero(outputGradient);
+        Arrays.fill(outputBiasGradient, 0.0);
+        embeddingGradients.clear();
+
+        for (int b = batchStart; b < batchEnd; b++) {
+          final int[] feats = features[order[b]];
+          final int goldTransition = gold[order[b]];
+          for (int f = 0; f < feats.length; f++) {
+            final float[] embedding = embeddings[feats[f]];
+            final int offset = f * embeddingSize;
+            for (int d = 0; d < embeddingSize; d++) {
+              x[offset + d] = embedding[d];
+            }
+          }
+          for (int j = 0; j < hiddenSize; j++) {
+            mask[j] = random.nextDouble() < keep;
+            if (!mask[j]) {
+              pre[j] = 0.0;
+              hidden[j] = 0.0;
+              continue;
+            }
+            final float[] weightRow = hiddenWeights[j];
+            double sum = hiddenBias[j];
+            for (int k = 0; k < inputSize; k++) {
+              sum += weightRow[k] * x[k];
+            }
+            pre[j] = sum;
+            hidden[j] = sum * sum * sum / keep;
+          }
+          double max = Double.NEGATIVE_INFINITY;
+          for (int o = 0; o < outputSize; o++) {
+            final float[] weightRow = outputWeights[o];
+            double sum = outputBias[o];
+            for (int j = 0; j < hiddenSize; j++) {
+              sum += weightRow[j] * hidden[j];
+            }
+            probabilities[o] = sum;
+            max = Math.max(max, sum);
+          }
+          double normalizer = 0.0;
+          for (int o = 0; o < outputSize; o++) {
+            probabilities[o] = Math.exp(probabilities[o] - max);
+            normalizer += probabilities[o];
+          }
+          for (int o = 0; o < outputSize; o++) {
+            probabilities[o] /= normalizer;
+          }
+          loss -= Math.log(Math.max(probabilities[goldTransition], 1e-12));
+
+          Arrays.fill(hiddenDelta, 0.0);
+          Arrays.fill(inputDelta, 0.0);
+          for (int o = 0; o < outputSize; o++) {
+            final double delta = probabilities[o] - (o == goldTransition ? 1.0 : 0.0);
+            outputBiasGradient[o] += delta;
+            final double[] gradientRow = outputGradient[o];
+            final float[] weightRow = outputWeights[o];
+            for (int j = 0; j < hiddenSize; j++) {
+              gradientRow[j] += delta * hidden[j];
+              hiddenDelta[j] += delta * weightRow[j];
+            }
+          }
+          for (int j = 0; j < hiddenSize; j++) {
+            if (!mask[j]) {
+              continue;
+            }
+            final double preDelta = hiddenDelta[j] * 3.0 * pre[j] * pre[j] / keep;
+            hiddenBiasGradient[j] += preDelta;
+            final double[] gradientRow = hiddenGradient[j];
+            final float[] weightRow = hiddenWeights[j];
+            for (int k = 0; k < inputSize; k++) {
+              gradientRow[k] += preDelta * x[k];
+              inputDelta[k] += preDelta * weightRow[k];
+            }
+          }
+          for (int f = 0; f < feats.length; f++) {
+            final double[] embeddingGradient = embeddingGradients
+                .computeIfAbsent(feats[f], key -> new double[embeddingSize]);
+            final int offset = f * embeddingSize;
+            for (int d = 0; d < embeddingSize; d++) {
+              embeddingGradient[d] += inputDelta[offset + d];
+            }
+          }
+        }
+
+        update(hiddenWeights, hiddenGradient, hiddenAccumulator, batch, settings);
+        updateVector(hiddenBias, hiddenBiasGradient, hiddenBiasAccumulator, batch, settings);
+        update(outputWeights, outputGradient, outputAccumulator, batch, settings);
+        updateVector(outputBias, outputBiasGradient, outputBiasAccumulator, batch, settings);
+        for (final Map.Entry<Integer, double[]> entry : embeddingGradients.entrySet()) {
+          final float[] embeddingRow = embeddings[entry.getKey()];
+          final double[] accumulatorRow = embeddingAccumulator[entry.getKey()];
+          final double[] gradientRow = entry.getValue();
+          for (int d = 0; d < embeddingSize; d++) {
+            final double gradient = gradientRow[d] / batch;
+            accumulatorRow[d] += gradient * gradient;
+            embeddingRow[d] -= settings.learningRate() * gradient
+                / (Math.sqrt(accumulatorRow[d]) + ADAGRAD_EPSILON);
+          }
+        }
+      }
+      checkFinite(model);
+      logger.info("epoch {}: loss {} in {} ms", epoch, loss / exampleCount,
+          System.currentTimeMillis() - epochStart);
+    }
+  }
+
+  /** One AdaGrad step on a weight matrix, with the L2 penalty folded into the gradient. */
+  private static void update(float[][] weights, double[][] gradients,
+      double[][] accumulators, int batch, Settings settings) {
+    for (int r = 0; r < weights.length; r++) {
+      final float[] weightRow = weights[r];
+      final double[] gradientRow = gradients[r];
+      final double[] accumulatorRow = accumulators[r];
+      for (int c = 0; c < weightRow.length; c++) {
+        final double gradient = gradientRow[c] / batch + settings.l2() * weightRow[c];
+        accumulatorRow[c] += gradient * gradient;
+        weightRow[c] -= settings.learningRate() * gradient
+            / (Math.sqrt(accumulatorRow[c]) + ADAGRAD_EPSILON);
+      }
+    }
+  }
+
+  /** One AdaGrad step on a bias vector; biases carry no L2 penalty. */
+  private static void updateVector(float[] weights, double[] gradients,
+      double[] accumulators, int batch, Settings settings) {
+    for (int i = 0; i < weights.length; i++) {
+      final double gradient = gradients[i] / batch;
+      accumulators[i] += gradient * gradient;
+      weights[i] -= settings.learningRate() * gradient
+          / (Math.sqrt(accumulators[i]) + ADAGRAD_EPSILON);
+    }
+  }
+
+  /** Rejects numerical overflow before returning or continuing to train a model. */
+  private static void checkFinite(FeedforwardDependencyModel model) {
+    checkFinite(model.embeddings());
+    checkFinite(model.hiddenWeights());
+    checkFinite(model.hiddenBias());
+    checkFinite(model.outputWeights());
+    checkFinite(model.outputBias());
+  }
+
+  /** Rejects a non-finite value in a matrix. */
+  private static void checkFinite(float[][] matrix) {
+    for (final float[] row : matrix) {
+      checkFinite(row);
+    }
+  }
+
+  /** Rejects a non-finite value in a vector. */
+  private static void checkFinite(float[] vector) {
+    for (final float value : vector) {
+      if (!Float.isFinite(value)) {
+        throw new IllegalStateException("training produced a non-finite model parameter");
+      }
+    }
+  }
+
+  /** A matrix drawn uniformly from {@code [-scale, scale]}. */
+  private static float[][] uniform(Random random, int rows, int columns, double scale) {
+    final float[][] matrix = new float[rows][columns];
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < columns; c++) {
+        matrix[r][c] = (float) ((random.nextDouble() * 2.0 - 1.0) * scale);
+      }
+    }
+    return matrix;
+  }
+
+  /** Fills a matrix with zeros. */
+  private static void zero(double[][] matrix) {
+    for (final double[] row : matrix) {
+      Arrays.fill(row, 0.0);
+    }
+  }
+
+  /** Fisher-Yates shuffle of the visit order. */
+  private static void shuffle(int[] order, Random random) {
+    for (int i = order.length - 1; i > 0; i--) {
+      final int j = random.nextInt(i + 1);
+      final int swap = order[i];
+      order[i] = order[j];
+      order[j] = swap;
+    }
+  }
+}
