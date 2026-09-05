@@ -20,6 +20,7 @@ package opennlp.embeddings.corpus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,9 +38,9 @@ import opennlp.tools.util.InvalidFormatException;
  * whitespace-collapsed single lines.</p>
  *
  * @param headword The dictionary headword. Must not be {@code null} or blank and must
- *                 not contain a tab or line break.
+ *                 not contain a tab, carriage return, or line feed.
  * @param definition The definition text. Must not be {@code null} or blank and must not
- *                   contain a tab or line break.
+ *                   contain a tab, carriage return, or line feed.
  *
  * @since 3.0.0
  */
@@ -49,7 +50,7 @@ public record DictionaryEntry(String headword, String definition) {
    * Validates the entry.
    *
    * @throws IllegalArgumentException Thrown if either component is {@code null}, blank,
-   *         or contains a tab or line break.
+   *         or contains a tab, carriage return, or line feed.
    */
   public DictionaryEntry {
     requireCell(headword, "headword");
@@ -73,11 +74,13 @@ public record DictionaryEntry(String headword, String definition) {
     if (file == null) {
       throw new IllegalArgumentException("file must not be null");
     }
+    for (DictionaryEntry entry : entries) {
+      if (entry == null) {
+        throw new IllegalArgumentException("entries must not contain null");
+      }
+    }
     try (BufferedWriter out = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
       for (DictionaryEntry entry : entries) {
-        if (entry == null) {
-          throw new IllegalArgumentException("entries must not contain null");
-        }
         out.write(entry.headword());
         out.write('\t');
         out.write(entry.definition());
@@ -114,12 +117,27 @@ public record DictionaryEntry(String headword, String definition) {
           throw new InvalidFormatException(
               "Line " + lineNumber + " of " + file + " must hold exactly one tab");
         }
-        entries.add(new DictionaryEntry(line.substring(0, tab), line.substring(tab + 1)));
+        try {
+          entries.add(new DictionaryEntry(line.substring(0, tab), line.substring(tab + 1)));
+        } catch (IllegalArgumentException e) {
+          throw new InvalidFormatException(
+              "Invalid dictionary entry on line " + lineNumber + " of " + file, e);
+        }
       }
+    } catch (CharacterCodingException e) {
+      throw new InvalidFormatException("Invalid UTF-8 in " + file, e);
     }
     return entries;
   }
 
+  /**
+   * Validates one TSV cell.
+   *
+   * @param value The cell value.
+   * @param name The component name used in error messages.
+   * @throws IllegalArgumentException Thrown if the value is {@code null}, blank, or
+   *         contains a TSV record delimiter.
+   */
   private static void requireCell(String value, String name) {
     if (value == null) {
       throw new IllegalArgumentException(name + " must not be null");
@@ -128,7 +146,8 @@ public record DictionaryEntry(String headword, String definition) {
       throw new IllegalArgumentException(name + " must not be blank");
     }
     if (value.indexOf('\t') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\r') >= 0) {
-      throw new IllegalArgumentException(name + " must not contain a tab or line break");
+      throw new IllegalArgumentException(
+          name + " must not contain a tab, carriage return, or line feed");
     }
   }
 }

@@ -32,12 +32,10 @@ import opennlp.embeddings.index.FlatFloatIndex;
 import opennlp.embeddings.index.HnswFloatIndex;
 
 /**
- * The Lucene HNSW contender run through the same measurements as
+ * Runs the Lucene HNSW index through the same measurements as
  * {@link SearchEvaluator#run(StaticEmbeddingModel, List, List, int, long, int)}: index the same
- * indexable passages, measure fidelity against the exact scan, and run the two zero-label
- * retrieval evaluations, reporting the same table columns so the numbers drop next to the
- * evaluator's. Lives in the test tree because the graph index is a benchmark baseline, not a
- * shipped dependency.
+ * indexable passages, measure fidelity against the exact scan, and run both retrieval
+ * evaluations. This test utility does not add Lucene to the runtime dependencies.
  */
 public final class HnswBaseline {
 
@@ -76,9 +74,15 @@ public final class HnswBaseline {
      * @throws IllegalArgumentException Thrown if a value is invalid or missing.
      */
     public Report {
+      if (passageCount < 1) {
+        throw new IllegalArgumentException("passageCount must be at least 1: " + passageCount);
+      }
       if (indexedPassageCount < 1 || indexedPassageCount > passageCount) {
         throw new IllegalArgumentException("indexedPassageCount must be in [1, passageCount]: "
             + indexedPassageCount);
+      }
+      if (headwordCount < 0) {
+        throw new IllegalArgumentException("headwordCount must be nonnegative: " + headwordCount);
       }
       if (indexedHeadwordCount < 0 || indexedHeadwordCount > headwordCount) {
         throw new IllegalArgumentException(
@@ -92,6 +96,25 @@ public final class HnswBaseline {
       }
       if (exact == null || hnsw == null || halfPassage == null) {
         throw new IllegalArgumentException("exact, hnsw, and halfPassage must not be null");
+      }
+      if (exact.rows() != indexedPassageCount || hnsw.rows() != indexedPassageCount) {
+        throw new IllegalArgumentException(
+            "index row counts must equal indexedPassageCount: " + indexedPassageCount);
+      }
+      if ((headwordCount == 0) != (definitionToHeadword == null)) {
+        throw new IllegalArgumentException(
+            "definitionToHeadword must be null exactly when headwordCount is zero");
+      }
+      if (definitionToHeadword != null
+          && definitionToHeadword.queries() > indexedHeadwordCount) {
+        throw new IllegalArgumentException(
+            "definition query count must not exceed indexedHeadwordCount: "
+                + definitionToHeadword.queries() + " > " + indexedHeadwordCount);
+      }
+      if (halfPassage.queries() > indexedPassageCount) {
+        throw new IllegalArgumentException(
+            "half-passage query count must not exceed indexedPassageCount: "
+                + halfPassage.queries() + " > " + indexedPassageCount);
       }
       if (!Double.isFinite(fidelityRecallAtK) || fidelityRecallAtK < 0
           || fidelityRecallAtK > 1) {
@@ -225,8 +248,8 @@ public final class HnswBaseline {
   }
 
   /**
-   * Runs the baseline: embed, build the exact and the HNSW passage index, measure fidelity and
-   * throughput, and run both zero-label retrieval evaluations against the HNSW indexes.
+   * Runs the baseline: embed, build the exact and HNSW passage indexes, measure fidelity and
+   * throughput, and run both retrieval evaluations.
    *
    * @param model      The embedding model. Must not be {@code null}.
    * @param passages   The passages to index and query. Must not be {@code null} or empty; at

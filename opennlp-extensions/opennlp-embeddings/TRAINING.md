@@ -17,7 +17,7 @@
 
 # Distilling a Model for OpenNLP Static Embeddings
 
-This module loads static embedding tables and, with the `DistillModel` command, also produces them: a table is distilled once from a sentence-transformer teacher and then loaded in the JVM as many times as you like. The distiller replicates [Model2Vec](https://github.com/MinishLab/model2vec) in Java — it runs the teacher's ONNX graph over its own vocabulary once, applies principal component analysis (PCA) and a Zipf weighting (frequent tokens are down-weighted, after Zipf's law of word frequency), and writes a flat per-token matrix. There is no training loop and no labelled data; a distillation is minutes on CPU, not hours on a GPU.
+This module loads static embedding tables and, with the `DistillModel` command, also produces them: a table is distilled once from a sentence-transformer teacher and then loaded in the JVM as many times as you like. The distiller replicates [Model2Vec](https://github.com/MinishLab/model2vec) in Java. It runs the teacher's ONNX graph over its own vocabulary once, applies principal component analysis (PCA) and a Zipf weighting (frequent tokens are down-weighted, after Zipf's law of word frequency), and writes a flat per-token matrix. There is no training loop and no labelled data; a distillation is minutes on CPU, not hours on a GPU.
 
 ## 1. Distill the teacher
 
@@ -37,7 +37,7 @@ bge-m3 is an [XLM-RoBERTa](https://arxiv.org/abs/1911.02116)/SentencePiece model
 
 ## 2. Assemble the model directory
 
-The distiller writes `model.safetensors` (F32), the cleaned `tokenizer.json`, and `config.json`, and copies the teacher's SentencePiece `.model` file when there is one. `DistillModel` assembles and verifies its own output; `AssembleModel` completes a directory put together by hand — for a WordPiece model it derives `vocab.txt` and `tokenizer_config.json` from `tokenizer.json`, for a SentencePiece model it checks that the trained `.model` file is present:
+The distiller writes `model.safetensors` (F32), the cleaned `tokenizer.json`, and `config.json`, and copies the teacher's SentencePiece `.model` file when there is one. `DistillModel` assembles and verifies its own output. `AssembleModel` completes a directory put together by hand: for a WordPiece model it derives `vocab.txt` and `tokenizer_config.json` from `tokenizer.json`; for a SentencePiece model it checks that the trained `.model` file is present:
 
 ```
 opennlp-embeddings AssembleModel -modelDir bge-m3-static
@@ -72,7 +72,7 @@ model.mostSimilar("coffee", 5);   // ▁coffee, ▁Coffee, ▁koffie, ▁kávé,
 
 Confirm parity against the Python reference before trusting a fresh distillation: embed the same text on both sides and check the vectors match within floating-point tolerance. They should agree to a few parts in ten thousand, because the JVM path reproduces the reference tokenization and pooling exactly, not approximately. The reference Python flow lives in the repository as `dev/embeddings/distill_bge_m3.py`, and `dev/embeddings/parity/` holds a harness that reruns the parity check and the single-thread speed comparison against the Python reference on any machine.
 
-Two tables distilled independently from the same teacher (one with this command, one with Python Model2Vec) agree on their pairwise geometry to a few parts in a thousand — similarities, neighbors, and rankings match — but their raw vectors are not directly comparable axis by axis: PCA fixes only the subspace, and within the near-degenerate tail of the spectrum two independent decompositions choose different bases.
+Two tables distilled independently from the same teacher (one with this command, one with Python Model2Vec) agree on their pairwise geometry to a few parts in a thousand. Similarities, neighbors, and rankings match, but their raw vectors are not directly comparable axis by axis. PCA fixes only the subspace, and two decompositions can choose different bases within the near-degenerate tail of the spectrum.
 
 ## 4. Evaluate retrieval and quantization
 
@@ -87,29 +87,29 @@ opennlp-embeddings EvalVectorSearch \
   -bits 4 -seed 42 -topK 10
 ```
 
-The command builds an exact float index and a TurboQuant index. It reports quantized overlap with the exact results, rank-1 agreement, definition-to-headword retrieval, half-passage retrieval, single-thread throughput, and storage per vector. A TSV containing the same metrics is written next to the markdown report.
+The command builds an exact float index and a TurboQuant index. The markdown and TSV reports contain fidelity, definition-to-headword retrieval, half-passage retrieval, single-thread throughput, and storage per vector.
 
 Inputs that embed to a zero vector have no search direction and are not indexed or evaluated. The report records total and indexable passage and headword counts, so this coverage remains visible. Fidelity recall uses the number of exact results actually returned, including when `topK` exceeds the index size.
 
 ## 5. Benchmark against Lucene HNSW
 
-The module's test tree carries a Lucene HNSW baseline that reruns the same measurements against a graph index: `opennlp.embeddings.index.HnswFloatIndex` adapts an in-memory Lucene index (vectors L2-normalized, dot-product similarity, default graph parameters, a 100-candidate search beam) to the `VectorIndex` contract, and `opennlp.embeddings.eval.HnswBaseline` reports the same table columns as `EvalVectorSearch`, so the two reports read side by side. Lucene is a test-scope dependency only; the shipped module has no search-engine dependency.
+The test tree includes a Lucene HNSW baseline with L2-normalized vectors, dot-product similarity, default graph parameters, and a 100-candidate search width. Lucene is a test-scope dependency.
 
-From the repository root, run the baseline through the Maven test runner. Set `H` to the legal corpus directory described above:
+From the repository root, set `CORPUS_DIR` to the legal corpus directory and run:
 
 ```
 ./mvnw -pl opennlp-extensions/opennlp-embeddings -am \
   -Dtest=HnswBaselineRunnerTest \
   -Dsurefire.failIfNoSpecifiedTests=false \
   -Dopennlp.forkCount=1 \
-  -Dopennlp.hnsw.model="$H/model" \
-  -Dopennlp.hnsw.passages="$H/normalized/passages.jsonl" \
-  -Dopennlp.hnsw.dictionary="$H/normalized/dictionary.tsv" \
-  -Dopennlp.hnsw.output="$H/hnsw-report.md" \
+  -Dopennlp.hnsw.model="$CORPUS_DIR/model" \
+  -Dopennlp.hnsw.passages="$CORPUS_DIR/normalized/passages.jsonl" \
+  -Dopennlp.hnsw.dictionary="$CORPUS_DIR/normalized/dictionary.tsv" \
+  -Dopennlp.hnsw.output="$CORPUS_DIR/hnsw-report.md" \
   -Dopennlp.hnsw.topK=10 test
 ```
 
-It writes the markdown report and a TSV twin next to it, covering the graph's recall against the exact scan, rank-1 agreement, both retrieval evaluations, build time, single-thread throughput, and serialized storage per vector including the graph links. The storage figure sums Lucene's serialized vector data, metadata, and graph files. It is not a measurement of live JVM memory.
+The reports contain graph recall against the exact scan, rank-1 agreement, both retrieval evaluations, build time, single-thread throughput, and serialized vector and graph storage. Storage does not measure live JVM memory.
 
 ## The WordPiece path
 

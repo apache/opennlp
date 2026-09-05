@@ -20,6 +20,7 @@ package opennlp.embeddings.corpus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,9 +38,9 @@ import opennlp.tools.util.InvalidFormatException;
  * Terms are case-folded; multi-word terms join their words with single spaces.</p>
  *
  * @param term The folded term, e.g. {@code habeas corpus}. Must not be {@code null} or
- *             blank and must not contain a tab or line break.
+ *             blank and must not contain a tab, carriage return, or line feed.
  * @param count The number of occurrences counted in the corpus. Must not be negative;
- *              a dictionary term the corpus never uses carries zero.
+ *              a dictionary term absent from the corpus has count zero.
  * @param fromDictionary Whether the term was kept because the dictionary lists it.
  *
  * @since 3.0.0
@@ -53,7 +54,8 @@ public record TermCount(String term, long count, boolean fromDictionary) {
    * Validates the term.
    *
    * @throws IllegalArgumentException Thrown if {@code term} is {@code null}, blank, or
-   *         contains a tab or line break, or {@code count} is negative.
+   *         contains a tab, carriage return, or line feed, or {@code count} is
+   *         negative.
    */
   public TermCount {
     if (term == null) {
@@ -63,7 +65,8 @@ public record TermCount(String term, long count, boolean fromDictionary) {
       throw new IllegalArgumentException("term must not be blank");
     }
     if (term.indexOf('\t') >= 0 || term.indexOf('\n') >= 0 || term.indexOf('\r') >= 0) {
-      throw new IllegalArgumentException("term must not contain a tab or line break");
+      throw new IllegalArgumentException(
+          "term must not contain a tab, carriage return, or line feed");
     }
     if (count < 0) {
       throw new IllegalArgumentException("count must not be negative: " + count);
@@ -86,11 +89,13 @@ public record TermCount(String term, long count, boolean fromDictionary) {
     if (file == null) {
       throw new IllegalArgumentException("file must not be null");
     }
+    for (TermCount term : terms) {
+      if (term == null) {
+        throw new IllegalArgumentException("terms must not contain null");
+      }
+    }
     try (BufferedWriter out = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
       for (TermCount term : terms) {
-        if (term == null) {
-          throw new IllegalArgumentException("terms must not contain null");
-        }
         out.write(term.term());
         out.write('\t');
         out.write(Long.toString(term.count()));
@@ -125,30 +130,41 @@ public record TermCount(String term, long count, boolean fromDictionary) {
         if (line.isBlank()) {
           continue;
         }
-        final String[] cells = line.split("\t", -1);
-        if (cells.length != 3) {
+        final int firstTab = line.indexOf('\t');
+        final int secondTab = firstTab < 0 ? -1 : line.indexOf('\t', firstTab + 1);
+        if (firstTab < 0 || secondTab < 0 || line.indexOf('\t', secondTab + 1) >= 0) {
           throw new InvalidFormatException(
               "Line " + lineNumber + " of " + file + " must hold three tab-separated cells");
         }
+        final String term = line.substring(0, firstTab);
+        final String countText = line.substring(firstTab + 1, secondTab);
+        final String source = line.substring(secondTab + 1);
         final long count;
         try {
-          count = Long.parseLong(cells[1]);
+          count = Long.parseLong(countText);
         } catch (NumberFormatException e) {
           throw new InvalidFormatException(
-              "Invalid count '" + cells[1] + "' on line " + lineNumber + " of " + file);
+              "Invalid count '" + countText + "' on line " + lineNumber + " of " + file);
         }
-        final boolean fromDictionary = switch (cells[2]) {
+        final boolean fromDictionary = switch (source) {
           case SOURCE_DICTIONARY -> true;
           case SOURCE_CORPUS -> false;
           default -> throw new InvalidFormatException(
-              "Unknown source '" + cells[2] + "' on line " + lineNumber + " of " + file);
+              "Unknown source '" + source + "' on line " + lineNumber + " of " + file);
         };
         if (count < 0) {
           throw new InvalidFormatException(
               "Negative count on line " + lineNumber + " of " + file);
         }
-        terms.add(new TermCount(cells[0], count, fromDictionary));
+        try {
+          terms.add(new TermCount(term, count, fromDictionary));
+        } catch (IllegalArgumentException e) {
+          throw new InvalidFormatException(
+              "Invalid vocabulary term on line " + lineNumber + " of " + file, e);
+        }
       }
+    } catch (CharacterCodingException e) {
+      throw new InvalidFormatException("Invalid UTF-8 in " + file, e);
     }
     return terms;
   }

@@ -35,8 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The HNSW baseline on the same tiny deterministic fixture the evaluator tests use: metric
- * ranges and structure, the self-labeling ground truth, and both report renderings.
+ * Tests HNSW metrics and report rendering on a deterministic fixture.
  */
 class HnswBaselineTest {
 
@@ -87,7 +86,7 @@ class HnswBaselineTest {
   }
 
   @Test
-  void testTheGraphSearchAgreesWithTheExactScanOnATinyCorpus() {
+  void testGraphSearchAgreesWithExactScanOnATinyCorpus() {
     final HnswBaseline.Report report = run();
 
     // Three vectors, one graph: the approximate search cannot miss.
@@ -98,7 +97,7 @@ class HnswBaselineTest {
   }
 
   @Test
-  void testTheMarkdownAndTsvRenderTheSameNumbers() {
+  void testMarkdownAndTsvRenderTheSameNumbers() {
     final HnswBaseline.Report report = run();
     final String markdown = report.toMarkdown();
     final String tsv = report.toTsv();
@@ -161,5 +160,38 @@ class HnswBaselineTest {
         assertThrows(IllegalArgumentException.class,
             () -> HnswBaseline.run(model, PASSAGES,
                 List.of(DICTIONARY.get(0), duplicateHeadword), 2)).getMessage());
+  }
+
+  @Test
+  void testHeadwordsWithoutEmbeddingsAreNotIndexed() {
+    final HnswBaseline.Report report = HnswBaseline.run(model, PASSAGES,
+        List.of(new DictionaryEntry("ZZZZZZZZ", "king queen")), 2);
+
+    assertEquals(1, report.headwordCount());
+    assertEquals(0, report.indexedHeadwordCount());
+    assertEquals(0, report.definitionToHeadword().queries());
+    assertEquals(0.0, report.definitionToHeadword().recallAtK());
+  }
+
+  @Test
+  void testReportRejectsContradictoryCounts() {
+    final SearchEvaluator.IndexMetrics oneRowExact =
+        new SearchEvaluator.IndexMetrics("exact", 1, 8.0, 0, 1.0);
+    final SearchEvaluator.IndexMetrics oneRowHnsw =
+        new SearchEvaluator.IndexMetrics("hnsw", 1, 9.0, 0, 1.0);
+    final SearchEvaluator.IndexMetrics emptyExact =
+        new SearchEvaluator.IndexMetrics("exact", 0, 0.0, 0, 0.0);
+    final SearchEvaluator.RetrievalMetrics noQueries =
+        new SearchEvaluator.RetrievalMetrics("hnsw", 0, 0.0, 0.0, 0.0);
+
+    assertThrows(IllegalArgumentException.class, () -> new HnswBaseline.Report(
+        1, 1, 0, 0, 2, 1, emptyExact, oneRowHnsw,
+        1.0, 1.0, null, noQueries));
+    assertThrows(IllegalArgumentException.class, () -> new HnswBaseline.Report(
+        1, 1, 1, 1, 2, 1, oneRowExact, oneRowHnsw,
+        1.0, 1.0, null, noQueries));
+    assertThrows(IllegalArgumentException.class, () -> new HnswBaseline.Report(
+        1, 1, 0, 0, 2, 1, oneRowExact, oneRowHnsw,
+        1.0, 1.0, noQueries, noQueries));
   }
 }

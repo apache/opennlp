@@ -30,11 +30,8 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * Runs the zero-label vector search evaluation, the {@code opennlp-embeddings EvalVectorSearch}
- * command: embed a passage corpus with a static embedding model, build the exact and the
- * quantized index, run the fidelity, definition-to-headword, and half-passage evaluations, and
- * write one markdown report plus a machine-readable TSV. One command, deterministic apart from
- * the wall-clock timings; see {@link SearchEvaluator} for the methodology.
+ * Evaluates exact and quantized vector search over a passage corpus and writes markdown and TSV
+ * reports. See {@link SearchEvaluator} for the metrics.
  */
 public class EvalVectorSearchTool extends BasicCmdLineTool {
 

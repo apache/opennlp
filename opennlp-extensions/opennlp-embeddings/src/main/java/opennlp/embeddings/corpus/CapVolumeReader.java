@@ -18,6 +18,9 @@
 package opennlp.embeddings.corpus;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -49,6 +52,7 @@ public final class CapVolumeReader {
   /** The hard cut for a single paragraph longer than any passage should be. */
   public static final int HARD_MAX_CHARS = 2400;
 
+  /** Prevents construction of this utility class. */
   private CapVolumeReader() {
   }
 
@@ -76,24 +80,48 @@ public final class CapVolumeReader {
       file.stream().map(ZipEntry::getName)
           .filter(n -> n.startsWith("json/") && n.endsWith(".json"))
           .forEach(names::add);
+      if (names.isEmpty()) {
+        throw new InvalidFormatException("No json/*.json case entries in " + zip);
+      }
       for (String name : names) {
-        final String json = new String(
-            file.getInputStream(file.getEntry(name)).readAllBytes(),
-            StandardCharsets.UTF_8);
+        final byte[] bytes;
+        try (InputStream in = file.getInputStream(file.getEntry(name))) {
+          bytes = in.readAllBytes();
+        }
+        final String json;
+        try {
+          json = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(bytes)).toString();
+        } catch (CharacterCodingException e) {
+          throw new InvalidFormatException("Invalid UTF-8 in " + zip + "!" + name, e);
+        }
         readCase(json, zip + "!" + name, volume, passages);
       }
     }
     return passages;
   }
 
+  /**
+   * Adds the passages from one case object.
+   *
+   * @param json The case JSON.
+   * @param inputName The entry name used in error messages.
+   * @param volume The reporter volume.
+   * @param passages The destination list.
+   * @throws InvalidFormatException Thrown if the case does not have the expected shape.
+   */
   private static void readCase(String json, String inputName, String volume,
       List<CasePassage> passages) throws InvalidFormatException {
     if (!(Json.parse(json, inputName) instanceof Map<?, ?> caseObject)) {
       throw new InvalidFormatException("Expected a JSON object in " + inputName);
     }
-    final Object id = caseObject.get("id");
-    if (id == null) {
-      throw new InvalidFormatException("Missing case id in " + inputName);
+    final Object idValue = caseObject.get("id");
+    final String id;
+    if (idValue instanceof Long number) {
+      id = Long.toString(number);
+    } else if (idValue instanceof String string && !string.isBlank()) {
+      id = string;
+    } else {
+      throw new InvalidFormatException("Missing or invalid case id in " + inputName);
     }
     final String caseName = caseObject.get("name_abbreviation") instanceof String s ? s : "";
     final String date = caseObject.get("decision_date") instanceof String s ? s : "";
@@ -116,6 +144,12 @@ public final class CapVolumeReader {
     }
   }
 
+  /**
+   * Selects the official citation, or the first citation when none is official.
+   *
+   * @param citations The parsed citations value.
+   * @return The selected citation, or an empty string when none is present.
+   */
   private static String officialCite(Object citations) {
     if (!(citations instanceof List<?> list)) {
       return "";
@@ -138,34 +172,46 @@ public final class CapVolumeReader {
   /**
    * Packs newline paragraphs into passages: whole paragraphs up to the soft target,
    * over-long paragraphs cut at the last space before the hard maximum.
+   *
+   * @param text The opinion text.
+   * @return The packed passages in source order.
    */
   static List<String> passagesOf(String text) {
     final List<String> result = new ArrayList<>();
     final List<String> batch = new ArrayList<>();
     int size = 0;
-    for (String rawParagraph : text.split("\n")) {
+    int start = 0;
+    while (start <= text.length()) {
+      int end = text.indexOf('\n', start);
+      if (end < 0) {
+        end = text.length();
+      }
+      final String rawParagraph = text.substring(start, end);
       String paragraph = rawParagraph.strip();
-      if (paragraph.isEmpty()) {
-        continue;
-      }
-      if (!batch.isEmpty() && size + paragraph.length() > TARGET_CHARS) {
-        result.add(String.join(" ", batch));
-        batch.clear();
-        size = 0;
-      }
-      while (paragraph.length() > HARD_MAX_CHARS) {
-        // The bound is exclusive: the cut lands strictly before the hard maximum.
-        int cut = paragraph.lastIndexOf(' ', HARD_MAX_CHARS - 1);
-        if (cut <= 0) {
-          cut = HARD_MAX_CHARS;
-        }
-        result.add(paragraph.substring(0, cut));
-        paragraph = paragraph.substring(cut).strip();
-      }
       if (!paragraph.isEmpty()) {
-        batch.add(paragraph);
-        size += paragraph.length() + 1;
+        if (!batch.isEmpty() && size + paragraph.length() > TARGET_CHARS) {
+          result.add(String.join(" ", batch));
+          batch.clear();
+          size = 0;
+        }
+        while (paragraph.length() > HARD_MAX_CHARS) {
+          // A cut at the limit would make the first passage exceed the hard maximum.
+          int cut = paragraph.lastIndexOf(' ', HARD_MAX_CHARS - 1);
+          if (cut <= 0) {
+            cut = HARD_MAX_CHARS;
+          }
+          result.add(paragraph.substring(0, cut));
+          paragraph = paragraph.substring(cut).strip();
+        }
+        if (!paragraph.isEmpty()) {
+          batch.add(paragraph);
+          size += paragraph.length() + 1;
+        }
       }
+      if (end == text.length()) {
+        break;
+      }
+      start = end + 1;
     }
     if (!batch.isEmpty()) {
       result.add(String.join(" ", batch));

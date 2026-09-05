@@ -22,9 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 /**
- * Maven entry point for a configured full-corpus HNSW baseline run. The test classpath keeps
- * Lucene out of the shipped module while letting the documented command use the reactor's
- * current OpenNLP classes.
+ * Maven entry point for a configured full-corpus HNSW baseline run.
  */
 class HnswBaselineRunnerTest {
 

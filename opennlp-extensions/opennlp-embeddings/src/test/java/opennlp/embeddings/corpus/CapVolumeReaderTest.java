@@ -127,6 +127,44 @@ public class CapVolumeReaderTest {
   }
 
   @Test
+  void testMalformedUtf8IsRejected(@TempDir Path dir) throws IOException {
+    final Path volume = dir.resolve("8.zip");
+    try (ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(volume))) {
+      out.putNextEntry(new ZipEntry("json/0001-01.json"));
+      out.write(("{\"id\": 1, \"name_abbreviation\": \"Alder v. Birch\", "
+          + "\"decision_date\": \"1906-01-02\", \"citations\": [], "
+          + "\"casebody\": {\"opinions\": [{\"text\": \"Opinion ")
+          .getBytes(StandardCharsets.UTF_8));
+      out.write(new byte[] {(byte) 0xc3, 0x28});
+      out.write(" text.\"}]}}".getBytes(StandardCharsets.UTF_8));
+      out.closeEntry();
+    }
+
+    assertThrows(InvalidFormatException.class, () -> CapVolumeReader.read(volume));
+  }
+
+  @Test
+  void testZipWithoutCaseEntriesIsRejected(@TempDir Path dir) throws IOException {
+    final Path volume = dir.resolve("9.zip");
+    try (ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(volume))) {
+      out.putNextEntry(new ZipEntry("README.txt"));
+      out.write("No case entries.".getBytes(StandardCharsets.UTF_8));
+      out.closeEntry();
+    }
+
+    assertThrows(InvalidFormatException.class, () -> CapVolumeReader.read(volume));
+  }
+
+  @Test
+  void testNonScalarCaseIdIsRejected(@TempDir Path dir) throws IOException {
+    final String json = caseJson(1, "Alder v. Birch", "[]", "Opinion text.")
+        .replace("\"id\": 1", "\"id\": true");
+    final Path volume = zip(dir, "10.zip", json);
+
+    assertThrows(InvalidFormatException.class, () -> CapVolumeReader.read(volume));
+  }
+
+  @Test
   void testNullZipIsRejected() {
     assertThrows(IllegalArgumentException.class, () -> CapVolumeReader.read(null));
   }

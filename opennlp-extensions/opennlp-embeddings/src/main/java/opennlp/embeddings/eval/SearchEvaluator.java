@@ -32,12 +32,10 @@ import opennlp.embeddings.index.VectorIndex;
 import opennlp.tools.util.java.Experimental;
 
 /**
- * Runs the zero-label evaluation loop over a static embedding model, a passage corpus, and a
- * dictionary: embed everything, build the exact and the quantized index, and measure what the
- * quantization costs and what the search stack retrieves, without any hand-labeled relevance
- * judgments.
+ * Evaluates exact and quantized vector search over embedded passages and dictionary entries
+ * without labeled relevance judgments.
  *
- * <p>Three evaluations, each self-labeling:</p>
+ * <p>Each evaluation derives its target from the input:</p>
  * <ol>
  *   <li><b>Index fidelity</b>: every indexable passage vector queries both indexes; the
  *   quantized index's overlap with the exact top-k and its rank-1 agreement measure pure
@@ -48,16 +46,16 @@ import opennlp.tools.util.java.Experimental;
  *   passage itself is the relevant answer.</li>
  * </ol>
  *
- * <p>The run is deterministic apart from the wall-clock timings: the quantization seed is
- * fixed by the caller and the queries are the inputs in order.</p>
- *
- * <p>The package-private measurement helpers are shared with the test-scope HNSW baseline in
- * the test tree, so both report the same metrics the same way.</p>
+ * <p>The caller supplies the quantization seed, and queries retain input order. Timing values
+ * depend on the runtime environment.</p>
  *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
 @Experimental
 public final class SearchEvaluator {
+
+  private static final String EXACT_INDEX_NAME = "exact";
+  private static final String QUANTIZED_INDEX_NAME = "turboquant";
 
   /** Not instantiable. */
   private SearchEvaluator() {
@@ -66,11 +64,11 @@ public final class SearchEvaluator {
   /**
    * The build and throughput measurements of one index.
    *
-   * @param name             The index's display name.
-   * @param rows             The number of indexed vectors.
+   * @param name                  The index's display name.
+   * @param rows                  The number of indexed vectors.
    * @param storageBytesPerVector The index's reported storage cost of one vector.
-   * @param buildMillis      The freeze time in milliseconds.
-   * @param queriesPerSecond Single-thread queries per second, measured after a warm-up pass.
+   * @param buildMillis           The index build time in milliseconds.
+   * @param queriesPerSecond      Single-thread queries per second, measured after a warm-up pass.
    */
   public record IndexMetrics(String name, int rows, double storageBytesPerVector,
                              long buildMillis,
@@ -114,6 +112,13 @@ public final class SearchEvaluator {
       requireRatio(mrr, "mrr");
       requireRatio(recallAt1, "recallAt1");
       requireRatio(recallAtK, "recallAtK");
+      if (queries == 0 && (mrr != 0 || recallAt1 != 0 || recallAtK != 0)) {
+        throw new IllegalArgumentException("metrics must be zero when queries is zero");
+      }
+      if (recallAt1 > mrr || mrr > recallAtK) {
+        throw new IllegalArgumentException(
+            "metrics must satisfy recallAt1 <= mrr <= recallAtK");
+      }
     }
   }
 
@@ -390,10 +395,11 @@ public final class SearchEvaluator {
 
     final float[][] timedQueries = fidelityQueries.toArray(float[][]::new);
 
-    final IndexMetrics flatMetrics = new IndexMetrics("exact", flat.size(),
+    final IndexMetrics flatMetrics = new IndexMetrics(EXACT_INDEX_NAME, flat.size(),
         model.dimension() * (double) Float.BYTES, flatBuildMillis,
         queriesPerSecond(flat, timedQueries, topK));
-    final IndexMetrics quantizedMetrics = new IndexMetrics("turboquant", quantized.size(),
+    final IndexMetrics quantizedMetrics = new IndexMetrics(
+        QUANTIZED_INDEX_NAME, quantized.size(),
         quantized.bytesPerVector(), quantizedBuildMillis,
         queriesPerSecond(quantized, timedQueries, topK));
 
@@ -423,9 +429,10 @@ public final class SearchEvaluator {
         queries.add(model.embed(entry.definition()));
         targets.add(entry.headword());
       }
-      definitionToHeadword.add(retrieval("exact", flatHeadwords, queries, targets, topK));
       definitionToHeadword.add(
-          retrieval("turboquant", quantizedHeadwords, queries, targets, topK));
+          retrieval(EXACT_INDEX_NAME, flatHeadwords, queries, targets, topK));
+      definitionToHeadword.add(
+          retrieval(QUANTIZED_INDEX_NAME, quantizedHeadwords, queries, targets, topK));
     }
 
     // Half passage: the first half of each passage queries the passage index.
@@ -440,8 +447,8 @@ public final class SearchEvaluator {
       passageTargets.add(passage.id());
     }
     final List<RetrievalMetrics> halfPassage = List.of(
-        retrieval("exact", flat, halfQueries, passageTargets, topK),
-        retrieval("turboquant", quantized, halfQueries, passageTargets, topK));
+        retrieval(EXACT_INDEX_NAME, flat, halfQueries, passageTargets, topK),
+        retrieval(QUANTIZED_INDEX_NAME, quantized, halfQueries, passageTargets, topK));
 
     return new Report(passages.size(), fidelityQueries.size(),
         dictionary.size(), indexedHeadwordCount, model.dimension(),
@@ -548,7 +555,7 @@ public final class SearchEvaluator {
   /**
    * Scores one retrieval evaluation: each query's target contributes its reciprocal rank when
    * it appears in the index's top {@code topK}, zero when it does not. Queries whose embedding
-   * has no direction (the index answers nothing) are dropped from the denominator and counted
+   * is all zero are dropped from the denominator and counted
    * out of {@code queries}.
    *
    * @param name    The index's display name.
@@ -566,11 +573,12 @@ public final class SearchEvaluator {
     int atOne = 0;
     int withinK = 0;
     for (int i = 0; i < queries.size(); i++) {
-      final List<VectorIndex.Hit> hits = index.topK(queries.get(i), topK);
-      if (hits.isEmpty()) {
+      final float[] query = queries.get(i);
+      if (!hasDirection(query)) {
         continue;
       }
       usable++;
+      final List<VectorIndex.Hit> hits = index.topK(query, topK);
       final String target = targets.get(i);
       for (int rank = 0; rank < hits.size(); rank++) {
         if (hits.get(rank).id().equals(target)) {
@@ -614,7 +622,8 @@ public final class SearchEvaluator {
    * @param text The passage text.
    */
   static String firstHalf(String text) {
-    final int midpoint = text.length() / 2;
+    final int midpoint = text.offsetByCodePoints(
+        0, text.codePointCount(0, text.length()) / 2);
     if (midpoint == 0) {
       return text;
     }
@@ -623,7 +632,7 @@ public final class SearchEvaluator {
   }
 
   /**
-   * {@return the whole milliseconds elapsed since a {@link System#nanoTime()} mark}
+   * {@return the elapsed milliseconds since a {@link System#nanoTime()} mark}
    *
    * @param startNanos The mark.
    */
@@ -640,6 +649,11 @@ public final class SearchEvaluator {
   private static void requireName(String name) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("name must not be null or blank");
+    }
+    if (name.indexOf('\t') >= 0 || name.indexOf('\r') >= 0
+        || name.indexOf('\n') >= 0 || name.indexOf('|') >= 0) {
+      throw new IllegalArgumentException(
+          "name must not contain a tab, carriage return, line feed, or pipe");
     }
   }
 

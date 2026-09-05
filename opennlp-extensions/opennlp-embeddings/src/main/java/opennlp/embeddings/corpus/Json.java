@@ -31,10 +31,18 @@ import opennlp.tools.util.InvalidFormatException;
  */
 final class Json {
 
+  private static final String HEX_DIGITS = "0123456789abcdef";
+
   private final String text;
   private final String inputName;
   private int position;
 
+  /**
+   * Creates a parser for one named input.
+   *
+   * @param text The JSON text.
+   * @param inputName The input name used in error messages.
+   */
   private Json(String text, String inputName) {
     this.text = text;
     this.inputName = inputName;
@@ -48,6 +56,7 @@ final class Json {
    * @return The parsed value. May be {@code null} for the JSON {@code null} literal.
    * @throws InvalidFormatException Thrown if the text is not a single well-formed JSON
    *         value.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
    */
   static Object parse(String text, String inputName) throws InvalidFormatException {
     if (text == null) {
@@ -70,8 +79,15 @@ final class Json {
    *
    * @param out The target builder. Must not be {@code null}.
    * @param value The string value to encode. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
    */
   static void appendString(StringBuilder out, String value) {
+    if (out == null) {
+      throw new IllegalArgumentException("out must not be null");
+    }
+    if (value == null) {
+      throw new IllegalArgumentException("value must not be null");
+    }
     out.append('"');
     for (int i = 0; i < value.length(); i++) {
       final char c = value.charAt(i);
@@ -82,8 +98,8 @@ final class Json {
         case '\r' -> out.append("\\r");
         case '\t' -> out.append("\\t");
         default -> {
-          if (c < 0x20) {
-            out.append(String.format("\\u%04x", (int) c));
+          if (c < 0x20 || Character.isSurrogate(c)) {
+            appendUnicodeEscape(out, c);
           } else {
             out.append(c);
           }
@@ -93,6 +109,26 @@ final class Json {
     out.append('"');
   }
 
+  /**
+   * Appends one UTF-16 code unit as a JSON Unicode escape.
+   *
+   * @param out The target builder.
+   * @param value The code unit.
+   */
+  private static void appendUnicodeEscape(StringBuilder out, char value) {
+    out.append('\\').append('u')
+        .append(HEX_DIGITS.charAt((value >>> 12) & 0x0f))
+        .append(HEX_DIGITS.charAt((value >>> 8) & 0x0f))
+        .append(HEX_DIGITS.charAt((value >>> 4) & 0x0f))
+        .append(HEX_DIGITS.charAt(value & 0x0f));
+  }
+
+  /**
+   * Parses the value at the current position.
+   *
+   * @return The parsed value.
+   * @throws InvalidFormatException Thrown if the value is malformed.
+   */
   private Object value() throws InvalidFormatException {
     skipWhitespace();
     final char c = peek();
@@ -107,6 +143,13 @@ final class Json {
     };
   }
 
+  /**
+   * Parses an object at the current position.
+   *
+   * @return The parsed members in input order.
+   * @throws InvalidFormatException Thrown if the object is malformed or repeats a
+   *         member name.
+   */
   private Map<String, Object> object() throws InvalidFormatException {
     expect('{');
     final Map<String, Object> object = new LinkedHashMap<>();
@@ -120,6 +163,9 @@ final class Json {
       final String key = string();
       skipWhitespace();
       expect(':');
+      if (object.containsKey(key)) {
+        throw malformed("Duplicate object member '" + key + "'");
+      }
       object.put(key, value());
       skipWhitespace();
       final char next = consume();
@@ -132,6 +178,12 @@ final class Json {
     }
   }
 
+  /**
+   * Parses an array at the current position.
+   *
+   * @return The parsed values in input order.
+   * @throws InvalidFormatException Thrown if the array is malformed.
+   */
   private List<Object> array() throws InvalidFormatException {
     expect('[');
     final List<Object> array = new ArrayList<>();
@@ -153,6 +205,12 @@ final class Json {
     }
   }
 
+  /**
+   * Parses a string at the current position.
+   *
+   * @return The decoded string.
+   * @throws InvalidFormatException Thrown if the string or an escape is malformed.
+   */
   private String string() throws InvalidFormatException {
     expect('"');
     final StringBuilder value = new StringBuilder();
@@ -162,6 +220,9 @@ final class Json {
         return value.toString();
       }
       if (c != '\\') {
+        if (c < 0x20) {
+          throw malformed("Unescaped control character in string");
+        }
         value.append(c);
         continue;
       }
@@ -190,36 +251,102 @@ final class Json {
     }
   }
 
+  /**
+   * Parses a JSON number at the current position.
+   *
+   * @return A {@link Long} for an integer or a finite {@link Double} otherwise.
+   * @throws InvalidFormatException Thrown if the number is malformed or cannot be
+   *         represented by the return type.
+   */
   private Object number() throws InvalidFormatException {
     final int start = position;
     if (peek() == '-') {
       position++;
     }
+    if (position >= text.length()) {
+      throw malformed("Invalid number '" + text.substring(start, position) + "'");
+    }
+    final char firstDigit = text.charAt(position);
+    if (firstDigit == '0') {
+      position++;
+      if (position < text.length()) {
+        final char next = text.charAt(position);
+        if (next >= '0' && next <= '9') {
+          throw malformed("Leading zero in number at position " + start);
+        }
+      }
+    } else if (firstDigit >= '1' && firstDigit <= '9') {
+      position++;
+      while (position < text.length()) {
+        final char digit = text.charAt(position);
+        if (digit < '0' || digit > '9') {
+          break;
+        }
+        position++;
+      }
+    } else {
+      throw malformed("Invalid number at position " + start);
+    }
+
     boolean integral = true;
-    while (position < text.length()) {
-      final char c = text.charAt(position);
-      if (c >= '0' && c <= '9') {
+    if (position < text.length() && text.charAt(position) == '.') {
+      integral = false;
+      position++;
+      final int fractionStart = position;
+      while (position < text.length()) {
+        final char digit = text.charAt(position);
+        if (digit < '0' || digit > '9') {
+          break;
+        }
         position++;
-      } else if (c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-') {
-        integral = false;
+      }
+      if (position == fractionStart) {
+        throw malformed("Missing digit after decimal point at position " + start);
+      }
+    }
+    if (position < text.length()
+        && (text.charAt(position) == 'e' || text.charAt(position) == 'E')) {
+      integral = false;
+      position++;
+      if (position < text.length()
+          && (text.charAt(position) == '+' || text.charAt(position) == '-')) {
         position++;
-      } else {
-        break;
+      }
+      final int exponentStart = position;
+      while (position < text.length()) {
+        final char digit = text.charAt(position);
+        if (digit < '0' || digit > '9') {
+          break;
+        }
+        position++;
+      }
+      if (position == exponentStart) {
+        throw malformed("Missing exponent digit at position " + start);
       }
     }
     final String token = text.substring(start, position);
     try {
-      // Deliberately not a ternary: mixed Long/Double operands would promote the
-      // integral branch to double and box every whole number as Double.
       if (integral) {
         return Long.parseLong(token);
       }
-      return Double.parseDouble(token);
+      final double value = Double.parseDouble(token);
+      if (!Double.isFinite(value)) {
+        throw malformed("Number is outside the supported range at position " + start);
+      }
+      return value;
     } catch (NumberFormatException e) {
       throw malformed("Invalid number '" + token + "'");
     }
   }
 
+  /**
+   * Parses a fixed literal at the current position.
+   *
+   * @param literal The expected source text.
+   * @param value The value represented by the literal.
+   * @return {@code value}.
+   * @throws InvalidFormatException Thrown if the literal is absent.
+   */
   private Object literal(String literal, Object value) throws InvalidFormatException {
     if (!text.startsWith(literal, position)) {
       throw malformed("Invalid literal at position " + position);
@@ -228,12 +355,23 @@ final class Json {
     return value;
   }
 
+  /** Advances past JSON space, tab, carriage return, and line feed characters. */
   private void skipWhitespace() {
-    while (position < text.length() && Character.isWhitespace(text.charAt(position))) {
+    while (position < text.length()) {
+      final char c = text.charAt(position);
+      if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
+        return;
+      }
       position++;
     }
   }
 
+  /**
+   * Returns the current character without advancing.
+   *
+   * @return The current character.
+   * @throws InvalidFormatException Thrown at the end of the input.
+   */
   private char peek() throws InvalidFormatException {
     if (position >= text.length()) {
       throw malformed("Unexpected end of input");
@@ -241,12 +379,24 @@ final class Json {
     return text.charAt(position);
   }
 
+  /**
+   * Returns the current character and advances one position.
+   *
+   * @return The consumed character.
+   * @throws InvalidFormatException Thrown at the end of the input.
+   */
   private char consume() throws InvalidFormatException {
     final char c = peek();
     position++;
     return c;
   }
 
+  /**
+   * Consumes one expected character.
+   *
+   * @param c The expected character.
+   * @throws InvalidFormatException Thrown if another character occurs.
+   */
   private void expect(char c) throws InvalidFormatException {
     final char actual = consume();
     if (actual != c) {
@@ -254,6 +404,12 @@ final class Json {
     }
   }
 
+  /**
+   * Creates a format exception that identifies the input.
+   *
+   * @param message The error description.
+   * @return The exception.
+   */
   private InvalidFormatException malformed(String message) {
     return new InvalidFormatException(message + " in " + inputName);
   }

@@ -59,8 +59,7 @@
       <version>${onnxruntime.version}</version>
     </dependency>
 
-    <!-- The HNSW baseline the evaluation harness benchmarks against; test scope keeps the
-         module's runtime free of search-engine dependencies. -->
+    <!-- Lucene is used only by the HNSW benchmark tests. -->
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
@@ -106,7 +105,7 @@
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
-          <!-- These invented corpus fixtures use formats that do not admit an AL header. -->
+          <!-- These self-authored corpus fixtures use formats without an AL header. -->
           <excludes combine.children="append">
             <exclude>src/test/resources/opennlp/embeddings/corpus/*</exclude>
           </excludes>

@@ -274,8 +274,8 @@ List<VectorIndex.Hit> hits = index.topK(model.embed("king"), 5);]]>
 <![CDATA[$ bin/embeddings EvalVectorSearch -model dir -passages file -dictionary file -out file [-bits num] [-seed num] [-topK num]]]>
 				</screen>
 				The bit width defaults to 4, the rotation seed defaults to 42, and the
-				evaluation depth defaults to 10. The tool writes a human-readable markdown
-				report and a key-value TSV carrying the same metrics.
+				evaluation depth defaults to 10. The tool writes a human-readable Markdown
+				report and a key-value TSV with the same metrics.
 			</para>
 			<para>
 				A text that embeds to a zero vector has no search direction, so the evaluator

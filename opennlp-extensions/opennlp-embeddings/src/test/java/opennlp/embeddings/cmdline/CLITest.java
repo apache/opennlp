@@ -40,6 +40,7 @@ class CLITest {
   /** {@return the tools the dispatcher registers, as parameterized-test arguments} */
   static Stream<BasicCmdLineTool> tools() {
     return Stream.of(new AssembleModelTool(), new DistillModelTool(), new QuantizeModelTool(),
+        new NormalizeDictionaryTool(), new NormalizeReporterTool(), new LearnVocabularyTool(),
         new EvalVectorSearchTool());
   }
 
@@ -96,5 +97,22 @@ class CLITest {
     assertTrue(help.contains("[-bits num]"), help);
     assertTrue(help.contains("[-seed num]"), help);
     assertTrue(help.contains("[-topK num]"), help);
+  }
+
+  @Test
+  void testCorpusToolHelpNamesEveryParameter() {
+    final String dictionaryHelp = new NormalizeDictionaryTool().getHelp();
+    final String reporterHelp = new NormalizeReporterTool().getHelp();
+    final String vocabularyHelp = new LearnVocabularyTool().getHelp();
+
+    assertTrue(dictionaryHelp.contains("-rawDir dir"), dictionaryHelp);
+    assertTrue(dictionaryHelp.contains("-out file"), dictionaryHelp);
+    assertTrue(reporterHelp.contains("-rawDir dir"), reporterHelp);
+    assertTrue(reporterHelp.contains("-out file"), reporterHelp);
+    assertTrue(vocabularyHelp.contains("-dictionary file"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("-passages file"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("-out file"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("[-minFrequency n]"), vocabularyHelp);
+    assertTrue(vocabularyHelp.contains("[-maxTerms n]"), vocabularyHelp);
   }
 }
