@@ -22,28 +22,33 @@ import java.util.Locale;
 import opennlp.embeddings.ModelQuantizer;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Quantizes a static embedding model directory's matrix to 2-4 bits per dimension, writing
  * {@code model.quantized} next to the {@code model.safetensors}, and prints the sizes and the
- * measured reconstruction quality. {@code StaticEmbeddingModel.load} prefers the quantized file
- * from then on; the safetensors may be deleted for a slim deployment.
+ * measured reconstruction quality. Delete {@code model.safetensors} before loading the quantized
+ * deployment; a model directory containing both matrix files is rejected.
  */
 public class QuantizeModelTool extends BasicCmdLineTool {
 
+  /** Command-line parameters accepted by this tool. */
   interface Params extends QuantizeModelParams {
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getShortDescription() {
     return "Quantizes a static embedding model directory's matrix to 2-4 bits per dimension";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run(String[] args) {
     final Params params = validateAndParseParams(args, Params.class);
@@ -51,15 +56,15 @@ public class QuantizeModelTool extends BasicCmdLineTool {
     try {
       result = ModelQuantizer.quantize(params.getModelDir().toPath(), params.getBits(),
           params.getSeed());
-    } catch (IllegalArgumentException e) {
-      throw new TerminateToolException(1, e.getMessage());
+    } catch (IllegalArgumentException | InvalidFormatException e) {
+      throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,
           "IO error while quantizing " + params.getModelDir() + ": " + e.getMessage(), e);
     }
     System.out.println("Quantized " + result.rowCount() + " rows of dimension "
         + result.dimension() + " to " + result.bits() + " bits"
-        + (result.hasWeights() ? ", carrying the per-token weights" : ""));
+        + (result.hasWeights() ? ", including the per-token weights" : ""));
     System.out.println(String.format(Locale.ROOT,
         "Size: %,d bytes safetensors, %,d bytes quantized (%.1fx smaller)",
         result.safetensorsBytes(), result.quantizedBytes(),

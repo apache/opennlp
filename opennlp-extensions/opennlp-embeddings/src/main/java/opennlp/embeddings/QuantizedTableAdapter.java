@@ -17,10 +17,8 @@
 package opennlp.embeddings;
 
 /**
- * The quantized {@link EmbeddingTable}: a {@link QuantizedEmbeddingMatrix} whose working space
- * is rotated space, so pooling accumulates decoded rows there and pays one inverse rotation per
- * pooled result, and a scan rotates the query once and scores every row without leaving rotated
- * space (see the matrix's class comment for why both are safe).
+ * Adapts a {@link QuantizedEmbeddingMatrix} to {@link EmbeddingTable}. Pooling and scoring use the
+ * matrix's rotated vector space.
  */
 final class QuantizedTableAdapter implements EmbeddingTable {
 
@@ -55,25 +53,25 @@ final class QuantizedTableAdapter implements EmbeddingTable {
 
   /** {@inheritDoc} */
   @Override
-  public void addRow(int row, float weight, float[] sum) {
+  public void addRow(int row, float weight, double[] sum) {
     matrix.addRowRotated(row, weight, sum);
   }
 
   /** {@inheritDoc} */
   @Override
-  public float[] finishPooling(float[] sum) {
+  public double[] finishPooling(double[] sum) {
     return matrix.toOriginal(sum);
   }
 
   /** {@inheritDoc} */
   @Override
-  public float[] prepareQuery(float[] query) {
-    return matrix.rotate(query);
+  public double[] prepareQuery(double[] query) {
+    return matrix.rotateQuery(query);
   }
 
   /** {@inheritDoc} */
   @Override
-  public double dot(int row, float[] preparedQuery) {
+  public double dot(int row, double[] preparedQuery) {
     return matrix.dotRotated(row, preparedQuery);
   }
 

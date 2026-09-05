@@ -110,7 +110,7 @@ class PieceTrieTest {
   }
 
   @Test
-  void testDuplicatePiecesFailLoudly() {
+  void testRejectsDuplicatePieces() {
     final byte[][] pieces = {{'a'}, {'a'}};
     assertThrows(IllegalArgumentException.class, () -> PieceTrie.build(pieces, new int[] {0, 1}));
   }

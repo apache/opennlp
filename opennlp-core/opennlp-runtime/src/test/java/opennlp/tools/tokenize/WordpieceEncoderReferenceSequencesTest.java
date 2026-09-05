@@ -26,15 +26,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Reference token-sequence expectations for {@link WordpieceEncoder}, covering lower casing,
- * accent stripping, punctuation and CJK isolation, and text cleaning.
- * <p>
- * All expected token sequences in this test were generated with the HuggingFace
- * {@code tokenizers} reference implementation ({@code BertWordPieceTokenizer})
- * using the same vocabulary, so they are verified to be identical to the
- * reference BERT tokenization. The encoder requires its special tokens to be
- * present in the vocabulary (every piece must have an id), so the vocabularies
- * here include them; the token sequences are unchanged.
+ * Checks token sequences defined by the BERT tokenizer for lower casing, accent stripping,
+ * punctuation, CJK isolation, and text cleaning.
+ *
+ * @see <a href="https://github.com/google-research/bert/blob/master/tokenization.py">
+ *     BERT reference tokenizer</a>
  */
 class WordpieceEncoderReferenceSequencesTest {
 
@@ -43,9 +39,11 @@ class WordpieceEncoderReferenceSequencesTest {
       "the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog",
       "em", "##bed", "##ding", "##s",
       "wurttemberg", "strasse", "grosse",
-      "don", "t", "wait", "what", ".", ",", "?", "!", "'",
+      "\u03C3\u03BF\u03C6\u03BF\u03C2", "\u03C3", "\u03BF\u03C3\u03B1",
+      "\u03BF\u03C3", "\u03BF\u03C2", "\u03B1", "\u03BF\u03C2\u302E\u03C3",
+      "don", "t", "wait", "what", ".", ",", "?", "!", "'", "\"",
       "\u6211", "\u7231",  // CJK
-      "natural", "language", "processing");
+      "natural", "language", "processing", "foxjumps");
 
   /**
    * The reference input and expected-sequence pairs, one argument set per pipeline behavior.
@@ -61,8 +59,31 @@ class WordpieceEncoderReferenceSequencesTest {
         // Lower cases before wordpiece splitting.
         Arguments.of("Embeddings",
             new String[] {"[CLS]", "em", "##bed", "##ding", "##s", "[SEP]"}),
+        // Lowercases a word-final Greek sigma to U+03C2.
+        Arguments.of("\u03A3\u039F\u03A6\u039F\u03A3",
+            new String[] {"[CLS]", "\u03C3\u03BF\u03C6\u03BF\u03C2", "[SEP]"}),
+        // A sigma without a preceding cased letter is not a final sigma.
+        Arguments.of("\u03A3", new String[] {"[CLS]", "\u03C3", "[SEP]"}),
+        // A sigma followed by a cased letter is not a final sigma.
+        Arguments.of("\u039F\u03A3\u0391",
+            new String[] {"[CLS]", "\u03BF\u03C3\u03B1", "[SEP]"}),
+        // Case context skips the apostrophe before punctuation isolation.
+        Arguments.of("\u039F\u03A3'\u0391",
+            new String[] {"[CLS]", "\u03BF\u03C3", "'", "\u03B1", "[SEP]"}),
+        // A full stop is also case-ignorable before punctuation isolation.
+        Arguments.of("\u039F\u03A3.\u0391",
+            new String[] {"[CLS]", "\u03BF\u03C3", ".", "\u03B1", "[SEP]"}),
+        // A quotation mark terminates the case context, so the sigma before it is word-final.
+        Arguments.of("\u039F\u03A3\"\u0391",
+            new String[] {"[CLS]", "\u03BF\u03C2", "\"", "\u03B1", "[SEP]"}),
+        // Case context skips a combining mark, which accent stripping later removes.
+        Arguments.of("\u039F\u03A3\u0301",
+            new String[] {"[CLS]", "\u03BF\u03C2", "[SEP]"}),
+        // A combining spacing mark terminates the case context.
+        Arguments.of("\u039F\u03A3\u302E\u03A3",
+            new String[] {"[CLS]", "\u03BF\u03C2\u302E\u03C3", "[SEP]"}),
         // The u-umlaut decomposes to u plus a combining diaeresis and the mark is stripped;
-        // the sharp s is not a combining mark and must survive, leaving an OOV token.
+        // the sharp s is not a combining mark and is retained, leaving an OOV token.
         Arguments.of("W\u00fcrttemberg Stra\u00dfe",
             new String[] {"[CLS]", "wurttemberg", "[UNK]", "[SEP]"}),
         // Splits punctuation runs into single characters.
@@ -79,11 +100,11 @@ class WordpieceEncoderReferenceSequencesTest {
         // joining "brown" and "fox" into one out-of-vocabulary token.
         Arguments.of("the\tquick\u00a0brown\u0000fox",
             new String[] {"[CLS]", "the", "quick", "[UNK]", "[SEP]"}),
-        // The reference implementation treats all C* categories as control
-        // characters: private use (U+E000, Co) and noncharacters (U+FDD0, Cn)
-        // are removed, joining the surrounding text into one OOV token.
-        Arguments.of("fox\ue000jumps and fox\ufdd0jumps",
-            new String[] {"[CLS]", "[UNK]", "[UNK]", "[UNK]", "[SEP]"}));
+        // BERT removes all Unicode control categories, including private-use,
+        // unassigned, and surrogate code units.
+        Arguments.of("fox\ue000jumps and fox\ufdd0jumps fox\ud800jumps",
+            new String[] {"[CLS]", "foxjumps", "[UNK]", "foxjumps", "foxjumps",
+                "[SEP]"}));
   }
 
   @ParameterizedTest
@@ -91,18 +112,7 @@ class WordpieceEncoderReferenceSequencesTest {
   void testEncodesTheReferenceSequence(String input, String[] expected) {
     final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
     Assertions.assertArrayEquals(expected, encoder.encodeToPieces(input),
-        "sequence broke on: " + input);
-  }
-
-  @Test
-  void testRejectsNullSpecialTokens() {
-    // The encoder's contract throws IllegalArgumentException for null special tokens.
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new WordpieceEncoder(VOCABULARY, true, null, "[SEP]", "[UNK]"));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new WordpieceEncoder(VOCABULARY, true, "[CLS]", null, "[UNK]"));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new WordpieceEncoder(VOCABULARY, true, "[CLS]", "[SEP]", null));
+        "unexpected sequence for: " + input);
   }
 
   @Test

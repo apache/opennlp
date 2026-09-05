@@ -32,8 +32,8 @@ final class IndexQueries {
    * @param k         The requested result count.
    * @param dimension The index's dimension.
    * @return The query's L2 norm.
-   * @throws IllegalArgumentException Thrown if {@code query} is {@code null} or has the wrong
-   *     length, or {@code k} is less than 1.
+   * @throws IllegalArgumentException Thrown if {@code query} is {@code null}, has the wrong
+   *     length, or contains a non-finite value, or {@code k} is less than 1.
    */
   static double checkedQueryNorm(float[] query, int k, int dimension) {
     if (query == null) {
@@ -47,9 +47,27 @@ final class IndexQueries {
       throw new IllegalArgumentException("K must be at least 1, got " + k);
     }
     double sumOfSquares = 0;
-    for (final float value : query) {
+    for (int dimensionIndex = 0; dimensionIndex < query.length; dimensionIndex++) {
+      final float value = query[dimensionIndex];
+      if (!Float.isFinite(value)) {
+        throw new IllegalArgumentException("Query has a non-finite value at dimension "
+            + dimensionIndex + ": " + value);
+      }
       sumOfSquares += (double) value * value;
     }
     return Math.sqrt(sumOfSquares);
+  }
+
+  /**
+   * Divides a dot product by the product of its vector norms and bounds rounding error to the
+   * cosine range.
+   *
+   * @param dot The dot product.
+   * @param normProduct The product of the two nonzero vector norms.
+   * @return The cosine similarity in {@code [-1, 1]}.
+   */
+  static double cosine(double dot, double normProduct) {
+    final double score = dot / normProduct;
+    return Math.max(-1.0, Math.min(1.0, score));
   }
 }

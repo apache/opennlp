@@ -19,17 +19,13 @@ package opennlp.embeddings;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * Cursor primitives shared by this package's purpose-built JSON readers
- * ({@link SafetensorsHeaderParser}, {@link FlatJsonFields}, {@link TokenizerJsonVocab},
- * {@link ModelAssembler}): string and integer scalars, literals, whitespace, and skipping one
- * value of any type. Deliberately not a general JSON
- * library: no floating-point decoding, no document model; each reader drives the cursor over
- * its own known-shape input and fails loud on anything else, with the input's name and the
- * offending offset in every message. Malformed input is a checked
- * {@link InvalidFormatException}, the exception model content errors carry throughout this
- * package.
+ * Cursor shared by the small JSON readers in this package. It parses scalar values and can skip
+ * one value of any type. Each reader handles its expected input structure. Malformed input raises
+ * an {@link InvalidFormatException} that includes the input name and offset.
  */
 final class JsonCursor {
+
+  private static final int MAX_NESTING_DEPTH = 128;
 
   private final String text;
   private final String inputName;
@@ -49,7 +45,11 @@ final class JsonCursor {
 
   /** Advances the cursor past any run of whitespace. */
   void skipWhitespace() {
-    while (position < text.length() && Character.isWhitespace(text.charAt(position))) {
+    while (position < text.length()) {
+      final char c = text.charAt(position);
+      if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
+        return;
+      }
       position++;
     }
   }
@@ -141,6 +141,8 @@ final class JsonCursor {
       }
       if (c == '\\') {
         value.append(parseEscape());
+      } else if (c <= 0x1F) {
+        throw malformed("Unescaped control character in a string");
       } else {
         value.append(c);
       }
@@ -174,11 +176,10 @@ final class JsonCursor {
     }
     final String hex = text.substring(position, position + 4);
     position += 4;
-    // Each of the four characters must be a hex digit; Integer.parseInt alone would also
-    // accept a sign and silently decode the wrong character.
+    // JSON escape digits are limited to the ASCII hexadecimal characters.
     int value = 0;
     for (int i = 0; i < 4; i++) {
-      final int digit = Character.digit(hex.charAt(i), 16);
+      final int digit = hexadecimalValue(hex.charAt(i));
       if (digit < 0) {
         throw malformed("Malformed \\u escape sequence: " + hex);
       }
@@ -187,26 +188,32 @@ final class JsonCursor {
     return (char) value;
   }
 
+  /** {@return the value of an ASCII hexadecimal digit, or {@code -1} for another character} */
+  private int hexadecimalValue(char c) {
+    if (c >= '0' && c <= '9') {
+      return c - '0';
+    }
+    if (c >= 'a' && c <= 'f') {
+      return c - 'a' + 10;
+    }
+    if (c >= 'A' && c <= 'F') {
+      return c - 'A' + 10;
+    }
+    return -1;
+  }
+
   /**
    * Skips one JSON number, holding it to the grammar (optional minus, digits, optional fraction,
-   * optional signed exponent) so malformed input fails loud even in a skipped field.
+   * optional signed exponent). This validation also applies to skipped fields.
    */
   private void skipNumber() throws InvalidFormatException {
-    if (peek() == '-') {
-      position++;
-    }
-    if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
-      throw malformed("Malformed number");
-    }
-    while (position < text.length() && Character.isDigit(text.charAt(position))) {
-      position++;
-    }
+    skipIntegerPart();
     if (position < text.length() && text.charAt(position) == '.') {
       position++;
-      if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
+      if (position >= text.length() || !isAsciiDigit(text.charAt(position))) {
         throw malformed("Malformed number: digit expected after the decimal point");
       }
-      while (position < text.length() && Character.isDigit(text.charAt(position))) {
+      while (position < text.length() && isAsciiDigit(text.charAt(position))) {
         position++;
       }
     }
@@ -217,13 +224,42 @@ final class JsonCursor {
           && (text.charAt(position) == '+' || text.charAt(position) == '-')) {
         position++;
       }
-      if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
+      if (position >= text.length() || !isAsciiDigit(text.charAt(position))) {
         throw malformed("Malformed number: digit expected in the exponent");
       }
-      while (position < text.length() && Character.isDigit(text.charAt(position))) {
+      while (position < text.length() && isAsciiDigit(text.charAt(position))) {
         position++;
       }
     }
+  }
+
+  /**
+   * Skips the optional sign and integer part of a JSON number.
+   *
+   * @throws InvalidFormatException Thrown if the integer part is absent or has a leading zero.
+   */
+  private void skipIntegerPart() throws InvalidFormatException {
+    if (peek() == '-') {
+      position++;
+    }
+    if (position >= text.length() || !isAsciiDigit(text.charAt(position))) {
+      throw malformed("Malformed number");
+    }
+    if (text.charAt(position) == '0') {
+      position++;
+      if (position < text.length() && isAsciiDigit(text.charAt(position))) {
+        throw malformed("Malformed number: leading zeros are not allowed");
+      }
+      return;
+    }
+    while (position < text.length() && isAsciiDigit(text.charAt(position))) {
+      position++;
+    }
+  }
+
+  /** {@return whether {@code c} is an ASCII decimal digit} */
+  private boolean isAsciiDigit(char c) {
+    return c >= '0' && c <= '9';
   }
 
   /**
@@ -233,15 +269,7 @@ final class JsonCursor {
    */
   long parseLong() throws InvalidFormatException {
     final int start = position;
-    if (peek() == '-') {
-      position++;
-    }
-    if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
-      throw malformed("Expected an integer");
-    }
-    while (position < text.length() && Character.isDigit(text.charAt(position))) {
-      position++;
-    }
+    skipIntegerPart();
     try {
       return Long.parseLong(text.substring(start, position));
     } catch (NumberFormatException e) {
@@ -287,20 +315,31 @@ final class JsonCursor {
   }
 
   /**
-   * Skips one JSON value of any type (string, number, array, object, true/false/null), so a
-   * reader tolerates fields it does not care about.
+   * Skips one JSON value of any type (string, number, array, object, true/false/null), allowing a
+   * reader to ignore unknown fields.
    */
   void skipValue() throws InvalidFormatException {
+    skipValue(0);
+  }
+
+  /**
+   * Skips one JSON value at the given container depth.
+   *
+   * @param depth The number of enclosing arrays and objects.
+   * @throws InvalidFormatException Thrown if the value is malformed or nested too deeply.
+   */
+  private void skipValue(int depth) throws InvalidFormatException {
     skipWhitespace();
     final char c = peek();
     if (c == '"') {
       parseString();
     } else if (c == '[') {
+      requireContainerDepth(depth);
       position++;
       skipWhitespace();
       if (peek() != ']') {
         while (true) {
-          skipValue();
+          skipValue(depth + 1);
           skipWhitespace();
           final char next = consume();
           if (next == ',') {
@@ -315,6 +354,7 @@ final class JsonCursor {
       }
       position++;
     } else if (c == '{') {
+      requireContainerDepth(depth);
       position++;
       skipWhitespace();
       if (peek() != '}') {
@@ -323,7 +363,7 @@ final class JsonCursor {
           parseString();
           skipWhitespace();
           expect(':');
-          skipValue();
+          skipValue(depth + 1);
           skipWhitespace();
           final char next = consume();
           if (next == ',') {
@@ -342,6 +382,18 @@ final class JsonCursor {
       // consumed, nothing to record
     } else {
       throw malformed("Unexpected character while skipping a value: '" + c + "'");
+    }
+  }
+
+  /**
+   * Rejects a container whose contents would exceed the nesting limit.
+   *
+   * @param depth The number of enclosing arrays and objects.
+   * @throws InvalidFormatException Thrown at the nesting limit.
+   */
+  private void requireContainerDepth(int depth) throws InvalidFormatException {
+    if (depth >= MAX_NESTING_DEPTH) {
+      throw malformed("JSON nesting depth exceeds " + MAX_NESTING_DEPTH);
     }
   }
 

@@ -69,4 +69,44 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 			longer uses a sharing or caching stemmer.
 		</para>
 	</section>
+
+	<section xml:id="tools.stemmer.hunspell">
+		<title>Hunspell dictionaries</title>
+		<para>
+			<code>opennlp.tools.stemmer.hunspell</code> implements the documented
+			Hunspell dictionary format: a user-supplied
+			<code>.aff</code> affix file and its <code>.dic</code> word list. OpenNLP
+			bundles no dictionary data; dictionaries are downloaded separately, and
+			each states its own license. The dictionary is immutable and safe to share;
+			<code>HunspellStemmerFactory</code> creates a fresh stemmer per call.
+			<code>HunspellManualExampleTest</code> asserts the behavior shown here.
+			<programlisting language="java"><![CDATA[
+HunspellDictionary dictionary = HunspellDictionary.load(
+    Path.of("dictionary.aff"), Path.of("dictionary.dic"));
+Stemmer stemmer = new HunspellStemmerFactory(dictionary).newStemmer();
+
+stemmer.stem("workers");   // "work"
+stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
+			</programlisting>
+			The stems above are those of the project-authored miniature dictionary the
+			test loads, which lists <code>work</code> with an agentive and a plural
+			suffix; the test asserts the same stem for <code>worker</code>. Which stem a
+			published dictionary yields for a given form is decided by that dictionary.
+			Acquisition helpers and the supported affix feature set live in
+			<code>dev/README-hunspell-dictionaries.md</code>.
+			An opt-in catalog download accepts an application-supplied
+			<code>DictionaryCatalog</code>, needs
+			<code>-Dopennlp.download.remote=true</code>, and fetches through the
+			digest-verified <code>ResourceInstaller</code> path. A file that already exists
+			in the target is not replaced. Remove old files before refreshing a dictionary.
+			Directives that would change stems when ignored
+			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>,
+			<code>COMPOUNDRULE</code>, <code>IGNORE</code>, <code>KEEPCASE</code>)
+			fail at load time; cosmetic tables such as <code>REP</code> are skipped.
+			A rule that strips a whole stem applies only when the affix file
+			declares <code>FULLSTRIP</code>, as in Hunspell itself.
+			Each affix or dictionary stream is rejected when it exceeds
+			<code>HunspellDictionary.MAX_STREAM_BYTES</code> (64&#160;MiB).
+		</para>
+	</section>
 </chapter>

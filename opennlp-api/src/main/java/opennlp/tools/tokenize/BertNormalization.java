@@ -24,6 +24,9 @@ package opennlp.tools.tokenize;
  */
 final class BertNormalization {
 
+  /** Default maximum word length used by BERT wordpiece tokenizers. */
+  static final int DEFAULT_MAX_WORD_CODE_POINTS = 100;
+
   private BertNormalization() {
   }
 
@@ -68,6 +71,12 @@ final class BertNormalization {
       return true;
     }
     return Character.getType(codePoint) == Character.SPACE_SEPARATOR;
+  }
+
+  /** Tests whether a code point is a Unicode line or paragraph separator. */
+  static boolean isLineOrParagraphSeparator(int codePoint) {
+    final int type = Character.getType(codePoint);
+    return type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR;
   }
 
   /**

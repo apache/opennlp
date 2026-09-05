@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The vocabulary contract: line number is the id, duplicates fail loud, the id lookup uses a
+ * The vocabulary contract: line number is the id, duplicate entries are rejected, and lookup uses
  * {@code -1} sentinel, and the reverse lookup enforces its bounds.
  */
 class EmbeddingVocabularyTest {
@@ -56,7 +56,7 @@ class EmbeddingVocabularyTest {
   }
 
   @Test
-  void testDuplicateTokenFailsLoudlyNamingBothLines() {
+  void testDuplicateTokenReportsBothLines() {
     final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> EmbeddingVocabulary.fromLines(List.of("hello", "world", "hello"), "test"));
     assertTrue(e.getMessage().contains("hello"), e.getMessage());

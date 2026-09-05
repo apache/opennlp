@@ -30,41 +30,42 @@ import java.util.Arrays;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.java.Experimental;
 
 /**
- * An embedding matrix quantized to {@code 2}-{@code 4} bits per dimension, following the
- * TurboQuant construction (Zandieh, Daliri, Hadian, Mirrokni,
+ * An embedding matrix quantized to {@code 2}-{@code 4} bits per dimension using an MSE-oriented
+ * variant of TurboQuant (Zandieh, Daliri, Hadian, Mirrokni,
  * <a href="https://arxiv.org/abs/2504.19874"><i>TurboQuant: Online Vector Quantization with
- * Near-optimal Distortion Rate</i></a>): each row is rotated by
- * a seeded {@link HadamardRotation}, so its coordinates become near-independent and
- * near-Gaussian, and each rotated coordinate is encoded independently with the
- * {@link GaussianQuantizer} grid of the chosen bit width. A row decodes to a per-row scale times
- * its grid levels; the scale is least-squares fitted per row, which strictly reduces the squared
- * error of the fixed grid.
+ * Near-optimal Distortion Rate</i></a>). Each row is transformed by a seeded
+ * {@link HadamardRotation}, and each rotated coordinate is encoded with the
+ * {@link GaussianQuantizer} grid for the selected bit width. A row decodes to a per-row scale
+ * times its grid levels; the scale is fitted by least squares.
  *
- * <p>The storage is {@code bits} per <em>padded</em> dimension plus two floats per row (the
- * fitted scale and the decoded norm), against 32 bits per dimension for the float matrix. The
- * rotation pads each row to the next power of two, so a 500,000-row, 300-dimension table stores
- * 512 coded dimensions per row and shrinks from roughly 600 MB to about 132 MB at 4 bits, 4.5
- * times smaller. The workload this serves is memory-bound row gathering, so reading fewer bytes
- * is also the throughput lever.</p>
+ * <p>The cited algorithm uses a dense random rotation and a dimension-specific coordinate
+ * distribution in its MSE stage. This implementation substitutes the fast Hadamard transform and
+ * a standard-normal grid. It also omits the paper's residual QJL stage, so it does not claim the
+ * paper's unbiased inner-product estimator.</p>
  *
- * <p>Rows live in <b>rotated space</b>, and the cheap operations stay there: the rotation is
+ * <p>The storage is {@code bits} per <em>padded</em> dimension plus two doubles per row for the
+ * fitted scale and decoded norm. The rotation pads each row to the next power of two.</p>
+ *
+ * <p>Rows live in <b>rotated space</b>. The rotation is
  * orthonormal, so dot products and norms of rotated vectors equal those of the originals, and
  * pooling commutes with it because rotation is linear. A consumer embeds text by summing rows
- * with {@link #addRowRotated(int, float, float[])} and applying {@link #toOriginal(float[])}
+ * with {@link #addRowRotated(int, float, double[])} and applying {@link #toOriginal(double[])}
  * once per text, not once per row; a similarity scan rotates the query once with
- * {@link #rotate(float[])} and scores every row with {@link #dotRotated(int, float[])}, never
+ * {@link #rotate(float[])} and scores every row with {@link #dotRotated(int, double[])}, without
  * leaving rotated space. {@link #decodeRow(int)} exists for callers that need one original-space
  * row and for measuring reconstruction quality.</p>
  *
- * <p>The file format is self-describing: it stores the grid levels and the rotation seed, so a
- * reader reconstructs exactly the decoder the writer used and never depends on this class's grid
- * derivation staying fixed. Quantizing is deterministic: the same matrix, bit width, and seed
- * produce the same file bytes on every JVM.</p>
+ * <p>The file format stores the grid levels and rotation seed. The reader therefore uses the
+ * same decoder parameters that wrote the file.</p>
  *
  * <p>Instances are immutable and safe for concurrent use after construction.</p>
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
+@Experimental
 @ThreadSafe
 public final class QuantizedEmbeddingMatrix {
 
@@ -74,8 +75,8 @@ public final class QuantizedEmbeddingMatrix {
   /** The largest supported bit width. */
   public static final int MAX_BITS = GaussianQuantizer.MAX_BITS;
 
-  // "ONQ1": OpenNLP quantized matrix, format 1.
-  private static final int MAGIC = 0x4F4E5131;
+  // "ONQ2": OpenNLP quantized matrix, format 2. Version 2 stores scales and norms as doubles.
+  private static final int MAGIC = 0x4F4E5132;
 
   private final int rowCount;
   private final int dimension;
@@ -86,26 +87,26 @@ public final class QuantizedEmbeddingMatrix {
   private final GaussianQuantizer quantizer;
   private final HadamardRotation rotation;
   // One scale per row: decoded rotated coordinate i of a row is scale * level(code_i).
-  private final float[] scales;
+  private final double[] scales;
   // Packed codes, row-major: row r's code i occupies bits [i*bits, (i+1)*bits) of the row's
   // rowBytes region, little-endian within the region.
   private final byte[] codes;
   // The L2 norm of each decoded original-space row. Quantization noise leaves some energy in
-  // the padding coordinates, which truncation drops, so this is computed exactly at quantize
+  // the padding coordinates, which truncation drops, so this is computed during quantization
   // time (one inverse rotation per row) and stored in the file rather than recomputed from the
   // codes on load.
-  private final float[] decodedNorms;
-  // Optional per-row pooling weights carried alongside the matrix, so a quantized file can
+  private final double[] decodedNorms;
+  // Optional per-row pooling weights stored alongside the matrix, so a quantized file can
   // fully replace a safetensors file that bundled a "weights" tensor; null when absent. The
   // weights are stored as they are, not quantized.
   private final float[] poolingWeights;
 
   /**
-   * Holds validated state; callers reach this through {@link #quantize} or {@link #read}.
+   * Constructs state validated by {@link #quantize} or {@link #read}.
    */
   private QuantizedEmbeddingMatrix(int rowCount, int dimension, int bits, long seed,
-                                   GaussianQuantizer quantizer, float[] scales, byte[] codes,
-                                   float[] decodedNorms, float[] poolingWeights) {
+                                   GaussianQuantizer quantizer, double[] scales, byte[] codes,
+                                   double[] decodedNorms, float[] poolingWeights) {
     this.rowCount = rowCount;
     this.dimension = dimension;
     this.paddedDimension = HadamardRotation.paddedDimension(dimension);
@@ -157,11 +158,11 @@ public final class QuantizedEmbeddingMatrix {
     final int paddedDimension = rotation.paddedDimension();
     final int rowBytes = rowByteCount(paddedDimension, bits);
     requireStorableSize(rowCount, rowBytes);
-    final float[] scales = new float[rowCount];
+    final double[] scales = new double[rowCount];
     final byte[] codes = new byte[rowCount * rowBytes];
-    final float[] decodedNorms = new float[rowCount];
-    final float[] rotated = new float[paddedDimension];
-    final float[] decoded = new float[paddedDimension];
+    final double[] decodedNorms = new double[rowCount];
+    final double[] rotated = new double[paddedDimension];
+    final double[] decoded = new double[paddedDimension];
     final double squareRootOfPadded = Math.sqrt(paddedDimension);
     for (int row = 0; row < rowCount; row++) {
       final int base = row * dimension;
@@ -194,15 +195,15 @@ public final class QuantizedEmbeddingMatrix {
       double gridDot = 0;
       double gridSquares = 0;
       for (int i = 0; i < paddedDimension; i++) {
-        final float standardized = (float) (rotated[i] * standardize);
-        final int code = quantizer.encode(standardized);
+        final double standardized = rotated[i] * standardize;
+        final int code = quantizer.encode((float) standardized);
         writeCode(codes, row * rowBytes, bits, i, code);
         final float level = quantizer.level(code);
         gridDot += (double) standardized * level;
         gridSquares += (double) level * level;
       }
       final double fitted = gridDot > 0 ? gridDot / gridSquares : 1.0;
-      scales[row] = (float) (norm / squareRootOfPadded * fitted);
+      scales[row] = norm / squareRootOfPadded * fitted;
       // The decoded original-space norm: quantization noise leaves energy in the padding
       // coordinates and truncation drops it, so the norm is measured on the truncated decode,
       // not on the rotated codes.
@@ -210,22 +211,35 @@ public final class QuantizedEmbeddingMatrix {
         decoded[i] = scales[row] * quantizer.level(readCode(codes, row * rowBytes, bits, i));
       }
       rotation.inverse(decoded);
+      double largestDecodedMagnitude = 0;
+      for (int d = 0; d < dimension; d++) {
+        largestDecodedMagnitude = Math.max(largestDecodedMagnitude, Math.abs(decoded[d]));
+      }
+      double decodedAdjustment = 1.0;
+      if (largestDecodedMagnitude > Float.MAX_VALUE) {
+        // Quantization can overshoot the finite float range even when every source coordinate is
+        // finite. Scale all reconstructed coordinates instead of clipping them individually, so
+        // decoding, stored norms, and rotated-space dot products continue to describe one row.
+        decodedAdjustment = Float.MAX_VALUE / largestDecodedMagnitude;
+        scales[row] *= decodedAdjustment;
+      }
       double decodedSumOfSquares = 0;
       for (int d = 0; d < dimension; d++) {
-        decodedSumOfSquares += (double) decoded[d] * decoded[d];
+        final float value = finiteFloat(decoded[d] * decodedAdjustment);
+        decodedSumOfSquares += (double) value * value;
       }
-      decodedNorms[row] = (float) Math.sqrt(decodedSumOfSquares);
+      decodedNorms[row] = Math.sqrt(decodedSumOfSquares);
     }
     return new QuantizedEmbeddingMatrix(rowCount, dimension, bits, seed, quantizer, scales,
         codes, decodedNorms, null);
   }
 
   /**
-   * {@return a copy of this matrix carrying per-row pooling weights} The weights ride along in
-   * the file unquantized, so a quantized file can fully replace a safetensors file that bundled
+   * {@return a copy of this matrix with per-row pooling weights} The file stores the weights
+   * unquantized, so a quantized file can fully replace a safetensors file that bundled
    * a {@code weights} tensor.
    *
-   * @param weights One weight per row, or {@code null} to carry none. Every weight must be
+   * @param weights One weight per row, or {@code null} when absent. Every weight must be
    *                finite. The array is copied.
    * @return A matrix sharing this one's codes and scales, with the given weights.
    * @throws IllegalArgumentException Thrown if {@code weights} has the wrong length or a
@@ -251,7 +265,7 @@ public final class QuantizedEmbeddingMatrix {
   }
 
   /**
-   * {@return a copy of the per-row pooling weights, or {@code null} when this matrix carries
+   * {@return a copy of the per-row pooling weights, or {@code null} when this matrix has
    * none}
    */
   public float[] poolingWeights() {
@@ -319,15 +333,16 @@ public final class QuantizedEmbeddingMatrix {
 
   /**
    * Rotates an original-space vector into this matrix's rotated space, padding it first. Rotate
-   * a query once, then score rows against it with {@link #dotRotated(int, float[])}.
+   * a query once, then score rows against it with {@link #dotRotated(int, double[])}.
    *
    * @param vector The original-space vector. Must not be {@code null} and must have length
    *               {@link #dimension()}.
-   * @return A new array of length {@link #paddedDimension()} holding the rotated vector.
+   * @return A new double-precision array of length {@link #paddedDimension()} containing the
+   *     rotated vector.
    * @throws IllegalArgumentException Thrown if {@code vector} is {@code null} or has the wrong
    *     length.
    */
-  public float[] rotate(float[] vector) {
+  public double[] rotate(float[] vector) {
     if (vector == null) {
       throw new IllegalArgumentException("Vector must not be null");
     }
@@ -335,24 +350,39 @@ public final class QuantizedEmbeddingMatrix {
       throw new IllegalArgumentException("Vector has length " + vector.length
           + " but this matrix has dimension " + dimension);
     }
-    final float[] padded = new float[paddedDimension];
-    System.arraycopy(vector, 0, padded, 0, dimension);
+    final double[] padded = new double[paddedDimension];
+    for (int d = 0; d < dimension; d++) {
+      padded[d] = vector[d];
+    }
+    rotation.rotate(padded);
+    return padded;
+  }
+
+  /**
+   * Rotates an internal double-precision query without narrowing analogy results to floats.
+   *
+   * @param query The query, of length {@link #dimension()}. Not modified.
+   * @return A new rotated query of length {@link #paddedDimension()}.
+   */
+  double[] rotateQuery(double[] query) {
+    final double[] padded = Arrays.copyOf(query, paddedDimension);
     rotation.rotate(padded);
     return padded;
   }
 
   /**
    * Maps a rotated-space vector back to original space. Apply this once per pooled result, after
-   * accumulating rows with {@link #addRowRotated(int, float, float[])}; rotation is linear, so
+   * accumulating rows with {@link #addRowRotated(int, float, double[])}; rotation is linear, so
    * the sum of rotated rows is the rotation of the summed rows.
    *
    * @param rotated The rotated-space vector. Must not be {@code null} and must have length
    *                {@link #paddedDimension()}. Not modified.
-   * @return A new array of length {@link #dimension()} holding the original-space vector.
+   * @return A new double-precision array of length {@link #dimension()} containing the
+   *     original-space vector.
    * @throws IllegalArgumentException Thrown if {@code rotated} is {@code null} or has the wrong
    *     length.
    */
-  public float[] toOriginal(float[] rotated) {
+  public double[] toOriginal(double[] rotated) {
     if (rotated == null) {
       throw new IllegalArgumentException("Rotated must not be null");
     }
@@ -360,11 +390,9 @@ public final class QuantizedEmbeddingMatrix {
       throw new IllegalArgumentException("Rotated has length " + rotated.length
           + " but this matrix's padded dimension is " + paddedDimension);
     }
-    final float[] copy = rotated.clone();
+    final double[] copy = rotated.clone();
     rotation.inverse(copy);
-    final float[] original = new float[dimension];
-    System.arraycopy(copy, 0, original, 0, dimension);
-    return original;
+    return Arrays.copyOf(copy, dimension);
   }
 
   /**
@@ -378,7 +406,7 @@ public final class QuantizedEmbeddingMatrix {
    * @throws IllegalArgumentException Thrown if {@code row} is out of range or {@code sum} is
    *     {@code null} or has the wrong length.
    */
-  public void addRowRotated(int row, float weight, float[] sum) {
+  public void addRowRotated(int row, float weight, double[] sum) {
     requireRow(row);
     if (sum == null) {
       throw new IllegalArgumentException("Sum must not be null");
@@ -387,7 +415,7 @@ public final class QuantizedEmbeddingMatrix {
       throw new IllegalArgumentException("Sum has length " + sum.length
           + " but this matrix's padded dimension is " + paddedDimension);
     }
-    final float scaledWeight = scales[row] * weight;
+    final double scaledWeight = scales[row] * weight;
     final int base = row * rowBytes;
     for (int i = 0; i < paddedDimension; i++) {
       sum[i] += scaledWeight * quantizer.level(readCode(codes, base, bits, i));
@@ -397,7 +425,7 @@ public final class QuantizedEmbeddingMatrix {
   /**
    * The dot product of a decoded row with a rotated-space query. Because the rotation is
    * orthonormal, this equals the original-space dot product of the decoded row with the
-   * un-rotated query, up to float rounding.
+   * un-rotated query, within floating-point rounding.
    *
    * @param row          The row to score. Must be between 0 and {@code rowCount() - 1}.
    * @param rotatedQuery The query in rotated space, as returned by {@link #rotate(float[])}.
@@ -407,7 +435,7 @@ public final class QuantizedEmbeddingMatrix {
    * @throws IllegalArgumentException Thrown if {@code row} is out of range or
    *     {@code rotatedQuery} is {@code null} or has the wrong length.
    */
-  public double dotRotated(int row, float[] rotatedQuery) {
+  public double dotRotated(int row, double[] rotatedQuery) {
     requireRow(row);
     if (rotatedQuery == null) {
       throw new IllegalArgumentException("RotatedQuery must not be null");
@@ -419,14 +447,14 @@ public final class QuantizedEmbeddingMatrix {
     final int base = row * rowBytes;
     double dot = 0;
     for (int i = 0; i < paddedDimension; i++) {
-      dot += (double) rotatedQuery[i] * quantizer.level(readCode(codes, base, bits, i));
+      dot += rotatedQuery[i] * quantizer.level(readCode(codes, base, bits, i));
     }
     return dot * scales[row];
   }
 
   /**
    * {@return the L2 norm of the decoded original-space row, for cosine scoring} Computed
-   * exactly at quantize time and stored in the file: quantization noise leaves some energy in
+   * during quantization and stored in the file: quantization noise leaves some energy in
    * the padding coordinates, which decoding truncates away, so this norm matches
    * {@link #decodeRow(int)}'s result rather than the rotated codes.
    *
@@ -439,7 +467,7 @@ public final class QuantizedEmbeddingMatrix {
   }
 
   /**
-   * Decodes one row back to original space. This pays the inverse rotation for a single row;
+   * Decodes one row back to original space. This performs the inverse rotation for a single row;
    * pooling and scanning callers should stay in rotated space instead (see the class comment).
    *
    * @param row The row to decode. Must be between 0 and {@code rowCount() - 1}.
@@ -448,9 +476,9 @@ public final class QuantizedEmbeddingMatrix {
    */
   public float[] decodeRow(int row) {
     requireRow(row);
-    final float[] rotated = new float[paddedDimension];
+    final double[] rotated = new double[paddedDimension];
     addRowRotated(row, 1f, rotated);
-    return toOriginal(rotated);
+    return toFloatVector(toOriginal(rotated));
   }
 
   /**
@@ -490,11 +518,11 @@ public final class QuantizedEmbeddingMatrix {
       for (final float level : levels) {
         data.writeFloat(level);
       }
-      for (final float scale : scales) {
-        data.writeFloat(scale);
+      for (final double scale : scales) {
+        data.writeDouble(scale);
       }
-      for (final float decodedNorm : decodedNorms) {
-        data.writeFloat(decodedNorm);
+      for (final double decodedNorm : decodedNorms) {
+        data.writeDouble(decodedNorm);
       }
       data.writeBoolean(poolingWeights != null);
       if (poolingWeights != null) {
@@ -507,16 +535,13 @@ public final class QuantizedEmbeddingMatrix {
   }
 
   /**
-   * Reads a matrix written by {@link #write(Path)}. The stored grid and seed rebuild exactly the
-   * decoder the writer used.
+   * Reads a matrix written by {@link #write(Path)}. The stored grid and seed rebuild the decoder.
    *
    * @param file The file to read. Must not be {@code null}.
    * @return The quantized matrix.
    * @throws IllegalArgumentException Thrown if {@code file} is {@code null}.
-   * @throws InvalidFormatException Thrown if the content is malformed: not a quantized matrix
-   *     of a supported version, declaring sizes the file's bytes cannot back or this reader
-   *     cannot store, storing an invalid grid or non-finite per-row values, or carrying
-   *     trailing bytes after the declared content.
+   * @throws InvalidFormatException Thrown if the content has an unsupported version, sizes that
+   *     conflict with the file length, an invalid grid, invalid row metadata, or trailing bytes.
    * @throws IOException Thrown if reading fails or the file is truncated.
    */
   public static QuantizedEmbeddingMatrix read(Path file) throws IOException {
@@ -544,14 +569,14 @@ public final class QuantizedEmbeddingMatrix {
       final long fileSize = Files.size(file);
       if (rowCount > fileSize || dimension > fileSize) {
         throw new InvalidFormatException(file + " declares " + rowCount + " rows and dimension "
-            + dimension + " but holds only " + fileSize + " bytes");
+            + dimension + " but has only " + fileSize + " bytes");
       }
       final int bits = data.readInt();
       try {
         GaussianQuantizer.requireSupportedBits(bits);
       } catch (IllegalArgumentException e) {
         throw new InvalidFormatException(file + " declares an unsupported bit width: "
-            + e.getMessage());
+            + e.getMessage(), e);
       }
       final long seed = data.readLong();
       final int levelCount = data.readInt();
@@ -559,25 +584,22 @@ public final class QuantizedEmbeddingMatrix {
         throw new InvalidFormatException(file + " declares " + levelCount + " grid levels "
             + "for " + bits + " bits; expected " + (1 << bits));
       }
+      final int paddedDimension;
       final int rowBytes;
       try {
-        rowBytes = rowByteCount(HadamardRotation.paddedDimension(dimension), bits);
+        paddedDimension = HadamardRotation.paddedDimension(dimension);
+        rowBytes = rowByteCount(paddedDimension, bits);
         requireStorableSize(rowCount, rowBytes);
       } catch (IllegalArgumentException e) {
         throw new InvalidFormatException(file + " declares a matrix this reader cannot "
-            + "store: " + e.getMessage());
+            + "store: " + e.getMessage(), e);
       }
-      // The header fully determines the file size: 28 fixed bytes (magic, row count, dimension,
-      // and bit width at 4 each, the 8-byte seed, the 4-byte level count), the grid levels, a
-      // scale and a decoded norm per row, the 1-byte pooling-weight flag, and the packed codes.
-      // Everything past this point allocates per-row storage, so the declared total is held
-      // against the bytes actually present first: a small hostile file must not force a giant
-      // allocation before its content is ever read.
-      final long declaredBytes = 28L + 4L * levelCount + (8L + rowBytes) * rowCount + 1L;
+      // Check the minimum length before allocating row-sized arrays.
+      final long declaredBytes = 28L + 4L * levelCount + (16L + rowBytes) * rowCount + 1L;
       if (declaredBytes > fileSize) {
         throw new InvalidFormatException(file + " declares " + rowCount + " rows and "
             + "dimension " + dimension + " at " + bits + " bits, needing at least "
-            + declaredBytes + " bytes of scales, norms, and packed codes, but holds only "
+            + declaredBytes + " bytes of scales, norms, and packed codes, but has only "
             + fileSize + " bytes");
       }
       final float[] levels = new float[levelCount];
@@ -588,30 +610,51 @@ public final class QuantizedEmbeddingMatrix {
       try {
         quantizer = GaussianQuantizer.fromLevels(levels);
       } catch (IllegalArgumentException e) {
-        throw new InvalidFormatException(file + " stores an invalid grid: " + e.getMessage());
+        throw new InvalidFormatException(file + " stores an invalid grid: " + e.getMessage(), e);
       }
-      final float[] scales = new float[rowCount];
+      double maximumLevelMagnitude = 0;
+      for (final float level : levels) {
+        maximumLevelMagnitude = Math.max(maximumLevelMagnitude, Math.abs(level));
+      }
+      // Each inverse-transform output can sum paddedDimension decoded coordinates before the
+      // normalization factor is applied.
+      final double maximumDecodableScale =
+          Double.MAX_VALUE / paddedDimension / maximumLevelMagnitude;
+      final double[] scales = new double[rowCount];
       for (int row = 0; row < rowCount; row++) {
-        scales[row] = data.readFloat();
-        if (!Float.isFinite(scales[row])) {
-          throw new InvalidFormatException(file + " has a non-finite scale for row " + row
+        scales[row] = data.readDouble();
+        if (!Double.isFinite(scales[row]) || scales[row] < 0
+            || scales[row] >= maximumDecodableScale) {
+          throw new InvalidFormatException(file + " has an invalid scale for row " + row
               + ": " + scales[row]);
         }
       }
-      final float[] decodedNorms = new float[rowCount];
+      // A finite float vector's L2 norm cannot exceed its L1 norm.
+      final double maximumDecodedNorm = (double) Float.MAX_VALUE * dimension;
+      final double[] decodedNorms = new double[rowCount];
       for (int row = 0; row < rowCount; row++) {
-        decodedNorms[row] = data.readFloat();
-        if (!Float.isFinite(decodedNorms[row]) || decodedNorms[row] < 0) {
+        decodedNorms[row] = data.readDouble();
+        if (!Double.isFinite(decodedNorms[row]) || decodedNorms[row] < 0
+            || decodedNorms[row] > maximumDecodedNorm) {
           throw new InvalidFormatException(file + " has an invalid decoded norm for row "
               + row + ": " + decodedNorms[row]);
         }
+        if (scales[row] == 0.0 && decodedNorms[row] > 0.0) {
+          throw new InvalidFormatException(file + " has zero scale but positive decoded norm for "
+              + "row " + row + ": " + decodedNorms[row]);
+        }
       }
       float[] poolingWeights = null;
-      if (data.readBoolean()) {
+      final int poolingWeightsFlag = data.readUnsignedByte();
+      if (poolingWeightsFlag > 1) {
+        throw new InvalidFormatException(file + " has invalid pooling-weight flag "
+            + poolingWeightsFlag + "; expected 0 or 1");
+      }
+      if (poolingWeightsFlag == 1) {
         if (declaredBytes + 4L * rowCount > fileSize) {
           throw new InvalidFormatException(file + " declares per-row pooling weights, "
               + "needing at least " + (declaredBytes + 4L * rowCount) + " bytes in total, but "
-              + "holds only " + fileSize + " bytes");
+              + "has only " + fileSize + " bytes");
         }
         poolingWeights = new float[rowCount];
         for (int row = 0; row < rowCount; row++) {
@@ -639,9 +682,8 @@ public final class QuantizedEmbeddingMatrix {
   }
 
   /**
-   * {@return one packed code} Codes may straddle a byte boundary (3-bit widths do), so two
-   * adjacent bytes are read and the code's bits selected; the second byte is only touched when
-   * the code actually crosses into it, so the last code of a row never reads past its region.
+   * {@return one packed code} A 3-bit code may cross a byte boundary, so this reads a second byte
+   * when required.
    *
    * @param codes    The packed code array.
    * @param rowBase  The row's first byte index.
@@ -676,5 +718,35 @@ public final class QuantizedEmbeddingMatrix {
     if (shift + bits > 8) {
       codes[byteIndex + 1] |= (byte) (code >>> (8 - shift));
     }
+  }
+
+  /**
+   * Converts a finite double to float, saturating values outside the finite float range.
+   *
+   * @param value The value to convert.
+   * @return The converted value.
+   */
+  private static float finiteFloat(double value) {
+    if (value > Float.MAX_VALUE) {
+      return Float.MAX_VALUE;
+    }
+    if (value < -Float.MAX_VALUE) {
+      return -Float.MAX_VALUE;
+    }
+    return (float) value;
+  }
+
+  /**
+   * Converts a double-precision vector to finite floats.
+   *
+   * @param values The vector to convert.
+   * @return The converted vector.
+   */
+  private float[] toFloatVector(double[] values) {
+    final float[] result = new float[values.length];
+    for (int i = 0; i < values.length; i++) {
+      result[i] = finiteFloat(values[i]);
+    }
+    return result;
   }
 }

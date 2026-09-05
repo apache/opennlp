@@ -164,4 +164,57 @@ for(ClassPathModelEntry entry : models) {
 
     </para>
   </section>
+
+  <section xml:id="tools.model.resource-installer">
+    <title>Installing third-party resources</title>
+    <para>
+      <code>ResourceInstaller</code> copies a supplied <code>http</code>,
+      <code>https</code>, or <code>file</code> URI into a target directory. Http and https
+      sources require a SHA-256 or SHA-512 checksum. File sources may omit it.
+      Gzip-compressed tar and zip archives are unpacked, plain gzip files are decompressed,
+      and other content is stored under its source name. OpenNLP <code>*.bin</code> model
+      files remain packed.
+    </para>
+    <programlisting language="java">
+<![CDATA[Path result = ResourceInstaller.install(
+    corpusTarGz.toUri(), targetDirectory, expectedSha256);
+// result is targetDirectory; the archived files appear under their archive paths]]>
+    </programlisting>
+    <para>
+      Content is unpacked in a staging directory on the target filesystem. Archive paths
+      cannot escape that directory, duplicate file paths are rejected, and existing target
+      files are not replaced. A checksum, download, or unpacking error promotes no files.
+      Promotion also rejects symbolic links below the target. Concurrent changes to the
+      target directory are outside this guarantee.
+    </para>
+    <para>
+      Http and https requests use connection and read timeouts, follow up to five
+      redirects by default, and reject an https-to-http downgrade. Default limits are 1 GiB
+      downloaded, 4 GiB expanded, and 100000 archive entries; compressed content may
+      expand to at most 100 times its compressed size, with a 1 MiB floor for small
+      sources. These defaults can be set at
+      JVM startup with
+      <code>opennlp.download.max.bytes</code>, <code>opennlp.install.max.total.bytes</code>,
+      <code>opennlp.install.max.entries</code>, and
+      <code>opennlp.install.max.expansion.ratio</code>. Use
+      <code>ResourceInstaller.Limits</code> to set limits for one call.
+    </para>
+    <para>
+      The expansion ratio and the expansion limit are enforced independently and the
+      tighter one applies, so raising <code>opennlp.install.max.total.bytes</code> alone
+      does not admit an archive that exceeds the ratio. A resource that legitimately
+      compresses better than 100 to 1, such as a corpus of highly repetitive text, needs
+      <code>opennlp.install.max.expansion.ratio</code> raised as well.
+    </para>
+    <programlisting language="java">
+<![CDATA[ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()
+    .readTimeout(Duration.ofSeconds(10))
+    .maxDownloadBytes(1024L * 1024)   // download limit in bytes
+    .maxExpandedBytes(1024L * 1024)   // expansion limit in bytes
+    .maxExpansionRatio(500)           // expanded bytes per compressed byte
+    .build();
+Path result = ResourceInstaller.install(
+    corpusTarGz.toUri(), targetDirectory, expectedSha256, limits);]]>
+    </programlisting>
+  </section>
 </chapter>

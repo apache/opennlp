@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import opennlp.embeddings.StaticEmbeddingModel.Casing;
@@ -29,10 +30,96 @@ import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 
 /**
- * Fixtures shared by more than one test in this module: the small WordPiece table the geometry
- * tests load, and JSON string quoting for the hand-built {@code tokenizer.json} fixtures.
+ * Fixtures shared by tests in this module: deterministic WordPiece tables and JSON string
+ * quoting for {@code tokenizer.json} fixtures.
  */
 public final class EmbeddingTestFixtures {
+
+  /** A deterministic ONNX graph mapping token ids to three-dimensional hidden states. */
+  private static final String TINY_TEACHER_ONNX =
+      "CAg66gIKJwoJaW5wdXRfaWRzEglpZHNfZmxvYXQiBENhc3QqCQoCdG8YAaABAgokCglpZHNf"
+          + "ZmxvYXQKBGF4ZXMSBmlkc18zZCIJVW5zcXVlZXplCiYKBmlkc18zZAoBdxIRbGFzdF9oaWRk"
+          + "ZW5fc3RhdGUiBk1hdE11bBIMdGlueS12ZWN0b3JzKhQIARAHQgRheGVzSggCAAAAAAAAACoX"
+          + "CAEIAxABQgF3SgwAAAA/AACAvwAAAEBaJgoJaW5wdXRfaWRzEhkKFwgHEhMKBxIFYmF0Y2gK"
+          + "CBIGdG9rZW5zWisKDmF0dGVudGlvbl9tYXNrEhkKFwgHEhMKBxIFYmF0Y2gKCBIGdG9rZW5z"
+          + "WisKDnRva2VuX3R5cGVfaWRzEhkKFwgHEhMKBxIFYmF0Y2gKCBIGdG9rZW5zYjIKEWxhc3Rf"
+          + "aGlkZGVuX3N0YXRlEh0KGwgBEhcKBxIFYmF0Y2gKCBIGdG9rZW5zCgIIA0IECgAQDQ==";
+
+  /** A tiny graph whose only input is {@code input_ids}. */
+  private static final String INPUT_IDS_ONLY_ONNX =
+      "CAg6lwIKJwoJaW5wdXRfaWRzEglpZHNfZmxvYXQiBENhc3QqCQoCdG8YAaABAgokCglpZHNf"
+          + "ZmxvYXQKBGF4ZXMSBmlkc18zZCIJVW5zcXVlZXplCiYKBmlkc18zZAoBdxIRbGFzdF9oaWRk"
+          + "ZW5fc3RhdGUiBk1hdE11bBITdGlueS1pbnB1dC1jb250cmFjdCoUCAEQB0IEYXhlc0oIAgAA"
+          + "AAAAAAAqFwgBCAMQAUIBd0oMAAAAPwAAgL8AAABAWiYKCWlucHV0X2lkcxIZChcIBxITCgcS"
+          + "BWJhdGNoCggSBnRva2Vuc2IyChFsYXN0X2hpZGRlbl9zdGF0ZRIdChsIARIXCgcSBWJhdGNo"
+          + "CggSBnRva2VucwoCCANCBAoAEA0=";
+
+  /** A tiny graph with an input the encoder cannot supply. */
+  private static final String UNSUPPORTED_INPUT_ONNX =
+      "CAg6wgIKJwoJaW5wdXRfaWRzEglpZHNfZmxvYXQiBENhc3QqCQoCdG8YAaABAgokCglpZHNf"
+          + "ZmxvYXQKBGF4ZXMSBmlkc18zZCIJVW5zcXVlZXplCiYKBmlkc18zZAoBdxIRbGFzdF9oaWRk"
+          + "ZW5fc3RhdGUiBk1hdE11bBITdGlueS1pbnB1dC1jb250cmFjdCoUCAEQB0IEYXhlc0oIAgAA"
+          + "AAAAAAAqFwgBCAMQAUIBd0oMAAAAPwAAgL8AAABAWiYKCWlucHV0X2lkcxIZChcIBxITCgcS"
+          + "BWJhdGNoCggSBnRva2Vuc1opCgxwb3NpdGlvbl9pZHMSGQoXCAcSEwoHEgViYXRjaAoIEgZ0"
+          + "b2tlbnNiMgoRbGFzdF9oaWRkZW5fc3RhdGUSHQobCAESFwoHEgViYXRjaAoIEgZ0b2tlbnMK"
+          + "AggDQgQKABAN";
+
+  /** A tiny graph that returns {@link Float#MAX_VALUE} at every token position. */
+  private static final String MAX_FLOAT_ONNX =
+      "CAg6igIKJwoJaW5wdXRfaWRzEglpZHNfZmxvYXQiBENhc3QqCQoCdG8YAaABAgokCglpZHNf"
+          + "ZmxvYXQKBGF4ZXMSBmlkc18zZCIJVW5zcXVlZXplCiYKBmlkc18zZAoBdxIRbGFzdF9oaWRk"
+          + "ZW5fc3RhdGUiBk1hdE11bBIOdGlueS1tYXgtZmxvYXQqFAgBEAdCBGF4ZXNKCAIAAAAAAAAA"
+          + "Kg8IAQgBEAFCAXdKBP//f39aJgoJaW5wdXRfaWRzEhkKFwgHEhMKBxIFYmF0Y2gKCBIGdG9r"
+          + "ZW5zYjIKEWxhc3RfaGlkZGVuX3N0YXRlEh0KGwgBEhcKBxIFYmF0Y2gKCBIGdG9rZW5zCgII"
+          + "AUIECgAQDQ==";
+
+  /** A graph whose {@code input_ids} has the unsupported INT32 element type. */
+  private static final String INT32_INPUT_ONNX =
+      "CAgSDm9wZW5ubHAtcmV2aWV3OsMBCiYKCWlucHV0X2lkcxIIYXNfZmxvYXQiBENhc3Qq"
+          + "CQoCdG8YAaABAgovCghhc19mbG9hdAoFYXhlczISEWxhc3RfaGlkZGVuX3N0YXRlIglV"
+          + "bnNxdWVlemUSC2ludDMyLWlucHV0Kg4IARAHOgECQgVheGVzMlomCglpbnB1dF9pZHMS"
+          + "GQoXCAYSEwoHEgViYXRjaAoIEgZ0b2tlbnNiIwoRbGFzdF9oaWRkZW5fc3RhdGUSDgoM"
+          + "CAESCAoACgAKAggBQgQKABAN";
+
+  /** A graph whose {@code input_ids} is rank one instead of batch by position. */
+  private static final String RANK_ONE_INPUT_ONNX =
+      "CAgSDm9wZW5ubHAtcmV2aWV3Or0BCiYKCWlucHV0X2lkcxIIYXNfZmxvYXQiBENhc3Qq"
+          + "CQoCdG8YAaABAgowCghhc19mbG9hdAoGYXhlczEyEhFsYXN0X2hpZGRlbl9zdGF0ZSIJ"
+          + "VW5zcXVlZXplEgtyYW5rMS1pbnB1dCoQCAIQBzoCAQJCBmF4ZXMxMlodCglpbnB1dF9p"
+          + "ZHMSEAoOCAcSCgoIEgZ0b2tlbnNiIwoRbGFzdF9oaWRkZW5fc3RhdGUSDgoMCAESCAoA"
+          + "CgAKAggBQgQKABAN";
+
+  /** A graph whose optional {@code attention_mask} has the unsupported INT32 type. */
+  private static final String INT32_ATTENTION_MASK_ONNX =
+      "CAgSDm9wZW5ubHAtcmV2aWV3Ou8BCiYKCWlucHV0X2lkcxIIYXNfZmxvYXQiBENhc3Qq"
+          + "CQoCdG8YAaABAgovCghhc19mbG9hdAoFYXhlczISEWxhc3RfaGlkZGVuX3N0YXRlIglV"
+          + "bnNxdWVlemUSCmludDMyLW1hc2sqDggBEAc6AQJCBWF4ZXMyWiYKCWlucHV0X2lkcxIZ"
+          + "ChcIBxITCgcSBWJhdGNoCggSBnRva2Vuc1orCg5hdHRlbnRpb25fbWFzaxIZChcIBhIT"
+          + "CgcSBWJhdGNoCggSBnRva2Vuc2IjChFsYXN0X2hpZGRlbl9zdGF0ZRIOCgwIARIICgAK"
+          + "AAoCCAFCBAoAEA0=";
+
+  /** A graph that declares a decoy rank-three float output before {@code last_hidden_state}. */
+  private static final String MULTIPLE_OUTPUTS_ONNX =
+      "CAgSDm9wZW5ubHAtcmV2aWV3OpYCCiYKCWlucHV0X2lkcxIIYXNfZmxvYXQiBENhc3Qq"
+          + "CQoCdG8YAaABAgovCghhc19mbG9hdAoFYXhlczISEWxhc3RfaGlkZGVuX3N0YXRlIglV"
+          + "bnNxdWVlemUKJAoRbGFzdF9oaWRkZW5fc3RhdGUKA3RlbhIFZGVjb3kiA011bBIQbXVs"
+          + "dGlwbGUtb3V0cHV0cyoOCAEQBzoBAkIFYXhlczIqDRABIgQAACBBQgN0ZW5aJgoJaW5w"
+          + "dXRfaWRzEhkKFwgHEhMKBxIFYmF0Y2gKCBIGdG9rZW5zYhcKBWRlY295Eg4KDAgBEggKAAoA"
+          + "CgIIAWIjChFsYXN0X2hpZGRlbl9zdGF0ZRIOCgwIARIICgAKAAoCCAFCBAoAEA0=";
+
+  /** A graph whose {@code input_ids} has the unsupported FLOAT element type. */
+  private static final String FLOAT_INPUT_ONNX =
+      "CAgSDm9wZW5ubHAtcmV2aWV3OpwBCjAKCWlucHV0X2lkcwoFYXhlczISEWxhc3RfaGlk"
+          + "ZGVuX3N0YXRlIglVbnNxdWVlemUSC2Zsb2F0LWlucHV0Kg4IARAHOgECQgVheGVzMlom"
+          + "CglpbnB1dF9pZHMSGQoXCAESEwoHEgViYXRjaAoIEgZ0b2tlbnNiIwoRbGFzdF9oaWRk"
+          + "ZW5fc3RhdGUSDgoMCAESCAoACgAKAggBQgQKABAN";
+
+  /** A graph whose fixed output does not follow the input batch and sequence dimensions. */
+  private static final String FIXED_OUTPUT_ONNX =
+      "CAgSDm9wZW5ubHAtcmV2aWV3OqEBCkASEWxhc3RfaGlkZGVuX3N0YXRlIghDb25zdGFu"
+          + "dCohCgV2YWx1ZSoVCAEIAQgBEAEiBAAA4EBCBWZpeGVkoAEEEgxmaXhlZC1vdXRwdXRa"
+          + "JgoJaW5wdXRfaWRzEhkKFwgHEhMKBxIFYmF0Y2gKCBIGdG9rZW5zYicKEWxhc3RfaGlk"
+          + "ZGVuX3N0YXRlEhIKEAgBEgwKAggBCgIIAQoCCAFCBAoAEA0=";
 
   /** The analogy table's tokens; the list index is the matrix row. */
   static final List<String> ANALOGY_VOCABULARY =
@@ -40,8 +127,8 @@ public final class EmbeddingTestFixtures {
 
   /**
    * The analogy table's rows, chosen so the classic word2vec analogy is exact:
-   * {@code king - man + woman = [3,3] - [2,1] + [1,2] = [2,4] = queen}. The directions genuinely
-   * differ, so pairwise cosine similarities are not trivially 1.0.
+   * {@code king - man + woman = [3,3] - [2,1] + [1,2] = [2,4] = queen}. The directions differ,
+   * so pairwise cosine similarities are not all 1.0.
    */
   static final float[][] ANALOGY_ROWS = {
       {0f, 0f},   // [CLS]
@@ -54,8 +141,151 @@ public final class EmbeddingTestFixtures {
       {-3f, -1f}, // apple: unrelated, opposite-ish direction
   };
 
+  /** Tokens used by the semantic-search example; the list index is the matrix row. */
+  private static final List<String> SEARCH_VOCABULARY = List.of(
+      "[CLS]", "[SEP]", "[UNK]",
+      "home", "espresso", "machine", "how", "do", "i", "brew", "at",
+      "the", "history", "of", "tea", "in", "east", "asia",
+      "best", "grinders", "for", "pour", "over", "coffee");
+
+  /**
+   * Search rows with three directions: espresso brewing, tea history, and coffee equipment.
+   * The query uses the first direction, so the example has a deterministic ranking.
+   */
+  private static final float[][] SEARCH_ROWS = {
+      {0f, 0f}, {0f, 0f}, {0f, 0f},
+      {1f, 0f}, {1f, 0f}, {1f, 0f}, {1f, 0f}, {1f, 0f}, {1f, 0f}, {1f, 0f}, {1f, 0f},
+      {0f, 1f}, {0f, 1f}, {0f, 1f}, {0f, 1f}, {0f, 1f}, {0f, 1f}, {0f, 1f},
+      {0.6f, 0.8f}, {0.6f, 0.8f}, {0.6f, 0.8f}, {0.6f, 0.8f}, {0.6f, 0.8f},
+      {0.6f, 0.8f}
+  };
+
   /** Not instantiable. */
   private EmbeddingTestFixtures() {
+  }
+
+  /**
+   * Writes the deterministic test ONNX graph.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeTinyOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, TINY_TEACHER_ONNX);
+  }
+
+  /**
+   * Writes a graph that declares only {@code input_ids}.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeInputIdsOnlyOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, INPUT_IDS_ONLY_ONNX);
+  }
+
+  /**
+   * Writes a graph that also requires {@code position_ids}.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeUnsupportedInputOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, UNSUPPORTED_INPUT_ONNX);
+  }
+
+  /**
+   * Writes a graph whose finite hidden states expose overflow in float accumulation.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeMaxFloatOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, MAX_FLOAT_ONNX);
+  }
+
+  /**
+   * Writes a graph whose {@code input_ids} element type is INT32.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeInt32InputOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, INT32_INPUT_ONNX);
+  }
+
+  /**
+   * Writes a graph whose {@code input_ids} is rank one.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeRankOneInputOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, RANK_ONE_INPUT_ONNX);
+  }
+
+  /**
+   * Writes a graph whose {@code attention_mask} element type is INT32.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeInt32AttentionMaskOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, INT32_ATTENTION_MASK_ONNX);
+  }
+
+  /**
+   * Writes a graph with two rank-three float outputs, including {@code last_hidden_state}.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeMultipleOutputsOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, MULTIPLE_OUTPUTS_ONNX);
+  }
+
+  /**
+   * Writes a graph whose {@code input_ids} element type is FLOAT.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeFloatInputOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, FLOAT_INPUT_ONNX);
+  }
+
+  /**
+   * Writes a graph whose output is always shaped {@code [1][1][1]}.
+   *
+   * @param directory The directory in which to create {@code model.onnx}.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  static Path writeFixedOutputOnnxModel(Path directory) throws IOException {
+    return writeOnnxModel(directory, FIXED_OUTPUT_ONNX);
+  }
+
+  /**
+   * Decodes an ONNX fixture into {@code model.onnx}.
+   *
+   * @param directory The destination directory.
+   * @param encodedModel The base64-encoded graph.
+   * @return The created graph file.
+   * @throws IOException Thrown if the graph cannot be written.
+   */
+  private static Path writeOnnxModel(Path directory, String encodedModel) throws IOException {
+    final Path file = directory.resolve("model.onnx");
+    Files.write(file, Base64.getDecoder().decode(encodedModel));
+    return file;
   }
 
   /**
@@ -86,6 +316,21 @@ public final class EmbeddingTestFixtures {
     writeVocabularyAndMatrix(dir);
     Files.writeString(dir.resolve("config.json"),
         "{\"model_type\":\"model2vec\",\"normalize\":false}");
+    Files.writeString(dir.resolve("tokenizer_config.json"), "{\"do_lower_case\":true}");
+  }
+
+  /**
+   * Writes the complete WordPiece model used by the semantic-search example.
+   *
+   * @param dir The directory to write the model files into.
+   * @throws IOException Thrown if writing a fixture file fails.
+   */
+  static void writeSearchDirectory(Path dir) throws IOException {
+    Files.write(dir.resolve("vocab.txt"), SEARCH_VOCABULARY);
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
+        SafetensorsTestFiles.matrix("embeddings", SEARCH_ROWS));
+    Files.writeString(dir.resolve("config.json"),
+        "{\"model_type\":\"model2vec\",\"normalize\":true}");
     Files.writeString(dir.resolve("tokenizer_config.json"), "{\"do_lower_case\":true}");
   }
 

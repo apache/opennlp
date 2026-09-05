@@ -16,14 +16,17 @@
  */
 package opennlp.embeddings.cmdline;
 
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
+import opennlp.tools.cmdline.TerminateToolException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -114,5 +117,22 @@ class CLITest {
     assertTrue(vocabularyHelp.contains("-out file"), vocabularyHelp);
     assertTrue(vocabularyHelp.contains("[-minFrequency n]"), vocabularyHelp);
     assertTrue(vocabularyHelp.contains("[-maxTerms n]"), vocabularyHelp);
+  }
+
+  @Test
+  void testQuantizeHelpNamesEveryParameter() {
+    final String help = new QuantizeModelTool().getHelp();
+
+    assertTrue(help.contains("-modelDir dir"), help);
+    assertTrue(help.contains("[-bits bits]"), help);
+    assertTrue(help.contains("[-seed seed]"), help);
+  }
+
+  @Test
+  void testQuantizeReportsInvalidModelContentAsAUserError(@TempDir Path directory) {
+    final TerminateToolException error = assertThrows(TerminateToolException.class,
+        () -> new QuantizeModelTool().run(new String[] {"-modelDir", directory.toString()}));
+
+    assertEquals(1, error.getCode());
   }
 }

@@ -24,10 +24,22 @@ import opennlp.tools.util.java.Experimental;
  *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  *
- * @param token      The vocabulary token: one subword piece of the model's tokenizer, which is
- *                   not necessarily a whole word.
+ * @param token      The matrix row's text: a tokenizer piece or a term-table entry.
  * @param similarity Cosine similarity to the query vector, in {@code [-1, 1]}.
+ * @throws IllegalArgumentException Thrown if {@code token} is {@code null}, or
+ *     {@code similarity} is non-finite or outside {@code [-1, 1]}.
  */
 @Experimental
 public record Neighbor(String token, double similarity) {
+
+  /** Validates the neighbor returned by a similarity search. */
+  public Neighbor {
+    if (token == null) {
+      throw new IllegalArgumentException("token must not be null");
+    }
+    if (!Double.isFinite(similarity) || similarity < -1.0 || similarity > 1.0) {
+      throw new IllegalArgumentException(
+          "similarity must be finite and within [-1, 1], got " + similarity);
+    }
+  }
 }

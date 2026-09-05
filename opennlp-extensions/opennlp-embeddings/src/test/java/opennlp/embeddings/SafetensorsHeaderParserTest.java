@@ -124,6 +124,12 @@ class SafetensorsHeaderParserTest {
       "{\"a\\" + "u00",
       // malformed \_u escape
       "{\"a\\" + "uZZZZ\":{}}",
+      // JSON hexadecimal digits are ASCII
+      "{\"__metadata__\":{\"note\":\"\\" + "uＦＦＦＦ\"}}",
+      // unescaped control character in a string
+      "{\"__metadata__\":{\"note\":\"line\nbreak\"}}",
+      // form feed is not JSON whitespace
+      "{\f}",
       // missing colon
       "{\"w\" 1}",
       // empty tensor object
@@ -134,10 +140,27 @@ class SafetensorsHeaderParserTest {
       "{\"w\":{\"dtype\":\"F32\",\"data_offsets\":[0,4]}}",
       // missing data_offsets
       "{\"w\":{\"dtype\":\"F32\",\"shape\":[1]}}",
+      // duplicate dtype
+      "{\"w\":{\"dtype\":\"F32\",\"dtype\":\"F16\",\"shape\":[1],"
+          + "\"data_offsets\":[0,4]}}",
+      // duplicate shape
+      "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"shape\":[2],"
+          + "\"data_offsets\":[0,4]}}",
+      // duplicate data_offsets
+      "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4],"
+          + "\"data_offsets\":[4,8]}}",
+      // duplicate metadata section
+      "{\"__metadata__\":{},\"__metadata__\":{}}",
+      // duplicate metadata key
+      "{\"__metadata__\":{\"format\":\"pt\",\"format\":\"tf\"}}",
       // data_offsets arity 1
       "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0]}}",
       // data_offsets arity 3
       "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4,8]}}",
+      // negative data offset
+      "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[-1,4]}}",
+      // reversed data offsets
+      "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[4,0]}}",
       // negative shape dimension
       "{\"w\":{\"dtype\":\"F32\",\"shape\":[-1],\"data_offsets\":[0,4]}}",
       // shape dimension over int range
@@ -146,6 +169,8 @@ class SafetensorsHeaderParserTest {
       "{\"w\":{\"dtype\":\"F32\",\"shape\":[\"x\"],\"data_offsets\":[0,4]}}",
       // number too large for long
       "{\"w\":{\"dtype\":\"F32\",\"shape\":[99999999999999999999],\"data_offsets\":[0,4]}}",
+      // leading zero in an integer
+      "{\"w\":{\"dtype\":\"F32\",\"shape\":[01],\"data_offsets\":[0,4]}}",
       // bare value instead of an object
       "42",
       // truncated after a tensor entry
@@ -159,7 +184,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testSignedUnicodeEscapeFailsLoudly() {
+  void testRejectsSignedUnicodeEscape() {
     // Integer.parseInt would accept "-0FF" and decode the wrong character; the parser must not.
     final String header = "{\"__metadata__\":{\"note\":\"a\\u-0FFb\"},"
         + "\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]}}";
@@ -167,7 +192,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testMalformedNumberInSkippedFieldFailsLoudly() {
+  void testRejectsMalformedNumberInSkippedField() {
     // Skipped unknown fields still hold values to the JSON grammar; "1e++--..5" is not a number.
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
         + "\"data_offsets\":[0,4],\"unknown\":1e++--..5}}";
@@ -175,7 +200,7 @@ class SafetensorsHeaderParserTest {
   }
 
   @Test
-  void testLoneMinusInSkippedFieldFailsLoudly() {
+  void testRejectsLoneMinusInSkippedField() {
     // A bare "-" is not a JSON number; the skip path must reject it rather than treating it as one.
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
         + "\"data_offsets\":[0,4],\"unknown\":-}}";

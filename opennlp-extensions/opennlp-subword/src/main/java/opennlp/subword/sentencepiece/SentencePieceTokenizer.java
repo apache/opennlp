@@ -18,6 +18,7 @@ package opennlp.subword.sentencepiece;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -53,11 +54,9 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  *
  * <p>Instances are immutable after loading and safe for concurrent use by multiple threads.</p>
  *
- * <p>Beyond {@link #load(Path) loading} the native {@code .model} format, a tokenizer can be
- * persisted with {@link #serialize(OutputStream)} and read back with
- * {@link #deserialize(InputStream)}. Reads are guarded by an {@link java.io.ObjectInputFilter}
- * that allow-lists only the classes reachable from a legitimate tokenizer graph and bounds graph
- * depth, references, and array length.</p>
+ * <p>A tokenizer can also be persisted with {@link #serialize(OutputStream)} and restored with
+ * {@link #deserialize(InputStream)}. Deserialization accepts only the classes used by this
+ * tokenizer and applies limits to graph depth, references, and array length.</p>
  *
  * @see <a href="https://github.com/google/sentencepiece">SentencePiece</a>
  * @see <a href="https://aclanthology.org/D18-2012/">Kudo &amp; Richardson (EMNLP 2018),
@@ -68,7 +67,7 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
 public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwareNormalizer {
 
   // Serializable through the OffsetAwareNormalizer contract.
-  private static final long serialVersionUID = -4472058014098085134L;
+  private static final long serialVersionUID = 7751888381608757475L;
 
   /** The segmentation algorithm a model was trained with. */
   public enum Algorithm {
@@ -94,14 +93,14 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
   private final int[] types;
   private final int unkId;
   private final boolean byteFallback;
-  private final Map<String, Integer> mainPieces;
-  private final Map<String, Integer> reservedPieces;
+  private final HashMap<String, Integer> mainPieces;
+  private final HashMap<String, Integer> reservedPieces;
   private final int[] byteToId;
   private final SentencePieceNormalizer normalizer;
   private final UnigramEncoder unigramEncoder;
   private final BpeEncoder bpeEncoder;
-  private final List<String> selfTestInputs;
-  private final List<String> selfTestExpected;
+  private final String[] selfTestInputs;
+  private final String[] selfTestExpected;
 
   /**
    * Validates a parsed model and derives the runtime structures: the piece maps, the byte-piece
@@ -229,8 +228,8 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
           userDefinedMatcher);
     }
 
-    selfTestInputs = List.copyOf(model.selfTestInputs);
-    selfTestExpected = List.copyOf(model.selfTestExpected);
+    selfTestInputs = model.selfTestInputs.toArray(String[]::new);
+    selfTestExpected = model.selfTestExpected.toArray(String[]::new);
   }
 
   /**
@@ -310,8 +309,8 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    * {@link java.io.InvalidClassException} before {@link ObjectInputStream#readObject()}
    * returns.</p>
    *
-   * <p>Callers should still treat this method as defense-in-depth: only invoke it on streams from
-   * trusted sources. If the default limits are too tight for an unusually large model, use
+   * <p>Only deserialize tokenizer streams from trusted sources. If the default limits reject a
+   * large model, use
    * {@link #deserialize(InputStream, DeserializationLimits)} to supply higher limits. The class
    * allow-list is intentionally not configurable; loosening it would defeat the purpose of the
    * filter.</p>
@@ -357,7 +356,13 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     }
     try (ObjectInputStream ois = new ObjectInputStream(in)) {
       ois.setObjectInputFilter(buildFilter(limits));
-      return (SentencePieceTokenizer) ois.readObject();
+      final Object value = ois.readObject();
+      if (!(value instanceof SentencePieceTokenizer tokenizer)) {
+        final String type = value == null ? "null" : value.getClass().getName();
+        throw new InvalidClassException(
+            "Expected a SentencePieceTokenizer, found " + type + ".");
+      }
+      return tokenizer;
     }
   }
 
@@ -365,10 +370,8 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    * Resource limits applied by the {@link ObjectInputFilter} used by
    * {@link SentencePieceTokenizer#deserialize(InputStream, DeserializationLimits)}.
    *
-   * <p>The limits bound graph traversal regardless of the class allow-list and provide
-   * defense-in-depth against pathological streams. The {@linkplain #DEFAULT default values} are
-   * generous enough for typical production models; raise them only if a legitimate model is
-   * rejected.</p>
+   * <p>The limits bound graph traversal independently of the class allow-list. Raise the
+   * {@linkplain #DEFAULT default values} only when they reject a valid model.</p>
    *
    * @param maxDepth Maximum object-graph nesting depth. Must be {@code > 0}.
    * @param maxRefs Maximum number of internal references the stream may create.
@@ -429,14 +432,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       "java.util.HashMap",
       // HashMap.readObject() requests permission to allocate a Map.Entry[] before reading
       // entries; the array type itself never appears as a value in the stream.
-      "java.util.Map$Entry",
-      // The unmodifiable lists created by List.copyOf serialize through the CollSer proxy,
-      // which requests an Object[] allocation for the elements, and the filter is also invoked
-      // for the concrete list class the proxy resolves to.
-      "java.util.CollSer",
-      "java.util.ImmutableCollections$List12",
-      "java.util.ImmutableCollections$ListN",
-      "java.lang.Object"
+      "java.util.Map$Entry"
   );
 
   /**
@@ -732,12 +728,12 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
 
   /** {@return the embedded self-test input samples} */
   List<String> selfTestInputs() {
-    return selfTestInputs;
+    return List.of(selfTestInputs);
   }
 
   /** {@return the embedded self-test expected segmentations} */
   List<String> selfTestExpected() {
-    return selfTestExpected;
+    return List.of(selfTestExpected);
   }
 
   // The prefix of a byte-fallback piece string; a full piece has the form "<0xAB>".
@@ -763,8 +759,22 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     if (piece.length() != 6 || !piece.startsWith(BYTE_PIECE_PREFIX) || piece.charAt(5) != '>') {
       return -1;
     }
-    final int high = Character.digit(piece.charAt(3), 16);
-    final int low = Character.digit(piece.charAt(4), 16);
+    final int high = asciiHexValue(piece.charAt(3));
+    final int low = asciiHexValue(piece.charAt(4));
     return high < 0 || low < 0 ? -1 : (high << 4) | low;
+  }
+
+  /** {@return the value of an ASCII hexadecimal digit, or {@code -1} for another character} */
+  private static int asciiHexValue(char c) {
+    if (c >= '0' && c <= '9') {
+      return c - '0';
+    }
+    if (c >= 'A' && c <= 'F') {
+      return c - 'A' + 10;
+    }
+    if (c >= 'a' && c <= 'f') {
+      return c - 'a' + 10;
+    }
+    return -1;
   }
 }

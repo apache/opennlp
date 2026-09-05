@@ -26,14 +26,12 @@ import java.util.stream.IntStream;
  * Model2Vec's distillation performs with a dense LAPACK SVD through scikit-learn. A dense SVD of
  * a vocabulary-size matrix (250k rows for a multilingual teacher) is not practical in pure Java,
  * so the top components are found with a random range finder and {@value #POWER_ITERATIONS} power
- * iterations, which for the fast-decaying spectrum of transformer token embeddings recovers the
- * same subspace as the exact decomposition.
+ * iterations to approximate the dominant subspace of transformer token embeddings.
  *
  * <p>The column mean is subtracted before decomposition (the data matrix is modified in place),
  * and the signs of the components are fixed the way scikit-learn's full solver fixes them
  * ({@code svd_flip} with {@code u_based_decision=false}): each component's largest-magnitude
- * coordinate is positive, so two distillations of the same teacher produce directly comparable
- * vectors instead of mirror images.</p>
+ * coordinate is positive. A fixed seed makes the Java calculation reproducible.</p>
  *
  * <p>The heavy loops are row-parallel over the common fork/join pool; all accumulation is in
  * {@code double}.</p>
@@ -92,7 +90,7 @@ final class RandomizedPca {
    */
   static Result fitTransform(float[] data, int rows, int cols, int components, long seed) {
     if (data == null) {
-      throw new IllegalArgumentException("Data must not be null");
+      throw new IllegalArgumentException("data must not be null");
     }
     if (rows < 1 || cols < 1 || data.length != (long) rows * cols) {
       throw new IllegalArgumentException("Data has " + data.length + " elements, not " + rows

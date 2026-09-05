@@ -37,9 +37,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Exercises {@link StaticEmbeddingModel#similarity}, {@link StaticEmbeddingModel#mostSimilar},
  * and {@link StaticEmbeddingModel#analogy} against {@link EmbeddingTestFixtures}' analogy table,
- * whose vectors point in genuinely different directions (unlike {@link StaticEmbeddingModelTest}'s
+ * whose vectors point in different directions (unlike {@link StaticEmbeddingModelTest}'s
  * collinear rows, which are ideal for pooling-math assertions but would make every pairwise cosine
- * similarity trivially 1.0).
+ * similarity 1.0).
  */
 class StaticEmbeddingModelSimilarityTest {
 
@@ -77,9 +77,8 @@ class StaticEmbeddingModelSimilarityTest {
 
   @Test
   void testMostSimilarFindsSelfAsTopMatch(@TempDir Path dir) throws IOException {
-    // Documented, deliberate behavior: unlike gensim's convention of excluding the query word,
-    // mostSimilar only excludes special tokens, so a single-word query's own vocabulary row is
-    // (correctly) its own nearest neighbor.
+    // Unlike gensim's convention of excluding the query word, mostSimilar excludes only special
+    // tokens. A single-word query's own vocabulary row is therefore its nearest neighbor.
     final StaticEmbeddingModel model = load(dir);
 
     final List<Neighbor> result = model.mostSimilar("king", 1);
@@ -106,6 +105,23 @@ class StaticEmbeddingModelSimilarityTest {
     }
     // apple is the clear outlier (opposite-ish direction) and must rank last.
     assertEquals("apple", result.get(result.size() - 1).token());
+  }
+
+  @Test
+  void testMostSimilarOrdersEqualScoresByMatrixRow(@TempDir Path dir) throws IOException {
+    final Path vocabulary = dir.resolve("ties-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "query", "first", "second"));
+    final Path tensors = dir.resolve("ties-model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", new float[][] {
+        {0f, 0f}, {0f, 0f}, {0f, 0f}, {1f, 0f}, {1f, 0f}, {1f, 0f}
+    }));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.CASED, Normalization.NONE);
+
+    assertEquals(List.of("query", "first"),
+        model.mostSimilar("query", 2).stream().map(Neighbor::token).toList());
+    assertEquals(List.of("query", "first", "second"),
+        model.mostSimilar("query", 3).stream().map(Neighbor::token).toList());
   }
 
   @Test
@@ -201,6 +217,57 @@ class StaticEmbeddingModelSimilarityTest {
     assertEquals("zero", result.get(1).token());
     assertEquals(0.0, result.get(1).similarity());
     assertTrue(result.stream().allMatch(neighbor -> Double.isFinite(neighbor.similarity())));
+  }
+
+  @Test
+  void testMostSimilarDoesNotOverflowFiniteRows(@TempDir Path dir) throws IOException {
+    final Path vocabulary = dir.resolve("large-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "large"));
+    final Path tensors = dir.resolve("large-model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", new float[][] {
+        {0f}, {0f}, {0f}, {Float.MAX_VALUE}
+    }));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.UNCASED, Normalization.NONE);
+
+    final Neighbor neighbor = model.mostSimilar("large", 1).get(0);
+
+    assertEquals("large", neighbor.token());
+    assertTrue(Double.isFinite(neighbor.similarity()));
+    assertEquals(1.0, neighbor.similarity(), 1e-12);
+  }
+
+  @Test
+  void testCosineSimilarityStaysWithinItsDocumentedRange(@TempDir Path dir) throws IOException {
+    final Path vocabulary = dir.resolve("rounding-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "rounding"));
+    final Path tensors = dir.resolve("rounding-model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", new float[][] {
+        {0f, 0f}, {0f, 0f}, {0f, 0f}, {6.0943845e19f, 2.0969745e19f}
+    }));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.UNCASED, Normalization.NONE);
+
+    assertEquals(1.0, model.similarity("rounding", "rounding"));
+    assertEquals(1.0, model.mostSimilar("rounding", 1).get(0).similarity());
+  }
+
+  @Test
+  void testAnalogyDoesNotOverflowFiniteInputVectors(@TempDir Path dir) throws IOException {
+    final Path vocabulary = dir.resolve("analogy-overflow-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "a", "b", "c", "answer"));
+    final Path tensors = dir.resolve("analogy-overflow-model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", new float[][] {
+        {0f}, {0f}, {0f}, {-Float.MAX_VALUE}, {Float.MAX_VALUE}, {Float.MAX_VALUE}, {1f}
+    }));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.CASED, Normalization.NONE);
+
+    final Neighbor neighbor = model.analogy("a", "b", "c", 1).get(0);
+
+    assertEquals("answer", neighbor.token());
+    assertTrue(Double.isFinite(neighbor.similarity()));
+    assertEquals(1.0, neighbor.similarity());
   }
 
   @Test

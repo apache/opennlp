@@ -18,6 +18,7 @@ package opennlp.embeddings;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -41,8 +42,8 @@ import opennlp.tools.util.java.Experimental;
  *   the unknown and pad tokens are dropped, the rest keeps its id order) and every surviving
  *   token is run through the teacher's ONNX graph as {@code [bos, token, eos]}; the token's
  *   embedding is the mean of the last hidden states.</li>
- *   <li>The matrix is projected onto its top principal components (a randomized SVD standing in
- *   for scikit-learn's dense one; see {@link RandomizedPca}).</li>
+ *   <li>The matrix is projected onto its top principal components with the randomized SVD in
+ *   {@link RandomizedPca}.</li>
  *   <li>Each row is scaled by its Zipf weight {@code sif / (sif + p)}, where {@code p} is the
  *   row's share of a Zipf distribution over the vocabulary and {@code sif} is
  *   {@value #SIF_COEFFICIENT}, Model2Vec's default.</li>
@@ -155,12 +156,10 @@ public final class ModelDistiller {
    * @param teacherDirectory The teacher's directory, holding {@code tokenizer.json} and
    *                         {@code onnx/model.onnx}. Must not be {@code null} and must be a
    *                         directory.
-   * @param outputDirectory  The model directory to write. Created when missing. The four files
-   *                         a distillation produces are replaced, but files a previous run's
-   *                         assembly derived ({@code vocab.txt}, {@code tokenizer_config.json})
-   *                         are not, so distil into a fresh or emptied directory when the
-   *                         vocabulary or the dimension changes. A failure part way through
-   *                         leaves whatever was written so far. Must not be {@code null}.
+   * @param outputDirectory  The model directory to write. Created when missing. Files produced
+   *                         or derived by distillation are replaced; unrelated files remain. A
+   *                         failure part way through leaves an incomplete output directory. Must
+   *                         not be {@code null}.
    * @param pcaDims          The number of principal components to keep; clamped to the teacher's
    *                         hidden dimension, and skipped entirely when it would not reduce a
    *                         tiny vocabulary. Model2Vec's default (and the recommended value) is
@@ -169,7 +168,8 @@ public final class ModelDistiller {
    *                         forward-pass batch; may be {@code null}.
    * @return The distillation result, read back from the verified directory.
    * @throws IllegalArgumentException Thrown if an argument is {@code null} or invalid, the
-   *     teacher directory lacks its files, or the teacher cannot be run.
+   *     teacher and output are the same directory, the teacher directory lacks its files, or the
+   *     teacher cannot be run.
    * @throws IOException Thrown if reading or writing a file fails.
    */
   public static Result distill(Path teacherDirectory, Path outputDirectory, int pcaDims,
@@ -205,21 +205,24 @@ public final class ModelDistiller {
    * @param listener         Receives progress lines; may be {@code null}.
    * @return The distillation result, read back from the verified directory.
    * @throws IllegalArgumentException Thrown if an argument is {@code null} or invalid, a term
-   *     normalizes to nothing, the teacher directory lacks its files, or the teacher cannot be
-   *     run.
+   *     normalizes to nothing, the teacher and output are the same directory, the teacher
+   *     directory lacks its files, or the teacher cannot be run.
    * @throws IOException Thrown if reading or writing a file fails.
    */
   public static Result distill(Path teacherDirectory, Path outputDirectory, int pcaDims,
                                List<String> terms, ProgressListener listener)
       throws IOException {
     if (teacherDirectory == null) {
-      throw new IllegalArgumentException("TeacherDirectory must not be null");
+      throw new IllegalArgumentException("teacherDirectory must not be null");
     }
     if (!Files.isDirectory(teacherDirectory)) {
       throw new IllegalArgumentException("Teacher directory does not exist or is not a "
           + "directory: " + teacherDirectory);
     }
     checkOutput(outputDirectory, pcaDims);
+    if (Files.exists(outputDirectory) && Files.isSameFile(teacherDirectory, outputDirectory)) {
+      throw new IllegalArgumentException("outputDirectory must differ from teacherDirectory");
+    }
     final Path onnxFile = teacherDirectory.resolve(ModelFileNames.ONNX_MODEL);
     if (!Files.isRegularFile(onnxFile)) {
       throw new IllegalArgumentException("Teacher directory " + teacherDirectory + " has no "
@@ -230,10 +233,6 @@ public final class ModelDistiller {
         teacherDirectory.resolve(ModelFileNames.TOKENIZER_JSON),
         teacherDirectory.resolve(ModelFileNames.TOKENIZER_CONFIG));
     final int rows = tokenizer.vocabularySize();
-    if (rows < 1) {
-      throw new IllegalArgumentException("Teacher directory " + teacherDirectory + " has no "
-          + "vocabulary token left after cleaning; there is nothing to distill");
-    }
     final List<String> termList = new ArrayList<>(prepareTerms(terms));
     if (!termList.isEmpty()) {
       // A term equal to a surviving vocabulary token would encode to the same teacher sequence
@@ -310,6 +309,7 @@ public final class ModelDistiller {
 
     report(listener, "Writing and verifying the model directory " + outputDirectory);
     Files.createDirectories(outputDirectory);
+    removeDerivedArtifacts(outputDirectory);
     SafetensorsWriter.writeMatrix(outputDirectory.resolve(ModelFileNames.SAFETENSORS), totalRows,
         components, transformed);
     tokenizer.writeCleaned(outputDirectory.resolve(ModelFileNames.TOKENIZER_JSON));
@@ -318,7 +318,7 @@ public final class ModelDistiller {
     copySentencePieceModel(teacherDirectory, outputDirectory);
     final Path termsFile = outputDirectory.resolve(ModelFileNames.TERMS);
     if (termList.isEmpty()) {
-      // A stale terms file from a previous run would no longer match the matrix's row count.
+      // The current matrix has no term rows, so an existing terms file cannot describe it.
       Files.deleteIfExists(termsFile);
     } else {
       Files.write(termsFile, termList);
@@ -326,6 +326,21 @@ public final class ModelDistiller {
     final ModelAssembler.Result assembled = ModelAssembler.assemble(outputDirectory);
     return new Result(assembled.family(), assembled.vocabularySize(), assembled.termCount(),
         teacherDimension, assembled.dimension(), explainedVarianceRatio);
+  }
+
+  /**
+   * Removes tokenizer files derived or copied by an earlier distillation. They must describe the
+   * same tokenizer as the matrix and {@code tokenizer.json} written by the current run.
+   *
+   * @param outputDirectory The model output directory.
+   * @throws IOException Thrown if an old artifact cannot be removed.
+   */
+  private static void removeDerivedArtifacts(Path outputDirectory) throws IOException {
+    Files.deleteIfExists(outputDirectory.resolve(ModelFileNames.VOCABULARY));
+    Files.deleteIfExists(outputDirectory.resolve(ModelFileNames.TOKENIZER_CONFIG));
+    for (final String name : ModelFileNames.SENTENCEPIECE_MODELS) {
+      Files.deleteIfExists(outputDirectory.resolve(name));
+    }
   }
 
   /**
@@ -396,12 +411,13 @@ public final class ModelDistiller {
    */
   private static List<String> prepareTerms(List<String> terms) {
     if (terms == null) {
-      throw new IllegalArgumentException("Terms must not be null");
+      throw new IllegalArgumentException("terms must not be null");
     }
     final Set<String> prepared = new LinkedHashSet<>(terms.size() * 2);
-    for (final String term : terms) {
+    for (int termIndex = 0; termIndex < terms.size(); termIndex++) {
+      final String term = terms.get(termIndex);
       if (term == null) {
-        throw new IllegalArgumentException("Terms must not contain null");
+        throw new IllegalArgumentException("terms[" + termIndex + "] must not be null");
       }
       final String normalized = TermTable.normalizeTerm(term);
       if (normalized.isEmpty()) {
@@ -424,10 +440,15 @@ public final class ModelDistiller {
    */
   private static void checkOutput(Path outputDirectory, int pcaDims) {
     if (outputDirectory == null) {
-      throw new IllegalArgumentException("OutputDirectory must not be null");
+      throw new IllegalArgumentException("outputDirectory must not be null");
+    }
+    if (Files.exists(outputDirectory, LinkOption.NOFOLLOW_LINKS)
+        && !Files.isDirectory(outputDirectory)) {
+      throw new IllegalArgumentException(
+          "outputDirectory must be a directory or not exist: " + outputDirectory);
     }
     if (pcaDims < 1) {
-      throw new IllegalArgumentException("PcaDims must be at least 1, got " + pcaDims);
+      throw new IllegalArgumentException("pcaDims must be at least 1, got " + pcaDims);
     }
   }
 
@@ -493,7 +514,8 @@ public final class ModelDistiller {
     return "{\n"
         + "  \"model_type\": \"model2vec\",\n"
         + "  \"architectures\": [\"StaticModel\"],\n"
-        + "  \"tokenizer_name\": \"" + (name == null ? teacherDirectory : name) + "\",\n"
+        + "  \"tokenizer_name\": "
+        + jsonString(String.valueOf(name == null ? teacherDirectory : name)) + ",\n"
         + teacherRevisionField(teacherDirectory)
         + "  \"apply_pca\": " + pcaDims + ",\n"
         + "  \"sif_coefficient\": " + SIF_COEFFICIENT + ",\n"
@@ -509,15 +531,45 @@ public final class ModelDistiller {
    * {@return the {@code config.json} field naming the commit the teacher's files came from, or an
    * empty string when the teacher directory is not a cached hub download}
    *
-   * <p>A distilled table is not reproducible without the exact revision of the teacher it was
-   * distilled from, and the teacher can move under its branch name, so the sha travels with the
-   * table rather than only staying in the cache directory it was downloaded into.</p>
+   * <p>A branch or tag may later identify different model files, so the output records the exact
+   * teacher revision used for the distillation.</p>
    *
    * @param teacherDirectory The teacher's directory.
    */
   private static String teacherRevisionField(Path teacherDirectory) {
     final String revision = HuggingFaceModelCache.pinnedRevision(teacherDirectory);
-    return revision == null ? "" : "  \"teacher_revision\": \"" + revision + "\",\n";
+    return revision == null ? "" : "  \"teacher_revision\": " + jsonString(revision) + ",\n";
+  }
+
+  /**
+   * {@return {@code value} as a JSON string literal}
+   *
+   * @param value The value to quote and escape.
+   */
+  private static String jsonString(String value) {
+    final StringBuilder json = new StringBuilder(value.length() + 2).append('"');
+    for (int i = 0; i < value.length(); i++) {
+      final char c = value.charAt(i);
+      switch (c) {
+        case '"' -> json.append("\\\"");
+        case '\\' -> json.append("\\\\");
+        case '\b' -> json.append("\\b");
+        case '\f' -> json.append("\\f");
+        case '\n' -> json.append("\\n");
+        case '\r' -> json.append("\\r");
+        case '\t' -> json.append("\\t");
+        default -> {
+          if (c < 0x20) {
+            json.append("\\u00")
+                .append(Character.forDigit(c >>> 4, 16))
+                .append(Character.forDigit(c & 0x0f, 16));
+          } else {
+            json.append(c);
+          }
+        }
+      }
+    }
+    return json.append('"').toString();
   }
 
   /**

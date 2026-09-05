@@ -137,7 +137,7 @@ class SentencePieceAlignmentTest {
   }
 
   @Test
-  void testNullInputsFailLoudly() {
+  void testRejectsNullInputs() {
     assertThrows(IllegalArgumentException.class, () -> unigram().encode(null));
     assertThrows(IllegalArgumentException.class, () -> unigram().normalizeAligned(null));
     assertThrows(IllegalArgumentException.class, () -> unigram().normalize(null));

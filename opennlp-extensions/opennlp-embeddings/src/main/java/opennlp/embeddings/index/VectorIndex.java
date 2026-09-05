@@ -39,17 +39,36 @@ public interface VectorIndex {
   /**
    * A query result: an indexed id and its cosine similarity to the query.
    *
-   * @param id    The indexed id.
+   * @param id    The indexed id. Must not be {@code null} or blank and must not contain a carriage
+   *              return or line feed.
    * @param score The cosine similarity, in {@code [-1, 1]}.
    */
   record Hit(String id, double score) {
+
+    /**
+     * Creates a query result.
+     *
+     * @throws IllegalArgumentException Thrown if {@code id} or {@code score} is invalid.
+     */
+    public Hit {
+      if (id == null || id.isBlank()) {
+        throw new IllegalArgumentException("Id must not be null or blank");
+      }
+      if (id.indexOf('\n') >= 0 || id.indexOf('\r') >= 0) {
+        throw new IllegalArgumentException("Id must not contain a carriage return or line feed");
+      }
+      if (!Double.isFinite(score) || score < -1.0 || score > 1.0) {
+        throw new IllegalArgumentException("Score must be finite and between -1 and 1, got "
+            + score);
+      }
+    }
   }
 
   /**
    * Adds a vector under an id during the build phase.
    *
-   * @param id     The vector's id. Must not be {@code null} or blank, must not contain a line
-   *               break, and must not already be indexed.
+   * @param id     The vector's id. Must not be {@code null} or blank, must not contain a carriage
+   *               return or line feed, and must not already be indexed.
    * @param vector The vector. Must not be {@code null}, must have the index's dimension, and
    *               every value must be finite. The array is copied.
    * @throws IllegalArgumentException Thrown if {@code id} or {@code vector} is invalid.
@@ -65,13 +84,14 @@ public interface VectorIndex {
   /**
    * Finds the indexed vectors nearest a query, most similar first.
    *
-   * @param query The query vector. Must not be {@code null} and must have the index's
-   *              dimension.
+   * @param query The query vector. Must not be {@code null}, must have the index's dimension,
+   *              and every value must be finite. Not modified.
    * @param k     The maximum number of results. Must be at least 1.
-   * @return Up to {@code k} hits, most similar first; empty when the index is empty or the
-   *     query has no direction.
-   * @throws IllegalArgumentException Thrown if {@code query} is {@code null} or has the wrong
-   *     length, or {@code k} is less than 1.
+   * @return Up to {@code k} hits, most similar first; ties retain insertion order. Returns an
+   *     empty list when the index is empty or the query has no direction. An indexed zero vector
+   *     has score zero.
+   * @throws IllegalArgumentException Thrown if {@code query} is {@code null}, has the wrong
+   *     length, or contains a non-finite value, or {@code k} is less than 1.
    * @throws IllegalStateException Thrown if the index is not frozen.
    */
   List<Hit> topK(float[] query, int k);

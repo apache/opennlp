@@ -25,30 +25,28 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * Completes a distilled embedding model directory so {@code StaticEmbeddingModel.load} can open it,
- * then verifies it by loading it.
- *
- * <p>A Model2Vec distillation writes {@code model.safetensors}, {@code tokenizer.json}, and
- * {@code config.json}. For a WordPiece model this tool derives the missing {@code vocab.txt} and
- * {@code tokenizer_config.json} from {@code tokenizer.json}. A Model2Vec Unigram model is already
- * self-contained. The tool loads the assembled directory and prints its family, dimension, and
- * vocabulary size, so a run that prints a summary is a directory that works.</p>
+ * Completes and validates a distilled static embedding model directory. For WordPiece models, the
+ * tool derives {@code vocab.txt} and {@code tokenizer_config.json} from {@code tokenizer.json}.
  */
 public class AssembleModelTool extends BasicCmdLineTool {
 
+  /** Command-line parameters accepted by this tool. */
   interface Params extends AssembleModelParams {
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getShortDescription() {
     return "Completes and verifies a distilled static embedding model directory";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run(String[] args) {
     final Params params = validateAndParseParams(args, Params.class);

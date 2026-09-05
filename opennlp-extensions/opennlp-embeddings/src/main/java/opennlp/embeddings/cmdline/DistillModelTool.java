@@ -17,6 +17,8 @@
 package opennlp.embeddings.cmdline;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -28,33 +30,28 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * Distills a sentence-transformer teacher into a static embedding model directory, the
- * {@code opennlp-embeddings DistillModel} command. This is Model2Vec's distillation
- * (teacher forward pass over the vocabulary, PCA, Zipf weighting) in Java, so producing a table
- * no longer needs a Python environment; see {@link ModelDistiller} for the pipeline.
- *
- * <p>The teacher is a Hugging Face model id (its files download once into a local cache, pinned to
- * the commit its revision resolved to and verified against the digests the hub publishes for them)
- * or a local directory holding {@code tokenizer.json} and {@code onnx/model.onnx}. A SentencePiece
- * teacher also needs its trained {@code .model} file, downloaded or supplied alongside. The
- * written directory is completed and verified by loading it, so a run that prints a summary is a
- * directory that works.</p>
+ * Distills a local or Hugging Face sentence-transformer into a static embedding model. The
+ * pipeline applies the teacher model, PCA, and Zipf weighting through {@link ModelDistiller}.
  */
 public class DistillModelTool extends BasicCmdLineTool {
 
+  /** Command-line parameters accepted by this tool. */
   interface Params extends DistillModelParams {
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getShortDescription() {
     return "Distills a sentence-transformer teacher into a static embedding model";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run(String[] args) {
     // -teacher and -out are mandatory parameters, so validateAndParseParams has already
@@ -78,7 +75,18 @@ public class DistillModelTool extends BasicCmdLineTool {
         + (result.termCount() > 0 ? " plus " + result.termCount() + " terms" : "")
         + ", " + result.teacherDimension() + "d -> "
         + result.dimension() + "d, PCA kept "
-        + String.format("%.1f", result.explainedVarianceRatio() * 100) + "% of the variance");
+        + formatPercentage(result.explainedVarianceRatio()) + "% of the variance");
+  }
+
+  /**
+   * Formats a variance ratio as a percentage with one decimal place.
+   *
+   * @param ratio The variance ratio.
+   * @return The percentage using a decimal point independently of the default locale.
+   */
+  private String formatPercentage(double ratio) {
+    return BigDecimal.valueOf(ratio).movePointRight(2)
+        .setScale(1, RoundingMode.HALF_UP).toPlainString();
   }
 
   /**

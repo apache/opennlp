@@ -19,9 +19,8 @@ package opennlp.embeddings.index;
 import java.util.List;
 
 /**
- * A bounded selection of the {@code k} highest-scoring rows, kept as a min-heap over primitive
- * parallel arrays: the root is always the weakest kept candidate, so a full scan decides most
- * rows with one comparison against it and allocates nothing per row.
+ * A bounded min-heap over parallel score and row arrays. The root is the lowest-ranked retained
+ * candidate.
  */
 final class TopK {
 
@@ -52,13 +51,13 @@ final class TopK {
       rows[i] = row;
       while (i > 0) {
         final int parent = (i - 1) >>> 1;
-        if (scores[parent] <= scores[i]) {
+        if (ranksBelow(parent, i)) {
           break;
         }
         swap(parent, i);
         i = parent;
       }
-    } else if (score > scores[0]) {
+    } else if (score > scores[0] || (score == scores[0] && row < rows[0])) {
       scores[0] = score;
       rows[0] = row;
       siftDown();
@@ -90,10 +89,10 @@ final class TopK {
       final int left = 2 * i + 1;
       final int right = left + 1;
       int smallest = i;
-      if (left < size && scores[left] < scores[smallest]) {
+      if (left < size && ranksBelow(left, smallest)) {
         smallest = left;
       }
-      if (right < size && scores[right] < scores[smallest]) {
+      if (right < size && ranksBelow(right, smallest)) {
         smallest = right;
       }
       if (smallest == i) {
@@ -102,6 +101,19 @@ final class TopK {
       swap(i, smallest);
       i = smallest;
     }
+  }
+
+  /**
+   * Tests whether one heap entry ranks below another. Later rows rank lower when scores tie, so
+   * results retain index order.
+   *
+   * @param candidate The candidate heap position.
+   * @param reference The reference heap position.
+   * @return {@code true} if the candidate ranks below the reference.
+   */
+  private boolean ranksBelow(int candidate, int reference) {
+    return scores[candidate] < scores[reference]
+        || (scores[candidate] == scores[reference] && rows[candidate] > rows[reference]);
   }
 
   /**

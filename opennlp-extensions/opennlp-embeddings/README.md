@@ -17,9 +17,9 @@
 
 # OpenNLP Static Embeddings
 
-Turn text into embedding vectors from a static (non-contextual) table: a per-token vector matrix plus subword tokenization, WordPiece or SentencePiece. It uses the same lookup-table approach as [word2vec](https://code.google.com/archive/p/word2vec/) and [GloVe](https://nlp.stanford.edu/projects/glove/). Distillation tools can compress a sentence-transformer into such a flat table (the [Model2Vec](https://github.com/MinishLab/model2vec) family is the primary target), and looking a sentence up in the table approximates the transformer's semantics at a fraction of the cost. Because SentencePiece models are supported, this includes multilingual tables distilled from encoders like the [XLM-RoBERTa](https://arxiv.org/abs/1911.02116) family. There is no model forward pass, no GPU, and no native runtime; it is pure JVM.
+Turn text into embedding vectors from a static (non-contextual) table: a per-token vector matrix plus WordPiece or SentencePiece tokenization. The module loads [Model2Vec](https://github.com/MinishLab/model2vec) layouts and can distill a sentence-transformer into the same flat-table form. SentencePiece support permits multilingual tables distilled from encoders in the [XLM-RoBERTa](https://arxiv.org/abs/1911.02116) family. Embedding uses JVM table lookups and arithmetic, without a model forward pass or native runtime.
 
-OpenNLP also supports ONNX models, which are inherently more accurate. Model2Vec sacrifices some accuracy for a large speed gain, and OpenNLP recognizes that trade-off, so both embedding methods are supported and implement the same `TextEmbedder` interface.
+OpenNLP also supports contextual ONNX models, which preserve word-sense context at a higher inference cost. Both embedding methods implement the same `TextEmbedder` interface.
 
 ## Quickstart
 
@@ -33,17 +33,18 @@ double  similarity = model.similarity("coffee", "espresso");
 List<Neighbor> near = model.mostSimilar("coffee", 5);
 ```
 
-The directory is the layout published releases use, and `load` detects the tokenizer family from the files present. A WordPiece model carries `vocab.txt`, `model.safetensors`, `config.json`, and `tokenizer_config.json`. A SentencePiece model carries a trained `.model` file (`sentencepiece.bpe.model`, `spiece.model`, or `tokenizer.model`) next to `tokenizer.json`, `model.safetensors`, and `config.json`. In both cases the tokenizer and pooling switches are read from the model's own config. One loaded model is immutable and thread-safe, so it can serve every thread of an application.
+The directory is the layout published releases use, and `load` detects the tokenizer family from the files present. A WordPiece model carries `vocab.txt`, `model.safetensors`, `config.json`, and `tokenizer_config.json`. A self-contained Model2Vec Unigram model carries `tokenizer.json`, `model.safetensors`, and `config.json`. A separate-file SentencePiece model uses the Unigram layout and adds its trained `sentencepiece.bpe.model`, `spiece.model`, or `tokenizer.model`. The tokenizer and pooling switches are read from the model's own configuration. One loaded model is immutable and thread-safe, so it can serve every thread of an application.
 
-A multilingual SentencePiece table embeds different languages into the same space, so similarity works across them:
+A multilingual SentencePiece table can compare text in the languages covered by its teacher:
 
 ```java
-model.similarity("The weather is beautiful today", "今天天气很好");  // same meaning, high score
+double crossLingual = model.similarity(
+    "The weather is beautiful today", "今天天气很好");
 ```
 
 ## When to use it
 
-Reach for this when embedding throughput and deployment simplicity matter more than the last few points of retrieval quality: semantic similarity, deduplication, candidate retrieval in front of a heavier reranker, clustering, or features for a classifier. A contextual model is still the better choice when the task depends on distinguishing word senses in context.
+Use static embeddings when throughput and deployment simplicity matter: semantic similarity, deduplication, candidate retrieval before a reranker, clustering, or classifier features. Use a contextual model when the task depends on distinguishing word senses in context.
 
 ## How it works
 
@@ -59,8 +60,8 @@ flowchart LR
 ```
 
 1. **Tokenize.** The model's own subword tokenizer splits the text into pieces: WordPiece with the model's casing rule, or a trained SentencePiece model that carries its own text normalizer. Special pieces (the WordPiece `[CLS]`, `[SEP]`, and `[UNK]` tokens, a SentencePiece model's control and unknown pieces) never contribute to the pooled vector.
-2. **Gather.** Each piece contributes its matrix row, found by the piece *string* rather than the tokenizer's numeric id. The two files of a SentencePiece model routinely order and offset their ids differently (the fairseq convention shifts them by one, and distillation tools reorder the vocabulary outright), so string lookup is what keeps the pairing robust; a poolable piece with no matrix row fails loud at load time, not at query time. Unknown pieces are dropped, and a text with no in-vocabulary pieces embeds to a zero vector rather than raising.
-3. **Weight and pool.** Per-token weights (when the model carries them) multiply into the running sum, and the sum is divided by the plain token count. This mean-pool matches the reference implementation of the targeted model family exactly, verified against it rather than assumed.
+2. **Gather.** Each piece contributes its matrix row, found by the piece *string* instead of the tokenizer's numeric id. The two files of a SentencePiece model may order or offset their ids differently, so string lookup keeps them aligned. Loading rejects a poolable piece with no matrix row. Unknown pieces are omitted, and text with no known pieces embeds to a zero vector.
+3. **Weight and pool.** Per-token weights (when present) multiply into the running sum, which is divided by the number of pooled tokens. This is the pooling rule used by Model2Vec tables.
 4. **Normalize.** The pooled vector is L2-normalized by default so cosine similarity is a dot product. Normalization can be turned off for models that expect raw pooled vectors.
 
 Per-row L2 norms and the special-token mask are precomputed at load time, so the neighbor scan and similarity calls do not recompute them on every query.
@@ -74,8 +75,11 @@ flowchart TD
   L["StaticEmbeddingModel.load(dir)"] --> DET{"vocab.txt present?"}
   DET -- "yes: WordPiece" --> WCFG["read config.json,<br/>tokenizer_config.json"]
   WCFG --> CAS["casing = do_lower_case"]
-  DET -- "no: SentencePiece" --> SPM["load the trained .model<br/>(its own normalizer, no casing switch)"]
-  SPM --> TJ["tokenizer.json vocab<br/>names the matrix rows"]
+  DET -- "no: Unigram" --> SPM{"trained .model present?"}
+  SPM -- "yes" --> SEP["load separate-file SentencePiece<br/>(its own normalizer)"]
+  SPM -- "no" --> SELF["load self-contained tokenizer.json<br/>(normalizer and scores)"]
+  SEP --> TJ["tokenizer.json vocab<br/>names the matrix rows"]
+  SELF --> TJ
   TJ --> COV["verify every poolable piece<br/>has a matrix row"]
   L --> NRM["normalization from config.json"]
   L --> MAT["model.safetensors to matrix"]
@@ -85,7 +89,7 @@ flowchart TD
   MAT --> M
 ```
 
-The weights are read with a purpose-built [safetensors](https://github.com/huggingface/safetensors) reader. Unlike pickle-based checkpoint formats, safetensors carries no executable content, so loading a downloaded file cannot execute arbitrary code. Tensor data streams directly into the decoded array, so the file size is not bound by Java's int-indexed arrays; a single decoded tensor is capped at the maximum Java array length (about 2.1 billion float elements), checked explicitly.
+The weights are read with a small [safetensors](https://github.com/huggingface/safetensors) reader. It parses a JSON header and raw tensor bytes, without deserializing Java or Python objects. Tensor data streams directly into the decoded array. A decoded tensor is limited to the maximum Java array length, about 2.1 billion float elements.
 
 ## Architecture
 
@@ -104,20 +108,30 @@ flowchart TD
   DL["SentenceVectorsDL<br/>(opennlp-dl, ONNX)"] -. implements .-> TE
 ```
 
-Two interfaces keep the module small. `SubwordTokenizer` is the tokenization interface: the WordPiece encoder from `opennlp-api` and the pure-JVM SentencePiece implementation from `opennlp-subword` both produce the same piece stream, so the pooling code has exactly one path. `TextEmbedder` is the embedding interface: the static path here and the contextual ONNX path in `opennlp-dl` both implement it, so callers can swap one for the other without touching their code.
+`SubwordTokenizer` provides one piece stream for the WordPiece encoder in `opennlp-api` and the pure-JVM SentencePiece implementation in `opennlp-subword`. `TextEmbedder` provides one embedding contract for this static implementation and the contextual ONNX implementation in `opennlp-dl`.
 
 ## Performance
 
-A static table wins on speed and footprint because there is no model forward pass: the hot path is a vocabulary lookup, a handful of vector adds, and one normalization. The module ships a Java Microbenchmark Harness (JMH) benchmark (`StaticEmbeddingModelBenchmark`) that measures `embed()` and `mostSimilar()` throughput on a real model directory (`-p modelDir=/path/to/model`), so you can reproduce numbers on your own hardware and model.
+A static table avoids a model forward pass. Its embedding path performs vocabulary lookups, vector additions, pooling, and optional normalization. The Java Microbenchmark Harness (JMH) benchmark (`StaticEmbeddingModelBenchmark`) measures `embed()` and `mostSimilar()` throughput on a model directory (`-p modelDir=/path/to/model`).
 
-Two things drive the numbers, and the benchmark separates them. `embed()` is tokenize-and-pool, so its cost tracks the text and the tokenizer, not the table size. `mostSimilar()` is a brute-force scan over every row, so its cost tracks the vocabulary size directly. A run comparing a small WordPiece table against the large multilingual SentencePiece table makes the split visible (throughput across all cores, one machine, indicative not publishable):
+`embed()` tokenizes and pools only the rows used by the input. `mostSimilar()` scans every matrix row, so its cost grows with the vocabulary. Use a vector index when a full scan is too expensive. The harness in `dev/embeddings/parity/` compares single-thread speed and vector output with the Model2Vec Python implementation. Run it with the model and hardware used for deployment.
 
-| table | tokenizer, rows | `embed()` | `mostSimilar()` |
-| --- | --- | --- | --- |
-| potion-base-8M | WordPiece, 29.5k | ~295k ops/s | ~9,000 ops/s |
-| bge-m3 (distilled) | SentencePiece, 250k | ~1.47M ops/s | ~550 ops/s |
+## Quantizing a model
 
-So a large multilingual vocabulary is free for embedding and expensive for a full nearest-neighbor scan; that scan is where an approximate index earns its place once the table is large. Separately, the repository's `dev/embeddings/parity/` directory holds a harness that reruns the single-thread speed comparison against the Model2Vec Python reference and checks that the output vectors match it within floating-point tolerance, so a cross-runtime comparison is something you reproduce on your own hardware rather than quote. Treat all of these as a starting expectation and run the benchmark on the model you plan to use.
+`QuantizeModel` converts `model.safetensors` to a 2, 3, or 4-bit matrix:
+
+```text
+opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4
+```
+
+The command writes `model.quantized` and reports its size and sampled reconstruction cosine.
+Delete `model.safetensors` before loading the quantized model. A directory containing both matrix
+files is rejected. The tokenizer, configuration, and optional `terms.txt` stay unchanged.
+
+The format uses a randomized Hadamard transform, a Gaussian Lloyd-Max grid, and a scale for each
+row. It is an MSE-oriented variant of
+[TurboQuant](https://arxiv.org/abs/2504.19874) and does not implement the paper's residual QJL
+estimator.
 
 ## Usage
 
@@ -155,7 +169,7 @@ List<Neighbor> king = model.analogy("man", "king", "woman", 1);
 
 ### Retrieval
 
-Embed a small corpus once, then rank documents against a query by cosine similarity. Because the vectors are L2-normalized, cosine is a plain dot product:
+For a small corpus, rank documents directly with `similarity`:
 
 ```java
 StaticEmbeddingModel model = StaticEmbeddingModel.load(modelDir);
@@ -165,28 +179,45 @@ List<String> docs = List.of(
     "The history of tea in East Asia",
     "Best grinders for pour-over coffee");
 
-float[][] docVectors = docs.stream().map(model::embed).toArray(float[][]::new);
-float[]   query      = model.embed("home espresso machine");
+String query = "home espresso machine";
 
 IntStream.range(0, docs.size())
     .boxed()
-    .sorted(Comparator.comparingDouble(i -> -dot(query, docVectors[i])))
+    .sorted(Comparator.comparingDouble(
+        (Integer i) -> model.similarity(query, docs.get(i))).reversed())
     .forEach(i -> System.out.println(docs.get(i)));
 ```
 
-Here `dot` is any dot product over two float arrays. For a full retrieval-augmented generation (RAG) retriever, keep the document vectors in whatever index you already use and score queries the same way. A vector index that stores and searches precomputed vectors, such as a Hierarchical Navigable Small World (HNSW) index, does not care how those vectors were produced, so these embeddings can feed it directly.
+For a larger corpus, embed each document once, store the vectors in a vector index, and embed each query with the same model. Any index that accepts float vectors, including a Hierarchical Navigable Small World (HNSW) index, can store these embeddings.
+
+### Bounded in-memory search
+
+`FlatFloatIndex` scans full-precision vectors for exact cosine scores. `TurboQuantIndex` scans packed 2-bit, 3-bit, or 4-bit rows, using less memory at the cost of recall. Both are for bounded collections in one JVM. Build either index on one thread, freeze it, then share it for concurrent queries:
+
+```java
+StaticEmbeddingModel model = StaticEmbeddingModel.load(modelDir);
+VectorIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
+
+index.add("wonderland-excerpt", model.embed("Alice met the Queen in the garden."));
+index.add("orchard-notes", model.embed("A ripe apple hangs from the tree."));
+index.freeze();
+
+List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);
+```
+
+A frozen, non-empty index can be written to a directory and loaded through the concrete class's `write(Path)` and `read(Path)` methods. The directory includes a SHA-256 manifest, so loading rejects a changed or mismatched vector or id file. Rebuild the index to add, replace, or remove a vector.
 
 ## Getting a model
 
 No model is bundled. Point the module at files you download, and the table's own license applies to the table. The Model2Vec distilled releases (for example potion-base-8M) publish the exact directory layout the one-argument `load` expects: download that release's `vocab.txt`, `model.safetensors`, `config.json`, and `tokenizer_config.json` into one directory and pass the directory to `load`. Or distill your own teacher with the module's `DistillModel` command (see `TRAINING.md`).
 
-For a multilingual SentencePiece table (for example one distilled from a bge-m3 or XLM-RoBERTa teacher), the distillation output ships `tokenizer.json`, `model.safetensors`, and `config.json` but usually not the trained SentencePiece `.model` file; copy that one file from the teacher model's own repository (it is named `sentencepiece.bpe.model` there) into the same directory. The loader tells you exactly this if the file is missing.
+For a multilingual SentencePiece table (for example one distilled from a bge-m3 or XLM-RoBERTa teacher), the distillation output ships `tokenizer.json`, `model.safetensors`, and `config.json` but usually not the trained SentencePiece `.model` file. Copy `sentencepiece.bpe.model` from the teacher repository into the same directory. A missing file is reported during loading.
 
 ## Notes and limits
 
 - Instances are immutable and safe for concurrent use, so one loaded model serves every thread.
 - Static tables do not disambiguate word senses in context. If the task turns on context, use a contextual model.
-- Out-of-vocabulary-only input embeds to a zero vector, matching the reference implementation. This is a rare edge case for text in the model's language (WordPiece backs off to subwords), and mostly happens for empty input or text outside the vocabulary's coverage. Decide in your code whether a zero vector means "no signal" for your use case.
+- Input with no known pieces embeds to a zero vector. Decide whether that represents "no signal" for the application.
 
 ## See also
 
