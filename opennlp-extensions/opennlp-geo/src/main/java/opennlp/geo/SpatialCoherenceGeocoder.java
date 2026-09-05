@@ -118,7 +118,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
   }
 
   /** Chooses among candidates by mean distance to the context, prior as tie-breaker. */
-  private static GeoResolution resolveAmbiguous(Span mention,
+  private GeoResolution resolveAmbiguous(Span mention,
       List<GazetteerEntry> candidates, List<GeoPoint> context) {
     if (context.isEmpty()) {
       return new GeoResolution(mention, candidates.get(0),
@@ -144,14 +144,14 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
   }
 
   /** How decisively the top population beats the runner-up, in {@code [0, 1]}. */
-  private static double populationSeparation(List<GazetteerEntry> candidates) {
+  private double populationSeparation(List<GazetteerEntry> candidates) {
     final double first = candidates.get(0).population();
     final double second = candidates.get(1).population();
     return first <= 0.0 ? 0.0 : 1.0 - (second / first);
   }
 
   /** {@return the mean great-circle distance from {@code from} to the context points, in km} */
-  private static double meanDistanceKm(GeoPoint from, List<GeoPoint> context) {
+  private double meanDistanceKm(GeoPoint from, List<GeoPoint> context) {
     double sum = 0.0;
     for (final GeoPoint to : context) {
       sum += distanceKm(from, to);
@@ -160,7 +160,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
   }
 
   /** The great-circle distance via the haversine formula. */
-  private static double distanceKm(GeoPoint from, GeoPoint to) {
+  private double distanceKm(GeoPoint from, GeoPoint to) {
     final double latDelta = Math.toRadians(to.latitude() - from.latitude());
     final double lonDelta = Math.toRadians(to.longitude() - from.longitude());
     final double a = Math.sin(latDelta / 2) * Math.sin(latDelta / 2)

@@ -47,8 +47,8 @@ import opennlp.tools.util.normalizer.TermAnalyzer;
  *
  * <p>Indexed names and queries are folded through the same normalization chain (NFC, case fold,
  * accent fold with {@link TermAnalyzer} over
- * <a href="https://unicode.org/reports/tr29/">UAX&#160;#29</a> word tokens), so matching is
- * queries match across case, accents, and hyphenation. The bundled table is pure ASCII;
+ * <a href="https://unicode.org/reports/tr29/">UAX&#160;#29</a> word tokens), so queries match
+ * across case, accents, and hyphenation. The bundled table is pure ASCII;
  * native-script names are not matchable against it.</p>
  *
  * <p>{@link #lookup(CharSequence)} returns candidates ordered by population descending, then a

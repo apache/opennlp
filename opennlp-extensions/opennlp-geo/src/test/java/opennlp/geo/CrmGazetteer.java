@@ -118,7 +118,7 @@ final class CrmGazetteer implements Gazetteer {
   }
 
   /** {@return {@code true} if {@code c} is an ASCII letter} */
-  private static boolean isAsciiLetter(char c) {
+  private boolean isAsciiLetter(char c) {
     return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
   }
 }
