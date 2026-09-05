@@ -17,15 +17,21 @@
 
 # Hunspell dictionaries for the affix stemmer
 
-The Hunspell stemmer (`opennlp.tools.stemmer.hunspell`) implements the documented Hunspell dictionary format: a `.dic` word list plus its `.aff` affix companion, both supplied by the user. Apache OpenNLP bundles no dictionary data; whichever dictionary you download, its license is stated in the readme shipped alongside it.
+The Hunspell stemmer (`opennlp.tools.stemmer.hunspell`) reads a user-supplied
+`.dic` word list and its `.aff` affix file. Apache OpenNLP bundles no dictionary
+data. The dictionary's readme states its license.
 
 ## Where dictionaries come from
 
-The LibreOffice project maintains a large collection of Hunspell dictionaries, one directory per language, at `github.com/LibreOffice/dictionaries`. Licenses differ per dictionary, which is why nothing is bundled: for example, the `en_US` dictionary derives from SCOWL and states its terms in `README_en_US.txt` in the same directory. Many other sources work too; the engine only cares that the pair follows the Hunspell format.
+The LibreOffice project maintains Hunspell dictionaries by language at
+`github.com/LibreOffice/dictionaries`. Each dictionary has a separate license.
+For example, SCOWL is the source for the `en_US` dictionary, with terms in
+`README_en_US.txt`. Other sources can be used when the `.aff` and `.dic` files
+follow the Hunspell format.
 
 OpenNLP does not ship a URL catalog. Applications that manage downloads can keep a
 properties file with an entry id followed by `.url`, `.sha512`, and optionally
-`.filename` keys. Pin each URL to a stable release or commit.
+`.filename` keys. Use a URL for a stable release or commit.
 
 ## Option A: application catalog
 
@@ -54,7 +60,7 @@ The download test uses local file URLs to exercise this flow without network acc
 ## Option B: your own files
 
 Fetch `.aff` / `.dic` (and the license readme) with any tool, or with
-`DownloadUtil.download(uri, path, sha512)`, then load them:
+`ResourceInstaller.install(uri, directory, sha512)`, then load them:
 
 ```java
 import java.nio.file.Path;
@@ -71,9 +77,13 @@ Stemmer stemmer = factory.newStemmer();
 CharSequence stem = stemmer.stem("workers");
 ```
 
-What `stem` evaluates to is decided by the dictionary you loaded, and this project ships no dictionary data, so no result is claimed here for `en_US`. The same load-and-stem flow is pinned by `HunspellManualExampleTest` (miniature in-memory dictionary, asserted stems for `workers` and `worker`) and by `HunspellStemmerFactoryTest#testEndToEndUsageFromFiles` (the same pair written to disk). The developer manual chapter `stemmer.xml` cites `HunspellManualExampleTest`.
+The result depends on the loaded dictionary. The in-tree manual example uses a
+small dictionary and checks that `workers` stems to `worker`.
 
-The dictionary is immutable and safe to share between threads; the factory hands out a fresh stemmer per call, so each thread takes its own from `newStemmer()`. A dictionary that declares a non-UTF-8 encoding through the `SET` directive in its `.aff` file is decoded accordingly; nothing needs converting beforehand.
+The dictionary is immutable and safe to share between threads. The factory creates a
+new stemmer for each call, so each thread can use its own instance. A dictionary that
+declares a non-UTF-8 encoding through the `SET` directive in its `.aff` file is decoded
+accordingly; no conversion is required.
 
 ## Testing against real dictionaries
 
@@ -86,4 +96,8 @@ The in-tree tests run against project-authored fixtures only. An opt-in test cla
 
 ## What the engine supports
 
-Supported affix features: `PFX` and `SFX` rules with strip strings, character-class conditions, cross-product combination of one prefix with one suffix, twofold suffixes through continuation classes, `FLAG` modes `char`, `UTF-8`, `long`, and `num`, the `AF` flag alias table, the `SET` encoding declaration, compound decomposition under `COMPOUNDFLAG`, the positional `COMPOUNDBEGIN`/`COMPOUNDMIDDLE`/`COMPOUNDEND` flags, `COMPOUNDMIN`, `COMPOUNDWORDMAX`, `COMPOUNDPERMITFLAG`, `COMPOUNDFORBIDFLAG`, and the `CHECKCOMPOUNDDUP`/`CHECKCOMPOUNDCASE`/`CHECKCOMPOUNDTRIPLE` declarations (compound parts stand on their entries alone or on an entry plus one affix, the zero and dash suffixes dictionaries position linking forms with included), the blocking flags `NEEDAFFIX` (alias `PSEUDOROOT`), `ONLYINCOMPOUND`, and `FORBIDDENWORD`, which keep virtual stems, compound-only parts, and forbidden words out of the reported analyses, and `CIRCUMFIX`, which binds marked prefix and suffix halves to one another as in the German `ge...t` participle, and the `FULLSTRIP` declaration, without which a rule that strips a whole stem is not applied, matching Hunspell. Directives that would change stems when ignored (`ICONV`, `OCONV`, `COMPLEXPREFIXES`, `COMPOUNDRULE`, `IGNORE`, `KEEPCASE`) fail at load time. Cosmetic tables such as `REP`, `MAP`, and `KEY` are skipped, so analyses that would need them are missed rather than invented. A malformed `.aff` file fails loudly at load time with the offending line number in the message. Each affix or dictionary stream is rejected when it exceeds `HunspellDictionary.MAX_STREAM_BYTES` (64 MiB).
+Supported affix features include `PFX` and `SFX` rules, continuation classes,
+compound flags, blocking flags, `CIRCUMFIX`, and `FULLSTRIP`. The parser rejects
+directives that would change stems if ignored. It skips cosmetic tables that do not
+affect stemming. Malformed files report the relevant line number. Each affix or
+dictionary stream is limited to 64 MiB.
