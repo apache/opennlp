@@ -19,7 +19,8 @@
 
 The Hunspell stemmer (`opennlp.tools.stemmer.hunspell`) reads a user-supplied
 `.dic` word list and its `.aff` affix file. Apache OpenNLP bundles no dictionary
-data. The dictionary's readme states its license.
+data. Retain the upstream copyright notices and full license text with downloaded
+files. A dictionary's license is separate from OpenNLP's Apache License.
 
 ## Where dictionaries come from
 
@@ -87,7 +88,16 @@ accordingly; no conversion is required.
 
 ## Testing against real dictionaries
 
-The in-tree tests use project-authored fixtures only. An opt-in test class, `HunspellRealDictionaryTest`, also checks everyday morphology with the LibreOffice `en_US`, `de_DE_frami`, and `hu_HU` dictionaries. Point it at one directory containing all listed `<name>.aff` and `<name>.dic` files. A missing dictionary skips the associated test; a dictionary that cannot be loaded fails it.
+The in-tree tests use project-authored fixtures only. An opt-in test class, `HunspellRealDictionaryTest`, checks inflections with the LibreOffice `en_US`, `de_DE_frami`, and `hu_HU` dictionaries using `ALLOW_PARTIAL`. It also checks that strict loading rejects dictionaries requiring unsupported directives. Point it at one directory containing the listed `<name>.aff` and `<name>.dic` files. A missing dictionary skips the associated test; a dictionary that cannot be loaded in partial mode fails it. These checks do not establish full Hunspell compatibility.
+
+Keep these downloads outside the checkout and out of source archives and JARs.
+The English dictionary's `README_en_US.txt` contains the SCOWL and Ispell
+copyright and license notices. The German dictionary is GPL-licensed and must
+not be bundled in an Apache release. The Hungarian dictionary offers MPL-2.0
+or LGPL-3.0-or-later; select MPL-2.0 and retain that license text with its README.
+These are optional local test inputs, not redistributed OpenNLP resources.
+See the [ASF third-party license policy](https://www.apache.org/legal/resolved.html)
+before proposing to bundle any dictionary.
 
 ```
 ./mvnw test -pl opennlp-core/opennlp-runtime -am \
@@ -101,8 +111,39 @@ The engine applies `PFX` and `SFX` rules with strip strings and character-class 
 
 Compound decomposition supports `COMPOUNDFLAG`, `COMPOUNDBEGIN`, `COMPOUNDMIDDLE`, `COMPOUNDEND`, `COMPOUNDMIN`, `COMPOUNDWORDMAX`, `COMPOUNDPERMITFLAG`, `COMPOUNDFORBIDFLAG`, `CHECKCOMPOUNDDUP`, `CHECKCOMPOUNDCASE`, and `CHECKCOMPOUNDTRIPLE`. Compound boundaries and minimum lengths use Unicode code points. `NEEDAFFIX` (also named `PSEUDOROOT`), `ONLYINCOMPOUND`, `FORBIDDENWORD`, `CIRCUMFIX`, and `FULLSTRIP` control whether an analysis is accepted.
 
-Other directives are skipped. Their conversion, suggestion, or advanced compound behavior is not applied by this affix stemmer. Comments and unused metadata may contain legacy-encoded bytes even when the file uses UTF-8. Parsed rules and dictionary text are decoded strictly. Default and `long` flag modes preserve raw one-byte flag values used by published UTF-8 dictionaries. Invalid rule counts, aliases, flags, and compound limits fail during loading. Each affix or dictionary stream is rejected when it exceeds `HunspellDictionary.MAX_STREAM_BYTES` (64 MiB).
+Comments and unused metadata may contain legacy-encoded bytes even when the file uses UTF-8. Parsed rules and dictionary text are decoded strictly. Default and `long` flag modes preserve raw one-byte flag values used by published UTF-8 dictionaries. Invalid rule counts, aliases, flags, and compound limits fail during loading in both modes. Each affix or dictionary stream is rejected when it exceeds `HunspellDictionary.MAX_STREAM_BYTES` (64 MiB).
 
-Skipped directives include `ICONV`, `OCONV`, `COMPLEXPREFIXES`, `COMPOUNDRULE`,
-`IGNORE`, and `KEEPCASE`. Loading a dictionary does not apply these rules;
-results can differ from Hunspell for words that need them.
+## Loading policy
+
+`HunspellDictionary.load(...)` defaults to `LoadMode.STRICT`. Unsupported affix
+directives cause an `IOException` identifying the directive and source line.
+Path-based loading includes the affix path. Valid Hunspell dictionaries using
+unsupported features require an explicit choice to load partially.
+
+Unsupported directives include `ICONV`, `OCONV`, `COMPLEXPREFIXES`, `COMPOUNDRULE`,
+`IGNORE`, and `KEEPCASE`. Unknown directive names also cause rejection. Recognized
+metadata and settings outside stemming, such as `NAME`, `TRY`, `REP`, and
+`WORDCHARS`, are ignored. `CHECKCOMPOUNDREP` and `FORBIDWARN` affect accepted
+analyses and remain unsupported, even though their associated suggestion or
+warning settings can be ignored independently.
+
+Use `ALLOW_PARTIAL` to skip unsupported directives and inspect the diagnostics:
+
+```java
+HunspellDictionary partial = HunspellDictionary.load(
+    Path.of("dictionary.aff"), Path.of("dictionary.dic"),
+    HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupportedDirectives()) {
+  System.err.println(diagnostic.directive() + " at "
+      + diagnostic.source() + ":" + diagnostic.lineNumber());
+}
+```
+
+`getUnsupportedDirectives()` returns an immutable list containing the first
+source location of each unsupported directive in file order. Recognized settings
+outside stemming are excluded from the list. File paths identify file-based
+loads; stream-based loads use `affix stream` as the source description.
+
+Partial loading does not apply the skipped behavior. Dictionary morphology
+fields are ignored in both modes. Strict affix loading does not establish
+complete Hunspell compatibility.

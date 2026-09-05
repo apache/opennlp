@@ -24,6 +24,10 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import opennlp.tools.stemmer.hunspell.HunspellDictionary.LoadMode;
 
 /**
  * Gated checks against published dictionaries, which are never bundled: the tests run
@@ -32,8 +36,9 @@ import org.junit.jupiter.api.Test;
  * its dictionary pair is absent. The download helper in {@code dev/} fetches the pairs
  * together with their license files; see {@code dev/README-hunspell-dictionaries.md}.
  *
- * <p>The assertions are limited to morphology stable across dictionary revisions:
- * everyday inflections, and for German the decomposability of ordinary compounds.</p>
+ * <p>Inflection checks use partial loading. A separate check tests strict rejection
+ * when the dictionary requires unsupported directives. These checks do not establish
+ * full Hunspell compatibility.</p>
  */
 public class HunspellRealDictionaryTest {
 
@@ -44,11 +49,12 @@ public class HunspellRealDictionaryTest {
    * gate or the pair is absent.
    *
    * @param name The dictionary base name, such as {@code en_US}.
-   * @return A stemmer over the loaded pair. Never {@code null}.
+   * @param mode The loading policy.
+   * @return The loaded dictionary.
    * @throws IOException Thrown if a present pair fails to load, which is a failure,
    *         not a skip.
    */
-  private static HunspellStemmer loadOrSkip(String name) throws IOException {
+  private static HunspellDictionary loadOrSkip(String name, LoadMode mode) throws IOException {
     final String dir = System.getProperty(DICT_DIR_PROPERTY);
     Assumptions.assumeTrue(dir != null && !dir.isBlank(),
         "no " + DICT_DIR_PROPERTY + " given");
@@ -56,7 +62,30 @@ public class HunspellRealDictionaryTest {
     final Path words = Path.of(dir, name + HunspellDictionary.DICTIONARY_FILE_SUFFIX);
     Assumptions.assumeTrue(Files.isReadable(affix) && Files.isReadable(words),
         name + " pair not present under " + dir);
-    return new HunspellStemmer(HunspellDictionary.load(affix, words));
+    return HunspellDictionary.load(affix, words, mode);
+  }
+
+  /**
+   * Checks strict loading using the diagnostics returned by partial loading.
+   *
+   * @param name The dictionary base name.
+   * @throws IOException If partial loading fails.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"en_US", "de_DE_frami", "hu_HU"})
+  void testStrictLoadingPolicy(String name) throws IOException {
+    final HunspellDictionary partial = loadOrSkip(name, LoadMode.ALLOW_PARTIAL);
+    if (partial.getUnsupportedDirectives().isEmpty()) {
+      Assertions.assertTrue(loadOrSkip(name, LoadMode.STRICT).getUnsupportedDirectives().isEmpty());
+    } else {
+      final HunspellDictionary.UnsupportedDirective diagnostic =
+          partial.getUnsupportedDirectives().get(0);
+      final IOException error = Assertions.assertThrows(IOException.class,
+          () -> loadOrSkip(name, LoadMode.STRICT));
+      Assertions.assertTrue(error.getMessage().contains(diagnostic.directive()));
+      Assertions.assertTrue(error.getMessage().contains(diagnostic.source()));
+      Assertions.assertTrue(error.getMessage().contains("line " + diagnostic.lineNumber()));
+    }
   }
 
   /**
@@ -67,7 +96,7 @@ public class HunspellRealDictionaryTest {
    */
   @Test
   void testEnglishInflections() throws IOException {
-    final HunspellStemmer stemmer = loadOrSkip("en_US");
+    final HunspellStemmer stemmer = new HunspellStemmer(loadOrSkip("en_US", LoadMode.ALLOW_PARTIAL));
     Assertions.assertEquals("worker", stemmer.stem("workers").toString());
     Assertions.assertEquals("cat", stemmer.stem("cats").toString());
     Assertions.assertEquals("unhappy", stemmer.stem("unhappiest").toString());
@@ -85,7 +114,7 @@ public class HunspellRealDictionaryTest {
    */
   @Test
   void testGermanInflections() throws IOException {
-    final HunspellStemmer stemmer = loadOrSkip("de_DE_frami");
+    final HunspellStemmer stemmer = new HunspellStemmer(loadOrSkip("de_DE_frami", LoadMode.ALLOW_PARTIAL));
     Assertions.assertEquals("Kind", stemmer.stem("Kinder").toString());
     // Haeuser, written with a-umlaut, stems to Haus
     Assertions.assertEquals("Haus", stemmer.stem("H\u00E4user").toString());
@@ -101,7 +130,7 @@ public class HunspellRealDictionaryTest {
    */
   @Test
   void testGermanCompoundsDecompose() throws IOException {
-    final HunspellStemmer stemmer = loadOrSkip("de_DE_frami");
+    final HunspellStemmer stemmer = new HunspellStemmer(loadOrSkip("de_DE_frami", LoadMode.ALLOW_PARTIAL));
     // Haustuer, written with u-umlaut, is Haus + Tuer
     Assertions.assertTrue(stemmer.stemAll("Haust\u00FCr").size() >= 2);
     Assertions.assertTrue(stemmer.stemAll("Kinderzimmer").size() >= 2);
@@ -116,7 +145,7 @@ public class HunspellRealDictionaryTest {
    */
   @Test
   void testHungarianInflections() throws IOException {
-    final HunspellStemmer stemmer = loadOrSkip("hu_HU");
+    final HunspellStemmer stemmer = new HunspellStemmer(loadOrSkip("hu_HU", LoadMode.ALLOW_PARTIAL));
     // kutyak, written with a-acute, is the plural of kutya
     Assertions.assertEquals("kutya", stemmer.stem("kuty\u00E1k").toString());
     Assertions.assertEquals("asztal", stemmer.stem("asztalon").toString());

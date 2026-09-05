@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,9 +56,12 @@ import opennlp.tools.util.StringUtil;
  * {@code FORBIDDENWORD}, plus {@code CIRCUMFIX} and {@code FULLSTRIP}, are also
  * applied.</p>
  *
- * <p>Other directives are skipped. Their spelling, conversion, suggestion, or
- * advanced compound behavior is not applied by this affix stemmer. Dictionary
- * morphology fields are also ignored.</p>
+ * <p>Loading defaults to {@link LoadMode#STRICT}: unsupported affix directives
+ * cause an {@link IOException}. Recognized metadata and suggestion settings that
+ * do not affect stemming are ignored. {@link LoadMode#ALLOW_PARTIAL} skips other
+ * directives and reports them through {@link #getUnsupportedDirectives()}.
+ * Dictionary morphology fields are ignored in both modes; strict affix loading
+ * does not establish complete Hunspell compatibility.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -80,6 +84,48 @@ public final class HunspellDictionary {
    * streams fail with {@link IOException}.
    */
   public static final int MAX_STREAM_BYTES = 64 * 1024 * 1024;
+
+  /** Controls whether unsupported affix directives prevent dictionary loading. */
+  public enum LoadMode {
+    /** Reject unsupported directives, including unknown directive names. */
+    STRICT,
+    /** Skip unsupported directives and record their first source locations. */
+    ALLOW_PARTIAL
+  }
+
+  /**
+   * The first occurrence of an unsupported affix directive.
+   *
+   * @param directive The directive name.
+   * @param source The affix file path, or {@code affix stream} for stream loading.
+   * @param lineNumber The one-based source line number.
+   */
+  public record UnsupportedDirective(String directive, String source, int lineNumber) {
+
+    /**
+     * Creates a diagnostic with a directive name and source location.
+     *
+     * @param directive The nonblank directive name.
+     * @param source The nonblank source description.
+     * @param lineNumber The positive source line number.
+     * @throws IllegalArgumentException If a name is null or blank, or the line
+     *     number is not positive.
+     */
+    public UnsupportedDirective {
+      if (directive == null || directive.isBlank()) {
+        throw new IllegalArgumentException("directive must not be null or blank");
+      }
+      if (source == null || source.isBlank()) {
+        throw new IllegalArgumentException("source must not be null or blank");
+      }
+      if (lineNumber < 1) {
+        throw new IllegalArgumentException("lineNumber must be positive");
+      }
+    }
+  }
+
+  private static final String AFFIX_STREAM = "affix stream";
+  private static final String DICTIONARY_STREAM = "dictionary stream";
 
   /**
    * One parsed affix rule of a {@code PFX} or {@code SFX} block.
@@ -181,14 +227,17 @@ public final class HunspellDictionary {
   private final boolean checkCompoundCase;
   private final boolean checkCompoundTriple;
   private final boolean fullStrip;
+  private final List<UnsupportedDirective> unsupportedDirectives;
 
   /**
    * Initializes the dictionary from the two parsed files.
    *
    * @param entries The words mapped to the flag sets of their entries.
    * @param affix The parsed affix file.
+   * @param unsupportedDirectives The skipped directives in encounter order.
    */
-  private HunspellDictionary(Map<String, List<int[]>> entries, AffixFile affix) {
+  private HunspellDictionary(Map<String, List<int[]>> entries, AffixFile affix,
+      List<UnsupportedDirective> unsupportedDirectives) {
     this.compoundFlag = affix.compoundFlag;
     this.compoundBegin = affix.compoundBegin;
     this.compoundEnd = affix.compoundEnd;
@@ -206,6 +255,7 @@ public final class HunspellDictionary {
     this.checkCompoundTriple = affix.checkCompoundTriple;
     this.fullStrip = affix.fullStrip;
     this.entries = entries;
+    this.unsupportedDirectives = List.copyOf(unsupportedDirectives);
     // A material-bearing rule can only be undone from a word whose boundary
     // character matches its affix material, so bucketing by that character
     // narrows each scan to one bucket plus the strip-only rules.
@@ -287,30 +337,51 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Loads a dictionary from its two files.
+   * Loads affix and dictionary files using {@link LoadMode#STRICT}.
    *
    * @param affixFile The {@code .aff} affix file. Must not be {@code null}.
    * @param dictionaryFile The {@code .dic} word list. Must not be {@code null}.
    * @return The loaded dictionary. Never {@code null}.
-   * @throws IOException Thrown if reading fails or a file is malformed.
+   * @throws IOException Thrown if reading fails, a file is malformed, or an affix
+   *     directive is unsupported.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static HunspellDictionary load(Path affixFile, Path dictionaryFile)
       throws IOException {
+    return load(affixFile, dictionaryFile, LoadMode.STRICT);
+  }
+
+  /**
+   * Loads affix and dictionary files with the selected directive policy.
+   *
+   * @param affixFile The non-null {@code .aff} affix file.
+   * @param dictionaryFile The non-null {@code .dic} word list.
+   * @param mode The non-null loading policy.
+   * @return The loaded dictionary.
+   * @throws IOException If reading fails, a stream exceeds {@link #MAX_STREAM_BYTES},
+   *     content is malformed, or strict loading encounters an unsupported directive.
+   * @throws IllegalArgumentException If a parameter is null.
+   */
+  public static HunspellDictionary load(Path affixFile, Path dictionaryFile,
+      LoadMode mode) throws IOException {
     if (affixFile == null) {
       throw new IllegalArgumentException("affixFile must not be null");
     }
     if (dictionaryFile == null) {
       throw new IllegalArgumentException("dictionaryFile must not be null");
     }
+    if (mode == null) {
+      throw new IllegalArgumentException("mode must not be null");
+    }
     try (InputStream affix = Files.newInputStream(affixFile);
          InputStream dictionary = Files.newInputStream(dictionaryFile)) {
-      return load(affix, dictionary);
+      return loadStreams(affix, dictionary, mode, affixFile.toString());
     }
   }
 
   /**
-   * Loads a dictionary from its two streams. Each stream is buffered up to
+   * Loads affix and dictionary streams using {@link LoadMode#STRICT}.
+   * Each stream is buffered up to
    * {@link #MAX_STREAM_BYTES} bytes; a larger stream fails with {@link IOException}.
    *
    * @param affixStream The {@code .aff} affix content. Must not be {@code null}. Not
@@ -319,33 +390,80 @@ public final class HunspellDictionary {
    *                         {@code null}. Not closed.
    * @return The loaded dictionary. Never {@code null}.
    * @throws IOException Thrown if reading fails, a stream exceeds
-   *     {@link #MAX_STREAM_BYTES}, or the content is malformed.
+   *     {@link #MAX_STREAM_BYTES}, the content is malformed, or an affix directive
+   *     is unsupported.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static HunspellDictionary load(InputStream affixStream,
       InputStream dictionaryStream) throws IOException {
+    return load(affixStream, dictionaryStream, LoadMode.STRICT);
+  }
+
+  /**
+   * Loads affix and dictionary streams with the selected directive policy.
+   * The streams are not closed.
+   *
+   * @param affixStream The non-null {@code .aff} affix content.
+   * @param dictionaryStream The non-null {@code .dic} word-list content.
+   * @param mode The non-null loading policy.
+   * @return The loaded dictionary, with diagnostics for skipped unsupported directives.
+   * @throws IOException If reading fails, a stream exceeds {@link #MAX_STREAM_BYTES},
+   *     content is malformed, or strict loading encounters an unsupported directive.
+   * @throws IllegalArgumentException If a parameter is null.
+   */
+  public static HunspellDictionary load(InputStream affixStream,
+      InputStream dictionaryStream, LoadMode mode) throws IOException {
     if (affixStream == null) {
       throw new IllegalArgumentException("affixStream must not be null");
     }
     if (dictionaryStream == null) {
       throw new IllegalArgumentException("dictionaryStream must not be null");
     }
-    byte[] affixBytes = readBounded(affixStream, MAX_STREAM_BYTES, "affix stream");
+    if (mode == null) {
+      throw new IllegalArgumentException("mode must not be null");
+    }
+    return loadStreams(affixStream, dictionaryStream, mode, AFFIX_STREAM);
+  }
+
+  /**
+   * Returns skipped unsupported directives, one entry per name in encounter order.
+   * Recognized settings outside stemming, such as suggestion tables, are excluded.
+   *
+   * @return An immutable list; empty for a dictionary loaded in strict mode.
+   */
+  public List<UnsupportedDirective> getUnsupportedDirectives() {
+    return unsupportedDirectives;
+  }
+
+  /**
+   * Loads validated streams without closing them.
+   *
+   * @param affixStream The affix input.
+   * @param dictionaryStream The word-list input.
+   * @param mode The directive policy.
+   * @param source The affix source used in unsupported-directive diagnostics.
+   * @return The parsed dictionary.
+   * @throws IOException If reading, validation, or parsing fails.
+   */
+  private static HunspellDictionary loadStreams(InputStream affixStream,
+      InputStream dictionaryStream, LoadMode mode, String source) throws IOException {
+    byte[] affixBytes = readBounded(affixStream, MAX_STREAM_BYTES, AFFIX_STREAM);
     final Charset charset = declaredCharset(affixBytes);
-    maskIgnoredAffixLines(affixBytes);
+    final List<UnsupportedDirective> unsupported = maskIgnoredAffixLines(
+        affixBytes, mode, source);
     final boolean rawUtf8Flags = StandardCharsets.UTF_8.equals(charset)
         && !usesUnicodeOrNumericFlags(affixBytes);
     affixBytes = normalizeUtf8ByteFlags(affixBytes, charset);
-    final AffixFile affix = parseAffix(decode(affixBytes, charset, "affix stream"));
+    final AffixFile affix = parseAffix(decode(affixBytes, charset, AFFIX_STREAM));
     byte[] dictionaryBytes = readBounded(dictionaryStream, MAX_STREAM_BYTES,
-        "dictionary stream");
+        DICTIONARY_STREAM);
     if (rawUtf8Flags) {
       dictionaryBytes = normalizeDictionaryByteFlags(dictionaryBytes);
     }
     final Map<String, List<int[]>> entries = parseWordList(
-        decode(dictionaryBytes, charset, "dictionary stream"),
+        decode(dictionaryBytes, charset, DICTIONARY_STREAM),
         affix.flagMode, affix.flagAliases);
-    return new HunspellDictionary(entries, affix);
+    return new HunspellDictionary(entries, affix, unsupported);
   }
 
   /**
@@ -355,12 +473,23 @@ public final class HunspellDictionary {
    * while malformed bytes in parsed directives are still reported.
    *
    * @param bytes The buffered affix file, modified in place.
+   * @param mode The directive policy applied before masking.
+   * @param source The affix source description.
+   * @return Unsupported directives skipped in partial mode, in encounter order.
+   * @throws IOException If strict loading encounters an unsupported directive.
    */
-  private static void maskIgnoredAffixLines(byte[] bytes) {
+  private static List<UnsupportedDirective> maskIgnoredAffixLines(byte[] bytes,
+      LoadMode mode, String source) throws IOException {
+    final Map<String, UnsupportedDirective> unsupported = new LinkedHashMap<>();
     int lineStart = 0;
+    int lineNumber = 1;
     for (int i = 0; i <= bytes.length; i++) {
       if (i == bytes.length || bytes[i] == '\n' || bytes[i] == '\r') {
         int fieldStart = lineStart;
+        if (lineStart == 0 && i >= 3 && bytes[0] == (byte) 0xef
+            && bytes[1] == (byte) 0xbb && bytes[2] == (byte) 0xbf) {
+          fieldStart = 3;
+        }
         while (fieldStart < i && isAsciiFieldSpace(bytes[fieldStart])) {
           fieldStart++;
         }
@@ -368,19 +497,55 @@ public final class HunspellDictionary {
         while (fieldEnd < i && !isAsciiFieldSpace(bytes[fieldEnd])) {
           fieldEnd++;
         }
+        boolean parsed = false;
         if (fieldStart < fieldEnd && bytes[fieldStart] != '#') {
           final String directive = new String(bytes, fieldStart,
               fieldEnd - fieldStart, StandardCharsets.US_ASCII);
           if (isParsedAffixDirective(directive)) {
             maskInlineComment(bytes, fieldEnd, i);
-            lineStart = i + 1;
-            continue;
+            parsed = true;
+          } else if (!isIgnoredAffixDirective(directive)) {
+            if (mode == LoadMode.STRICT) {
+              throw new IOException("unsupported affix directive " + directive
+                  + " in " + source + " at line " + lineNumber
+                  + "; use LoadMode.ALLOW_PARTIAL to load without this behavior");
+            }
+            if (!unsupported.containsKey(directive)) {
+              unsupported.put(directive,
+                  new UnsupportedDirective(directive, source, lineNumber));
+            }
           }
         }
-        Arrays.fill(bytes, lineStart, i, (byte) ' ');
+        if (!parsed) {
+          Arrays.fill(bytes, lineStart, i, (byte) ' ');
+        }
+        if (i < bytes.length && bytes[i] == '\r'
+            && i + 1 < bytes.length && bytes[i + 1] == '\n') {
+          i++;
+        }
         lineStart = i + 1;
+        lineNumber++;
       }
     }
+    return List.copyOf(unsupported.values());
+  }
+
+  /**
+   * Identifies metadata, suggestion and command-line settings unused by stemming.
+   * Result-changing options that use these settings, including
+   * {@code CHECKCOMPOUNDREP} and {@code FORBIDWARN}, remain unsupported.
+   *
+   * @param directive The affix directive name.
+   * @return Whether the directive can be ignored by the affix stemmer.
+   * @see <a href="https://github.com/hunspell/hunspell/blob/e184e22c51fe213f4490e9b36998f0ad3e5e606b/man/hunspell.5">Hunspell format</a>
+   */
+  private static boolean isIgnoredAffixDirective(String directive) {
+    return switch (directive) {
+      case "NAME", "HOME", "VERSION", "KEY", "TRY", "REP", "MAP", "PHONE",
+          "NOSUGGEST", "MAXCPDSUGS", "MAXNGRAMSUGS", "MAXDIFF", "ONLYMAXDIFF",
+          "NOSPLITSUGS", "SUGSWITHDOTS", "WARN", "SUBSTANDARD", "WORDCHARS" -> true;
+      default -> false;
+    };
   }
 
   /** {@return whether a byte separates fields in an affix line} */

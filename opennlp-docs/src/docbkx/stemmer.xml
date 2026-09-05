@@ -73,11 +73,12 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 	<section xml:id="tools.stemmer.hunspell">
 		<title>Hunspell dictionaries</title>
 		<para>
-			<code>opennlp.tools.stemmer.hunspell</code> implements the documented
-			Hunspell dictionary format: a user-supplied
+			<code>opennlp.tools.stemmer.hunspell</code> loads a user-supplied
 			<code>.aff</code> affix file and its <code>.dic</code> word list. OpenNLP
 			bundles no dictionary data; dictionaries are downloaded separately, and
-			each states its own license. The dictionary is immutable and safe to share;
+			each states its own license. Retain the dictionary's copyright notices and
+			license text with downloaded files. OpenNLP's Apache License does not
+			relicense those files. The dictionary is immutable and safe to share;
 			<code>HunspellStemmerFactory</code> creates a fresh stemmer per call.
 			<code>HunspellManualExampleTest</code> asserts the behavior shown here.
 			<programlisting language="java"><![CDATA[
@@ -99,14 +100,31 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			<code>-Dopennlp.download.remote=true</code>, and fetches through the
 			digest-verified <code>ResourceInstaller</code> path. A file that already exists
 			in the target is not replaced. Remove old files before refreshing a dictionary.
-			Directives outside the supported affix-stemming subset are skipped, so
-			published dictionaries can still use their supported rules. Conversion,
-			suggestion, and advanced compound behavior from skipped directives is not
-			applied to the returned stems.
-			This includes <code>ICONV</code>, <code>OCONV</code>,
+			Loading uses <code>HunspellDictionary.LoadMode.STRICT</code> by default.
+			Unsupported affix directives cause an <code>IOException</code> with the
+			directive name and source line. File-based loading also includes the path.
+			This applies to <code>ICONV</code>, <code>OCONV</code>,
 			<code>COMPLEXPREFIXES</code>, <code>COMPOUNDRULE</code>,
-			<code>IGNORE</code>, and <code>KEEPCASE</code>. Results can differ from
-			Hunspell for words that need these rules.
+			<code>IGNORE</code>, <code>KEEPCASE</code>, and unknown directive names.
+			Such dictionaries may be valid Hunspell input; the error identifies
+			behavior that OpenNLP does not support. Metadata and suggestion settings
+			that do not affect stemming are ignored.
+			Applications can select <code>ALLOW_PARTIAL</code> to use the supported
+			rules and inspect skipped directives:
+			<programlisting language="java"><![CDATA[
+HunspellDictionary partial = HunspellDictionary.load(
+    Path.of("dictionary.aff"), Path.of("dictionary.dic"),
+    HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupportedDirectives()) {
+  System.err.println(diagnostic.directive() + " at "
+      + diagnostic.source() + ":" + diagnostic.lineNumber());
+}]]>
+			</programlisting>
+			The diagnostic list is immutable and contains the first source location
+			for each unsupported directive, in file order. Partial loading does not
+			apply conversion, casing, or compound behavior from skipped directives.
+			Dictionary morphology fields are ignored in both modes. Strict affix
+			loading does not establish complete Hunspell compatibility.
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
 			rejects malformed text in parsed rules, invalid counts, numeric flags

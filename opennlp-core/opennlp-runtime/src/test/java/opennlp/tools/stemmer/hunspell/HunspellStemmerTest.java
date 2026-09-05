@@ -1249,8 +1249,7 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies that directives outside the affix-stemming subset do not prevent use of
-   * the rules this implementation supports.
+   * Checks supported rules when partial loading skips unsupported directives.
    *
    * @param line The affix file line.
    */
@@ -1277,10 +1276,15 @@ public class HunspellStemmerTest {
   })
   void testUnsupportedDirectiveDoesNotBlockSupportedRules(String line)
       throws IOException {
-    final HunspellStemmer stemmer = new HunspellStemmer(load(
-        line + "\nSFX A Y 1\nSFX A 0 s .\n", "1\ndog/A\n"));
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream((line + "\nSFX A Y 1\nSFX A 0 s .\n")
+            .getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream("1\ndog/A\n".getBytes(StandardCharsets.UTF_8)),
+        HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+    final HunspellStemmer stemmer = new HunspellStemmer(dictionary);
 
     Assertions.assertEquals("dog", stemmer.stem("dogs").toString());
+    Assertions.assertEquals(1, dictionary.getUnsupportedDirectives().size());
   }
 
   /**
@@ -1493,13 +1497,19 @@ public class HunspellStemmerTest {
     Assertions.assertEquals("foo", stemmer.stem("unfoosbar").toString());
   }
 
-  /** Verifies that an unrecognized directive does not block supported affix rules. */
+  /** Checks supported rules when partial loading skips an unknown directive. */
   @Test
   void testUnknownAffixDirectiveIsSkipped() throws IOException {
-    final HunspellStemmer stemmer = new HunspellStemmer(load(
-        "UNRECOGNIZED value\nSFX A Y 1\nSFX A 0 s .\n", "1\ndog/A\n"));
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream("UNRECOGNIZED value\nSFX A Y 1\nSFX A 0 s .\n"
+            .getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream("1\ndog/A\n".getBytes(StandardCharsets.UTF_8)),
+        HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+    final HunspellStemmer stemmer = new HunspellStemmer(dictionary);
 
     Assertions.assertEquals("dog", stemmer.stem("dogs").toString());
+    Assertions.assertEquals("UNRECOGNIZED",
+        dictionary.getUnsupportedDirectives().get(0).directive());
   }
 
   /** Verifies validation of the {@code AF} count line. */
