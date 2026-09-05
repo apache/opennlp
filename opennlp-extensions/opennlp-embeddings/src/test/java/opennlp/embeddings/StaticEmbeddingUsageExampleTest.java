@@ -27,10 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Pins the cookbook paths documented in {@code embeddings.xml}, mirroring its listings: load a
- * model directory with {@link StaticEmbeddingModel#load(Path)}, embed a text, and call
- * {@code similarity}, {@code mostSimilar}, and {@code analogy}; and load through the explicit
- * WordPiece and SentencePiece overloads.
+ * Demonstrates loading, embedding, similarity, nearest-neighbor search, and analogy operations.
  */
 public class StaticEmbeddingUsageExampleTest {
 

@@ -48,16 +48,6 @@ import opennlp.tools.tokenize.Tokenizer;
  * encoding: {@code attention_mask} is {@code 1} for every real
  * token and {@code token_type_ids} is {@code 0} throughout.</p>
  *
- * <p><b>Release note (OpenNLP 3.0.0):</b> prior releases sent an
- * all-zero {@code attention_mask} and all-one {@code token_type_ids},
- * so the encoder attended to nothing and the output vectors were
- * incorrect. Additionally, tokenization now performs BERT basic
- * tokenization (lower casing and accent stripping by default, see
- * {@link opennlp.tools.tokenize.WordpieceEncoder}) before wordpiece.
- * Output vectors change with the corrected encoding and tokenization;
- * any embeddings persisted from the previous behavior are not
- * comparable with the corrected output and must be re-embedded.</p>
- *
  * <p>This class is thread-safe and may be shared across threads: {@link #getVectors(String)}
  * holds no per-call instance state and the underlying {@link OrtSession} supports
  * concurrent execution. This thread-safety guarantee applies until {@link #close()}
@@ -119,9 +109,14 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    * @param sentence The input sentence.
    * @return The sentence vector.
    *
+   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null}.
    * @throws OrtException Thrown if an error occurs during inference.
    */
   public float[] getVectors(final String sentence) throws OrtException {
+
+    if (sentence == null) {
+      throw new IllegalArgumentException("sentence must not be null");
+    }
 
     final Tokens tokens = tokenize(sentence, tokenizer, vocab);
 
@@ -162,7 +157,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   @Override
   public float[] embed(final CharSequence text) {
     if (text == null) {
-      throw new IllegalArgumentException("Text must not be null");
+      throw new IllegalArgumentException("text must not be null");
     }
     try {
       return getVectors(text instanceof String s ? s : text.toString());
@@ -188,7 +183,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   @Override
   public float[][] embedAll(final List<? extends CharSequence> texts) {
     if (texts == null) {
-      throw new IllegalArgumentException("Texts must not be null");
+      throw new IllegalArgumentException("texts must not be null");
     }
     final float[][] vectors = new float[texts.size()][];
     if (texts.isEmpty()) {
@@ -199,7 +194,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
     for (int i = 0; i < texts.size(); i++) {
       final CharSequence text = texts.get(i);
       if (text == null) {
-        throw new IllegalArgumentException("Texts must not contain null");
+        throw new IllegalArgumentException("texts[" + i + "] must not be null");
       }
       encoded[i] = tokenize(text instanceof String s ? s : text.toString(), tokenizer, vocab);
       byLength.computeIfAbsent(encoded[i].ids().length, length -> new ArrayList<>()).add(i);

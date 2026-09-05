@@ -25,7 +25,7 @@ import java.util.List;
  * {@link StaticEmbeddingModel}'s loader and {@link ModelAssembler}. A WordPiece directory holds
  * {@link #SAFETENSORS}, {@link #CONFIG}, {@link #VOCABULARY}, and {@link #TOKENIZER_CONFIG}; a
  * Unigram directory holds {@link #SAFETENSORS}, {@link #CONFIG}, and
- * {@link #TOKENIZER_JSON}. Legacy SentencePiece directories may additionally hold one of
+ * {@link #TOKENIZER_JSON}. A separate-file SentencePiece directory additionally holds one of
  * {@link #SENTENCEPIECE_MODELS}.
  *
  * <p>{@link #ONNX_MODEL} and {@link #ONNX_MODEL_DATA} name files of a <em>teacher</em> directory

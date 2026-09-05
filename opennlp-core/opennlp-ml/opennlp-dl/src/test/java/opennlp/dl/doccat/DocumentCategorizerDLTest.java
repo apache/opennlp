@@ -57,7 +57,7 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
-  void testCategorizeFailsLoudlyWhenInferenceFails() {
+  void testCategorizePropagatesInferenceFailure() {
     final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
         categorizerWithoutSession().categorize(new String[] {"hello world"}));
 
@@ -66,7 +66,7 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
-  void testScoreMapsFailLoudlyWhenInferenceFails() {
+  void testScoreMapsPropagateInferenceFailure() {
     final DocumentCategorizerDL categorizer = categorizerWithoutSession();
 
     assertThrows(IllegalStateException.class, () ->
@@ -126,7 +126,7 @@ public class DocumentCategorizerDLTest {
 
   @Test
   void testSoftmaxRejectsNaNLogit() {
-    // A NaN logit would otherwise poison the whole distribution into NaN scores; fail loudly instead.
+    // A NaN logit would otherwise turn the whole distribution into NaN scores.
     final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
         DocumentCategorizerDL.softmax(new float[] {0f, Float.NaN, 0f}));
     assertTrue(e.getMessage().contains("NaN"), e.getMessage());
@@ -136,7 +136,7 @@ public class DocumentCategorizerDLTest {
   void testSoftmaxRejectsInfiniteLogit() {
     // A +Infinity logit (not NaN, so it slips past an isNaN-only guard) poisons the distribution too:
     // max becomes +Inf, so value - max is Inf - Inf == NaN, every exp() is NaN, and categorize() would
-    // silently return all-NaN scores. It must fail loud like the NaN case. -Infinity is non-finite too.
+    // return all-NaN scores. It is invalid for the same reason as NaN. -Infinity is non-finite too.
     final IllegalStateException pos = assertThrows(IllegalStateException.class, () ->
         DocumentCategorizerDL.softmax(new float[] {0f, Float.POSITIVE_INFINITY, 0f}));
     assertTrue(pos.getMessage().contains("non-finite") || pos.getMessage().contains("Infinity"),
@@ -199,7 +199,7 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
-  void testLogitsFromOutputFailsLoudlyOnNullAndUnexpectedType() {
+  void testLogitsFromOutputRejectsNullAndUnexpectedType() {
     // A null or otherwise-shaped model output is a contract violation, not an "inference failed".
     final IllegalStateException onNull = assertThrows(IllegalStateException.class,
         () -> DocumentCategorizerDL.logitsFromOutput(null));
@@ -209,7 +209,7 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
-  void testRequireMatchingCategoryCountFailsLoudlyOnMismatch() {
+  void testRequireMatchingCategoryCountRejectsMismatch() {
     // A distribution whose length differs from the configured category count means the model and
     // the categorizer configuration do not match; the matching case passes the array through.
     final double[] ok = {0.5, 0.5};

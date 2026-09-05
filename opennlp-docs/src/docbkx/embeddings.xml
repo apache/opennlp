@@ -22,26 +22,22 @@
 		<para>
 			The <code>opennlp-embeddings</code> extension module produces sentence and word
 			embedding vectors from a static (non-contextual) embedding table: a per-token vector
-			matrix plus subword tokenization, WordPiece or SentencePiece. It is the modern
-			successor to the word2vec and GloVe workflow. Distillation tools can compress a
-			sentence-transformer into such a flat table (the Model2Vec family of releases is the
-			primary target), and looking a sentence up in the table approximates the transformer's
-			semantics at a small fraction of the cost: embedding a text is tokenize, gather,
-			mean-pool, and normalize, with no model forward pass, no GPU, and no native runtime.
+				matrix plus WordPiece or SentencePiece tokenization. The module loads Model2Vec
+				layouts and can distill a sentence-transformer into the same flat-table form.
+				Embedding uses table lookups, mean pooling, and optional normalization, without a
+				model forward pass or native runtime.
 			SentencePiece support covers multilingual tables distilled from encoders of the
 			XLM-RoBERTa family, whose vectors embed different languages into the same space.
 		</para>
 		<para>
-			Use it when embedding throughput and a pure-JVM deployment matter more than the last
-			few points of retrieval quality: semantic similarity and deduplication, candidate
-			retrieval for a heavier reranker, clustering, or classification features. A
-			contextual model remains the better choice when distinguishing word senses in context
-			is the point of the task.
+				Use it for semantic similarity, deduplication, candidate retrieval, clustering, or
+				classifier features when a static table suits the task. Use a contextual model when
+				the task depends on distinguishing word senses in context.
 		</para>
 		<para>
-			OpenNLP supports contextual, ONNX-backed sentence vectors as well, in the
-			<code>opennlp-dl</code> module. Those are inherently more accurate; Model2Vec trades
-			some accuracy for a large speed gain. Both paths implement the same
+			OpenNLP also supports contextual, ONNX-backed sentence vectors in the
+			<code>opennlp-dl</code> module. Contextual models preserve word-sense context at a
+			higher inference cost. Both paths implement the same
 			<code>TextEmbedder</code> interface (in <code>opennlp-api</code>), so an application can
 			swap one for the other without changing its calling code.
 		</para>
@@ -67,7 +63,7 @@
 			<code>tokenizer_config.json</code>; a Model2Vec Unigram model carries
 			<code>tokenizer.json</code>, <code>model.safetensors</code>, and
 			<code>config.json</code>. Its JSON file contains the Unigram vocabulary, scores,
-			normalizer, and pre-tokenizer. Legacy SentencePiece directories may also carry a
+			normalizer, and pre-tokenizer. Separate-file SentencePiece directories may also carry a
 			trained <code>.model</code> file. The tokenizer and pooling switches are read from the
 			model's own configuration files:
 		</para>
@@ -80,10 +76,6 @@ double similarity = model.similarity("coffee", "espresso");
 List<Neighbor> neighbors = model.mostSimilar("coffee", 5);
 List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
 		</programlisting>
-		<para>
-			<code>StaticEmbeddingUsageExampleTest</code> asserts the load-and-query workflow
-			shown here.
-		</para>
 		<para>
 			For a model laid out differently, the explicit overloads take the data files and the
 			switches directly. The WordPiece overload takes whether the tokenizer lower-cases
@@ -106,30 +98,22 @@ StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
 ]]>
 		</programlisting>
 		<para>
-			The <code>testExplicitOverloads</code> case of
-			<code>StaticEmbeddingUsageExampleTest</code> asserts the two overloads shown here.
-		</para>
-		<para>
 			Matrix rows are resolved by piece string, never by tokenizer id, because the two
-			files of a legacy SentencePiece model may order and offset their ids differently. A
-			poolable piece with no matrix row fails loud at load time. Current Model2Vec Unigram
-			releases load directly from their self-contained <code>tokenizer.json</code> and do not
-			require a tokenizer file copied from the teacher.
+			files of a separate-file SentencePiece model may order and offset their ids differently.
+			A poolable piece with no matrix row is rejected during loading. A self-contained
+			Model2Vec Unigram layout loads directly from its <code>tokenizer.json</code>.
 		</para>
 		<para>
 			Instances are immutable and safe for concurrent use, so one loaded model can serve
 			every thread of an application. Texts with no in-vocabulary tokens embed to a zero
-			vector rather than raising an error (matching the reference implementation), and
-			<code>similarity</code> reports <code>0</code> for them. This is a rare edge case for
-			text in the model's language, since subword tokenization backs off to smaller pieces;
-			it mostly happens for empty input or text outside the vocabulary's coverage.
+			vector, and <code>similarity</code> reports <code>0</code> for them.
 		</para>
 	</section>
 
 	<section xml:id="tools.embeddings.search">
 		<title>Semantic Search</title>
 		<para>
-			The headline use case is ranking documents against a query by meaning rather than by
+			A common use case is ranking documents against a query by meaning rather than by
 			shared words. <code>similarity</code> embeds both texts and returns the cosine
 			similarity of their vectors, so a small document list ranks with one call per
 			document:
@@ -152,10 +136,9 @@ for (String document : documents) {
 results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 		</programlisting>
 		<para>
-			<code>StaticEmbeddingSearchExampleTest</code> asserts the ranking shown here. For a
-			corpus too large to score per query, embed each document once with
+			For a corpus too large to score per query, embed each document once with
 			<code>embed</code>, keep the vectors in any vector index, and embed only the query
-			at search time; the index does not care how the vectors were produced.
+			at search time. Any index that accepts float vectors can store these embeddings.
 		</para>
 	</section>
 
@@ -183,8 +166,8 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 				<code>-pcaDims</code> is the number of principal components to keep and defaults
 				to 256. The run ends by assembling the output directory and verifying it with
 				<code>StaticEmbeddingModel.load</code>, then prints a summary naming the tokenizer
-				family, the row count, the dimension reduction, and the variance the PCA kept, so a
-				run that prints a summary is a directory that works.
+				family, row count, dimension reduction, and variance retained by PCA. The summary is
+				printed only after the directory loads successfully.
 			</para>
 			<para>
 				<code>-terms</code> names an optional term file: one term per line, with text after
@@ -195,7 +178,7 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 				<code>terms.txt</code>. When such a model embeds text, it first matches the text
 				against its terms greedily longest-first, case-insensitively, and pools a matched
 				term's single row instead of the subword pieces of its words; text between matches
-				is tokenized as usual, and a model without a term file embeds exactly as before.
+				is tokenized as usual. A model without a term file uses subword pieces throughout.
 				Terms should arrive sorted by descending corpus frequency, because the Zipf
 				weighting treats the subword rows and the term rows as one frequency ranking. A
 				term that equals a vocabulary token is dropped as a duplicate row, and terms are
@@ -212,8 +195,8 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 				<code>config.json</code>; for a WordPiece model the tool derives the missing
 				<code>vocab.txt</code> and <code>tokenizer_config.json</code> from
 				<code>tokenizer.json</code>, and for a SentencePiece model it checks that the
-				trained <code>.model</code> file copied from the teacher is present, naming the fix
-				if it is not. It never overwrites an existing file.
+				trained <code>.model</code> file copied from the teacher is present. A missing file is
+				reported with its expected name. The tool never overwrites an existing file.
 				<screen>
 <![CDATA[$ bin/embeddings AssembleModel -modelDir dir]]>
 				</screen>
@@ -226,10 +209,9 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 	<section xml:id="tools.embeddings.safetensors">
 		<title>The safetensors Reader</title>
 		<para>
-			Weights are read with a purpose-built reader for the safetensors format. Unlike
-			pickle-based checkpoint formats, a safetensors file carries no executable content
-			(the header is data-only JSON and the body is raw tensor bytes), so loading one
-			cannot execute arbitrary code. Only the header is read eagerly; tensor data streams
+			Weights are read with a small reader for the safetensors format. It parses a JSON
+			header and raw tensor bytes without deserializing Java or Python objects. Only the
+			header is read eagerly; tensor data streams
 			directly into the decoded array, so the file size is not limited by Java's
 			int-indexed arrays. One decoded tensor is capped at the maximum Java array length
 			(about 2.1 billion float elements), checked explicitly.

@@ -29,9 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Pins the semantic-search listing documented in {@code embeddings.xml}: score every document
- * against a query with {@link StaticEmbeddingModel#similarity(String, String)} and sort by
- * descending score, asserting the exact ranking on the analogy fixture's known geometry.
+ * Demonstrates semantic search with the query and documents shown in {@code embeddings.xml}.
  */
 public class StaticEmbeddingSearchExampleTest {
 
@@ -41,11 +39,14 @@ public class StaticEmbeddingSearchExampleTest {
 
   @Test
   void testRanksDocumentsByCosineSimilarityToTheQuery(@TempDir Path dir) throws IOException {
-    EmbeddingTestFixtures.writeAnalogyDirectory(dir);
+    EmbeddingTestFixtures.writeSearchDirectory(dir);
     final StaticEmbeddingModel model = StaticEmbeddingModel.load(dir);
 
-    final String query = "king";
-    final List<String> documents = List.of("queen woman", "apple", "king man");
+    final String query = "home espresso machine";
+    final List<String> documents = List.of(
+        "How do I brew espresso at home?",
+        "The history of tea in East Asia",
+        "Best grinders for pour-over coffee");
 
     final List<Scored> results = new ArrayList<>();
     for (final String document : documents) {
@@ -53,11 +54,12 @@ public class StaticEmbeddingSearchExampleTest {
     }
     results.sort(Comparator.comparingDouble(Scored::score).reversed());
 
-    // The fixture's mean-pooled vectors give distinct cosines to "king" ([3,3]): "king man"
-    // pools to [2.5,2] (0.994), "queen woman" to [1.5,3] (0.949), "apple" is [-3,-1] (-0.894).
-    assertEquals(List.of("king man", "queen woman", "apple"),
+    assertEquals(List.of(
+            "How do I brew espresso at home?",
+            "Best grinders for pour-over coffee",
+            "The history of tea in East Asia"),
         results.stream().map(Scored::document).toList());
     assertTrue(results.get(0).score() > results.get(1).score());
-    assertTrue(results.get(2).score() < 0);
+    assertTrue(results.get(1).score() > results.get(2).score());
   }
 }

@@ -33,9 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Pins the cookbook path documented in {@code tokenizer.xml}: load a
- * {@link SentencePieceTokenizer} from a {@code .model} file, encode text to pieces with
- * original offsets, and obtain id arrays.
+ * Demonstrates loading a {@link SentencePieceTokenizer}, retaining original-text offsets, and
+ * obtaining token ids.
  */
 class SentencePieceUsageExampleTest {
 
