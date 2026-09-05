@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,21 +60,53 @@ public final class ParserTool extends BasicCmdLineTool {
             + "Defaults to a WhitespaceTokenizer.";
   }
 
-  private static final Pattern UNTOKENIZED_PAREN_PATTERN_1 = Pattern.compile("([^ ])([({)}])");
-  private static final Pattern UNTOKENIZED_PAREN_PATTERN_2 = Pattern.compile("([({)}])([^ ])");
-
   public static Parse[] parseLine(String line, Parser parser, int numParses) {
     return parseLine( line, parser, WhitespaceTokenizer.INSTANCE, numParses );
   }
 
   public static Parse[] parseLine(String line, Parser parser, Tokenizer tokenizer, int numParses) {
     // fix some parens patterns
-    line = UNTOKENIZED_PAREN_PATTERN_1.matcher(line).replaceAll("$1 $2");
-    line = UNTOKENIZED_PAREN_PATTERN_2.matcher(line).replaceAll("$1 $2");
+    line = spaceUntokenizedParens(line);
 
     // tokenize
     String[] tokens = tokenizer.tokenize(line);
     return parseLine(tokens, parser, numParses);
+  }
+
+  /*
+   * Replicates the two sequential replaceAll passes over ([^ ])([({)}]) and
+   * ([({)}])([^ ]): each pass scans left to right, inserts a single space into
+   * every match, and resumes scanning after the matched pair, so pairs
+   * overlapping a match are only reconsidered by the second pass.
+   */
+  static String spaceUntokenizedParens(String line) {
+    return insertParenSpaces(insertParenSpaces(line, false), true);
+  }
+
+  private static String insertParenSpaces(String line, boolean parenFirst) {
+    StringBuilder spaced = new StringBuilder(line.length() + 8);
+    int i = 0;
+    while (i < line.length()) {
+      char c = line.charAt(i);
+      if (i + 1 < line.length()) {
+        char next = line.charAt(i + 1);
+        boolean match = parenFirst
+            ? isParen(c) && next != ' '
+            : c != ' ' && isParen(next);
+        if (match) {
+          spaced.append(c).append(' ').append(next);
+          i += 2;
+          continue;
+        }
+      }
+      spaced.append(c);
+      i++;
+    }
+    return spaced.toString();
+  }
+
+  private static boolean isParen(char c) {
+    return c == '(' || c == ')' || c == '{' || c == '}';
   }
 
   /**
