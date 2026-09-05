@@ -87,17 +87,22 @@ accordingly; no conversion is required.
 
 ## Testing against real dictionaries
 
-The in-tree tests run against project-authored fixtures only. An opt-in test class, `HunspellRealDictionaryTest`, additionally checks everyday morphology against published dictionaries when pointed at a directory of `<name>.aff`/`<name>.dic` pairs (each test skips when its pair is absent):
+The in-tree tests use project-authored fixtures only. An opt-in test class, `HunspellRealDictionaryTest`, also checks everyday morphology with the LibreOffice `en_US`, `de_DE_frami`, and `hu_HU` dictionaries. Point it at one directory containing all listed `<name>.aff` and `<name>.dic` files. A missing dictionary skips the associated test; a dictionary that cannot be loaded fails it.
 
 ```
-./mvnw test -pl opennlp-core/opennlp-runtime -Dtest=HunspellRealDictionaryTest \
+./mvnw test -pl opennlp-core/opennlp-runtime -am \
+    -Dtest=HunspellRealDictionaryTest -Dsurefire.failIfNoSpecifiedTests=false \
     -Dopennlp.hunspell.dict.dir=/tmp/hunspell-dicts
 ```
 
 ## What the engine supports
 
-Supported affix features include `PFX` and `SFX` rules, continuation classes,
-compound flags, blocking flags, `CIRCUMFIX`, and `FULLSTRIP`. The parser rejects
-directives that would change stems if ignored. It skips cosmetic tables that do not
-affect stemming. Malformed files report the relevant line number. Each affix or
-dictionary stream is limited to 64 MiB.
+The engine applies `PFX` and `SFX` rules with strip strings and character-class conditions. It supports a prefix and suffix cross-product, a double suffix sequence connected by continuation classes, identity rules in continuation paths, file-wide `FLAG` modes, file-wide `AF` aliases, and the `SET` encoding declaration. Numeric flags range from 1 through 65000.
+
+Compound decomposition supports `COMPOUNDFLAG`, `COMPOUNDBEGIN`, `COMPOUNDMIDDLE`, `COMPOUNDEND`, `COMPOUNDMIN`, `COMPOUNDWORDMAX`, `COMPOUNDPERMITFLAG`, `COMPOUNDFORBIDFLAG`, `CHECKCOMPOUNDDUP`, `CHECKCOMPOUNDCASE`, and `CHECKCOMPOUNDTRIPLE`. Compound boundaries and minimum lengths use Unicode code points. `NEEDAFFIX` (also named `PSEUDOROOT`), `ONLYINCOMPOUND`, `FORBIDDENWORD`, `CIRCUMFIX`, and `FULLSTRIP` control whether an analysis is accepted.
+
+Other directives are skipped. Their conversion, suggestion, or advanced compound behavior is not applied by this affix stemmer. Comments and unused metadata may contain legacy-encoded bytes even when the file uses UTF-8. Parsed rules and dictionary text are decoded strictly. Default and `long` flag modes preserve raw one-byte flag values used by published UTF-8 dictionaries. Invalid rule counts, aliases, flags, and compound limits fail during loading. Each affix or dictionary stream is rejected when it exceeds `HunspellDictionary.MAX_STREAM_BYTES` (64 MiB).
+
+Skipped directives include `ICONV`, `OCONV`, `COMPLEXPREFIXES`, `COMPOUNDRULE`,
+`IGNORE`, and `KEEPCASE`. Loading a dictionary does not apply these rules;
+results can differ from Hunspell for words that need them.
