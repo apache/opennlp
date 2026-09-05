@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.BeamSearch;
@@ -66,7 +64,6 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
 
   private static final String[][] EMPTY = new String[0][0];
   public static final int DEFAULT_BEAM_SIZE = 3;
-  private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
 
   public static final String START = "start";
   public static final String CONTINUE = "cont";
@@ -327,12 +324,26 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
    * @return The name type, or {@code null} if not set.
    */
   static String extractNameType(String outcome) {
-    Matcher matcher = typedOutcomePattern.matcher(outcome);
-    if (matcher.matches()) {
-      return matcher.group(1);
+    int separator = outcome.lastIndexOf('-');
+    if (separator > 0 && isWordChars(outcome, separator + 1)) {
+      return outcome.substring(0, separator);
     }
 
     return null;
+  }
+
+  private static boolean isWordChars(String outcome, int from) {
+    if (from >= outcome.length()) {
+      return false;
+    }
+    for (int i = from; i < outcome.length(); i++) {
+      char c = outcome.charAt(i);
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9') || c == '_')) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

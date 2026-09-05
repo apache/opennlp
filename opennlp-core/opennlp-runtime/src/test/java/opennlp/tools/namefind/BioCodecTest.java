@@ -262,4 +262,16 @@ public class BioCodecTest {
         new String[] {A_START, A_START, A_CONTINUE, A_CONTINUE, B_START, B_START, OTHER, OTHER}));
   }
 
+  @Test
+  void testExtractNameType() {
+    Assertions.assertEquals("atype", BioCodec.extractNameType("atype-start"));
+    Assertions.assertEquals("a-b", BioCodec.extractNameType("a-b-start"));
+    Assertions.assertEquals("type_1", BioCodec.extractNameType("type_1-cont"));
+    Assertions.assertNull(BioCodec.extractNameType("start"));
+    Assertions.assertNull(BioCodec.extractNameType("other"));
+    Assertions.assertNull(BioCodec.extractNameType("-start"));
+    Assertions.assertNull(BioCodec.extractNameType("atype-"));
+    Assertions.assertNull(BioCodec.extractNameType("atype-st.art"));
+  }
+
 }
