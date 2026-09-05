@@ -172,13 +172,13 @@ public final class HunspellStemmer implements Stemmer {
 
   /**
    * Decomposes a word into listed compound parts when the affix analysis found
-   * no result: the first part must be admitted to open a compound, and later parts
+   * nothing: the first part must be admitted to open a compound, every further part
    * to continue or close one, each at least the declared minimum length and counted
    * against the declared maximum. A part stands on its own entry or on an entry plus
    * one affix, the way published dictionaries position their linking forms through
    * zero or dash suffixes. The stems of the parts of every successful splitting are
    * reported left to right, so the head-most material comes last. A word the
-   * dictionary lists as forbidden is not decomposed; that is how one specific
+   * dictionary lists as forbidden never decomposes; that is how one specific
    * ill-formed compound is blocked while its parts stay productive.
    *
    * @param word The case variant to decompose.
@@ -240,7 +240,7 @@ public final class HunspellStemmer implements Stemmer {
     final boolean first = from == 0;
     final int remaining = codePointOffsets.length - 1 - fromPoint;
     // every split leaving room for a further part; a first-position part must also
-    // leave the closing part, so the complete word is not treated as one part
+    // leave the closing part, so the whole word is never one part
     if (remaining >= 2 * min && (max == 0 || surfaces.size() + 2 <= max)) {
       final int lastEndPoint = codePointOffsets.length - 1 - min;
       for (int endPoint = fromPoint + min; endPoint <= lastEndPoint; endPoint++) {
@@ -266,7 +266,7 @@ public final class HunspellStemmer implements Stemmer {
         stems.remove(stems.size() - 1);
       }
     }
-    // the closing part takes the complete remainder; a compound has multiple parts
+    // the closing part takes the whole remainder; a compound has at least two parts
     if (first || remaining < min
         || (max > 0 && surfaces.size() + 1 > max) || budget[0] <= 0) {
       return;

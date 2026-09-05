@@ -25,11 +25,13 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.DictionaryCatalog;
 import opennlp.tools.util.DigestTestUtil;
-import opennlp.tools.util.DownloadUtil;
 
 /**
  * Pins the Hunspell catalog download gate; network fetches are not exercised here.
@@ -42,16 +44,18 @@ public class HunspellDictionaryDownloadTest {
    *
    * @param target A scratch directory managed by the test framework.
    * @throws IOException Thrown if the local catalog cannot be prepared.
-   */
+  */
   @Test
   void testDownloadRequiresRemoteProperty(@TempDir Path target) throws IOException {
     final DictionaryCatalog catalog = localCatalog(target);
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
       final IOException e = Assertions.assertThrows(IOException.class,
           () -> HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", target));
-      Assertions.assertTrue(e.getMessage().contains(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY));
+      Assertions.assertTrue(
+          e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
     } finally {
       restore(previous);
     }
@@ -68,8 +72,9 @@ public class HunspellDictionaryDownloadTest {
   void testDownloadsFromApplicationCatalog(@TempDir Path target) throws IOException {
     final DictionaryCatalog catalog = localCatalog(target);
     final Path output = target.resolve("output");
-    final String previous = System.getProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
-    System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, "true");
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, "true");
     try {
       HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", output);
       Assertions.assertEquals("SET UTF-8\n",
@@ -85,18 +90,28 @@ public class HunspellDictionaryDownloadTest {
   /**
    * Verifies that each required parameter is checked before a download begins.
    *
+   * @param argument The invalid method parameter.
    * @param target A scratch directory managed by the test framework.
    * @throws IOException Thrown if the local catalog cannot be prepared.
    */
-  @Test
-  void testRejectsNullParameters(@TempDir Path target) throws IOException {
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(strings = {"catalog", "dictionaryId", "targetDirectory"})
+  void testRejectsNullParameters(String argument, @TempDir Path target)
+      throws IOException {
     final DictionaryCatalog catalog = localCatalog(target);
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionaryDownload.downloadFromCatalog(null, "demo", target));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionaryDownload.downloadFromCatalog(catalog, null, target));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", null));
+    final Executable download = switch (argument) {
+      case "catalog" -> () ->
+          HunspellDictionaryDownload.downloadFromCatalog(null, "demo", target);
+      case "dictionaryId" -> () ->
+          HunspellDictionaryDownload.downloadFromCatalog(catalog, null, target);
+      case "targetDirectory" -> () ->
+          HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", null);
+      default -> throw new IllegalArgumentException("unknown argument: " + argument);
+    };
+
+    final IllegalArgumentException thrown =
+        Assertions.assertThrows(IllegalArgumentException.class, download);
+    Assertions.assertEquals(argument + " must not be null", thrown.getMessage());
   }
 
   /**
@@ -140,9 +155,9 @@ public class HunspellDictionaryDownloadTest {
   /** Restores the remote-download property to its previous value. */
   private static void restore(String previous) {
     if (previous == null) {
-      System.clearProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY);
+      System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     } else {
-      System.setProperty(DownloadUtil.REMOTE_DOWNLOAD_PROPERTY, previous);
+      System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, previous);
     }
   }
 }

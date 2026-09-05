@@ -78,7 +78,7 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 			<code>.aff</code> affix file and its <code>.dic</code> word list. OpenNLP
 			bundles no dictionary data; dictionaries are downloaded separately, and
 			each states its own license. The dictionary is immutable and safe to share;
-			<code>HunspellStemmerFactory</code> hands out a fresh stemmer per call.
+			<code>HunspellStemmerFactory</code> creates a fresh stemmer per call.
 			<code>HunspellManualExampleTest</code> asserts the behavior shown here.
 			<programlisting language="java"><![CDATA[
 HunspellDictionary dictionary = HunspellDictionary.load(
@@ -96,11 +96,17 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			<code>dev/README-hunspell-dictionaries.md</code>.
 			An opt-in catalog download accepts an application-supplied
 			<code>DictionaryCatalog</code>, needs
-			<code>-Dopennlp.download.remote=true</code>, and verifies SHA-512 digests.
+			<code>-Dopennlp.download.remote=true</code>, and fetches through the
+			digest-verified <code>ResourceInstaller</code> path. A file that already exists
+			in the target is not replaced. Remove old files before refreshing a dictionary.
 			Directives outside the supported affix-stemming subset are skipped, so
 			published dictionaries can still use their supported rules. Conversion,
 			suggestion, and advanced compound behavior from skipped directives is not
 			applied to the returned stems.
+			This includes <code>ICONV</code>, <code>OCONV</code>,
+			<code>COMPLEXPREFIXES</code>, <code>COMPOUNDRULE</code>,
+			<code>IGNORE</code>, and <code>KEEPCASE</code>. Results can differ from
+			Hunspell for words that need these rules.
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
 			rejects malformed text in parsed rules, invalid counts, numeric flags
