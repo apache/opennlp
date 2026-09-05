@@ -100,10 +100,22 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			<code>-Dopennlp.download.remote=true</code>, and fetches through the
 			digest-verified <code>ResourceInstaller</code> path. A file that already exists
 			in the target is not replaced. Remove old files before refreshing a dictionary.
-			Directives that would change stems when ignored
-			(<code>ICONV</code>, <code>OCONV</code>, <code>COMPLEXPREFIXES</code>,
-			<code>COMPOUNDRULE</code>, <code>IGNORE</code>, <code>KEEPCASE</code>)
-			fail at load time; cosmetic tables such as <code>REP</code> are skipped.
+			Directives outside the supported affix-stemming subset are skipped, so
+			published dictionaries can still use their supported rules. Conversion,
+			suggestion, and advanced compound behavior from skipped directives is not
+			applied to the returned stems.
+			This includes <code>ICONV</code>, <code>OCONV</code>,
+			<code>COMPLEXPREFIXES</code>, <code>COMPOUNDRULE</code>,
+			<code>IGNORE</code>, and <code>KEEPCASE</code>. Results can differ from
+			Hunspell for words that need these rules.
+			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
+			affix file, including rules listed before those declarations. Parsing
+			rejects malformed text in parsed rules, invalid counts, numeric flags
+			outside the range 1 through 65000, and <code>COMPOUNDMIN</code> values
+			that cannot be doubled safely. Comments and unused metadata may retain a
+			legacy encoding. Default and <code>long</code> flag modes preserve raw
+			one-byte flag values in UTF-8 files. Compound length and boundary checks
+			count Unicode code points.
 			A rule that strips a whole stem applies only when the affix file
 			declares <code>FULLSTRIP</code>, as in Hunspell itself.
 			Each affix or dictionary stream is rejected when it exceeds
