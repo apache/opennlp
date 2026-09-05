@@ -103,6 +103,23 @@ public class DefaultPOSContextGeneratorTest {
   }
 
   @Test
+  void capitalAndDigitFeatures() {
+    DefaultPOSContextGenerator generator = new DefaultPOSContextGenerator(null);
+
+    // accept sides: ASCII capital letter and ASCII digit
+    final String[] withCapAndNum = generator.getContext(0,
+        new Object[] {"Token9"}, new String[] {"tag"});
+    Assertions.assertTrue(Arrays.asList(withCapAndNum).contains("c"));
+    Assertions.assertTrue(Arrays.asList(withCapAndNum).contains("d"));
+
+    // reject sides: accented capitals and non-ASCII digits are not matched
+    final String[] accented = generator.getContext(0,
+        new Object[] {"Étudiant٥"}, new String[] {"tag"});
+    Assertions.assertFalse(Arrays.asList(accented).contains("c"));
+    Assertions.assertFalse(Arrays.asList(accented).contains("d"));
+  }
+
+  @Test
   void dictionaryMatch() {
     int indexWithDictionaryMatch = 2;
 
