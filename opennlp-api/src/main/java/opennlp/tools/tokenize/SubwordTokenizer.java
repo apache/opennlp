@@ -19,14 +19,19 @@ package opennlp.tools.tokenize;
 import java.util.List;
 
 /**
- * Splits text into subword units against a fixed vocabulary, reporting for every unit its
- * vocabulary id and the exact span of the original text it covers.
+ * Splits text into subword units from a fixed model vocabulary, reporting the model id and
+ * original-text span for each unit.
  *
- * <p>The segmentation is vocabulary-driven rather than linguistic, and each piece is in the
- * model's normalized form, so a piece is generally not a substring of the input. The offsets in
- * each {@link SubwordPiece} always refer to the caller's original text.</p>
+ * <p>Segmentation follows model entries, not linguistic token boundaries. Each piece is in the
+ * model's normalized form and need not equal the input. Offsets in each {@link SubwordPiece}
+ * refer to the original input text.</p>
+ *
+ * <p>An implementation may include model control pieces with empty source spans. Their presence
+ * and placement are part of that tokenizer's contract, not this interface.</p>
  *
  * <p>Thread safety is implementation specific.</p>
+ *
+ * @since 3.0.0
  */
 public interface SubwordTokenizer {
 
@@ -34,7 +39,7 @@ public interface SubwordTokenizer {
    * Encodes text into subword pieces.
    *
    * @param text The text to encode; must not be {@code null}.
-   * @return The pieces in text order; empty when no units can be encoded.
+   * @return The pieces in model order; may be empty.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   List<SubwordPiece> encode(CharSequence text);
@@ -43,7 +48,7 @@ public interface SubwordTokenizer {
    * Encodes text into vocabulary ids.
    *
    * @param text The text to encode; must not be {@code null}.
-   * @return The ids in text order; empty when no units can be encoded.
+   * @return The ids from {@link #encode(CharSequence)}, in the same order.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   default int[] encodeToIds(CharSequence text) {
@@ -59,7 +64,7 @@ public interface SubwordTokenizer {
    * Encodes text into piece strings in the vocabulary's normalized form.
    *
    * @param text The text to encode; must not be {@code null}.
-   * @return The pieces in text order; empty when no units can be encoded.
+   * @return The piece strings from {@link #encode(CharSequence)}, in the same order.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   default String[] encodeToPieces(CharSequence text) {

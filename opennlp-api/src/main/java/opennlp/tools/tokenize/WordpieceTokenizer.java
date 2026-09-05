@@ -17,6 +17,7 @@
 
 package opennlp.tools.tokenize;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -35,16 +36,11 @@ import opennlp.tools.util.Span;
  * no accent stripping, no control character removal. Text that does not match
  * the vocabulary's casing - for uncased models that includes every capitalized
  * word - is mapped to the unknown token. Use {@link WordpieceEncoder} for the
- * full BERT tokenization pipeline.
+ * BERT normalization and wordpiece segmentation stages.
  * <p>
- * As of OpenNLP 3.0.0 the behavior matches the reference BERT wordpiece
- * implementation in three respects that differ from earlier releases:
- * runs of punctuation (and non-ASCII punctuation) are split into individual
- * single-character tokens, words that cannot be fully represented by
- * vocabulary pieces become a single unknown token instead of the matched
- * prefix pieces followed by the unknown token, and {@link #tokenizePos(String)}
- * throws {@link UnsupportedOperationException} instead of returning
- * {@code null}.
+ * Runs of punctuation are split into individual tokens. A word that cannot be
+ * fully represented by vocabulary pieces becomes one unknown token.
+ * {@link #tokenizePos(String)} is not supported.
  * <p>
  * For reference see:
  * <ul>
@@ -61,6 +57,8 @@ import opennlp.tools.util.Span;
  * @see WordpieceEncoder
  */
 public class WordpieceTokenizer implements Tokenizer {
+
+  private static final String CONTINUATION_PREFIX = "##";
 
   /** BERT classification token: {@code [CLS]}. */
   public static final String BERT_CLS_TOKEN = "[CLS]";
@@ -80,28 +78,33 @@ public class WordpieceTokenizer implements Tokenizer {
   private final String classificationToken;
   private final String separatorToken;
   private final String unknownToken;
-  private int maxTokenLength = 50;
+  private final int maxTokenLength;
 
   /**
    * Initializes a {@link WordpieceTokenizer} with a {@code vocabulary} and a default
-   * {@code maxTokenLength} of {@code 50}.
+   * maximum token length of 100 Unicode code points.
    *
-   * @param vocabulary  A set of tokens considered the vocabulary.
+   * @param vocabulary A set of tokens considered the vocabulary; must not be {@code null}
+   *     or contain {@code null} or empty entries.
+   * @throws IllegalArgumentException Thrown if {@code vocabulary} is invalid.
    */
   public WordpieceTokenizer(Set<String> vocabulary) {
-    this(vocabulary, BERT_CLS_TOKEN, BERT_SEP_TOKEN, BERT_UNK_TOKEN);
+    this(vocabulary, BERT_CLS_TOKEN, BERT_SEP_TOKEN, BERT_UNK_TOKEN,
+        BertNormalization.DEFAULT_MAX_WORD_CODE_POINTS);
   }
 
   /**
    * Initializes a {@link WordpieceTokenizer} with a {@code vocabulary} and a custom
    * {@code maxTokenLength}.
    *
-   * @param vocabulary  A set of tokens considered the vocabulary.
-   * @param maxTokenLength A non-negative number that is used as maximum token length.
+   * @param vocabulary A set of tokens considered the vocabulary; must not be {@code null}
+   *     or contain {@code null} or empty entries.
+   * @param maxTokenLength The non-negative maximum number of Unicode code points in one token.
+   * @throws IllegalArgumentException Thrown if {@code vocabulary} is invalid or
+   *     {@code maxTokenLength} is negative.
    */
   public WordpieceTokenizer(Set<String> vocabulary, int maxTokenLength) {
-    this(vocabulary);
-    this.maxTokenLength = requireNonNegative(maxTokenLength);
+    this(vocabulary, BERT_CLS_TOKEN, BERT_SEP_TOKEN, BERT_UNK_TOKEN, maxTokenLength);
   }
 
   /**
@@ -111,31 +114,33 @@ public class WordpieceTokenizer implements Tokenizer {
    * use different special tokens instead of the BERT
    * defaults.
    *
-   * @param vocabulary          The vocabulary.
-   * @param classificationToken The CLS token.
-   * @param separatorToken      The SEP token.
-   * @param unknownToken        The UNK token.
+   * @param vocabulary          The vocabulary; must not be {@code null} or contain {@code null}
+   *                            or empty entries.
+   * @param classificationToken The CLS token; must not be {@code null} or empty.
+   * @param separatorToken      The SEP token; must not be {@code null} or empty.
+   * @param unknownToken        The UNK token; must not be {@code null} or empty.
+   * @throws IllegalArgumentException Thrown if an argument is invalid.
    */
   public WordpieceTokenizer(
       final Set<String> vocabulary,
       final String classificationToken,
       final String separatorToken,
       final String unknownToken) {
-    this.vocabulary = vocabulary;
-    this.classificationToken = classificationToken;
-    this.separatorToken = separatorToken;
-    this.unknownToken = unknownToken;
+    this(vocabulary, classificationToken, separatorToken, unknownToken,
+        BertNormalization.DEFAULT_MAX_WORD_CODE_POINTS);
   }
 
   /**
    * Initializes a {@link WordpieceTokenizer} with a {@code vocabulary},
    * custom special tokens and a custom {@code maxTokenLength}.
    *
-   * @param vocabulary          The vocabulary.
-   * @param classificationToken The CLS token.
-   * @param separatorToken      The SEP token.
-   * @param unknownToken        The UNK token.
-   * @param maxTokenLength      A non-negative number that is used as maximum token length.
+   * @param vocabulary          The vocabulary; must not be {@code null} or contain {@code null}
+   *                            or empty entries.
+   * @param classificationToken The CLS token; must not be {@code null} or empty.
+   * @param separatorToken      The SEP token; must not be {@code null} or empty.
+   * @param unknownToken        The UNK token; must not be {@code null} or empty.
+   * @param maxTokenLength      The non-negative maximum number of Unicode code points in one token.
+   * @throws IllegalArgumentException Thrown if an argument is invalid.
    */
   public WordpieceTokenizer(
       final Set<String> vocabulary,
@@ -143,11 +148,44 @@ public class WordpieceTokenizer implements Tokenizer {
       final String separatorToken,
       final String unknownToken,
       final int maxTokenLength) {
-    this(vocabulary, classificationToken, separatorToken, unknownToken);
+    this.vocabulary = copyVocabulary(vocabulary);
+    this.classificationToken = requireToken(classificationToken, "classificationToken");
+    this.separatorToken = requireToken(separatorToken, "separatorToken");
+    this.unknownToken = requireToken(unknownToken, "unknownToken");
     this.maxTokenLength = requireNonNegative(maxTokenLength);
   }
 
-  private static int requireNonNegative(final int maxTokenLength) {
+  /** Validates and copies a vocabulary. */
+  private Set<String> copyVocabulary(Set<String> vocabulary) {
+    if (vocabulary == null) {
+      throw new IllegalArgumentException("vocabulary must not be null");
+    }
+    final Set<String> copy = new HashSet<>(vocabulary.size());
+    for (final String piece : vocabulary) {
+      if (piece == null) {
+        throw new IllegalArgumentException("vocabulary must not contain null");
+      }
+      if (piece.isEmpty()) {
+        throw new IllegalArgumentException("vocabulary must not contain an empty piece");
+      }
+      copy.add(piece);
+    }
+    return Set.copyOf(copy);
+  }
+
+  /** Validates a special token. */
+  private String requireToken(String token, String name) {
+    if (token == null) {
+      throw new IllegalArgumentException(name + " must not be null");
+    }
+    if (token.isEmpty()) {
+      throw new IllegalArgumentException(name + " must not be empty");
+    }
+    return token;
+  }
+
+  /** Validates the maximum token length. */
+  private int requireNonNegative(final int maxTokenLength) {
     if (maxTokenLength < 0) {
       throw new IllegalArgumentException(
           "maxTokenLength must be non-negative: " + maxTokenLength);
@@ -167,8 +205,17 @@ public class WordpieceTokenizer implements Tokenizer {
         "Wordpiece tokens cannot be mapped to character spans of the original text");
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
   @Override
   public String[] tokenize(final String text) {
+
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
 
     final List<String> tokens = new LinkedList<>();
     tokens.add(classificationToken);
@@ -189,7 +236,7 @@ public class WordpieceTokenizer implements Tokenizer {
 
       final char[] characters = token.toCharArray();
 
-      if (characters.length <= maxTokenLength) {
+      if (Character.codePointCount(characters, 0, characters.length) <= maxTokenLength) {
 
         // The pieces of this word. Only added to the result if the whole word matches.
         final List<String> wordPieces = new LinkedList<>();
@@ -213,7 +260,7 @@ public class WordpieceTokenizer implements Tokenizer {
 
             // This is a substring so prefix it with ##.
             if (start > 0) {
-              substring = "##" + substring;
+              substring = CONTINUATION_PREFIX + substring;
             }
 
             // See if the substring is in the vocabulary.
@@ -231,7 +278,7 @@ public class WordpieceTokenizer implements Tokenizer {
             }
 
             // Subtract 1 from the end to find the next longest piece in the vocabulary.
-            end--;
+            end -= Character.charCount(Character.codePointBefore(characters, end));
 
           }
 

@@ -538,6 +538,61 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				</programlisting>
 			</para>
 		</section>
+		<section xml:id="tools.tokenizer.lattice">
+			<title>Lattice tokenization for CJK</title>
+			<para>
+				Languages written without spaces need a dictionary-backed segmenter.
+				<code>LatticeTokenizer</code> scores paths over a MeCab-format dictionary and
+				emits the cheapest segmentation with spans in original text coordinates.
+				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
+				Install a dictionary archive with <code>MecabDictionaryInstaller</code>, load it
+				as a <code>MecabDictionary</code>, and tokenize. Remote archives require an
+				expected SHA-256 or SHA-512 digest; an application-supplied opt-in catalog
+				(<code>installFromCatalog</code>) also needs
+				<code>-Dopennlp.download.remote=true</code>.
+				<code>matrix.def</code> must list a cost for every declared cell; matrix
+				dimensions plus lexicon size are bounded by the shared
+				<code>ResourceLimits.MAX_ENTRIES</code> limit and the matrix cell count
+				by <code>ResourceLimits.MAX_MATRIX_CELLS</code>.
+				Fetching, verification, and unpacking use <code>ResourceInstaller</code>,
+				described in the model loading chapter. Default limits are a 1 GiB
+				download, 4 GiB unpacked, and 100000 archive entries. Set higher limits at
+				JVM startup via
+				<code>opennlp.download.max.bytes</code>,
+				<code>opennlp.install.max.total.bytes</code>,
+				<code>opennlp.install.max.entries</code>, and
+				<code>opennlp.install.max.expansion.ratio</code> for larger dictionaries such as
+				UniDic. Installed files are flattened to their base names. Existing target
+				files are not replaced and must be removed before a refresh.
+					Dictionary loading rejects empty lexicon surfaces, duplicate
+					<code>matrix.def</code> entries, duplicate <code>char.def</code>
+					categories, costs outside the signed 16-bit range, malformed text in the
+					selected encoding, and <code>unk.def</code> templates for undefined
+					categories. MeCab-quoted CSV fields are accepted.
+					A <code>char.def</code> may define up to 17 categories, and category
+					lengths range from 0 through 15, matching the MeCab character-property
+					compiler.
+					If a <code>char.def</code> mapping lists multiple categories, the first
+					provides unknown-word settings. Grouping continues while successive
+					assignments overlap. Unknown words use their category's <code>unk.def</code>
+					template first, with <code>DEFAULT</code> used when no category template exists.
+				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and
+				lexicon flows shown here.
+				<programlisting language="java">
+<![CDATA[MecabDictionaryInstaller.install(archiveUri, dictionaryDirectory, sha512);
+LatticeTokenizer tokenizer =
+    new LatticeTokenizer(MecabDictionary.load(dictionaryDirectory));
+
+String text = "東京に行く";
+String[] tokens = tokenizer.tokenize(text);
+Span[] spans = tokenizer.tokenizePos(text);
+List<Morpheme> morphemes = tokenizer.analyze(text);
+
+UnigramSegmenter segmenter = UnigramSegmenter.load(Path.of("chinese-words.txt"));
+String[] words = segmenter.tokenize("我来到北京清华大学");]]>
+				</programlisting>
+			</para>
+		</section>
 	</section>
 	<section xml:id="tools.tokenizer.subword">
 		<title>Subword Tokenization</title>
@@ -547,18 +602,17 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 			Each value contains the normalized piece string, vocabulary id, and UTF-16 span in the
 			original text. The span remains valid when model normalization changes the piece text.
 			<code>encodeToIds</code> and <code>encodeToPieces</code> return only the ids or strings.
-			Thread safety is implementation specific.
+			An implementation can include model control pieces with empty spans, such as the
+			classification and separator pieces used by BERT. Thread safety is implementation specific.
 		</para>
 		<para>
 			The interface, <code>SubwordPiece</code>, and vocabulary-based
 			<code>WordpieceEncoder</code> are in <code>opennlp-api</code>. Implementations that read
-			trained model formats can implement the same contract. The SentencePiece implementation is in
-			<link xlink:href="https://github.com/apache/opennlp-addons">opennlp-addons</link>
-			and does not bundle a model.
+			trained model formats can implement the same contract.
 		</para>
 		<para>
-			A piece without source text, such as a control symbol, has an empty span.
-			<code>SubwordPiece.span</code> returns the range as a <code>Span</code>.
+			A piece without source text has an empty span. When normalization reorders characters, the
+			range can include adjacent source characters.
 		</para>
 		<section xml:id="tools.tokenizer.subword.wordpiece">
 			<title>WordPiece</title>
@@ -567,24 +621,28 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				BERT tokenization pipeline: control character removal, whitespace normalization, CJK
 				isolation, optional lower casing with accent stripping, punctuation isolation, and
 				greedy longest-match wordpiece segmentation. It is constructed from the model's
-				vocabulary, conventionally the lines of a <code>vocab.txt</code> file, where a piece's
-				id is its line number.
+				vocabulary, conventionally the lines of a <code>vocab.txt</code> file, where the line
+				number is the id.
 				<programlisting language="java">
 <![CDATA[List<String> vocabulary = Files.readAllLines(Path.of("vocab.txt"));
 
 WordpieceEncoder encoder = new WordpieceEncoder(vocabulary);        // uncased model
 WordpieceEncoder cased = new WordpieceEncoder(vocabulary, false);   // cased model
 
-List<SubwordPiece> pieces = encoder.encode("OpenNLP encodes text for BERT models.");
-int[] ids = encoder.encodeToIds("OpenNLP encodes text for BERT models.");]]>
+String text = "Alice was beginning to get very tired.";
+List<SubwordPiece> pieces = encoder.encode(text);
+for (SubwordPiece piece : pieces) {
+  CharSequence source = text.subSequence(piece.start(), piece.end());
+  System.out.println(piece.id() + "\t" + piece.piece() + "\t" + source);
+}
+int[] ids = encoder.encodeToIds(text);]]>
 				</programlisting>
-				Each encoding is framed by the classification and separator pieces, which use empty
-				spans at the text's boundaries, and words the vocabulary cannot cover become the
-				unknown piece. Models with other special tokens or with non-contiguous ids are
+				The classification and separator pieces appear at the beginning and end with empty
+				spans. Words the vocabulary cannot cover, and words exceeding 100 normalized Unicode
+				code points, become the unknown piece. A constructor parameter can set a different maximum.
+				Models with other special tokens or non-contiguous ids are
 				supported through the constructors taking explicit special tokens or a piece-to-id
-				map. <code>BertTokenizer</code> is deprecated and delegates tokenization to
-				<code>WordpieceEncoder</code>. New code can pass the vocabulary as a <code>List</code>
-				or a piece-to-id map and call <code>encodeToPieces</code> for the piece sequence.
+				map.
 			</para>
 		</section>
 	</section>

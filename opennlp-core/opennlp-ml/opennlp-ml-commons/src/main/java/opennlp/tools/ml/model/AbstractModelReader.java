@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 
+import opennlp.tools.util.ResourceLimits;
+
 /**
  * An abstract, basic implementation of a model reader.
  */
@@ -32,31 +34,17 @@ public abstract class AbstractModelReader {
   /**
    * System property for overriding the maximum number of entries (outcomes, predicates,
    * outcome patterns, chunk counts) that may be read from a model file or training data.
-   * Set at JVM startup, e.g. {@code -DOPENNLP_MAX_ENTRIES=5000000}.
-   * Falls back to {@code 10_000_000} if absent or invalid.
+   * Alias of {@link ResourceLimits#MAX_ENTRIES_PROPERTY}.
    */
-  public static final String MAX_ENTRIES_PROPERTY = "OPENNLP_MAX_ENTRIES";
+  public static final String MAX_ENTRIES_PROPERTY = ResourceLimits.MAX_ENTRIES_PROPERTY;
 
   /**
    * Upper bound on count fields read from a model file.
-   * Prevents OOM on crafted inputs with oversized array size declarations.
-   * Configurable via the {@link #MAX_ENTRIES_PROPERTY} system property.
-   * <p>
+   * Alias of {@link ResourceLimits#MAX_ENTRIES}.
    * Public so that deserializers outside this package which implement their own binary
    * format can apply the same bound to their count fields.
    */
-  public static final int MAX_ENTRIES = initMaxEntries();
-
-  private static int initMaxEntries() {
-    String prop = System.getProperty(MAX_ENTRIES_PROPERTY, "").trim();
-    if (!prop.isEmpty()) {
-      try {
-        int val = Integer.parseInt(prop);
-        if (val > 0) return val;
-      } catch (NumberFormatException ignore) { }
-    }
-    return 10_000_000;
-  }
+  public static final int MAX_ENTRIES = ResourceLimits.MAX_ENTRIES;
 
   /**
    * The number of predicates contained in a model.
