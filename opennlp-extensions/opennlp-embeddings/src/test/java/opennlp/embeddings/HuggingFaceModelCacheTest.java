@@ -220,6 +220,22 @@ class HuggingFaceModelCacheTest {
   }
 
   /**
+   * A relative path with a {@code ..} segment is ambiguous as a teacher reference: Windows
+   * collapses {@code ..} lexically without checking that the segment before it exists, so a
+   * misspelled hub id such as {@code BAAI/..} would silently name the working directory there
+   * while POSIX reports it as nonexistent. The reference must be rejected on every platform,
+   * even when it resolves to an existing directory ({@code src} always exists below the module
+   * the tests run from).
+   */
+  @Test
+  void testRelativePathWithParentSegmentIsRejected(@TempDir Path cacheRoot) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> HuggingFaceModelCache.resolve("src/..", hub.base(), cacheRoot, null));
+    assertTrue(e.getMessage().contains("org/model"), e.getMessage());
+    assertTrue(hub.requests.isEmpty(), hub.requests.toString());
+  }
+
+  /**
    * The two digest forms the hub uses, on the two files a distillation needs: a git blob SHA-1 for
    * a file stored in git and a SHA-256 for one stored in Git LFS.
    */
