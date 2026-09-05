@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.archive.TarArchives;
 
 /**
  * Demonstrates the intended end-to-end usage of this package with miniature,
@@ -60,7 +61,7 @@ public class LatticeUsageExampleTest {
       throws IOException {
     // A minimal but complete dictionary: one lexicon file plus the three definition
     // files every MeCab-format distribution contains, wrapped like a release archive.
-    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
+    final byte[] archive = TarArchives.gzippedTar(new String[][] {
         {"mini-dict-0.1/lexicon.csv", String.join("\n",
             "\u6771\u4EAC,0,0,3000,noun,proper",
             "\u4EAC\u90FD,0,0,3000,noun,proper",

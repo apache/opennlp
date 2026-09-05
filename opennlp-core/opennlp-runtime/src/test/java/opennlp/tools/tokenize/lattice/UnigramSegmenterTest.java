@@ -20,6 +20,7 @@ package opennlp.tools.tokenize.lattice;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -40,6 +41,9 @@ import opennlp.tools.util.Span;
  * example, and its Javadoc spells out each fixture word.</p>
  */
 public class UnigramSegmenterTest {
+
+  /** UTF-8 lead byte with the required continuation byte omitted. */
+  private static final byte TRUNCATED_UTF8_LEAD_BYTE = (byte) 0xC3;
 
   private static final String LEXICON = String.join("\n",
       "\u6211 5000 r",
@@ -239,5 +243,28 @@ public class UnigramSegmenterTest {
         new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
         StandardCharsets.UTF_8);
     Assertions.assertArrayEquals(new String[] {"\u6211"}, loaded.tokenize("\u6211"));
+  }
+
+  @Test
+  void testRejectsMalformedLexiconEncoding() {
+    final byte[] malformed = {'w', TRUNCATED_UTF8_LEAD_BYTE, ' ', '1', '\n'};
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> UnigramSegmenter.load(
+            new ByteArrayInputStream(malformed), StandardCharsets.UTF_8));
+
+    Assertions.assertInstanceOf(MalformedInputException.class, e);
+    Assertions.assertEquals("Input length = 1", e.getMessage());
+  }
+
+  @Test
+  void testLongLexiconWordLoads() throws IOException {
+    final String word = "a".repeat(20_000);
+
+    final UnigramSegmenter loaded = UnigramSegmenter.load(
+        new ByteArrayInputStream((word + " 1\n").getBytes(StandardCharsets.UTF_8)),
+        StandardCharsets.UTF_8);
+
+    Assertions.assertArrayEquals(new String[] {word}, loaded.tokenize(word));
   }
 }

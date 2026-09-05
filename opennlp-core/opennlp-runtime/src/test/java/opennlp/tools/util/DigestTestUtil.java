@@ -22,11 +22,20 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
 /**
- * Computes SHA-512 digests for test fixtures.
+ * Computes digests for test fixtures.
  */
 public final class DigestTestUtil {
 
   private DigestTestUtil() {
+  }
+
+  /**
+   * {@return the SHA-256 digest of {@code bytes} as 64 lowercase hex digits}
+   *
+   * @param bytes The content to digest. Must not be {@code null}.
+   */
+  public static String sha256(byte[] bytes) {
+    return digest("SHA-256", bytes);
   }
 
   /**
@@ -35,9 +44,19 @@ public final class DigestTestUtil {
    * @param bytes The content to digest. Must not be {@code null}.
    */
   public static String sha512(byte[] bytes) {
+    return digest("SHA-512", bytes);
+  }
+
+  /**
+   * {@return the digest of {@code bytes} as lowercase hex digits}
+   *
+   * @param algorithm The digest algorithm name.
+   * @param bytes The content to digest. Must not be {@code null}.
+   */
+  private static String digest(String algorithm, byte[] bytes) {
     try {
       return HexFormat.of().formatHex(
-          MessageDigest.getInstance("SHA-512").digest(bytes));
+          MessageDigest.getInstance(algorithm).digest(bytes));
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(e);
     }
