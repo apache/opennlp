@@ -17,7 +17,9 @@
 
 package opennlp.tools.formats.conllu;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -28,6 +30,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSample> {
@@ -104,6 +108,37 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
           , sent4.getTextLang());
 
       Assertions.assertNull(stream.read(), "Stream must be exhausted");
+    }
+  }
+
+  @Test
+  void testContractionIdsAreMerged() throws IOException {
+    try (ObjectStream<ConlluSentence> stream = getStream("es-ud-sample.conllu")) {
+      ConlluSentence sent1 = stream.read();
+
+      Assertions.assertEquals(55, sent1.getWordLines().size());
+      Assertions.assertEquals("1-3", sent1.getWordLines().get(0).getId());
+      Assertions.assertEquals("Digámoslo", sent1.getWordLines().get(0).getForm());
+      Assertions.assertEquals("15-16", sent1.getWordLines().get(12).getId());
+      for (ConlluWordLine wordLine : sent1.getWordLines()) {
+        Assertions.assertFalse(wordLine.getId().equals("1")
+            || wordLine.getId().equals("2") || wordLine.getId().equals("3")
+            || wordLine.getId().equals("15") || wordLine.getId().equals("16"),
+            "Expanded contraction parts must be removed");
+      }
+    }
+  }
+
+  @Test
+  void testInvalidTextLangCodeIsRejected() throws IOException {
+    // "text_e" has a single lowercase letter, so no language code can be extracted
+    InputStreamFactory in = () -> new ByteArrayInputStream(
+        ("# text_e = Bonjour\n"
+            + "1\tBonjour\tbonjour\tINTJ\t_\t_\t0\troot\t_\t_\n")
+            .getBytes(StandardCharsets.UTF_8));
+
+    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
+      Assertions.assertThrows(InvalidFormatException.class, stream::read);
     }
   }
 }
