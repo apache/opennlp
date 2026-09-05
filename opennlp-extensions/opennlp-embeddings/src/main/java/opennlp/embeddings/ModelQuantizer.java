@@ -21,22 +21,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.java.Experimental;
 
 /**
  * Quantizes a static embedding model directory in place: reads the matrix and optional
  * per-token weights from the directory's {@code model.safetensors}, quantizes the matrix to the
  * requested bit width (see {@link QuantizedEmbeddingMatrix}), and writes
- * {@code model.quantized} next to it. {@code StaticEmbeddingModel.load} prefers the quantized
- * file from then on; the safetensors may be deleted for a slim deployment.
+ * {@code model.quantized} next to it. Delete the safetensors before loading the quantized
+ * deployment; a model directory containing both matrix files is ambiguous and is rejected.
  *
  * <p>The written file is verified by reading it back and measuring the mean cosine between the
  * original and reconstructed rows over a deterministic sample, so a completed run reports the
  * reconstruction quality actually on disk.</p>
+ *
+ * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
+@Experimental
 public final class ModelQuantizer {
 
   // At most this many rows enter the verification sample, evenly strided so it is
-  // deterministic and covers the whole table.
+  // deterministic and spans the row range.
   private static final int VERIFICATION_SAMPLE_CAP = 1024;
 
   /** Not instantiable. */
@@ -44,12 +48,12 @@ public final class ModelQuantizer {
   }
 
   /**
-   * What a quantization run produced and measured.
+   * Statistics for a completed quantization.
    *
    * @param rowCount        The number of matrix rows.
    * @param dimension       The row width.
    * @param bits            The bit width per padded dimension.
-   * @param hasWeights      Whether per-token pooling weights were carried over.
+   * @param hasWeights      Whether per-token pooling weights were included.
    * @param safetensorsBytes The size of the source safetensors file.
    * @param quantizedBytes  The size of the written quantized file.
    * @param sampledRows     The number of rows in the verification sample.
@@ -70,9 +74,10 @@ public final class ModelQuantizer {
    *                       {@link QuantizedEmbeddingMatrix#MAX_BITS}.
    * @param seed           The rotation seed; the same matrix, bits, and seed write the same
    *                       file bytes.
-   * @return What was produced and measured.
-   * @throws IllegalArgumentException Thrown if an argument is invalid or the directory has no
-   *     safetensors file.
+   * @return Statistics for the written quantized matrix.
+   * @throws IllegalArgumentException Thrown if an argument is invalid.
+   * @throws InvalidFormatException Thrown if the directory has no safetensors file or its
+   *     tensors do not have the required shapes.
    * @throws IOException Thrown if reading or writing fails.
    */
   public static Result quantize(Path modelDirectory, int bits, long seed) throws IOException {
@@ -83,22 +88,31 @@ public final class ModelQuantizer {
       throw new IllegalArgumentException(
           "Model directory does not exist or is not a directory: " + modelDirectory);
     }
+    GaussianQuantizer.requireSupportedBits(bits);
     final Path safetensorsFile = modelDirectory.resolve(ModelFileNames.SAFETENSORS);
     if (!Files.isRegularFile(safetensorsFile)) {
       throw new InvalidFormatException("Model directory " + modelDirectory + " has no "
           + ModelFileNames.SAFETENSORS + " to quantize");
     }
     final SafetensorsFile tensors = SafetensorsFile.read(safetensorsFile);
+    final boolean hasWeights = tensors.tensorNames()
+        .contains(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME);
+    if (hasWeights && tensors.tensorInfo(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME)
+        .shape().length != 1) {
+      throw new InvalidFormatException("Tensor '"
+          + StaticEmbeddingModel.WEIGHTS_TENSOR_NAME + "' in " + safetensorsFile
+          + " must be 1-D");
+    }
     final String matrixName = tensors.singleMatrixTensorName();
     final TensorInfo matrixInfo = tensors.tensorInfo(matrixName);
     final int rowCount = matrixInfo.shape()[0];
     final int dimension = matrixInfo.shape()[1];
     final float[] matrix = tensors.readFloats(matrixName);
     float[] weights = null;
-    if (tensors.tensorNames().contains(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME)) {
+    if (hasWeights) {
       weights = tensors.readFloats(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME);
       if (weights.length != rowCount) {
-        throw new IllegalArgumentException("Tensor '"
+        throw new InvalidFormatException("Tensor '"
             + StaticEmbeddingModel.WEIGHTS_TENSOR_NAME + "' in " + safetensorsFile + " has "
             + weights.length + " elements but the matrix has " + rowCount + " rows");
       }
@@ -109,11 +123,13 @@ public final class ModelQuantizer {
         .write(quantizedFile);
     // Verify what is actually on disk, not the in-memory object.
     final QuantizedEmbeddingMatrix written = QuantizedEmbeddingMatrix.read(quantizedFile);
-    final int stride = Math.max(1, rowCount / VERIFICATION_SAMPLE_CAP);
+    final int sampleCount = Math.min(rowCount, VERIFICATION_SAMPLE_CAP);
     int sampled = 0;
     int nonZero = 0;
     double cosineSum = 0;
-    for (int row = 0; row < rowCount; row += stride) {
+    for (int sample = 0; sample < sampleCount; sample++) {
+      final int row = sampleCount == 1 ? 0
+          : (int) ((long) sample * (rowCount - 1) / (sampleCount - 1));
       sampled++;
       final double cosine = cosine(matrix, row * dimension, dimension, written.decodeRow(row));
       if (!Double.isNaN(cosine)) {
@@ -145,6 +161,9 @@ public final class ModelQuantizer {
       normBSquared += (double) decoded[d] * decoded[d];
     }
     final double denominator = Math.sqrt(normASquared) * Math.sqrt(normBSquared);
-    return denominator == 0 ? Double.NaN : dot / denominator;
+    if (denominator == 0) {
+      return Double.NaN;
+    }
+    return Math.max(-1.0, Math.min(1.0, dot / denominator));
   }
 }

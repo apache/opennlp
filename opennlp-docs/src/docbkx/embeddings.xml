@@ -62,9 +62,9 @@
 		<title>Embedding Text with the API</title>
 		<para>
 			A model directory loads with a single call, and the tokenizer family is detected from
-			the files present. A WordPiece model carries <code>vocab.txt</code>,
+			the files present. A WordPiece model contains <code>vocab.txt</code>,
 			<code>model.safetensors</code>, <code>config.json</code>, and
-			<code>tokenizer_config.json</code>; a Model2Vec Unigram model carries
+			<code>tokenizer_config.json</code>; a Model2Vec Unigram model contains
 			<code>tokenizer.json</code>, <code>model.safetensors</code>, and
 			<code>config.json</code>. Its JSON file contains the Unigram vocabulary, scores,
 			normalizer, and pre-tokenizer. Legacy SentencePiece directories may also carry a
@@ -89,7 +89,7 @@ List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
 			switches directly. The WordPiece overload takes whether the tokenizer lower-cases
 			(and strips accents) and whether embeddings are L2-normalized; both are properties of
 			the model, published in its configuration. The SentencePiece overload has no casing
-			switch, because the trained <code>.model</code> file carries the model's own text
+			switch, because the trained <code>.model</code> file contains the model's text
 			normalizer.
 		</para>
 		<programlisting language="java">
@@ -112,7 +112,7 @@ StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
 		<para>
 			Matrix rows are resolved by piece string, never by tokenizer id, because the two
 			files of a legacy SentencePiece model may order and offset their ids differently. A
-			poolable piece with no matrix row fails loud at load time. Current Model2Vec Unigram
+			poolable piece with no matrix row is rejected during loading. Current Model2Vec Unigram
 			releases load directly from their self-contained <code>tokenizer.json</code> and do not
 			require a tokenizer file copied from the teacher.
 		</para>
@@ -226,16 +226,15 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 	<section xml:id="tools.embeddings.quantized">
 		<title>Quantized Models</title>
 		<para>
-			A static embedding table can be quantized to 2, 3, or 4 bits per dimension, shrinking
-			it by roughly 4 to 16 times against the 32-bit float matrix, depending on the bit
-			width and on how far the dimension is from a power of two: rows are padded to the
-			next power of two before coding, so a 500,000-row, 300-dimension table stores 512
-			coded dimensions per row and drops from about 600 MB to about 132 MB at 4 bits, 4.5
-			times smaller. Because embedding is
-			memory-bound row gathering, reading fewer bytes is also the throughput lever. The
-			method is the TurboQuant construction: each row is rotated so its coordinates become
-			near-independent and near-Gaussian, and each rotated coordinate is encoded against an
-			optimal scalar grid, with a least-squares scale fitted per row.
+			A static embedding table can be quantized to 2, 3, or 4 bits per dimension. The size
+			depends on the bit width and on padding each row to the next power of two. For example,
+			a 500,000-row table with 300 dimensions uses 600 MB as 32-bit floats. At 4 bits, its
+			rows are padded to 512 dimensions and the quantized file uses about 136 MB, including
+			its per-row scales and norms. The implementation uses a randomized Hadamard transform,
+			a standard-normal Lloyd-Max scalar grid, and a least-squares scale per row. This is an
+			MSE-oriented variant of
+			<ulink url="https://arxiv.org/abs/2504.19874">TurboQuant</ulink>. It does not include
+			the residual QJL stage used by the paper's unbiased inner-product estimator.
 		</para>
 		<para>
 			The <code>QuantizeModel</code> tool quantizes a model directory's
@@ -251,17 +250,10 @@ opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4]]>
 			A directory presents exactly one matrix file. After quantizing, delete the
 			<code>model.safetensors</code> to deploy the quantized matrix; the loader then reads
 			<code>model.quantized</code> with no code change, and any per-token pooling weights
-			are carried inside the quantized file. A directory that still holds both files is
+			are stored inside the quantized file. A directory that still contains both files is
 			rejected at load time, so the deployment must choose which matrix is authoritative.
-			Embedding, <code>similarity</code>, and <code>mostSimilar</code> behave the same as on
-			the float model, up to the quantization error of the chosen bit width; fewer bits
-			trade fidelity for size.
-		</para>
-		<para>
-			<code>StaticEmbeddingModelQuantizedTest</code> asserts this workflow end to end:
-			quantizing a directory, loading it after the safetensors is removed, and matching the
-			float model's embeddings and rankings; <code>QuantizedEmbeddingMatrixTest</code> pins
-			the reconstruction quality at each bit width.
+			Embedding, <code>similarity</code>, and <code>mostSimilar</code> use the same API as the
+			float model. Fewer bits reduce the file size and increase quantization error.
 		</para>
 	</section>
 
@@ -269,7 +261,7 @@ opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4]]>
 		<title>The safetensors Reader</title>
 		<para>
 			Weights are read with a purpose-built reader for the safetensors format. Unlike
-			pickle-based checkpoint formats, a safetensors file carries no executable content
+			pickle-based checkpoint formats, a safetensors file contains no executable content
 			(the header is data-only JSON and the body is raw tensor bytes), so loading one
 			cannot execute arbitrary code. Only the header is read eagerly; tensor data streams
 			directly into the decoded array, so the file size is not limited by Java's

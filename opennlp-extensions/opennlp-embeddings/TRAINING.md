@@ -74,6 +74,18 @@ Confirm parity against the Python reference before trusting a fresh distillation
 
 Two tables distilled independently from the same teacher (one with this command, one with Python Model2Vec) agree on their pairwise geometry to a few parts in a thousand — similarities, neighbors, and rankings match — but their raw vectors are not directly comparable axis by axis: PCA fixes only the subspace, and within the near-degenerate tail of the spectrum two independent decompositions choose different bases.
 
+## 4. Quantize the matrix
+
+Quantization reduces the matrix size after distillation or assembly:
+
+```text
+opennlp-embeddings QuantizeModel -modelDir bge-m3-static -bits 4
+```
+
+The command writes `model.quantized` and verifies the written file against sampled source rows.
+Remove `model.safetensors` to select the quantized matrix. Keep the tokenizer, configuration, and
+term files in the directory.
+
 ## The WordPiece path
 
 A WordPiece teacher (a BERT-family model such as bge-large-en) distills the same way. Its directory layout is the BERT one instead: `vocab.txt` (one token per line, line number is the row), `model.safetensors`, `config.json`, and `tokenizer_config.json` (whose `do_lower_case` sets the casing). `load` detects WordPiece from the presence of `vocab.txt`.

@@ -25,9 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The quantizer contract: the derived grids match the published Lloyd-Max tables for the
- * Gaussian, encoding picks the nearest level, grids are symmetric, and a grid read back from a
- * file round-trips through {@code fromLevels}.
+ * Tests the Gaussian Lloyd-Max grids and nearest-level encoding.
  */
 class GaussianQuantizerTest {
 
@@ -49,7 +47,7 @@ class GaussianQuantizerTest {
    * @param quantizer The quantizer under test.
    * @param expected  The published positive levels, ascending.
    */
-  private static void assertPositiveLevels(GaussianQuantizer quantizer, double... expected) {
+  private void assertPositiveLevels(GaussianQuantizer quantizer, double... expected) {
     final int half = quantizer.levelCount() / 2;
     assertEquals(expected.length, half);
     for (int i = 0; i < half; i++) {
@@ -86,6 +84,16 @@ class GaussianQuantizerTest {
   }
 
   @Test
+  void testFiniteGridMidpointsDoNotOverflow() {
+    final float maximum = Float.MAX_VALUE;
+    final GaussianQuantizer quantizer = GaussianQuantizer.fromLevels(new float[] {
+        maximum / 4f, maximum / 2f, maximum * 0.75f, maximum
+    });
+
+    assertEquals(3, quantizer.encode(maximum));
+  }
+
+  @Test
   void testFromLevelsRoundTripsAGrid() {
     final GaussianQuantizer original = GaussianQuantizer.forBits(3);
     final GaussianQuantizer restored = GaussianQuantizer.fromLevels(original.levels());
@@ -115,7 +123,7 @@ class GaussianQuantizerTest {
   }
 
   @Test
-  void testUnsupportedBitWidthsFailLoud() {
+  void testUnsupportedBitWidthsAreRejected() {
     assertThrows(IllegalArgumentException.class, () -> GaussianQuantizer.forBits(1));
     assertThrows(IllegalArgumentException.class, () -> GaussianQuantizer.forBits(5));
     assertThrows(IllegalArgumentException.class, () -> GaussianQuantizer.forBits(0));

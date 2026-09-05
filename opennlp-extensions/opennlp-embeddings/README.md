@@ -119,6 +119,23 @@ Two things drive the numbers, and the benchmark separates them. `embed()` is tok
 
 So a large multilingual vocabulary is free for embedding and expensive for a full nearest-neighbor scan; that scan is where an approximate index earns its place once the table is large. Separately, the repository's `dev/embeddings/parity/` directory holds a harness that reruns the single-thread speed comparison against the Model2Vec Python reference and checks that the output vectors match it within floating-point tolerance, so a cross-runtime comparison is something you reproduce on your own hardware rather than quote. Treat all of these as a starting expectation and run the benchmark on the model you plan to use.
 
+## Quantizing a model
+
+`QuantizeModel` converts `model.safetensors` to a 2, 3, or 4-bit matrix:
+
+```text
+opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4
+```
+
+The command writes `model.quantized` and reports its size and sampled reconstruction cosine.
+Delete `model.safetensors` before loading the quantized model. A directory containing both matrix
+files is rejected. The tokenizer, configuration, and optional `terms.txt` stay unchanged.
+
+The format uses a randomized Hadamard transform, a Gaussian Lloyd-Max grid, and a scale for each
+row. It is an MSE-oriented variant of
+[TurboQuant](https://arxiv.org/abs/2504.19874) and does not implement the paper's residual QJL
+estimator.
+
 ## Usage
 
 ### Loading a non-standard layout

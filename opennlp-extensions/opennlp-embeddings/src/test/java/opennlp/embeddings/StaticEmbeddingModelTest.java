@@ -166,6 +166,78 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testMeanPoolingDoesNotOverflowFiniteRows(@TempDir Path dir) throws IOException {
+    final Path vocabulary = dir.resolve("large-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "large", "value"));
+    final Path tensors = dir.resolve("large-model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", new float[][] {
+        {0f}, {0f}, {0f}, {Float.MAX_VALUE}, {Float.MAX_VALUE}
+    }));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.UNCASED, Normalization.NONE);
+
+    final float[] result = model.embed("large value");
+
+    assertArrayEquals(new float[] {Float.MAX_VALUE}, result);
+  }
+
+  @Test
+  void testL2NormalizationHandlesFiniteVectorsWhoseNormExceedsFloatRange(@TempDir Path dir)
+      throws IOException {
+    final Path vocabulary = dir.resolve("large-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "large"));
+    final Path tensors = dir.resolve("large-model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", new float[][] {
+        {0f, 0f}, {0f, 0f}, {0f, 0f}, {Float.MAX_VALUE, Float.MAX_VALUE}
+    }));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.UNCASED, Normalization.L2);
+
+    final float[] result = model.embed("large");
+
+    final float normalizedCoordinate = (float) (1.0 / Math.sqrt(2.0));
+    assertArrayEquals(new float[] {normalizedCoordinate, normalizedCoordinate}, result, 1e-6f);
+  }
+
+  @Test
+  void testFinitePoolingWeightsDoNotProduceInfiniteCoordinates(@TempDir Path dir)
+      throws IOException {
+    final Path vocabulary = dir.resolve("weighted-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "large"));
+    final Path tensors = dir.resolve("weighted-model.safetensors");
+    SafetensorsTestFiles.write(tensors,
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {
+            {0f}, {0f}, {0f}, {Float.MAX_VALUE}
+        }),
+        SafetensorsTestFiles.vector("weights", new float[] {1f, 1f, 1f, Float.MAX_VALUE}));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.UNCASED, Normalization.NONE);
+
+    final float[] result = model.embed("large");
+
+    assertArrayEquals(new float[] {Float.MAX_VALUE}, result);
+  }
+
+  @Test
+  void testL2NormalizationPrecedesFloatNarrowing(@TempDir Path dir) throws IOException {
+    final Path vocabulary = dir.resolve("weighted-vocab.txt");
+    Files.write(vocabulary, List.of("[CLS]", "[SEP]", "[UNK]", "large"));
+    final Path tensors = dir.resolve("weighted-model.safetensors");
+    SafetensorsTestFiles.write(tensors,
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {
+            {0f, 0f}, {0f, 0f}, {0f, 0f}, {Float.MAX_VALUE, 1f}
+        }),
+        SafetensorsTestFiles.vector("weights", new float[] {1f, 1f, 1f, Float.MAX_VALUE}));
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocabulary, tensors,
+        Casing.UNCASED, Normalization.L2);
+
+    final float[] result = model.embed("large");
+
+    assertEquals(1f, result[0]);
+    assertEquals((float) (1.0 / Float.MAX_VALUE), result[1], Float.MIN_VALUE);
+  }
+
+  @Test
   void testEmbedNormalizesToUnitLength(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
         StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
