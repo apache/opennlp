@@ -34,16 +34,19 @@ public class NormalizeDictionaryTool extends BasicCmdLineTool {
   interface Params extends NormalizeDictionaryParams {
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getShortDescription() {
     return "Normalizes raw Bouvier law dictionary HTML into a headword/definition TSV";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run(String[] args) {
     final Params params = validateAndParseParams(args, Params.class);
@@ -52,7 +55,7 @@ public class NormalizeDictionaryTool extends BasicCmdLineTool {
       entries = BouvierDictionaryParser.parseDirectory(params.getRawDir().toPath());
       DictionaryEntry.writeTsv(entries, params.getOut().toPath());
     } catch (IllegalArgumentException e) {
-      throw new TerminateToolException(1, e.getMessage());
+      throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,
           "IO error while normalizing " + params.getRawDir() + ": " + e.getMessage(), e);

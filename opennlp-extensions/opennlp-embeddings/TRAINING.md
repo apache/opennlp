@@ -82,7 +82,7 @@ The command writes `model.quantized` and verifies the written file against sampl
 Remove `model.safetensors` to select the quantized matrix. Keep the tokenizer, configuration, and
 term files in the directory.
 
-## 4. Evaluate retrieval and quantization
+## 5. Evaluate retrieval and quantization
 
 The `EvalVectorSearch` command evaluates a distilled model over a normalized passage corpus and dictionary without hand-labelled judgments:
 
@@ -95,29 +95,44 @@ opennlp-embeddings EvalVectorSearch \
   -bits 4 -seed 42 -topK 10
 ```
 
-The command builds an exact float index and a TurboQuant index. It reports quantized overlap with the exact results, rank-1 agreement, definition-to-headword retrieval, half-passage retrieval, single-thread throughput, and storage per vector. A TSV containing the same metrics is written next to the markdown report.
+The command builds an exact float index and a TurboQuant index. The markdown and TSV reports contain fidelity, definition-to-headword retrieval, half-passage retrieval, single-thread throughput, and storage per vector.
+
+For `-out vector-search-report.md`, the TSV file is `vector-search-report.tsv`.
+The paths must refer to separate files. A `.tsv` output name (any case), links to the same
+file, and dangling symbolic links are rejected before evaluation. Separate
+existing reports are replaced.
+
+Report paths must not refer to the passage or dictionary input file, including
+through symbolic or hard links. File identity is checked before evaluation and
+again before writing reports.
+
+Index build time includes construction, vector insertion and `freeze()`.
+Text embedding and queries are excluded. The TSV field `index.buildScope`
+contains `construction,insertion,freeze`.
 
 Inputs that embed to a zero vector have no search direction and are not indexed or evaluated. The report records total and indexable passage and headword counts, so this coverage remains visible. Fidelity recall uses the number of exact results actually returned, including when `topK` exceeds the index size.
 
-## 5. Benchmark against Lucene HNSW
+## 6. Benchmark against Lucene HNSW
 
-The module's test tree carries a Lucene HNSW baseline that reruns the same measurements against a graph index: `opennlp.embeddings.index.HnswFloatIndex` adapts an in-memory Lucene index (vectors L2-normalized, dot-product similarity, default graph parameters, a 100-candidate search beam) to the `VectorIndex` contract, and `opennlp.embeddings.eval.HnswBaseline` reports the same table columns as `EvalVectorSearch`, so the two reports read side by side. Lucene is a test-scope dependency only; the shipped module has no search-engine dependency.
+The test tree includes a Lucene HNSW baseline with L2-normalized vectors, dot-product similarity, default graph parameters, and a 100-candidate search width. Lucene is a test-scope dependency.
 
-From the repository root, run the baseline through the Maven test runner. Set `H` to the legal corpus directory described above:
+From the repository root, set `CORPUS_DIR` to the legal corpus directory and run:
 
 ```
 ./mvnw -pl opennlp-extensions/opennlp-embeddings -am \
   -Dtest=HnswBaselineRunnerTest \
   -Dsurefire.failIfNoSpecifiedTests=false \
   -Dopennlp.forkCount=1 \
-  -Dopennlp.hnsw.model="$H/model" \
-  -Dopennlp.hnsw.passages="$H/normalized/passages.jsonl" \
-  -Dopennlp.hnsw.dictionary="$H/normalized/dictionary.tsv" \
-  -Dopennlp.hnsw.output="$H/hnsw-report.md" \
+  -Dopennlp.hnsw.model="$CORPUS_DIR/model" \
+  -Dopennlp.hnsw.passages="$CORPUS_DIR/normalized/passages.jsonl" \
+  -Dopennlp.hnsw.dictionary="$CORPUS_DIR/normalized/dictionary.tsv" \
+  -Dopennlp.hnsw.output="$CORPUS_DIR/hnsw-report.md" \
   -Dopennlp.hnsw.topK=10 test
 ```
 
-It writes the markdown report and a TSV twin next to it, covering the graph's recall against the exact scan, rank-1 agreement, both retrieval evaluations, build time, single-thread throughput, and serialized storage per vector including the graph links. The storage figure sums Lucene's serialized vector data, metadata, and graph files. It is not a measurement of live JVM memory.
+The reports contain graph recall against the exact scan, rank-1 agreement, both retrieval evaluations, build time, single-thread throughput, and serialized vector and graph storage. Storage does not measure live JVM memory.
+
+The HNSW command uses the same report naming and replacement rules as `EvalVectorSearch`.
 
 ## The WordPiece path
 

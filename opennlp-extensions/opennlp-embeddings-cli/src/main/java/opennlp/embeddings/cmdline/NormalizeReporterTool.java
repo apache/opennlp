@@ -38,16 +38,19 @@ public class NormalizeReporterTool extends BasicCmdLineTool {
   interface Params extends NormalizeReporterParams {
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getShortDescription() {
     return "Normalizes Caselaw Access Project volume zips into an opinion-passage JSONL file";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run(String[] args) {
     final Params params = validateAndParseParams(args, Params.class);
@@ -64,7 +67,7 @@ public class NormalizeReporterTool extends BasicCmdLineTool {
       }
       CasePassage.writeJsonl(passages, params.getOut().toPath());
     } catch (IllegalArgumentException | InvalidFormatException e) {
-      throw new TerminateToolException(1, e.getMessage());
+      throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,
           "IO error while normalizing " + params.getRawDir() + ": " + e.getMessage(), e);

@@ -90,7 +90,7 @@ public final class VocabularyLearner {
       throw new IllegalArgumentException("dictionaryHeadwords must not be null");
     }
 
-    // First word of each dictionary sequence -> candidate sequences, longest first.
+    // Candidates are grouped by first word and ordered longest first.
     final Map<String, List<List<String>>> dictionaryByFirstWord = new HashMap<>();
     final Map<String, Long> dictionaryCounts = new LinkedHashMap<>();
     for (String headword : dictionaryHeadwords) {
@@ -154,6 +154,10 @@ public final class VocabularyLearner {
   /**
    * Counts the longest dictionary sequence starting at a position, if any.
    *
+   * @param words The corpus words.
+   * @param position The first word to compare.
+   * @param dictionaryByFirstWord Dictionary sequences grouped by their first word.
+   * @param dictionaryCounts The destination counts by normalized term.
    * @return The number of words consumed, zero when no sequence matches.
    */
   private static int countDictionaryMatch(List<String> words, int position,
@@ -173,7 +177,12 @@ public final class VocabularyLearner {
     return 0;
   }
 
-  /** Folds a text to lower case and splits it into maximal letter-or-digit runs. */
+  /**
+   * Folds text to lower case and finds maximal letter-or-digit runs.
+   *
+   * @param text The source text.
+   * @return The normalized words.
+   */
   private static List<String> words(String text) {
     final List<String> words = new ArrayList<>();
     final String folded = StringUtil.toLowerCase(text);

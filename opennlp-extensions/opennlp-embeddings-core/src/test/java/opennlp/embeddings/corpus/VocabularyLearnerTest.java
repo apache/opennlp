@@ -77,7 +77,7 @@ public class VocabularyLearnerTest {
 
   @Test
   void testDictionaryTermsAreKeptAtZeroCount() {
-    final List<TermCount> terms = ANY.learn(List.of("nothing relevant"), List.of("REPLEVIN"));
+    final List<TermCount> terms = ANY.learn(List.of("unrelated text"), List.of("REPLEVIN"));
     final TermCount replevin = byTerm(terms).get("replevin");
     assertEquals(0, replevin.count());
     assertTrue(replevin.fromDictionary());
@@ -104,11 +104,11 @@ public class VocabularyLearnerTest {
   }
 
   @Test
-  void testMaxTermsCapsCorpusWordsButNeverDictionaryTerms() {
+  void testMaxTermsCapsCorpusWordsButKeepsDictionaryTerms() {
     final List<TermCount> terms = new VocabularyLearner(1, 2).learn(
         List.of("one two three one two one"),
         List.of("ALPHA", "BETA", "GAMMA"));
-    // All three dictionary terms survive a cap of two; no corpus word fits.
+    // All three dictionary terms remain when the corpus-word limit is two.
     assertEquals(3, terms.size());
     assertTrue(terms.stream().allMatch(TermCount::fromDictionary));
   }

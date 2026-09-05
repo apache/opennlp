@@ -20,6 +20,7 @@ package opennlp.embeddings.corpus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,11 +38,11 @@ import opennlp.tools.util.InvalidFormatException;
  * fields {@code id}, {@code case}, {@code cite}, {@code date}, {@code vol}, and
  * {@code text}.</p>
  *
- * @param id The passage id, {@code <caseid>-<opinion>-<seq>}. Must not be {@code null}
- *           or blank.
+ * @param id The passage identifier. Must not be {@code null} or blank. The CAP reader uses
+ *           {@code <caseid>-<opinion>-<seq>}.
  * @param caseName The abbreviated case name. Must not be {@code null}.
- * @param cite The official citation, e.g. {@code 200 U.S. 1}, or empty when the case
- *             carries none. Must not be {@code null}.
+ * @param cite The official citation, e.g. {@code 200 U.S. 1}, or empty when unavailable.
+ *             Must not be {@code null}.
  * @param date The decision date as recorded by the reporter. Must not be {@code null}.
  * @param volume The reporter volume. Must not be {@code null}.
  * @param text The passage text. Must not be {@code null} or blank.
@@ -89,12 +90,14 @@ public record CasePassage(String id, String caseName, String cite, String date,
     if (file == null) {
       throw new IllegalArgumentException("file must not be null");
     }
+    for (CasePassage passage : passages) {
+      if (passage == null) {
+        throw new IllegalArgumentException("passages must not contain null");
+      }
+    }
     try (BufferedWriter out = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
       final StringBuilder line = new StringBuilder();
       for (CasePassage passage : passages) {
-        if (passage == null) {
-          throw new IllegalArgumentException("passages must not contain null");
-        }
         line.setLength(0);
         line.append("{\"id\": ");
         Json.appendString(line, passage.id());
@@ -120,8 +123,8 @@ public record CasePassage(String id, String caseName, String cite, String date,
    * @param file The file to read. Must not be {@code null}.
    * @return The passages in file order. Never {@code null}.
    * @throws IOException Thrown if reading fails.
-   * @throws InvalidFormatException Thrown if a line is not a JSON object carrying the
-   *         six string fields.
+   * @throws InvalidFormatException Thrown if a line is not a JSON object with the six
+   *         string fields.
    * @throws IllegalArgumentException Thrown if {@code file} is {@code null}.
    */
   public static List<CasePassage> readJsonl(Path file)
@@ -143,18 +146,33 @@ public record CasePassage(String id, String caseName, String cite, String date,
         if (!(value instanceof Map<?, ?> object)) {
           throw new InvalidFormatException("Expected a JSON object in " + inputName);
         }
-        passages.add(new CasePassage(
-            stringField(object, "id", inputName),
-            stringField(object, "case", inputName),
-            stringField(object, "cite", inputName),
-            stringField(object, "date", inputName),
-            stringField(object, "vol", inputName),
-            stringField(object, "text", inputName)));
+        try {
+          passages.add(new CasePassage(
+              stringField(object, "id", inputName),
+              stringField(object, "case", inputName),
+              stringField(object, "cite", inputName),
+              stringField(object, "date", inputName),
+              stringField(object, "vol", inputName),
+              stringField(object, "text", inputName)));
+        } catch (IllegalArgumentException e) {
+          throw new InvalidFormatException("Invalid passage in " + inputName, e);
+        }
       }
+    } catch (CharacterCodingException e) {
+      throw new InvalidFormatException("Invalid UTF-8 in " + file, e);
     }
     return passages;
   }
 
+  /**
+   * Reads one required string field.
+   *
+   * @param object The parsed object.
+   * @param field The field name.
+   * @param inputName The input name used in error messages.
+   * @return The field value.
+   * @throws InvalidFormatException Thrown if the field is absent or is not a string.
+   */
   private static String stringField(Map<?, ?> object, String field, String inputName)
       throws InvalidFormatException {
     final Object value = object.get(field);
@@ -165,6 +183,13 @@ public record CasePassage(String id, String caseName, String cite, String date,
     return string;
   }
 
+  /**
+   * Validates a record component.
+   *
+   * @param value The component value.
+   * @param name The component name used in error messages.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
+   */
   private static void requireNotNull(Object value, String name) {
     if (value == null) {
       throw new IllegalArgumentException(name + " must not be null");

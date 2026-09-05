@@ -33,9 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Verifies the Bouvier HTML entry rules against the authored fixture file: headword
- * capture, continuation paragraphs, page-furniture and short-definition filtering,
- * entity decoding, and first-occurrence deduplication across a directory.
+ * Tests Bouvier headwords, definitions, entities, and directory deduplication.
  */
 public class BouvierDictionaryParserTest {
 
@@ -53,10 +51,10 @@ public class BouvierDictionaryParserTest {
   void testParsesEntriesAndFiltersFurniture() {
     final List<DictionaryEntry> entries = BouvierDictionaryParser.parse(fixtureHtml);
 
-    // TEST ACT, TENANT, and T & E survive; the title paragraph and SHORT do not.
+    // TEST ACT, TENANT, and T & E remain; the title paragraph and SHORT do not.
     assertEquals(3, entries.size());
     assertEquals("TEST ACT", entries.get(0).headword());
-    assertTrue(entries.get(0).definition().startsWith("an invented statute"));
+    assertTrue(entries.get(0).definition().startsWith("a fictional statute"));
     assertEquals("TENANT", entries.get(1).headword());
     assertEquals("T & E", entries.get(2).headword());
   }
@@ -82,6 +80,14 @@ public class BouvierDictionaryParserTest {
     assertEquals(1, entries.size());
     // The C1 range maps through Windows-1252, so &#150; is an en dash.
     assertEquals("a \u2013 b \u2014 c \u2013 d, with padding to pass the filter.",
+        entries.get(0).definition());
+  }
+
+  @Test
+  void testInvalidNumericCharacterReferenceRemainsLiteral() {
+    final List<DictionaryEntry> entries = BouvierDictionaryParser.parse(
+        "<p><b>BAD CODE</b>, a &#xD800; value in a fictional definition long enough to keep.</p>");
+    assertEquals("a &#xD800; value in a fictional definition long enough to keep.",
         entries.get(0).definition());
   }
 

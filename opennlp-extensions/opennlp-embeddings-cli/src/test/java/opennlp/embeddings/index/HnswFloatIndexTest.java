@@ -28,8 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The HNSW baseline against the exact index: self-retrieval, graph recall on a deterministic
- * random collection, the cosine score mapping, and the footprint accessor.
+ * Tests HNSW retrieval, recall, cosine scores, and serialized size.
  */
 class HnswFloatIndexTest {
 
@@ -165,6 +164,21 @@ class HnswFloatIndexTest {
   }
 
   @Test
+  void testTinyNonzeroQueryRetainsItsDirection() {
+    final float[] axis = new float[DIMENSION];
+    axis[0] = 1f;
+    final float[] tinyQuery = new float[DIMENSION];
+    tinyQuery[0] = 1e-13f;
+    final HnswFloatIndex index = new HnswFloatIndex(DIMENSION);
+    index.add("axis", axis);
+    index.freeze();
+
+    try (index) {
+      assertEquals("axis", index.topK(tinyQuery, 1).get(0).id());
+    }
+  }
+
+  @Test
   void testSerializedBytesPerVectorCoversTheFloatDataAndTheGraph() {
     try (HnswFloatIndex index = hnsw(collection())) {
       // At least the raw float32 vector; the rest is graph links and metadata.
@@ -179,7 +193,7 @@ class HnswFloatIndexTest {
     assertThrows(IllegalStateException.class, index::serializedBytesPerVector);
     index.freeze();
     try (index) {
-      assertEquals(0, index.serializedBytesPerVector(), "an empty index stores nothing");
+      assertEquals(0, index.serializedBytesPerVector(), "an empty index stores zero bytes");
     }
   }
 

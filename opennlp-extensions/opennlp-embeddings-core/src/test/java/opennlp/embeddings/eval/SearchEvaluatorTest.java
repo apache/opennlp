@@ -28,6 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 import opennlp.embeddings.StaticEmbeddingModel;
 import opennlp.embeddings.corpus.CasePassage;
 import opennlp.embeddings.corpus.DictionaryEntry;
+import opennlp.embeddings.index.FlatFloatIndex;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -91,7 +92,7 @@ class SearchEvaluatorTest {
   }
 
   @Test
-  void testTheSelfLabelingGroundTruthIsRecovered() {
+  void testInputDerivedTargetsAreRecovered() {
     final SearchEvaluator.Report report = run();
 
     // Three well-separated passages at k = 2: the quantized top-2 matches the exact top-2.
@@ -111,7 +112,7 @@ class SearchEvaluatorTest {
   }
 
   @Test
-  void testTheEvaluationIsDeterministicApartFromTimings() {
+  void testMetricsAreDeterministic() {
     final SearchEvaluator.Report first = run();
     final SearchEvaluator.Report second = run();
 
@@ -122,7 +123,7 @@ class SearchEvaluatorTest {
   }
 
   @Test
-  void testTheMarkdownAndTsvRenderTheSameNumbers() {
+  void testMarkdownAndTsvRenderTheSameNumbers() {
     final SearchEvaluator.Report report = run();
     final String markdown = report.toMarkdown();
     final String tsv = report.toTsv();
@@ -267,6 +268,30 @@ class SearchEvaluatorTest {
         () -> new SearchEvaluator.IndexMetrics("exact", 1, Double.NaN, 0, 1.0));
     assertThrows(IllegalArgumentException.class,
         () -> new SearchEvaluator.RetrievalMetrics("exact", 1, 1.1, 1.0, 1.0));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SearchEvaluator.RetrievalMetrics("bad\tname", 1, 1.0, 1.0, 1.0));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SearchEvaluator.RetrievalMetrics("exact", 0, 1.0, 1.0, 1.0));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SearchEvaluator.RetrievalMetrics("exact", 1, 0.4, 0.5, 0.8));
+  }
+
+  @Test
+  void testRetrievalCountsUsableQueriesWhenAnIndexReturnsNoHits() {
+    final FlatFloatIndex emptyIndex = new FlatFloatIndex(2);
+    emptyIndex.freeze();
+
+    final SearchEvaluator.RetrievalMetrics metrics = SearchEvaluator.retrieval(
+        "empty", emptyIndex, List.of(new float[] {1f, 0f}), List.of("target"), 1);
+
+    assertEquals(1, metrics.queries());
+    assertEquals(0.0, metrics.recallAtK());
+  }
+
+  @Test
+  void testFirstHalfDoesNotSplitASupplementaryCodePoint() {
+    final String emoji = Character.toString(0x1f600);
+    assertEquals(emoji, SearchEvaluator.firstHalf(emoji.repeat(3)));
   }
 
   @Test

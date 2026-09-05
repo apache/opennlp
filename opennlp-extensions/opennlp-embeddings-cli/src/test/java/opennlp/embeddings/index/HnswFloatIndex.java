@@ -37,9 +37,8 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.ByteBuffersDirectory;
 
 /**
- * The Lucene HNSW baseline the evaluation harness benchmarks against: an in-memory Lucene index
- * with one graph-searched vector field, adapted to the {@link VectorIndex} contract. Lives in
- * the test tree so Lucene stays a test-scope dependency, never a runtime one.
+ * In-memory Lucene HNSW index used by the evaluation tests. It adapts one graph-searched vector
+ * field to the {@link VectorIndex} contract.
  *
  * <p>Vectors are L2-normalized at add time and searched with
  * {@link VectorSimilarityFunction#DOT_PRODUCT}, which is cosine similarity on unit vectors;
@@ -49,9 +48,8 @@ import org.apache.lucene.store.ByteBuffersDirectory;
  * 100).</p>
  *
  * <p>Lucene searches the graph with a beam of {@code k} candidates, so a small {@code k}
- * searches shallowly and loses recall. Each query therefore gathers at least
- * {@link #DEFAULT_SEARCH_WIDTH} candidates (the customary graph-search depth, overridable per
- * index) and returns the top {@code k} of them.</p>
+ * can reduce recall. Each query gathers at least {@link #DEFAULT_SEARCH_WIDTH} candidates and
+ * returns the top {@code k}.</p>
  */
 public final class HnswFloatIndex implements VectorIndex, AutoCloseable {
 
@@ -60,8 +58,6 @@ public final class HnswFloatIndex implements VectorIndex, AutoCloseable {
 
   private static final String VECTOR_FIELD = "vector";
   private static final String ID_FIELD = "id";
-  private static final double NORM_EPSILON = 1e-12;
-
   private final int dimension;
   private final int searchWidth;
   private VectorBuffer buffer;
@@ -160,7 +156,7 @@ public final class HnswFloatIndex implements VectorIndex, AutoCloseable {
       throw new IllegalStateException("The index is not frozen; freeze() ends the build phase");
     }
     final double queryNorm = IndexQueries.checkedQueryNorm(query, k, dimension);
-    if (queryNorm < NORM_EPSILON || size == 0) {
+    if (queryNorm == 0 || size == 0) {
       return List.of();
     }
     final float[] unit = query.clone();
@@ -246,7 +242,7 @@ public final class HnswFloatIndex implements VectorIndex, AutoCloseable {
       sumOfSquares += (double) value * value;
     }
     final double norm = Math.sqrt(sumOfSquares);
-    if (norm < NORM_EPSILON) {
+    if (norm == 0) {
       return;
     }
     for (int d = 0; d < vector.length; d++) {

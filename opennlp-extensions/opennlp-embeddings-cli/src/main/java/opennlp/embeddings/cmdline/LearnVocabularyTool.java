@@ -38,16 +38,19 @@ public class LearnVocabularyTool extends BasicCmdLineTool {
   interface Params extends LearnVocabularyParams {
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getShortDescription() {
     return "Learns a term vocabulary from a dictionary TSV and an opinion-passage JSONL corpus";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run(String[] args) {
     final Params params = validateAndParseParams(args, Params.class);
@@ -70,7 +73,7 @@ public class LearnVocabularyTool extends BasicCmdLineTool {
       TermCount.writeTsv(vocabulary, params.getOut().toPath());
       dictionaryTerms = vocabulary.stream().filter(TermCount::fromDictionary).count();
     } catch (IllegalArgumentException | InvalidFormatException e) {
-      throw new TerminateToolException(1, e.getMessage());
+      throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,
           "IO error while learning the vocabulary: " + e.getMessage(), e);

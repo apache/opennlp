@@ -46,6 +46,7 @@ public final class BouvierDictionaryParser {
   private static final int MIN_DEFINITION_LENGTH = 20;
   private static final int MAX_HEADWORD_LENGTH = 60;
 
+  /** Prevents construction of this utility class. */
   private BouvierDictionaryParser() {
   }
 
@@ -75,7 +76,7 @@ public final class BouvierDictionaryParser {
     final List<DictionaryEntry> entries = new ArrayList<>();
     final Set<String> seen = new HashSet<>();
     for (Path file : files) {
-      // The 2001/2002 transcription predates UTF-8 hosting; Latin-1 decodes every byte.
+      // The archived HTML files use ISO-8859-1.
       for (DictionaryEntry entry : parse(Files.readString(file, StandardCharsets.ISO_8859_1))) {
         if (seen.add(StringUtil.toLowerCase(entry.headword()))) {
           entries.add(entry);
@@ -132,7 +133,7 @@ public final class BouvierDictionaryParser {
           case "b" -> inBold = inParagraph;
           case "/b" -> inBold = false;
           default -> {
-            // Any other tag is formatting noise; its text content still flows below.
+            // Other elements do not change paragraph or bold state.
           }
         }
         i = close + 1;
@@ -166,6 +167,12 @@ public final class BouvierDictionaryParser {
     return entries;
   }
 
+  /**
+   * Returns the element name without its attributes.
+   *
+   * @param tag The lower-case tag contents without angle brackets.
+   * @return The element name.
+   */
   private static String tagName(String tag) {
     for (int i = 0; i < tag.length(); i++) {
       if (Character.isWhitespace(tag.charAt(i))) {
@@ -178,6 +185,10 @@ public final class BouvierDictionaryParser {
   /**
    * Appends the finished paragraph: a new entry when it opened with a plausible bold
    * headword, otherwise a continuation of the previous entry's definition.
+   *
+   * @param raw The parsed headword and definition pairs.
+   * @param bold The leading bold text, or {@code null}.
+   * @param text The remaining paragraph text.
    */
   private static void flushParagraph(List<String[]> raw, String bold, StringBuilder text) {
     String body = collapseWhitespace(text.toString());
@@ -192,10 +203,22 @@ public final class BouvierDictionaryParser {
     }
   }
 
+  /**
+   * Tests whether a character may separate a headword from its definition.
+   *
+   * @param c The character.
+   * @return {@code true} for recognized leading punctuation.
+   */
   private static boolean isLeadingPunctuation(char c) {
     return c == ',' || c == '.' || c == ';' || c == ':' || c == '-';
   }
 
+  /**
+   * Tests whether bold text has the form of a dictionary headword.
+   *
+   * @param word The bold text.
+   * @return {@code true} when the text can be a headword.
+   */
   private static boolean isPlausibleHeadword(String word) {
     final String candidate = word.strip();
     if (candidate.isEmpty() || candidate.length() > MAX_HEADWORD_LENGTH) {
@@ -243,6 +266,12 @@ public final class BouvierDictionaryParser {
     return collapsed.toString();
   }
 
+  /**
+   * Removes trailing punctuation and collapses whitespace in a headword.
+   *
+   * @param word The source headword.
+   * @return The cleaned headword.
+   */
   private static String cleanHeadword(String word) {
     String cleaned = collapseWhitespace(word);
     while (!cleaned.isEmpty()
@@ -252,6 +281,12 @@ public final class BouvierDictionaryParser {
     return cleaned;
   }
 
+  /**
+   * Decodes supported entity references in text content.
+   *
+   * @param data The text content.
+   * @return The decoded text.
+   */
   private static String decodeEntities(String data) {
     if (data.indexOf('&') < 0) {
       return data;
@@ -283,6 +318,9 @@ public final class BouvierDictionaryParser {
    * Decodes one entity reference: the named entities the transcription uses, then the
    * decimal and hexadecimal numeric forms. Unknown references decode to {@code null}
    * and pass through literally.
+   *
+   * @param name The reference without {@code &} and {@code ;}.
+   * @return The decoded text, or {@code null} for an unsupported reference.
    */
   private static String decodeEntity(String name) {
     final String named = switch (name) {
@@ -347,7 +385,8 @@ public final class BouvierDictionaryParser {
     } catch (NumberFormatException e) {
       return null;
     }
-    if (code < 0 || code > Character.MAX_CODE_POINT) {
+    if (code <= 0 || code > Character.MAX_CODE_POINT
+        || code >= Character.MIN_SURROGATE && code <= Character.MAX_SURROGATE) {
       return null;
     }
     return new String(Character.toChars(windows1252Remap(code)));
@@ -356,6 +395,9 @@ public final class BouvierDictionaryParser {
   /**
    * Maps the C1 control range through Windows-1252, the HTML rule for numeric
    * references such as the transcription's {@code &#150;} en dashes.
+   *
+   * @param code The numeric reference value.
+   * @return The mapped Unicode code point.
    */
   private static int windows1252Remap(int code) {
     return switch (code) {

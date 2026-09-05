@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -34,9 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Verifies the three interchange file forms: the dictionary TSV, the passage JSON
- * Lines, and the vocabulary TSV, including round trips, the authored fixture files, and
- * the malformed-content contract ({@link InvalidFormatException}).
+ * Tests dictionary TSV, passage JSON Lines, and vocabulary TSV interchange files.
  */
 public class InterchangeFilesTest {
 
@@ -60,11 +59,24 @@ public class InterchangeFilesTest {
   @Test
   void testDictionaryTsvRoundTrips(@TempDir Path dir) throws Exception {
     final List<DictionaryEntry> entries = List.of(
-        new DictionaryEntry("A QUO", "from which; an invented round-trip definition."),
-        new DictionaryEntry("ZONE", "an invented closing entry."));
+        new DictionaryEntry("A QUO", "from which; a fictional round-trip definition."),
+        new DictionaryEntry("ZONE", "a fictional closing entry."));
     final Path file = dir.resolve("dictionary.tsv");
     DictionaryEntry.writeTsv(entries, file);
     assertEquals(entries, DictionaryEntry.readTsv(file));
+  }
+
+  @Test
+  void testDictionaryWriterValidatesBeforeReplacingTheFile(@TempDir Path dir)
+      throws IOException {
+    final Path file = dir.resolve("dictionary.tsv");
+    Files.writeString(file, "existing dictionary\n");
+    final List<DictionaryEntry> entries = new ArrayList<>();
+    entries.add(new DictionaryEntry("ALICE", "a named person in the example."));
+    entries.add(null);
+
+    assertThrows(IllegalArgumentException.class, () -> DictionaryEntry.writeTsv(entries, file));
+    assertEquals("existing dictionary\n", Files.readString(file));
   }
 
   @Test
@@ -73,6 +85,14 @@ public class InterchangeFilesTest {
     Files.writeString(file, "NO TAB ON THIS LINE\n");
     assertThrows(InvalidFormatException.class, () -> DictionaryEntry.readTsv(file));
     Files.writeString(file, "TWO\tTABS\tHERE\n");
+    assertThrows(InvalidFormatException.class, () -> DictionaryEntry.readTsv(file));
+  }
+
+  @Test
+  void testDictionaryTsvRejectsBlankCellsAsInvalidFormat(@TempDir Path dir)
+      throws IOException {
+    final Path file = dir.resolve("blank-dictionary-cell.tsv");
+    Files.writeString(file, "\tdefinition\n");
     assertThrows(InvalidFormatException.class, () -> DictionaryEntry.readTsv(file));
   }
 
@@ -105,11 +125,35 @@ public class InterchangeFilesTest {
   }
 
   @Test
+  void testPassageWriterValidatesBeforeReplacingTheFile(@TempDir Path dir)
+      throws IOException {
+    final Path file = dir.resolve("passages.jsonl");
+    Files.writeString(file, "existing passages\n");
+    final List<CasePassage> passages = new ArrayList<>();
+    passages.add(new CasePassage("alice-0-0", "Alice v. Queen", "", "", "1",
+        "Alice met the Queen in the garden."));
+    passages.add(null);
+
+    assertThrows(IllegalArgumentException.class, () -> CasePassage.writeJsonl(passages, file));
+    assertEquals("existing passages\n", Files.readString(file));
+  }
+
+  @Test
   void testPassageJsonlRejectsMalformedLines(@TempDir Path dir) throws IOException {
     final Path file = dir.resolve("broken.jsonl");
     Files.writeString(file, "not json\n");
     assertThrows(InvalidFormatException.class, () -> CasePassage.readJsonl(file));
     Files.writeString(file, "{\"id\": \"1\"}\n");
+    assertThrows(InvalidFormatException.class, () -> CasePassage.readJsonl(file));
+  }
+
+  @Test
+  void testPassageJsonlRejectsBlankRequiredFieldsAsInvalidFormat(@TempDir Path dir)
+      throws IOException {
+    final Path file = dir.resolve("blank-passage-field.jsonl");
+    Files.writeString(file,
+        "{\"id\": \" \", \"case\": \"Alder v. Birch\", \"cite\": \"1 Fict. 1\", "
+            + "\"date\": \"1904-01-01\", \"vol\": \"1\", \"text\": \"Opinion text.\"}\n");
     assertThrows(InvalidFormatException.class, () -> CasePassage.readJsonl(file));
   }
 
@@ -125,6 +169,19 @@ public class InterchangeFilesTest {
   }
 
   @Test
+  void testVocabularyWriterValidatesBeforeReplacingTheFile(@TempDir Path dir)
+      throws IOException {
+    final Path file = dir.resolve("vocabulary.tsv");
+    Files.writeString(file, "existing vocabulary\n");
+    final List<TermCount> terms = new ArrayList<>();
+    terms.add(new TermCount("alice", 3, false));
+    terms.add(null);
+
+    assertThrows(IllegalArgumentException.class, () -> TermCount.writeTsv(terms, file));
+    assertEquals("existing vocabulary\n", Files.readString(file));
+  }
+
+  @Test
   void testVocabularyTsvRejectsMalformedLines(@TempDir Path dir) throws IOException {
     final Path file = dir.resolve("broken.tsv");
     Files.writeString(file, "term\tnot-a-number\tcorpus\n");
@@ -132,6 +189,24 @@ public class InterchangeFilesTest {
     Files.writeString(file, "term\t3\tneither\n");
     assertThrows(InvalidFormatException.class, () -> TermCount.readTsv(file));
     Files.writeString(file, "term\t3\n");
+    assertThrows(InvalidFormatException.class, () -> TermCount.readTsv(file));
+  }
+
+  @Test
+  void testVocabularyTsvRejectsBlankTermsAsInvalidFormat(@TempDir Path dir)
+      throws IOException {
+    final Path file = dir.resolve("blank-vocabulary-term.tsv");
+    Files.writeString(file, "\t3\tcorpus\n");
+    assertThrows(InvalidFormatException.class, () -> TermCount.readTsv(file));
+  }
+
+  @Test
+  void testReadersRejectMalformedUtf8AsInvalidFormat(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("malformed-utf8");
+    Files.write(file, new byte[] {(byte) 0xc3, 0x28, '\n'});
+
+    assertThrows(InvalidFormatException.class, () -> DictionaryEntry.readTsv(file));
+    assertThrows(InvalidFormatException.class, () -> CasePassage.readJsonl(file));
     assertThrows(InvalidFormatException.class, () -> TermCount.readTsv(file));
   }
 

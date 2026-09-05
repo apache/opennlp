@@ -1,71 +1,74 @@
 # Legal corpus acquisition
 
-These tools fetch open legal data, verify and record it, and normalize it into
-two small interchange files consumed by the embedding evaluation. Licensing
-details and acquisition-time findings are in `LICENSING.md`.
+These scripts download checksum-pinned legal data and normalize it into the
+dictionary and passage files used by the embedding evaluation. Source terms
+are listed in `LICENSING.md`.
 
-Everything lands under `$LEGAL_CORPUS_HOME` (default
-`~/.cache/opennlp-legal-corpus`), never in the repository.
+Data is stored under `$LEGAL_CORPUS_HOME`, which defaults to
+`~/.cache/opennlp-legal-corpus`.
 
 ## Usage
 
 ```
+export LEGAL_CORPUS_HOME="$HOME/.cache/opennlp-legal-corpus"
 ./fetch-dictionary.sh              # Bouvier 1856, 26 pinned Wayback files
-WITH_BLACKS=1 ./fetch-dictionary.sh  # additionally the Black's 2nd (1910) OCR
-./fetch-reporter.sh 190 220        # CAP U.S. Reports volumes (default range)
+WITH_BLACKS=1 ./fetch-dictionary.sh  # optional Black's 2nd edition OCR
+./fetch-reporter.sh 190 220        # pinned CAP U.S. Reports volumes
+./fetch-scripts-test.sh             # offline checksum tests
 ```
 
-Everything after the fetch is pure Java, via the opennlp-embeddings CLI
-(`opennlp.embeddings.cmdline.CLI`; build the module, then put its classes and
-dependencies on the classpath):
+The remaining commands use the `opennlp-embeddings` CLI from the binary
+distribution:
 
 ```
-CLI NormalizeDictionary -rawDir $H/raw/bouvier -out $H/normalized/dictionary.tsv
-CLI NormalizeReporter   -rawDir $H/raw/us      -out $H/normalized/passages.jsonl
-CLI LearnVocabulary     -dictionary $H/normalized/dictionary.tsv \
-                        -passages $H/normalized/passages.jsonl \
-                        -out $H/normalized/vocabulary.tsv
-CLI DistillModel        -teacher sentence-transformers/all-MiniLM-L6-v2 \
-                        -out $H/model -terms $H/normalized/vocabulary.tsv
-CLI EvalVectorSearch    -model $H/model \
-                        -passages $H/normalized/passages.jsonl \
-                        -dictionary $H/normalized/dictionary.tsv \
-                        -out $H/report.md
+CORPUS_DIR="$LEGAL_CORPUS_HOME"
+bin/embeddings NormalizeDictionary \
+  -rawDir "$CORPUS_DIR/raw/bouvier" \
+  -out "$CORPUS_DIR/normalized/dictionary.tsv"
+bin/embeddings NormalizeReporter \
+  -rawDir "$CORPUS_DIR/raw/us" \
+  -out "$CORPUS_DIR/normalized/passages.jsonl"
+bin/embeddings LearnVocabulary \
+  -dictionary "$CORPUS_DIR/normalized/dictionary.tsv" \
+  -passages "$CORPUS_DIR/normalized/passages.jsonl" \
+  -out "$CORPUS_DIR/normalized/vocabulary.tsv"
+bin/embeddings DistillModel \
+  -teacher sentence-transformers/all-MiniLM-L6-v2 \
+  -out "$CORPUS_DIR/model" \
+  -terms "$CORPUS_DIR/normalized/vocabulary.tsv"
+bin/embeddings EvalVectorSearch \
+  -model "$CORPUS_DIR/model" \
+  -passages "$CORPUS_DIR/normalized/passages.jsonl" \
+  -dictionary "$CORPUS_DIR/normalized/dictionary.tsv" \
+  -out "$CORPUS_DIR/report.md"
 ```
 
-The last command is the whole evaluation loop: it builds the exact and the
-quantized index over the embedded passages and writes one markdown report
-(and a TSV twin) with index fidelity, definition-to-headword retrieval,
-half-passage retrieval, throughput, and storage cost.
+`EvalVectorSearch` builds the exact and quantized indexes and writes markdown
+and TSV reports with fidelity, definition-to-headword retrieval, half-passage
+retrieval, throughput, and storage measurements.
 
-A Lucene HNSW baseline reruns the same measurements against a graph index
-for comparison. It lives in the module's test tree so Lucene stays a
-test-scope dependency. From the repository root, run it through the Maven
-test runner:
+A Lucene HNSW baseline runs the same measurements against a graph index. It is
+in the test tree, so Lucene remains a test-scope dependency. Run it from the
+repository root:
 
 ```
 ./mvnw -pl opennlp-extensions/opennlp-embeddings -am \
   -Dtest=HnswBaselineRunnerTest \
   -Dsurefire.failIfNoSpecifiedTests=false \
   -Dopennlp.forkCount=1 \
-  -Dopennlp.hnsw.model="$H/model" \
-  -Dopennlp.hnsw.passages="$H/normalized/passages.jsonl" \
-  -Dopennlp.hnsw.dictionary="$H/normalized/dictionary.tsv" \
-  -Dopennlp.hnsw.output="$H/hnsw-report.md" \
+  -Dopennlp.hnsw.model="$CORPUS_DIR/model" \
+  -Dopennlp.hnsw.passages="$CORPUS_DIR/normalized/passages.jsonl" \
+  -Dopennlp.hnsw.dictionary="$CORPUS_DIR/normalized/dictionary.tsv" \
+  -Dopennlp.hnsw.output="$CORPUS_DIR/hnsw-report.md" \
   -Dopennlp.hnsw.topK=10 test
 ```
 
 The report's per-vector footprint is serialized Lucene vector and graph
 storage, not live JVM memory.
 
-The original Python normalizers were retired 2026-08-16 after the Java ports
-reproduced their output byte for byte on the full first acquisition (see
-`opennlp.embeddings.corpus`).
-
-Fetches are idempotent (existing files are skipped) and every download is
-appended to `$LEGAL_CORPUS_HOME/MANIFEST.tsv` with URL, UTC date, sha256, and
-size. The Wayback Machine rate-limits; if a fetch dies mid-run, wait a moment
-and rerun to resume.
+The fetch scripts verify new and cached files against the checked-in SHA-256
+values and sizes. Successful downloads are recorded in
+`$LEGAL_CORPUS_HOME/MANIFEST.tsv`. A failed download can be retried safely.
 
 ## Interchange formats
 
@@ -90,25 +93,13 @@ passage is a coherent run of argument.
 
 ## Fixtures
 
-`fixtures/mini-dictionary.tsv` and `fixtures/mini-passages.jsonl` are tiny,
-entirely self-authored files in exactly these formats, safe to copy into test
-resources. They are NOT excerpts of the fetched data.
+`fixtures/mini-dictionary.tsv` and `fixtures/mini-passages.jsonl` are
+self-authored examples in these formats. They do not contain fetched text.
 
-## Measured on first acquisition (2026-08-16)
+## Reference corpus
 
 - Bouvier: 6,270 entries from 26 letter files.
-- One validation volume (us/200, 1906): 676 passages from 109 cases.
+- United States Reports volumes 190 through 220: 22,087 passages.
 
-The full evaluation used 22,087 passages and 6,270 headwords at dimension
-256 and top 10. On the author's workstation, the default JVM run produced:
-
-| index | storage bytes/vector | build (ms) | QPS (1 thread) |
-|---|---|---|---|
-| exact | 1024.000 | 16 | 842 |
-| Lucene HNSW | 1049.958 | 8466 | 4212 |
-
-HNSW reached 0.976 recall at 10 against the exact scan and 0.921 rank-1
-agreement. Its definition-to-headword MRR at 10 was 0.069, and its
-half-passage MRR at 10 was 0.804. Timings are environment-sensitive. The
-exact and TurboQuant figures count their stored row payloads; the HNSW
-figure counts Lucene's serialized vector data, metadata, and graph files.
+Run both evaluation commands to produce model-specific quality, storage, and
+throughput results for the current JVM and hardware.
