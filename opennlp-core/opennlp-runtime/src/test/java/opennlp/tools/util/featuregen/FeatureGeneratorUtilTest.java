@@ -71,6 +71,21 @@ public class FeatureGeneratorUtilTest {
   }
 
   @Test
+  void testCapPeriod() {
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("A."));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Z."));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ä."));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ö."));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ü."));
+
+    // reject sides: lower case initial, other second char, longer tokens
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("a."));
+    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("A,"));
+    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("Ab."));
+    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("AB."));
+  }
+
+  @Test
   void testJapanese() {
     // Hiragana
     Assertions.assertEquals("jah", FeatureGeneratorUtil.tokenFeature("そういえば"));
