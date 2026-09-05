@@ -32,6 +32,13 @@ on:
     paths:
       - ".github/**"
 
+concurrency:
+  # A new commit on a pull request makes the run in flight obsolete, so cancel it
+  # instead of paying for a result nobody will read. Pushes to a branch group by ref
+  # and are never cancelled, so every commit on main keeps a full build.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
