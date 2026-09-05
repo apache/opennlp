@@ -19,7 +19,6 @@ package opennlp.tools.lemmatizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Simple feature generator for learning statistical lemmatizers.
@@ -33,9 +32,6 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
 
   private static final int PREFIX_LENGTH = 5;
   private static final int SUFFIX_LENGTH = 7;
-
-  private static final Pattern PATTERN_HAS_CAP = Pattern.compile("[A-Z]");
-  private static final Pattern PATTERN_HAS_NUM = Pattern.compile("[0-9]");
 
   public DefaultLemmatizerContextGenerator() {
   }
@@ -105,15 +101,35 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
       features.add("h");
     }
 
-    if (PATTERN_HAS_CAP.matcher(lex).find()) {
+    if (containsAsciiUpperCase(lex)) {
       features.add("c");
     }
 
-    if (PATTERN_HAS_NUM.matcher(lex).find()) {
+    if (containsAsciiDigit(lex)) {
       features.add("d");
     }
 
     return features.toArray(new String[0]);
+  }
+
+  private static boolean containsAsciiUpperCase(String token) {
+    for (int i = 0; i < token.length(); i++) {
+      char c = token.charAt(i);
+      if (c >= 'A' && c <= 'Z') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean containsAsciiDigit(String token) {
+    for (int i = 0; i < token.length(); i++) {
+      char c = token.charAt(i);
+      if (c >= '0' && c <= '9') {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
