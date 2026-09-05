@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,6 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   private static final Logger logger = LoggerFactory.getLogger(TokenSampleStream.class);
   private final BufferedReader in;
   private String line;
-  private final Pattern alphaNumeric = Pattern.compile("[A-Za-z0-9]");
   private boolean evenq = true;
 
   public TokenSampleStream(InputStream is) throws IOException {
@@ -55,7 +53,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   public TokenSample next() {
-    String[] tokens = line.split("\\s+");
+    String[] tokens = splitOnWhitespace(line);
     if (tokens.length == 0) {
       evenq = true;
     }
@@ -73,7 +71,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         default -> token;
       };
       if (sb.length() != 0) {
-        if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
+        if (!containsAsciiAlphaNum(token) || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
           if ((token.equals("``") || token.equals("--") || token.equals("$") ||
               token.equals("(")  || token.equals("&")  || token.equals("#") ||
               (token.equals("\"") && (evenq && ti != tokens.length - 1)))
@@ -111,6 +109,48 @@ public class TokenSampleStream implements Iterator<TokenSample> {
 
   public void remove() {
     throw new UnsupportedOperationException();
+  }
+
+  private static String[] splitOnWhitespace(String line) {
+    // Replicates String.split("\\s+"): a leading whitespace run yields one empty
+    // leading field, runs collapse, trailing empty fields are dropped.
+    if (line.isEmpty()) {
+      return new String[] {""};
+    }
+    List<String> tokens = new ArrayList<>();
+    if (isAsciiWhitespace(line.charAt(0))) {
+      tokens.add("");
+    }
+    int start = 0;
+    for (int i = 0; i < line.length(); i++) {
+      if (isAsciiWhitespace(line.charAt(i))) {
+        if (i > start) {
+          tokens.add(line.substring(start, i));
+        }
+        while (i + 1 < line.length() && isAsciiWhitespace(line.charAt(i + 1))) {
+          i++;
+        }
+        start = i + 1;
+      }
+    }
+    if (line.length() > start) {
+      tokens.add(line.substring(start));
+    }
+    return tokens.toArray(new String[0]);
+  }
+
+  private static boolean isAsciiWhitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
+  }
+
+  private static boolean containsAsciiAlphaNum(String token) {
+    for (int i = 0; i < token.length(); i++) {
+      char c = token.charAt(i);
+      if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void usage() {
