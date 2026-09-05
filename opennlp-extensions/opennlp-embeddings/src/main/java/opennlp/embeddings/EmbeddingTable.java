@@ -23,7 +23,7 @@ package opennlp.embeddings;
  * <p>A table may work in a space of its own choosing. {@link #addRow(int, float, double[])}
  * accumulates into a vector of {@link #pooledLength()}, and {@link #finishPooling(double[])}
  * maps the accumulated vector to original space once per pooled result. Scoring mirrors this:
- * {@link #prepareQuery(float[])} maps a query into the working space once, and
+ * {@link #prepareQuery(double[])} maps a query into the working space once, and
  * {@link #dot(int, double[])} scores every row against the prepared query there. The working
  * space must preserve norms and dot products, so cosine math is space-independent.</p>
  *
@@ -65,14 +65,14 @@ interface EmbeddingTable {
    * @param query The query, of length {@link #dimension()}. Not modified.
    * @return The double-precision prepared query, of length {@link #pooledLength()}.
    */
-  double[] prepareQuery(float[] query);
+  double[] prepareQuery(double[] query);
 
   /**
    * The dot product of a row with a prepared query, equal to the original-space dot product up
    * to float rounding.
    *
    * @param row           The row to score, between 0 and {@code rowCount() - 1}.
-   * @param preparedQuery The query as returned by {@link #prepareQuery(float[])}.
+   * @param preparedQuery The query as returned by {@link #prepareQuery(double[])}.
    * @return The dot product.
    */
   double dot(int row, double[] preparedQuery);

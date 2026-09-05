@@ -92,12 +92,8 @@ final class FloatEmbeddingTable implements EmbeddingTable {
 
   /** {@inheritDoc} */
   @Override
-  public double[] prepareQuery(float[] query) {
-    final double[] prepared = new double[dimension];
-    for (int d = 0; d < dimension; d++) {
-      prepared[d] = query[d];
-    }
-    return prepared;
+  public double[] prepareQuery(double[] query) {
+    return query.clone();
   }
 
   /** {@inheritDoc} */

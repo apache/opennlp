@@ -146,28 +146,34 @@ class SafetensorsWriterTest {
 
   @Test
   void testRejectsANullFile() {
-    assertEquals("File must not be null", assertThrows(IllegalArgumentException.class,
+    assertEquals("file must not be null", assertThrows(IllegalArgumentException.class,
         () -> SafetensorsWriter.writeMatrix(null, 1, 1, new float[1])).getMessage());
   }
 
   @Test
   void testRejectsNullValues(@TempDir Path dir) {
-    assertEquals("Values must not be null", assertThrows(IllegalArgumentException.class,
+    assertEquals("values must not be null", assertThrows(IllegalArgumentException.class,
         () -> SafetensorsWriter.writeMatrix(dir.resolve(ModelFileNames.SAFETENSORS), 1, 1, null))
         .getMessage());
   }
 
   @ParameterizedTest
-  @CsvSource({"0, 2, 2", "2, 0, 2", "-1, 2, 2", "2, 3, 5", "2, 3, 7", "1, 1, 0"})
+  @CsvSource(delimiter = ';', value = {
+      "0;2;2;rows must be at least 1, got 0",
+      "2;0;2;cols must be at least 1, got 0",
+      "-1;2;2;rows must be at least 1, got -1",
+      "2;3;5;values has 5 elements, not 2 x 3",
+      "2;3;7;values has 7 elements, not 2 x 3",
+      "1;1;0;values has 0 elements, not 1 x 1"
+  })
   void testRejectsAShapeThatDoesNotMatchTheValues(int rows, int cols, int valueCount,
-                                                  @TempDir Path dir) {
+                                                  String expectedMessage, @TempDir Path dir) {
     final Path file = dir.resolve(ModelFileNames.SAFETENSORS);
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> SafetensorsWriter.writeMatrix(file, rows, cols, new float[valueCount]));
 
-    assertEquals("Values has " + valueCount + " elements, not " + rows + " x " + cols,
-        e.getMessage());
+    assertEquals(expectedMessage, e.getMessage());
     assertTrue(Files.notExists(file), "a rejected write must not leave a file behind");
   }
 }

@@ -70,10 +70,10 @@ final class TermSegmenter {
   static TermSegmenter forTeacher(TeacherTokenizer teacher, Path teacherDirectory)
       throws IOException {
     if (teacher == null) {
-      throw new IllegalArgumentException("Teacher must not be null");
+      throw new IllegalArgumentException("teacher must not be null");
     }
     if (teacherDirectory == null) {
-      throw new IllegalArgumentException("TeacherDirectory must not be null");
+      throw new IllegalArgumentException("teacherDirectory must not be null");
     }
     if (TeacherTokenizer.WORDPIECE.equals(teacher.modelType())) {
       // The lowercase default matches ModelAssembler's: absent means the uncased convention.
@@ -114,7 +114,7 @@ final class TermSegmenter {
    */
   List<String> pieces(String term) {
     if (term == null) {
-      throw new IllegalArgumentException("Term must not be null");
+      throw new IllegalArgumentException("term must not be null");
     }
     final List<SubwordPiece> encoded = tokenizer.encode(term);
     final List<String> pieces = new ArrayList<>(encoded.size());

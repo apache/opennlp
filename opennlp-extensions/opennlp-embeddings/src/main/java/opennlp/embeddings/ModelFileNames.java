@@ -25,7 +25,7 @@ import java.util.List;
  * {@link StaticEmbeddingModel}'s loader and {@link ModelAssembler}. Every model directory has
  * one matrix file, either {@link #SAFETENSORS} or {@link #QUANTIZED}. A WordPiece directory also
  * has {@link #CONFIG}, {@link #VOCABULARY}, and {@link #TOKENIZER_CONFIG}; a Unigram directory has
- * {@link #CONFIG} and {@link #TOKENIZER_JSON}. Legacy SentencePiece directories may additionally
+ * {@link #CONFIG} and {@link #TOKENIZER_JSON}. Separate-file SentencePiece directories may additionally
  * have one of {@link #SENTENCEPIECE_MODELS}.
  *
  * <p>{@link #ONNX_MODEL} and {@link #ONNX_MODEL_DATA} name files of a <em>teacher</em> directory

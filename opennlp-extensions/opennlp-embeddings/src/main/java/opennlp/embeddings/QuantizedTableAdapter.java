@@ -65,8 +65,8 @@ final class QuantizedTableAdapter implements EmbeddingTable {
 
   /** {@inheritDoc} */
   @Override
-  public double[] prepareQuery(float[] query) {
-    return matrix.rotate(query);
+  public double[] prepareQuery(double[] query) {
+    return matrix.rotateQuery(query);
   }
 
   /** {@inheritDoc} */

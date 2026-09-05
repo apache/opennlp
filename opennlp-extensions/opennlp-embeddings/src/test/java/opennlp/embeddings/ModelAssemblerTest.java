@@ -28,6 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 import opennlp.embeddings.cmdline.AssembleModelTool;
 import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -122,6 +123,81 @@ class ModelAssemblerTest {
   }
 
   @Test
+  void testRejectsDuplicateTopLevelModel(@TempDir Path dir) throws IOException {
+    final String duplicate = WORDPIECE_TOKENIZER_JSON.substring(0,
+        WORDPIECE_TOKENIZER_JSON.length() - 1) + ",\"model\":{\"type\":\"Unigram\"}}";
+    Files.writeString(dir.resolve("tokenizer.json"), duplicate);
+    Files.writeString(dir.resolve("config.json"), "{\"normalize\":false}");
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
+        SafetensorsTestFiles.matrix("embeddings", ROWS));
+
+    final InvalidFormatException exception = assertThrows(InvalidFormatException.class,
+        () -> ModelAssembler.assemble(dir));
+    assertTrue(exception.getMessage().contains("model")
+        && exception.getMessage().contains("more than once"), exception.getMessage());
+  }
+
+  @Test
+  void testRejectsDuplicateModelType(@TempDir Path dir) throws IOException {
+    final String duplicate = WORDPIECE_TOKENIZER_JSON.replace(
+        "\"type\":\"WordPiece\"", "\"type\":\"WordPiece\",\"type\":\"Unigram\"");
+    Files.writeString(dir.resolve("tokenizer.json"), duplicate);
+    Files.writeString(dir.resolve("config.json"), "{\"normalize\":false}");
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
+        SafetensorsTestFiles.matrix("embeddings", ROWS));
+
+    final InvalidFormatException exception = assertThrows(InvalidFormatException.class,
+        () -> ModelAssembler.assemble(dir));
+    assertTrue(exception.getMessage().contains("model.type")
+        && exception.getMessage().contains("more than once"), exception.getMessage());
+  }
+
+  @Test
+  void testRejectsDuplicateNormalizerLowercase(@TempDir Path dir) throws IOException {
+    final String duplicate = WORDPIECE_TOKENIZER_JSON.replace(
+        "\"lowercase\":true", "\"lowercase\":true,\"lowercase\":false");
+    Files.writeString(dir.resolve("tokenizer.json"), duplicate);
+    Files.writeString(dir.resolve("config.json"), "{\"normalize\":false}");
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
+        SafetensorsTestFiles.matrix("embeddings", ROWS));
+
+    final InvalidFormatException exception = assertThrows(InvalidFormatException.class,
+        () -> ModelAssembler.assemble(dir));
+    assertTrue(exception.getMessage().contains("normalizer.lowercase")
+        && exception.getMessage().contains("more than once"), exception.getMessage());
+  }
+
+  @Test
+  void testRejectsNonBooleanNormalizerLowercase(@TempDir Path dir) throws IOException {
+    final String malformed = WORDPIECE_TOKENIZER_JSON.replace(
+        "\"lowercase\":true", "\"lowercase\":\"true\"");
+    Files.writeString(dir.resolve("tokenizer.json"), malformed);
+    Files.writeString(dir.resolve("config.json"), "{\"normalize\":false}");
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
+        SafetensorsTestFiles.matrix("embeddings", ROWS));
+
+    final InvalidFormatException exception = assertThrows(InvalidFormatException.class,
+        () -> ModelAssembler.assemble(dir));
+    assertTrue(exception.getMessage().contains("normalizer.lowercase")
+        && exception.getMessage().contains("boolean"), exception.getMessage());
+  }
+
+  @Test
+  void testRejectsDuplicateVocabularyTokenBeforeWritingFiles(@TempDir Path dir)
+      throws IOException {
+    final String duplicate = "{\"model\":{\"type\":\"WordPiece\",\"vocab\":"
+        + "{\"[UNK]\":0,\"[UNK]\":1}}}";
+    Files.writeString(dir.resolve("tokenizer.json"), duplicate);
+    Files.writeString(dir.resolve("config.json"), "{\"normalize\":false}");
+    SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {{0f}, {1f}}));
+
+    assertThrows(InvalidFormatException.class, () -> ModelAssembler.assemble(dir));
+    assertFalse(Files.exists(dir.resolve("vocab.txt")));
+    assertFalse(Files.exists(dir.resolve("tokenizer_config.json")));
+  }
+
+  @Test
   void testLoadsAModel2VecUnigramTokenizerWithoutASeparateModelFile(@TempDir Path dir)
       throws IOException {
     Files.writeString(dir.resolve("tokenizer.json"),
@@ -190,7 +266,7 @@ class ModelAssemblerTest {
   }
 
   @Test
-  void testToolPrintsASummaryAndFailsLoudlyOnABadDirectory(@TempDir Path dir) throws IOException {
+  void testToolPrintsASummaryAndRejectsABadDirectory(@TempDir Path dir) throws IOException {
     writeWordpieceDistillation(dir);
     // The tool runs the assembly without throwing on a good directory.
     new AssembleModelTool().run(new String[] {"-modelDir", dir.toString()});

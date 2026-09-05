@@ -352,9 +352,23 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testLoadRejectsAZeroDimensionMatrix(@TempDir Path dir) throws IOException {
+    final float[][] rows = new float[VOCAB_TOKENS.size()][0];
+    final Path tensors = dir.resolve("zero-dimension.safetensors");
+    SafetensorsTestFiles.write(tensors,
+        SafetensorsTestFiles.matrix("embeddings", rows));
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> StaticEmbeddingModel.load(writeVocab(dir), tensors,
+            Casing.UNCASED, Normalization.NONE));
+
+    assertTrue(error.getMessage().contains("dimension"), error.getMessage());
+  }
+
+  @Test
   void testLoadRejectsANonFiniteMatrixValue(@TempDir Path dir) throws IOException {
     // The distiller replaces non-finite teacher values with zero before writing, so a NaN in a
-    // loaded matrix marks a corrupt or foreign file. It must fail loud at load time: a NaN row
+    // loaded matrix marks a corrupt or foreign file. Loading must reject it because a NaN row
     // defeats both the zero-norm guard and every similarity comparison downstream.
     final float[][] rows = new float[ROWS.length][];
     for (int r = 0; r < ROWS.length; r++) {
@@ -382,6 +396,34 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testLoadRejectsANonFiniteWeight(@TempDir Path dir) throws IOException {
+    final Path vocab = writeVocab(dir);
+    final float[] weights = {1f, 1f, 1f, 1f, Float.NaN, 1f};
+    final Path nanTensors = dir.resolve("nan-weight.safetensors");
+    SafetensorsTestFiles.write(nanTensors,
+        SafetensorsTestFiles.matrix("embeddings", ROWS),
+        SafetensorsTestFiles.vector("weights", weights));
+
+    final InvalidFormatException nan = assertThrows(InvalidFormatException.class,
+        () -> StaticEmbeddingModel.load(vocab, nanTensors,
+            Casing.UNCASED, Normalization.NONE));
+    assertTrue(nan.getMessage().contains("weights"), nan.getMessage());
+    assertTrue(nan.getMessage().contains("row 4"), nan.getMessage());
+
+    weights[4] = Float.NEGATIVE_INFINITY;
+    final Path infiniteTensors = dir.resolve("infinite-weight.safetensors");
+    SafetensorsTestFiles.write(infiniteTensors,
+        SafetensorsTestFiles.matrix("embeddings", ROWS),
+        SafetensorsTestFiles.vector("weights", weights));
+
+    final InvalidFormatException infinite = assertThrows(InvalidFormatException.class,
+        () -> StaticEmbeddingModel.load(vocab, infiniteTensors,
+            Casing.UNCASED, Normalization.NONE));
+    assertTrue(infinite.getMessage().contains("weights"), infinite.getMessage());
+    assertTrue(infinite.getMessage().contains("row 4"), infinite.getMessage());
+  }
+
+  @Test
   void testLoadRejectsWeightsSizeMismatch(@TempDir Path dir) throws IOException {
     // A weights tensor sized for a different (smaller) vocabulary than the embedding matrix.
     final Path file = dir.resolve("mismatched.safetensors");
@@ -392,6 +434,23 @@ class StaticEmbeddingModelTest {
     final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> StaticEmbeddingModel.load(writeVocab(dir), file, Casing.UNCASED, Normalization.NONE));
     assertTrue(e.getMessage().contains("weights"));
+  }
+
+  @Test
+  void testLoadRejectsWeightsThatAreNotOneDimensional(@TempDir Path dir) throws IOException {
+    final Path vocabulary = dir.resolve("scalar-weight-vocab.txt");
+    Files.write(vocabulary, List.of("[UNK]"));
+    final Path tensors = dir.resolve("scalar-weight.safetensors");
+    SafetensorsTestFiles.write(tensors,
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {{1f}}),
+        new SafetensorsTestFiles.Tensor("weights", new int[0], new float[] {1f}));
+
+    final InvalidFormatException exception = assertThrows(InvalidFormatException.class,
+        () -> StaticEmbeddingModel.load(vocabulary, tensors,
+            Casing.UNCASED, Normalization.NONE));
+
+    assertTrue(exception.getMessage().contains("weights"), exception.getMessage());
+    assertTrue(exception.getMessage().contains("1-D"), exception.getMessage());
   }
 
   // Writes the two JSON configuration files of a published model directory alongside the
@@ -488,8 +547,7 @@ class StaticEmbeddingModelTest {
     writeVocab(dir);
     writeSafetensors(dir, false);
     writeConfigs(dir, "false", "true");
-    // Only mean pooling is implemented; a third-party config declaring another pooling must
-    // fail loud instead of silently mean-pooling with the wrong semantics.
+    // Only mean pooling is implemented, so a config declaring another operation is invalid.
     Files.writeString(dir.resolve("config.json"),
         "{\"model_type\":\"model2vec\",\"normalize\":false,\"pooling\":\"max\"}");
 
@@ -526,7 +584,7 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
-  void testTextEmbedderSeamMatchesDirectUseAndBatches(@TempDir Path dir) throws IOException {
+  void testTextEmbedderInterfaceMatchesDirectUseAndBatches(@TempDir Path dir) throws IOException {
     final TextEmbedder embedder =
         StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
             Casing.UNCASED, Normalization.NONE);
