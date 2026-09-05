@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.embeddings" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Static Embeddings</title>
+
+	<section xml:id="tools.embeddings.introduction">
+		<title>Introduction</title>
+		<para>
+			The <code>opennlp-embeddings</code> extension module produces sentence and word
+			embedding vectors from a static (non-contextual) embedding table: a per-token vector
+				matrix plus WordPiece or SentencePiece tokenization. The module loads Model2Vec
+				layouts and can distill a sentence-transformer into the same flat-table form.
+				Embedding uses table lookups, mean pooling, and optional normalization, without a
+				model forward pass or native runtime.
+			SentencePiece support covers multilingual tables distilled from encoders of the
+			XLM-RoBERTa family, whose vectors embed different languages into the same space.
+		</para>
+		<para>
+				Use it for semantic similarity, deduplication, candidate retrieval, clustering, or
+				classifier features when a static table suits the task. Use a contextual model when
+				the task depends on distinguishing word senses in context.
+		</para>
+		<para>
+			OpenNLP also supports contextual, ONNX-backed sentence vectors in the
+			<code>opennlp-dl</code> module. Contextual models preserve word-sense context at a
+			higher inference cost. Both paths implement the same
+			<code>TextEmbedder</code> interface (in <code>opennlp-api</code>), so an application can
+			swap one for the other without changing its calling code.
+		</para>
+		<para>
+			No model is bundled with the module. Callers point it at a model directory they
+			downloaded; the table's own license applies to the table.
+		</para>
+		<para>
+			The public API of this module
+			(<code>StaticEmbeddingModel</code>, <code>SafetensorsFile</code>,
+			<code>TensorInfo</code>, <code>Neighbor</code>, <code>ModelDistiller</code>, and
+			<code>ModelAssembler</code>, <code>VectorIndex</code>,
+			<code>FlatFloatIndex</code>, and <code>TurboQuantIndex</code>), together with the
+			<code>TextEmbedder</code> interface
+			in <code>opennlp-api</code>, is experimental and may change in a later release.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.api">
+		<title>Embedding Text with the API</title>
+		<para>
+			A model directory loads with a single call, and the tokenizer family is detected from
+			the files present. A WordPiece model contains <code>vocab.txt</code>,
+			<code>model.safetensors</code>, <code>config.json</code>, and
+			<code>tokenizer_config.json</code>; a Model2Vec Unigram model contains
+			<code>tokenizer.json</code>, <code>model.safetensors</code>, and
+			<code>config.json</code>. Its JSON file contains the Unigram vocabulary, scores,
+			normalizer, and pre-tokenizer. Separate-file SentencePiece directories may also carry a
+			trained <code>.model</code> file. The tokenizer and pooling switches are read from the
+			model's own configuration files:
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
+
+float[] vector = model.embed("The quick brown fox");
+double similarity = model.similarity("coffee", "espresso");
+List<Neighbor> neighbors = model.mostSimilar("coffee", 5);
+List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
+		</programlisting>
+		<para>
+			For a model laid out differently, the explicit overloads take the data files and the
+			switches directly. The WordPiece overload takes whether the tokenizer lower-cases
+			(and strips accents) and whether embeddings are L2-normalized; both are properties of
+			the model, published in its configuration. The SentencePiece overload has no casing
+			switch, because the trained <code>.model</code> file contains the model's text
+			normalizer.
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(
+    Path.of("vocab.txt"), Path.of("model.safetensors"),
+    StaticEmbeddingModel.Casing.UNCASED,      // from the model's do_lower_case
+    StaticEmbeddingModel.Normalization.L2);   // from the model's config
+
+StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
+    Path.of("sentencepiece.bpe.model"), Path.of("tokenizer.json"),
+    Path.of("model.safetensors"),
+    StaticEmbeddingModel.Normalization.L2);
+]]>
+		</programlisting>
+		<para>
+			Matrix rows are resolved by piece string, never by tokenizer id, because the two
+			files of a separate-file SentencePiece model may order and offset their ids differently.
+			A poolable piece with no matrix row is rejected during loading. A self-contained
+			Model2Vec Unigram layout loads directly from its <code>tokenizer.json</code>.
+		</para>
+		<para>
+			Instances are immutable and safe for concurrent use, so one loaded model can serve
+			every thread of an application. Texts with no in-vocabulary tokens embed to a zero
+			vector, and <code>similarity</code> reports <code>0</code> for them.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.search">
+		<title>Semantic Search</title>
+		<para>
+			A common use case is ranking documents against a query by meaning rather than by
+			shared words. <code>similarity</code> embeds both texts and returns the cosine
+			similarity of their vectors, so a small document list ranks with one call per
+			document:
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
+
+String query = "home espresso machine";
+List<String> documents = List.of(
+    "How do I brew espresso at home?",
+    "The history of tea in East Asia",
+    "Best grinders for pour-over coffee");
+
+record Scored(String document, double score) {}
+List<Scored> results = new ArrayList<>();
+for (String document : documents) {
+  results.add(new Scored(document, model.similarity(query, document)));
+}
+results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
+		</programlisting>
+		<para>
+			For a corpus too large to score per query, embed each document once with
+			<code>embed</code>, keep the vectors in any vector index, and embed only the query
+			at search time. Any index that accepts float vectors can store these embeddings.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.vector-index">
+		<title>Bounded In-Memory Vector Search</title>
+		<para>
+			The module includes two build-once, read-many implementations of
+			<code>VectorIndex</code>. <code>FlatFloatIndex</code> keeps full-precision vectors and
+			scans each row for exact cosine scores. <code>TurboQuantIndex</code> scans packed 2-bit,
+			3-bit, or 4-bit rows, using less memory at the cost of recall. Both are for bounded
+			collections in one JVM, such as the passages of one document. They are not graph indexes
+			or distributed search engines.
+		</para>
+		<para>
+			Build the index on one thread, call <code>freeze</code> once, then safely publish the
+			frozen index. Frozen indexes accept concurrent <code>topK</code> calls. Added vectors are
+			copied. Ids must be unique. Queries and indexed vectors must match the configured dimension
+			and contain finite values:
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
+VectorIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
+
+index.add("wonderland-excerpt", model.embed("Alice met the Queen in the garden."));
+index.add("orchard-notes", model.embed("A ripe apple hangs from the tree."));
+index.freeze();
+
+List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);]]>
+		</programlisting>
+		<para>
+			<code>VectorIndexUsageExampleTest</code> asserts this lifecycle. Use
+			<code>FlatFloatIndex</code> in the same listing when exact float scoring matters more
+			than storage. A zero query returns no results, and an indexed zero vector scores zero.
+			A frozen, non-empty index of either type can be saved with
+			<code>write(Path)</code> and reopened with that class's <code>read(Path)</code>; the loaded
+			index is already frozen. A SHA-256 manifest detects changed or mismatched vector and id
+			files. The interface has no delete or update operation. Rebuild a new index when the
+			bounded collection changes.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.cmdline">
+		<title>Command Line Tools</title>
+		<para>
+			The module ships its own command line launcher, <code>bin/embeddings</code>, next to
+			<code>bin/opennlp</code> in the binary distribution. Invoked without arguments it lists
+			the available tools, and every tool prints its help when invoked with the
+			<code>help</code> parameter.
+		</para>
+		<section xml:id="tools.embeddings.cmdline.distill">
+			<title>Distill Model Tool</title>
+			<para>
+				The <code>DistillModel</code> tool compresses a sentence-transformer teacher into a
+				static embedding table. The teacher is either a Hugging Face model id
+				(<code>org/model</code>, or <code>org/model@revision</code> to pin a branch, tag, or
+				commit; the required files download once into a local cache) or a local directory
+				holding the teacher's <code>tokenizer.json</code> and <code>onnx/model.onnx</code>.
+				The following command distills a teacher into the directory given by
+				<code>-out</code>:
+				<screen>
+<![CDATA[$ bin/embeddings DistillModel -teacher hf-id-or-path -out dir [-pcaDims num] [-terms file]]]>
+				</screen>
+				<code>-pcaDims</code> is the number of principal components to keep and defaults
+				to 256. The run ends by assembling the output directory and verifying it with
+				<code>StaticEmbeddingModel.load</code>, then prints a summary naming the tokenizer
+				family, row count, dimension reduction, and variance retained by PCA. The summary is
+				printed only after the directory loads successfully.
+			</para>
+			<para>
+				<code>-terms</code> names an optional term file: one term per line, with text after
+				a tab ignored, so a learned vocabulary TSV works unchanged. Each term, a whole word
+				or a multi-word phrase such as a domain vocabulary entry, is segmented by the
+				teacher's own tokenizer, encoded through the teacher as one sequence, and appended
+				to the table as an extra row, recorded in the model directory as
+				<code>terms.txt</code>. When such a model embeds text, it first matches the text
+				against its terms greedily longest-first, case-insensitively, and pools a matched
+				term's single row instead of the subword pieces of its words; text between matches
+				is tokenized as usual. A model without a term file uses subword pieces throughout.
+				Terms should arrive sorted by descending corpus frequency, because the Zipf
+				weighting treats the subword rows and the term rows as one frequency ranking. A
+				term that equals a vocabulary token is dropped as a duplicate row, and terms are
+				also returned by the similarity search of <code>mostSimilar</code> like any
+				vocabulary token.
+			</para>
+		</section>
+		<section xml:id="tools.embeddings.cmdline.assemble">
+			<title>Assemble Model Tool</title>
+			<para>
+				The <code>AssembleModel</code> tool completes a downloaded distillation in place so
+				<code>StaticEmbeddingModel.load</code> can open it. A Model2Vec distillation writes
+				<code>model.safetensors</code>, <code>tokenizer.json</code>, and
+				<code>config.json</code>; for a WordPiece model the tool derives the missing
+				<code>vocab.txt</code> and <code>tokenizer_config.json</code> from
+				<code>tokenizer.json</code>, and for a SentencePiece model it checks that the
+				trained <code>.model</code> file copied from the teacher is present. A missing file is
+				reported with its expected name. The tool never overwrites an existing file.
+				<screen>
+<![CDATA[$ bin/embeddings AssembleModel -modelDir dir]]>
+				</screen>
+				The tool then verifies the directory by loading it and prints the loaded model's
+				family, row count, and dimension, along with a line for every file it wrote.
+			</para>
+		</section>
+		<section xml:id="tools.embeddings.cmdline.eval-vector-search">
+			<title>Evaluate Vector Search Tool</title>
+			<para>
+				The <code>EvalVectorSearch</code> tool evaluates a static embedding model over
+				a normalized passage corpus and dictionary. It builds an exact float index and
+				a TurboQuant index, then reports index fidelity, definition-to-headword
+				retrieval, half-passage retrieval, single-thread throughput, and storage per
+				vector.
+				<screen>
+<![CDATA[$ bin/embeddings EvalVectorSearch -model dir -passages file -dictionary file -out file [-bits num] [-seed num] [-topK num]]]>
+				</screen>
+				The bit width defaults to 4, the rotation seed defaults to 42, and the
+				evaluation depth defaults to 10. The tool writes a human-readable Markdown
+				report and a key-value TSV with the same metrics.
+			</para>
+			<para>
+				A text that embeds to a zero vector has no search direction, so the evaluator
+				does not index or query it. The report distinguishes total inputs from
+				indexable passage and headword embeddings. Fidelity recall divides by the
+				number of exact results actually returned, so it remains valid when the
+				requested depth exceeds the index size.
+			</para>
+		</section>
+	</section>
+
+	<section xml:id="tools.embeddings.quantized">
+		<title>Quantized Models</title>
+		<para>
+			A static embedding table can be quantized to 2, 3, or 4 bits per dimension. The size
+			depends on the bit width and on padding each row to the next power of two. For example,
+			a 500,000-row table with 300 dimensions uses 600 MB as 32-bit floats. At 4 bits, its
+			rows are padded to 512 dimensions and the quantized file uses about 136 MB, including
+			its per-row scales and norms. The implementation uses a randomized Hadamard transform,
+			a standard-normal Lloyd-Max scalar grid, and a least-squares scale per row. This is an
+			MSE-oriented variant of
+			<ulink url="https://arxiv.org/abs/2504.19874">TurboQuant</ulink>. It does not include
+			the residual QJL stage used by the paper's unbiased inner-product estimator.
+		</para>
+		<para>
+			The <code>QuantizeModel</code> tool quantizes a model directory's
+			<code>model.safetensors</code> in place, writing <code>model.quantized</code> next to
+			it and reporting the sizes and the reconstruction quality it measured from the written
+			file:
+		</para>
+		<programlisting language="text">
+			<![CDATA[
+opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4]]>
+		</programlisting>
+		<para>
+			A directory presents exactly one matrix file. After quantizing, delete the
+			<code>model.safetensors</code> to deploy the quantized matrix; the loader then reads
+			<code>model.quantized</code> with no code change, and any per-token pooling weights
+			are stored inside the quantized file. A directory that still contains both files is
+			rejected at load time, so the deployment must choose which matrix is authoritative.
+			Embedding, <code>similarity</code>, and <code>mostSimilar</code> use the same API as the
+			float model. Fewer bits reduce the file size and increase quantization error.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.safetensors">
+		<title>The safetensors Reader</title>
+		<para>
+			Weights are read with a small reader for the safetensors format. It parses a JSON
+			header and raw tensor bytes without deserializing Java or Python objects. Only the
+			header is read eagerly; tensor data streams
+			directly into the decoded array, so the file size is not limited by Java's
+			int-indexed arrays. One decoded tensor is capped at the maximum Java array length
+			(about 2.1 billion float elements), checked explicitly.
+		</para>
+	</section>
+</chapter>
