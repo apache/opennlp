@@ -19,25 +19,21 @@ package opennlp.embeddings;
 import java.util.Arrays;
 
 /**
- * An optimal scalar quantizer for standard-normal values: {@code 2^bits} representation levels
- * minimizing the mean squared error over {@code N(0,1)}, with encoding by nearest level. The
- * coordinates of a {@link HadamardRotation rotated} unit vector, scaled by the square root of the
- * padded dimension, follow this distribution closely, which is what makes one fixed grid
- * near-optimal for every coordinate of every vector (Zandieh et al.,
- * <a href="https://arxiv.org/abs/2504.19874"><i>TurboQuant: Online Vector Quantization with
- * Near-optimal Distortion Rate</i></a>).
+ * A scalar quantizer for standard-normal values: {@code 2^bits} representation levels minimizing
+ * mean squared error over {@code N(0,1)}, with encoding by nearest level. A
+ * {@link HadamardRotation} and per-row scaling let {@link QuantizedEmbeddingMatrix} use this one
+ * fixed grid for every row.
  *
  * <p>The levels are the classic Lloyd-Max quantizer of the Gaussian (Max,
  * <a href="https://doi.org/10.1109/TIT.1960.1057548"><i>Quantizing for minimum
  * distortion</i></a>, IRE Transactions on Information Theory, 1960), computed here by Lloyd
  * iteration over a fine discretization of the density rather than copied from published tables,
  * so the derivation is in this file and reproducible. Computed grids are cached per bit width.
- * Encoding compares against the midpoints between adjacent levels, which is exactly the
- * nearest-level rule for a sorted grid.</p>
+ * Encoding compares against the midpoints between adjacent levels.</p>
  *
  * <p>A quantized file stores its grid, and reading rebuilds the quantizer from the stored levels
- * through {@link #fromLevels(float[])}, so decoding never depends on this derivation matching the
- * one that encoded the file.</p>
+ * through {@link #fromLevels(float[])}. Decoding therefore uses the serialized levels instead of
+ * regenerating them.</p>
  *
  * <p>Instances are immutable and safe for concurrent use.</p>
  */
@@ -59,12 +55,12 @@ final class GaussianQuantizer {
   private static final GaussianQuantizer[] CACHE = new GaussianQuantizer[MAX_BITS + 1];
 
   private final float[] levels;
-  // Midpoints between adjacent levels: level i is nearest exactly when the value lies in
+  // Midpoints between adjacent levels: level i is nearest when the value lies in
   // (thresholds[i-1], thresholds[i]], with the outermost intervals unbounded.
   private final float[] thresholds;
 
   /**
-   * Holds a validated grid; callers reach this through {@link #forBits(int)} or
+   * Constructs a validated grid for {@link #forBits(int)} and
    * {@link #fromLevels(float[])}.
    *
    * @param levels The representation levels, ascending.
@@ -73,7 +69,7 @@ final class GaussianQuantizer {
     this.levels = levels;
     this.thresholds = new float[levels.length - 1];
     for (int i = 0; i < thresholds.length; i++) {
-      thresholds[i] = (levels[i] + levels[i + 1]) / 2f;
+      thresholds[i] = (float) (((double) levels[i] + levels[i + 1]) / 2.0);
     }
   }
 
@@ -191,8 +187,7 @@ final class GaussianQuantizer {
       samples[i] = -LLOYD_RANGE + i * step;
       weights[i] = Math.exp(-samples[i] * samples[i] / 2);
     }
-    // Initial levels: evenly spaced over the central mass; Lloyd converges to the optimum for
-    // the log-concave Gaussian regardless of the starting spread.
+    // Start with levels spaced across the central mass.
     final double[] levels = new double[levelCount];
     for (int i = 0; i < levelCount; i++) {
       levels[i] = -3.0 + 6.0 * (i + 0.5) / levelCount;

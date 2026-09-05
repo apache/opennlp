@@ -20,16 +20,14 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Edge cases for the quantized matrix: dimensions that are not powers of two (so the padding
- * and truncation path runs), a one-dimensional matrix, adversarial rows the random rotation
- * must still reconstruct (constant, one-hot, sign-alternating), and the dot/norm consistency
- * over padded dimensions.
+ * Tests padded dimensions and finite extreme values in a quantized matrix.
  */
 class QuantizedEmbeddingMatrixEdgeCaseTest {
 
@@ -50,7 +48,7 @@ class QuantizedEmbeddingMatrixEdgeCaseTest {
     for (int d = 0; d < dimension; d++) {
       query[d] = (float) random.nextGaussian();
     }
-    final float[] rotatedQuery = quantized.rotate(query);
+    final double[] rotatedQuery = quantized.rotate(query);
     for (int row = 0; row < rows; row++) {
       final float[] decoded = quantized.decodeRow(row);
       double originalDot = 0;
@@ -67,7 +65,7 @@ class QuantizedEmbeddingMatrixEdgeCaseTest {
 
   @Test
   void testConstantRowReconstructsDespiteBeingSpikyAfterRotation() {
-    // A constant vector is the worst case for the transform: its rotation concentrates all
+    // A constant vector stresses the transform because its rotation concentrates all
     // energy in one coordinate, which the grid clamps. The per-row least-squares scale must
     // absorb that clamp, so the reconstruction still points the same way.
     final int dimension = 300;
@@ -119,6 +117,65 @@ class QuantizedEmbeddingMatrixEdgeCaseTest {
     }
   }
 
+  @Test
+  void testQuantizesEveryFiniteTwoDimensionalSignPattern() {
+    final float maximum = Float.MAX_VALUE;
+    final float[] matrix = {
+        maximum, maximum,
+        maximum, -maximum,
+        -maximum, maximum,
+        -maximum, -maximum
+    };
+
+    final QuantizedEmbeddingMatrix quantized =
+        QuantizedEmbeddingMatrix.quantize(matrix, 4, 2, 4, SEED);
+
+    for (int row = 0; row < quantized.rowCount(); row++) {
+      assertTrue(Double.isFinite(quantized.rowNorm(row)), "non-finite norm at row " + row);
+      for (final float value : quantized.decodeRow(row)) {
+        assertTrue(Float.isFinite(value), "non-finite decoded value at row " + row);
+      }
+    }
+  }
+
+  @Test
+  void testExtremeFiniteRowsScoreLikeTheirDecodedValues() {
+    final float maximum = Float.MAX_VALUE;
+    final float[] matrix = {
+        maximum, maximum,
+        maximum, -maximum,
+        -maximum, maximum,
+        -maximum, -maximum
+    };
+    final QuantizedEmbeddingMatrix quantized =
+        QuantizedEmbeddingMatrix.quantize(matrix, 4, 2, 4, SEED);
+
+    for (int row = 0; row < quantized.rowCount(); row++) {
+      final float[] decoded = quantized.decodeRow(row);
+      for (int dimension = 0; dimension < 2; dimension++) {
+        final float[] query = new float[2];
+        query[dimension] = 1f;
+        final double actual = quantized.dotRotated(row, quantized.rotate(query));
+        assertEquals(decoded[dimension], actual,
+            Math.abs((double) decoded[dimension]) * 1e-6,
+            "rotated scoring must match decoded coordinate " + dimension + " of row " + row);
+      }
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource({"1, 1", "1, -1", "-1, 1", "-1, -1"})
+  void testFiniteQueriesDoNotOverflowRotatedSpace(float firstSign, float secondSign) {
+    final QuantizedEmbeddingMatrix quantized =
+        QuantizedEmbeddingMatrix.quantize(new float[] {1f, 1f}, 1, 2, 4, SEED);
+    final float maximum = Float.MAX_VALUE;
+    final float[] query = {firstSign * maximum, secondSign * maximum};
+
+    for (final double value : quantized.rotate(query)) {
+      assertTrue(Double.isFinite(value), "a finite query must stay finite after rotation");
+    }
+  }
+
   /**
    * {@return the cosine between a matrix row and a decoded vector}
    *
@@ -127,7 +184,7 @@ class QuantizedEmbeddingMatrixEdgeCaseTest {
    * @param dimension The row width.
    * @param decoded   The decoded row.
    */
-  private static double cosine(float[] matrix, int base, int dimension, float[] decoded) {
+  private double cosine(float[] matrix, int base, int dimension, float[] decoded) {
     return ModelQuantizer.cosine(matrix, base, dimension, decoded);
   }
 }

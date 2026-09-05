@@ -27,14 +27,13 @@ import java.util.Random;
 import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 
 /**
- * Writes a SentencePiece-layout static embedding model directory around the bundled tiny
- * Unigram test model, for tests that need one. The matrix vocabulary is written the way a
- * distillation ships it: control pieces dropped, extra special rows in front, and one token
- * appended through {@code added_tokens}, so lookups must go by piece string, not tokenizer id.
+ * Builds a SentencePiece-layout embedding model around the bundled tiny Unigram model. Its
+ * tokenizer ids and matrix rows differ, which tests row lookup by piece text.
  */
 final class SentencePieceModelFixture {
 
   static final String MODEL_RESOURCE = "/opennlp/embeddings/tiny-unigram.model";
+  private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 
   private final byte[] modelBytes;
   private final SentencePieceTokenizer tokenizer;
@@ -47,11 +46,12 @@ final class SentencePieceModelFixture {
    * @throws IOException Thrown if the resource cannot be read.
    */
   SentencePieceModelFixture() throws IOException {
-    try (InputStream in = SentencePieceModelFixture.class.getResourceAsStream(MODEL_RESOURCE)) {
+    try (InputStream in = modelResource()) {
       modelBytes = in.readAllBytes();
     }
-    tokenizer = SentencePieceTokenizer.load(
-        SentencePieceModelFixture.class.getResourceAsStream(MODEL_RESOURCE));
+    try (InputStream in = modelResource()) {
+      tokenizer = SentencePieceTokenizer.load(in);
+    }
     rows = new ArrayList<>();
     rows.add("<pad>");
     rows.add("<unk>");
@@ -109,7 +109,7 @@ final class SentencePieceModelFixture {
    *
    * @param pieces The {@code model.vocab} pieces in row order.
    */
-  private static String tokenizerJson(List<String> pieces) {
+  private String tokenizerJson(List<String> pieces) {
     final StringBuilder json = new StringBuilder("{\"version\":\"1.0\",\"added_tokens\":[");
     json.append("{\"id\":0,\"content\":\"<pad>\",\"special\":true},");
     json.append("{\"id\":").append(pieces.size()).append(",\"content\":\"<extra_special>\","
@@ -130,7 +130,7 @@ final class SentencePieceModelFixture {
    *
    * @param text The text to quote.
    */
-  private static String quote(String text) {
+  private String quote(String text) {
     final StringBuilder quoted = new StringBuilder("\"");
     for (int i = 0; i < text.length(); i++) {
       final char c = text.charAt(i);
@@ -139,7 +139,11 @@ final class SentencePieceModelFixture {
         case '\\' -> quoted.append("\\\\");
         default -> {
           if (c < 0x20) {
-            quoted.append(String.format("\\u%04x", (int) c));
+            quoted.append("\\u")
+                .append(HEX_DIGITS[(c >>> 12) & 0xF])
+                .append(HEX_DIGITS[(c >>> 8) & 0xF])
+                .append(HEX_DIGITS[(c >>> 4) & 0xF])
+                .append(HEX_DIGITS[c & 0xF]);
           } else {
             quoted.append(c);
           }
@@ -147,5 +151,19 @@ final class SentencePieceModelFixture {
       }
     }
     return quoted.append('"').toString();
+  }
+
+  /**
+   * Opens the bundled SentencePiece model.
+   *
+   * @return A new stream for the model resource.
+   * @throws IOException Thrown if the resource is missing.
+   */
+  private InputStream modelResource() throws IOException {
+    final InputStream in = SentencePieceModelFixture.class.getResourceAsStream(MODEL_RESOURCE);
+    if (in == null) {
+      throw new IOException("Missing test resource " + MODEL_RESOURCE);
+    }
+    return in;
   }
 }

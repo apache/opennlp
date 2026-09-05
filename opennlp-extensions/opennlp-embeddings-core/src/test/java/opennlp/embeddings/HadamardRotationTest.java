@@ -27,9 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * The rotation contract: orthonormal (norms and dot products preserved), self-consistent
- * (inverse restores the input), deterministic per seed and JVM-independent by construction, and
- * padded to the next power of two.
+ * Tests the randomized Hadamard rotation and its inverse.
  */
 class HadamardRotationTest {
 
@@ -49,8 +47,8 @@ class HadamardRotationTest {
   void testRotationPreservesNormsAndDotProducts() {
     final Random random = new Random(42);
     final HadamardRotation rotation = new HadamardRotation(300, 7L);
-    final float[] a = randomPadded(rotation, random);
-    final float[] b = randomPadded(rotation, random);
+    final double[] a = randomPadded(rotation, random);
+    final double[] b = randomPadded(rotation, random);
     final double normBefore = norm(a);
     final double dotBefore = dot(a, b);
     rotation.rotate(a);
@@ -65,24 +63,24 @@ class HadamardRotationTest {
   void testInverseRestoresTheInput() {
     final Random random = new Random(43);
     final HadamardRotation rotation = new HadamardRotation(256, 99L);
-    final float[] vector = randomPadded(rotation, random);
-    final float[] original = vector.clone();
+    final double[] vector = randomPadded(rotation, random);
+    final double[] original = vector.clone();
     rotation.rotate(vector);
     rotation.inverse(vector);
-    assertArrayEquals(original, vector, 1e-4f);
+    assertArrayEquals(original, vector, 1e-12);
   }
 
   @Test
   void testSameSeedSameRotationDifferentSeedDifferentRotation() {
     final Random random = new Random(44);
-    final float[] input = randomPadded(new HadamardRotation(64, 5L), random);
-    final float[] first = input.clone();
-    final float[] second = input.clone();
-    final float[] other = input.clone();
+    final double[] input = randomPadded(new HadamardRotation(64, 5L), random);
+    final double[] first = input.clone();
+    final double[] second = input.clone();
+    final double[] other = input.clone();
     new HadamardRotation(64, 5L).rotate(first);
     new HadamardRotation(64, 5L).rotate(second);
     new HadamardRotation(64, 6L).rotate(other);
-    assertArrayEquals(first, second, 0f, "the same seed must give bit-identical rotations");
+    assertArrayEquals(first, second, 0f, "the same seed must give equal rotations");
     assertFalse(Arrays.equals(first, other),
         "different seeds must give different rotations");
   }
@@ -92,11 +90,11 @@ class HadamardRotationTest {
     // A one-hot vector concentrates all its energy in one coordinate; after rotation every
     // coordinate must hold a share, which is the property the per-coordinate quantizer needs.
     final HadamardRotation rotation = new HadamardRotation(128, 11L);
-    final float[] oneHot = new float[rotation.paddedDimension()];
-    oneHot[3] = 1f;
+    final double[] oneHot = new double[rotation.paddedDimension()];
+    oneHot[3] = 1.0;
     rotation.rotate(oneHot);
     final double expectedMagnitude = 1.0 / Math.sqrt(rotation.paddedDimension());
-    for (final float value : oneHot) {
+    for (final double value : oneHot) {
       assertEquals(expectedMagnitude, Math.abs(value), 1e-6,
           "a rotated one-hot vector has equal magnitude everywhere");
     }
@@ -107,37 +105,37 @@ class HadamardRotationTest {
     final HadamardRotation rotation = new HadamardRotation(300, 1L);
     assertEquals(512, rotation.paddedDimension());
     assertThrows(IllegalArgumentException.class, () -> rotation.rotate(null));
-    assertThrows(IllegalArgumentException.class, () -> rotation.rotate(new float[300]));
-    assertThrows(IllegalArgumentException.class, () -> rotation.inverse(new float[511]));
+    assertThrows(IllegalArgumentException.class, () -> rotation.rotate(new double[300]));
+    assertThrows(IllegalArgumentException.class, () -> rotation.inverse(new double[511]));
     assertThrows(IllegalArgumentException.class, () -> new HadamardRotation(0, 1L));
   }
 
   @Test
   void testDimensionOneIsTheIdentityUpToSign() {
     final HadamardRotation rotation = new HadamardRotation(1, 123L);
-    final float[] vector = new float[] {2.5f};
+    final double[] vector = new double[] {2.5};
     rotation.rotate(vector);
-    assertEquals(2.5f, Math.abs(vector[0]), 1e-6f);
+    assertEquals(2.5, Math.abs(vector[0]), 1e-12);
     rotation.inverse(vector);
-    assertEquals(2.5f, vector[0], 1e-6f);
+    assertEquals(2.5, vector[0], 1e-12);
   }
 
-  private static float[] randomPadded(HadamardRotation rotation, Random random) {
-    final float[] vector = new float[rotation.paddedDimension()];
+  private double[] randomPadded(HadamardRotation rotation, Random random) {
+    final double[] vector = new double[rotation.paddedDimension()];
     for (int i = 0; i < vector.length; i++) {
-      vector[i] = (float) random.nextGaussian();
+      vector[i] = random.nextGaussian();
     }
     return vector;
   }
 
-  private static double norm(float[] vector) {
+  private double norm(double[] vector) {
     return Math.sqrt(dot(vector, vector));
   }
 
-  private static double dot(float[] a, float[] b) {
+  private double dot(double[] a, double[] b) {
     double dot = 0;
     for (int i = 0; i < a.length; i++) {
-      dot += (double) a[i] * b[i];
+      dot += a[i] * b[i];
     }
     return dot;
   }

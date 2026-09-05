@@ -70,6 +70,18 @@ List<Neighbor> neighbors = model.mostSimilar("coffee", 5);
 
 The reference Python flow lives in `dev/embeddings/distill_bge_m3.py`. The `dev/embeddings/parity/` harness embeds the same text with both implementations and reports vector differences and single-thread speed. Compare independently distilled tables by similarities and rankings because PCA bases can differ.
 
+## 4. Quantize the matrix
+
+Quantization reduces the matrix size after distillation or assembly:
+
+```text
+opennlp-embeddings QuantizeModel -modelDir bge-m3-static -bits 4
+```
+
+The command writes `model.quantized` and verifies the written file against sampled source rows.
+Remove `model.safetensors` to select the quantized matrix. Keep the tokenizer, configuration, and
+term files in the directory.
+
 ## The WordPiece path
 
 A WordPiece teacher (a BERT-family model such as bge-large-en) distills the same way. Its directory layout is the BERT one instead: `vocab.txt` (one token per line, line number is the row), `model.safetensors`, `config.json`, and `tokenizer_config.json` (whose `do_lower_case` sets the casing). `load` detects WordPiece from the presence of `vocab.txt`.

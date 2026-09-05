@@ -18,14 +18,12 @@ package opennlp.embeddings;
 
 /**
  * A seeded randomized Hadamard rotation: a deterministic random sign flip per coordinate followed
- * by the normalized fast Walsh-Hadamard transform. Rotating a vector this way spreads its energy
- * evenly across coordinates, so each coordinate of a rotated unit vector is approximately
- * Gaussian with variance {@code 1/paddedDimension} and nearly independent of the others, which is
- * the property {@link GaussianQuantizer}'s per-coordinate grids rely on.
+ * by the normalized fast Walsh-Hadamard transform. The transform reduces coordinate concentration
+ * before {@link GaussianQuantizer} encodes each coordinate independently.
  *
- * <p>The transform is orthonormal, so it preserves norms and inner products exactly (up to float
+ * <p>The transform is orthonormal, so it preserves norms and inner products within floating-point
  * rounding): two vectors rotated with the same instance have the same dot product as the
- * originals, which lets similarity math stay in rotated space and never pay for the inverse.
+ * originals, which lets similarity calculations remain in rotated space without an inverse.
  * Writing {@code S} for the sign flip and {@code H} for the normalized Walsh-Hadamard matrix
  * (which is its own inverse), the rotation is {@code H·S} and its inverse is {@code S·H}: the
  * same two operations applied in the opposite order, so no second table is needed.</p>
@@ -46,7 +44,7 @@ final class HadamardRotation {
   private final int paddedDimension;
   // True where the coordinate is negated before (rotate) or after (inverse) the transform.
   private final boolean[] flip;
-  private final float inverseSquareRoot;
+  private final double inverseSquareRoot;
 
   /**
    * Creates the rotation for vectors of the given original dimension.
@@ -71,7 +69,7 @@ final class HadamardRotation {
       flip[i] = (bits & 1L) != 0;
       bits >>>= 1;
     }
-    this.inverseSquareRoot = (float) (1.0 / Math.sqrt(paddedDimension));
+    this.inverseSquareRoot = 1.0 / Math.sqrt(paddedDimension);
   }
 
   /**
@@ -105,7 +103,7 @@ final class HadamardRotation {
    * @throws IllegalArgumentException Thrown if {@code vector} is {@code null} or has the wrong
    *     length.
    */
-  void rotate(float[] vector) {
+  void rotate(double[] vector) {
     requirePaddedLength(vector);
     for (int i = 0; i < paddedDimension; i++) {
       if (flip[i]) {
@@ -124,7 +122,7 @@ final class HadamardRotation {
    * @throws IllegalArgumentException Thrown if {@code vector} is {@code null} or has the wrong
    *     length.
    */
-  void inverse(float[] vector) {
+  void inverse(double[] vector) {
     requirePaddedLength(vector);
     walshHadamard(vector);
     for (int i = 0; i < paddedDimension; i++) {
@@ -135,13 +133,13 @@ final class HadamardRotation {
   }
 
   /**
-   * Requires the vector to be non-null and of the padded length.
+   * Checks that a vector has the padded length.
    *
    * @param vector The vector to check.
    * @throws IllegalArgumentException Thrown if {@code vector} is {@code null} or has the wrong
    *     length.
    */
-  private void requirePaddedLength(float[] vector) {
+  private void requirePaddedLength(double[] vector) {
     if (vector == null) {
       throw new IllegalArgumentException("Vector must not be null");
     }
@@ -157,12 +155,12 @@ final class HadamardRotation {
    *
    * @param vector The vector to transform, of the padded length.
    */
-  private void walshHadamard(float[] vector) {
+  private void walshHadamard(double[] vector) {
     for (int half = 1; half < paddedDimension; half <<= 1) {
       for (int block = 0; block < paddedDimension; block += half << 1) {
         for (int i = block; i < block + half; i++) {
-          final float a = vector[i];
-          final float b = vector[i + half];
+          final double a = vector[i];
+          final double b = vector[i + half];
           vector[i] = a + b;
           vector[i + half] = a - b;
         }
@@ -179,7 +177,7 @@ final class HadamardRotation {
    *
    * @param state The state word to mix.
    */
-  private static long splitmix64(long state) {
+  private long splitmix64(long state) {
     long z = state;
     z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
     z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;

@@ -38,10 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The quantized WordPiece model directory contract: after {@link ModelQuantizer} runs and the
- * safetensors is removed, the directory loads from {@code model.quantized}, embeds and ranks
- * like the float model up to the quantization error, and carries per-token pooling weights
- * through the quantized file. A directory holding both matrix files is rejected.
+ * Tests quantized WordPiece model loading, embedding, search, and file selection.
  */
 class StaticEmbeddingModelQuantizedTest {
 
@@ -53,7 +50,7 @@ class StaticEmbeddingModelQuantizedTest {
   };
   private static final String[] SENTENCES = {
       "hello world", "apple banana cherry", "a guitar by the river",
-      "no vocabulary hit here matches nothing"
+      "xyzzy plugh"
   };
 
   /**
@@ -63,7 +60,7 @@ class StaticEmbeddingModelQuantizedTest {
    * @param withWeights Whether to bundle a per-token {@code weights} tensor.
    * @throws IOException Thrown if writing fails.
    */
-  private static void writeModelDirectory(Path directory, boolean withWeights)
+  private void writeModelDirectory(Path directory, boolean withWeights)
       throws IOException {
     final List<String> vocabulary = new ArrayList<>(List.of("[UNK]", "[CLS]", "[SEP]"));
     vocabulary.addAll(List.of(WORDS));
@@ -99,10 +96,10 @@ class StaticEmbeddingModelQuantizedTest {
    *
    * @param directory The model directory to quantize in place.
    * @param bits      The bit width.
-   * @return What the quantizer measured.
+   * @return The quantization result.
    * @throws IOException Thrown if quantizing or deleting fails.
    */
-  private static ModelQuantizer.Result deployQuantized(Path directory, int bits)
+  private ModelQuantizer.Result deployQuantized(Path directory, int bits)
       throws IOException {
     final ModelQuantizer.Result result = ModelQuantizer.quantize(directory, bits, SEED);
     Files.delete(directory.resolve(ModelFileNames.SAFETENSORS));
@@ -118,23 +115,27 @@ class StaticEmbeddingModelQuantizedTest {
     deployQuantized(directory, bits);
     final StaticEmbeddingModel quantizedModel = StaticEmbeddingModel.load(directory);
     assertEquals(floatModel.dimension(), quantizedModel.dimension());
-    // Pooling several rows accumulates independent quantization noise, so the pooled cosine
-    // sits a little below the single-row reconstruction; the floor loosens as bits shrink.
-    // Every value is far above what a broken rotation, grid, or scale would produce.
+    // Pooling several rows accumulates independent quantization noise, so the pooled cosine can
+    // be lower than a single-row reconstruction. The threshold decreases with the bit width and
+    // detects errors in the rotation, grid, or scale.
     final double threshold = switch (bits) {
       case 2 -> 0.88;
       case 3 -> 0.95;
       default -> 0.98;
     };
+    int compared = 0;
     for (final String text : SENTENCES) {
       final double cosine = cosine(floatModel.embed(text), quantizedModel.embed(text));
       if (Double.isNaN(cosine)) {
-        // Both pooled to the zero vector: an out-of-vocabulary text, identical behavior.
+        // Both models produced a zero vector for out-of-vocabulary text.
         continue;
       }
+      compared++;
       assertTrue(cosine >= threshold,
-          bits + "-bit embedding of '" + text + "' drifted to cosine " + cosine);
+          bits + "-bit embedding of '" + text + "' has cosine " + cosine);
     }
+    assertEquals(SENTENCES.length - 1, compared,
+        "only the out-of-vocabulary sentence should produce a zero vector");
   }
 
   @Test
@@ -166,16 +167,91 @@ class StaticEmbeddingModelQuantizedTest {
   @Test
   void testPoolingWeightsRideThroughTheQuantizedFile(@TempDir Path directory)
       throws IOException {
-    writeModelDirectory(directory, true);
+    final Path weightedDirectory = Files.createDirectory(directory.resolve("weighted"));
+    final Path unweightedDirectory = Files.createDirectory(directory.resolve("unweighted"));
+    final List<String> vocabulary = List.of("[UNK]", "[CLS]", "[SEP]", "hello", "world");
+    final float[][] rows = {
+        {0f, 0f}, {0f, 0f}, {0f, 0f}, {1f, 0f}, {0f, 1f}
+    };
+    for (final Path modelDirectory : List.of(weightedDirectory, unweightedDirectory)) {
+      Files.write(modelDirectory.resolve(ModelFileNames.VOCABULARY), vocabulary);
+      Files.writeString(modelDirectory.resolve(ModelFileNames.CONFIG), "{\"normalize\": true}");
+      Files.writeString(modelDirectory.resolve(ModelFileNames.TOKENIZER_CONFIG),
+          "{\"do_lower_case\": true}");
+    }
+    SafetensorsTestFiles.write(weightedDirectory.resolve(ModelFileNames.SAFETENSORS),
+        SafetensorsTestFiles.matrix("embeddings", rows),
+        SafetensorsTestFiles.vector(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME,
+            new float[] {1f, 1f, 1f, 10f, 1f}));
+    SafetensorsTestFiles.write(unweightedDirectory.resolve(ModelFileNames.SAFETENSORS),
+        SafetensorsTestFiles.matrix("embeddings", rows));
+    final StaticEmbeddingModel floatModel = StaticEmbeddingModel.load(weightedDirectory);
+    final StaticEmbeddingModel unweightedModel = StaticEmbeddingModel.load(unweightedDirectory);
+    final float[] expected = floatModel.embed("hello world");
+    assertTrue(cosine(expected, unweightedModel.embed("hello world")) < 0.9,
+        "the fixture must distinguish weighted from unweighted pooling");
+
+    final ModelQuantizer.Result result = deployQuantized(weightedDirectory, 4);
+    assertTrue(result.hasWeights(), "the weights tensor must be included");
+    final StaticEmbeddingModel quantizedModel = StaticEmbeddingModel.load(weightedDirectory);
+    final double cosine = cosine(expected, quantizedModel.embed("hello world"));
+    assertTrue(cosine > 0.98, "weighted quantized embedding has cosine " + cosine);
+  }
+
+  @Test
+  void testQuantizedDirectoryIncludesTermRows(@TempDir Path directory) throws IOException {
+    Files.write(directory.resolve(ModelFileNames.VOCABULARY),
+        List.of("[CLS]", "[SEP]", "[UNK]", "habeas", "corpus"));
+    Files.write(directory.resolve(ModelFileNames.TERMS), List.of("habeas corpus"));
+    SafetensorsTestFiles.write(directory.resolve(ModelFileNames.SAFETENSORS),
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {
+            {0f, 0f}, {0f, 0f}, {0f, 0f}, {1f, 0f}, {0f, 1f}, {10f, 10f}
+        }));
+    Files.writeString(directory.resolve(ModelFileNames.CONFIG), "{\"normalize\": false}");
+    Files.writeString(directory.resolve(ModelFileNames.TOKENIZER_CONFIG),
+        "{\"do_lower_case\": true}");
     final StaticEmbeddingModel floatModel = StaticEmbeddingModel.load(directory);
-    final ModelQuantizer.Result result = deployQuantized(directory, 4);
-    assertTrue(result.hasWeights(), "the weights tensor must be carried over");
+
+    deployQuantized(directory, 4);
     final StaticEmbeddingModel quantizedModel = StaticEmbeddingModel.load(directory);
-    // Weighted pooling changes the pooled direction; matching the float model closely proves
-    // the weights arrived, since dropping them would score a visibly different vector.
-    final double cosine =
-        cosine(floatModel.embed("hello world apple"), quantizedModel.embed("hello world apple"));
-    assertTrue(cosine > 0.98, "weighted quantized embedding drifted to cosine " + cosine);
+
+    assertEquals(1, quantizedModel.termCount());
+    assertTrue(cosine(floatModel.embed("habeas corpus"),
+        quantizedModel.embed("habeas corpus")) > 0.98);
+    assertEquals("habeas corpus",
+        quantizedModel.mostSimilar("habeas corpus", 1).get(0).token());
+  }
+
+  @Test
+  void testQuantizedModel2VecUnigramDirectoryLoadsWithoutSafetensors(@TempDir Path directory)
+      throws IOException {
+    Files.writeString(directory.resolve(ModelFileNames.TOKENIZER_JSON),
+        "{\"normalizer\":{\"type\":\"Sequence\",\"normalizers\":["
+            + "{\"type\":\"Precompiled\",\"precompiled_charsmap\":\"\"},"
+            + "{\"type\":\"Replace\",\"pattern\":{\"String\":\".\"},"
+            + "\"content\":\" . \"},"
+            + "{\"type\":\"Replace\",\"pattern\":{\"Regex\":\"\\\\s+\"},"
+            + "\"content\":\" \"},"
+            + "{\"type\":\"Strip\",\"strip_left\":true,\"strip_right\":true}]},"
+            + "\"pre_tokenizer\":{\"type\":\"Metaspace\",\"replacement\":\"▁\","
+            + "\"prepend_scheme\":\"always\",\"split\":false},"
+            + "\"model\":{\"type\":\"Unigram\",\"unk_id\":1,"
+            + "\"byte_fallback\":false,\"vocab\":["
+            + "[\"[PAD]\",-10.0],[\"[UNK]\",-10.0],[\"▁hello\",-1.0],"
+            + "[\"▁world\",-1.0],[\"▁\",-2.0],[\".\",-1.0]]}}");
+    Files.writeString(directory.resolve(ModelFileNames.CONFIG), "{\"normalize\":false}");
+    SafetensorsTestFiles.write(directory.resolve(ModelFileNames.SAFETENSORS),
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {
+            {0f}, {0f}, {2f}, {4f}, {8f}, {16f}
+        }));
+    final StaticEmbeddingModel floatModel = StaticEmbeddingModel.load(directory);
+
+    deployQuantized(directory, 4);
+    final StaticEmbeddingModel quantizedModel = StaticEmbeddingModel.load(directory);
+
+    assertEquals(6, quantizedModel.vocabularySize());
+    assertTrue(cosine(floatModel.embed("hello world."),
+        quantizedModel.embed("hello world.")) > 0.98);
   }
 
   @Test
@@ -187,7 +263,7 @@ class StaticEmbeddingModelQuantizedTest {
     for (final String word : new String[] {"hello", "river", "copper"}) {
       assertEquals(floatModel.mostSimilar(word, 1).get(0).token(),
           quantizedModel.mostSimilar(word, 1).get(0).token(),
-          "top neighbor of '" + word + "' must survive quantization");
+          "top neighbor of '" + word + "' must remain first after quantization");
     }
   }
 
@@ -200,8 +276,8 @@ class StaticEmbeddingModelQuantizedTest {
     // that the analogy path (query build, exclusion, scan) runs end to end over rotated space.
     final List<Neighbor> neighbors = model.analogy("hello", "world", "apple", 1);
     assertEquals(1, neighbors.size());
-    // The analogy excludes its own terms, so none of them comes back.
-    assertFalse(neighbors.get(0).token().equals("apple"));
+    assertFalse(List.of("hello", "world", "apple").contains(neighbors.get(0).token()),
+        "the analogy result must exclude every query term");
   }
 
   @ParameterizedTest
@@ -219,7 +295,28 @@ class StaticEmbeddingModelQuantizedTest {
   }
 
   @Test
-  void testRowCountMismatchFailsLoud(@TempDir Path directory) throws IOException {
+  void testVerificationSampleDoesNotExceedItsCap(@TempDir Path directory) throws IOException {
+    final float[][] rows = new float[1025][1];
+    for (int row = 0; row < rows.length; row++) {
+      rows[row][0] = row + 1f;
+    }
+    SafetensorsTestFiles.write(directory.resolve(ModelFileNames.SAFETENSORS),
+        SafetensorsTestFiles.matrix("embeddings", rows));
+
+    final ModelQuantizer.Result result = ModelQuantizer.quantize(directory, 4, SEED);
+
+    assertEquals(1024, result.sampledRows());
+  }
+
+  @Test
+  void testVerificationCosineStaysWithinItsMathematicalRange() {
+    final float[] row = {6.0943845e19f, 2.0969745e19f};
+
+    assertEquals(1.0, ModelQuantizer.cosine(row, 0, row.length, row));
+  }
+
+  @Test
+  void testRowCountMismatchIsRejected(@TempDir Path directory) throws IOException {
     writeModelDirectory(directory, false);
     deployQuantized(directory, 4);
     final Path vocabularyFile = directory.resolve("vocab.txt");
@@ -246,6 +343,31 @@ class StaticEmbeddingModelQuantizedTest {
   }
 
   @Test
+  void testQuantizerRejectsBadBitWidthBeforeReadingTheMatrix(@TempDir Path directory)
+      throws IOException {
+    Files.write(directory.resolve(ModelFileNames.SAFETENSORS), new byte[] {1, 2, 3, 4});
+
+    final IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+        () -> ModelQuantizer.quantize(directory, 1, SEED));
+
+    assertTrue(error.getMessage().contains("Bits"), error.getMessage());
+  }
+
+  @Test
+  void testQuantizerRejectsMatrixShapedPoolingWeights(@TempDir Path directory)
+      throws IOException {
+    SafetensorsTestFiles.write(directory.resolve(ModelFileNames.SAFETENSORS),
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {{1f, 2f}, {3f, 4f}}),
+        SafetensorsTestFiles.matrix(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME,
+            new float[][] {{1f}, {1f}}));
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> ModelQuantizer.quantize(directory, 4, SEED));
+
+    assertTrue(error.getMessage().contains("1-D"), error.getMessage());
+  }
+
+  @Test
   void testQuantizedEmbeddingsAreDeterministic(@TempDir Path first, @TempDir Path second)
       throws IOException {
     writeModelDirectory(first, false);
@@ -256,7 +378,7 @@ class StaticEmbeddingModelQuantizedTest {
     final StaticEmbeddingModel modelB = StaticEmbeddingModel.load(second);
     for (final String text : SENTENCES) {
       assertArrayEquals(modelA.embed(text), modelB.embed(text), 0f,
-          "the same table, bits, and seed must embed bit-identically");
+          "the same table, bits, and seed must produce equal embeddings");
     }
   }
 
@@ -267,7 +389,7 @@ class StaticEmbeddingModelQuantizedTest {
    * @param a The first vector.
    * @param b The second vector, of the same length.
    */
-  private static double cosine(float[] a, float[] b) {
+  private double cosine(float[] a, float[] b) {
     return ModelQuantizer.cosine(a, 0, a.length, b);
   }
 }

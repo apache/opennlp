@@ -188,6 +188,23 @@ statistic includes temporary objects, not just the retained model.
 
 `embed()` tokenizes and pools only the rows used by the input. `mostSimilar()` scans every matrix row, so its cost grows with the vocabulary. Use a vector index when a full scan is too expensive. The harness in `dev/embeddings/parity/` compares single-thread speed and vector output with the Model2Vec Python implementation. Run it with the model and hardware used for deployment.
 
+## Quantizing a model
+
+`QuantizeModel` converts `model.safetensors` to a 2, 3, or 4-bit matrix:
+
+```text
+opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4
+```
+
+The command writes `model.quantized` and reports its size and sampled reconstruction cosine.
+Delete `model.safetensors` before loading the quantized model. A directory containing both matrix
+files is rejected. The tokenizer, configuration, and optional `terms.txt` stay unchanged.
+
+The format uses a randomized Hadamard transform, a Gaussian Lloyd-Max grid, and a scale for each
+row. It is an MSE-oriented variant of
+[TurboQuant](https://arxiv.org/abs/2504.19874) and does not implement the paper's residual QJL
+estimator.
+
 ## Usage
 
 ### Loading a non-standard layout
