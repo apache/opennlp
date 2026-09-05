@@ -594,4 +594,56 @@ String[] words = segmenter.tokenize("我来到北京清华大学");]]>
 			</para>
 		</section>
 	</section>
+	<section xml:id="tools.tokenizer.subword">
+		<title>Subword Tokenization</title>
+		<para>
+			Neural models commonly use subword units from a fixed vocabulary. The
+			<code>SubwordTokenizer</code> interface encodes text as <code>SubwordPiece</code> values.
+			Each value contains the normalized piece string, vocabulary id, and UTF-16 span in the
+			original text. The span remains valid when model normalization changes the piece text.
+			<code>encodeToIds</code> and <code>encodeToPieces</code> return only the ids or strings.
+			An implementation can include model control pieces with empty spans, such as the
+			classification and separator pieces used by BERT. Thread safety is implementation specific.
+		</para>
+		<para>
+			The interface, <code>SubwordPiece</code>, and vocabulary-based
+			<code>WordpieceEncoder</code> are in <code>opennlp-api</code>. Implementations that read
+			trained model formats can implement the same contract.
+		</para>
+		<para>
+			A piece without source text has an empty span. When normalization reorders characters, the
+			range can include adjacent source characters.
+		</para>
+		<section xml:id="tools.tokenizer.subword.wordpiece">
+			<title>WordPiece</title>
+			<para>
+				<code>WordpieceEncoder</code> in <code>opennlp.tools.tokenize</code> runs the full
+				BERT tokenization pipeline: control character removal, whitespace normalization, CJK
+				isolation, optional lower casing with accent stripping, punctuation isolation, and
+				greedy longest-match wordpiece segmentation. It is constructed from the model's
+				vocabulary, conventionally the lines of a <code>vocab.txt</code> file, where the line
+				number is the id.
+				<programlisting language="java">
+<![CDATA[List<String> vocabulary = Files.readAllLines(Path.of("vocab.txt"));
+
+WordpieceEncoder encoder = new WordpieceEncoder(vocabulary);        // uncased model
+WordpieceEncoder cased = new WordpieceEncoder(vocabulary, false);   // cased model
+
+String text = "Alice was beginning to get very tired.";
+List<SubwordPiece> pieces = encoder.encode(text);
+for (SubwordPiece piece : pieces) {
+  CharSequence source = text.subSequence(piece.start(), piece.end());
+  System.out.println(piece.id() + "\t" + piece.piece() + "\t" + source);
+}
+int[] ids = encoder.encodeToIds(text);]]>
+				</programlisting>
+				The classification and separator pieces appear at the beginning and end with empty
+				spans. Words the vocabulary cannot cover, and words exceeding 100 normalized Unicode
+				code points, become the unknown piece. A constructor parameter can set a different maximum.
+				Models with other special tokens or non-contiguous ids are
+				supported through the constructors taking explicit special tokens or a piece-to-id
+				map.
+			</para>
+		</section>
+	</section>
 </chapter>
