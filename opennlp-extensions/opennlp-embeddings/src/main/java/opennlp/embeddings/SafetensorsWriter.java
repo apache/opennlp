@@ -61,20 +61,26 @@ final class SafetensorsWriter {
    * @param cols   The number of matrix columns.
    * @param values The matrix values in row-major order, {@code rows * cols} of them. Must not be
    *               {@code null}.
-   * @throws IllegalArgumentException Thrown if an argument is {@code null} or the value count
-   *     does not match the shape.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}, a dimension is less
+   *     than 1, or the value count does not match the shape.
    * @throws IOException Thrown if writing fails.
    */
   static void writeMatrix(Path file, int rows, int cols, float[] values) throws IOException {
     if (file == null) {
-      throw new IllegalArgumentException("File must not be null");
+      throw new IllegalArgumentException("file must not be null");
     }
     if (values == null) {
-      throw new IllegalArgumentException("Values must not be null");
+      throw new IllegalArgumentException("values must not be null");
     }
-    if (rows < 1 || cols < 1 || values.length != (long) rows * cols) {
-      throw new IllegalArgumentException("Values has " + values.length + " elements, not " + rows
-          + " x " + cols);
+    if (rows < 1) {
+      throw new IllegalArgumentException("rows must be at least 1, got " + rows);
+    }
+    if (cols < 1) {
+      throw new IllegalArgumentException("cols must be at least 1, got " + cols);
+    }
+    if (values.length != (long) rows * cols) {
+      throw new IllegalArgumentException("values has " + values.length + " elements, not "
+          + rows + " x " + cols);
     }
     final long dataBytes = (long) values.length * Float.BYTES;
     final String header = "{\"" + EMBEDDINGS_TENSOR + "\":{\"dtype\":\"F32\",\"shape\":[" + rows

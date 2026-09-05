@@ -122,6 +122,30 @@ class SentencePieceTokenizerSerializationTest {
   }
 
   /**
+   * Verifies that an allow-listed leaf type cannot be returned as the top-level object.
+   */
+  @Test
+  void testAllowListedLeafPayloadIsRejected() throws IOException {
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+      out.writeObject("not a tokenizer");
+    }
+    assertThrows(InvalidClassException.class, () ->
+        SentencePieceTokenizer.deserialize(new ByteArrayInputStream(bytes.toByteArray())));
+  }
+
+  /** Verifies that a serialized null cannot be returned as a tokenizer. */
+  @Test
+  void testNullPayloadIsRejected() throws IOException {
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+      out.writeObject(null);
+    }
+    assertThrows(InvalidClassException.class, () ->
+        SentencePieceTokenizer.deserialize(new ByteArrayInputStream(bytes.toByteArray())));
+  }
+
+  /**
    * Verifies that a legitimate stream is rejected when it exceeds the supplied resource
    * limits, so the limits bound the graph regardless of the class allow-list.
    */

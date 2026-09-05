@@ -80,20 +80,24 @@ class SentenceVectorsDLEmbedderTest {
       // The dimension comes from the model's declared output metadata, no inference needed.
       assertEquals(3, embedder.dimension());
 
-      // The seam produces the same vector as the original entry point, for String and
+      // The interface produces the same vector as the original entry point, for String and
       // non-String inputs alike.
       assertArrayEquals(CLS_VECTOR, embedder.embed("hello world"), 1e-5f);
       assertArrayEquals(CLS_VECTOR, embedder.embed(new StringBuilder("hello world")), 1e-5f);
 
       // The batch method returns one vector per input, in input order;
-      // this model's [CLS]-position output is input-independent by construction.
+      // this model's [CLS]-position output is the same for every input.
       final float[][] batch = embedder.embedAll(List.of("hello world", "hello"));
       assertEquals(2, batch.length);
       assertArrayEquals(CLS_VECTOR, batch[0], 1e-5f);
       assertArrayEquals(CLS_VECTOR, batch[1], 1e-5f);
 
-      assertThrows(IllegalArgumentException.class, () -> embedder.embed(null));
-      assertThrows(IllegalArgumentException.class, () -> embedder.embedAll(null));
+      assertEquals("text must not be null", assertThrows(IllegalArgumentException.class,
+          () -> embedder.embed(null)).getMessage());
+      assertEquals("sentence must not be null", assertThrows(IllegalArgumentException.class,
+          () -> vectors.getVectors(null)).getMessage());
+      assertEquals("texts must not be null", assertThrows(IllegalArgumentException.class,
+          () -> embedder.embedAll(null)).getMessage());
     }
   }
 
@@ -124,8 +128,8 @@ class SentenceVectorsDLEmbedderTest {
   void testEmbedAllEdges(@TempDir Path dir) throws Exception {
     try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir))) {
       assertEquals(0, vectors.embedAll(List.of()).length);
-      assertThrows(IllegalArgumentException.class,
-          () -> vectors.embedAll(Arrays.asList("hello", null)));
+      assertEquals("texts[1] must not be null", assertThrows(IllegalArgumentException.class,
+          () -> vectors.embedAll(Arrays.asList("hello", null))).getMessage());
     }
   }
 }

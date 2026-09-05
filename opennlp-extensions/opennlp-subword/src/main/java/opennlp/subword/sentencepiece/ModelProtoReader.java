@@ -16,6 +16,9 @@
  */
 package opennlp.subword.sentencepiece;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +32,7 @@ import opennlp.tools.util.InvalidFormatException;
  * ({@code sentencepiece_model.proto}, Apache License 2.0). This reader walks the tag stream
  * directly and keeps only the fields inference needs: the pieces with scores and types, the
  * normalizer spec, the trainer-spec fields that change runtime behavior, and the embedded
- * self-test samples. Unknown fields are skipped, and malformed input fails loudly.</p>
+ * self-test samples. Unknown fields are skipped, and malformed input is rejected.</p>
  *
  * @see <a href=
  *     "https://github.com/google/sentencepiece/blob/master/src/sentencepiece_model.proto">
@@ -98,13 +101,16 @@ final class ModelProtoReader {
     final ModelProtoReader reader = new ModelProtoReader(data);
     final RawModel model = new RawModel();
     while (reader.pos < data.length) {
-      final long tag = reader.varint();
+      final long tag = reader.readTag(data.length);
       switch (fieldOf(tag)) {
-        case FIELD_MODEL_PIECES -> reader.piece(model, reader.lenPayload(tag));
-        case FIELD_MODEL_TRAINER_SPEC -> reader.trainerSpec(model, reader.lenPayload(tag));
-        case FIELD_MODEL_NORMALIZER_SPEC -> reader.normalizerSpec(model, reader.lenPayload(tag));
-        case FIELD_MODEL_SELF_TEST_DATA -> reader.selfTestData(model, reader.lenPayload(tag));
-        default -> reader.skip(tag);
+        case FIELD_MODEL_PIECES -> reader.piece(model, reader.lenPayload(tag, data.length));
+        case FIELD_MODEL_TRAINER_SPEC ->
+            reader.trainerSpec(model, reader.lenPayload(tag, data.length));
+        case FIELD_MODEL_NORMALIZER_SPEC ->
+            reader.normalizerSpec(model, reader.lenPayload(tag, data.length));
+        case FIELD_MODEL_SELF_TEST_DATA ->
+            reader.selfTestData(model, reader.lenPayload(tag, data.length));
+        default -> reader.skip(tag, data.length);
       }
     }
     if (model.pieces.isEmpty()) {
@@ -146,12 +152,12 @@ final class ModelProtoReader {
     float score = 0;
     int type = RawModel.TYPE_NORMAL;
     while (pos < end) {
-      final long tag = varint();
+      final long tag = readTag(end);
       switch (fieldOf(tag)) {
-        case FIELD_PIECE_PIECE -> piece = utf8(lenPayload(tag));
-        case FIELD_PIECE_SCORE -> score = fixed32Float(tag);
-        case FIELD_PIECE_TYPE -> type = (int) varintOf(tag);
-        default -> skip(tag);
+        case FIELD_PIECE_PIECE -> piece = utf8(lenPayload(tag, end));
+        case FIELD_PIECE_SCORE -> score = fixed32Float(tag, end);
+        case FIELD_PIECE_TYPE -> type = (int) varintOf(tag, end);
+        default -> skip(tag, end);
       }
     }
     if (piece == null || piece.isEmpty()) {
@@ -175,13 +181,13 @@ final class ModelProtoReader {
    */
   private void trainerSpec(RawModel model, int end) throws InvalidFormatException {
     while (pos < end) {
-      final long tag = varint();
+      final long tag = readTag(end);
       switch (fieldOf(tag)) {
-        case FIELD_TRAINER_MODEL_TYPE -> model.modelType = (int) varintOf(tag);
+        case FIELD_TRAINER_MODEL_TYPE -> model.modelType = (int) varintOf(tag, end);
         case FIELD_TRAINER_TREAT_WHITESPACE_AS_SUFFIX ->
-            model.treatWhitespaceAsSuffix = varintOf(tag) != 0;
-        case FIELD_TRAINER_BYTE_FALLBACK -> model.byteFallback = varintOf(tag) != 0;
-        default -> skip(tag);
+            model.treatWhitespaceAsSuffix = varintOf(tag, end) != 0;
+        case FIELD_TRAINER_BYTE_FALLBACK -> model.byteFallback = varintOf(tag, end) != 0;
+        default -> skip(tag, end);
       }
     }
   }
@@ -196,15 +202,17 @@ final class ModelProtoReader {
    */
   private void normalizerSpec(RawModel model, int end) throws InvalidFormatException {
     while (pos < end) {
-      final long tag = varint();
+      final long tag = readTag(end);
       switch (fieldOf(tag)) {
         case FIELD_NORMALIZER_PRECOMPILED_CHARSMAP ->
-            model.precompiledCharsMap = bytes(lenPayload(tag));
-        case FIELD_NORMALIZER_ADD_DUMMY_PREFIX -> model.addDummyPrefix = varintOf(tag) != 0;
+            model.precompiledCharsMap = bytes(lenPayload(tag, end));
+        case FIELD_NORMALIZER_ADD_DUMMY_PREFIX ->
+            model.addDummyPrefix = varintOf(tag, end) != 0;
         case FIELD_NORMALIZER_REMOVE_EXTRA_WHITESPACES ->
-            model.removeExtraWhitespaces = varintOf(tag) != 0;
-        case FIELD_NORMALIZER_ESCAPE_WHITESPACES -> model.escapeWhitespaces = varintOf(tag) != 0;
-        default -> skip(tag);
+            model.removeExtraWhitespaces = varintOf(tag, end) != 0;
+        case FIELD_NORMALIZER_ESCAPE_WHITESPACES ->
+            model.escapeWhitespaces = varintOf(tag, end) != 0;
+        default -> skip(tag, end);
       }
     }
   }
@@ -219,17 +227,17 @@ final class ModelProtoReader {
    */
   private void selfTestData(RawModel model, int end) throws InvalidFormatException {
     while (pos < end) {
-      final long tag = varint();
+      final long tag = readTag(end);
       if (fieldOf(tag) == FIELD_SELF_TEST_SAMPLES) {
-        final int sampleEnd = lenPayload(tag);
+        final int sampleEnd = lenPayload(tag, end);
         String input = null;
         String expected = null;
         while (pos < sampleEnd) {
-          final long sampleTag = varint();
+          final long sampleTag = readTag(sampleEnd);
           switch (fieldOf(sampleTag)) {
-            case FIELD_SAMPLE_INPUT -> input = utf8(lenPayload(sampleTag));
-            case FIELD_SAMPLE_EXPECTED -> expected = utf8(lenPayload(sampleTag));
-            default -> skip(sampleTag);
+            case FIELD_SAMPLE_INPUT -> input = utf8(lenPayload(sampleTag, sampleEnd));
+            case FIELD_SAMPLE_EXPECTED -> expected = utf8(lenPayload(sampleTag, sampleEnd));
+            default -> skip(sampleTag, sampleEnd);
           }
         }
         if (input != null && expected != null) {
@@ -237,7 +245,7 @@ final class ModelProtoReader {
           model.selfTestExpected.add(expected);
         }
       } else {
-        skip(tag);
+        skip(tag, end);
       }
     }
   }
@@ -246,18 +254,19 @@ final class ModelProtoReader {
    * Reads the length prefix of a length-delimited field and returns the exclusive end offset of its
    * payload.
    *
-   * @param tag The field tag, whose wire type must be length-delimited.
+   * @param tag   The field tag, whose wire type must be length-delimited.
+   * @param limit The exclusive end offset of the enclosing message.
    * @return The exclusive end offset of the payload.
    * @throws InvalidFormatException Thrown if the wire type is wrong or the length runs past the
    *     input.
    */
-  private int lenPayload(long tag) throws InvalidFormatException {
+  private int lenPayload(long tag, int limit) throws InvalidFormatException {
     if (wireTypeOf(tag) != WIRE_LEN) {
       throw malformed("field " + fieldOf(tag) + " is not length-delimited");
     }
-    final long length = varint();
-    if (length < 0 || pos + length > data.length) {
-      throw malformed("length " + length + " exceeds the remaining input");
+    final long length = varint(limit);
+    if (length < 0 || length > limit - pos) {
+      throw malformed("length " + length + " crosses its message boundary");
     }
     return pos + (int) length;
   }
@@ -265,29 +274,31 @@ final class ModelProtoReader {
   /**
    * Reads the varint value of a field after checking its wire type.
    *
-   * @param tag The field tag, whose wire type must be varint.
+   * @param tag   The field tag, whose wire type must be varint.
+   * @param limit The exclusive end offset of the enclosing message.
    * @return The decoded value.
    * @throws InvalidFormatException Thrown if the wire type is wrong or the varint is malformed.
    */
-  private long varintOf(long tag) throws InvalidFormatException {
+  private long varintOf(long tag, int limit) throws InvalidFormatException {
     if (wireTypeOf(tag) != WIRE_VARINT) {
       throw malformed("field " + fieldOf(tag) + " is not a varint");
     }
-    return varint();
+    return varint(limit);
   }
 
   /**
    * Reads the little-endian 32-bit float value of a field after checking its wire type.
    *
-   * @param tag The field tag, whose wire type must be 32-bit.
+   * @param tag   The field tag, whose wire type must be 32-bit.
+   * @param limit The exclusive end offset of the enclosing message.
    * @return The decoded float.
    * @throws InvalidFormatException Thrown if the wire type is wrong or the input is truncated.
    */
-  private float fixed32Float(long tag) throws InvalidFormatException {
+  private float fixed32Float(long tag, int limit) throws InvalidFormatException {
     if (wireTypeOf(tag) != WIRE_FIXED32) {
       throw malformed("field " + fieldOf(tag) + " is not a 32-bit value");
     }
-    if (pos + 4 > data.length) {
+    if (limit - pos < 4) {
       throw malformed("truncated 32-bit value");
     }
     final int bits = (data[pos] & 0xFF) | (data[pos + 1] & 0xFF) << 8
@@ -301,11 +312,20 @@ final class ModelProtoReader {
    *
    * @param end The exclusive end offset of the payload.
    * @return The decoded string.
+   * @throws InvalidFormatException Thrown if the payload is not valid UTF-8.
    */
-  private String utf8(int end) {
-    final String s = new String(data, pos, end - pos, StandardCharsets.UTF_8);
-    pos = end;
-    return s;
+  private String utf8(int end) throws InvalidFormatException {
+    try {
+      final String decoded = StandardCharsets.UTF_8.newDecoder()
+          .onMalformedInput(CodingErrorAction.REPORT)
+          .onUnmappableCharacter(CodingErrorAction.REPORT)
+          .decode(ByteBuffer.wrap(data, pos, end - pos))
+          .toString();
+      pos = end;
+      return decoded;
+    } catch (CharacterCodingException e) {
+      throw malformed("string is not valid UTF-8");
+    }
   }
 
   /**
@@ -322,19 +342,39 @@ final class ModelProtoReader {
   }
 
   /**
-   * Reads a base-128 varint from the current position, advancing past it.
+   * Reads and validates a field tag.
    *
+   * @param limit The exclusive end offset of the enclosing message.
+   * @return The decoded tag.
+   * @throws InvalidFormatException Thrown if the tag is malformed or has an invalid field number.
+   */
+  private long readTag(int limit) throws InvalidFormatException {
+    final long tag = varint(limit);
+    final long field = tag >>> 3;
+    if (field == 0 || field > 0x1FFFFFFFL) {
+      throw malformed("invalid field number " + field);
+    }
+    return tag;
+  }
+
+  /**
+   * Reads a base-128 varint without crossing its enclosing message.
+   *
+   * @param limit The exclusive end offset of the enclosing message.
    * @return The decoded value.
    * @throws InvalidFormatException Thrown if the input ends mid-varint or the varint exceeds 64
    *     bits.
    */
-  private long varint() throws InvalidFormatException {
+  private long varint(int limit) throws InvalidFormatException {
     long value = 0;
     for (int shift = 0; shift < 64; shift += 7) {
-      if (pos >= data.length) {
+      if (pos >= limit) {
         throw malformed("truncated varint");
       }
       final byte b = data[pos++];
+      if (shift == 63 && (b & 0x7E) != 0) {
+        throw malformed("varint exceeds 64 bits");
+      }
       value |= (long) (b & 0x7F) << shift;
       if ((b & 0x80) == 0) {
         return value;
@@ -346,16 +386,17 @@ final class ModelProtoReader {
   /**
    * Skips the value of an unrecognized field according to its wire type.
    *
-   * @param tag The field tag.
+   * @param tag   The field tag.
+   * @param limit The exclusive end offset of the enclosing message.
    * @throws InvalidFormatException Thrown if the wire type is unsupported or the value runs past
    *     the input.
    */
-  private void skip(long tag) throws InvalidFormatException {
+  private void skip(long tag, int limit) throws InvalidFormatException {
     switch (wireTypeOf(tag)) {
-      case WIRE_VARINT -> varint();
-      case WIRE_FIXED64 -> advance(8);
-      case WIRE_LEN -> pos = lenPayload(tag);
-      case WIRE_FIXED32 -> advance(4);
+      case WIRE_VARINT -> varint(limit);
+      case WIRE_FIXED64 -> advance(8, limit);
+      case WIRE_LEN -> pos = lenPayload(tag, limit);
+      case WIRE_FIXED32 -> advance(4, limit);
       default -> throw malformed("unsupported wire type " + wireTypeOf(tag));
     }
   }
@@ -364,10 +405,11 @@ final class ModelProtoReader {
    * Advances the position by a fixed number of bytes.
    *
    * @param count The number of bytes to skip.
+   * @param limit The exclusive end offset of the enclosing message.
    * @throws InvalidFormatException Thrown if fewer than {@code count} bytes remain.
    */
-  private void advance(int count) throws InvalidFormatException {
-    if (pos + count > data.length) {
+  private void advance(int count, int limit) throws InvalidFormatException {
+    if (limit - pos < count) {
       throw malformed("truncated field");
     }
     pos += count;

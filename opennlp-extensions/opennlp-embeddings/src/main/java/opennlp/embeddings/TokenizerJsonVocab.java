@@ -21,7 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import opennlp.tools.util.InvalidFormatException;
 
@@ -31,9 +33,7 @@ import opennlp.tools.util.InvalidFormatException;
  * the piece's id, and the {@code added_tokens} list overlays extra pieces (appended when their id
  * is the next row, checked for agreement when it is an existing row). Only the vocabulary is
  * read; every other section, including the tokenizer's normalizer and segmentation state, is
- * skipped structurally. Like the package's other readers this is purpose-built on
- * {@link JsonCursor}, not a general JSON library, and fails loud on anything outside the known
- * shape.
+ * skipped. It uses {@link JsonCursor} and rejects input outside the expected structure.
  */
 final class TokenizerJsonVocab {
 
@@ -47,7 +47,11 @@ final class TokenizerJsonVocab {
    * @param id      The token's id, the matrix row it claims.
    * @param content The token's string.
    */
-  private record AddedToken(long id, String content) {
+  private record AddedToken(long id, String content, boolean special) {
+  }
+
+  /** The matrix rows and the rows declared as special added tokens. */
+  record Result(List<String> rows, Set<Integer> specialRows) {
   }
 
   /**
@@ -62,8 +66,21 @@ final class TokenizerJsonVocab {
    * @throws IOException Thrown if reading the file fails.
    */
   static List<String> rows(Path file) throws IOException {
+    return read(file).rows();
+  }
+
+  /**
+   * Reads the pieces and special-token rows of a Unigram {@code tokenizer.json}.
+   *
+   * @param file The {@code tokenizer.json} file. Must not be {@code null} and must exist.
+   * @return The parsed vocabulary information.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or missing.
+   * @throws InvalidFormatException Thrown if the vocabulary layout is malformed.
+   * @throws IOException Thrown if reading the file fails.
+   */
+  static Result read(Path file) throws IOException {
     if (file == null) {
-      throw new IllegalArgumentException("File must not be null");
+      throw new IllegalArgumentException("file must not be null");
     }
     if (!Files.isRegularFile(file)) {
       throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
@@ -121,14 +138,18 @@ final class TokenizerJsonVocab {
     }
     cursor.requireEnd("Trailing content after the top-level object");
 
-    if (modelType != null && !"Unigram".equals(modelType)) {
-      throw new InvalidFormatException(file + " has a '" + modelType + "' tokenizer model; "
-          + "only the Unigram list layout maps pieces to matrix rows here. For a WordPiece "
-          + "model, load from its vocab.txt instead");
-    }
     if (vocab == null) {
       throw new InvalidFormatException(file + " has no model.vocab list; it does not name "
           + "the matrix rows");
+    }
+    if (modelType == null) {
+      throw new InvalidFormatException(file + " has no model.type; only a Unigram tokenizer "
+          + "maps pieces to matrix rows here");
+    }
+    if (!"Unigram".equals(modelType)) {
+      throw new InvalidFormatException(file + " has a '" + modelType + "' tokenizer model; "
+          + "only the Unigram list layout maps pieces to matrix rows here. For a WordPiece "
+          + "model, load from its vocab.txt instead");
     }
     return overlayAddedTokens(vocab, addedTokens, file);
   }
@@ -240,13 +261,18 @@ final class TokenizerJsonVocab {
     cursor.expect('[');
     cursor.skipWhitespace();
     final List<AddedToken> tokens = new ArrayList<>();
+    final Set<Long> tokenIds = new HashSet<>();
     if (cursor.peek() == ']') {
       cursor.consume();
       return tokens;
     }
     while (true) {
       cursor.skipWhitespace();
-      tokens.add(parseAddedToken(cursor));
+      final AddedToken token = parseAddedToken(cursor);
+      if (!tokenIds.add(token.id())) {
+        throw cursor.malformed("added token id " + token.id() + " occurs more than once");
+      }
+      tokens.add(token);
       cursor.skipWhitespace();
       final char next = cursor.consume();
       if (next == ',') {
@@ -271,6 +297,7 @@ final class TokenizerJsonVocab {
     cursor.skipWhitespace();
     Long id = null;
     String content = null;
+    Boolean special = null;
     if (cursor.peek() == '}') {
       throw cursor.malformed("An added token must carry 'id' and 'content'");
     }
@@ -293,6 +320,12 @@ final class TokenizerJsonVocab {
           }
           content = cursor.parseString();
         }
+        case "special" -> {
+          if (special != null) {
+            throw cursor.malformed("Field 'special' appears more than once in an added token");
+          }
+          special = cursor.parseBoolean();
+        }
         default -> cursor.skipValue();
       }
       cursor.skipWhitespace();
@@ -312,12 +345,12 @@ final class TokenizerJsonVocab {
     if (id < 0) {
       throw cursor.malformed("An added token's id must not be negative: " + id);
     }
-    return new AddedToken(id, content);
+    return new AddedToken(id, content, Boolean.TRUE.equals(special));
   }
 
   /**
    * Overlays the added tokens onto the vocabulary in id order: an id equal to the current size
-   * appends, an id below it must agree with the piece already there, and a gap fails loud.
+   * appends, an id below it must agree with the piece already there, and gaps are rejected.
    *
    * @param vocab       The {@code model.vocab} pieces in list order; extended in place.
    * @param addedTokens The added tokens to overlay.
@@ -326,11 +359,12 @@ final class TokenizerJsonVocab {
    * @throws InvalidFormatException Thrown if an added token contradicts the vocabulary or
    *     leaves a gap in the id space.
    */
-  private static List<String> overlayAddedTokens(List<String> vocab,
-                                                 List<AddedToken> addedTokens, Path file)
+  private static Result overlayAddedTokens(List<String> vocab,
+                                           List<AddedToken> addedTokens, Path file)
       throws InvalidFormatException {
     final List<AddedToken> byId = new ArrayList<>(addedTokens);
     byId.sort(Comparator.comparingLong(AddedToken::id));
+    final Set<Integer> specialRows = new HashSet<>();
     for (final AddedToken token : byId) {
       if (token.id() == vocab.size()) {
         vocab.add(token.content());
@@ -346,7 +380,10 @@ final class TokenizerJsonVocab {
             + "' at id " + token.id() + " but the vocabulary only has " + vocab.size()
             + " rows; the id space has a gap");
       }
+      if (token.special()) {
+        specialRows.add((int) token.id());
+      }
     }
-    return vocab;
+    return new Result(List.copyOf(vocab), Set.copyOf(specialRows));
   }
 }

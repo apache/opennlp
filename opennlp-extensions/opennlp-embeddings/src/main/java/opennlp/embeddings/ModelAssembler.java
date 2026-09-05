@@ -56,7 +56,7 @@ public final class ModelAssembler {
   /** The Unigram {@code model.type} a SentencePiece distillation's {@code tokenizer.json} uses. */
   private static final String FAMILY_UNIGRAM = "Unigram";
 
-  /** The legacy SentencePiece tokenizer family, when a separate model file is present. */
+  /** The SentencePiece tokenizer family used when a separate model file is present. */
   private static final String FAMILY_SENTENCEPIECE = "SentencePiece";
 
   /** Not instantiable. */
@@ -95,7 +95,7 @@ public final class ModelAssembler {
    */
   public static Result assemble(Path modelDirectory) throws IOException {
     if (modelDirectory == null) {
-      throw new IllegalArgumentException("ModelDirectory must not be null");
+      throw new IllegalArgumentException("modelDirectory must not be null");
     }
     if (!Files.isDirectory(modelDirectory)) {
       throw new IllegalArgumentException(
@@ -154,9 +154,9 @@ public final class ModelAssembler {
   /** Loads and verifies a self-contained Model2Vec Unigram directory. */
   private static Result assembleUnigram(Path modelDirectory) throws IOException {
     final StaticEmbeddingModel model = load(modelDirectory);
-    final boolean legacySentencePiece = ModelFileNames.firstRegularFile(modelDirectory,
+    final boolean separateSentencePiece = ModelFileNames.firstRegularFile(modelDirectory,
         ModelFileNames.SENTENCEPIECE_MODELS) != null;
-    return new Result(legacySentencePiece ? FAMILY_SENTENCEPIECE : FAMILY_UNIGRAM,
+    return new Result(separateSentencePiece ? FAMILY_SENTENCEPIECE : FAMILY_UNIGRAM,
         model.dimension(), model.vocabularySize(), model.termCount(), false, false);
   }
 
@@ -226,6 +226,8 @@ public final class ModelAssembler {
     String modelType = null;
     List<String> orderedVocabulary = null;
     Boolean lowerCase = null;
+    boolean seenModel = false;
+    boolean seenNormalizer = false;
     if (cursor.peek() == '}') {
       cursor.consume();
     } else {
@@ -237,11 +239,21 @@ public final class ModelAssembler {
         cursor.skipWhitespace();
         switch (key) {
           case "model" -> {
+            if (seenModel) {
+              throw cursor.malformed("Field 'model' appears more than once");
+            }
+            seenModel = true;
             final ModelSection model = parseModel(cursor);
             modelType = model.type();
             orderedVocabulary = model.orderedVocabulary();
           }
-          case "normalizer" -> lowerCase = TeacherTokenizer.parseNormalizerLowercase(cursor);
+          case "normalizer" -> {
+            if (seenNormalizer) {
+              throw cursor.malformed("Field 'normalizer' appears more than once");
+            }
+            seenNormalizer = true;
+            lowerCase = TeacherTokenizer.parseNormalizerLowercase(cursor);
+          }
           default -> cursor.skipValue();
         }
         cursor.skipWhitespace();
@@ -278,6 +290,8 @@ public final class ModelAssembler {
     cursor.skipWhitespace();
     String type = null;
     List<String> orderedVocabulary = null;
+    boolean seenType = false;
+    boolean seenVocabulary = false;
     if (cursor.peek() == '}') {
       cursor.consume();
       return new ModelSection(null, null);
@@ -289,9 +303,21 @@ public final class ModelAssembler {
       cursor.expect(':');
       cursor.skipWhitespace();
       if ("type".equals(key)) {
+        if (seenType) {
+          throw cursor.malformed("Field 'model.type' appears more than once");
+        }
+        seenType = true;
         type = cursor.parseString();
-      } else if ("vocab".equals(key) && cursor.peek() == '{') {
-        orderedVocabulary = parseVocabularyDictionary(cursor);
+      } else if ("vocab".equals(key)) {
+        if (seenVocabulary) {
+          throw cursor.malformed("Field 'model.vocab' appears more than once");
+        }
+        seenVocabulary = true;
+        if (cursor.peek() == '{') {
+          orderedVocabulary = parseVocabularyDictionary(cursor);
+        } else {
+          cursor.skipValue();
+        }
       } else {
         cursor.skipValue();
       }
@@ -320,6 +346,7 @@ public final class ModelAssembler {
     cursor.expect('{');
     cursor.skipWhitespace();
     final Map<Long, String> tokenById = new LinkedHashMap<>();
+    final Map<String, Long> idByToken = new LinkedHashMap<>();
     if (cursor.peek() == '}') {
       cursor.consume();
       return List.of();
@@ -331,6 +358,11 @@ public final class ModelAssembler {
       cursor.expect(':');
       cursor.skipWhitespace();
       final long id = cursor.parseLong();
+      final Long previousId = idByToken.putIfAbsent(token, id);
+      if (previousId != null) {
+        throw cursor.malformed("Vocabulary token '" + token + "' is assigned more than once, "
+            + "at ids " + previousId + " and " + id);
+      }
       if (tokenById.putIfAbsent(id, token) != null) {
         throw cursor.malformed("Vocabulary id " + id + " is assigned more than once");
       }

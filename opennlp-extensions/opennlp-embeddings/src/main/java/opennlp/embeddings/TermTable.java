@@ -27,9 +27,9 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * The term rows of a static embedding matrix: whole words and multi-word phrases that were
- * distilled through the teacher as units and sit after the subword rows. Matching a text against
+ * distilled through the teacher as units and stored after the subword rows. Matching text against
  * the table finds the greedily longest term at each word position, so "writ of habeas corpus"
- * wins over "habeas corpus" wins over the subword pieces of each word.
+ * is preferred to "habeas corpus", which is preferred to the subword pieces of each word.
  *
  * <p>A term is stored in normalized form: the lower-cased letter-or-digit word runs of its text,
  * joined by single spaces (see {@link #normalizeTerm(String)}). Matching folds each word run of
@@ -73,7 +73,7 @@ final class TermTable {
   static TermTable of(List<String> terms, int firstRow, String sourceName)
       throws InvalidFormatException {
     if (terms == null) {
-      throw new IllegalArgumentException("Terms must not be null");
+      throw new IllegalArgumentException("terms must not be null");
     }
     final Map<String, Integer> rowByTerm = new HashMap<>(terms.size() * 2);
     int maxTermWords = 0;
@@ -101,7 +101,7 @@ final class TermTable {
    */
   static String normalizeTerm(String text) {
     if (text == null) {
-      throw new IllegalArgumentException("Text must not be null");
+      throw new IllegalArgumentException("text must not be null");
     }
     final StringBuilder normalized = new StringBuilder(text.length());
     final String folded = StringUtil.toLowerCase(text);
@@ -178,7 +178,7 @@ final class TermTable {
    */
   List<Match> matches(String text) {
     if (text == null) {
-      throw new IllegalArgumentException("Text must not be null");
+      throw new IllegalArgumentException("text must not be null");
     }
     if (termsByOffset.isEmpty()) {
       return List.of();

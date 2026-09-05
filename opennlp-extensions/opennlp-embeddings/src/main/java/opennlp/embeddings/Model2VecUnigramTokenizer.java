@@ -33,15 +33,13 @@ import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.Span;
+import opennlp.tools.util.normalizer.AlignedText;
+import opennlp.tools.util.normalizer.Alignment;
 
 /**
- * Runs the Unigram tokenizer stored directly in a Model2Vec {@code tokenizer.json}.
- *
- * <p>Hugging Face stores the pieces and their scores in JSON, while OpenNLP's pure Java Unigram
- * decoder reads the equivalent SentencePiece protobuf. This adapter creates that protobuf in
- * memory. A tiny second tokenizer runs the JSON file's precompiled character map before the
- * supported post-normalization steps are applied. No generated tokenizer file is written beside
- * the user-supplied model.</p>
+ * Runs a supported Hugging Face Unigram tokenizer through OpenNLP's SentencePiece decoder.
+ * Normalization occurs in memory, and returned offsets refer to the original input text.
  */
 final class Model2VecUnigramTokenizer implements SubwordTokenizer {
 
@@ -64,6 +62,12 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
   private final int unknownId;
   private final Set<Integer> controlIds;
 
+  /**
+   * Creates a tokenizer from validated configuration.
+   *
+   * @param parsed The tokenizer configuration.
+   * @throws IOException Thrown if an internal SentencePiece model cannot be loaded.
+   */
   private Model2VecUnigramTokenizer(Parsed parsed) throws IOException {
     final byte[] normalizerModel = modelBytes(
         List.of(new Piece("<unk>", 0f, TYPE_UNKNOWN)), 0, false,
@@ -76,7 +80,14 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     controlIds = Set.copyOf(parsed.controlIds());
   }
 
-  /** Reads and validates a supported Model2Vec Unigram tokenizer. */
+  /**
+   * Reads and validates a supported Model2Vec Unigram tokenizer.
+   *
+   * @param tokenizerJson The Hugging Face tokenizer configuration.
+   * @return A tokenizer for the configuration.
+   * @throws IllegalArgumentException Thrown if {@code tokenizerJson} is null or not a regular file.
+   * @throws IOException Thrown if the configuration cannot be read or loaded.
+   */
   static Model2VecUnigramTokenizer load(Path tokenizerJson) throws IOException {
     if (tokenizerJson == null) {
       throw new IllegalArgumentException("tokenizerJson must not be null");
@@ -94,11 +105,21 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     if (text == null) {
       throw new IllegalArgumentException("text must not be null");
     }
-    String normalized = normalizer.normalize(text).toString();
+    final String original = text.toString();
+    AlignedText aligned = normalizer.normalizeAligned(original);
     for (NormalizationOperation operation : operations) {
-      normalized = operation.apply(normalized);
+      final AlignedText next = operation.applyAligned(aligned.normalizedString());
+      aligned = new AlignedText(original, next.normalized(),
+          aligned.alignment().andThen(next.alignment()));
     }
-    return segmenter.encode(normalized);
+    final List<SubwordPiece> normalizedPieces = segmenter.encode(aligned.normalized());
+    final List<SubwordPiece> originalPieces = new ArrayList<>(normalizedPieces.size());
+    for (SubwordPiece piece : normalizedPieces) {
+      final Span span = aligned.toOriginalSpan(piece.start(), piece.end());
+      originalPieces.add(
+          new SubwordPiece(piece.piece(), piece.id(), span.getStart(), span.getEnd()));
+    }
+    return originalPieces;
   }
 
   /** {@return whether the row is the tokenizer's unknown piece} */
@@ -121,6 +142,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return segmenter.idToPiece(id);
   }
 
+  /** Reads and validates the tokenizer configuration. */
   private static Parsed parse(Path file) throws IOException {
     final JsonCursor cursor = new JsonCursor(Files.readString(file), file.getFileName().toString());
     cursor.skipWhitespace();
@@ -130,9 +152,10 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     ParsedNormalizer normalizer = null;
     boolean metaspace = false;
     List<AddedToken> addedTokens = List.of();
+    final Set<String> fields = new HashSet<>();
     if (cursor.peek() != '}') {
       while (true) {
-        final String key = cursor.parseString();
+        final String key = uniqueKey(cursor, fields, "top-level");
         cursor.skipWhitespace();
         cursor.expect(':');
         cursor.skipWhitespace();
@@ -201,6 +224,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
         normalizer.precompiledCharsMap(), normalizer.operations(), controls);
   }
 
+  /** Reads the Unigram model object. */
   private static ParsedModel parseModel(JsonCursor cursor) throws InvalidFormatException {
     cursor.expect('{');
     cursor.skipWhitespace();
@@ -208,8 +232,9 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     int unknownId = -1;
     boolean byteFallback = false;
     List<Piece> pieces = null;
+    final Set<String> fields = new HashSet<>();
     while (cursor.peek() != '}') {
-      final String key = cursor.parseString();
+      final String key = uniqueKey(cursor, fields, "model");
       cursor.skipWhitespace();
       cursor.expect(':');
       cursor.skipWhitespace();
@@ -224,6 +249,9 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
       final char next = cursor.consume();
       if (next == ',') {
         cursor.skipWhitespace();
+        if (cursor.peek() == '}') {
+          throw cursor.malformed("Trailing comma in model object");
+        }
       } else if (next != '}') {
         throw cursor.malformed("Expected ',' or '}' after a model field");
       } else {
@@ -234,6 +262,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return new ParsedModel(type, unknownId, byteFallback, pieces);
   }
 
+  /** Reads the ordered Unigram vocabulary. */
   private static List<Piece> parseVocabulary(JsonCursor cursor) throws InvalidFormatException {
     cursor.expect('[');
     cursor.skipWhitespace();
@@ -256,6 +285,9 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
       final char next = cursor.consume();
       if (next == ',') {
         cursor.skipWhitespace();
+        if (cursor.peek() == ']') {
+          throw cursor.malformed("Trailing comma in model vocabulary");
+        }
       } else if (next != ']') {
         throw cursor.malformed("Expected ',' or ']' after a vocabulary entry");
       } else {
@@ -266,6 +298,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return pieces;
   }
 
+  /** Reads the tokenizer normalizer. */
   private static ParsedNormalizer parseNormalizer(JsonCursor cursor)
       throws InvalidFormatException {
     final NormalizerBuilder builder = new NormalizerBuilder();
@@ -273,6 +306,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return new ParsedNormalizer(builder.precompiledCharsMap, builder.operations);
   }
 
+  /** Adds one normalizer object to {@code builder}. */
   private static void parseNormalizerObject(JsonCursor cursor, NormalizerBuilder builder)
       throws InvalidFormatException {
     cursor.expect('{');
@@ -284,8 +318,9 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     String content = null;
     boolean stripLeft = false;
     boolean stripRight = false;
+    final Set<String> fields = new HashSet<>();
     while (cursor.peek() != '}') {
-      final String key = cursor.parseString();
+      final String key = uniqueKey(cursor, fields, "normalizer");
       cursor.skipWhitespace();
       cursor.expect(':');
       cursor.skipWhitespace();
@@ -322,6 +357,10 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
             if (builder.precompiledCharsMap != null) {
               throw cursor.malformed("More than one Precompiled normalizer is not supported");
             }
+            if (!builder.operations.isEmpty()) {
+              throw cursor.malformed(
+                  "Precompiled normalizer must precede other normalization steps");
+            }
             builder.precompiledCharsMap = child.precompiledCharsMap();
           }
           builder.operations.addAll(child.operations());
@@ -343,6 +382,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     }
   }
 
+  /** Reads the children of a Sequence normalizer. */
   private static List<ParsedNormalizer> parseNormalizerChildren(JsonCursor cursor)
       throws InvalidFormatException {
     cursor.expect('[');
@@ -356,6 +396,9 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
       final char next = cursor.consume();
       if (next == ',') {
         cursor.skipWhitespace();
+        if (cursor.peek() == ']') {
+          throw cursor.malformed("Trailing comma in normalizer array");
+        }
       } else if (next != ']') {
         throw cursor.malformed("Expected ',' or ']' after a normalizer");
       } else {
@@ -366,6 +409,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return children;
   }
 
+  /** Reads a Replace normalizer pattern. */
   private static PatternValue parsePattern(JsonCursor cursor) throws InvalidFormatException {
     cursor.expect('{');
     cursor.skipWhitespace();
@@ -379,12 +423,16 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return new PatternValue(kind, value);
   }
 
+  /** Creates a supported Replace operation. */
   private static NormalizationOperation replacement(
       PatternValue pattern, String content, JsonCursor cursor) throws InvalidFormatException {
     if (pattern == null || content == null) {
       throw cursor.malformed("Replace normalizer needs pattern and content");
     }
     if ("String".equals(pattern.kind())) {
+      if (pattern.value().isEmpty()) {
+        throw cursor.malformed("Replace normalizer has an unsupported empty literal pattern");
+      }
       if (!content.equals(" " + pattern.value() + " ")) {
         throw cursor.malformed("Only spacing literal replacements are supported");
       }
@@ -398,6 +446,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     throw cursor.malformed("Unsupported Replace normalizer pattern");
   }
 
+  /** Reads the pre-tokenizer and reports whether it is the supported Metaspace form. */
   private static boolean parsePreTokenizer(JsonCursor cursor) throws InvalidFormatException {
     cursor.expect('{');
     cursor.skipWhitespace();
@@ -405,8 +454,9 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     String replacement = null;
     String prependScheme = null;
     boolean split = true;
+    final Set<String> fields = new HashSet<>();
     while (cursor.peek() != '}') {
-      final String key = cursor.parseString();
+      final String key = uniqueKey(cursor, fields, "pre-tokenizer");
       cursor.skipWhitespace();
       cursor.expect(':');
       cursor.skipWhitespace();
@@ -431,19 +481,22 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
         && "always".equals(prependScheme) && !split;
   }
 
+  /** Reads tokenizer rows that carry added-token metadata. */
   private static List<AddedToken> parseAddedTokens(JsonCursor cursor)
       throws InvalidFormatException {
     cursor.expect('[');
     cursor.skipWhitespace();
     final List<AddedToken> tokens = new ArrayList<>();
+    final Set<Integer> tokenIds = new HashSet<>();
     while (cursor.peek() != ']') {
       cursor.expect('{');
       cursor.skipWhitespace();
       int id = -1;
       String content = null;
       boolean special = false;
+      final Set<String> fields = new HashSet<>();
       while (cursor.peek() != '}') {
-        final String key = cursor.parseString();
+        final String key = uniqueKey(cursor, fields, "added token");
         cursor.skipWhitespace();
         cursor.expect(':');
         cursor.skipWhitespace();
@@ -466,11 +519,17 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
       if (id < 0 || content == null) {
         throw cursor.malformed("Added token needs id and content");
       }
+      if (!tokenIds.add(id)) {
+        throw cursor.malformed("added token id " + id + " occurs more than once");
+      }
       tokens.add(new AddedToken(id, content, special));
       cursor.skipWhitespace();
       final char next = cursor.consume();
       if (next == ',') {
         cursor.skipWhitespace();
+        if (cursor.peek() == ']') {
+          throw cursor.malformed("Trailing comma in added-token array");
+        }
       } else if (next != ']') {
         throw cursor.malformed("Expected ',' or ']' after an added token");
       } else {
@@ -481,6 +540,25 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return tokens;
   }
 
+  /**
+   * Reads an object field name and rejects a name already seen in that object.
+   *
+   * @param cursor The JSON cursor positioned at the field name.
+   * @param fields The names already read from the current object.
+   * @param object A short object name for error messages.
+   * @return The field name.
+   * @throws InvalidFormatException Thrown if the field name occurs more than once.
+   */
+  private static String uniqueKey(JsonCursor cursor, Set<String> fields, String object)
+      throws InvalidFormatException {
+    final String key = cursor.parseString();
+    if (!fields.add(key)) {
+      throw cursor.malformed(object + " field '" + key + "' occurs more than once");
+    }
+    return key;
+  }
+
+  /** Converts a non-negative JSON integer to an {@code int}. */
   private static int checkedInt(long value, JsonCursor cursor, String field)
       throws InvalidFormatException {
     if (value < 0 || value > Integer.MAX_VALUE) {
@@ -489,15 +567,21 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
     return (int) value;
   }
 
+  /** {@return whether {@code piece} has the ASCII form {@code <0xNN>}} */
   private static boolean isBytePiece(String piece) {
     if (piece.length() != 6 || piece.charAt(0) != '<' || piece.charAt(1) != '0'
         || piece.charAt(2) != 'x' || piece.charAt(5) != '>') {
       return false;
     }
-    return Character.digit(piece.charAt(3), 16) >= 0
-        && Character.digit(piece.charAt(4), 16) >= 0;
+    return isAsciiHexDigit(piece.charAt(3)) && isAsciiHexDigit(piece.charAt(4));
   }
 
+  /** {@return whether {@code c} is an ASCII hexadecimal digit} */
+  private static boolean isAsciiHexDigit(char c) {
+    return c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f';
+  }
+
+  /** Encodes the supplied tokenizer data as a SentencePiece model. */
   private static byte[] modelBytes(List<Piece> pieces, int unknownId, boolean byteFallback,
                                    byte[] precompiledCharsMap, boolean normalizing) {
     final ProtoWriter model = new ProtoWriter();
@@ -527,60 +611,75 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
   }
 
   private interface NormalizationOperation {
-    String apply(String input);
+
+    /**
+     * Applies this operation and records how its output maps to {@code input}.
+     *
+     * @param input The text produced by the previous normalization stage.
+     * @return The operation result and its alignment to {@code input}.
+     */
+    AlignedText applyAligned(String input);
   }
 
   private record SurroundOperation(String literal) implements NormalizationOperation {
+    /** {@inheritDoc} */
     @Override
-    public String apply(String input) {
-      if (literal.isEmpty()) {
-        return input;
-      }
+    public AlignedText applyAligned(String input) {
       final StringBuilder out = new StringBuilder(input.length() + 8);
+      final Alignment.Builder alignment = new Alignment.Builder(input.length() + 8);
       int cursor = 0;
       while (cursor < input.length()) {
         if (input.startsWith(literal, cursor)) {
-          appendMarker(out);
+          appendMarker(out, alignment);
           out.append(literal);
-          appendMarker(out);
+          alignment.equal(literal.length());
+          appendMarker(out, alignment);
           cursor += literal.length();
         } else {
           final int codePoint = input.codePointAt(cursor);
           out.appendCodePoint(codePoint);
-          cursor += Character.charCount(codePoint);
+          final int width = Character.charCount(codePoint);
+          alignment.equal(width);
+          cursor += width;
         }
       }
-      return out.toString();
+      return new AlignedText(input, out.toString(), alignment.build(input.length()));
     }
   }
 
   private enum CollapseOperation implements NormalizationOperation {
     INSTANCE;
 
+    /** {@inheritDoc} */
     @Override
-    public String apply(String input) {
+    public AlignedText applyAligned(String input) {
       final StringBuilder out = new StringBuilder(input.length());
-      boolean marker = false;
-      for (int cursor = 0; cursor < input.length(); ) {
+      final Alignment.Builder alignment = new Alignment.Builder(input.length());
+      int cursor = 0;
+      while (cursor < input.length()) {
         final int codePoint = input.codePointAt(cursor);
-        cursor += Character.charCount(codePoint);
         if (codePoint == MARKER_CHAR) {
-          if (!marker) {
-            out.append(MARKER_CHAR);
-          }
-          marker = true;
+          final int start = cursor;
+          do {
+            cursor++;
+          } while (cursor < input.length() && input.charAt(cursor) == MARKER_CHAR);
+          out.append(MARKER_CHAR);
+          alignment.replace(cursor - start, 1);
         } else {
+          final int width = Character.charCount(codePoint);
           out.appendCodePoint(codePoint);
-          marker = false;
+          alignment.equal(width);
+          cursor += width;
         }
       }
-      return out.toString();
+      return new AlignedText(input, out.toString(), alignment.build(input.length()));
     }
   }
 
   private record StripOperation(boolean left, boolean right) implements NormalizationOperation {
+    /** {@inheritDoc} */
     @Override
-    public String apply(String input) {
+    public AlignedText applyAligned(String input) {
       int start = 0;
       int end = input.length();
       if (right) {
@@ -596,13 +695,38 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
           start--;
         }
       }
-      return start == 0 && end == input.length() ? input : input.substring(start, end);
+      if (start == 0 && end == input.length()) {
+        return identity(input);
+      }
+      final Alignment.Builder alignment = new Alignment.Builder(end - start);
+      alignment.replace(start, 0);
+      alignment.equal(end - start);
+      alignment.replace(input.length() - end, 0);
+      return new AlignedText(input, input.substring(start, end), alignment.build(input.length()));
     }
   }
 
-  private static void appendMarker(StringBuilder out) {
+  /**
+   * Creates an aligned identity result.
+   *
+   * @param input The text used as both sides of the result.
+   * @return An identity alignment over {@code input}.
+   */
+  private static AlignedText identity(String input) {
+    return new AlignedText(input, input,
+        new Alignment.Builder(input.length()).equal(input.length()).build(input.length()));
+  }
+
+  /**
+   * Appends a metaspace marker when the output does not already end with one.
+   *
+   * @param out       The normalized output.
+   * @param alignment The alignment being built for {@code out}.
+   */
+  private static void appendMarker(StringBuilder out, Alignment.Builder alignment) {
     if (out.isEmpty() || out.charAt(out.length() - 1) != MARKER_CHAR) {
       out.append(MARKER_CHAR);
+      alignment.replace(0, 1);
     }
   }
 
@@ -636,25 +760,30 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
   private static final class ProtoWriter {
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+    /** Writes an embedded message field. */
     void message(int field, byte[] value) {
       bytesField(field, value);
     }
 
+    /** Writes a UTF-8 string field. */
     void string(int field, String value) {
       bytesField(field, value.getBytes(StandardCharsets.UTF_8));
     }
 
+    /** Writes a length-delimited field. */
     void bytesField(int field, byte[] value) {
       varint((long) field << 3 | 2);
       varint(value.length);
       out.writeBytes(value);
     }
 
+    /** Writes an integer field. */
     void varintField(int field, long value) {
       varint((long) field << 3);
       varint(value);
     }
 
+    /** Writes a 32-bit floating-point field. */
     void float32(int field, float value) {
       varint((long) field << 3 | 5);
       final int bits = Float.floatToIntBits(value);
@@ -664,6 +793,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
       out.write(bits >>> 24 & 0xff);
     }
 
+    /** Writes an unsigned variable-length integer. */
     void varint(long value) {
       long remaining = value;
       while ((remaining & ~0x7fL) != 0) {
@@ -673,6 +803,7 @@ final class Model2VecUnigramTokenizer implements SubwordTokenizer {
       out.write((int) remaining);
     }
 
+    /** {@return the encoded message} */
     byte[] bytes() {
       return out.toByteArray();
     }

@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * The {@code tokenizer.json} vocabulary contract: the Unigram {@code model.vocab} list order is
  * the row order, {@code added_tokens} append or must agree, everything else is skipped, and any
- * departure from the known shape fails loud.
+ * input outside the expected structure is rejected.
  */
 class TokenizerJsonVocabTest {
 
@@ -103,6 +103,19 @@ class TokenizerJsonVocabTest {
   }
 
   @Test
+  void testRejectsDuplicateAddedTokenIds() throws IOException {
+    final Path file = write("{\"added_tokens\":["
+        + "{\"id\":0,\"content\":\"a\",\"special\":false},"
+        + "{\"id\":0,\"content\":\"a\",\"special\":true}],"
+        + "\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"a\",0.0]]}}");
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> TokenizerJsonVocab.read(file));
+
+    assertTrue(error.getMessage().contains("id 0 occurs more than once"), error.getMessage());
+  }
+
+  @Test
   void testSkipsUnrelatedSectionsAndDecodesEscapes() throws IOException {
     final Path file = write("{\"version\":\"1.0\",\"truncation\":null,"
         + "\"normalizer\":{\"type\":\"Precompiled\",\"precompiled_charsmap\":\"AAAA\"},"
@@ -123,9 +136,18 @@ class TokenizerJsonVocabTest {
   }
 
   @Test
+  void testRejectsAModelWithoutAType() throws IOException {
+    final Path file = write("{\"model\":{\"vocab\":[[\"a\",0.0]]}}");
+
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
+        () -> TokenizerJsonVocab.rows(file));
+    assertTrue(e.getMessage().contains("model.type"), e.getMessage());
+  }
+
+  @Test
   void testRejectsAnObjectShapedVocab() throws IOException {
     // The WordPiece/BPE tokenizer.json layout stores vocab as {piece: id}; ids in that shape
-    // are not list positions, so it must be refused rather than misread.
+    // are not list positions, so the parser must reject this form.
     final Path file = write("{\"model\":{\"type\":\"Unigram\",\"vocab\":{\"a\":0,\"b\":1}}}");
 
     final InvalidFormatException e = assertThrows(InvalidFormatException.class,

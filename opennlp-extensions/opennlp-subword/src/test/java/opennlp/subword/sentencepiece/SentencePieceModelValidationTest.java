@@ -40,14 +40,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Fail-loud behavior on malformed models, plus the concurrency guarantee: one loaded tokenizer
- * must produce identical results from many threads.
- */
+/** Validates malformed-model rejection and concurrent tokenizer use. */
 class SentencePieceModelValidationTest {
 
+  private static final String HEX_DIGITS = "0123456789ABCDEF";
+
   @Test
-  void testNullAndEmptyInputFailLoudly() {
+  void testRejectsNullAndEmptyInput() {
     assertThrows(IllegalArgumentException.class,
         () -> SentencePieceTokenizer.load((Path) null));
     assertThrows(IllegalArgumentException.class,
@@ -57,14 +56,14 @@ class SentencePieceModelValidationTest {
   }
 
   @Test
-  void testGarbageBytesFailLoudly() {
+  void testRejectsGarbageBytes() {
     final byte[] garbage = "this is not a model file at all".getBytes(StandardCharsets.UTF_8);
     assertThrows(InvalidFormatException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(garbage)));
   }
 
   @Test
-  void testTruncatedModelFailsLoudly() throws IOException {
+  void testRejectsTruncatedModel() throws IOException {
     final byte[] whole = readModel();
     final byte[] truncated = Arrays.copyOf(whole, whole.length / 3);
     assertThrows(InvalidFormatException.class,
@@ -72,7 +71,49 @@ class SentencePieceModelValidationTest {
   }
 
   @Test
-  void testUnsupportedModelTypeFailsLoudly() {
+  void testRejectsAPieceFieldThatCrossesItsMessageBoundary() {
+    final byte[] model = {
+        0x0A, 0x02,  // pieces sub-message with a two-byte payload
+        0x0A, 0x04,  // piece string claiming four bytes outside that payload
+        'a', 'b', 'c', 'd'};
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> ModelProtoReader.read(model));
+
+    assertTrue(error.getMessage().contains("message boundary"), error.getMessage());
+  }
+
+  @Test
+  void testRejectsMalformedUtf8InAPiece() {
+    final byte[] model = {
+        0x0A, 0x03,  // pieces sub-message
+        0x0A, 0x01, (byte) 0xFF};
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> ModelProtoReader.read(model));
+
+    assertTrue(error.getMessage().contains("UTF-8"), error.getMessage());
+  }
+
+  /** Verifies that the tenth byte of a 64-bit varint cannot carry more than one value bit. */
+  @Test
+  void testRejectsVarintLargerThan64Bits() {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    out.writeBytes(minimalModel(ModelProtoReader.RawModel.MODEL_TYPE_UNIGRAM));
+    out.write(0x28); // Unknown field 5 with the varint wire type.
+    for (int i = 0; i < 9; i++) {
+      out.write(0x80);
+    }
+    out.write(0x02);
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> ModelProtoReader.read(out.toByteArray()));
+
+    assertTrue(error.getMessage().contains("64 bits"), error.getMessage());
+  }
+
+  @Test
+  void testRejectsUnsupportedModelType() {
     // A minimal well-formed model claiming the WORD algorithm (model_type = 3).
     final byte[] model = minimalModel(3);
     final InvalidFormatException e = assertThrows(InvalidFormatException.class,
@@ -81,7 +122,7 @@ class SentencePieceModelValidationTest {
   }
 
   @Test
-  void testMissingUnknownPieceFailsLoudly() {
+  void testRejectsMissingUnknownPiece() {
     final byte[] model = minimalModelWithoutUnk();
     final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(model)));
@@ -89,7 +130,7 @@ class SentencePieceModelValidationTest {
   }
 
   @Test
-  void testMalformedPrecompiledCharsMapFailsLoudly() {
+  void testRejectsMalformedPrecompiledCharsMap() {
     // A well-formed proto whose normalizer spec carries a truncated precompiled character map;
     // load() must report it as an invalid model, like every other malformed model content.
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -191,6 +232,38 @@ class SentencePieceModelValidationTest {
       assertFalse(plain.isByte(id), "piece " + id + " must not be a byte piece");
     }
     assertThrows(IllegalArgumentException.class, () -> plain.isByte(-1));
+  }
+
+  @Test
+  void testRejectsNonAsciiHexadecimalBytePiece() {
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> SentencePieceTokenizer.load(new ByteArrayInputStream(
+            byteFallbackModel("<0x\uff26F>"))));
+
+    assertTrue(error.getMessage().contains("invalid"), error.getMessage());
+  }
+
+  /**
+   * Builds a byte-fallback model, replacing the {@code <0xFF>} piece with the supplied text.
+   *
+   * @param lastBytePiece The text of the piece assigned to byte {@code 0xFF}.
+   * @return The encoded model.
+   */
+  private static byte[] byteFallbackModel(String lastBytePiece) {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    writePiece(out, "<unk>", 2);
+    for (int b = 0; b < 256; b++) {
+      final String piece = "<0x" + HEX_DIGITS.charAt(b >>> 4)
+          + HEX_DIGITS.charAt(b & 0x0f) + ">";
+      writePiece(out, b == 255 ? lastBytePiece : piece, 6);
+    }
+    // trainer_spec { byte_fallback = true }
+    out.write(0x12);
+    out.write(3);
+    out.write(0x98);
+    out.write(0x02);
+    out.write(1);
+    return out.toByteArray();
   }
 
   private static byte[] readModel() throws IOException {

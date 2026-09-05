@@ -21,12 +21,17 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,8 +49,7 @@ import opennlp.tools.util.java.Experimental;
  * <p>Only the header is read eagerly; tensor data is streamed into a fresh array with positional
  * reads on request, so a decoded {@code float[]} is capped at {@link Integer#MAX_VALUE} - 8
  * elements. The file must stay in place and unchanged between {@link #read(Path)} and a later
- * {@link #readFloats(String)} call; a file truncated in between fails loud rather than returning
- * partial data.</p>
+ * {@link #readFloats(String)} call. A file truncated between those operations is rejected.</p>
  *
  * <p>Instances are immutable and safe for concurrent use: every {@link #readFloats(String)}
  * call opens its own channel and decodes into a fresh array the caller owns.</p>
@@ -57,6 +61,8 @@ import opennlp.tools.util.java.Experimental;
 public final class SafetensorsFile {
 
   private static final int HEADER_LENGTH_PREFIX_BYTES = 8;
+
+  private static final long MAX_HEADER_SIZE = 100_000_000L;
 
   /** The header's dtype marker for 32-bit IEEE floats. */
   private static final String DTYPE_F32 = "F32";
@@ -71,8 +77,8 @@ public final class SafetensorsFile {
   // whole floats.
   private static final int READ_CHUNK_BYTES = 1 << 20;
 
-  // The JVM refuses array allocations slightly below Integer.MAX_VALUE; the exact headroom is
-  // implementation-specific, 8 is the commonly reserved amount.
+  // Array allocation limits are slightly below Integer.MAX_VALUE and vary by JVM; 8 is the
+  // commonly reserved headroom.
   private static final long MAX_ARRAY_LENGTH = Integer.MAX_VALUE - 8;
 
   private final Path file;
@@ -101,7 +107,7 @@ public final class SafetensorsFile {
    */
   public static SafetensorsFile read(Path file) throws IOException {
     if (file == null) {
-      throw new IllegalArgumentException("File must not be null");
+      throw new IllegalArgumentException("file must not be null");
     }
     if (!Files.isRegularFile(file)) {
       throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
@@ -116,17 +122,31 @@ public final class SafetensorsFile {
           .order(ByteOrder.LITTLE_ENDIAN);
       readFully(channel, prefix, 0, file);
       final long headerLength = prefix.flip().getLong();
-      if (headerLength < 0 || headerLength > fileSize - HEADER_LENGTH_PREFIX_BYTES) {
+      if (headerLength < 0) {
+        throw new InvalidFormatException(
+            "File " + file + " declares a negative header length: " + headerLength);
+      }
+      if (headerLength > MAX_HEADER_SIZE) {
+        throw new InvalidFormatException("File " + file + " declares a header length of "
+            + headerLength + " bytes, which exceeds the safetensors limit of "
+            + MAX_HEADER_SIZE + " bytes");
+      }
+      if (headerLength > fileSize - HEADER_LENGTH_PREFIX_BYTES) {
         throw new InvalidFormatException("File " + file + " declares a header length of "
             + headerLength + ", which does not fit in a file of " + fileSize + " bytes");
       }
-      if (headerLength > MAX_ARRAY_LENGTH) {
-        throw new InvalidFormatException("File " + file + " declares a header length of "
-            + headerLength + " bytes, too large to decode as a single JSON string");
-      }
       final ByteBuffer headerBytes = ByteBuffer.allocate((int) headerLength);
       readFully(channel, headerBytes, HEADER_LENGTH_PREFIX_BYTES, file);
-      final String headerJson = new String(headerBytes.array(), StandardCharsets.UTF_8);
+      final String headerJson;
+      try {
+        headerJson = StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)
+            .decode(headerBytes.flip()).toString();
+      } catch (CharacterCodingException e) {
+        throw new InvalidFormatException(
+            "File " + file + " does not contain a valid UTF-8 header", e);
+      }
       final SafetensorsHeaderParser.Result parsed = SafetensorsHeaderParser.parse(headerJson);
       final long dataStart = HEADER_LENGTH_PREFIX_BYTES + headerLength;
       final long dataLength = fileSize - dataStart;
@@ -143,6 +163,22 @@ public final class SafetensorsFile {
           throw new InvalidFormatException(
               "File " + file + " declares tensor '" + tensor.name() + "' more than once");
         }
+      }
+      final List<TensorInfo> tensorsByOffset = new ArrayList<>(parsed.tensors());
+      tensorsByOffset.sort(Comparator.comparingLong(TensorInfo::dataOffsetBegin)
+          .thenComparingLong(TensorInfo::dataOffsetEnd));
+      long expectedOffset = 0;
+      for (final TensorInfo tensor : tensorsByOffset) {
+        if (tensor.dataOffsetBegin() != expectedOffset) {
+          throw new InvalidFormatException("File " + file + " tensor '" + tensor.name()
+              + "' begins at data offset " + tensor.dataOffsetBegin() + " instead of "
+              + expectedOffset + "; tensor ranges must be contiguous and non-overlapping");
+        }
+        expectedOffset = tensor.dataOffsetEnd();
+      }
+      if (expectedOffset != dataLength) {
+        throw new InvalidFormatException("File " + file + " declares " + expectedOffset
+            + " bytes of tensor data but its data section has " + dataLength + " bytes");
       }
       return new SafetensorsFile(file, dataStart, Collections.unmodifiableMap(tensorsByName),
           Collections.unmodifiableMap(parsed.metadata()));
@@ -164,7 +200,7 @@ public final class SafetensorsFile {
    */
   public TensorInfo tensorInfo(String name) {
     if (name == null) {
-      throw new IllegalArgumentException("Name must not be null");
+      throw new IllegalArgumentException("name must not be null");
     }
     final TensorInfo info = tensorsByName.get(name);
     if (info == null) {
@@ -194,7 +230,12 @@ public final class SafetensorsFile {
   public float[] readFloats(String name) throws IOException {
     final TensorInfo info = tensorInfo(name);
     final int elementBytes = floatElementBytes(info.dtype(), name);
-    final long elementCount = info.elementCount();
+    final long elementCount;
+    try {
+      elementCount = info.elementCount();
+    } catch (IllegalArgumentException e) {
+      throw new InvalidFormatException(e.getMessage(), e);
+    }
     if (elementCount < 0 || elementCount > MAX_ARRAY_LENGTH) {
       throw new InvalidFormatException("Tensor '" + name + "' declares " + elementCount
           + " elements, more than a Java array can hold (" + MAX_ARRAY_LENGTH
@@ -330,8 +371,7 @@ public final class SafetensorsFile {
   /**
    * Finds the single 2-dimensional floating-point tensor in this file (dtype {@code F32},
    * {@code F16}, or {@code BF16}), the shape a static embedding table's weight matrix takes
-   * (vocabulary size by hidden dimension). Strict rather than guessing a name convention, so a
-   * wrong guess cannot silently load the wrong tensor.
+   * (vocabulary size by hidden dimension). It does not guess from the tensor name.
    *
    * @return The name of the single 2-D float tensor.
    * @throws InvalidFormatException Thrown if the file has zero or more than one 2-D float

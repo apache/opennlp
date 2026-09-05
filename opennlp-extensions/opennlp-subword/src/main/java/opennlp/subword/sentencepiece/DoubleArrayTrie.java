@@ -25,7 +25,7 @@ import java.io.Serializable;
  * <p>Each unit is one little-endian 32-bit word encoding a label, an offset to the unit's
  * children, and a leaf flag; traversal XORs the offset with the next key byte. Only the longest
  * prefix match is needed here, so this walks the byte key once and remembers the last accepting
- * state. Out-of-range unit references, which a well-formed trie never produces, fail loudly
+ * state. Out-of-range unit references, which a valid trie never produces, are rejected
  * rather than reading arbitrary memory.</p>
  *
  * <p>This class is an independent re-implementation of the reader side of that format, written

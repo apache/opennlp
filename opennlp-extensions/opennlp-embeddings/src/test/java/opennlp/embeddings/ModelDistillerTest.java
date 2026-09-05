@@ -38,8 +38,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ModelDistillerTest {
 
+  /** A six-row WordPiece tokenizer accepted by {@link TeacherTokenizer}. */
+  private static final String TINY_TEACHER_TOKENIZER =
+      "{\"version\":\"1.0\","
+          + "\"normalizer\":{\"type\":\"BertNormalizer\",\"lowercase\":true},"
+          + "\"added_tokens\":["
+          + "{\"id\":0,\"content\":\"[PAD]\",\"special\":true},"
+          + "{\"id\":1,\"content\":\"[UNK]\",\"special\":true},"
+          + "{\"id\":2,\"content\":\"[CLS]\",\"special\":true},"
+          + "{\"id\":3,\"content\":\"[SEP]\",\"special\":true}],"
+          + "\"post_processor\":{\"type\":\"BertProcessing\","
+          + "\"cls\":[\"[CLS]\",2],\"sep\":[\"[SEP]\",3]},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"[UNK]\","
+          + "\"vocab\":{\"[PAD]\":0,\"[UNK]\":1,\"[CLS]\":2,\"[SEP]\":3,"
+          + "\"hello\":4,\"world\":5}}}";
+
   /** Model2Vec's SIF coefficient, the value the distiller uses. */
   private static final double SIF = 1e-4;
+
+  /**
+   * Writes a small teacher that can run a complete distillation without external files.
+   *
+   * @param directory The teacher directory to create.
+   * @return The created teacher directory.
+   * @throws IOException Thrown if a fixture file cannot be written.
+   */
+  private static Path writeTinyTeacher(Path directory) throws IOException {
+    EmbeddingTestFixtures.writeTinyOnnxModel(Files.createDirectories(directory.resolve("onnx")));
+    Files.writeString(directory.resolve("tokenizer.json"), TINY_TEACHER_TOKENIZER);
+    Files.writeString(directory.resolve("tokenizer_config.json"),
+        "{\"pad_token\":\"[PAD]\"}");
+    return directory;
+  }
 
   @Test
   void testZipfWeightsFollowTheModel2vecFormula() {
@@ -94,7 +124,7 @@ class ModelDistillerTest {
   void testRejectsANullTeacherDirectory(@TempDir Path dir) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> ModelDistiller.distill((Path) null, dir, 256, null));
-    assertEquals("TeacherDirectory must not be null", e.getMessage());
+    assertEquals("teacherDirectory must not be null", e.getMessage());
   }
 
   @Test
@@ -110,7 +140,7 @@ class ModelDistillerTest {
   void testRejectsANullOutputDirectory(@TempDir Path dir) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> ModelDistiller.distill(dir, null, 256, null));
-    assertEquals("OutputDirectory must not be null", e.getMessage());
+    assertEquals("outputDirectory must not be null", e.getMessage());
   }
 
   @ParameterizedTest
@@ -118,7 +148,19 @@ class ModelDistillerTest {
   void testRejectsANonPositivePcaDimension(int pcaDims, @TempDir Path dir) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> ModelDistiller.distill(dir, dir.resolve("out"), pcaDims, null));
-    assertEquals("PcaDims must be at least 1, got " + pcaDims, e.getMessage());
+    assertEquals("pcaDims must be at least 1, got " + pcaDims, e.getMessage());
+  }
+
+  @Test
+  void testRejectsAnOutputPathThatIsAFileBeforeResolvingTheTeacher(@TempDir Path dir)
+      throws IOException {
+    final Path output = Files.writeString(dir.resolve("model.bin"), "keep me");
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ModelDistiller.distill("not a model id", output, 256, null));
+
+    assertEquals("outputDirectory must be a directory or not exist: " + output, e.getMessage());
+    assertEquals("keep me", Files.readString(output));
   }
 
   @Test
@@ -133,25 +175,57 @@ class ModelDistillerTest {
     assertTrue(Files.notExists(dir.resolve("out")), "the output directory must not be created");
   }
 
-  /**
-   * A teacher whose whole vocabulary is dropped by the cleaning has no rows to encode. That has to
-   * be caught before the ONNX graph is loaded, where it would otherwise surface as a zero-length
-   * matrix. The graph file here is a placeholder that would fail to load if it were reached.
-   */
   @Test
-  void testRejectsATeacherWhoseVocabularyIsFullyCleanedAway(@TempDir Path dir) throws IOException {
-    final Path teacher = Files.createDirectory(dir.resolve("teacher"));
-    Files.createDirectory(teacher.resolve("onnx"));
-    Files.writeString(teacher.resolve(ModelFileNames.ONNX_MODEL), "not a real graph");
-    Files.writeString(teacher.resolve(ModelFileNames.TOKENIZER_JSON),
-        "{\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"[unused0]\","
-            + "\"vocab\":{\"[unused0]\":0}}}");
+  void testReplacesFilesDerivedByAnEarlierDistillation(@TempDir Path dir) throws IOException {
+    final Path teacher = writeTinyTeacher(Files.createDirectory(dir.resolve("teacher")));
+    final Path output = Files.createDirectory(dir.resolve("output"));
+    Files.write(output.resolve(ModelFileNames.VOCABULARY),
+        List.of("[PAD]", "[UNK]", "stale", "rows"));
+    Files.writeString(output.resolve(ModelFileNames.TOKENIZER_CONFIG),
+        "{\"do_lower_case\":false}");
+    for (final String name : ModelFileNames.SENTENCEPIECE_MODELS) {
+      Files.writeString(output.resolve(name), "stale model");
+    }
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> ModelDistiller.distill(teacher, dir.resolve("out"), 256, null));
+    final ModelDistiller.Result result = ModelDistiller.distill(teacher, output, 1, null);
 
-    assertTrue(e.getMessage().contains("nothing to distill"), e.getMessage());
-    assertTrue(Files.notExists(dir.resolve("out")), "the output directory must not be created");
+    assertEquals("WordPiece", result.family());
+    assertEquals(List.of("[PAD]", "[UNK]", "hello", "world"),
+        Files.readAllLines(output.resolve(ModelFileNames.VOCABULARY)));
+    assertTrue(Files.readString(output.resolve(ModelFileNames.TOKENIZER_CONFIG))
+        .contains("\"do_lower_case\": true"));
+    for (final String name : ModelFileNames.SENTENCEPIECE_MODELS) {
+      assertTrue(Files.notExists(output.resolve(name)), name + " must not survive the new run");
+    }
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(output);
+    assertTrue(model.embed("hello")[0] != 0f);
+  }
+
+  @Test
+  void testRejectsTheTeacherDirectoryAsItsOwnOutput(@TempDir Path dir) throws IOException {
+    final Path teacher = writeTinyTeacher(Files.createDirectory(dir.resolve("teacher")));
+    final String tokenizer = Files.readString(teacher.resolve(ModelFileNames.TOKENIZER_JSON));
+
+    final IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+        () -> ModelDistiller.distill(teacher, teacher, 1, null));
+
+    assertEquals("outputDirectory must differ from teacherDirectory", error.getMessage());
+    assertEquals(tokenizer, Files.readString(teacher.resolve(ModelFileNames.TOKENIZER_JSON)));
+    assertTrue(Files.isRegularFile(teacher.resolve(ModelFileNames.ONNX_MODEL)));
+  }
+
+  @Test
+  void testEscapesTheTeacherNameInTheGeneratedConfiguration(@TempDir Path dir)
+      throws IOException {
+    final Path teacher = writeTinyTeacher(Files.createDirectory(dir.resolve("teacher\"quoted")));
+    final Path output = dir.resolve("output");
+
+    final ModelDistiller.Result result = ModelDistiller.distill(teacher, output, 1, null);
+
+    assertEquals("WordPiece", result.family());
+    assertTrue(Files.readString(output.resolve(ModelFileNames.CONFIG))
+        .contains("\"tokenizer_name\": \"teacher\\\"quoted\""));
+    assertEquals(1, StaticEmbeddingModel.load(output).dimension());
   }
 
   /**
@@ -162,10 +236,10 @@ class ModelDistillerTest {
   @ParameterizedTest
   @ValueSource(strings = {"BAAI/bge-m3", "sentence-transformers/all-MiniLM-L6-v2"})
   void testRejectsABadOutputBeforeResolvingAHubTeacher(String teacher, @TempDir Path dir) {
-    assertEquals("OutputDirectory must not be null",
+    assertEquals("outputDirectory must not be null",
         assertThrows(IllegalArgumentException.class,
             () -> ModelDistiller.distill(teacher, null, 256, null)).getMessage());
-    assertEquals("PcaDims must be at least 1, got 0",
+    assertEquals("pcaDims must be at least 1, got 0",
         assertThrows(IllegalArgumentException.class,
             () -> ModelDistiller.distill(teacher, dir.resolve("out"), 0, null)).getMessage());
   }
@@ -176,11 +250,11 @@ class ModelDistillerTest {
    */
   @Test
   void testRejectsBadTermsBeforeResolvingAHubTeacher(@TempDir Path dir) {
-    assertEquals("Terms must not be null",
+    assertEquals("terms must not be null",
         assertThrows(IllegalArgumentException.class,
             () -> ModelDistiller.distill("BAAI/bge-m3", dir.resolve("out"), 256, null, null))
             .getMessage());
-    assertEquals("Terms must not contain null",
+    assertEquals("terms[0] must not be null",
         assertThrows(IllegalArgumentException.class,
             () -> ModelDistiller.distill("BAAI/bge-m3", dir.resolve("out"), 256,
                 Collections.singletonList(null), null)).getMessage());

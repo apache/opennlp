@@ -21,16 +21,12 @@ import java.util.List;
 import opennlp.tools.util.java.Experimental;
 
 /**
- * Encodes a piece of text into a single fixed-length vector.
+ * Encodes text into a fixed-length vector.
  *
- * <p>A text embedder maps whole texts (a sentence, a paragraph, a document) into one dense
- * vector whose geometry carries meaning: texts about the same thing land near each other. This
- * is the text-level counterpart of {@link opennlp.tools.util.wordvector.WordVectorTable}, which
- * looks up a stored vector for a single word; an embedder composes a vector for text it has
- * never seen, handling tokenization and pooling internally.</p>
+ * <p>Unlike {@link opennlp.tools.util.wordvector.WordVectorTable}, which looks up a stored vector
+ * for one word, this interface accepts a sentence, paragraph, or document.</p>
  *
- * <p>Thread safety is implementation specific. Failures during encoding surface as unchecked
- * exceptions carrying the underlying cause.</p>
+ * <p>Thread safety is implementation specific.</p>
  *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
@@ -65,11 +61,15 @@ public interface TextEmbedder {
    */
   default float[][] embedAll(List<? extends CharSequence> texts) {
     if (texts == null) {
-      throw new IllegalArgumentException("Texts must not be null");
+      throw new IllegalArgumentException("texts must not be null");
     }
     final float[][] vectors = new float[texts.size()][];
     for (int i = 0; i < vectors.length; i++) {
-      vectors[i] = embed(texts.get(i));
+      final CharSequence text = texts.get(i);
+      if (text == null) {
+        throw new IllegalArgumentException("texts[" + i + "] must not be null");
+      }
+      vectors[i] = embed(text);
     }
     return vectors;
   }

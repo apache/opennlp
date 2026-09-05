@@ -43,11 +43,14 @@ final class EmbeddingVocabulary {
 
   private final Map<String, Integer> idByToken;
   private final List<String> tokenById;
+  private final Set<Integer> specialRows;
 
   /** Holds the parsed piece-to-row and row-to-piece views; built by the {@code from*} factories. */
-  private EmbeddingVocabulary(Map<String, Integer> idByToken, List<String> tokenById) {
+  private EmbeddingVocabulary(Map<String, Integer> idByToken, List<String> tokenById,
+                              Set<Integer> specialRows) {
     this.idByToken = idByToken;
     this.tokenById = tokenById;
+    this.specialRows = specialRows;
   }
 
   /**
@@ -77,7 +80,8 @@ final class EmbeddingVocabulary {
    */
   static EmbeddingVocabulary fromTokenizerJson(Path file) throws IOException {
     requireRegularFile(file);
-    return fromLines(TokenizerJsonVocab.rows(file), file.toString());
+    final TokenizerJsonVocab.Result result = TokenizerJsonVocab.read(file);
+    return fromLines(result.rows(), file.toString(), result.specialRows());
   }
 
   /**
@@ -89,7 +93,7 @@ final class EmbeddingVocabulary {
    */
   private static void requireRegularFile(Path file) {
     if (file == null) {
-      throw new IllegalArgumentException("File must not be null");
+      throw new IllegalArgumentException("file must not be null");
     }
     if (!Files.isRegularFile(file)) {
       throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
@@ -106,6 +110,13 @@ final class EmbeddingVocabulary {
    */
   static EmbeddingVocabulary fromLines(List<String> lines, String sourceName)
       throws InvalidFormatException {
+    return fromLines(lines, sourceName, Set.of());
+  }
+
+  /** Builds a vocabulary and records rows declared as special tokens. */
+  private static EmbeddingVocabulary fromLines(List<String> lines, String sourceName,
+                                               Set<Integer> specialRows)
+      throws InvalidFormatException {
     final Map<String, Integer> idByToken = new LinkedHashMap<>(lines.size() * 2);
     for (int id = 0; id < lines.size(); id++) {
       final String token = lines.get(id);
@@ -115,7 +126,8 @@ final class EmbeddingVocabulary {
                 + "' more than once, at rows " + idByToken.get(token) + " and " + id);
       }
     }
-    return new EmbeddingVocabulary(Collections.unmodifiableMap(idByToken), List.copyOf(lines));
+    return new EmbeddingVocabulary(Collections.unmodifiableMap(idByToken), List.copyOf(lines),
+        Set.copyOf(specialRows));
   }
 
   /** {@return every token in this vocabulary, without order} */
@@ -137,7 +149,7 @@ final class EmbeddingVocabulary {
    */
   int id(String token) {
     if (token == null) {
-      throw new IllegalArgumentException("Token must not be null");
+      throw new IllegalArgumentException("token must not be null");
     }
     final Integer id = idByToken.get(token);
     return id == null ? -1 : id;
@@ -146,6 +158,11 @@ final class EmbeddingVocabulary {
   /** {@return the number of tokens in this vocabulary} */
   int size() {
     return idByToken.size();
+  }
+
+  /** {@return the rows declared as special tokens by the vocabulary source} */
+  Set<Integer> specialRows() {
+    return specialRows;
   }
 
   /**

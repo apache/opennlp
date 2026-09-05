@@ -19,6 +19,7 @@ package opennlp.embeddings;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * unknown id, a null post-processor, and only the unknown/pad added tokens.
  */
 class TeacherTokenizerTest {
+
+  private static final String MINIMAL_WORDPIECE_MODEL =
+      "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}";
 
   // A WordPiece teacher: the special tokens are added tokens, plus one [unused] row and one
   // content row pair. The post-processor wraps sequences in [CLS]/[SEP] (ids 2 and 3).
@@ -192,9 +196,71 @@ class TeacherTokenizerTest {
     assertTrue(e.getMessage().contains("BPE"), e.getMessage());
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "{" + MINIMAL_WORDPIECE_MODEL + "," + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"added_tokens\":[],\"added_tokens\":[]," + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":null,\"post_processor\":null," + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"normalizer\":{},\"normalizer\":{}," + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"model\":{\"type\":\"WordPiece\",\"type\":\"WordPiece\","
+          + "\"unk_token\":\"a\",\"vocab\":{\"a\":0}}}",
+      "{\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\","
+          + "\"unk_token\":\"a\",\"vocab\":{\"a\":0}}}",
+      "{\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\","
+          + "\"vocab\":{\"a\":0},\"vocab\":{\"a\":0}}}"
+  })
+  void testRejectsDuplicateTokenizerFields(String json, @TempDir Path dir) throws IOException {
+    final Path tokenizerJson = write(dir, "tokenizer.json", json);
+
+    final InvalidFormatException exception = assertThrows(InvalidFormatException.class,
+        () -> TeacherTokenizer.read(tokenizerJson, null));
+    assertTrue(exception.getMessage().contains("more than once"), exception.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "{\"post_processor\":{\"type\":\"TemplateProcessing\","
+          + "\"type\":\"TemplateProcessing\",\"single\":\"$A\","
+          + "\"special_tokens\":{ }}," + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":{\"type\":\"TemplateProcessing\","
+          + "\"single\":\"$A\",\"single\":\"$A\",\"special_tokens\":{ }},"
+          + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":{\"type\":\"TemplateProcessing\","
+          + "\"single\":\"$A\",\"special_tokens\":{ },\"special_tokens\":{ }},"
+          + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":{\"type\":\"BertProcessing\","
+          + "\"cls\":[\"a\",0],\"cls\":[\"a\",0],\"sep\":[\"a\",0]},"
+          + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":{\"type\":\"BertProcessing\","
+          + "\"cls\":[\"a\",0],\"sep\":[\"a\",0],\"sep\":[\"a\",0]},"
+          + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":{\"type\":\"TemplateProcessing\","
+          + "\"single\":[{\"Sequence\":{\"id\":\"A\",\"id\":\"A\","
+          + "\"type_id\":0}}],\"special_tokens\":{ }},"
+          + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":{\"type\":\"TemplateProcessing\","
+          + "\"single\":\"[CLS] $A\",\"special_tokens\":{"
+          + "\"[CLS]\":{\"ids\":[0]},\"[CLS]\":{\"ids\":[0]}}},"
+          + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"post_processor\":{\"type\":\"TemplateProcessing\","
+          + "\"single\":\"[CLS] $A\",\"special_tokens\":{"
+          + "\"[CLS]\":{\"ids\":[0],\"ids\":[0]}}},"
+          + MINIMAL_WORDPIECE_MODEL + "}",
+      "{\"added_tokens\":[{\"content\":\"a\",\"content\":\"a\"}],"
+          + MINIMAL_WORDPIECE_MODEL + "}"
+  })
+  void testRejectsDuplicateNestedTokenizerFields(String json, @TempDir Path dir)
+      throws IOException {
+    final Path tokenizerJson = write(dir, "tokenizer.json", json);
+
+    final InvalidFormatException exception = assertThrows(InvalidFormatException.class,
+        () -> TeacherTokenizer.read(tokenizerJson, null));
+    assertTrue(exception.getMessage().contains("more than once"), exception.getMessage());
+  }
+
   @Test
   void testRejectsANullTokenizerJsonFile() {
-    assertEquals("TokenizerJsonFile must not be null", assertThrows(
+    assertEquals("tokenizerJsonFile must not be null", assertThrows(
         IllegalArgumentException.class, () -> TeacherTokenizer.read(null, null)).getMessage());
   }
 
@@ -209,8 +275,7 @@ class TeacherTokenizerTest {
 
   /**
    * The teacher must be rejected, not half-read, when it cannot describe a distilled table. Each
-   * case names the part of the contract it breaks and a fragment the message has to carry, so a
-   * silently weakened check shows up as a failing row rather than as a corrupt model directory.
+   * case names the part of the contract it breaks and an expected message fragment.
    */
   @ParameterizedTest
   @CsvSource(delimiter = ';', value = {
@@ -225,9 +290,55 @@ class TeacherTokenizerTest {
           + "\"vocab\":[[\"a\",0.0]]}};does not name an unknown token",
       "vocabulary ids with a gap;{\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\","
           + "\"vocab\":{\"a\":0,\"b\":2}}};not a gapless range",
+      "a duplicate vocabulary token;{\"model\":{\"type\":\"Unigram\",\"unk_id\":0,"
+          + "\"vocab\":[[\"<unk>\",0.0],[\"piece\",-1.0],[\"piece\",-2.0]]}};"
+          + "declares token 'piece' more than once",
       "an unsupported post-processor;{\"post_processor\":{\"type\":\"ByteLevel\"},"
           + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}};"
           + "is not supported",
+      "a post-processor object without a type;{\"post_processor\":{},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}};"
+          + "post_processor.type is required",
+      "a TemplateProcessing post-processor without a single template;{\"post_processor\":{"
+          + "\"type\":\"TemplateProcessing\",\"special_tokens\":{}},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}};"
+          + "post_processor.single is required",
+      "a string template without a sequence;{\"post_processor\":{"
+          + "\"type\":\"TemplateProcessing\",\"single\":\"[CLS] [SEP]\","
+          + "\"special_tokens\":{\"[CLS]\":{\"ids\":[0]},\"[SEP]\":{\"ids\":[0]}}},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}};"
+          + "exactly one sequence placeholder",
+      "a structured template with two sequences;{\"post_processor\":{"
+          + "\"type\":\"TemplateProcessing\",\"single\":["
+          + "{\"Sequence\":{\"id\":\"A\",\"type_id\":0}},"
+          + "{\"Sequence\":{\"id\":\"A\",\"type_id\":0}}],\"special_tokens\":{}},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}};"
+          + "exactly one sequence placeholder",
+      "a BertProcessing post-processor without cls;{\"post_processor\":{"
+          + "\"type\":\"BertProcessing\",\"sep\":[\"a\",0]},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}};"
+          + "post_processor.cls is required",
+      "a RobertaProcessing post-processor without sep;{\"post_processor\":{"
+          + "\"type\":\"RobertaProcessing\",\"cls\":[\"a\",0]},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\",\"vocab\":{\"a\":0}}};"
+          + "post_processor.sep is required",
+      "a negative post-processor id;{\"post_processor\":{\"type\":\"BertProcessing\","
+          + "\"cls\":[\"[CLS]\",-1],\"sep\":[\"[SEP]\",1]},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"[UNK]\","
+          + "\"vocab\":{\"[UNK]\":0,\"[SEP]\":1}}};outside the supported integer range",
+      "an overflowing post-processor id;{\"post_processor\":{\"type\":\"TemplateProcessing\","
+          + "\"single\":\"[CLS] $A\",\"special_tokens\":{\"[CLS]\":{"
+          + "\"ids\":[4294967296]}}},\"model\":{\"type\":\"WordPiece\","
+          + "\"unk_token\":\"[UNK]\",\"vocab\":{\"[UNK]\":0}}};"
+          + "outside the supported integer range",
+      "a structured special token without an id;{\"post_processor\":{"
+          + "\"type\":\"TemplateProcessing\",\"single\":[{\"SpecialToken\":{}}]},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"[UNK]\","
+          + "\"vocab\":{\"[UNK]\":0}}};SpecialToken template item needs an id",
+      "a structured sequence without an id;{\"post_processor\":{"
+          + "\"type\":\"TemplateProcessing\",\"single\":[{\"Sequence\":{}}]},"
+          + "\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"[UNK]\","
+          + "\"vocab\":{\"[UNK]\":0}}};Sequence template item needs an id",
       "trailing content;{\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"a\","
           + "\"vocab\":{\"a\":0}}} junk;Trailing content"})
   void testRejectsATeacherItCannotDistill(String reason, String teacherJson, String messagePart,
@@ -395,6 +506,18 @@ class TeacherTokenizerTest {
     assertEquals(expectedSize, tokenizer.vocabularySize());
   }
 
+  @Test
+  void testUnusedPatternDoesNotRemoveTheUnknownToken(@TempDir Path dir) throws IOException {
+    final Path tokenizerJson = write(dir, "tokenizer.json",
+        "{\"model\":{\"type\":\"WordPiece\",\"unk_token\":\"[unused0]\","
+            + "\"vocab\":{\"[unused0]\":0,\"hello\":1}}}");
+
+    final TeacherTokenizer tokenizer = TeacherTokenizer.read(tokenizerJson, null);
+
+    assertEquals("[unused0]", tokenizer.unkToken());
+    assertArrayEquals(new int[] {0, 1}, tokenizer.keptOriginalIds());
+  }
+
   /**
    * Vocabulary entries are copied as raw spans, so a teacher's escapes reach the distilled file
    * untouched and still decode to the pieces the loader resolves matrix rows by.
@@ -489,7 +612,7 @@ class TeacherTokenizerTest {
     final Path tokenizerJson = write(dir, "tokenizer.json", UNIGRAM_TEACHER);
     final TeacherTokenizer tokenizer = TeacherTokenizer.read(tokenizerJson, null);
 
-    assertEquals("File must not be null", assertThrows(
+    assertEquals("file must not be null", assertThrows(
         IllegalArgumentException.class, () -> tokenizer.writeCleaned(null)).getMessage());
   }
 
@@ -502,8 +625,10 @@ class TeacherTokenizerTest {
     // and the sequence is wrapped in the post-processor's [CLS]/[SEP] ids.
     assertArrayEquals(new long[] {2, 5, 1, 7, 3},
         tokenizer.inputSequence(List.of("hello", "nope", "world")));
-    assertEquals("Pieces must not be null", assertThrows(IllegalArgumentException.class,
+    assertEquals("pieces must not be null", assertThrows(IllegalArgumentException.class,
         () -> tokenizer.inputSequence((List<String>) null)).getMessage());
+    assertEquals("pieces[0] must not be null", assertThrows(IllegalArgumentException.class,
+        () -> tokenizer.inputSequence(Collections.singletonList(null))).getMessage());
   }
 
   @Test

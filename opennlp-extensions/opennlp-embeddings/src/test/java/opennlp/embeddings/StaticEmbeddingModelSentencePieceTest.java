@@ -233,8 +233,9 @@ class StaticEmbeddingModelSentencePieceTest {
   void testMostSimilarNeverReturnsSpecialRows(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model = loadFromDirectory(writeModelDirectory(dir, null));
 
-    for (final Neighbor neighbor : model.mostSimilar("a", 5)) {
-      assertFalse(List.of("<pad>", "<unk>", "<mask>").contains(neighbor.token()),
+    for (final Neighbor neighbor : model.mostSimilar("a", model.vocabularySize())) {
+      assertFalse(List.of("<pad>", "<unk>", "<mask>", "<extra_special>")
+              .contains(neighbor.token()),
           "special row leaked into neighbors: " + neighbor.token());
     }
   }
@@ -269,7 +270,7 @@ class StaticEmbeddingModelSentencePieceTest {
   }
 
   @Test
-  void testDirectoryLoadExplainsAnIncompleteLegacyTokenizer(@TempDir Path dir)
+  void testDirectoryLoadExplainsAnIncompleteSeparateFileTokenizer(@TempDir Path dir)
       throws IOException {
     writeModelDirectory(dir, true);
     Files.delete(dir.resolve("sentencepiece.bpe.model"));

@@ -24,10 +24,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -50,8 +57,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The cache's teacher-reference contract and its download integrity, exercised against a hub
  * served on the loopback interface: no test here reaches the network. A local directory is
  * returned as-is, anything that is neither a directory nor an {@code org/model} hub id is rejected
- * before a request is made, and a download is pinned to one commit and refused unless it matches
- * the digest the hub published for it.
+ * before a request is made, and a download is pinned to one commit and accepted only when it
+ * matches the digest the hub published for it.
  */
 class HuggingFaceModelCacheTest {
 
@@ -154,21 +161,21 @@ class HuggingFaceModelCacheTest {
   }
 
   @Test
-  void testNullTeacherFailsLoudly() {
+  void testRejectsNullTeacher() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> HuggingFaceModelCache.resolve(null, null));
     assertTrue(e.getMessage().contains("must not be null"), e.getMessage());
   }
 
   @Test
-  void testNullHubBaseFailsLoudly(@TempDir Path cacheRoot) {
-    assertEquals("HubBase must not be null", assertThrows(IllegalArgumentException.class,
+  void testRejectsNullHubBase(@TempDir Path cacheRoot) {
+    assertEquals("hubBase must not be null", assertThrows(IllegalArgumentException.class,
         () -> HuggingFaceModelCache.resolve(MODEL_ID, null, cacheRoot, null)).getMessage());
   }
 
   @Test
-  void testNullCacheRootFailsLoudly() {
-    assertEquals("CacheRoot must not be null", assertThrows(IllegalArgumentException.class,
+  void testRejectsNullCacheRoot() {
+    assertEquals("cacheRoot must not be null", assertThrows(IllegalArgumentException.class,
         () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), null, null)).getMessage());
   }
 
@@ -179,7 +186,10 @@ class HuggingFaceModelCacheTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"bge-m3", "BAAI/bge m3", "BAAI/bge-m3/onnx", "/BAAI/bge-m3",
-      "BAAI/bge-m3/", "BAAI//bge-m3", "BAAI/bge-m3@", "BAAI/bge-m3@a b", "BAAI/bge-m3@main@main"})
+      "BAAI/bge-m3/", "BAAI//bge-m3", "BAAI/bge-m3@", "BAAI/bge-m3@/main",
+      "BAAI/bge-m3@main/", "BAAI/bge-m3@refs//1", "BAAI/bge-m3@a b",
+      "BAAI/bge-m3@main@main", "../bge-m3", "BAAI/..", "BAAI/bge-m3@..",
+      "BAAI/bge-m3@refs/../main"})
   void testMalformedTeacherReferenceIsRejectedBeforeAnyRequest(String teacher,
                                                                @TempDir Path cacheRoot) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
@@ -328,7 +338,7 @@ class HuggingFaceModelCacheTest {
   }
 
   @Test
-  void testAMissingEtagIsRefused(@TempDir Path cacheRoot) throws IOException {
+  void testAMissingEtagIsRejected(@TempDir Path cacheRoot) throws IOException {
     serveTeacher();
     hub.serve(COMMIT, ModelFileNames.TOKENIZER_JSON, TOKENIZER, null);
 
@@ -344,9 +354,24 @@ class HuggingFaceModelCacheTest {
   @ValueSource(strings = {"", "not-a-digest", "296101682cfaaf7c2d1e2394062858aea9dd3ea",
       "296101682cfaaf7c2d1e2394062858aea9dd3ea55", "zzz101682cfaaf7c2d1e2394062858aea9dd3ea5",
       "sha256:faffaa0a29c6cf303b7a0dfc59d54131b17b2658c22e02c5da3a66d7526360ef"})
-  void testAMalformedEtagIsRefused(String etag, @TempDir Path cacheRoot) {
+  void testAMalformedEtagIsRejected(String etag, @TempDir Path cacheRoot) {
     serveTeacher();
     hub.serve(COMMIT, ModelFileNames.TOKENIZER_JSON, TOKENIZER, quoted(etag));
+
+    final IOException e = assertThrows(IOException.class,
+        () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null));
+
+    assertTrue(e.getMessage().contains("Expected checksum could not be retrieved"), e.getMessage());
+    assertTrue(e.getMessage().contains("neither a git blob SHA-1 nor a SHA-256"), e.getMessage());
+  }
+
+  @Test
+  void testAnEtagWithAnEmbeddedQuoteIsRejected(@TempDir Path cacheRoot) {
+    serveTeacher();
+    final int middle = TOKENIZER_BLOB_SHA1.length() / 2;
+    final String malformed = TOKENIZER_BLOB_SHA1.substring(0, middle) + '"'
+        + TOKENIZER_BLOB_SHA1.substring(middle);
+    hub.serve(COMMIT, ModelFileNames.TOKENIZER_JSON, TOKENIZER, malformed);
 
     final IOException e = assertThrows(IOException.class,
         () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null));
@@ -387,7 +412,7 @@ class HuggingFaceModelCacheTest {
     assertTrue(e.getMessage().contains("the distillation needs this file"), e.getMessage());
   }
 
-  /** Only a 404 means absent: a hub that is broken or refuses access must not look like one. */
+  /** Only a 404 means absent; another error status must remain visible to the caller. */
   @Test
   void testAnOptionalFileServedWithAnErrorStatusIsNotTreatedAsAbsent(@TempDir Path cacheRoot) {
     serveTeacher();
@@ -422,6 +447,37 @@ class HuggingFaceModelCacheTest {
     assertEquals(COMMIT, HuggingFaceModelCache.pinnedRevision(cache));
   }
 
+  @Test
+  void testRejectsCommitHeaderSuppliedOnlyByRedirectTarget(@TempDir Path cacheRoot) {
+    hub.reply(resolvePath(DEFAULT_REF, ModelFileNames.TOKENIZER_JSON),
+        new Reply(302, null, null, "/cdn/tokenizer", null));
+    hub.reply("/cdn/tokenizer",
+        new Reply(200, COMMIT, quoted(TOKENIZER_BLOB_SHA1), null, TOKENIZER));
+    hub.serve(COMMIT, ModelFileNames.TOKENIZER_JSON, TOKENIZER, quoted(TOKENIZER_BLOB_SHA1));
+    hub.serve(COMMIT, ModelFileNames.ONNX_MODEL, ONNX, quoted(ONNX_SHA256));
+
+    final IOException error = assertThrows(IOException.class,
+        () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null));
+
+    assertTrue(error.getMessage().contains("x-repo-commit"), error.getMessage());
+  }
+
+  @Test
+  void testRejectsChecksumHeaderSuppliedOnlyByRedirectTarget(@TempDir Path cacheRoot) {
+    hub.serve(DEFAULT_REF, ModelFileNames.TOKENIZER_JSON, TOKENIZER,
+        quoted(TOKENIZER_BLOB_SHA1));
+    hub.reply(resolvePath(COMMIT, ModelFileNames.TOKENIZER_JSON),
+        new Reply(302, COMMIT, null, "/cdn/tokenizer", null));
+    hub.reply("/cdn/tokenizer",
+        new Reply(200, null, quoted(TOKENIZER_BLOB_SHA1), null, TOKENIZER));
+    hub.serve(COMMIT, ModelFileNames.ONNX_MODEL, ONNX, quoted(ONNX_SHA256));
+
+    final IOException error = assertThrows(IOException.class,
+        () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null));
+
+    assertTrue(error.getMessage().contains("x-linked-etag"), error.getMessage());
+  }
+
   /** A complete cache directory is a usable teacher with the hub unreachable. */
   @Test
   void testACompleteCacheIsReusedWithoutContactingTheHub(@TempDir Path cacheRoot)
@@ -436,6 +492,60 @@ class HuggingFaceModelCacheTest {
     assertEquals(first, second);
     assertTrue(hub.requests.isEmpty(), hub.requests.toString());
     assertArrayEquals(TOKENIZER, Files.readAllBytes(second.resolve(ModelFileNames.TOKENIZER_JSON)));
+  }
+
+  /** Concurrent writers for one teacher must not publish files from different revisions. */
+  @Test
+  void testConcurrentResolutionsOfOneTeacherAreSerialized(@TempDir Path cacheRoot)
+      throws Exception {
+    serveTeacher();
+    final CountDownLatch firstAtGraph = new CountDownLatch(1);
+    final CountDownLatch releaseFirst = new CountDownLatch(1);
+    hub.gate(COMMIT, ModelFileNames.ONNX_MODEL, firstAtGraph, releaseFirst);
+
+    final ExecutorService executor = Executors.newFixedThreadPool(2);
+    try (Hub movedHub = new Hub()) {
+      movedHub.serve(DEFAULT_REF, ModelFileNames.TOKENIZER_JSON, BIG_TOKENIZER,
+          quoted(BIG_TOKENIZER_BLOB_SHA1), OTHER_COMMIT);
+      movedHub.serve(OTHER_COMMIT, ModelFileNames.TOKENIZER_JSON, BIG_TOKENIZER,
+          quoted(BIG_TOKENIZER_BLOB_SHA1), OTHER_COMMIT);
+      movedHub.serve(OTHER_COMMIT, ModelFileNames.ONNX_MODEL, BIG_ONNX,
+          quoted(BIG_ONNX_SHA256), OTHER_COMMIT);
+      final CountDownLatch secondReachedHub = new CountDownLatch(1);
+      movedHub.signalOnRequest(DEFAULT_REF, ModelFileNames.TOKENIZER_JSON, secondReachedHub);
+
+      final Future<Path> first = executor.submit(
+          () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null));
+      assertTrue(firstAtGraph.await(5, TimeUnit.SECONDS), "first download did not reach the graph");
+      final Future<Path> second = executor.submit(
+          () -> HuggingFaceModelCache.resolve(MODEL_ID, movedHub.base(), cacheRoot, null));
+      try {
+        assertFalse(secondReachedHub.await(1, TimeUnit.SECONDS),
+            "a second writer contacted the hub while the first held the cache");
+      } finally {
+        releaseFirst.countDown();
+      }
+
+      assertEquals(first.get(5, TimeUnit.SECONDS), second.get(5, TimeUnit.SECONDS));
+    } finally {
+      releaseFirst.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
+  void testAMarkedCacheMissingAnOptionalFileIsDownloadedAgain(@TempDir Path cacheRoot)
+      throws IOException {
+    serveTeacher();
+    hub.serve(COMMIT, SENTENCEPIECE_MODEL, SENTENCEPIECE, quoted(SENTENCEPIECE_BLOB_SHA1));
+    final Path cache = HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null);
+    Files.delete(cache.resolve(SENTENCEPIECE_MODEL));
+    hub.requests.clear();
+
+    HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null);
+
+    assertArrayEquals(SENTENCEPIECE, Files.readAllBytes(cache.resolve(SENTENCEPIECE_MODEL)));
+    assertFalse(hub.requests.isEmpty(), "the incomplete snapshot must be downloaded again");
   }
 
   /** A recorded revision without the files it vouches for is not a cache directory. */
@@ -476,7 +586,7 @@ class HuggingFaceModelCacheTest {
     hub.replies.clear();
     assertThrows(IOException.class,
         () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null),
-        "the half-replaced directory must not be handed out");
+        "an incomplete directory must not be returned");
   }
 
   /** Only a commit sha names a teacher, so a stray file cannot make a directory look pinned. */
@@ -492,9 +602,8 @@ class HuggingFaceModelCacheTest {
   }
 
   /**
-   * A cache directory left incomplete by an interrupted run does not carry the revision it was
-   * downloaded at, so its files are checked against the revision now being downloaded instead of
-   * being trusted, and the expensive ones are not fetched again when they already match.
+   * An incomplete cache has no revision marker. Each cached file is therefore checked against the
+   * requested revision and reused only when its digest matches.
    */
   @Test
   void testAnUnmarkedCachedFileThatMatchesTheRevisionIsKept(@TempDir Path cacheRoot)
@@ -567,7 +676,24 @@ class HuggingFaceModelCacheTest {
   }
 
   @Test
-  void testARequestedCommitTheHubResolvesElsewhereIsRefused(@TempDir Path cacheRoot) {
+  void testARevisionWithSlashesIsEncodedAsOnePathSegment(@TempDir Path cacheRoot)
+      throws IOException {
+    final String requestPath = "/" + MODEL_ID + "/resolve/refs%2Fpr%2F1/"
+        + ModelFileNames.TOKENIZER_JSON;
+    hub.reply(requestPath,
+        new Reply(200, COMMIT, quoted(TOKENIZER_BLOB_SHA1), null, TOKENIZER));
+    hub.serve(COMMIT, ModelFileNames.TOKENIZER_JSON, TOKENIZER, quoted(TOKENIZER_BLOB_SHA1));
+    hub.serve(COMMIT, ModelFileNames.ONNX_MODEL, ONNX, quoted(ONNX_SHA256));
+
+    final Path cache = HuggingFaceModelCache.resolve(MODEL_ID + "@refs/pr/1", hub.base(),
+        cacheRoot, null);
+
+    assertEquals(COMMIT, HuggingFaceModelCache.pinnedRevision(cache));
+    assertTrue(hub.requests.contains(requestPath), hub.requests.toString());
+  }
+
+  @Test
+  void testARequestedCommitTheHubResolvesElsewhereIsRejected(@TempDir Path cacheRoot) {
     hub.serve(OTHER_COMMIT, ModelFileNames.TOKENIZER_JSON, TOKENIZER, quoted(TOKENIZER_BLOB_SHA1));
 
     final IOException e = assertThrows(IOException.class, () -> HuggingFaceModelCache.resolve(
@@ -598,7 +724,7 @@ class HuggingFaceModelCacheTest {
   }
 
   @Test
-  void testARevisionThatCannotBePinnedIsRefused(@TempDir Path cacheRoot) {
+  void testARevisionThatCannotBePinnedIsRejected(@TempDir Path cacheRoot) {
     hub.reply(resolvePath(DEFAULT_REF, ModelFileNames.TOKENIZER_JSON),
         new Reply(200, null, quoted(TOKENIZER_BLOB_SHA1), null, TOKENIZER));
 
@@ -610,7 +736,7 @@ class HuggingFaceModelCacheTest {
   }
 
   @Test
-  void testAModelTheHubDoesNotHaveIsRefused(@TempDir Path cacheRoot) {
+  void testAModelTheHubDoesNotHaveIsRejected(@TempDir Path cacheRoot) {
     final IOException e = assertThrows(IOException.class,
         () -> HuggingFaceModelCache.resolve(MODEL_ID, hub.base(), cacheRoot, null));
 
@@ -693,6 +819,10 @@ class HuggingFaceModelCacheTest {
   private record Reply(int status, String commit, String etag, String location, byte[] body) {
   }
 
+  /** Coordinates one response with a concurrent test. */
+  private record Gate(CountDownLatch entered, CountDownLatch release) {
+  }
+
   /**
    * A stand-in for the hub on the loopback interface, answering canned responses per request path
    * and recording the paths it was asked for.
@@ -701,6 +831,8 @@ class HuggingFaceModelCacheTest {
 
     private final HttpServer server;
     private final Map<String, Reply> replies = new ConcurrentHashMap<>();
+    private final Map<String, CountDownLatch> arrivals = new ConcurrentHashMap<>();
+    private final Map<String, Gate> gates = new ConcurrentHashMap<>();
     private final List<String> requests = Collections.synchronizedList(new ArrayList<>());
 
     private Hub() throws IOException {
@@ -773,6 +905,17 @@ class HuggingFaceModelCacheTest {
       replies.put(path, reply);
     }
 
+    /** Records when the requested file reaches this hub. */
+    private void signalOnRequest(String revision, String file, CountDownLatch arrival) {
+      arrivals.put(resolvePath(revision, file), arrival);
+    }
+
+    /** Pauses the requested file until {@code release} is opened. */
+    private void gate(String revision, String file, CountDownLatch entered,
+                      CountDownLatch release) {
+      gates.put(resolvePath(revision, file), new Gate(entered, release));
+    }
+
     /**
      * Answers one request, with 404 when nothing is registered for its path.
      *
@@ -780,8 +923,24 @@ class HuggingFaceModelCacheTest {
      * @throws IOException Thrown if the response headers cannot be sent.
      */
     private void answer(HttpExchange exchange) throws IOException {
-      final String path = exchange.getRequestURI().getPath();
+      final String path = exchange.getRequestURI().getRawPath();
       requests.add(path);
+      final CountDownLatch arrival = arrivals.get(path);
+      if (arrival != null) {
+        arrival.countDown();
+      }
+      final Gate gate = gates.get(path);
+      if (gate != null) {
+        gate.entered().countDown();
+        try {
+          if (!gate.release().await(5, TimeUnit.SECONDS)) {
+            throw new IOException("Timed out waiting to release " + path);
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new IOException("Interrupted while waiting to release " + path, e);
+        }
+      }
       final Reply reply = replies.get(path);
       if (reply == null) {
         exchange.sendResponseHeaders(NOT_FOUND, -1);
@@ -816,16 +975,11 @@ class HuggingFaceModelCacheTest {
       server.stop(0);
     }
   }
-  /**
-   * Verifies that references differing only in a character the readable part of the directory
-   * name flattens do not share a cache directory. They did: the name replaced '.', '@' and '/'
-   * without disambiguating them, so three distinct teachers mapped to one directory, and the
-   * cached fast path would answer from it without contacting the hub.
-   */
+  /** Verifies that flattening reference characters does not create cache-name collisions. */
   @Test
-  void testDistinctTeachersDoNotShareACacheDirectory() throws Exception {
-    final java.util.Set<String> names = new java.util.HashSet<>();
-    for (final String teacher : java.util.List.of(
+  void testDistinctTeachersDoNotShareACacheDirectory() {
+    final Set<String> names = new HashSet<>();
+    for (final String teacher : List.of(
         "acme/model_v1", "acme/model.v1", "acme/model@v1", "acme/model-v1")) {
       names.add(HuggingFaceModelCache.cacheDirectoryName(teacher));
     }
