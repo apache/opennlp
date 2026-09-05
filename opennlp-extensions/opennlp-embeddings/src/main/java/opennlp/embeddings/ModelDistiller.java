@@ -544,9 +544,13 @@ public final class ModelDistiller {
   /**
    * {@return {@code value} as a JSON string literal}
    *
+   * <p>Package-private for tests: the characters that need escaping are illegal in file names
+   * on Windows, so a teacher directory cannot carry them there and the escaper is exercised
+   * directly instead.</p>
+   *
    * @param value The value to quote and escape.
    */
-  private static String jsonString(String value) {
+  static String jsonString(String value) {
     final StringBuilder json = new StringBuilder(value.length() + 2).append('"');
     for (int i = 0; i < value.length(); i++) {
       final char c = value.charAt(i);
