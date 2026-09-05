@@ -26,9 +26,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
@@ -46,8 +47,6 @@ import opennlp.tools.util.model.SerializableArtifact;
  * value of the dict attribute of each {@link BrownCluster} feature generator.
  */
 public class BrownCluster implements SerializableArtifact {
-
-  private static final Pattern tabPattern = Pattern.compile("\t");
 
   public static class BrownClusterSerializer implements ArtifactSerializer<BrownCluster> {
 
@@ -82,7 +81,7 @@ public class BrownCluster implements SerializableArtifact {
 
       String line;
       while ((line = breader.readLine()) != null) {
-        String[] lineArray = tabPattern.split(line);
+        String[] lineArray = splitTabs(line);
         if (lineArray.length == 3) {
           int freq = Integer.parseInt(lineArray[2]);
           if (freq > 5 ) {
@@ -94,6 +93,21 @@ public class BrownCluster implements SerializableArtifact {
         }
       }
     }
+  }
+
+  private static String[] splitTabs(String line) {
+    List<String> fields = new ArrayList<>();
+    int start = 0;
+    int separator;
+    while ((separator = line.indexOf('\t', start)) != -1) {
+      fields.add(line.substring(start, separator));
+      start = separator + 1;
+    }
+    fields.add(line.substring(start));
+    while (fields.size() > 1 && fields.get(fields.size() - 1).isEmpty()) {
+      fields.remove(fields.size() - 1);
+    }
+    return fields.toArray(new String[0]);
   }
 
   /**
