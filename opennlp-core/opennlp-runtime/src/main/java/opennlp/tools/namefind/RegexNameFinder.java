@@ -29,6 +29,9 @@ import opennlp.tools.util.Span;
 
 /**
  * A {@link TokenNameFinder} implementation based on a series of regular expressions.
+ * <p>
+ * Please note: RegEx is not allowed in the processing path of OpenNLP.
+ * However, a RegEx step is an obvious exception.
  */
 public final class RegexNameFinder implements TokenNameFinder {
 
