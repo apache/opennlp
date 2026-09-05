@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +37,9 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
-import opennlp.tools.tokenize.BertTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.SubwordPiece;
+import opennlp.tools.tokenize.SubwordTokenizer;
+import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -55,7 +57,7 @@ public abstract class AbstractDL implements AutoCloseable {
 
   protected final OrtEnvironment env;
   protected final OrtSession session;
-  protected final Tokenizer tokenizer;
+  protected final SubwordTokenizer tokenizer;
   protected final Map<String, Integer> vocab;
 
   private final AtomicBoolean closed = new AtomicBoolean();
@@ -105,7 +107,7 @@ public abstract class AbstractDL implements AutoCloseable {
       final OrtSession createdSession = env.createSession(model.getPath(), sessionOptions);
       try {
         this.vocab = Map.copyOf(loadVocabFile(vocabulary));
-        this.tokenizer = createBertTokenizer(vocab, lowerCase);
+        this.tokenizer = createWordpieceEncoder(vocab, lowerCase);
       } catch (IOException | RuntimeException e) {
         // Vocabulary/tokenizer init failed after the native session was created; close it
         // so a partially constructed instance never leaks the ONNX session.
@@ -136,7 +138,7 @@ public abstract class AbstractDL implements AutoCloseable {
     this.env = env;
     this.session = session;
     this.vocab = vocab;
-    this.tokenizer = createBertTokenizer(vocab, lowerCase);
+    this.tokenizer = createWordpieceEncoder(vocab, lowerCase);
   }
 
   /**
@@ -238,38 +240,70 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Creates a {@link BertTokenizer} that performs the full BERT tokenization
-   * pipeline: basic tokenization (text normalization) followed by wordpiece.
-   * The special tokens are selected based on the vocabulary: if it contains
-   * RoBERTa-style tokens, those are used, otherwise the BERT defaults.
+   * Builds the BERT encoder, selecting RoBERTa special tokens when present and BERT defaults
+   * otherwise.
    *
-   * @param vocab The vocabulary map.
-   * @param lowerCase {@code true} for uncased models (lower casing and accent
-   *     stripping), {@code false} for cased models.
-   * @return A configured {@link BertTokenizer}.
-   * @throws IllegalArgumentException Thrown if a RoBERTa-style vocabulary
-   *     contains no supported unknown token.
+   * @param vocab     The vocabulary map.
+   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
+   * @return A configured {@link WordpieceEncoder}.
+   * @throws IllegalArgumentException Thrown if {@code vocab} is {@code null} or the selected
+   *     special tokens are not all present in it.
    */
-  protected BertTokenizer createTokenizer(
+  static WordpieceEncoder createWordpieceEncoder(
       final Map<String, Integer> vocab, final boolean lowerCase) {
-
-    return createBertTokenizer(vocab, lowerCase);
-  }
-
-  static BertTokenizer createBertTokenizer(
-      final Map<String, Integer> vocab, final boolean lowerCase) {
+    if (vocab == null) {
+      throw new IllegalArgumentException("vocab must not be null");
+    }
     if (vocab.containsKey(
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
             WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      return new BertTokenizer(
-          vocab.keySet(),
+      return new WordpieceEncoder(
+          vocab,
           lowerCase,
           WordpieceTokenizer.ROBERTA_CLS_TOKEN,
           WordpieceTokenizer.ROBERTA_SEP_TOKEN,
           resolveUnknownToken(vocab));
     }
-    return new BertTokenizer(vocab.keySet(), lowerCase);
+    return new WordpieceEncoder(vocab, lowerCase,
+        WordpieceTokenizer.BERT_CLS_TOKEN,
+        WordpieceTokenizer.BERT_SEP_TOKEN,
+        WordpieceTokenizer.BERT_UNK_TOKEN);
+  }
+
+  /**
+   * Encodes text as the token strings and numeric inputs consumed by a BERT model.
+   *
+   * @param text The text to encode; must not be {@code null}.
+   * @return The encoded pieces, ids, attention mask, and token types.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  protected final Tokens encodeTokens(CharSequence text) {
+    return encodeTokens(tokenizer, text);
+  }
+
+  /**
+   * Encodes text with the supplied tokenizer.
+   *
+   * @param tokenizer The tokenizer to use; must not be {@code null}.
+   * @param text The text to encode; must not be {@code null}.
+   * @return The encoded pieces, ids, attention mask, and token types.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
+   */
+  protected static Tokens encodeTokens(SubwordTokenizer tokenizer, CharSequence text) {
+    requireNonNullArg(tokenizer, "tokenizer");
+    final List<SubwordPiece> pieces = tokenizer.encode(text);
+    final String[] tokens = new String[pieces.size()];
+    final long[] ids = new long[pieces.size()];
+    final long[] mask = new long[pieces.size()];
+    final long[] types = new long[pieces.size()];
+    for (int i = 0; i < pieces.size(); i++) {
+      final SubwordPiece piece = pieces.get(i);
+      tokens[i] = piece.piece();
+      ids[i] = piece.id();
+    }
+    Arrays.fill(mask, 1);
+    return new Tokens(tokens, ids, mask, types);
   }
 
   /**

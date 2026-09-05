@@ -20,19 +20,23 @@ package opennlp.dl.vectors;
 import java.io.File;
 import java.io.IOException;
 import java.nio.LongBuffer;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import ai.onnxruntime.NodeInfo;
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+import ai.onnxruntime.TensorInfo;
 
 import opennlp.dl.AbstractDL;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.tokenize.Tokenizer;
-
+import opennlp.tools.embeddings.TextEmbedder;
+import opennlp.tools.tokenize.SubwordTokenizer;
 
 /**
  * Facilitates the generation of sentence vectors using
@@ -47,7 +51,7 @@ import opennlp.tools.tokenize.Tokenizer;
  * so the encoder attended to nothing and the output vectors were
  * incorrect. Additionally, tokenization now performs BERT basic
  * tokenization (lower casing and accent stripping by default, see
- * {@link opennlp.tools.tokenize.BertTokenizer}) before wordpiece.
+ * {@link opennlp.tools.tokenize.WordpieceEncoder}) before wordpiece.
  * Output vectors change with the corrected encoding and tokenization;
  * any embeddings persisted from the previous behavior are not
  * comparable with the corrected output and must be re-embedded.</p>
@@ -56,9 +60,18 @@ import opennlp.tools.tokenize.Tokenizer;
  * holds no per-call instance state and the underlying {@link OrtSession} supports
  * concurrent execution. This thread-safety guarantee applies until {@link #close()}
  * is called; callers must not race {@code close()} with inference methods.</p>
+ *
+ * <p>{@link #getVectors(String)} is the primary entry point; {@link #embed(CharSequence)}
+ * adapts it to the {@link TextEmbedder} contract. {@link #embedAll(List)} runs one batched
+ * session per distinct tokenized length, so a batch of same-length inputs costs one
+ * inference instead of one per input.</p>
  */
 @ThreadSafe
-public class SentenceVectorsDL extends AbstractDL {
+public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
+
+  // The hidden dimension declared by the model's output metadata, or a value <= 0 when the
+  // model declares it dynamically; dimension() then probes once and caches here.
+  private volatile int dimension;
 
   /**
    * Instantiates a {@link SentenceVectorsDL sentence vector generator} for an
@@ -94,6 +107,7 @@ public class SentenceVectorsDL extends AbstractDL {
       throws OrtException, IOException {
 
     super(model, vocabulary, new OrtSession.SessionOptions(), lowerCase);
+    this.dimension = declaredOutputDimension(session);
 
   }
 
@@ -103,11 +117,16 @@ public class SentenceVectorsDL extends AbstractDL {
    * @param sentence The input sentence.
    * @return The sentence vector.
    *
+   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null}.
    * @throws OrtException Thrown if an error occurs during inference.
    */
   public float[] getVectors(final String sentence) throws OrtException {
 
-    final Tokens tokens = tokenize(sentence, tokenizer, vocab);
+    if (sentence == null) {
+      throw new IllegalArgumentException("sentence must not be null");
+    }
+
+    final Tokens tokens = encode(sentence, tokenizer);
 
     final Map<String, OnnxTensor> inputs = new HashMap<>();
 
@@ -133,40 +152,159 @@ public class SentenceVectorsDL extends AbstractDL {
   }
 
   /**
-   * Encodes text as model inputs: wordpiece token ids, an attention mask of ones,
-   * and single-segment (all zero) token type ids.
+   * {@inheritDoc}
    *
-   * @param text The text to encode.
-   * @param tokenizer The wordpiece tokenizer matching the {@code vocab}.
-   * @param vocab The vocabulary map.
-   * @return The encoded {@link Tokens}.
+   * <p>Adapts {@link #getVectors(String)} to the {@link TextEmbedder} contract. Empty or
+   * unrecognized input is still run through the model, which returns the vector for the
+   * wrapped {@code [CLS] ... [SEP]} sequence rather than a zero vector.</p>
    *
-   * @throws IllegalArgumentException Thrown if the tokenizer emits a token that is
-   *     not present in the vocabulary.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * @throws IllegalStateException Thrown if inference fails; the cause carries the
+   *     underlying {@link OrtException}.
    */
-  static Tokens tokenize(final String text, final Tokenizer tokenizer,
-      final Map<String, Integer> vocab) {
+  @Override
+  public float[] embed(final CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
+    try {
+      return getVectors(text instanceof String s ? s : text.toString());
+    } catch (OrtException e) {
+      throw new IllegalStateException("Sentence vector inference failed.", e);
+    }
+  }
 
-    final String[] tokens = tokenizer.tokenize(text);
-
-    final long[] ids = new long[tokens.length];
-
-    for (int x = 0; x < tokens.length; x++) {
-      final Integer id = vocab.get(tokens[x]);
-      if (id == null) {
-        throw new IllegalArgumentException("Token '" + tokens[x]
-            + "' is not present in the vocabulary; the vocabulary file does not match the model.");
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Batched execution: the inputs are tokenized up front, grouped by tokenized length,
+   * and each group runs through the session once with shape {@code [group size, length]}.
+   * Grouping by length means a batch never pads, so every row is computed from exactly the
+   * tensors its single-input call would have used. A length group of one executes the
+   * same {@code [1, length]} shapes as {@link #getVectors(String)}.</p>
+   *
+   * @throws IllegalArgumentException Thrown if {@code texts} is {@code null} or contains
+   *     {@code null}.
+   * @throws IllegalStateException Thrown if inference fails; the cause carries the
+   *     underlying {@link OrtException}.
+   */
+  @Override
+  public float[][] embedAll(final List<? extends CharSequence> texts) {
+    if (texts == null) {
+      throw new IllegalArgumentException("texts must not be null");
+    }
+    final float[][] vectors = new float[texts.size()][];
+    if (texts.isEmpty()) {
+      return vectors;
+    }
+    final Tokens[] encoded = new Tokens[texts.size()];
+    final Map<Integer, List<Integer>> byLength = new HashMap<>();
+    for (int i = 0; i < texts.size(); i++) {
+      final CharSequence text = texts.get(i);
+      if (text == null) {
+        throw new IllegalArgumentException("texts[" + i + "] must not be null");
       }
-      ids[x] = id;
+      encoded[i] = encodeTokens(text);
+      byLength.computeIfAbsent(encoded[i].ids().length, length -> new ArrayList<>()).add(i);
+    }
+    try {
+      for (final List<Integer> group : byLength.values()) {
+        runBatch(encoded, group, vectors);
+      }
+    } catch (OrtException e) {
+      throw new IllegalStateException("Sentence vector inference failed.", e);
+    }
+    return vectors;
+  }
+
+  /**
+   * Runs one inference over a group of same-length encodings and stores each row's
+   * {@code [CLS]}-position vector under its original input index.
+   *
+   * @param encoded The tokenized inputs, indexed by input position.
+   * @param group The input positions sharing one tokenized length, in input order.
+   * @param vectors The output array to fill, indexed by input position.
+   * @throws OrtException Thrown if an error occurs during inference.
+   */
+  private void runBatch(final Tokens[] encoded, final List<Integer> group,
+      final float[][] vectors) throws OrtException {
+
+    final int batch = group.size();
+    final int length = encoded[group.get(0)].ids().length;
+    final long[] ids = new long[batch * length];
+    final long[] mask = new long[batch * length];
+    final long[] types = new long[batch * length];
+    for (int b = 0; b < batch; b++) {
+      final Tokens tokens = encoded[group.get(b)];
+      System.arraycopy(tokens.ids(), 0, ids, b * length, length);
+      System.arraycopy(tokens.mask(), 0, mask, b * length, length);
+      System.arraycopy(tokens.types(), 0, types, b * length, length);
     }
 
-    final long[] mask = new long[ids.length];
-    Arrays.fill(mask, 1);
+    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    final long[] shape = {batch, length};
 
-    final long[] types = new long[ids.length];
+    try {
+      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(ids), shape));
 
-    return new Tokens(tokens, ids, mask, types);
+      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, LongBuffer.wrap(mask), shape));
 
+      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(types), shape));
+
+      try (OrtSession.Result result = session.run(inputs)) {
+        // getValue() copies the tensor into Java arrays, so the result can be closed safely.
+        final float[][][] v = (float[][][]) result.get(0).getValue();
+        for (int b = 0; b < batch; b++) {
+          vectors[group.get(b)] = v[b][0];
+        }
+      }
+    } finally {
+      inputs.values().forEach(OnnxTensor::close);
+    }
+
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Read from the model's declared output metadata when it is static; a model that declares
+   * the hidden dimension dynamically is probed with one inference on the first call and the
+   * result cached.</p>
+   */
+  @Override
+  public int dimension() {
+    final int declared = dimension;
+    if (declared > 0) {
+      return declared;
+    }
+    synchronized (this) {
+      if (dimension <= 0) {
+        dimension = embed("a").length;
+      }
+      return dimension;
+    }
+  }
+
+  /**
+   * {@return the last dimension of the first output's declared shape, or {@code -1} when the
+   * model declares it dynamically}
+   *
+   * @param session The model's ONNX session.
+   * @throws OrtException Thrown if reading the output metadata fails.
+   */
+  private static int declaredOutputDimension(final OrtSession session) throws OrtException {
+    final Iterator<NodeInfo> outputs = session.getOutputInfo().values().iterator();
+    if (!outputs.hasNext() || !(outputs.next().getInfo() instanceof TensorInfo tensorInfo)) {
+      return -1;
+    }
+    final long[] shape = tensorInfo.getShape();
+    final long last = shape.length > 0 ? shape[shape.length - 1] : -1;
+    return last > 0 && last <= Integer.MAX_VALUE ? (int) last : -1;
+  }
+
+  /** Encodes one sentence with model vocabulary ids. */
+  static Tokens encode(String text, SubwordTokenizer tokenizer) {
+    return encodeTokens(tokenizer, text);
   }
 
 }

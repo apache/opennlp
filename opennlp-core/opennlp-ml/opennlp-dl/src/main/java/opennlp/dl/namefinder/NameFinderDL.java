@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +40,7 @@ import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.namefind.OffsetMappingNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -50,7 +50,7 @@ import opennlp.tools.util.normalizer.Alignment;
  * An implementation of {@link opennlp.tools.namefind.TokenNameFinder} that uses ONNX models.
  *
  * <p>Tokenization performs BERT basic tokenization (text normalization)
- * before wordpiece, see {@link opennlp.tools.tokenize.BertTokenizer}. Input
+ * before wordpiece, see {@link opennlp.tools.tokenize.WordpieceEncoder}. Input
  * text is <b>not</b> lower cased by default, because named entity recognition
  * models are commonly cased: capitalization is a strong signal for entity
  * boundaries. For uncased models, set
@@ -789,18 +789,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
     final List<ChunkTokens> t = new ArrayList<>(chunks.size());
     for (final TextChunk chunk : chunks) {
 
-      // Now we can tokenize the group and continue.
-      final String[] tokens = tokenizer.tokenize(chunk.text());
-
-      final long[] ids = tokenIds(tokens, vocab);
-
-      final long[] mask = new long[ids.length];
-      Arrays.fill(mask, 1);
-
-      final long[] types = new long[ids.length];
-      Arrays.fill(types, 0);
-
-      t.add(new ChunkTokens(new Tokens(tokens, ids, mask, types), chunk.start(), chunk.end()));
+      t.add(new ChunkTokens(encode(chunk.text(), tokenizer), chunk.start(), chunk.end()));
 
     }
 
@@ -808,31 +797,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
 
   }
 
-  /**
-   * Maps tokens to their vocabulary ids.
-   *
-   * @param tokens The tokens to map.
-   * @param vocab The vocabulary map.
-   * @return The token ids.
-   *
-   * @throws IllegalArgumentException Thrown if a token is not present in the
-   *     vocabulary.
-   */
-  static long[] tokenIds(final String[] tokens, final Map<String, Integer> vocab) {
-
-    final long[] ids = new long[tokens.length];
-
-    for (int x = 0; x < tokens.length; x++) {
-      final Integer id = vocab.get(tokens[x]);
-      if (id == null) {
-        throw new IllegalArgumentException("Token '" + tokens[x]
-            + "' is not present in the vocabulary; the vocabulary file does not match the model.");
-      }
-      ids[x] = id;
-    }
-
-    return ids;
-
+  /** Encodes one name finder input with model vocabulary ids. */
+  static Tokens encode(String text, SubwordTokenizer tokenizer) {
+    return encodeTokens(tokenizer, text);
   }
 
 }

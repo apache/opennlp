@@ -108,6 +108,13 @@
     </fileSet>
 
     <fileSet>
+      <directory>../opennlp-extensions/opennlp-embeddings/src/main/bin</directory>
+      <fileMode>755</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>../opennlp-tools/lang</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
@@ -233,10 +240,24 @@
     </fileSet>
 
     <fileSet>
+      <directory>../opennlp-extensions/opennlp-embeddings/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-embeddings</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>../opennlp-extensions/opennlp-spellcheck/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-spellcheck</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-extensions/opennlp-subword/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-subword</outputDirectory>
     </fileSet>
 
     <fileSet>
