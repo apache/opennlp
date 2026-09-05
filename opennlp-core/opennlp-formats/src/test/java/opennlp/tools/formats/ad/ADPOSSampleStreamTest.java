@@ -108,4 +108,14 @@ public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample>
     }
   }
 
+  @Test
+  void testReplaceWhitespaceWithEquals() {
+    Assertions.assertEquals("v-fin", ADPOSSampleStream.replaceWhitespaceWithEquals("v-fin"));
+    Assertions.assertEquals("PR=3S=IND", ADPOSSampleStream.replaceWhitespaceWithEquals("PR 3S IND"));
+    Assertions.assertEquals("PR=3S", ADPOSSampleStream.replaceWhitespaceWithEquals("PR  \t3S"));
+    Assertions.assertEquals("=PR=3S=", ADPOSSampleStream.replaceWhitespaceWithEquals(" PR 3S "));
+    Assertions.assertEquals("=", ADPOSSampleStream.replaceWhitespaceWithEquals(" "));
+    Assertions.assertEquals("", ADPOSSampleStream.replaceWhitespaceWithEquals(""));
+  }
+
 }

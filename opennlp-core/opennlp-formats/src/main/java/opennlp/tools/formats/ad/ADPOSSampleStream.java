@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
@@ -39,8 +38,6 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 @Internal
 public class ADPOSSampleStream implements ObjectStream<POSSample> {
-
-  private static final Pattern WHITESPACES_PATTERN = Pattern.compile("\\s+");
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
   private final boolean expandME;
@@ -118,7 +115,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       if (isIncludeFeatures && leaf.getMorphologicalTag() != null) {
         tag += " " + leaf.getMorphologicalTag();
       }
-      tag = WHITESPACES_PATTERN.matcher(tag).replaceAll("=");
+      tag = replaceWhitespaceWithEquals(tag);
 
       if (tag == null)
         tag = lexeme;
@@ -150,6 +147,33 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       }
     }
 
+  }
+
+  /*
+   * Replicates replaceAll("=") of the \s+ pattern: every run of ASCII
+   * whitespace, including leading and trailing runs, is replaced by a single
+   * equals sign.
+   */
+  static String replaceWhitespaceWithEquals(String tag) {
+    StringBuilder replaced = new StringBuilder(tag.length());
+    int i = 0;
+    while (i < tag.length()) {
+      char c = tag.charAt(i);
+      if (isAsciiWhitespace(c)) {
+        replaced.append('=');
+        while (i + 1 < tag.length() && isAsciiWhitespace(tag.charAt(i + 1))) {
+          i++;
+        }
+      } else {
+        replaced.append(c);
+      }
+      i++;
+    }
+    return replaced.toString();
+  }
+
+  private static boolean isAsciiWhitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
   }
 
   @Override
