@@ -19,8 +19,8 @@ package opennlp.tools.wordnet;
 /**
  * The four parts of speech a wordnet-style lexicon distinguishes.
  *
- * <p>The enum carries none of the single-letter codes the on-disk formats use; readers own the
- * mapping from their format's codes to these values. Adjective satellites normalize to
+ * <p>The enum does not expose the single-letter codes used by file formats. Each reader maps its
+ * format's codes to these values. Adjective satellites normalize to
  * {@link #ADJECTIVE}, with the cluster structure preserved through
  * {@link WordNetRelation#SIMILAR_TO}.</p>
  *

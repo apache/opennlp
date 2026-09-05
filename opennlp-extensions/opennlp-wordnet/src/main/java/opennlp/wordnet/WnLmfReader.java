@@ -353,7 +353,7 @@ public final class WnLmfReader {
     void parse(XMLStreamReader reader) throws XMLStreamException, InvalidFormatException {
       while (reader.hasNext()) {
         final int event = reader.next();
-        // A DTD event carries nothing that can affect parsing once the factory is hardened.
+        // A DTD event has no content used after DTD processing and external entities are disabled.
         if (event == XMLStreamConstants.START_ELEMENT) {
           startElement(reader);
         } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -581,7 +581,7 @@ public final class WnLmfReader {
      * @param id       The identifier to claim.
      * @param kind     The element kind used in a duplicate error.
      * @param location The source location.
-     * @throws InvalidFormatException Thrown if another parsed element already carries the id.
+     * @throws InvalidFormatException Thrown if the id is already assigned to another element.
      */
     private void claimDocumentId(String id, String kind, Location location)
         throws InvalidFormatException {

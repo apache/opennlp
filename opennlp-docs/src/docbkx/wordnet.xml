@@ -34,12 +34,12 @@
 	<section xml:id="tools.wordnet.load">
 		<title>Loading a lexicon</title>
 		<para>
-			WN-LMF is the usual choice for Open English WordNet and other GWA
-			wordnets. WNDB remains available for a local Princeton-style
+			Use WN-LMF for Open English WordNet and other GWA wordnets. Use WNDB
+			for a local Princeton-style
 			<code>dict</code> directory. The examples below use the miniature
 			fixtures from the module's tests; replace the paths with a full lexicon
-			in application code. <code>WordNetUsageExampleTest</code> asserts the
-			behavior shown here.
+			in application code. <code>WordNetUsageExampleTest</code> checks these
+			results.
 			<programlisting language="java"><![CDATA[
 LexicalKnowledgeBase lexicon = WnLmfReader.read(Path.of("en-wordnet.xml"));
 // or: LexicalKnowledgeBase lexicon = WndbReader.read(Path.of("dict"));]]>
@@ -52,11 +52,11 @@ LexicalKnowledgeBase lexicon = WnLmfReader.read(Path.of("en-wordnet.xml"));
 		<para>
 			A WN-LMF <code>LexicalResource</code> may contain several
 			<code>Lexicon</code> elements. Use <code>readResource</code> for this
-			shape. It returns the lexicons in document order and keeps each language's
+			document. It returns the lexicons in document order and keeps each language's
 			lookup index separate. The single-lexicon <code>read</code> methods reject a
 			multi-lexicon document with an error that points to
 			<code>readResource</code>; equal lemmas in different languages remain separate.
-			<code>WordNetUsageExampleTest</code> mirrors this example:
+			<code>WordNetUsageExampleTest</code> checks this example:
 			<programlisting language="java"><![CDATA[
 WnLmfResource resource =
     WnLmfReader.readResource(inputStream, "omw-multilingual.xml");
@@ -108,7 +108,7 @@ List<Synset> senses = lexicon.lookup("dog", WordNetPOS.NOUN);
 	<section xml:id="tools.wordnet.relations">
 		<title>Navigating relations</title>
 		<para>
-			Each synset carries its typed relations (<code>WordNetRelation</code>) to
+			Each synset exposes its typed relations (<code>WordNetRelation</code>) to
 			other synsets. Follow a relation with <code>Synset.related(...)</code>,
 			resolve the returned ids with <code>synset(id)</code>, or navigate in one
 			step with <code>related(...)</code> on the knowledge base. Starting from
@@ -130,8 +130,8 @@ Synset parent = lexicon.synset(parents.get(0)).orElseThrow();
 		<para>
 			The reader covers every typed <code>SynsetRelation</code> and
 			<code>SenseRelation</code> declared by WN-LMF 1.4. Sense relations are
-			lifted to the synset level. The format's <code>other</code> escape hatch is
-			intentionally skipped because it carries no type the API can preserve;
+			represented at the synset level. The <code>other</code> relation is skipped
+			because it supplies no type the API can preserve;
 			any other unknown relation name fails with the source line. A relation
 			that is valid only on <code>SenseRelation</code> or only on
 			<code>SynsetRelation</code> is also rejected when placed on the wrong
@@ -158,7 +158,7 @@ lexicon.synset(instrumentId).orElseThrow().lemmas(); // ["payment card"]]]>
 		<para>
 			Some multilingual resources retain an unlexicalized synset as the target
 			of a relation. Such a synset is available through <code>synset(id)</code>
-			with an empty lemma list, but is naturally absent from lemma lookup.
+			with an empty lemma list, but is not included in lemma lookup.
 		</para>
 	</section>
 

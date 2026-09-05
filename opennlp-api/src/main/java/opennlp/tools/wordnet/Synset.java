@@ -27,7 +27,7 @@ import opennlp.tools.commons.ThreadSafe;
  * One synonym set: a single lexicalized concept with its member lemmas, gloss, and typed
  * relations to other synsets.
  *
- * <p>The {@link #id() id} is an opaque, source-qualified string minted by the reader that
+ * <p>The {@link #id() id} is an opaque, source-qualified string created by the reader that
  * produced the synset; consumers must not parse it, only pass it back to
  * {@link LexicalKnowledgeBase#synset(String)} and compare it for equality. Relations map each
  * {@link WordNetRelation} present on this synset to the target synset ids in source order.</p>
@@ -56,6 +56,8 @@ public record Synset(
     List<String> lemmas,
     String gloss,
     Map<WordNetRelation, List<String>> relations) {
+
+  private static final String RELATION_PREFIX = "Relation ";
 
   /**
    * Creates a synset.
@@ -92,12 +94,12 @@ public record Synset(
       }
       final List<String> targets = relation.getValue();
       if (targets == null || targets.isEmpty()) {
-        throw new IllegalArgumentException("Relation " + relation.getKey()
+        throw new IllegalArgumentException(RELATION_PREFIX + relation.getKey()
             + " must map to a non-empty target list for synset " + id);
       }
       for (final String target : targets) {
         if (target == null || target.isEmpty()) {
-          throw new IllegalArgumentException("Relation " + relation.getKey()
+          throw new IllegalArgumentException(RELATION_PREFIX + relation.getKey()
               + " must not contain a null or empty target id for synset " + id);
         }
       }
