@@ -21,16 +21,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateTokenizerTest {
+
+  private static final class TestDL extends AbstractDL {
+
+    private TestDL(Map<String, Integer> vocab) {
+      super(null, null, vocab, true);
+    }
+
+    private Tokens encode(String text) {
+      return encodeTokens(text);
+    }
+  }
 
   private static Map<String, Integer> bertVocab() {
     final Map<String, Integer> vocab = new HashMap<>();
@@ -52,34 +66,34 @@ public class CreateTokenizerTest {
   }
 
   @Test
-  void testCreatesLowerCasingPipelineTokenizer() {
-    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(bertVocab(), true);
+  void testCreatesLowerCasingWordpieceEncoder() {
+    final SubwordTokenizer tokenizer = AbstractDL.createWordpieceEncoder(bertVocab(), true);
 
     // Capitalized input must be lower cased before the wordpiece lookup.
     assertArrayEquals(new String[] {
         WordpieceTokenizer.BERT_CLS_TOKEN, "hello", "world", WordpieceTokenizer.BERT_SEP_TOKEN},
-        tokenizer.tokenize("Hello World"));
+        tokenizer.encodeToPieces("Hello World"));
   }
 
   @Test
-  void testCreatesCasePreservingPipelineTokenizer() {
-    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(bertVocab(), false);
+  void testCreatesCasePreservingWordpieceEncoder() {
+    final SubwordTokenizer tokenizer = AbstractDL.createWordpieceEncoder(bertVocab(), false);
 
     // Without lower casing, capitalized words miss the lowercase-only vocabulary.
     assertArrayEquals(new String[] {
         WordpieceTokenizer.BERT_CLS_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN, "world",
         WordpieceTokenizer.BERT_SEP_TOKEN},
-        tokenizer.tokenize("Hello world"));
+        tokenizer.encodeToPieces("Hello world"));
   }
 
   @Test
   void testSelectsRobertaSpecialTokens() {
-    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(robertaVocab(), false);
+    final SubwordTokenizer tokenizer = AbstractDL.createWordpieceEncoder(robertaVocab(), false);
 
     assertArrayEquals(new String[] {
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.ROBERTA_UNK_TOKEN,
         WordpieceTokenizer.ROBERTA_SEP_TOKEN},
-        tokenizer.tokenize("hello missing"));
+        tokenizer.encodeToPieces("hello missing"));
   }
 
   @Test
@@ -88,12 +102,12 @@ public class CreateTokenizerTest {
     vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
     vocab.put(WordpieceTokenizer.BERT_UNK_TOKEN, 2);
 
-    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(vocab, false);
+    final SubwordTokenizer tokenizer = AbstractDL.createWordpieceEncoder(vocab, false);
 
     assertArrayEquals(new String[] {
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.BERT_UNK_TOKEN,
         WordpieceTokenizer.ROBERTA_SEP_TOKEN},
-        tokenizer.tokenize("hello missing"));
+        tokenizer.encodeToPieces("hello missing"));
   }
 
   @Test
@@ -102,23 +116,47 @@ public class CreateTokenizerTest {
     vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
 
     assertThrows(IllegalArgumentException.class,
-        () -> AbstractDL.createPipelineTokenizer(vocab, false));
+        () -> AbstractDL.createWordpieceEncoder(vocab, false));
     assertThrows(IllegalArgumentException.class, () -> AbstractDL.createWordpieceTokenizer(vocab));
   }
 
-  @Test
-  void testTokenizePosIsUnsupported() {
-    final Tokenizer tokenizer = AbstractDL.createPipelineTokenizer(bertVocab(), true);
-    assertThrows(UnsupportedOperationException.class, () -> tokenizer.tokenizePos("the fox"));
+  @ParameterizedTest
+  @ValueSource(strings = {
+      WordpieceTokenizer.BERT_CLS_TOKEN,
+      WordpieceTokenizer.BERT_SEP_TOKEN,
+      WordpieceTokenizer.BERT_UNK_TOKEN
+  })
+  void testRejectsBertVocabularyMissingSpecialTokensAtCreation(String missingToken) {
+    final Map<String, Integer> vocab = bertVocab();
+    vocab.remove(missingToken);
+
+    final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.createWordpieceEncoder(vocab, true));
+    assertEquals("vocabulary must contain special token '" + missingToken + "'",
+        exception.getMessage());
   }
 
   @Test
-  void testRejectsBertVocabularyMissingSpecialTokensAtCreation() {
-    final Map<String, Integer> vocab = bertVocab();
-    vocab.remove(WordpieceTokenizer.BERT_UNK_TOKEN);
+  void testRejectsNullVocabularyAtCreation() {
+    final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.createWordpieceEncoder(null, true));
+    assertEquals("vocab must not be null", exception.getMessage());
+  }
 
-    assertThrows(IllegalArgumentException.class,
-        () -> AbstractDL.createPipelineTokenizer(vocab, true));
+  @Test
+  void testDlEncodingPreservesVocabularyIds() {
+    final Map<String, Integer> vocab = Map.of(
+        WordpieceTokenizer.BERT_CLS_TOKEN, 101,
+        WordpieceTokenizer.BERT_SEP_TOKEN, 205,
+        WordpieceTokenizer.BERT_UNK_TOKEN, 999,
+        "hello", 42);
+
+    final Tokens tokens = new TestDL(vocab).encode("Hello");
+
+    assertArrayEquals(new String[] {"[CLS]", "hello", "[SEP]"}, tokens.tokens());
+    assertArrayEquals(new long[] {101, 42, 205}, tokens.ids());
+    assertArrayEquals(new long[] {1, 1, 1}, tokens.mask());
+    assertArrayEquals(new long[] {0, 0, 0}, tokens.types());
   }
 
   @Test

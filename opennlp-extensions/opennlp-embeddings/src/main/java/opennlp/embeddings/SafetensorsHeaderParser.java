@@ -26,7 +26,7 @@ import opennlp.tools.util.InvalidFormatException;
 /**
  * A cursor parser for the JSON header of a safetensors file: a flat object of tensor name to a
  * {@code dtype}/{@code shape}/{@code data_offsets} record, plus an optional {@code __metadata__}
- * string map. Not a general-purpose JSON parser; it fails loud on anything outside that shape.
+ * string map. Input outside that structure is rejected.
  */
 final class SafetensorsHeaderParser {
 
@@ -51,7 +51,7 @@ final class SafetensorsHeaderParser {
    */
   static Result parse(String headerJson) throws InvalidFormatException {
     if (headerJson == null) {
-      throw new IllegalArgumentException("HeaderJson must not be null");
+      throw new IllegalArgumentException("headerJson must not be null");
     }
     final SafetensorsHeaderParser parser = new SafetensorsHeaderParser(headerJson);
     return parser.parseTop();
@@ -61,6 +61,7 @@ final class SafetensorsHeaderParser {
   private Result parseTop() throws InvalidFormatException {
     final List<TensorInfo> tensors = new ArrayList<>();
     Map<String, String> metadata = Map.of();
+    boolean metadataSeen = false;
     cursor.skipWhitespace();
     cursor.expect('{');
     cursor.skipWhitespace();
@@ -76,6 +77,10 @@ final class SafetensorsHeaderParser {
       cursor.expect(':');
       cursor.skipWhitespace();
       if (METADATA_KEY.equals(key)) {
+        if (metadataSeen) {
+          throw cursor.malformed("Field '__metadata__' appears more than once");
+        }
+        metadataSeen = true;
         metadata = parseStringMap();
       } else {
         tensors.add(parseTensorInfo(key));
@@ -113,6 +118,9 @@ final class SafetensorsHeaderParser {
     int[] shape = null;
     long dataOffsetBegin = -1;
     long dataOffsetEnd = -1;
+    boolean dtypeSeen = false;
+    boolean shapeSeen = false;
+    boolean dataOffsetsSeen = false;
     cursor.skipWhitespace();
     while (cursor.peek() != '}') {
       cursor.skipWhitespace();
@@ -121,9 +129,26 @@ final class SafetensorsHeaderParser {
       cursor.expect(':');
       cursor.skipWhitespace();
       switch (field) {
-        case "dtype" -> dtype = cursor.parseString();
-        case "shape" -> shape = parseIntArray();
+        case "dtype" -> {
+          if (dtypeSeen) {
+            throw cursor.malformed("Tensor '" + name + "' field 'dtype' appears more than once");
+          }
+          dtypeSeen = true;
+          dtype = cursor.parseString();
+        }
+        case "shape" -> {
+          if (shapeSeen) {
+            throw cursor.malformed("Tensor '" + name + "' field 'shape' appears more than once");
+          }
+          shapeSeen = true;
+          shape = parseIntArray();
+        }
         case "data_offsets" -> {
+          if (dataOffsetsSeen) {
+            throw cursor.malformed(
+                "Tensor '" + name + "' field 'data_offsets' appears more than once");
+          }
+          dataOffsetsSeen = true;
           final long[] offsets = parseLongArray();
           if (offsets.length != 2) {
             throw cursor.malformed("Tensor '" + name + "' data_offsets must have exactly 2 "
@@ -141,9 +166,13 @@ final class SafetensorsHeaderParser {
         continue;
       }
       if (next == '}') {
-        if (dtype == null || shape == null || dataOffsetBegin < 0) {
+        if (dtype == null || shape == null || dataOffsetBegin < 0 || dataOffsetEnd < 0) {
           throw cursor.malformed("Tensor '" + name
               + "' is missing dtype, shape, or data_offsets");
+        }
+        if (dataOffsetEnd < dataOffsetBegin) {
+          throw cursor.malformed("Tensor '" + name
+              + "' has data_offsets whose end precedes their beginning");
         }
         return new TensorInfo(name, dtype, shape, dataOffsetBegin, dataOffsetEnd);
       }
@@ -168,7 +197,10 @@ final class SafetensorsHeaderParser {
       cursor.skipWhitespace();
       cursor.expect(':');
       cursor.skipWhitespace();
-      map.put(key, cursor.parseString());
+      final String value = cursor.parseString();
+      if (map.putIfAbsent(key, value) != null) {
+        throw cursor.malformed("Metadata field '" + key + "' appears more than once");
+      }
       cursor.skipWhitespace();
       final char next = cursor.consume();
       if (next == ',') {

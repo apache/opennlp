@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * A model directory with a term table: term rows pool as single units where they match, the
  * subword path is untouched everywhere else, terms appear as similarity-search neighbors, and a
- * malformed or mismatched terms file fails loud at load time.
+ * malformed or mismatched terms file is rejected during loading.
  */
 class StaticEmbeddingModelTermTest {
 
@@ -136,7 +136,7 @@ class StaticEmbeddingModelTermTest {
   }
 
   @Test
-  void testARowCountMismatchWithTermsFailsLoud(@TempDir Path dir) throws IOException {
+  void testRejectsARowCountMismatchWithTerms(@TempDir Path dir) throws IOException {
     Files.write(dir.resolve("vocab.txt"), VOCABULARY);
     final float[][] matrix = new float[VOCABULARY.size()][];
     System.arraycopy(ROWS, 0, matrix, 0, VOCABULARY.size());
@@ -153,7 +153,7 @@ class StaticEmbeddingModelTermTest {
   }
 
   @Test
-  void testAMalformedTermsFileFailsLoud(@TempDir Path dir) throws IOException {
+  void testRejectsAMalformedTermsFile(@TempDir Path dir) throws IOException {
     Files.write(dir.resolve("vocab.txt"), VOCABULARY);
     SafetensorsTestFiles.write(dir.resolve("model.safetensors"),
         SafetensorsTestFiles.matrix("embeddings", ROWS));

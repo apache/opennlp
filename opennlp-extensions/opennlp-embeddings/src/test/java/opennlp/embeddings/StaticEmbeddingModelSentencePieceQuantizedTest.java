@@ -23,18 +23,18 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The quantized SentencePiece loading path: a SentencePiece directory whose matrix has been
- * quantized and whose safetensors removed loads through {@code loadSentencePieceQuantized},
- * resolves rows by piece string across the tokenizer id offset, and embeds like the float
- * model up to the quantization error. Both matrix files present is rejected.
+ * Tests quantized SentencePiece model loading, embedding, and search.
  */
 class StaticEmbeddingModelSentencePieceQuantizedTest {
 
@@ -48,8 +48,9 @@ class StaticEmbeddingModelSentencePieceQuantizedTest {
     fixture = new SentencePieceModelFixture();
   }
 
-  @Test
-  void testQuantizedSentencePieceEmbedsLikeTheFloatModel(@TempDir Path directory)
+  @ParameterizedTest
+  @ValueSource(strings = {"a", "the model", "hello there world"})
+  void testQuantizedSentencePieceEmbedsLikeTheFloatModel(String text, @TempDir Path directory)
       throws IOException {
     fixture.write(directory, DIMENSION, true, SEED);
     final StaticEmbeddingModel floatModel = StaticEmbeddingModel.load(directory);
@@ -58,14 +59,10 @@ class StaticEmbeddingModelSentencePieceQuantizedTest {
     final StaticEmbeddingModel quantizedModel = StaticEmbeddingModel.load(directory);
     assertEquals(floatModel.dimension(), quantizedModel.dimension());
     assertEquals(floatModel.vocabularySize(), quantizedModel.vocabularySize());
-    for (final String text : new String[] {"a", "the model", "hello there world"}) {
-      final double cosine = cosine(floatModel.embed(text), quantizedModel.embed(text));
-      if (Double.isNaN(cosine)) {
-        continue;
-      }
-      assertTrue(cosine > 0.97,
-          "quantized SentencePiece embedding of '" + text + "' drifted to cosine " + cosine);
-    }
+    final double cosine = cosine(floatModel.embed(text), quantizedModel.embed(text));
+    assertFalse(Double.isNaN(cosine), "fixture text must produce a nonzero vector: " + text);
+    assertTrue(cosine > 0.97,
+        "quantized SentencePiece embedding of '" + text + "' has cosine " + cosine);
   }
 
   @Test
@@ -98,7 +95,7 @@ class StaticEmbeddingModelSentencePieceQuantizedTest {
    * @param a The first vector.
    * @param b The second vector, of the same length.
    */
-  private static double cosine(float[] a, float[] b) {
+  private double cosine(float[] a, float[] b) {
     return ModelQuantizer.cosine(a, 0, a.length, b);
   }
 }

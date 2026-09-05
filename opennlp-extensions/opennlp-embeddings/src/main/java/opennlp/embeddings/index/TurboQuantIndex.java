@@ -156,7 +156,7 @@ public final class TurboQuantIndex implements VectorIndex {
     for (int d = 0; d < dimension; d++) {
       unitQuery[d] = (float) (query[d] / queryNorm);
     }
-    final float[] rotated = matrix.rotate(unitQuery);
+    final double[] rotated = matrix.rotate(unitQuery);
     final TopK best = new TopK(Math.min(k, ids.size()));
     for (int row = 0; row < ids.size(); row++) {
       final double rowNorm = matrix.rowNorm(row);

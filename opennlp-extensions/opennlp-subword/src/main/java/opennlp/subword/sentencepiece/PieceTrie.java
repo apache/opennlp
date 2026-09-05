@@ -103,8 +103,7 @@ final class PieceTrie implements Serializable {
     }
     Arrays.sort(order, Comparator.comparing(i -> pieces[i], Arrays::compareUnsigned));
 
-    // First pass counts nodes and edges, second pass fills the packed arrays; both walk the
-    // sorted keys with the same recursion, so the shapes agree by construction.
+    // The counting and filling passes use the same traversal over the sorted keys.
     final Builder builder = new Builder(pieces, ids, order);
     builder.count(0, pieces.length, 0);
     builder.allocate();

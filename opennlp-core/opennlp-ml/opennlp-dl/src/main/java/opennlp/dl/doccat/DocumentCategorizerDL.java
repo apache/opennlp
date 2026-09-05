@@ -23,7 +23,6 @@ import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +43,7 @@ import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.doccat.DocumentCategorizer;
+import opennlp.tools.tokenize.SubwordTokenizer;
 
 
 /**
@@ -376,18 +376,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     final List<Tokens> t = new ArrayList<>(groups.size());
     for (final String group : groups) {
 
-      // Now we can tokenize the group and continue.
-      final String[] tokens = tokenizer.tokenize(group);
-
-      final long[] ids = tokenIds(tokens, vocab);
-
-      final long[] mask = new long[ids.length];
-      Arrays.fill(mask, 1);
-
-      final long[] types = new long[ids.length];
-      Arrays.fill(types, 0);
-
-      t.add(new Tokens(tokens, ids, mask, types));
+      t.add(encode(group, tokenizer));
 
     }
 
@@ -395,31 +384,9 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   }
 
-  /**
-   * Maps tokens to their vocabulary ids.
-   *
-   * @param tokens The tokens to map.
-   * @param vocab The vocabulary map.
-   * @return The token ids.
-   *
-   * @throws IllegalArgumentException Thrown if a token is not present in the
-   *     vocabulary.
-   */
-  static long[] tokenIds(final String[] tokens, final Map<String, Integer> vocab) {
-
-    final long[] ids = new long[tokens.length];
-
-    for (int x = 0; x < tokens.length; x++) {
-      final Integer id = vocab.get(tokens[x]);
-      if (id == null) {
-        throw new IllegalArgumentException("Token '" + tokens[x]
-            + "' is not present in the vocabulary; the vocabulary file does not match the model.");
-      }
-      ids[x] = id;
-    }
-
-    return ids;
-
+  /** Encodes one classifier input with model vocabulary ids. */
+  static Tokens encode(String text, SubwordTokenizer tokenizer) {
+    return encodeTokens(tokenizer, text);
   }
 
   /**

@@ -29,6 +29,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.InvalidFormatException;
@@ -42,8 +43,8 @@ class SafetensorsFileTest {
 
   private static final String MODEL_FILE_NAME = "model.safetensors";
 
-  // Builds the header JSON of a file holding one tensor, for tests that hand-roll headers with
-  // deliberately odd dtypes, shapes, or data_offsets.
+  // Builds the header JSON of a file holding one tensor, for tests that create headers with
+  // invalid dtypes, shapes, or data_offsets.
   private static String singleTensorHeader(String name, String dtype, String shape,
                                            long begin, long end) {
     return "{\"" + name + "\":{\"dtype\":\"" + dtype + "\",\"shape\":" + shape
@@ -52,7 +53,7 @@ class SafetensorsFileTest {
 
   // Builds a safetensors file byte for byte: an 8-byte little-endian header length, the header
   // JSON verbatim, then the raw data bytes. Used by the negative tests whose headers
-  // SafetensorsTestFiles would refuse to write; well-formed fixtures use that helper instead.
+  // SafetensorsTestFiles validates its input; malformed fixtures are written directly here.
   private static Path writeFile(Path dir, String name, String headerJson, byte[] data)
       throws IOException {
     final byte[] headerBytes = headerJson.getBytes(StandardCharsets.UTF_8);
@@ -103,6 +104,20 @@ class SafetensorsFileTest {
     assertEquals(List.of("first", "second"), List.copyOf(parsed.tensorNames()));
     assertArrayEquals(new float[] {1f, 2f}, parsed.readFloat32("first"));
     assertArrayEquals(new float[] {3f, 4f, 5f}, parsed.readFloat32("second"));
+  }
+
+  @Test
+  void testZeroLengthTensorMayPrecedeDataAtTheSameOffset(@TempDir Path dir) throws IOException {
+    final String header = "{\"values\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[0,4]},\"empty\":{\"dtype\":\"F32\",\"shape\":[0],"
+        + "\"data_offsets\":[0,0]}}";
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, floatsToLittleEndianBytes(3f));
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+
+    assertEquals(List.of("values", "empty"), List.copyOf(parsed.tensorNames()));
+    assertArrayEquals(new float[0], parsed.readFloats("empty"));
+    assertArrayEquals(new float[] {3f}, parsed.readFloats("values"));
   }
 
   @Test
@@ -215,6 +230,18 @@ class SafetensorsFileTest {
   }
 
   @Test
+  void testRejectsHeaderLargerThanTheSafetensorsLimit(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("oversized-header.safetensors");
+    final byte[] prefix = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
+        .putLong(100_000_001L).array();
+    Files.write(file, prefix);
+
+    final InvalidFormatException exception =
+        assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
+    assertTrue(exception.getMessage().contains("100000000 bytes"), exception.getMessage());
+  }
+
+  @Test
   void testRejectsDuplicateTensorName(@TempDir Path dir) throws IOException {
     // The same key twice is syntactically valid JSON (just semantically ambiguous), so the
     // header parser itself does not reject it; SafetensorsFile's post-parse check does.
@@ -244,11 +271,54 @@ class SafetensorsFileTest {
   }
 
   @Test
+  void testRejectsOverlappingTensorRanges(@TempDir Path dir) throws IOException {
+    final String header = "{\"first\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[0,4]},\"second\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[0,4]}}";
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[4]);
+
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
+  }
+
+  @Test
+  void testRejectsGapsBetweenTensorRanges(@TempDir Path dir) throws IOException {
+    final String header = "{\"first\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[0,4]},\"second\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[8,12]}}";
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[12]);
+
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
+  }
+
+  @Test
+  void testRejectsTrailingTensorData(@TempDir Path dir) throws IOException {
+    final String header = singleTensorHeader("w", "F32", "[1]", 0, 4);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[8]);
+
+    assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
+  }
+
+  @Test
   void testRejectsUnterminatedString(@TempDir Path dir) throws IOException {
     final String header = "{\"w\":{\"dtype\":\"F32";
     final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[0]);
 
     assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
+  }
+
+  @Test
+  void testRejectsInvalidUtf8InHeader(@TempDir Path dir) throws IOException {
+    final byte[] invalidUtf8 = {(byte) 0xC3, 0x28};
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    out.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
+        .putLong(invalidUtf8.length).array());
+    out.write(invalidUtf8);
+    final Path file = dir.resolve("invalid-utf8.safetensors");
+    Files.write(file, out.toByteArray());
+
+    final InvalidFormatException exception =
+        assertThrows(InvalidFormatException.class, () -> SafetensorsFile.read(file));
+    assertTrue(exception.getMessage().contains("valid UTF-8"), exception.getMessage());
   }
 
   @Test
@@ -267,9 +337,9 @@ class SafetensorsFileTest {
   }
 
   @Test
-  void testFailsLoudWhenTheFileIsTruncatedAfterRead(@TempDir Path dir) throws IOException {
+  void testRejectsAFileTruncatedAfterRead(@TempDir Path dir) throws IOException {
     // Tensor data is streamed on demand rather than held in memory, so a file that shrinks
-    // between read() and readFloat32() must fail loud, not return partial data.
+    // between read() and readFloat32() must be rejected rather than return partial data.
     final byte[] data = floatsToLittleEndianBytes(1f, 2f);
     final String header = singleTensorHeader("w", "F32", "[2]", 0, data.length);
     final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
@@ -314,13 +384,41 @@ class SafetensorsFileTest {
     assertEquals(a.hashCode(), b.hashCode());
   }
 
+  @ParameterizedTest
+  @CsvSource({
+      "-1, 0, 0, shape[0]",
+      "1, -1, 0, dataOffsetBegin",
+      "1, 2, 1, dataOffsetEnd"
+  })
+  void testTensorInfoRejectsInvalidDimensionsAndOffsets(int dimension, long begin, long end,
+                                                        String messagePart) {
+    final IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+        () -> new TensorInfo("t", "F32", new int[] {dimension}, begin, end));
+
+    assertTrue(error.getMessage().contains(messagePart), error.getMessage());
+  }
+
   @Test
-  void testTensorInfoElementCountOverflowFailsLoudly() {
+  void testTensorInfoRejectsElementCountOverflow() {
     final TensorInfo crafted = new TensorInfo("t", "F32",
         new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE}, 0, 8);
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, crafted::elementCount);
     assertTrue(e.getMessage().contains("overflows"), e.getMessage());
+  }
+
+  @Test
+  void testReadFloatsReportsElementCountOverflowAsInvalidFormat(@TempDir Path dir)
+      throws IOException {
+    final String header = singleTensorHeader("huge", "F32",
+        "[2147483647,2147483647,2147483647]", 0, 0);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[0]);
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> parsed.readFloats("huge"));
+
+    assertTrue(error.getMessage().contains("overflows"), error.getMessage());
   }
 
   // F16 is Model2Vec's default output dtype, so widening is the common downloaded-model case;

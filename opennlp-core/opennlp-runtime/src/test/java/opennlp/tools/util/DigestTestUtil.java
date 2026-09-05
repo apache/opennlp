@@ -1,0 +1,64 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.util;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+
+/**
+ * Computes digests for test fixtures.
+ */
+public final class DigestTestUtil {
+
+  private DigestTestUtil() {
+  }
+
+  /**
+   * {@return the SHA-256 digest of {@code bytes} as 64 lowercase hex digits}
+   *
+   * @param bytes The content to digest. Must not be {@code null}.
+   */
+  public static String sha256(byte[] bytes) {
+    return digest("SHA-256", bytes);
+  }
+
+  /**
+   * {@return the SHA-512 digest of {@code bytes} as 128 lowercase hex digits}
+   *
+   * @param bytes The content to digest. Must not be {@code null}.
+   */
+  public static String sha512(byte[] bytes) {
+    return digest("SHA-512", bytes);
+  }
+
+  /**
+   * {@return the digest of {@code bytes} as lowercase hex digits}
+   *
+   * @param algorithm The digest algorithm name.
+   * @param bytes The content to digest. Must not be {@code null}.
+   */
+  private static String digest(String algorithm, byte[] bytes) {
+    try {
+      return HexFormat.of().formatHex(
+          MessageDigest.getInstance(algorithm).digest(bytes));
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+}

@@ -17,10 +17,8 @@
 package opennlp.embeddings;
 
 /**
- * The float {@link EmbeddingTable}: a flat row-major matrix, exactly the storage
- * {@link StaticEmbeddingModel} always had. Its working space is original space, so query
- * preparation and pooling finish are the identity, and per-row norms are precomputed once for
- * the neighbor scan.
+ * A float, row-major {@link EmbeddingTable}. Its working space is the original vector space, and
+ * row norms are computed when the table is constructed.
  */
 final class FloatEmbeddingTable implements EmbeddingTable {
 
@@ -73,7 +71,7 @@ final class FloatEmbeddingTable implements EmbeddingTable {
 
   /** {@inheritDoc} */
   @Override
-  public void addRow(int row, float weight, float[] sum) {
+  public void addRow(int row, float weight, double[] sum) {
     final int base = row * dimension;
     if (weight == 1f) {
       for (int d = 0; d < dimension; d++) {
@@ -81,28 +79,27 @@ final class FloatEmbeddingTable implements EmbeddingTable {
       }
     } else {
       for (int d = 0; d < dimension; d++) {
-        sum[d] += values[base + d] * weight;
+        sum[d] += (double) values[base + d] * weight;
       }
     }
   }
 
   /** {@inheritDoc} */
   @Override
-  public float[] finishPooling(float[] sum) {
+  public double[] finishPooling(double[] sum) {
     return sum;
   }
 
   /** {@inheritDoc} */
   @Override
-  public float[] prepareQuery(float[] query) {
-    return query;
+  public double[] prepareQuery(double[] query) {
+    return query.clone();
   }
 
   /** {@inheritDoc} */
   @Override
-  public double dot(int row, float[] preparedQuery) {
+  public double dot(int row, double[] preparedQuery) {
     final int base = row * dimension;
-    // Four accumulators so the JIT can vectorize the dot product without reordering FP adds.
     double dot0 = 0;
     double dot1 = 0;
     double dot2 = 0;

@@ -20,15 +20,14 @@ package opennlp.embeddings;
  * The row storage behind {@link StaticEmbeddingModel}: gathering rows into a pooled vector and
  * scoring rows against a query.
  *
- * <p>A table may work in a space of its own choosing. {@link #addRow(int, float, float[])}
- * accumulates into a vector of {@link #pooledLength()}, and {@link #finishPooling(float[])}
+ * <p>A table may work in a space of its own choosing. {@link #addRow(int, float, double[])}
+ * accumulates into a vector of {@link #pooledLength()}, and {@link #finishPooling(double[])}
  * maps the accumulated vector to original space once per pooled result. Scoring mirrors this:
- * {@link #prepareQuery(float[])} maps a query into the working space once, and
- * {@link #dot(int, float[])} scores every row against the prepared query there. The working
+ * {@link #prepareQuery(double[])} maps a query into the working space once, and
+ * {@link #dot(int, double[])} scores every row against the prepared query there. The working
  * space must preserve norms and dot products, so cosine math is space-independent.</p>
  *
- * <p>Implementations must be safe for concurrent use; the accumulator and prepared query
- * arrays belong to the caller.</p>
+ * <p>The accumulator and prepared query arrays belong to the caller.</p>
  */
 interface EmbeddingTable {
 
@@ -46,37 +45,37 @@ interface EmbeddingTable {
    *
    * @param row    The row to add, between 0 and {@code rowCount() - 1}.
    * @param weight The weight to multiply the row by.
-   * @param sum    The accumulator, of length {@link #pooledLength()}.
+   * @param sum    The double-precision accumulator, of length {@link #pooledLength()}.
    */
-  void addRow(int row, float weight, float[] sum);
+  void addRow(int row, float weight, double[] sum);
 
   /**
-   * Maps an accumulated vector to original space. Called once per pooled result; the returned
-   * array may be {@code sum} itself.
+   * Maps an accumulated vector to original space. Called once per pooled result. The result stays
+   * in double precision so normalization can run before conversion to the public float vector.
    *
-   * @param sum The accumulator, of length {@link #pooledLength()}.
-   * @return The pooled vector in original space, of length {@link #dimension()}.
+   * @param sum The double-precision accumulator, of length {@link #pooledLength()}.
+   * @return The double-precision pooled vector in original space, of length
+   *     {@link #dimension()}.
    */
-  float[] finishPooling(float[] sum);
+  double[] finishPooling(double[] sum);
 
   /**
-   * Maps an original-space query into this table's working space, once per scan. The returned
-   * array may be {@code query} itself.
+   * Maps an original-space query into this table's working space, once per scan.
    *
    * @param query The query, of length {@link #dimension()}. Not modified.
-   * @return The prepared query, of length {@link #pooledLength()}.
+   * @return The double-precision prepared query, of length {@link #pooledLength()}.
    */
-  float[] prepareQuery(float[] query);
+  double[] prepareQuery(double[] query);
 
   /**
    * The dot product of a row with a prepared query, equal to the original-space dot product up
    * to float rounding.
    *
    * @param row           The row to score, between 0 and {@code rowCount() - 1}.
-   * @param preparedQuery The query as returned by {@link #prepareQuery(float[])}.
+   * @param preparedQuery The query as returned by {@link #prepareQuery(double[])}.
    * @return The dot product.
    */
-  double dot(int row, float[] preparedQuery);
+  double dot(int row, double[] preparedQuery);
 
   /**
    * {@return the L2 norm of a row as this table stores it, for cosine scoring}

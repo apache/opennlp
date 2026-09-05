@@ -26,7 +26,7 @@ import java.util.PriorityQueue;
 
 /**
  * Byte-pair-encoding segmentation: the normalized text starts as single characters (or
- * user-defined symbols, which are frozen whole) and adjacent pairs merge greedily, highest piece
+ * user-defined symbols, which are kept intact) and adjacent pairs merge greedily, highest piece
  * score first, until no adjacent pair forms a vocabulary piece.
  *
  * <p>Only pieces of the normal, user-defined, and unused types participate in merges; a merge that
@@ -34,11 +34,11 @@ import java.util.PriorityQueue;
  */
 final class BpeEncoder implements Serializable {
 
-  private static final long serialVersionUID = -57799941356582785L;
+  private static final long serialVersionUID = 112585252536688886L;
 
   private static final int MAX_RESEGMENT_DEPTH = 100;
 
-  private final Map<String, Integer> pieces;
+  private final HashMap<String, Integer> pieces;
   private final float[] scores;
   private final boolean[] unused;
   private final boolean[] reserved;
@@ -57,7 +57,7 @@ final class BpeEncoder implements Serializable {
    * @param userDefinedMatcher Longest-match trie over user-defined symbols, or null when the
    *                           model defines none.
    */
-  BpeEncoder(Map<String, Integer> pieces, float[] scores, boolean[] unused, boolean[] reserved,
+  BpeEncoder(HashMap<String, Integer> pieces, float[] scores, boolean[] unused, boolean[] reserved,
              int unkId, PieceTrie userDefinedMatcher) {
     this.pieces = pieces;
     this.scores = scores;
@@ -91,36 +91,36 @@ final class BpeEncoder implements Serializable {
     }
 
     // The symbol list as index-linked ranges of the normalized bytes; merged-away symbols
-    // become empty ranges. Freeze flags travel as 0/1 bytes parallel to the ranges.
+    // become empty ranges. Protected-symbol flags travel as 0/1 bytes parallel to the ranges.
     final IntBuilder fromB = new IntBuilder(size);
     final IntBuilder toB = new IntBuilder(size);
-    final ByteBuilder freezeB = new ByteBuilder(size);
+    final ByteBuilder protectedB = new ByteBuilder(size);
     int position = 0;
     while (position < size) {
       int matched = 0;
       if (userDefinedMatcher != null) {
         matched = userDefinedMatcher.longestMatch(normalized, size, position);
       }
-      final boolean frozen = matched > 0;
-      final int length = frozen ? matched
+      final boolean protectedSymbol = matched > 0;
+      final int length = protectedSymbol ? matched
           : Math.min(SentencePieceNormalizer.utf8Length(normalized[position]),
               size - position);
       fromB.append(position);
       toB.append(position + length);
-      freezeB.append(frozen ? (byte) 1 : (byte) 0);
+      protectedB.append(protectedSymbol ? (byte) 1 : (byte) 0);
       position += length;
     }
-    final int symbolCount = freezeB.length();
+    final int symbolCount = protectedB.length();
     final int[] from = fromB.toArray();
     final int[] to = toB.toArray();
-    final byte[] frozenFlags = freezeB.array();
+    final byte[] protectedFlags = protectedB.array();
     final int[] prev = new int[symbolCount];
     final int[] next = new int[symbolCount];
-    final boolean[] freeze = new boolean[symbolCount];
+    final boolean[] protectedSymbols = new boolean[symbolCount];
     for (int i = 0; i < symbolCount; i++) {
       prev[i] = i - 1;
       next[i] = i + 1 < symbolCount ? i + 1 : -1;
-      freeze[i] = frozenFlags[i] != 0;
+      protectedSymbols[i] = protectedFlags[i] != 0;
     }
 
     // Higher score first; equal scores break towards the leftmost pair.
@@ -132,7 +132,7 @@ final class BpeEncoder implements Serializable {
     final Map<String, String[]> revMerge = new HashMap<>();
 
     for (int left = 0; left + 1 < symbolCount; left++) {
-      maybeAddPair(normalized, from, to, freeze, left, left + 1, agenda, revMerge);
+      maybeAddPair(normalized, from, to, protectedSymbols, left, left + 1, agenda, revMerge);
     }
 
     while (!agenda.isEmpty()) {
@@ -152,8 +152,10 @@ final class BpeEncoder implements Serializable {
       }
       from[top.right()] = to[top.right()];
 
-      maybeAddPair(normalized, from, to, freeze, prev[top.left()], top.left(), agenda, revMerge);
-      maybeAddPair(normalized, from, to, freeze, top.left(), next[top.left()], agenda, revMerge);
+      maybeAddPair(normalized, from, to, protectedSymbols,
+          prev[top.left()], top.left(), agenda, revMerge);
+      maybeAddPair(normalized, from, to, protectedSymbols,
+          top.left(), next[top.left()], agenda, revMerge);
     }
 
     final List<Segment> output = new ArrayList<>(symbolCount);
@@ -174,16 +176,16 @@ final class BpeEncoder implements Serializable {
    * @param normalized The buffer holding the normalized UTF-8 bytes.
    * @param from       Per symbol, the inclusive start offset in {@code normalized}.
    * @param to         Per symbol, the exclusive end offset in {@code normalized}.
-   * @param freeze     Per symbol, whether it is a user-defined symbol excluded from merging.
+   * @param protectedSymbols Per symbol, whether it is a user-defined symbol excluded from merging.
    * @param left       The index of the left symbol, or {@code -1} for none.
    * @param right      The index of the right symbol, or {@code -1} for none.
    * @param agenda     The merge agenda to add to.
    * @param revMerge   The map from a merged piece to its two constituents.
    */
-  private void maybeAddPair(byte[] normalized, int[] from, int[] to, boolean[] freeze,
+  private void maybeAddPair(byte[] normalized, int[] from, int[] to, boolean[] protectedSymbols,
                             int left, int right, PriorityQueue<Pair> agenda,
                             Map<String, String[]> revMerge) {
-    if (left == -1 || right == -1 || freeze[left] || freeze[right]) {
+    if (left == -1 || right == -1 || protectedSymbols[left] || protectedSymbols[right]) {
       return;
     }
     final String piece =

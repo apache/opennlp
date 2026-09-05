@@ -108,10 +108,10 @@ final class FlatJsonFields {
   private static <T> T topLevelField(Path file, String field, ValueReader<T> valueReader)
       throws IOException {
     if (file == null) {
-      throw new IllegalArgumentException("File must not be null");
+      throw new IllegalArgumentException("file must not be null");
     }
     if (field == null) {
-      throw new IllegalArgumentException("Field must not be null");
+      throw new IllegalArgumentException("field must not be null");
     }
     final String json = Files.readString(file);
     final JsonCursor cursor = new JsonCursor(json, file.getFileName().toString());

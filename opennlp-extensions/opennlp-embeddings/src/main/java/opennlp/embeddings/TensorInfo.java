@@ -44,17 +44,30 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
    * corrupt the validated state.
    *
    * @throws IllegalArgumentException Thrown if {@code name}, {@code dtype}, or {@code shape} is
-   *     {@code null}.
+   *     {@code null}, a dimension or the starting offset is negative, or the ending offset is
+   *     before the starting offset.
    */
   public TensorInfo {
     if (name == null) {
-      throw new IllegalArgumentException("Name must not be null");
+      throw new IllegalArgumentException("name must not be null");
     }
     if (dtype == null) {
-      throw new IllegalArgumentException("Dtype must not be null");
+      throw new IllegalArgumentException("dtype must not be null");
     }
     if (shape == null) {
-      throw new IllegalArgumentException("Shape must not be null");
+      throw new IllegalArgumentException("shape must not be null");
+    }
+    for (int i = 0; i < shape.length; i++) {
+      if (shape[i] < 0) {
+        throw new IllegalArgumentException("shape[" + i + "] must not be negative");
+      }
+    }
+    if (dataOffsetBegin < 0) {
+      throw new IllegalArgumentException("dataOffsetBegin must not be negative");
+    }
+    if (dataOffsetEnd < dataOffsetBegin) {
+      throw new IllegalArgumentException(
+          "dataOffsetEnd must not be less than dataOffsetBegin");
     }
     shape = shape.clone();
   }

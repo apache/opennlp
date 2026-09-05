@@ -42,9 +42,9 @@ That trains each model listed in `MODELS` inside `gen_fixtures.py`
 (`tiny-unigram`, `tiny-unigram-bytefb`, `tiny-bpe`, `tiny-unigram-identity`,
 `tiny-unigram-suffix`) and writes:
 
-- `<name>.model` — SentencePiece binary model
-- `<name>.fixtures.tsv` — expected pieces, ids, UTF-16 spans, and normalized form
-- `corpus-full.txt` — training corpus (`corpus.txt` plus multilingual lines)
+- `<name>.model`: SentencePiece binary model
+- `<name>.fixtures.tsv`: expected pieces, ids, UTF-16 spans, and normalized form
+- `corpus-full.txt`: training corpus (`corpus.txt` plus multilingual lines)
 
 Pin the `sentencepiece` package version you used if regenerating for a PR, so
 reviewers can reproduce the same bytes.

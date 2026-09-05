@@ -27,7 +27,7 @@ import java.util.StringJoiner;
 
 /**
  * Writes small well-formed safetensors fixtures for tests and benchmarks. Negative tests that
- * need deliberately malformed bytes still hand-roll them.
+ * need malformed bytes construct those bytes directly.
  */
 final class SafetensorsTestFiles {
 

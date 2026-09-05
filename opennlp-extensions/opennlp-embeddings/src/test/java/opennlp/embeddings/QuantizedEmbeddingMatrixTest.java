@@ -36,9 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The quantized matrix contract: reconstruction quality per bit width, rotated-space math that
- * agrees with original-space math, linear pooling, deterministic bytes, a self-describing file
- * that round-trips exactly, and loud failure on malformed input.
+ * Tests quantized matrix encoding, storage, pooling, and scoring.
  */
 class QuantizedEmbeddingMatrixTest {
 
@@ -49,11 +47,11 @@ class QuantizedEmbeddingMatrixTest {
   /**
    * {@return a deterministic random test matrix with varied row norms}
    */
-  private static float[] testMatrix() {
+  private float[] testMatrix() {
     final Random random = new Random(42);
     final float[] matrix = new float[ROWS * DIMENSION];
     for (int row = 0; row < ROWS; row++) {
-      // Vary the norms so per-row scaling is actually exercised.
+      // Vary the norms to exercise per-row scaling.
       final float rowScale = 0.1f + 3f * random.nextFloat();
       for (int d = 0; d < DIMENSION; d++) {
         matrix[row * DIMENSION + d] = rowScale * (float) random.nextGaussian();
@@ -62,10 +60,7 @@ class QuantizedEmbeddingMatrixTest {
     return matrix;
   }
 
-  // The mean squared error of the Gaussian Lloyd-Max grids translates to an expected cosine
-  // between a row and its reconstruction; these thresholds sit safely below the analytic
-  // expectation (about 0.945 at 2 bits, 0.983 at 3, 0.995 at 4) but far above what a broken
-  // rotation, grid, or scale would produce.
+  // Minimum reconstruction quality for the deterministic fixture at each bit width.
   @ParameterizedTest
   @CsvSource({"2, 0.92", "3, 0.97", "4, 0.99"})
   void testReconstructionQualityPerBitWidth(int bits, double threshold) {
@@ -92,7 +87,7 @@ class QuantizedEmbeddingMatrixTest {
     for (int d = 0; d < DIMENSION; d++) {
       query[d] = (float) random.nextGaussian();
     }
-    final float[] rotatedQuery = quantized.rotate(query);
+    final double[] rotatedQuery = quantized.rotate(query);
     for (int row = 0; row < ROWS; row++) {
       final float[] decoded = quantized.decodeRow(row);
       double originalDot = 0;
@@ -126,19 +121,19 @@ class QuantizedEmbeddingMatrixTest {
     final float[] matrix = testMatrix();
     final QuantizedEmbeddingMatrix quantized =
         QuantizedEmbeddingMatrix.quantize(matrix, ROWS, DIMENSION, 4, SEED);
-    final float[] rotatedSum = new float[quantized.paddedDimension()];
+    final double[] rotatedSum = new double[quantized.paddedDimension()];
     quantized.addRowRotated(0, 1f, rotatedSum);
     quantized.addRowRotated(1, 2.5f, rotatedSum);
     quantized.addRowRotated(2, -0.5f, rotatedSum);
-    final float[] pooled = quantized.toOriginal(rotatedSum);
+    final double[] pooled = quantized.toOriginal(rotatedSum);
     final float[] row0 = quantized.decodeRow(0);
     final float[] row1 = quantized.decodeRow(1);
     final float[] row2 = quantized.decodeRow(2);
-    final float[] expected = new float[DIMENSION];
+    final double[] expected = new double[DIMENSION];
     for (int d = 0; d < DIMENSION; d++) {
-      expected[d] = row0[d] + 2.5f * row1[d] - 0.5f * row2[d];
+      expected[d] = row0[d] + 2.5 * row1[d] - 0.5 * row2[d];
     }
-    assertArrayEquals(expected, pooled, 1e-3f,
+    assertArrayEquals(expected, pooled, 1e-3,
         "rotation is linear, so pooling commutes with it");
   }
 
@@ -181,7 +176,7 @@ class QuantizedEmbeddingMatrixTest {
       assertArrayEquals(written.decodeRow(row), read.decodeRow(row), 0f,
           "a read matrix must decode exactly like the written one");
     }
-    // Writing the read matrix reproduces the file, so the format loses nothing.
+    // Writing the decoded matrix again must not change the file bytes.
     final Path rewritten = directory.resolve("rewritten.bin");
     read.write(rewritten);
     assertArrayEquals(Files.readAllBytes(file), Files.readAllBytes(rewritten));
@@ -194,7 +189,7 @@ class QuantizedEmbeddingMatrixTest {
     final Path file = directory.resolve("matrix.bin");
     QuantizedEmbeddingMatrix.quantize(matrix, ROWS, DIMENSION, 4, SEED).write(file);
     final long floatBytes = (long) ROWS * DIMENSION * Float.BYTES;
-    // 4 bits over the padded dimension (512 for 300) plus one scale per row and the header:
+    // 4 bits over the padded dimension (512 for 300) plus scale and norm metadata per row:
     // still far under half the float size; at equal dimensions the ratio approaches 8x.
     assertTrue(Files.size(file) < floatBytes / 2,
         "the 4-bit file (" + Files.size(file) + " bytes) must be well under half the float "
@@ -215,7 +210,7 @@ class QuantizedEmbeddingMatrixTest {
     withWeights.write(file);
     final QuantizedEmbeddingMatrix read = QuantizedEmbeddingMatrix.read(file);
     assertArrayEquals(weights, read.poolingWeights(), 0f);
-    // Rewriting reproduces the file, so the weights block loses nothing.
+    // Writing the decoded matrix again must preserve the weight bytes.
     final Path rewritten = directory.resolve("rewritten.bin");
     read.write(rewritten);
     assertArrayEquals(Files.readAllBytes(file), Files.readAllBytes(rewritten));
@@ -232,7 +227,7 @@ class QuantizedEmbeddingMatrixTest {
    * @param directory The directory to write into.
    * @param matrix    The matrix to write.
    */
-  private static long sizeWithoutWeights(Path directory, QuantizedEmbeddingMatrix matrix)
+  private long sizeWithoutWeights(Path directory, QuantizedEmbeddingMatrix matrix)
       throws IOException {
     final Path file = directory.resolve("unweighted.bin");
     matrix.write(file);
@@ -284,18 +279,18 @@ class QuantizedEmbeddingMatrixTest {
     assertThrows(IllegalArgumentException.class, () -> quantized.decodeRow(4));
     assertThrows(IllegalArgumentException.class, () -> quantized.rotate(null));
     assertThrows(IllegalArgumentException.class, () -> quantized.rotate(new float[7]));
-    assertThrows(IllegalArgumentException.class, () -> quantized.toOriginal(new float[7]));
+    assertThrows(IllegalArgumentException.class, () -> quantized.toOriginal(new double[7]));
     assertThrows(IllegalArgumentException.class,
-        () -> quantized.addRowRotated(0, 1f, new float[7]));
+        () -> quantized.addRowRotated(0, 1f, new double[7]));
     assertThrows(IllegalArgumentException.class,
-        () -> quantized.dotRotated(0, new float[7]));
+        () -> quantized.dotRotated(0, new double[7]));
   }
 
   @Test
   void testReadRejectsADimensionThatOverflowsTheRowByteCount(@TempDir Path directory)
       throws IOException {
     // A header declaring dimension 2^29 makes paddedDimension*bits overflow a signed int, so
-    // the per-row byte count goes negative. A corrupt or hostile file must be rejected cleanly,
+    // the per-row byte count goes negative. A malformed file must be rejected cleanly,
     // not crash the reader with an undocumented NegativeArraySizeException.
     final Path file = directory.resolve("matrix.bin");
     QuantizedEmbeddingMatrix.quantize(new float[] {1f, 2f, 3f, 4f}, 1, 4, 4, SEED).write(file);

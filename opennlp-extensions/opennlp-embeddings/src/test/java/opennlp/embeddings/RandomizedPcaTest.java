@@ -191,14 +191,37 @@ class RandomizedPcaTest {
   }
 
   @Test
+  void testWideMatrixUsesNoMoreSampleDimensionsThanCenteredRank() {
+    final int rows = 3;
+    final int cols = 20;
+    final int components = 2;
+    final float[] data = new float[rows * cols];
+    for (int c = 0; c < cols; c++) {
+      data[c] = c + 1;
+      data[cols + c] = (c + 1) * (c + 1);
+      data[2 * cols + c] = c % 3 - 1;
+    }
+
+    final RandomizedPca.Result result =
+        RandomizedPca.fitTransform(data, rows, cols, components, 42);
+
+    assertEquals(rows * components, result.transformed().length);
+    assertTrue(result.explainedVarianceRatio() > 0.999999,
+        "two components must retain all variance of three centered rows");
+    for (final float value : result.transformed()) {
+      assertTrue(Float.isFinite(value));
+    }
+  }
+
+  @Test
   void testRejectsNullData() {
-    assertEquals("Data must not be null", assertThrows(IllegalArgumentException.class,
+    assertEquals("data must not be null", assertThrows(IllegalArgumentException.class,
         () -> RandomizedPca.fitTransform(null, 3, 4, 2, 42)).getMessage());
   }
 
   /**
    * The shape must describe the array exactly: a wrong column count, a non-positive dimension, or
-   * a length that is not {@code rows * cols} is rejected rather than silently reinterpreted.
+   * a length that is not {@code rows * cols} is rejected.
    */
   @ParameterizedTest
   @CsvSource({"3, 5, 2", "3, 3, 2", "0, 4, 2", "3, 0, 2", "-1, 4, 2", "4, 4, 2", "2, 4, 1"})
@@ -229,7 +252,7 @@ class RandomizedPcaTest {
 
   /**
    * Data whose rows are all identical centers to exactly zero, so there is no subspace and the
-   * explained-variance ratio would be 0/0. That must fail loudly rather than return NaN.
+   * explained-variance ratio would be 0/0. The calculation must reject this case.
    */
   @Test
   void testRejectsDataWithoutVariance() {

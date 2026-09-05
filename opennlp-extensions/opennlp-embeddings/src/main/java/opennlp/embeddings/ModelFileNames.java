@@ -22,11 +22,11 @@ import java.util.List;
 
 /**
  * The file names of a static embedding model directory, shared by
- * {@link StaticEmbeddingModel}'s loader and {@link ModelAssembler}. A WordPiece directory holds
- * {@link #SAFETENSORS}, {@link #CONFIG}, {@link #VOCABULARY}, and {@link #TOKENIZER_CONFIG}; a
- * Unigram directory holds {@link #SAFETENSORS}, {@link #CONFIG}, and
- * {@link #TOKENIZER_JSON}. Legacy SentencePiece directories may additionally hold one of
- * {@link #SENTENCEPIECE_MODELS}.
+ * {@link StaticEmbeddingModel}'s loader and {@link ModelAssembler}. Every model directory has
+ * one matrix file, either {@link #SAFETENSORS} or {@link #QUANTIZED}. A WordPiece directory also
+ * has {@link #CONFIG}, {@link #VOCABULARY}, and {@link #TOKENIZER_CONFIG}; a Unigram directory has
+ * {@link #CONFIG} and {@link #TOKENIZER_JSON}. Separate-file SentencePiece directories may additionally
+ * have one of {@link #SENTENCEPIECE_MODELS}.
  *
  * <p>{@link #ONNX_MODEL} and {@link #ONNX_MODEL_DATA} name files of a <em>teacher</em> directory
  * rather than of a model directory; {@link ModelDistiller} and {@link HuggingFaceModelCache} share
@@ -38,7 +38,7 @@ final class ModelFileNames {
   static final String SAFETENSORS = "model.safetensors";
 
   /**
-   * The quantized matrix file, written by the {@code QuantizeModel} tool. It carries the matrix
+   * The quantized matrix file, written by the {@code QuantizeModel} tool. It contains the matrix
    * and any per-token weights itself, and is the directory's matrix source in place of
    * {@link #SAFETENSORS}, which a quantized deployment deletes.
    */
@@ -47,13 +47,13 @@ final class ModelFileNames {
   /** The tokenizer description whose Unigram {@code model.vocab} order names the matrix rows. */
   static final String TOKENIZER_JSON = "tokenizer.json";
 
-  /** The model configuration carrying the {@code normalize} pooling switch. */
+  /** The model configuration containing the {@code normalize} pooling switch. */
   static final String CONFIG = "config.json";
 
   /** The BERT-style vocabulary of a WordPiece model, one token per line in row order. */
   static final String VOCABULARY = "vocab.txt";
 
-  /** The tokenizer configuration carrying the WordPiece {@code do_lower_case} switch. */
+  /** The tokenizer configuration containing the WordPiece {@code do_lower_case} switch. */
   static final String TOKENIZER_CONFIG = "tokenizer_config.json";
 
   /** The optional term rows of the matrix, one normalized term per line in row order. */

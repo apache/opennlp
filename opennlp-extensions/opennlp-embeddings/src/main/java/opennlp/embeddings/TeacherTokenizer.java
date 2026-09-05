@@ -47,11 +47,13 @@ import opennlp.tools.util.InvalidFormatException;
  * id space plus the teacher's begin/end-of-sequence wrapper ids: Model2Vec feeds each vocabulary
  * token to the teacher as {@code [bos, token, eos]} and mean-pools the hidden states.</p>
  *
- * <p>The rewrite copies every field it does not change byte for byte (the normalizer, the
- * pre-tokenizer, the Unigram scores), so the cleaned {@code tokenizer.json} stays a faithful
- * fast-tokenizer description of the distilled table.</p>
+ * <p>The rewrite copies every field it does not change, including the normalizer,
+ * pre-tokenizer, and Unigram scores. The cleaned {@code tokenizer.json} continues to describe the
+ * distilled table.</p>
  */
 final class TeacherTokenizer {
+
+  private static final String HEX_DIGITS = "0123456789abcdef";
 
   /** The prefix of the BERT-style placeholder tokens Model2Vec's cleaning drops. */
   private static final String UNUSED_TOKEN_PREFIX = "[unused";
@@ -112,13 +114,14 @@ final class TeacherTokenizer {
    *     missing.
    * @throws InvalidFormatException Thrown if a file is malformed, the tokenizer model is
    *     neither WordPiece nor Unigram, the vocabulary ids are not a gapless range, the unknown
-   *     token is missing, or the post-processor is of an unsupported type.
+   *     token is missing, a vocabulary token appears more than once, or the post-processor is
+   *     of an unsupported type.
    * @throws IOException Thrown if reading a file fails.
    */
   static TeacherTokenizer read(Path tokenizerJsonFile, Path tokenizerConfigFile)
       throws IOException {
     if (tokenizerJsonFile == null) {
-      throw new IllegalArgumentException("TokenizerJsonFile must not be null");
+      throw new IllegalArgumentException("tokenizerJsonFile must not be null");
     }
     if (!Files.isRegularFile(tokenizerJsonFile)) {
       throw new IllegalArgumentException("File does not exist or is not a regular file: "
@@ -139,6 +142,10 @@ final class TeacherTokenizer {
     Boolean lowerCase = null;
     Set<String> addedContents = Set.of();
     PostProcessor postProcessor = new PostProcessor(List.of(), List.of(), null, null, Map.of());
+    boolean seenModel = false;
+    boolean seenAddedTokens = false;
+    boolean seenPostProcessor = false;
+    boolean seenNormalizer = false;
     if (cursor.peek() == '}') {
       cursor.consume();
     } else {
@@ -150,15 +157,37 @@ final class TeacherTokenizer {
         cursor.skipWhitespace();
         switch (key) {
           case "model" -> {
+            if (seenModel) {
+              throw cursor.malformed("Field 'model' appears more than once");
+            }
+            seenModel = true;
             final ModelSection model = parseModel(cursor);
             modelType = model.type();
             tokensById = model.tokensById();
             unkToken = model.unkToken();
             unkId = model.unkId();
           }
-          case "added_tokens" -> addedContents = parseAddedTokenContents(cursor);
-          case "post_processor" -> postProcessor = parsePostProcessor(cursor);
-          case "normalizer" -> lowerCase = parseNormalizerLowercase(cursor);
+          case "added_tokens" -> {
+            if (seenAddedTokens) {
+              throw cursor.malformed("Field 'added_tokens' appears more than once");
+            }
+            seenAddedTokens = true;
+            addedContents = parseAddedTokenContents(cursor);
+          }
+          case "post_processor" -> {
+            if (seenPostProcessor) {
+              throw cursor.malformed("Field 'post_processor' appears more than once");
+            }
+            seenPostProcessor = true;
+            postProcessor = parsePostProcessor(cursor);
+          }
+          case "normalizer" -> {
+            if (seenNormalizer) {
+              throw cursor.malformed("Field 'normalizer' appears more than once");
+            }
+            seenNormalizer = true;
+            lowerCase = parseNormalizerLowercase(cursor);
+          }
           default -> cursor.skipValue();
         }
         cursor.skipWhitespace();
@@ -184,7 +213,12 @@ final class TeacherTokenizer {
     }
     final Map<String, Integer> idByToken = new HashMap<>(tokensById.size() * 2);
     for (int id = 0; id < tokensById.size(); id++) {
-      idByToken.putIfAbsent(tokensById.get(id), id);
+      final String token = tokensById.get(id);
+      final Integer previousId = idByToken.putIfAbsent(token, id);
+      if (previousId != null) {
+        throw new InvalidFormatException("Vocabulary " + tokenizerJsonFile + " declares token '"
+            + token + "' more than once, at ids " + previousId + " and " + id);
+      }
     }
     if (unkToken == null) {
       if (unkId == null || unkId < 0 || unkId >= tokensById.size()) {
@@ -202,11 +236,11 @@ final class TeacherTokenizer {
     // post-processor, or from resolving a TemplateProcessing's special token names through its
     // special_tokens table, falling back to the vocabulary.
     final int[] bosIds = postProcessor.clsId() != null
-        ? new int[] {postProcessor.clsId().intValue()}
+        ? new int[] {checkedTokenId(postProcessor.clsId(), "cls", tokenizerJsonFile)}
         : resolveNames(postProcessor.bosNames(), postProcessor.specialTokenIds(), idByToken,
             tokenizerJsonFile);
     final int[] eosIds = postProcessor.sepId() != null
-        ? new int[] {postProcessor.sepId().intValue()}
+        ? new int[] {checkedTokenId(postProcessor.sepId(), "sep", tokenizerJsonFile)}
         : resolveNames(postProcessor.eosNames(), postProcessor.specialTokenIds(), idByToken,
             tokenizerJsonFile);
     final Integer padId = padToken == null ? null : idByToken.get(padToken);
@@ -219,7 +253,7 @@ final class TeacherTokenizer {
     final List<Integer> kept = new ArrayList<>(tokensById.size());
     for (int id = 0; id < tokensById.size(); id++) {
       final String token = tokensById.get(id);
-      if (isUnusedToken(token)) {
+      if (isUnusedToken(token) && !keepSpecial.contains(token)) {
         continue;
       }
       if (addedContents.contains(token) && !keepSpecial.contains(token)) {
@@ -250,6 +284,7 @@ final class TeacherTokenizer {
     cursor.expect('{');
     cursor.skipWhitespace();
     Boolean lowerCase = null;
+    boolean seenLowerCase = false;
     if (cursor.peek() == '}') {
       cursor.consume();
       return null;
@@ -261,12 +296,16 @@ final class TeacherTokenizer {
       cursor.expect(':');
       cursor.skipWhitespace();
       if ("lowercase".equals(key)) {
+        if (seenLowerCase) {
+          throw cursor.malformed("Field 'normalizer.lowercase' appears more than once");
+        }
+        seenLowerCase = true;
         if (cursor.consumeLiteral("true")) {
           lowerCase = Boolean.TRUE;
         } else if (cursor.consumeLiteral("false")) {
           lowerCase = Boolean.FALSE;
         } else {
-          cursor.skipValue();
+          throw cursor.malformed("Field 'normalizer.lowercase' must be a boolean");
         }
       } else {
         cursor.skipValue();
@@ -312,7 +351,7 @@ final class TeacherTokenizer {
    * @param specialTokenIds The post-processor's name-to-id table.
    * @param idByToken       The vocabulary, token to id.
    * @param file            The source file, for error messages.
-   * @throws InvalidFormatException Thrown if a name resolves nowhere.
+   * @throws InvalidFormatException Thrown if a name has no token id.
    */
   private static int[] resolveNames(List<String> names, Map<String, Long> specialTokenIds,
                                     Map<String, Integer> idByToken, Path file)
@@ -322,7 +361,7 @@ final class TeacherTokenizer {
       final Long specialId = specialTokenIds.get(names.get(i));
       final Integer vocabId = idByToken.get(names.get(i));
       if (specialId != null) {
-        ids[i] = specialId.intValue();
+        ids[i] = checkedTokenId(specialId, names.get(i), file);
       } else if (vocabId != null) {
         ids[i] = vocabId;
       } else {
@@ -331,6 +370,24 @@ final class TeacherTokenizer {
       }
     }
     return ids;
+  }
+
+  /**
+   * Converts a post-processor token id to the integer representation used by the tokenizer.
+   *
+   * @param id          The parsed token id.
+   * @param description The field or token name that supplied the id.
+   * @param file        The source file, for error messages.
+   * @return The token id as an integer.
+   * @throws InvalidFormatException Thrown if the id is negative or exceeds the integer range.
+   */
+  private static int checkedTokenId(long id, String description, Path file)
+      throws InvalidFormatException {
+    if (id < 0 || id > Integer.MAX_VALUE) {
+      throw new InvalidFormatException(file + " assigns " + description + " token id " + id
+          + " outside the supported integer range");
+    }
+    return (int) id;
   }
 
   /** {@return the tokenizer family, {@code "WordPiece"} or {@code "Unigram"}} */
@@ -391,18 +448,23 @@ final class TeacherTokenizer {
    * @param pieces The term's piece strings, as the teacher's own segmenter produced them. Must
    *               not be {@code null}.
    * @return The teacher input ids.
-   * @throws IllegalArgumentException Thrown if {@code pieces} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code pieces} or one of its elements is
+   *     {@code null}.
    */
   long[] inputSequence(List<String> pieces) {
     if (pieces == null) {
-      throw new IllegalArgumentException("Pieces must not be null");
+      throw new IllegalArgumentException("pieces must not be null");
     }
     final long[] sequence = new long[bosIds.length + pieces.size() + eosIds.length];
     int i = 0;
     for (final int id : bosIds) {
       sequence[i++] = id;
     }
-    for (final String piece : pieces) {
+    for (int pieceIndex = 0; pieceIndex < pieces.size(); pieceIndex++) {
+      final String piece = pieces.get(pieceIndex);
+      if (piece == null) {
+        throw new IllegalArgumentException("pieces[" + pieceIndex + "] must not be null");
+      }
       final Integer id = idByOriginalToken.get(piece);
       sequence[i++] = id == null ? originalUnkId : id;
     }
@@ -446,7 +508,7 @@ final class TeacherTokenizer {
    */
   void writeCleaned(Path file) throws IOException {
     if (file == null) {
-      throw new IllegalArgumentException("File must not be null");
+      throw new IllegalArgumentException("file must not be null");
     }
     final Map<Integer, Integer> newIdByOriginal = new HashMap<>(keptOriginalIds.length * 2);
     for (int row = 0; row < keptOriginalIds.length; row++) {
@@ -697,7 +759,7 @@ final class TeacherTokenizer {
    *
    * @param content The string to quote.
    */
-  private static String quoted(String content) {
+  private String quoted(String content) {
     final StringBuilder out = new StringBuilder(content.length() + 2).append('"');
     for (int i = 0; i < content.length(); i++) {
       final char c = content.charAt(i);
@@ -706,7 +768,9 @@ final class TeacherTokenizer {
         case '\\' -> out.append("\\\\");
         default -> {
           if (c < 0x20) {
-            out.append(String.format("\\u%04x", (int) c));
+            out.append("\\u00")
+                .append(HEX_DIGITS.charAt(c >>> 4))
+                .append(HEX_DIGITS.charAt(c & 0x0f));
           } else {
             out.append(c);
           }
@@ -745,6 +809,10 @@ final class TeacherTokenizer {
     List<String> tokensById = null;
     String unkToken = null;
     Long unkId = null;
+    boolean seenType = false;
+    boolean seenUnkToken = false;
+    boolean seenUnkId = false;
+    boolean seenVocabulary = false;
     if (cursor.peek() == '}') {
       cursor.consume();
       return new ModelSection(null, null, null, null);
@@ -756,14 +824,36 @@ final class TeacherTokenizer {
       cursor.expect(':');
       cursor.skipWhitespace();
       switch (key) {
-        case "type" -> type = cursor.parseString();
-        case "unk_token" -> unkToken = cursor.parseString();
+        case "type" -> {
+          if (seenType) {
+            throw cursor.malformed("Field 'model.type' appears more than once");
+          }
+          seenType = true;
+          type = cursor.parseString();
+        }
+        case "unk_token" -> {
+          if (seenUnkToken) {
+            throw cursor.malformed("Field 'model.unk_token' appears more than once");
+          }
+          seenUnkToken = true;
+          unkToken = cursor.parseString();
+        }
         case "unk_id" -> {
+          if (seenUnkId) {
+            throw cursor.malformed("Field 'model.unk_id' appears more than once");
+          }
+          seenUnkId = true;
           if (!cursor.consumeLiteral("null")) {
             unkId = cursor.parseLong();
           }
         }
-        case "vocab" -> tokensById = parseVocab(cursor);
+        case "vocab" -> {
+          if (seenVocabulary) {
+            throw cursor.malformed("Field 'model.vocab' appears more than once");
+          }
+          seenVocabulary = true;
+          tokensById = parseVocab(cursor);
+        }
         default -> cursor.skipValue();
       }
       cursor.skipWhitespace();
@@ -874,6 +964,7 @@ final class TeacherTokenizer {
       cursor.expect('{');
       cursor.skipWhitespace();
       String content = null;
+      boolean seenContent = false;
       if (cursor.peek() == '}') {
         cursor.consume();
       } else {
@@ -884,6 +975,10 @@ final class TeacherTokenizer {
           cursor.expect(':');
           cursor.skipWhitespace();
           if ("content".equals(key)) {
+            if (seenContent) {
+              throw cursor.malformed("Field 'added_tokens[].content' appears more than once");
+            }
+            seenContent = true;
             content = cursor.parseString();
           } else {
             cursor.skipValue();
@@ -943,6 +1038,11 @@ final class TeacherTokenizer {
     Map<String, Long> specialTokenIds = Map.of();
     Long clsId = null;
     Long sepId = null;
+    boolean seenType = false;
+    boolean seenSingle = false;
+    boolean seenSpecialTokens = false;
+    boolean seenCls = false;
+    boolean seenSep = false;
     if (cursor.peek() == '}') {
       cursor.consume();
     } else {
@@ -953,15 +1053,44 @@ final class TeacherTokenizer {
         cursor.expect(':');
         cursor.skipWhitespace();
         switch (key) {
-          case "type" -> type = cursor.parseString();
+          case "type" -> {
+            if (seenType) {
+              throw cursor.malformed("Field 'post_processor.type' appears more than once");
+            }
+            seenType = true;
+            type = cursor.parseString();
+          }
           case "single" -> {
+            if (seenSingle) {
+              throw cursor.malformed("Field 'post_processor.single' appears more than once");
+            }
+            seenSingle = true;
             final List<List<String>> wrapper = parseTemplate(cursor);
             bosNames = wrapper.get(0);
             eosNames = wrapper.get(1);
           }
-          case "special_tokens" -> specialTokenIds = parseSpecialTokenIds(cursor);
-          case "cls" -> clsId = parseTokenIdPair(cursor);
-          case "sep" -> sepId = parseTokenIdPair(cursor);
+          case "special_tokens" -> {
+            if (seenSpecialTokens) {
+              throw cursor.malformed(
+                  "Field 'post_processor.special_tokens' appears more than once");
+            }
+            seenSpecialTokens = true;
+            specialTokenIds = parseSpecialTokenIds(cursor);
+          }
+          case "cls" -> {
+            if (seenCls) {
+              throw cursor.malformed("Field 'post_processor.cls' appears more than once");
+            }
+            seenCls = true;
+            clsId = parseTokenIdPair(cursor);
+          }
+          case "sep" -> {
+            if (seenSep) {
+              throw cursor.malformed("Field 'post_processor.sep' appears more than once");
+            }
+            seenSep = true;
+            sepId = parseTokenIdPair(cursor);
+          }
           default -> cursor.skipValue();
         }
         cursor.skipWhitespace();
@@ -977,13 +1106,24 @@ final class TeacherTokenizer {
       }
     }
     if (type == null) {
-      return new PostProcessor(List.of(), List.of(), null, null, Map.of());
+      throw cursor.malformed("post_processor.type is required");
     }
     return switch (type) {
-      case "TemplateProcessing" ->
-          new PostProcessor(bosNames, eosNames, null, null, specialTokenIds);
-      case "BertProcessing", "RobertaProcessing" ->
-          new PostProcessor(List.of(), List.of(), clsId, sepId, specialTokenIds);
+      case "TemplateProcessing" -> {
+        if (!seenSingle) {
+          throw cursor.malformed("post_processor.single is required for TemplateProcessing");
+        }
+        yield new PostProcessor(bosNames, eosNames, null, null, specialTokenIds);
+      }
+      case "BertProcessing", "RobertaProcessing" -> {
+        if (clsId == null) {
+          throw cursor.malformed("post_processor.cls is required for " + type);
+        }
+        if (sepId == null) {
+          throw cursor.malformed("post_processor.sep is required for " + type);
+        }
+        yield new PostProcessor(List.of(), List.of(), clsId, sepId, specialTokenIds);
+      }
       default -> throw new InvalidFormatException("The post_processor type '" + type
           + "' is not supported; expected TemplateProcessing, BertProcessing, or "
           + "RobertaProcessing");
@@ -1002,6 +1142,7 @@ final class TeacherTokenizer {
       throws InvalidFormatException {
     final List<String> bos = new ArrayList<>(1);
     final List<String> eos = new ArrayList<>(1);
+    int sequenceCount = 0;
     if (cursor.peek() == '"') {
       // The template is items separated by whitespace runs, such as "[CLS] $A [SEP]".
       final String template = cursor.parseString();
@@ -1020,11 +1161,13 @@ final class TeacherTokenizer {
         }
         final String part = template.substring(start, i);
         if (part.startsWith(SEQUENCE_PLACEHOLDER_PREFIX)) {
+          sequenceCount++;
           current = eos;
         } else {
           current.add(part);
         }
       }
+      requireSingleSequence(sequenceCount, cursor);
       return List.of(bos, eos);
     }
     cursor.expect('[');
@@ -1032,7 +1175,7 @@ final class TeacherTokenizer {
     List<String> current = bos;
     if (cursor.peek() == ']') {
       cursor.consume();
-      return List.of(bos, eos);
+      throw cursor.malformed("A single template needs exactly one sequence placeholder; found 0");
     }
     while (true) {
       cursor.skipWhitespace();
@@ -1045,6 +1188,7 @@ final class TeacherTokenizer {
       cursor.expect('{');
       cursor.skipWhitespace();
       String id = null;
+      boolean seenId = false;
       if (cursor.peek() == '}') {
         cursor.consume();
       } else {
@@ -1055,6 +1199,10 @@ final class TeacherTokenizer {
           cursor.expect(':');
           cursor.skipWhitespace();
           if ("id".equals(key)) {
+            if (seenId) {
+              throw cursor.malformed("Field 'post_processor.single[].id' appears more than once");
+            }
+            seenId = true;
             id = cursor.parseString();
           } else {
             cursor.skipValue();
@@ -1074,8 +1222,15 @@ final class TeacherTokenizer {
       cursor.skipWhitespace();
       cursor.expect('}');
       if ("SpecialToken".equals(itemType)) {
+        if (id == null) {
+          throw cursor.malformed("SpecialToken template item needs an id");
+        }
         current.add(id);
       } else if ("Sequence".equals(itemType)) {
+        if (id == null) {
+          throw cursor.malformed("Sequence template item needs an id");
+        }
+        sequenceCount++;
         current = eos;
       } else {
         throw cursor.malformed("Unknown template item type: '" + itemType + "'");
@@ -1090,7 +1245,23 @@ final class TeacherTokenizer {
       }
       throw cursor.malformed("Expected ',' or ']' after a template item, got '" + next + "'");
     }
+    requireSingleSequence(sequenceCount, cursor);
     return List.of(bos, eos);
+  }
+
+  /**
+   * Verifies that a single-sequence template inserts its input once.
+   *
+   * @param count  The number of sequence placeholders read.
+   * @param cursor The cursor used to report the source location.
+   * @throws InvalidFormatException Thrown unless {@code count} is one.
+   */
+  private static void requireSingleSequence(int count, JsonCursor cursor)
+      throws InvalidFormatException {
+    if (count != 1) {
+      throw cursor.malformed("A single template needs exactly one sequence placeholder; found "
+          + count);
+    }
   }
 
   /**
@@ -1103,6 +1274,7 @@ final class TeacherTokenizer {
     cursor.expect('{');
     cursor.skipWhitespace();
     final Map<String, Long> ids = new HashMap<>();
+    final Set<String> names = new HashSet<>();
     if (cursor.peek() == '}') {
       cursor.consume();
       return ids;
@@ -1113,9 +1285,13 @@ final class TeacherTokenizer {
       cursor.skipWhitespace();
       cursor.expect(':');
       cursor.skipWhitespace();
+      if (!names.add(name)) {
+        throw cursor.malformed("Special token '" + name + "' appears more than once");
+      }
       cursor.expect('{');
       cursor.skipWhitespace();
       Long id = null;
+      boolean seenIds = false;
       if (cursor.peek() == '}') {
         cursor.consume();
       } else {
@@ -1126,6 +1302,11 @@ final class TeacherTokenizer {
           cursor.expect(':');
           cursor.skipWhitespace();
           if ("ids".equals(key)) {
+            if (seenIds) {
+              throw cursor.malformed("Field 'post_processor.special_tokens."
+                  + name + ".ids' appears more than once");
+            }
+            seenIds = true;
             cursor.expect('[');
             cursor.skipWhitespace();
             id = cursor.parseLong();
