@@ -325,4 +325,16 @@ public class NameFinderMETest extends AbstractNameFinderTest {
     assertEquals("organization", names2[1].getType());
   }
 
+  @Test
+  void testExtractNameType() {
+    assertEquals("atype", NameFinderME.extractNameType("atype-start"));
+    assertEquals("a-b", NameFinderME.extractNameType("a-b-start"));
+    assertEquals("type_1", NameFinderME.extractNameType("type_1-cont"));
+    assertEquals(null, NameFinderME.extractNameType("start"));
+    assertEquals(null, NameFinderME.extractNameType("other"));
+    assertEquals(null, NameFinderME.extractNameType("-start"));
+    assertEquals(null, NameFinderME.extractNameType("atype-"));
+    assertEquals(null, NameFinderME.extractNameType("atype-st.art"));
+  }
+
 }
