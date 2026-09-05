@@ -19,12 +19,15 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -57,6 +60,30 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
     Assertions.assertEquals(3, samples.get(0).getSentences().length);
     Assertions.assertEquals(new Span(0, 119), samples.get(0).getSentences()[0]);
     Assertions.assertEquals(new Span(120, 180), samples.get(0).getSentences()[1]);
+  }
+
+  @Test
+  void testInvalidMetadataIsRejected() throws IOException {
+    // the second sentence id "AX" has no digits, so its metadata cannot be parsed
+    List<String> lines = List.of(
+        "<s>",
+        "SOURCE: src",
+        "1001 Hello world .",
+        "</s>",
+        "<s>",
+        "SOURCE: src",
+        "AX Hi there .",
+        "</s>");
+    Iterator<String> iterator = lines.iterator();
+    ObjectStream<String> lineStream = new ObjectStream<>() {
+      @Override
+      public String read() {
+        return iterator.hasNext() ? iterator.next() : null;
+      }
+    };
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(lineStream, true)) {
+      Assertions.assertThrows(RuntimeException.class, stream::read);
+    }
   }
 
 }
