@@ -20,10 +20,15 @@ package opennlp.tools.namefind;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
@@ -95,24 +100,32 @@ public class RegexNameFinderFactoryTest {
    * Crafted inputs that used to drive the built-in EMAIL and URL patterns into
    * catastrophic backtracking / deep recursion (ReDoS, CWE-1333 / CWE-400 / CWE-674).
    * The hardened patterns must finish quickly regardless of input length.
+   * <p>
+   * Each attack runs as its own test so a regression names the exact input that
+   * got slow. Each case does one warmup run outside the timed section, so the
+   * budget measures the match itself rather than JVM cold start on throttled
+   * machines.
    */
-  @Test
-  void testBuiltinPatternsAreNotVulnerableToReDoS() {
-    final String emailLocalBlowup = "a".repeat(100_000) + "@ ";
-    final String emailDomainBlowup = "x@a" + "-a".repeat(60_000) + " ";
-    final String urlPathRecursion = "http://a.com/" + "a".repeat(100_000) + " ";
-    final String urlNestedBlowup = "http://a.com" + "/a".repeat(50_000) + "%z";
-    // The reported StackOverflowError repro: a long ?a&a&a&... query string, which
-    // drove the nested (&(...)+ ... )* group in the old URL pattern into deep recursion.
-    final String urlQueryRecursion = "http://a.com/p?a" + "&a".repeat(50_000) + "= ";
+  private static Stream<Arguments> reDoSAttacks() {
+    return Stream.of(
+        Arguments.of(Named.of("emailLocalBlowup", "a".repeat(100_000) + "@ ")),
+        Arguments.of(Named.of("emailDomainBlowup", "x@a" + "-a".repeat(60_000) + " ")),
+        Arguments.of(Named.of("urlPathRecursion", "http://a.com/" + "a".repeat(100_000) + " ")),
+        Arguments.of(Named.of("urlNestedBlowup", "http://a.com" + "/a".repeat(50_000) + "%z")),
+        // The reported StackOverflowError repro: a long ?a&a&a&... query string, which
+        // drove the nested (&(...)+ ... )* group in the old URL pattern into deep recursion.
+        Arguments.of(Named.of("urlQueryRecursion", "http://a.com/p?a" + "&a".repeat(50_000) + "= ")));
+  }
 
-    Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-      for (String attack : new String[] {
-          emailLocalBlowup, emailDomainBlowup, urlPathRecursion, urlNestedBlowup, urlQueryRecursion}) {
-        String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(attack);
-        regexNameFinder.find(tokens);
-      }
-    });
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("reDoSAttacks")
+  void testBuiltinPatternsAreNotVulnerableToReDoS(String attack) {
+    String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(attack);
+    // Warmup: JIT-compile the pattern engine before the timed run.
+    regexNameFinder.find(tokens);
+
+    Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2),
+        () -> regexNameFinder.find(tokens));
   }
 
   /**
