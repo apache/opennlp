@@ -18,14 +18,10 @@
 
 package opennlp.tools.util.featuregen;
 
-import java.util.regex.Pattern;
-
 /**
  * This class provide common utilities for feature generation.
  */
 public class FeatureGeneratorUtil {
-
-  private static final Pattern capPeriod = Pattern.compile("^[A-ZÄÖÜ]\\.$");
 
   /**
    * Generates a class name for the specified token.
@@ -98,7 +94,7 @@ public class FeatureGeneratorUtil {
         feat = "ac";
       }
     }
-    else if (capPeriod.matcher(token).find()) {
+    else if (isCapPeriod(token)) {
       feat = "cp";
     }
     else if (pattern.isInitialCapitalLetter()) {
@@ -109,5 +105,13 @@ public class FeatureGeneratorUtil {
     }
 
     return (feat);
+  }
+
+  private static boolean isCapPeriod(String token) {
+    return token.length() == 2 && isCapPeriodStart(token.charAt(0)) && token.charAt(1) == '.';
+  }
+
+  private static boolean isCapPeriodStart(char c) {
+    return (c >= 'A' && c <= 'Z') || c == 'Ä' || c == 'Ö' || c == 'Ü';
   }
 }
