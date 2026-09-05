@@ -162,7 +162,8 @@ final class HuggingFaceModelCache {
    *                 the default branch), downloaded into
    *                 {@code ~/.cache/opennlp-embeddings/org-model} on first use (the slash becomes
    *                 a dash, dots and the revision separator become underscores). Must not be
-   *                 {@code null}.
+   *                 {@code null}. A relative path containing a {@code ..} segment is rejected as
+   *                 ambiguous; pass an absolute or normalized path instead.
    * @param listener Receives one progress line per download; may be {@code null}.
    * @return The local teacher directory.
    * @throws IllegalArgumentException Thrown if {@code teacher} is {@code null}, or is neither a
@@ -203,7 +204,7 @@ final class HuggingFaceModelCache {
       throw new IllegalArgumentException("cacheRoot must not be null");
     }
     final Path local = Path.of(teacher);
-    if (Files.isDirectory(local)) {
+    if (!isAmbiguousRelativePath(local) && Files.isDirectory(local)) {
       return local;
     }
     final TeacherReference reference = parseTeacherReference(teacher);
@@ -594,6 +595,29 @@ final class HuggingFaceModelCache {
       }
     }
     return true;
+  }
+
+  /**
+   * {@return whether {@code path} is relative and contains a {@code ..} segment}
+   *
+   * <p>Windows collapses {@code ..} lexically, without checking that the segment before it
+   * exists, so {@code BAAI/..} denotes the working directory there even when {@code BAAI} does
+   * not exist; POSIX resolves the same string to nothing. Refusing the shape keeps a misspelled
+   * hub id from silently naming a directory the caller did not mean, and keeps the rejection
+   * identical on every platform.</p>
+   *
+   * @param path The teacher reference as a path.
+   */
+  private static boolean isAmbiguousRelativePath(Path path) {
+    if (path.isAbsolute()) {
+      return false;
+    }
+    for (final Path segment : path) {
+      if ("..".equals(segment.toString())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

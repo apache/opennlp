@@ -215,17 +215,31 @@ class ModelDistillerTest {
   }
 
   @Test
-  void testEscapesTheTeacherNameInTheGeneratedConfiguration(@TempDir Path dir)
+  void testWritesTheTeacherNameIntoTheGeneratedConfiguration(@TempDir Path dir)
       throws IOException {
-    final Path teacher = writeTinyTeacher(Files.createDirectory(dir.resolve("teacher\"quoted")));
+    final Path teacher = writeTinyTeacher(Files.createDirectory(dir.resolve("teacher")));
     final Path output = dir.resolve("output");
 
     final ModelDistiller.Result result = ModelDistiller.distill(teacher, output, 1, null);
 
     assertEquals("WordPiece", result.family());
     assertTrue(Files.readString(output.resolve(ModelFileNames.CONFIG))
-        .contains("\"tokenizer_name\": \"teacher\\\"quoted\""));
+        .contains("\"tokenizer_name\": \"teacher\""));
     assertEquals(1, StaticEmbeddingModel.load(output).dimension());
+  }
+
+  /**
+   * The JSON escape behind {@code tokenizer_name} is exercised directly, because every
+   * character that needs escaping (quote, backslash, control characters) is illegal in file
+   * names on Windows, so a real teacher directory cannot carry such a name there.
+   */
+  @Test
+  void testJsonStringEscapesQuotesBackslashesAndControlCharacters() {
+    assertEquals("\"teacher\\\"quoted\"", ModelDistiller.jsonString("teacher\"quoted"));
+    assertEquals("\"back\\\\slash\"", ModelDistiller.jsonString("back\\slash"));
+    assertEquals("\"line\\nbreak\"", ModelDistiller.jsonString("line\nbreak"));
+    assertEquals("\"\\u0001\"", ModelDistiller.jsonString("\u0001"));
+    assertEquals("\"plain\"", ModelDistiller.jsonString("plain"));
   }
 
   /**
