@@ -21,10 +21,11 @@
 		<title>Introduction</title>
 		<para>
 			A stemmer reduces a word form to a shorter root. OpenNLP ships rule-based
-			engines such as Snowball and Porter through the
-			<code>opennlp.tools.stemmer.Stemmer</code> interface. Stemming is
-			language-specific and lossy: it is useful for search and feature reduction,
-			not as a substitute for lemmatization when a dictionary form is required.
+			engines such as Snowball, Porter, and the light and minimal stemmers
+			through the <code>opennlp.tools.stemmer.Stemmer</code> interface. Stemming
+			is language-specific and lossy: it is useful for search and feature
+			reduction, not as a substitute for lemmatization when a dictionary form is
+			required.
 		</para>
 	</section>
 
@@ -64,9 +65,9 @@ new SharingStemmer(factory).stem("running");   // "run"
 new CachingStemmer(factory).stem("running");   // "run"]]>
 			</programlisting>
 			Thread-safe stemmers such as the shareable <code>SnowballStemmer</code>
-			class do not need <code>SharingStemmer</code>. Long-running containers
-			should call <code>clearThreadLocalState()</code> when a pooled thread no
-			longer uses a sharing or caching stemmer.
+			class and the light stemmers do not need <code>SharingStemmer</code>.
+			Long-running containers should call <code>clearThreadLocalState()</code>
+			when a pooled thread no longer uses a sharing or caching stemmer.
 		</para>
 	</section>
 
@@ -107,6 +108,36 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			declares <code>FULLSTRIP</code>, as in Hunspell itself.
 			Each affix or dictionary stream is rejected when it exceeds
 			<code>HunspellDictionary.MAX_STREAM_BYTES</code> (64&#160;MiB).
+		</para>
+	</section>
+
+	<section xml:id="tools.stemmer.light">
+		<title>Light and minimal stemmers</title>
+		<para>
+			The package <code>opennlp.tools.stemmer.light</code> provides light and minimal
+			stemmers based on algorithms in Apache Lucene's analysis-common module.
+			Light stemmers remove a modest set of endings; minimal stemmers remove fewer.
+			Instances are immutable, safe for concurrent use, and implement
+			<code>StemmerFactory</code>. Input must use lowercase NFC. The stemmers do not
+			apply case folding or Unicode normalization.
+		</para>
+		<para>
+			Languages with a light stemmer include German, Spanish, Finnish, French,
+			Hungarian, Italian, Norwegian, Portuguese, Russian, and Swedish. Minimal
+			stemmers are available for German, English, Spanish, French, Norwegian, and
+			Swedish. Norwegian variants are selected through
+			<code>NorwegianVariety</code>.
+			<code>LightStemmerUsageExampleTest</code> checks these results.
+			<programlisting language="java"><![CDATA[
+GermanLightStemmer light = new GermanLightStemmer();
+light.stem("häusern");                           // "haus"
+
+new SpanishMinimalStemmer().stem("jerseis");         // "jersey"
+
+NorwegianLightStemmer bokmaal =
+    new NorwegianLightStemmer(NorwegianVariety.BOKMAAL);
+bokmaal.stem("hemmeligheten");                       // "hemmelig"]]>
+			</programlisting>
 		</para>
 	</section>
 </chapter>
