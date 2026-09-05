@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -71,6 +72,38 @@ public class DownloadParserTest {
   void testNullUrl() {
     assertThrows(NullPointerException.class, () -> new DownloadUtil.DownloadParser(null)
     );
+  }
+
+  @Test
+  void testExtractLinks() {
+    assertEquals(List.of("a.bin", "b.bin"),
+        DownloadUtil.DownloadParser.extractLinks(
+            "<a href=\"a.bin\">x</a><a href=\"b.bin\">y</a>"));
+
+    // the pattern is case-insensitive
+    assertEquals(List.of("c.bin"),
+        DownloadUtil.DownloadParser.extractLinks("<A HREF=\"c.bin\">z</A>"));
+
+    // a link without closing tag is skipped, later valid links are still found
+    assertEquals(List.of(),
+        DownloadUtil.DownloadParser.extractLinks("<a href=\"d.bin\">x"));
+
+    // the first "</a>" closes the whole match, swallowing nested link markup
+    assertEquals(List.of("d.bin"),
+        DownloadUtil.DownloadParser.extractLinks("<a href=\"d.bin\">x <a href=\"e.bin\">y</a>"));
+
+    // the href value ends at the first "\">", so it may contain other markup
+    assertEquals(List.of("f<b>g.bin"),
+        DownloadUtil.DownloadParser.extractLinks("<a href=\"f<b>g.bin\">f</a>"));
+
+    // DOTALL allows matches to span lines
+    assertEquals(List.of("a.bin", "h\ni.bin"),
+        DownloadUtil.DownloadParser.extractLinks(
+            "<a href=\"a.bin\">x</a> <a href=\"h\ni.bin\">y</a>"));
+
+    assertEquals(List.of(), DownloadUtil.DownloadParser.extractLinks("no links here"));
+    assertEquals(List.of(), DownloadUtil.DownloadParser.extractLinks(
+        "<a href=\"d.bin\">no closing tag"));
   }
 
   @Test
