@@ -176,6 +176,23 @@ IntStream.range(0, docs.size())
 
 Here `dot` is any dot product over two float arrays. For a full retrieval-augmented generation (RAG) retriever, keep the document vectors in whatever index you already use and score queries the same way. A vector index that stores and searches precomputed vectors, such as a Hierarchical Navigable Small World (HNSW) index, does not care how those vectors were produced, so these embeddings can feed it directly.
 
+### Bounded in-memory search
+
+`FlatFloatIndex` scans full-precision vectors for exact cosine scores. `TurboQuantIndex` scans packed 2-bit, 3-bit, or 4-bit rows, using less memory at the cost of recall. Both are for bounded collections in one JVM. Build either index on one thread, freeze it, then share it for concurrent queries:
+
+```java
+StaticEmbeddingModel model = StaticEmbeddingModel.load(modelDir);
+VectorIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
+
+index.add("wonderland-excerpt", model.embed("Alice met the Queen in the garden."));
+index.add("orchard-notes", model.embed("A ripe apple hangs from the tree."));
+index.freeze();
+
+List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);
+```
+
+A frozen, non-empty index can be written to a directory and loaded through the concrete class's `write(Path)` and `read(Path)` methods. The directory includes a SHA-256 manifest, so loading rejects a changed or mismatched vector or id file. Rebuild the index to add, replace, or remove a vector.
+
 ## Getting a model
 
 No model is bundled. Point the module at files you download, and the table's own license applies to the table. The Model2Vec distilled releases (for example potion-base-8M) publish the exact directory layout the one-argument `load` expects: download that release's `vocab.txt`, `model.safetensors`, `config.json`, and `tokenizer_config.json` into one directory and pass the directory to `load`. Or distill your own teacher with the module's `DistillModel` command (see `TRAINING.md`).

@@ -17,9 +17,9 @@
 package opennlp.embeddings.index;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -32,13 +32,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The exact index's scores: hand-computed cosine similarities, exact ordering, and the
- * odd-dimension tail of the unrolled dot product.
+ * Tests cosine scores, result ordering, persistence, and malformed index directories.
  */
 class FlatFloatIndexTest {
 
   @Test
-  void testScoresAreExactCosineSimilarities() {
+  void testScoresMatchKnownCosineSimilarities() {
     final FlatFloatIndex index = new FlatFloatIndex(2);
     index.add("x", new float[] {1f, 0f});
     index.add("y", new float[] {0f, 1f});
@@ -56,12 +55,35 @@ class FlatFloatIndexTest {
   }
 
   @Test
-  void testAnOppositeVectorScoresMinusOne() {
+  void testAnInverseVectorScoresMinusOne() {
     final FlatFloatIndex index = new FlatFloatIndex(3);
-    index.add("opposite", new float[] {-2f, 0f, 0f});
+    index.add("inverse", new float[] {-2f, 0f, 0f});
     index.freeze();
 
     assertEquals(-1.0, index.topK(new float[] {5f, 0f, 0f}, 1).get(0).score(), 1e-12);
+  }
+
+  @Test
+  void testFiniteInputsProduceABoundedFiniteScore() {
+    final float[] vector = {2_920_951_808f, -8_143_641_600f};
+    final FlatFloatIndex index = new FlatFloatIndex(vector.length);
+    index.add("same", vector);
+    index.freeze();
+
+    final double score = index.topK(vector, 1).get(0).score();
+    assertTrue(Double.isFinite(score), "score: " + score);
+    assertTrue(score <= 1.0, "score: " + score);
+    assertEquals(1.0, score, 1e-12);
+  }
+
+  @Test
+  void testExtremeFiniteInputsDoNotOverflowTheDotProduct() {
+    final float[] vector = {Float.MAX_VALUE, 0f};
+    final FlatFloatIndex index = new FlatFloatIndex(vector.length);
+    index.add("same", vector);
+    index.freeze();
+
+    assertEquals(1.0, index.topK(vector, 1).get(0).score(), 1e-12);
   }
 
   @Test
@@ -72,13 +94,13 @@ class FlatFloatIndexTest {
     index.freeze();
 
     final double norm = Math.sqrt(1 + 4 + 9 + 16 + 25);
-    // Query along the last coordinate only: the dot is exactly the tail's contribution.
+    // Only the scalar tail contributes to this dot product.
     final float[] query = new float[] {0f, 0f, 0f, 0f, 2f};
     assertEquals(5.0 * 2 / (2 * norm), index.topK(query, 1).get(0).score(), 1e-12);
   }
 
   @Test
-  void testWriteReadRoundTripAnswersIdentically(@TempDir Path dir) throws IOException {
+  void testWriteReadRoundTripPreservesScores(@TempDir Path dir) throws IOException {
     final FlatFloatIndex index = new FlatFloatIndex(3);
     index.add("x", new float[] {1f, 0f, 0f});
     index.add("diagonal", new float[] {1f, 1f, 0f});
@@ -89,11 +111,13 @@ class FlatFloatIndexTest {
     final FlatFloatIndex reloaded = FlatFloatIndex.read(dir);
     assertEquals(index.size(), reloaded.size());
     assertEquals(index.dimension(), reloaded.dimension());
-    // The file stores the full-precision floats, so a reloaded index scores identically.
     assertEquals(index.topK(new float[] {1f, 0.5f, 0f}, 3),
         reloaded.topK(new float[] {1f, 0.5f, 0f}, 3));
     assertEquals(List.of("x", "diagonal", "zero"),
         Files.readAllLines(dir.resolve(FlatFloatIndex.IDS_FILE)));
+    assertTrue(Files.isRegularFile(dir.resolve(FlatFloatIndex.MANIFEST_FILE)));
+    assertThrows(IllegalStateException.class,
+        () -> reloaded.add("new", new float[] {0f, 0f, 1f}));
   }
 
   @Test
@@ -121,7 +145,9 @@ class FlatFloatIndexTest {
     index.add("b", new float[] {0f, 1f});
     index.freeze();
     index.write(dir);
-    Files.write(dir.resolve(FlatFloatIndex.IDS_FILE), List.of("a", "a"));
+    final byte[] vectors = Files.readAllBytes(dir.resolve(FlatFloatIndex.VECTORS_FILE));
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE,
+        List.of("a", "a"), file -> Files.write(file, vectors));
 
     assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
   }
@@ -132,12 +158,25 @@ class FlatFloatIndexTest {
     index.add("a", new float[] {1f, 0f});
     index.freeze();
     index.write(dir);
-    Files.write(dir.resolve(FlatFloatIndex.IDS_FILE), List.of("one-extra-id"),
-        StandardOpenOption.APPEND);
+    final byte[] vectors = Files.readAllBytes(dir.resolve(FlatFloatIndex.VECTORS_FILE));
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE,
+        List.of("a", "one-extra-id"), file -> Files.write(file, vectors));
 
     final InvalidFormatException e =
         assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
     assertTrue(e.getMessage().contains("do not belong"), e.getMessage());
+  }
+
+  @Test
+  void testReadRejectsIdsChangedWithoutTheirVectors(@TempDir Path dir) throws IOException {
+    final FlatFloatIndex index = new FlatFloatIndex(2);
+    index.add("alice", new float[] {1f, 0f});
+    index.add("rabbit", new float[] {0f, 1f});
+    index.freeze();
+    index.write(dir);
+    Files.write(dir.resolve(FlatFloatIndex.IDS_FILE), List.of("queen", "rabbit"));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
   }
 
   @Test
@@ -148,7 +187,86 @@ class FlatFloatIndexTest {
     index.write(dir);
     final Path vectors = dir.resolve(FlatFloatIndex.VECTORS_FILE);
     final byte[] bytes = Files.readAllBytes(vectors);
-    Files.write(vectors, java.util.Arrays.copyOf(bytes, bytes.length - 1));
+    final byte[] truncated = java.util.Arrays.copyOf(bytes, bytes.length - 1);
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE, List.of("a"),
+        file -> Files.write(file, truncated));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+  }
+
+  @Test
+  void testReadRejectsATruncatedHeader(@TempDir Path dir) throws IOException {
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE, List.of("a"),
+        file -> Files.write(file, new byte[] {0x4f}));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+  }
+
+  @Test
+  void testReadRejectsAnUnknownFileMagic(@TempDir Path dir) throws IOException {
+    final ByteBuffer file = ByteBuffer.allocate(5 * Integer.BYTES);
+    file.put(new byte[] {'B', 'A', 'D', '!'});
+    file.putInt(2);
+    file.putInt(1);
+    file.putFloat(1f);
+    file.putFloat(0f);
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE, List.of("Alice"),
+        path -> Files.write(path, file.array()));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+  }
+
+  @Test
+  void testReadRejectsAnInvalidShape(@TempDir Path dir) throws IOException {
+    final ByteBuffer header = ByteBuffer.allocate(3 * Integer.BYTES);
+    header.put(new byte[] {'O', 'N', 'F', '1'});
+    header.putInt(2);
+    header.putInt(Integer.MAX_VALUE);
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE, List.of("Alice"),
+        path -> Files.write(path, header.array()));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+  }
+
+  @Test
+  void testReadRejectsTrailingBytes(@TempDir Path dir) throws IOException {
+    final FlatFloatIndex index = new FlatFloatIndex(2);
+    index.add("Alice", new float[] {1f, 0f});
+    index.freeze();
+    index.write(dir);
+    final Path vectorsFile = dir.resolve(FlatFloatIndex.VECTORS_FILE);
+    final byte[] vectors = Files.readAllBytes(vectorsFile);
+    final byte[] extended = java.util.Arrays.copyOf(vectors, vectors.length + 1);
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE, List.of("Alice"),
+        path -> Files.write(path, extended));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+  }
+
+  @Test
+  void testReadRejectsANonFiniteVector(@TempDir Path dir) throws IOException {
+    final FlatFloatIndex index = new FlatFloatIndex(2);
+    index.add("a", new float[] {1f, 0f});
+    index.freeze();
+    index.write(dir);
+
+    final Path vectorsFile = dir.resolve(FlatFloatIndex.VECTORS_FILE);
+    final byte[] bytes = Files.readAllBytes(vectorsFile);
+    ByteBuffer.wrap(bytes).putFloat(12, Float.NaN);
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE, List.of("a"),
+        file -> Files.write(file, bytes));
+
+    assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
+  }
+
+  @Test
+  void testReadRejectsAnEmptyPersistedIndex(@TempDir Path dir) throws IOException {
+    final ByteBuffer header = ByteBuffer.allocate(3 * Integer.BYTES);
+    header.put(new byte[] {'O', 'N', 'F', '1'});
+    header.putInt(2);
+    header.putInt(0);
+    IndexFiles.write(dir, FlatFloatIndex.VECTORS_FILE, FlatFloatIndex.IDS_FILE, List.of(),
+        file -> Files.write(file, header.array()));
 
     assertThrows(InvalidFormatException.class, () -> FlatFloatIndex.read(dir));
   }
