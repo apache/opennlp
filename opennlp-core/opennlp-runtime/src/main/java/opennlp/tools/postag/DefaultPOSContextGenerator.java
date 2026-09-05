@@ -20,7 +20,6 @@ package opennlp.tools.postag;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.StringList;
@@ -37,9 +36,6 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
   protected final String SB = "*SB*";
   private static final int PREFIX_LENGTH = 4;
   private static final int SUFFIX_LENGTH = 4;
-
-  private static final Pattern hasCap = Pattern.compile("[A-Z]");
-  private static final Pattern hasNum = Pattern.compile("[0-9]");
 
   private final Dictionary dict;
 
@@ -165,11 +161,11 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
         e.add("h");
       }
 
-      if (hasCap.matcher(lex).find()) {
+      if (containsAsciiUpperCase(lex)) {
         e.add("c");
       }
 
-      if (hasNum.matcher(lex).find()) {
+      if (containsAsciiDigit(lex)) {
         e.add("d");
       }
     }
@@ -194,6 +190,26 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
       }
     }
     return e.toArray(new String[0]);
+  }
+
+  private static boolean containsAsciiUpperCase(String token) {
+    for (int i = 0; i < token.length(); i++) {
+      char c = token.charAt(i);
+      if (c >= 'A' && c <= 'Z') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean containsAsciiDigit(String token) {
+    for (int i = 0; i < token.length(); i++) {
+      char c = token.charAt(i);
+      if (c >= '0' && c <= '9') {
+        return true;
+      }
+    }
+    return false;
   }
 
 }
