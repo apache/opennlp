@@ -69,9 +69,6 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         .compile("^([=-]*)([^:=]+):([^\\(\\s]+)\\([\"'](.+)[\"']\\s*((?:<.+>)*)\\s*([^\\)]+)?\\)\\s+(.+)");
     private static final Pattern BIZARRE_LEAF_PATTERN = Pattern
         .compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
-    private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("^(=*)(\\W+)$");
-    private static final Pattern PUNCTUATION_DOT_PATTERN = Pattern.compile("\\»\\s+\\.");
-    private static final Pattern PUNCTUATION_COMMA_PATTERN = Pattern.compile("\\»\\s+\\,");
 
     private String text,meta;
 
@@ -208,9 +205,71 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     private String fixPunctuation(String text) {
-      text = PUNCTUATION_DOT_PATTERN.matcher(text).replaceAll("».");
-      text = PUNCTUATION_COMMA_PATTERN.matcher(text).replaceAll("»,");
+      text = replaceGuillemetPunctuation(text, '.', "».");
+      text = replaceGuillemetPunctuation(text, ',', "»,");
       return text;
+    }
+
+    /*
+     * Replicates replaceAll of the »\s+punct pattern: every run of ASCII
+     * whitespace between » and the given punctuation character is removed.
+     */
+    private static String replaceGuillemetPunctuation(String text, char punct, String replacement) {
+      StringBuilder fixed = new StringBuilder(text.length());
+      int i = 0;
+      while (i < text.length()) {
+        char c = text.charAt(i);
+        if (c == '»' && i + 1 < text.length()) {
+          int j = i + 1;
+          while (j < text.length() && isAsciiWhitespace(text.charAt(j))) {
+            j++;
+          }
+          if (j > i + 1 && j < text.length() && text.charAt(j) == punct) {
+            fixed.append(replacement);
+            i = j + 1;
+            continue;
+          }
+        }
+        fixed.append(c);
+        i++;
+      }
+      return fixed.toString();
+    }
+
+    private static boolean isAsciiWhitespace(char c) {
+      return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
+    }
+
+    /*
+     * Replicates matches() of the ^(=*)(\W+)$ punctuation pattern: the line
+     * consists of leading equals signs followed by one or more non-word
+     * characters, where a word character is an ASCII letter, digit, or
+     * underscore. A line of only equals signs matches, with the last equals
+     * sign as lexeme. Returns the level and lexeme, or null when the line
+     * does not match.
+     */
+    private static String[] parsePunctuationLine(String line) {
+      if (line.isEmpty()) {
+        return null;
+      }
+      for (int i = 0; i < line.length(); i++) {
+        if (isAsciiWord(line.charAt(i))) {
+          return null;
+        }
+      }
+      int equals = 0;
+      while (equals < line.length() && line.charAt(equals) == '=') {
+        equals++;
+      }
+      if (equals == line.length()) {
+        return new String[] {String.valueOf(equals), "="};
+      }
+      return new String[] {String.valueOf(equals + 1), line.substring(equals)};
+    }
+
+    private static boolean isAsciiWord(char c) {
+      return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9') || c == '_';
     }
 
     /**
@@ -255,13 +314,11 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return leaf;
       }
 
-      Matcher punctuationMatcher = PUNCTUATION_PATTERN.matcher(line);
-      if (punctuationMatcher.matches()) {
-        int level = punctuationMatcher.group(1).length() + 1;
-        String lexeme = punctuationMatcher.group(2);
+      String[] punctuation = parsePunctuationLine(line);
+      if (punctuation != null) {
         Leaf leaf = new Leaf();
-        leaf.setLevel(level);
-        leaf.setLexeme(lexeme);
+        leaf.setLevel(Integer.parseInt(punctuation[0]));
+        leaf.setLexeme(punctuation[1]);
         return leaf;
       }
 
