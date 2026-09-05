@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The build-phase collector shared by the index implementations: validates and copies each
- * added id and vector, and flattens the rows when the index freezes. Not safe for concurrent
- * use; the build phase is single-threaded by contract.
+ * Collects validated copies of ids and vectors during the single-threaded build phase.
  */
 final class VectorBuffer {
 
@@ -49,8 +47,8 @@ final class VectorBuffer {
   /**
    * Validates and stores one id and vector.
    *
-   * @param id     The vector's id. Must not be {@code null} or blank, must not contain a line
-   *               break, and must not already be present.
+   * @param id     The vector's id. Must not be {@code null} or blank, must not contain a carriage
+   *               return or line feed, and must not already be present.
    * @param vector The vector. Must not be {@code null}, must have the buffer's dimension, and
    *               every value must be finite. The array is copied.
    * @throws IllegalArgumentException Thrown if {@code id} or {@code vector} is invalid.
@@ -60,7 +58,7 @@ final class VectorBuffer {
       throw new IllegalArgumentException("Id must not be null or blank");
     }
     if (id.indexOf('\n') >= 0 || id.indexOf('\r') >= 0) {
-      throw new IllegalArgumentException("Id must not contain a line break: '" + id + "'");
+      throw new IllegalArgumentException("Id must not contain a carriage return or line feed");
     }
     if (vector == null) {
       throw new IllegalArgumentException("Vector must not be null");
@@ -85,11 +83,6 @@ final class VectorBuffer {
   /** {@return the number of stored vectors} */
   int size() {
     return ids.size();
-  }
-
-  /** {@return the dimension every vector has} */
-  int dimension() {
-    return dimension;
   }
 
   /** {@return the ids in add order, as an immutable list} */

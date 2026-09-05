@@ -28,7 +28,7 @@ import opennlp.embeddings.index.VectorIndex;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** Pins the bounded in-memory vector search listing in {@code embeddings.xml}. */
+/** Exercises the bounded in-memory vector search listing in {@code embeddings.xml}. */
 class VectorIndexUsageExampleTest {
 
   @Test
@@ -38,12 +38,12 @@ class VectorIndexUsageExampleTest {
     final StaticEmbeddingModel model = StaticEmbeddingModel.load(modelDirectory);
     final VectorIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
 
-    index.add("royal-article", model.embed("king queen"));
-    index.add("fruit-article", model.embed("apple"));
+    index.add("wonderland-excerpt", model.embed("Alice met the Queen in the garden."));
+    index.add("orchard-notes", model.embed("A ripe apple hangs from the tree."));
     index.freeze();
 
-    final List<VectorIndex.Hit> hits = index.topK(model.embed("king"), 5);
+    final List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);
     assertEquals(2, hits.size());
-    assertEquals("royal-article", hits.get(0).id());
+    assertEquals("wonderland-excerpt", hits.get(0).id());
   }
 }
