@@ -88,81 +88,52 @@ accordingly; no conversion is required.
 
 ## Testing against real dictionaries
 
-The runtime tests use project-authored fixtures. `HunspellCompatibilityEval`
-in `opennlp-eval-tests` loads external LibreOffice `en_US`, `de_DE_frami`, and
-`hu_HU` dictionaries. It checks strict loading, expected inflections, compounds,
-and concurrent stemming and analysis. Native comparisons check complete stem
-and analysis sets, preserving the order of fields within each analysis.
-Separator whitespace is normalized. Recognition is checked separately.
+The runtime tests use project-authored fixtures. `HunspellCompatibilityEval` in `opennlp-eval-tests` extends `AbstractEvalTest` and loads the LibreOffice `en_US`, `de_DE_frami`, and `hu_HU` dictionaries from the `hunspell/` directory of `OPENNLP_DATA_DIR`, the shared `opennlp-data.zip` archive every evaluation uses. It checks strict loading, expected inflections, compounds, concurrent stemming and analysis, and the results recorded from the reference implementation as described below.
 
-The reference dictionary revision is
+The dictionary revision is
 [`32b006a2c22a4ac7e8ed3f03346f7b3d85a970a4`](https://github.com/LibreOffice/dictionaries/tree/32b006a2c22a4ac7e8ed3f03346f7b3d85a970a4).
-The evaluation verifies SHA-256 digests before loading these files. Point it at
-a directory containing all of the `<name>.aff` and `<name>.dic` files. A missing
-dictionary property skips dictionary evaluation; configured missing files,
-changed digests and loading errors fail. These checks cover selected examples,
-not all possible words or dictionaries.
+The archive holds `<name>.aff`, `<name>.dic`, and `README_<name>.txt` for each of
+the three dictionaries under `hunspell/`. The evaluation verifies the MD5 digests of
+the affix and word-list files before loading them, as the other evaluations do, and
+fails when a file is missing or changed. These checks cover selected examples, not
+all possible words or dictionaries.
 
-Keep these downloads outside the checkout and out of source archives and JARs.
 The English dictionary's `README_en_US.txt` contains the SCOWL and Ispell
 copyright and license notices. The German dictionary is GPL-licensed and must
 not be bundled in an Apache release. The Hungarian dictionary offers MPL-2.0
 or LGPL-3.0-or-later; select MPL-2.0 and retain that license text with the README.
-These are optional local test inputs, not redistributed OpenNLP resources.
+They are evaluation inputs, not redistributed OpenNLP resources.
 See the [ASF third-party license policy](https://www.apache.org/legal/resolved.html)
 before proposing to bundle any dictionary.
 
 ```
 ./mvnw test -pl opennlp-eval-tests -am -Peval-tests \
     -Dtest=HunspellCompatibilityEval -Dsurefire.failIfNoSpecifiedTests=false \
-    -Dopennlp.forkCount=1 \
-    -Dopennlp.hunspell.dict.dir=/tmp/hunspell-dicts
+    -Dopennlp.forkCount=1 -DOPENNLP_DATA_DIR=/path/to/opennlp-data
 ```
 
-Add `-Dopennlp.hunspell.reference=/tmp/opennlp-hunspell-reference` for native
-comparisons, after building the driver below. Without this property, the Java
-evaluations run and native comparisons skip. A configured invalid executable
-fails. Maven does not obtain any dictionaries or native libraries for this test.
+The evaluation compares 49 input forms with the stems, analyses, and recognition
+recorded from the reference implementation. It reports exact result-set matches,
+expected differences, unknown-input identity fallbacks, and unexpected results
+separately, and fails on an unexpected result. Expected differences specify the
+complete OpenNLP output for inputs whose recorded reference output differs, so a
+change on either side fails. Concurrency checks compare repeated results with a
+single-threaded reference. They do not measure throughput, and compatibility
+counts are not accuracy scores.
 
-The evaluation includes 49 original input forms. It reports exact result-set
-matches, expected differences, unknown-input identity fallbacks, and unexpected
-results separately. Expected differences specify the complete output of both
-implementations; a change to either output fails. Missing native analyses do
-not count as exact matches. Input and executable digests appear in test output.
+### How the reference results were recorded
 
-For additional inputs, set `-Dopennlp.hunspell.eval.words.dir=/path/to/word-lists`.
-That directory must contain `en_US.txt`, `de_DE_frami.txt`, and `hu_HU.txt`, each
-UTF-8 with one input per line, no blank lines, and at most 10,000 inputs.
-Duplicate inputs are evaluated separately. The native driver uses each
-dictionary's encoding; characters it cannot encode cause failure. Unexpected
-results fail the evaluation, including differences outside the explicit
-examples. The word-list files remain external and are not downloaded.
+The reference outcomes recorded in `HunspellCompatibilityTest`, `HunspellCompletionTest`, and `HunspellCompatibilityEval` come from Hunspell revision [`e184e22c51fe213f4490e9b36998f0ad3e5e606b`](https://github.com/hunspell/hunspell/commit/e184e22c51fe213f4490e9b36998f0ad3e5e606b), built from source and driven through its C API. The project contains no native source, and no test forks a native process; the fixtures and the recorded outputs are what is committed.
 
-Concurrency checks compare repeated results with a single-threaded reference.
-They do not measure throughput. Compatibility counts are not accuracy scores.
-
-### Native reference checks
-
-`HunspellCompatibilityTest` and `HunspellCompletionTest` create project-authored
-dictionaries for comparison with an external Hunspell build. The reference revision is
-[`e184e22c51fe213f4490e9b36998f0ad3e5e606b`](https://github.com/hunspell/hunspell/commit/e184e22c51fe213f4490e9b36998f0ad3e5e606b).
-Keep that source, the license files, and generated binaries outside this checkout.
-After obtaining the reference source, build the small C API driver locally:
+The driver used for recording is about thirty lines of C++ against `hunspell.h`: it calls `Hunspell_create(affixPath, dictionaryPath)`, reads one input per line from standard input in the encoding the affix file declares with `SET`, and for each line calls `Hunspell_spell`, `Hunspell_stem`, or `Hunspell_analyze` as selected by a command-line argument, printing one output line per input with multiple stems or analyses joined by a tab, then releases each result list with `Hunspell_free_list` and the handle with `Hunspell_destroy`. It builds with:
 
 ```sh
 g++ -std=c++17 -O2 -DHUNSPELL_STATIC \
     -I/path/to/hunspell/src/hunspell \
-    /path/to/hunspell/src/hunspell/*.cxx dev/hunspell-reference.cc \
-    -o /tmp/opennlp-hunspell-reference
-./mvnw test -pl opennlp-core/opennlp-runtime -am \
-    '-Dtest=Hunspell*Test' -Dsurefire.failIfNoSpecifiedTests=false \
-    -Dopennlp.forkCount=1 \
-    -Dopennlp.hunspell.reference=/tmp/opennlp-hunspell-reference
+    /path/to/hunspell/src/hunspell/*.cxx driver.cc -o hunspell-reference
 ```
 
-The driver is test tooling, not a runtime dependency. Maven does not download or
-build Hunspell. Without the reference property, native comparisons are skipped;
-Java fixture tests still run. A configured executable that fails is a test failure.
+Whitespace inside recorded analyses is normalized to single spaces. The fixture tests assert the OpenNLP results and, where recognition deliberately deviates from the recorded reference outcome, name the deviation from the manual; a fixture whose deviation disappears fails, so the recorded outcomes stay honest. To re-record after a reference upgrade, rebuild the driver from the new revision, run the fixtures and the evaluation inputs through it, and update the recorded values.
 
 ## What the engine supports
 

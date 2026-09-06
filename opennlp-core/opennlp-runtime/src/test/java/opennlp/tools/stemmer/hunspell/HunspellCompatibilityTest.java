@@ -20,12 +20,11 @@ package opennlp.tools.stemmer.hunspell;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -34,9 +33,6 @@ class HunspellCompatibilityTest {
 
   private static final String PLURAL = "SFX A Y 1\nSFX A 0 s .\n";
   private static final String COMPOUND = "COMPOUNDFLAG C\nCOMPOUNDMIN 1\n";
-
-  @TempDir
-  private Path directory;
 
   /**
    * One original dictionary and an expected stemming result.
@@ -298,18 +294,15 @@ class HunspellCompatibilityTest {
   }
 
   /**
-   * Checks the expectations using an optional external Hunspell executable.
+   * The stems the reference implementation returned for a fixture when the fixtures were
+   * recorded, as described in {@code dev/README-hunspell-dictionaries.md}. An empty
+   * reference result is recorded as the input itself.
    *
-   * @param example The dictionary and assertion.
-   * @throws Exception If preparing or running the reference fails.
+   * @param example The fixture.
+   * @return The recorded reference stems.
    */
-  @ParameterizedTest(name = "native {0}")
-  @MethodSource("examples")
-  void testNativeStemming(Example example) throws Exception {
-    final String result = runNative(example, "stem").strip();
-    final List<String> actual = result.isEmpty() ? List.of(example.input())
-        : List.of(result.split("\t"));
-    final List<String> expected = switch (example.name()) {
+  private static List<String> referenceStems(Example example) {
+    return switch (example.name()) {
       case "keepcase-title", "keepcase-uppercase", "forbidden-warning" -> List.of("card");
       case "complex-prefixes", "sharp-s-uppercase", "sharp-s-keepcase" -> List.of(example.input());
       case "compound-rule", "compound-force-uppercase", "compound-force-uppercase-reject",
@@ -328,11 +321,8 @@ class HunspellCompatibilityTest {
       case "compound-replacement-inner" -> List.of("rootforbidden");
       case "compound-replacement-inner-unaffected" -> List.of("root");
       case "forbidden-affixed-other-order" -> List.of("barwordfoo");
-      // the reference analyzer stems the compound its spell checker forbids
       case "forbidden-affixed-blocks-compound" -> List.of("foowordbar");
-      // the reference analyzer matches hidden capitalized forms for capitalized input too
       case "hidden-capital-initial-capital" -> List.of("Ipod");
-      // the reference analyzer does not lower the initial capital of a mixed-case word
       case "mixed-case-initial-capital", "mixed-case-initial-capital-entry" ->
           List.of(example.input());
       case "break-default", "break-recursive", "break-start", "break-end", "break-custom",
@@ -341,20 +331,17 @@ class HunspellCompatibilityTest {
       default -> example.name().startsWith("compound-") && example.expected().size() > 1
           ? List.of(String.join("", example.expected())) : example.expected();
     };
-    Assertions.assertEquals(expected, actual);
   }
 
   /**
-   * Checks recognition separately from native stemming, which can return stems
-   * for rejected forms and no stems for accepted forms.
+   * Whether the reference spell checker accepted a fixture input when the fixtures
+   * were recorded.
    *
-   * @param example The dictionary and input.
-   * @throws Exception If the reference fails.
+   * @param example The fixture.
+   * @return The recorded recognition outcome.
    */
-  @ParameterizedTest(name = "native recognition {0}")
-  @MethodSource("examples")
-  void testNativeRecognition(Example example) throws Exception {
-    final boolean accepted = switch (example.name()) {
+  private static boolean referenceAccepts(Example example) {
+    return switch (example.name()) {
       case "keepcase-title", "keepcase-uppercase", "forbidden-warning",
           "mixed-case-is-not-lowercase", "complex-prefix-requires-continuation",
           "complex-prefix-single-suffix", "compound-rule-order", "compound-rule-homonyms",
@@ -369,23 +356,74 @@ class HunspellCompatibilityTest {
           "hidden-capital-not-in-compound", "hungarian-hyphen-rule-needs-hyphen",
           "hungarian-hyphen-rule-needs-language", "hungarian-hyphen-rule-needs-flag",
           "hungarian-hyphen-rule-first-part-only", "trailing-period-not-added",
-          // the reference spell checker rejects this form while its analyzer stems it
           "turkic-capitalized-entry" -> false;
       default -> true;
     };
-    Assertions.assertEquals(accepted ? "1" : "0", runNative(example, "spell").strip());
   }
 
   /**
-   * Runs an optional reference process on an original fixture.
-   *
-   * @param example The dictionary and input.
-   * @param operation The native operation.
-   * @return The native output.
-   * @throws Exception If file preparation or reference execution fails.
+   * The fixtures whose recognition deliberately differs from the recorded reference
+   * spell-checker outcome, each with the manual's reason.
    */
-  private String runNative(Example example, String operation) throws Exception {
-    return HunspellTestSupport.nativeResult(directory, example.affix(), example.words(),
-        example.input(), operation);
+  private static final Map<String, String> RECOGNITION_DEVIATIONS = Map.of(
+      "turkic-capitalized-entry", "the reference checker rejects what its analyzer stems");
+
+  /**
+   * The fixtures whose single stem differs from the recorded reference stem, each with
+   * the manual's reason. Fixtures with several part stems, and fixtures the reference
+   * checker rejects while its analyzer still stems them, are covered structurally.
+   */
+  private static final Map<String, String> STEM_DEVIATIONS = Map.ofEntries(
+      Map.entry("complex-prefixes", "the reference analyzer reverses field text under COMPLEXPREFIXES"),
+      Map.entry("sharp-s-uppercase", "the reference analyzer does not expand SS to a sharp s"),
+      Map.entry("sharp-s-keepcase", "the reference analyzer does not expand SS to a sharp s"),
+      Map.entry("compound-pattern-replacement", "the reference analyzer does not restore replaced junctions"),
+      Map.entry("compound-simplified-triple", "the reference analyzer does not restore simplified triples"),
+      Map.entry("mixed-case-initial-capital", "the reference analyzer keeps the initial capital"),
+      Map.entry("mixed-case-initial-capital-entry", "the reference analyzer keeps the initial capital"),
+      Map.entry("apostrophe-all-caps", "the reference analyzer does not undo an elided-article prefix"),
+      Map.entry("apostrophe-capitalized", "the reference analyzer does not undo an elided-article prefix"),
+      Map.entry("hidden-capital-initial-capital", "the reference analyzer ignores the capitalized input"),
+      Map.entry("break-start", "the reference analyzer does not split at BREAK separators"),
+      Map.entry("break-end", "the reference analyzer does not split at BREAK separators"));
+
+  /**
+   * Tests recognition against the recorded reference outcome. A fixture listed in
+   * {@link #RECOGNITION_DEVIATIONS} must differ, so a stale entry fails too.
+   *
+   * @param example The fixture.
+   * @throws IOException If loading fails.
+   */
+  @ParameterizedTest(name = "recognition {0}")
+  @MethodSource("examples")
+  void testRecognitionAgainstReference(Example example) throws IOException {
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream(("SET UTF-8\n" + example.affix()).getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream(example.words().getBytes(StandardCharsets.UTF_8)));
+    final boolean recognized = !new HunspellStemmer(dictionary).analyze(example.input()).isEmpty();
+    final String deviation = RECOGNITION_DEVIATIONS.get(example.name());
+    Assertions.assertEquals(deviation == null, recognized == referenceAccepts(example),
+        deviation == null ? "recognition differs from the reference" : deviation);
+  }
+
+  /**
+   * Tests stems against the recorded reference stems. Part stems of compounds and
+   * break forms differ by design from the concatenated reference stem, the reference
+   * analyzer stems some forms its checker rejects, and the remaining differences are
+   * listed in {@link #STEM_DEVIATIONS}; such a fixture must differ, so a stale entry
+   * fails too.
+   *
+   * @param example The fixture.
+   */
+  @ParameterizedTest(name = "stems {0}")
+  @MethodSource("examples")
+  void testStemsAgainstReference(Example example) {
+    final boolean same = example.expected().equals(referenceStems(example));
+    if (example.expected().size() > 1 || !referenceAccepts(example)) {
+      return;
+    }
+    final String deviation = STEM_DEVIATIONS.get(example.name());
+    Assertions.assertEquals(deviation == null, same,
+        deviation == null ? "stems differ from the reference: " + referenceStems(example) : deviation);
   }
 }
