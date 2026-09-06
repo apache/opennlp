@@ -51,15 +51,35 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
   private static final Logger logger =
       LoggerFactory.getLogger(ConlluDependencySampleStream.class);
 
+  /** The number of tab-separated columns of a CoNLL-U word line. */
   private static final int COLUMNS = 10;
+
+  /** The column holding the word index, a multiword token range, or an empty node id. */
+  private static final int ID = 0;
+
+  /** The column holding the word form. */
   private static final int FORM = 1;
+
+  /** The column holding the universal part-of-speech tag. */
   private static final int UPOS = 3;
+
+  /** The column holding the language-specific part-of-speech tag. */
   private static final int XPOS = 4;
+
+  /** The column holding the one-based index of the head, {@code 0} for the root. */
   private static final int HEAD = 6;
+
+  /** The column holding the relation label to the head. */
   private static final int DEPREL = 7;
 
   /** The CoNLL-U placeholder of a missing value. */
   private static final String PLACEHOLDER = "_";
+
+  /** The byte order mark some editors prepend to UTF-8 content. */
+  private static final char BOM = '\ufeff';
+
+  /** The first character of a comment line. */
+  private static final char COMMENT = '#';
 
   private final InputStreamFactory in;
   private final int tagColumn;
@@ -90,6 +110,11 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     this.reader = open();
   }
 
+  /**
+   * {@inheritDoc}
+   * Sentences without a usable basic dependency annotation are skipped, and their count
+   * is logged once the content is exhausted.
+   */
   @Override
   public DependencySample read() throws IOException {
     List<String[]> words;
@@ -126,7 +151,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     while ((line = reader.readLine()) != null) {
       if (firstLine) {
         firstLine = false;
-        if (!line.isEmpty() && line.charAt(0) == '\ufeff') {
+        if (!line.isEmpty() && line.charAt(0) == BOM) {
           line = line.substring(1);
         }
       }
@@ -136,7 +161,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
         }
         continue;
       }
-      if (line.charAt(0) == '#') {
+      if (line.charAt(0) == COMMENT) {
         continue;
       }
       final String[] fields = splitFields(line);
@@ -144,7 +169,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
         throw new IOException("CoNLL-U word line has " + fields.length
             + " columns, expected " + COLUMNS + ": " + line);
       }
-      final String id = fields[0];
+      final String id = fields[ID];
       if (id.indexOf('-') < 0 && id.indexOf('.') < 0) {
         words.add(fields);
       }
@@ -187,7 +212,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     final String[] relations = new String[n];
     for (int i = 0; i < n; i++) {
       final String[] word = words.get(i);
-      if (!Integer.toString(i + 1).equals(word[0])) {
+      if (!Integer.toString(i + 1).equals(word[ID])) {
         return null;
       }
       tokens[i] = word[FORM];
@@ -209,6 +234,11 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     }
   }
 
+  /**
+   * {@inheritDoc}
+   * Reopens the content through the {@link InputStreamFactory}, which must therefore
+   * produce a fresh stream on every call.
+   */
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     reader.close();
@@ -217,6 +247,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     skipped = 0;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void close() throws IOException {
     reader.close();

@@ -48,6 +48,7 @@ public record Transition(Type type, String label) {
   /** The single shift transition; shifts carry no label. */
   public static final Transition SHIFT = new Transition(Type.SHIFT, null);
 
+  /** Separates the type name from the label in an encoded arc transition. */
   private static final char SEPARATOR = ':';
 
   /**
@@ -74,6 +75,7 @@ public record Transition(Type type, String label) {
    *
    * @param label The relation label. Must not be {@code null} or blank.
    * @return A {@link Transition} of {@link Type#LEFT_ARC}. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code label} is {@code null} or blank.
    */
   public static Transition leftArc(String label) {
     return new Transition(Type.LEFT_ARC, label);
@@ -84,6 +86,7 @@ public record Transition(Type type, String label) {
    *
    * @param label The relation label. Must not be {@code null} or blank.
    * @return A {@link Transition} of {@link Type#RIGHT_ARC}. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code label} is {@code null} or blank.
    */
   public static Transition rightArc(String label) {
     return new Transition(Type.RIGHT_ARC, label);

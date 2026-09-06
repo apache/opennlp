@@ -80,6 +80,8 @@ public final class ArcStandardState {
 
   /**
    * Deep-copies {@code source}; used only by {@link #copy()}.
+   *
+   * @param source The state to copy.
    */
   private ArcStandardState(ArcStandardState source) {
     this.tokenCount = source.tokenCount;

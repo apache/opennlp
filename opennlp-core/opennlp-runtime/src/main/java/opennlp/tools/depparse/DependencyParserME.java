@@ -118,6 +118,12 @@ public class DependencyParserME implements DependencyParser {
     return decoded;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalStateException Thrown if the model returns scores that do not match
+   *         its outcomes or are not finite.
+   */
   @Override
   public DependencyGraph parse(String[] tokens, String[] tags) {
     DependencySample.checkTokensAndTags(tokens, tags);
@@ -131,6 +137,13 @@ public class DependencyParserME implements DependencyParser {
   /**
    * Scores all outcomes for the current configuration and picks the best transition that
    * is applicable; inapplicable outcomes are passed over regardless of score.
+   *
+   * @param state The current configuration.
+   * @param tokens The sentence tokens.
+   * @param tags The part-of-speech tags aligned with {@code tokens}.
+   * @return The highest scoring applicable transition. Never {@code null}.
+   * @throws IllegalStateException Thrown if the model returns a score count that does not
+   *         match its outcomes, a non-finite score, or no applicable transition.
    */
   private Transition bestApplicable(ArcStandardState state, String[] tokens, String[] tags) {
     final double[] probabilities = model.eval(contextGenerator.getContext(state, tokens, tags));

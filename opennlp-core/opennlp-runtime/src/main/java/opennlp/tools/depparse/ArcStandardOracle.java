@@ -76,8 +76,13 @@ public final class ArcStandardOracle {
   }
 
   /**
-   * Picks the gold transition for the current configuration, or {@code null} when the
-   * configuration is stuck, which only happens for non-projective input.
+   * Picks the gold transition for the current configuration.
+   *
+   * @param gold The gold graph being derived.
+   * @param goldDependents The gold dependent count per token, indexed by head.
+   * @param state The current configuration.
+   * @return The next gold transition, or {@code null} when the configuration is stuck,
+   *         which only happens for non-projective input.
    */
   private static Transition nextTransition(DependencyGraph gold, int[] goldDependents,
       ArcStandardState state) {
