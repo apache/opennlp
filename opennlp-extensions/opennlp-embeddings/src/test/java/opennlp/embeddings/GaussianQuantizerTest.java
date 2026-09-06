@@ -19,6 +19,8 @@ package opennlp.embeddings;
 import java.util.Random;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,6 +30,51 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Tests the Gaussian Lloyd-Max grids and nearest-level encoding.
  */
 class GaussianQuantizerTest {
+
+  /**
+   * Requires adjacent float levels to encode to their corresponding indices.
+   *
+   * @param lowerBits The float bits of the lower level.
+   */
+  @ParameterizedTest
+  @ValueSource(ints = {0x3f800001, 0xbf800001, 0x00000001, 0x80000001})
+  void testAdjacentLevelsEncodeToTheirIndices(int lowerBits) {
+    final float lower = Float.intBitsToFloat(lowerBits);
+    final float upper = Math.nextUp(lower);
+    final GaussianQuantizer quantizer = GaussianQuantizer.fromLevels(
+        new float[] {-2f, lower, upper, 2f});
+
+    assertEquals(1, quantizer.encode(lower));
+    assertEquals(2, quantizer.encode(upper));
+  }
+
+  /**
+   * Tests float values near the exact midpoint between computed grid levels.
+   *
+   * @param bits The quantization width.
+   */
+  @ParameterizedTest
+  @ValueSource(ints = {2, 3, 4})
+  void testComputedGridMidpointUsesNearestLevel(int bits) {
+    final GaussianQuantizer quantizer = GaussianQuantizer.forBits(bits);
+    for (int upper = 1; upper < quantizer.levelCount(); upper++) {
+      final double midpoint = ((double) quantizer.level(upper - 1) + quantizer.level(upper)) / 2;
+      final float value = (float) midpoint;
+      final int expected = value <= midpoint ? upper - 1 : upper;
+      assertEquals(expected, quantizer.encode(value), "upper level " + upper);
+    }
+  }
+
+  /** Selects the lower level at a representable midpoint. */
+  @Test
+  void testExactMidpointSelectsLowerLevel() {
+    final GaussianQuantizer quantizer = GaussianQuantizer.fromLevels(
+        new float[] {-3f, -1f, 1f, 3f});
+
+    assertEquals(0, quantizer.encode(-2f));
+    assertEquals(1, quantizer.encode(0f));
+    assertEquals(2, quantizer.encode(2f));
+  }
 
   @Test
   void testGridsMatchThePublishedLloydMaxTables() {
