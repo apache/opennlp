@@ -101,12 +101,31 @@ for (DependencyArc arc : graph.arcs()) {
   System.out.println(dependent + " -> " + head + " (" + arc.relation() + ")");
 }]]>
 			</programlisting>
-			<code>DependencyEvaluator</code> reports unlabeled and labeled attachment scores.
-			The provided treebank evaluation uses gold sentence boundaries, tokens, and tags,
-			so it measures the dependency parser rather than a complete text pipeline. The
-			arc-standard trainers skip non-projective training samples. The treebank evaluation
-			is <code>UniversalDependencyParserEval</code> in <code>opennlp-eval-tests</code>; the
-			treebank download helper and its instructions are in <code>opennlp-formats/dev</code>.
+			<code>DependencyEvaluator</code> reports the unlabeled attachment score (the fraction
+			of tokens with the correct head) and the labeled attachment score (the fraction with
+			the correct head and relation label), both over all tokens and, through the
+			<code>ExcludingPunctuation</code> getters, over the tokens whose gold tag is not
+			<code>PUNCT</code>. <code>DependencyCrossValidator</code> splits a sample stream into
+			folds, trains a parser on the other folds through a trainer you supply, and scores
+			the held-out fold, so both parser implementations can be cross validated:
+			<programlisting language="java">
+<![CDATA[DependencyCrossValidator validator = new DependencyCrossValidator(
+    samples -> new DependencyParserME(
+        DependencyParserME.train("eng", samples, parameters)));
+validator.evaluate(trainingSamples, 4);
+double uas = validator.getUas();
+double lasExcludingPunctuation = validator.getLasExcludingPunctuation();]]>
+			</programlisting>
+			The provided treebank evaluation, <code>UniversalDependencyParserEval</code> in
+			<code>opennlp-eval-tests</code>, trains each parser from scratch on a Universal
+			Dependencies 2.0 training split and pins all four scores on data the parser has not
+			seen: the transition parser on the English, German, Spanish AnCora, and French
+			development splits and in a five-fold cross validation of the English training split,
+			the feedforward parser on the English and Spanish AnCora development splits. It uses
+			gold sentence boundaries, tokens, and tags, so it measures the dependency parser
+			rather than a complete text pipeline. The arc-standard trainers skip non-projective
+			training samples. The treebank download helper and the pinned scores are documented
+			in <code>opennlp-formats/dev</code>.
 		</para>
 	</section>
 </chapter>
