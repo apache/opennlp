@@ -32,9 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The distiller's argument checking and its Zipf weighting. The forward pass itself needs a real
- * ONNX teacher and is exercised by the distillation script, not here, so these tests pin the
- * checks that must reject a bad call before any teacher is downloaded or run.
+ * Tests argument validation, Zipf weighting and output files with a small ONNX teacher.
  */
 class ModelDistillerTest {
 
@@ -69,6 +67,25 @@ class ModelDistillerTest {
     Files.writeString(directory.resolve("tokenizer_config.json"),
         "{\"pad_token\":\"[PAD]\"}");
     return directory;
+  }
+
+  /**
+   * Rejects changes in teacher vector length before creating output files.
+   *
+   * @param directory The test directory.
+   * @throws IOException Thrown if a fixture file cannot be written.
+   */
+  @Test
+  void testRejectsChangingTeacherDimension(@TempDir Path directory) throws IOException {
+    final Path teacher = writeTinyTeacher(Files.createDirectory(directory.resolve("teacher")));
+    EmbeddingTestFixtures.writeVariableDimensionOnnxModel(teacher.resolve("onnx"));
+    final Path output = directory.resolve("output");
+
+    final IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+        () -> ModelDistiller.distill(teacher, output, 1, null));
+
+    assertTrue(error.getMessage().contains("hidden dimension"), error.getMessage());
+    assertTrue(Files.notExists(output));
   }
 
   @Test
