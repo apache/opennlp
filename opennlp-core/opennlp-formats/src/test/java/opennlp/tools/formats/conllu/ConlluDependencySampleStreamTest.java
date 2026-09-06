@@ -197,6 +197,34 @@ public class ConlluDependencySampleStreamTest {
     }
   }
 
+  /**
+   * Verifies that a word whose relation is the underscore placeholder makes the
+   * sentence incomplete: it is skipped like an underscore head, and reading continues
+   * with the next sentence.
+   *
+   * @throws IOException Thrown if reading fails.
+   */
+  @Test
+  void testUnderscoreRelationIsSkipped() throws IOException {
+    final String content = String.join("\n",
+        line("1", "Dogs", "dog", "NOUN", "NNS", "_", "2", "_", "_", "_"),
+        line("2", "bark", "bark", "VERB", "VBP", "_", "0", "root", "_", "_"),
+        "",
+        line("1", "Cats", "cat", "NOUN", "NNS", "_", "2", "nsubj", "_", "_"),
+        line("2", "purr", "purr", "VERB", "VBP", "_", "0", "root", "_", "_"),
+        "") + "\n";
+    final InputStreamFactory in = () -> new ByteArrayInputStream(
+        content.getBytes(StandardCharsets.UTF_8));
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      final DependencySample sample = samples.read();
+      assertNotNull(sample);
+      assertArrayEquals(new String[] {"Cats", "purr"}, sample.getTokens());
+      assertEquals("nsubj", sample.getGraph().relationOf(0));
+      assertNull(samples.read());
+    }
+  }
+
   @Test
   void testMalformedUtf8Throws() throws IOException {
     final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
