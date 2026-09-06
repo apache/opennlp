@@ -20,10 +20,9 @@ package opennlp.tools.stemmer.hunspell;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -31,7 +30,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -44,9 +42,6 @@ class HunspellCompletionTest {
   private static final String COMPOUND = "COMPOUNDFLAG C\nCOMPOUNDMIN 1\n";
   private static final String HUNGARIAN = COMPOUND + "LANG hu\nCOMPOUNDWORDMAX 2\n";
   private static final String THREE_WORDS = "3\nray/C\nme/C\nfa/C";
-
-  @TempDir
-  private Path directory;
 
   /**
    * An original dictionary with expected recognition and stems.
@@ -188,16 +183,34 @@ class HunspellCompletionTest {
   }
 
   /**
-   * Tests native recognition with the same original fixtures.
+   * The fixtures whose recognition deliberately differs from the recorded reference
+   * spell-checker outcome, each with the manual's reason.
+   */
+  private static final Map<String, String> RECOGNITION_DEVIATIONS = Map.of(
+      "turkish-capitalized-name", "the reference checker rejects what its analyzer stems",
+      "azerbaijani-capitalized-name", "the reference checker rejects what its analyzer stems",
+      "dotted-capital-i", "a dotted capital I is lowercased outside the Turkic languages",
+      "multi-part-compound-near-listed-word", "the reference rejects it through its suggester",
+      "numeric-token", "numbers are accepted natively before any lookup");
+
+  /**
+   * Tests recognition against the outcome recorded from the reference spell checker.
+   * A fixture listed in {@link #RECOGNITION_DEVIATIONS} must differ, so a stale entry
+   * fails too.
    *
    * @param example The fixture.
-   * @throws Exception If the reference process fails.
+   * @throws IOException If loading fails.
    */
-  @ParameterizedTest(name = "native {0}")
+  @ParameterizedTest(name = "recognition {0}")
   @MethodSource("examples")
-  void testNativeRecognition(Example example) throws Exception {
-    Assertions.assertEquals(example.accepted() ? "1" : "0", HunspellTestSupport.nativeResult(
-        directory, example.affix(), example.words(), example.input(), "spell").strip());
+  void testRecognitionAgainstReference(Example example) throws IOException {
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream(("SET UTF-8\n" + example.affix()).getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream(example.words().getBytes(StandardCharsets.UTF_8)));
+    final boolean recognized = !new HunspellStemmer(dictionary).analyze(example.input()).isEmpty();
+    final String deviation = RECOGNITION_DEVIATIONS.get(example.name());
+    Assertions.assertEquals(deviation == null, recognized == example.accepted(),
+        deviation == null ? "recognition differs from the reference" : deviation);
   }
 
   /**
@@ -340,33 +353,28 @@ class HunspellCompletionTest {
    * @param affix The affix content.
    * @param words The word list.
    * @param input The analyzed word.
-   * @param expected The distinct analyses.
-   * @throws Exception If loading or the optional reference fails.
+   * @param expected The distinct analyses, as recorded from the reference analyzer.
+   * @throws IOException If loading fails.
    */
   @ParameterizedTest
   @MethodSource("zeroAffixAnalyses")
   void testZeroAffixAnalyses(String affix, String words, String input, List<String> expected)
-      throws Exception {
+      throws IOException {
     final HunspellStemmer stemmer = new HunspellStemmer(HunspellDictionary.load(
         new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
         new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8))));
     Assertions.assertEquals(new TreeSet<>(expected), new TreeSet<>(stemmer.analyze(input)));
-    final Set<String> reference = new TreeSet<>();
-    for (String analysis : HunspellTestSupport.nativeResult(directory, affix, words, input, "analyze")
-        .strip().split("\t")) {
-      reference.add(HunspellTestSupport.normalizeFields(analysis));
-    }
-    Assertions.assertEquals(new TreeSet<>(expected), reference);
   }
 
   /**
-   * Tests that only the first listed homonym decides whether a spelling is forbidden,
-   * as in the reference implementation.
+   * Tests that only the first listed homonym decides whether a spelling is forbidden.
+   * The reference spell checker accepts {@code foo} with the valid homonym listed first
+   * and rejects it with the forbidden homonym listed first.
    *
-   * @throws Exception If loading or the optional reference fails.
+   * @throws IOException If loading fails.
    */
   @Test
-  void testForbiddenFirstHomonym() throws Exception {
+  void testForbiddenFirstHomonym() throws IOException {
     final String affix = "FORBIDDENWORD X\nCOMPOUNDFLAG Y\nCOMPOUNDMIN 1\n";
     final HunspellStemmer allowed = new HunspellStemmer(HunspellDictionary.load(
         new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
@@ -377,20 +385,24 @@ class HunspellCompletionTest {
         new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
         new ByteArrayInputStream("2\nfoo/YX\nfoo/S\n".getBytes(StandardCharsets.UTF_8))));
     Assertions.assertEquals(List.of(), forbidden.analyze("foo"));
-    Assertions.assertEquals("1", HunspellTestSupport.nativeResult(directory, affix,
-        "2\nfoo/S\nfoo/YX\n", "foo", "spell").strip());
-    Assertions.assertEquals("0", HunspellTestSupport.nativeResult(directory, affix,
-        "2\nfoo/YX\nfoo/S\n", "foo", "spell").strip());
   }
 
+  /**
+   * Tests analyses against the field text recorded from the reference analyzer, with
+   * separator whitespace normalized to single spaces.
+   *
+   * @param affix The affix content.
+   * @param words The word list.
+   * @param input The analyzed word.
+   * @param expected The recorded analysis.
+   * @throws IOException If loading fails.
+   */
   @ParameterizedTest
   @MethodSource("morphology")
-  void testMorphologyFields(String affix, String words, String input, String expected) throws Exception {
+  void testMorphologyFields(String affix, String words, String input, String expected) throws IOException {
     final HunspellStemmer stemmer = new HunspellStemmer(HunspellDictionary.load(
         new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
         new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8))));
     Assertions.assertEquals(List.of(expected), stemmer.analyze(input));
-    Assertions.assertEquals(expected, HunspellTestSupport.normalizeFields(HunspellTestSupport.nativeResult(
-        directory, affix, words, input, "analyze")));
   }
 }

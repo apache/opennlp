@@ -163,9 +163,9 @@ analyzer.analyze("table");   // []]]>
 			the spell checker for recognition and the analyzer for stems and fields
 			wherever the two agree, and resolves each disagreement the same way for
 			every caller. The results deviate from the native library in the
-			following cases. The compatibility evaluation in
-			<xref linkend="opennlp.evaltest.hunspell"/> lists each expected difference
-			with the complete output of both implementations.
+			following cases. <code>HunspellCompatibilityEval</code> in
+			<code>opennlp-eval-tests</code> records each expected difference together
+			with the reference output.
 		</para>
 		<itemizedlist>
 			<listitem>
