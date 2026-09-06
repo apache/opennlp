@@ -1532,12 +1532,12 @@ public class HunspellStemmerTest {
    * @param flag The invalid numeric flag.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"-1", "0", "65001"})
+  @ValueSource(strings = {"-1", "0", "65536"})
   void testNumericFlagOutsideRangeIsRejected(String flag) {
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> load("FLAG num\n", "1\nword/" + flag + "\n"));
 
-    Assertions.assertEquals("numeric flag outside 1..65000 at line 2: " + flag,
+    Assertions.assertEquals("numeric flag outside 1..65535 at line 2: " + flag,
         e.getMessage());
   }
 

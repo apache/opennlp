@@ -228,7 +228,7 @@ class HunspellDictionaryLoadTest {
    * @param malformed Malformed affix content.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"AF -1\n", "FLAG num\nSFX 65001 Y 0\n",
+  @ValueSource(strings = {"AF -1\n", "FLAG num\nSFX 65536 Y 0\n",
       "COMPOUNDMIN -1\n", "SFX A Y 2\nSFX A 0 s .\n", "FLAG short\n",
       "ICONV 1\n", "ICONV -1\n", "ICONV 1\nICONV a b\nICONV c d\n",
       "OCONV 1\nOCONV _ x\n", "AM 1\n", "AM -1\n",

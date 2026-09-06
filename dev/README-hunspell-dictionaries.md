@@ -166,7 +166,7 @@ Java fixture tests still run. A configured executable that fails is a test failu
 
 ## What the engine supports
 
-The engine applies `PFX` and `SFX` rules with strip strings and character-class conditions. It supports a prefix and suffix cross-product, a double suffix sequence connected by continuation classes, rules that add and strip no material both on their own and in continuation paths, file-wide `FLAG` modes, file-wide `AF` aliases, and the `SET` encoding declaration. Numeric flags range from 1 through 65000. A number sign starts a comment at the beginning of a line or after the fields a directive consumes; elsewhere it is an ordinary value, so `BREAK #`, `NEEDAFFIX #`, and affix material consisting of `#` load as written.
+The engine applies `PFX` and `SFX` rules with strip strings and character-class conditions. It supports a prefix and suffix cross-product, a double suffix sequence connected by continuation classes, rules that add and strip no material both on their own and in continuation paths, file-wide `FLAG` modes, file-wide `AF` aliases, and the `SET` encoding declaration. Numeric flags range from 1 through 65535, the full range the reference accepts. A number sign starts a comment at the beginning of a line or after the fields a directive consumes; elsewhere it is an ordinary value, so `BREAK #`, `NEEDAFFIX #`, and affix material consisting of `#` load as written.
 
 `COMPLEXPREFIXES` selects 2 prefix levels and 1 suffix level instead of 1
 prefix and 2 suffixes. `ICONV` and `OCONV` use longest-match conversions;
@@ -177,7 +177,14 @@ tried with a lowercase initial, and the Turkic `LANG` values map the dotted and
 dotless `i` in both case directions. All-uppercase input also matches mixed-case
 entries and flagged all-uppercase entries in their capitalized form, as the
 reference does through hidden capitalized homonyms, so `IPODS` stems to `Ipod`
-while `Ipods` stays unrecognized; these forms take no part in compounds.
+while `Ipods` stays unrecognized; these forms take no part in compounds. An
+all-uppercase word with an apostrophe is also tried with the part after the
+apostrophe capitalized, so `L'AFRIQUE` finds an elided article rule. Trailing
+periods are removed before lookup, and one period is restored when only an entry
+listed with it matches, so `texts.` stems to `text` and `etc.` stays `etc.`.
+Under `LANG hu`, the part of a word before a hyphen follows the reference's
+moving rule: it may be a compound whose opening entry carries one of the
+hardwired flags `F`, `G`, or `H`, ignoring compound-forbid and size limits.
 
 Compound decomposition supports positional flags and independent `COMPOUNDRULE`
 patterns, including optional and repeated flags. It applies compound permit and

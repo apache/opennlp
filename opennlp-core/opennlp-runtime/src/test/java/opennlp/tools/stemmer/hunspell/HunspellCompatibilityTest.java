@@ -249,8 +249,32 @@ class HunspellCompatibilityTest {
             "IPODS", List.of("IPODS")),
         new Example("hidden-capital-unflagged-all-caps", PLURAL, "1\nNASA\n", "Nasa", List.of("Nasa")),
         new Example("hidden-capital-not-in-compound", COMPOUND + PLURAL, "2\niPod/AC\ncase/C\n",
-            "IPODCASE", List.of("IPODCASE")));
+            "IPODCASE", List.of("IPODCASE")),
+        new Example("hungarian-hyphen-moving-rule", HUNGARIAN_HYPHEN, HUNGARIAN_WORDS,
+            "forróvíz-tartály", List.of("forró", "víz", "tartály")),
+        new Example("hungarian-hyphen-rule-needs-hyphen", HUNGARIAN_HYPHEN, HUNGARIAN_WORDS,
+            "forróvíz", List.of("forróvíz")),
+        new Example("hungarian-hyphen-rule-needs-language", HUNGARIAN_HYPHEN.replace("LANG hu", "LANG de"),
+            HUNGARIAN_WORDS, "forróvíz-tartály", List.of("forróvíz-tartály")),
+        new Example("hungarian-hyphen-rule-needs-flag", HUNGARIAN_HYPHEN,
+            "3\nforr/S\nvíz/Y\ntartály/Y\n", "forrvíz-tartály", List.of("forrvíz-tartály")),
+        new Example("hungarian-hyphen-rule-first-part-only", HUNGARIAN_HYPHEN, HUNGARIAN_WORDS,
+            "tartály-forróvíz", List.of("tartály-forróvíz")),
+        new Example("apostrophe-all-caps", "PFX P Y 1\nPFX P 0 l' .\n", "1\nAfrique/P\n",
+            "L'AFRIQUE", List.of("Afrique")),
+        new Example("apostrophe-capitalized", "PFX P Y 1\nPFX P 0 l' .\n", "1\nAfrique/P\n",
+            "L'Afrique", List.of("Afrique")),
+        new Example("trailing-period", PLURAL, "2\ntext/A\netc.\n", "texts.", List.of("text")),
+        new Example("trailing-periods", PLURAL, "2\ntext/A\netc.\n", "texts...", List.of("text")),
+        new Example("trailing-period-entry", PLURAL, "2\ntext/A\netc.\n", "etc.", List.of("etc.")),
+        new Example("trailing-period-not-added", PLURAL, "2\ntext/A\netc.\n", "etc", List.of("etc")),
+        new Example("numeric-flag-maximum", "FLAG num\nSFX 65535 Y 1\nSFX 65535 0 s .\n",
+            "1\ndog/65535\n", "dogs", List.of("dog")));
   }
+
+  private static final String HUNGARIAN_HYPHEN = "LANG hu\nCOMPOUNDFLAG Y\nCOMPOUNDMIN 2\n"
+      + "COMPOUNDFORBIDFLAG !\nBREAK 1\nBREAK -\nSFX S Y 1\nSFX S 0 ó .\n";
+  private static final String HUNGARIAN_WORDS = "4\nforr/S\nvíz/Y\nforró/F!\ntartály/Y\n";
 
   /**
    * Checks the Java implementation using the original fixture.
@@ -309,7 +333,8 @@ class HunspellCompatibilityTest {
       case "mixed-case-initial-capital", "mixed-case-initial-capital-entry" ->
           List.of(example.input());
       case "break-default", "break-recursive", "break-start", "break-end", "break-custom",
-          "break-number-sign" -> List.of(example.input());
+          "break-number-sign", "hungarian-hyphen-moving-rule", "apostrophe-all-caps",
+          "apostrophe-capitalized" -> List.of(example.input());
       default -> example.name().startsWith("compound-") && example.expected().size() > 1
           ? List.of(String.join("", example.expected())) : example.expected();
     };
@@ -338,7 +363,9 @@ class HunspellCompatibilityTest {
           "compound-replacement-inner", "forbidden-affixed-blocks-compound",
           "flag-number-sign-virtual-stem", "hidden-capital-initial-capital",
           "hidden-capital-listed-form-wins", "hidden-capital-unflagged-all-caps",
-          "hidden-capital-not-in-compound",
+          "hidden-capital-not-in-compound", "hungarian-hyphen-rule-needs-hyphen",
+          "hungarian-hyphen-rule-needs-language", "hungarian-hyphen-rule-needs-flag",
+          "hungarian-hyphen-rule-first-part-only", "trailing-period-not-added",
           // the reference spell checker rejects this form while its analyzer stems it
           "turkic-capitalized-entry" -> false;
       default -> true;
