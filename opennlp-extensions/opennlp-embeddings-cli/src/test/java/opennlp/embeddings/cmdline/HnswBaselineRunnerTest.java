@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.embeddings.eval;
+package opennlp.embeddings.cmdline;
 
 import java.io.IOException;
 
@@ -31,7 +31,7 @@ class HnswBaselineRunnerTest {
   @Test
   @EnabledIfSystemProperty(named = "opennlp.hnsw.model", matches = ".+")
   void testConfiguredBaseline() throws IOException {
-    HnswBaseline.main(new String[] {
+    HnswBaselineRunner.main(new String[] {
         property("model"),
         property("passages"),
         property("dictionary"),

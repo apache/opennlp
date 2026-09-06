@@ -16,14 +16,12 @@
  */
 package opennlp.embeddings.eval;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
 import opennlp.embeddings.StaticEmbeddingModel;
-import opennlp.embeddings.cmdline.HnswBaselineRunner;
 import opennlp.embeddings.corpus.CasePassage;
 import opennlp.embeddings.corpus.DictionaryEntry;
 import opennlp.embeddings.eval.SearchEvaluator.IndexMetrics;
@@ -351,19 +349,6 @@ public final class HnswBaseline {
           indexedHeadwordCount, model.dimension(), topK, exactMetrics, hnswMetrics,
           fidelity.recallAtK(), fidelity.rank1Agreement(), definitionToHeadword, halfPassage);
     }
-  }
-
-  /**
-   * Runs the baseline from the command line, on the test classpath:
-   * {@code HnswBaseline model-dir passages-jsonl dictionary-tsv out-md [topK]}. Writes the
-   * Markdown report to the given path and a TSV report next to it.
-   *
-   * @param args The arguments above.
-   * @throws IOException Thrown if an input cannot be read or a report cannot be written.
-   * @throws IllegalArgumentException If an evaluation argument or report path is invalid.
-   */
-  public static void main(String[] args) throws IOException {
-    HnswBaselineRunner.main(args);
   }
 
 }

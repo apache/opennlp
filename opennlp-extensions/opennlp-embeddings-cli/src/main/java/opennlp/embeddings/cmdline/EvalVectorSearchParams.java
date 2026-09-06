@@ -50,7 +50,8 @@ interface EvalVectorSearchParams {
    */
   @ParameterDescription(valueName = "file",
       description = "The markdown report to write; a TSV with the same metrics is written "
-          + "next to it with the extension .tsv.")
+          + "next to it with the extension .tsv. Report paths must be distinct; "
+          + "dangling symbolic links and paths to passage or dictionary inputs are not allowed.")
   String getOut();
 
   /**
