@@ -1182,8 +1182,9 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies CHECKCOMPOUNDDUP: a part must not repeat its left neighbor, while the
-   * same dictionary without the declaration accepts the repetition.
+   * Verifies CHECKCOMPOUNDDUP: the closing part must not repeat the part before it,
+   * while an earlier repetition passes, as in the reference implementation, and the
+   * same dictionary without the declaration accepts both.
    *
    * @throws IOException Thrown if a fixture fails to load.
    */
@@ -1192,10 +1193,11 @@ public class HunspellStemmerTest {
     final String words = "2\ndog/Z\nhouse/Z\n";
     final HunspellStemmer checked = new HunspellStemmer(load(
         "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\nCHECKCOMPOUNDDUP\n", words));
-    Assertions.assertEquals(List.of("dogdoghouse"), checked.stemAll("dogdoghouse"));
+    Assertions.assertEquals(List.of("doghousehouse"), checked.stemAll("doghousehouse"));
+    Assertions.assertEquals(List.of("dog", "house"), checked.stemAll("dogdoghouse"));
     final HunspellStemmer unchecked = new HunspellStemmer(load(
         "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\n", words));
-    Assertions.assertEquals(List.of("dog", "house"), unchecked.stemAll("dogdoghouse"));
+    Assertions.assertEquals(List.of("dog", "house"), unchecked.stemAll("doghousehouse"));
   }
 
   /**
@@ -1692,18 +1694,23 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies that a forbidden homonym blocks affix analysis even when another entry
-   * for the same surface is valid as a standalone entry.
+   * Verifies that the first listed homonym decides whether a surface form is
+   * forbidden, as in the reference implementation: a forbidden first homonym blocks the
+   * standalone and affix analyses, while a valid first homonym keeps both.
    *
    * @throws IOException Thrown if the fixture fails to load.
    */
   @Test
-  void testForbiddenHomonymOverridesStandaloneEntry() throws IOException {
-    final HunspellStemmer stemmer = new HunspellStemmer(load(
+  void testForbiddenFirstHomonymOverridesStandaloneEntry() throws IOException {
+    final HunspellStemmer forbiddenFirst = new HunspellStemmer(load(
+        "FORBIDDENWORD X\nSFX A Y 1\nSFX A 0 s .\n",
+        "3\nfoo/A\nfoos/X\nfoos\n"));
+    Assertions.assertEquals(List.of("foos"), forbiddenFirst.stemAll("foos"));
+    Assertions.assertEquals(List.of(), forbiddenFirst.analyze("foos"));
+    final HunspellStemmer validFirst = new HunspellStemmer(load(
         "FORBIDDENWORD X\nSFX A Y 1\nSFX A 0 s .\n",
         "3\nfoo/A\nfoos\nfoos/X\n"));
-
-    Assertions.assertEquals(List.of("foos"), stemmer.stemAll("foos"));
+    Assertions.assertEquals(List.of("foos", "foo"), validFirst.stemAll("foos"));
   }
 
   /**

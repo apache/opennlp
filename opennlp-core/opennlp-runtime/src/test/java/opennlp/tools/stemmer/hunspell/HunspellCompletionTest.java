@@ -23,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.StringUtil;
@@ -122,10 +125,11 @@ class HunspellCompletionTest {
         new Example("compound-affixed-duplicate", COMPOUND + "CHECKCOMPOUNDDUP\n"
             + "COMPOUNDPERMITFLAG P\nSFX A Y 1\nSFX A 0 s/P .\n",
             "1\nriver/CA\n", "riversriver", List.of("riversriver"), false),
+        // the reference spell checker rejects these forms while its analyzer stems them
         new Example("turkish-capitalized-name", "LANG tr_TR\n", "1\nİpek\n",
-            "İPEK", List.of("İPEK"), false),
+            "İPEK", List.of("İpek"), false),
         new Example("azerbaijani-capitalized-name", "LANG az_AZ\n", "1\nİpek\n",
-            "İPEK", List.of("İPEK"), false),
+            "İPEK", List.of("İpek"), false),
         new Example("compound-pattern-suffix-flag", COMPOUND + "COMPOUNDPERMITFLAG P\n"
             + "CHECKCOMPOUNDPATTERN 1\nCHECKCOMPOUNDPATTERN s/X b\n"
             + "SFX A Y 1\nSFX A 0 s/PX .\n", "2\nriver/CA\nboat/C\n",
@@ -270,7 +274,22 @@ class HunspellCompletionTest {
             "2\nriver/C po:noun\nboat/CA po:noun\n", "riverboats",
             "pa:river st:river po:noun pa:boats st:boat po:noun is:plural"},
         new String[] {"SFX A Y 1\nSFX A 0 s . is:plural\n", "1\ncard/A custom\n",
-            "cards", "st:card is:plural"});
+            "cards", "st:card is:plural"},
+        new String[] {"NEEDAFFIX X\nSFX A Y 1\nSFX A 0 0 .\n", "1\nfoo/XA\n", "foo", "st:foo fl:A"},
+        new String[] {"PFX C Y 1\nPFX C 0 pre .\n", "1\nfoo/C\n", "prefoo", "pre st:foo fl:C"},
+        new String[] {"PFX C Y 1\nPFX C 0 pre .\n", "1\nfoo/C po:noun\n", "prefoo", "pre st:foo po:noun"},
+        new String[] {"PFX B Y 1\nPFX B 0 re .\nSFX A Y 1\nSFX A 0 s . is:plural\n",
+            "1\ngo/AB po:verb\n", "regos", "fl:B st:go po:verb is:plural"},
+        new String[] {"PFX B Y 1\nPFX B 0 re . dp:again\nSFX A Y 1\nSFX A 0 s .\n",
+            "1\ngo/AB\n", "regos", "dp:again st:go fl:A"},
+        new String[] {"SFX A Y 1\nSFX A 0 er/B .\nSFX B Y 1\nSFX B 0 s .\n",
+            "1\nwalk/A po:verb\n", "walkers", "st:walk po:verb fl:A fl:B"},
+        new String[] {COMPOUND, "2\nfoo/C id:1\nbar/C\n", "foobar", "pa:foo st:foo id:1 pa:bar"},
+        new String[] {COMPOUND, "3\nfoo/C\nbar/C id:2\nbaz/C\n", "foobarbaz",
+            "pa:foo st:foo pa:bar st:bar id:2 pa:baz"},
+        new String[] {COMPOUND + "SFX A Y 1\nSFX A 0 s .\n", "2\nfoo/C id:1\nbar/CA\n", "foobars",
+            "pa:foo st:foo id:1 pa:bars st:bar fl:A"},
+        new String[] {"SFX A Y 1\nSFX A 0 s .\n", "1\niPod/A po:noun\n", "IPODS", "st:Ipod po:noun fl:A"});
   }
 
   /**
@@ -282,6 +301,73 @@ class HunspellCompletionTest {
    * @param expected The expected analysis.
    * @throws Exception If parsing or reference execution fails.
    */
+  /**
+   * Analyses that include a rule adding and removing no material, in reference order.
+   *
+   * @return Affix content, word list, input, and every expected analysis.
+   */
+  private static Stream<Arguments> zeroAffixAnalyses() {
+    return Stream.of(
+        Arguments.of("SFX A Y 1\nSFX A 0 0 . is:zero\n", "1\nbar/A\n", "bar",
+            List.of("st:bar", "st:bar is:zero")),
+        Arguments.of("PFX A Y 1\nPFX A 0 0 . dp:zero\n", "1\nbar/A\n", "bar",
+            List.of("st:bar", "dp:zero st:bar fl:A")),
+        Arguments.of("NEEDAFFIX X\nSFX A Y 1\nSFX A 0 0 . >\nSFX B Y 1\nSFX B 0 0 . <ZERO>>\n"
+            + "SFX C Y 2\nSFX C 0 0/XAB . <ZERODERIV>\nSFX C 0 baz/XAB . <DERIV>\n",
+            "1\nbar/XABC\t<BAR\n", "bar",
+            List.of("st:bar <BAR >", "st:bar <BAR <ZERO>>", "st:bar <BAR <ZERODERIV> >",
+                "st:bar <BAR <ZERODERIV> <ZERO>>")));
+  }
+
+  /**
+   * Tests that a rule without material is undone on its own and inside a continuation.
+   *
+   * @param affix The affix content.
+   * @param words The word list.
+   * @param input The analyzed word.
+   * @param expected The distinct analyses.
+   * @throws Exception If loading or the optional reference fails.
+   */
+  @ParameterizedTest
+  @MethodSource("zeroAffixAnalyses")
+  void testZeroAffixAnalyses(String affix, String words, String input, List<String> expected)
+      throws Exception {
+    final HunspellStemmer stemmer = new HunspellStemmer(HunspellDictionary.load(
+        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8))));
+    Assertions.assertEquals(new TreeSet<>(expected), new TreeSet<>(stemmer.analyze(input)));
+    final Set<String> reference = new TreeSet<>();
+    for (String analysis : HunspellTestSupport.nativeResult(directory, affix, words, input, "analyze")
+        .strip().split("\t")) {
+      reference.add(HunspellTestSupport.normalizeFields(analysis));
+    }
+    Assertions.assertEquals(new TreeSet<>(expected), reference);
+  }
+
+  /**
+   * Tests that only the first listed homonym decides whether a spelling is forbidden,
+   * as in the reference implementation.
+   *
+   * @throws Exception If loading or the optional reference fails.
+   */
+  @Test
+  void testForbiddenFirstHomonym() throws Exception {
+    final String affix = "FORBIDDENWORD X\nCOMPOUNDFLAG Y\nCOMPOUNDMIN 1\n";
+    final HunspellStemmer allowed = new HunspellStemmer(HunspellDictionary.load(
+        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream("2\nfoo/S\nfoo/YX\n".getBytes(StandardCharsets.UTF_8))));
+    Assertions.assertEquals(List.of("st:foo"), allowed.analyze("foo"));
+    Assertions.assertEquals(List.of(), allowed.analyze("foofoo"));
+    final HunspellStemmer forbidden = new HunspellStemmer(HunspellDictionary.load(
+        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream("2\nfoo/YX\nfoo/S\n".getBytes(StandardCharsets.UTF_8))));
+    Assertions.assertEquals(List.of(), forbidden.analyze("foo"));
+    Assertions.assertEquals("1", HunspellTestSupport.nativeResult(directory, affix,
+        "2\nfoo/S\nfoo/YX\n", "foo", "spell").strip());
+    Assertions.assertEquals("0", HunspellTestSupport.nativeResult(directory, affix,
+        "2\nfoo/YX\nfoo/S\n", "foo", "spell").strip());
+  }
+
   @ParameterizedTest
   @MethodSource("morphology")
   void testMorphologyFields(String affix, String words, String input, String expected) throws Exception {

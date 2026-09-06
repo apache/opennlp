@@ -185,7 +185,71 @@ class HunspellCompatibilityTest {
             "3\nrain/C\ncoat/C\nrainboats/A ph:raincoats*\n", "raincoat", List.of("rain", "coat")),
         new Example("replacement-morphology-star", COMPOUND + "CHECKCOMPOUNDREP\n" + PLURAL,
             "4\nrain/C\ncoat/C\nrainboats/A ph:raincoats*\nrainboat\n",
-            "raincoat", List.of("raincoat")));
+            "raincoat", List.of("raincoat")),
+        new Example("derivation-surface-prefix", "PFX U Y 1\nPFX U 0 un . dp:pfx_un sp:un\n"
+            + "SFX A Y 1\nSFX A 0 able/U . ds:der_able\n", "1\ndrink/A po:verb\n",
+            "undrinkable", List.of("undrinkable")),
+        new Example("derivation-inflectional-prefix", "PFX P Y 1\nPFX P 0 un . ip:un\n"
+            + "SFX R Y 1\nSFX R 0 able/P . ds:DER\n", "1\ndrink/R po:verb\n",
+            "undrinkable", List.of("drinkable")),
+        new Example("compound-pattern-substitution-only", COMPOUND + "CHECKCOMPOUNDPATTERN 2\n"
+            + "CHECKCOMPOUNDPATTERN o b z\nCHECKCOMPOUNDPATTERN oo ba u\n",
+            "2\nfoo/C\nbar/C\n", "fozar", List.of("foo", "bar")),
+        new Example("compound-pattern-substitution-second", COMPOUND + "CHECKCOMPOUNDPATTERN 2\n"
+            + "CHECKCOMPOUNDPATTERN o b z\nCHECKCOMPOUNDPATTERN oo ba u\n",
+            "2\nfoo/C\nbar/C\n", "fur", List.of("foo", "bar")),
+        new Example("compound-duplicate-last-parts", COMPOUND + "CHECKCOMPOUNDDUP\n",
+            "2\nfoo/C\nbar/C\n", "foofoobar", List.of("foo", "bar")),
+        new Example("compound-duplicate-reject", COMPOUND + "CHECKCOMPOUNDDUP\n",
+            "2\nfoo/C\nbar/C\n", "foobarbar", List.of("foobarbar")),
+        new Example("compound-forbid-entry", "COMPOUNDFLAG X\nCOMPOUNDPERMITFLAG Y\n"
+            + "COMPOUNDFORBIDFLAG Z\nSFX S Y 2\nSFX S 0 bar/YX .\nSFX S 0 baz/YX .\n",
+            "3\nfoo/S\nexample/X\nfoobaz/Z\n", "foobazexample", List.of("foobazexample")),
+        new Example("compound-forbid-entry-other-suffix", "COMPOUNDFLAG X\nCOMPOUNDPERMITFLAG Y\n"
+            + "COMPOUNDFORBIDFLAG Z\nSFX S Y 2\nSFX S 0 bar/YX .\nSFX S 0 baz/YX .\n",
+            "3\nfoo/S\nexample/X\nfoobaz/Z\n", "foobarexample", List.of("foo", "example")),
+        new Example("compound-only-suffix-at-end", COMPOUND + "ONLYINCOMPOUND O\n"
+            + "COMPOUNDPERMITFLAG P\nSFX B Y 1\nSFX B 0 s/OP .\n",
+            "2\nfoo/C\npseudo/CB\n", "foopseudos", List.of("foopseudos")),
+        new Example("compound-only-suffix-inside", COMPOUND + "ONLYINCOMPOUND O\n"
+            + "COMPOUNDPERMITFLAG P\nSFX B Y 1\nSFX B 0 s/OP .\n",
+            "2\nfoo/C\npseudo/CB\n", "pseudosfoo", List.of("pseudo", "foo")),
+        new Example("compound-replacement-inner", COMPOUND + "CHECKCOMPOUNDREP\n"
+            + "REP 1\nREP forbiddenroot forbidden_root\n",
+            "3\nroot/C\nforbidden/C\nforbidden root\n", "rootforbiddenroot",
+            List.of("rootforbiddenroot")),
+        new Example("compound-replacement-inner-unaffected", COMPOUND + "CHECKCOMPOUNDREP\n"
+            + "REP 1\nREP forbiddenroot forbidden_root\n",
+            "3\nroot/C\nforbidden/C\nforbidden root\n", "rootforbidden",
+            List.of("root", "forbidden")),
+        new Example("mixed-case-initial-capital", "PFX a Y 1\nPFX a u no u\n",
+            "1\nuLinda/a\n", "NoLinda", List.of("uLinda")),
+        new Example("mixed-case-initial-capital-entry", "PFX a Y 1\nPFX a u no u\n",
+            "1\nuLinda/a\n", "ULinda", List.of("uLinda")),
+        new Example("forbidden-affixed-blocks-compound", "FORBIDDENWORD F\nCOMPOUNDFLAG C\n"
+            + "COMPOUNDMIN 1\nSFX S Y 1\nSFX S 0 s .\n",
+            "4\nfoo/CS\nword/C\nbar/CS\nfoowordbar/FS\n", "foowordbars", List.of("foowordbars")),
+        new Example("forbidden-affixed-other-order", "FORBIDDENWORD F\nCOMPOUNDFLAG C\n"
+            + "COMPOUNDMIN 1\nSFX S Y 1\nSFX S 0 s .\n",
+            "4\nfoo/CS\nword/C\nbar/CS\nfoowordbar/FS\n", "barwordfoos",
+            List.of("bar", "word", "foo")),
+        new Example("turkic-capitalized-entry", "LANG tr\n", "1\nİzmir\n",
+            "İZMİR", List.of("İzmir")),
+        new Example("break-number-sign", "BREAK 1\nBREAK #\n" + PLURAL,
+            "2\nriver/A\nboat/A\n", "rivers#boats", List.of("river", "boat")),
+        new Example("flag-number-sign", "NEEDAFFIX #\n" + PLURAL,
+            "2\nfoo/#A\nbar/A\n", "foos", List.of("foo")),
+        new Example("flag-number-sign-virtual-stem", "NEEDAFFIX #\n" + PLURAL,
+            "2\nfoo/#A\nbar/A\n", "foo", List.of("foo")),
+        new Example("hidden-capital-mixed-case", PLURAL, "1\niPod/A\n", "IPODS", List.of("Ipod")),
+        new Example("hidden-capital-initial-capital", PLURAL, "1\niPod/A\n", "Ipods", List.of("Ipods")),
+        new Example("hidden-capital-all-caps-entry", "SFX S N 1\nSFX S 0 's .\n",
+            "1\nUNICEF/S\n", "UNICEF'S", List.of("Unicef")),
+        new Example("hidden-capital-listed-form-wins", PLURAL, "2\niPod/A\nIpod\n",
+            "IPODS", List.of("IPODS")),
+        new Example("hidden-capital-unflagged-all-caps", PLURAL, "1\nNASA\n", "Nasa", List.of("Nasa")),
+        new Example("hidden-capital-not-in-compound", COMPOUND + PLURAL, "2\niPod/AC\ncase/C\n",
+            "IPODCASE", List.of("IPODCASE")));
   }
 
   /**
@@ -228,10 +292,24 @@ class HunspellCompatibilityTest {
           "replacement-morphology", "replacement-morphology-arrow", "replacement-morphology-star",
           "replacement-morphology-star-unlisted" ->
           List.of("rain");
-      case "compound-pattern-replacement", "compound-simplified-triple" -> List.of(example.input());
+      case "compound-pattern-replacement", "compound-simplified-triple",
+          "compound-pattern-substitution-only", "compound-pattern-substitution-second",
+          "compound-only-suffix-inside" -> List.of(example.input());
       case "compound-syllable-limit" -> List.of("rayme");
-      case "break-default", "break-recursive", "break-start", "break-end", "break-custom" ->
+      case "compound-duplicate-last-parts" -> List.of("foofoo");
+      case "compound-forbid-entry-other-suffix" -> List.of("foobar");
+      case "compound-replacement-inner" -> List.of("rootforbidden");
+      case "compound-replacement-inner-unaffected" -> List.of("root");
+      case "forbidden-affixed-other-order" -> List.of("barwordfoo");
+      // the reference analyzer stems the compound its spell checker forbids
+      case "forbidden-affixed-blocks-compound" -> List.of("foowordbar");
+      // the reference analyzer matches hidden capitalized forms for capitalized input too
+      case "hidden-capital-initial-capital" -> List.of("Ipod");
+      // the reference analyzer does not lower the initial capital of a mixed-case word
+      case "mixed-case-initial-capital", "mixed-case-initial-capital-entry" ->
           List.of(example.input());
+      case "break-default", "break-recursive", "break-start", "break-end", "break-custom",
+          "break-number-sign" -> List.of(example.input());
       default -> example.name().startsWith("compound-") && example.expected().size() > 1
           ? List.of(String.join("", example.expected())) : example.expected();
     };
@@ -255,7 +333,14 @@ class HunspellCompatibilityTest {
           "compound-force-uppercase-reject", "compound-root-count", "compound-replacement-check",
           "compound-pattern", "compound-syllable-limit-reject", "break-disabled",
           "break-unknown-part", "break-internal-only", "replacement-trailing-fields",
-          "replacement-morphology", "replacement-morphology-arrow", "replacement-morphology-star" -> false;
+          "replacement-morphology", "replacement-morphology-arrow", "replacement-morphology-star",
+          "compound-duplicate-reject", "compound-forbid-entry", "compound-only-suffix-at-end",
+          "compound-replacement-inner", "forbidden-affixed-blocks-compound",
+          "flag-number-sign-virtual-stem", "hidden-capital-initial-capital",
+          "hidden-capital-listed-form-wins", "hidden-capital-unflagged-all-caps",
+          "hidden-capital-not-in-compound",
+          // the reference spell checker rejects this form while its analyzer stems it
+          "turkic-capitalized-entry" -> false;
       default -> true;
     };
     Assertions.assertEquals(accepted ? "1" : "0", runNative(example, "spell").strip());

@@ -515,7 +515,7 @@ class HunspellCompatibilityEval {
   }
 
   /**
-   * Specifies compound-only, compound, BREAK and prefix-field output differences.
+   * Specifies compound-only, compound, and BREAK output differences.
    *
    * @param dictionary The external dictionary.
    * @param word The input form.
@@ -525,14 +525,6 @@ class HunspellCompatibilityEval {
     if (dictionary == Dictionary.ENGLISH && word.equals("well-known")) {
       return new Difference(new Result(Set.of(), Set.of()),
           new Result(Set.of("well", "known"), Set.of("pa:well st:well pa:known st:known")));
-    }
-    if (dictionary == Dictionary.ENGLISH && word.equals("unhappy")) {
-      return new Difference(new Result(Set.of("unhappy", "happy"), Set.of("st:unhappy", "un st:happy fl:U")),
-          new Result(Set.of("unhappy", "happy"), Set.of("st:unhappy", "fl:U st:happy")));
-    }
-    if (dictionary == Dictionary.ENGLISH && word.equals("undone")) {
-      return new Difference(new Result(Set.of("done"), Set.of("un st:done fl:U")),
-          new Result(Set.of("done"), Set.of("fl:U st:done")));
     }
     if (dictionary != Dictionary.GERMAN) {
       return null;
@@ -556,12 +548,12 @@ class HunspellCompatibilityEval {
       case "Vorschläge" -> new Difference(new Result(Set.of(), Set.of()),
           new Result(Set.of("Vor", "schlag"), Set.of("pa:Vor st:Vor fl:j pa:schläge st:schlag fl:p")));
       case "Haustür" -> new Difference(new Result(Set.of(), Set.of("pa:tür")),
-          new Result(Set.of("Haus", "tür"), Set.of("pa:Haus st:Haus fl:j pa:tür st:tür")));
+          new Result(Set.of("Haus", "tür"), Set.of("pa:Haus st:Haus fl:j pa:tür")));
       case "Kinderzimmer" -> new Difference(new Result(Set.of(), Set.of("pa:zimmer")),
-          new Result(Set.of("Kinder", "zimmer"), Set.of("pa:Kinder st:Kinder fl:j pa:zimmer st:zimmer")));
+          new Result(Set.of("Kinder", "zimmer"), Set.of("pa:Kinder st:Kinder fl:j pa:zimmer")));
       case "Abbildungsverzeichnis" -> new Difference(new Result(Set.of(), Set.of("pa:verzeichnis")),
           new Result(Set.of("Abbildungs", "verzeichnis"),
-              Set.of("pa:Abbildungs st:Abbildungs fl:j pa:verzeichnis st:verzeichnis")));
+              Set.of("pa:Abbildungs st:Abbildungs fl:j pa:verzeichnis")));
       case "Haus" -> new Difference(new Result(Set.of("haus", "Haus"), Set.of("st:haus fl:k", "st:Haus")),
           new Result(Set.of("Haus"), Set.of("st:Haus")));
       case "Baum" -> new Difference(new Result(Set.of("baum", "Baum"), Set.of("st:baum fl:k", "st:Baum")),

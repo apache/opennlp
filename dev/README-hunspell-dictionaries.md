@@ -166,13 +166,18 @@ Java fixture tests still run. A configured executable that fails is a test failu
 
 ## What the engine supports
 
-The engine applies `PFX` and `SFX` rules with strip strings and character-class conditions. It supports a prefix and suffix cross-product, a double suffix sequence connected by continuation classes, identity rules in continuation paths, file-wide `FLAG` modes, file-wide `AF` aliases, and the `SET` encoding declaration. Numeric flags range from 1 through 65000.
+The engine applies `PFX` and `SFX` rules with strip strings and character-class conditions. It supports a prefix and suffix cross-product, a double suffix sequence connected by continuation classes, rules that add and strip no material both on their own and in continuation paths, file-wide `FLAG` modes, file-wide `AF` aliases, and the `SET` encoding declaration. Numeric flags range from 1 through 65000. A number sign starts a comment at the beginning of a line or after the fields a directive consumes; elsewhere it is an ordinary value, so `BREAK #`, `NEEDAFFIX #`, and affix material consisting of `#` load as written.
 
 `COMPLEXPREFIXES` selects 2 prefix levels and 1 suffix level instead of 1
 prefix and 2 suffixes. `ICONV` and `OCONV` use longest-match conversions;
 `IGNORE` removes configured characters from input, entries, and affix material.
 `KEEPCASE`, `CHECKSHARPS`, `LANG`, `WARN`, and `FORBIDWARN` control case variants
-and warning-marked entries.
+and warning-marked entries. A capitalized word with a further inner capital is also
+tried with a lowercase initial, and the Turkic `LANG` values map the dotted and
+dotless `i` in both case directions. All-uppercase input also matches mixed-case
+entries and flagged all-uppercase entries in their capitalized form, as the
+reference does through hidden capitalized homonyms, so `IPODS` stems to `Ipod`
+while `Ipods` stays unrecognized; these forms take no part in compounds.
 
 Compound decomposition supports positional flags and independent `COMPOUNDRULE`
 patterns, including optional and repeated flags. It applies compound permit and
@@ -183,10 +188,15 @@ entries and dictionary `ph:` replacements. Compound boundaries and minimum
 lengths use Unicode code points. `BREAK` splits recognized parts recursively;
 the default separators are `-`, `^-`, and `-$`, and `BREAK 0` disables them.
 
+The compound restrictions follow the reference implementation in detail. `CHECKCOMPOUNDDUP` compares the two parts joined at each level, so only a repeated closing part rejects a compound. The `CHECKCOMPOUNDREP` and word-pair checks apply to the complete input and to every remainder a further level splits. A junction restored from a `CHECKCOMPOUNDPATTERN` replacement is exempt from the other patterns. A listed spelling whose first homonym carries `COMPOUNDFORBIDFLAG` is barred from every position but the last, including its affixed readings, and a suffix marked `ONLYINCOMPOUND` cannot close a compound.
+
 `NEEDAFFIX` (also named `PSEUDOROOT`), `ONLYINCOMPOUND`, `FORBIDDENWORD`,
-`CIRCUMFIX`, and `FULLSTRIP` control whether an analysis is accepted. Morphology
+`CIRCUMFIX`, and `FULLSTRIP` control whether an analysis is accepted. As in the
+reference implementation, the first listed homonym decides whether a spelling is
+forbidden, and a forbidden direct or affixed reading also blocks the compound and
+`BREAK` readings of that input. Morphology
 aliases use `AM`; `st:` supplies an explicit stem, `sp:` prepends surface
-material, and `ds:` retains derivational suffixes.
+material, and `ds:` makes the form derived by the entry's suffixes the stem.
 
 `SYLLABLENUM` supports Hungarian compound syllable adjustments. The deprecated
 `LEMMA_PRESENT` directive is validated but has no effect. Obsolete
@@ -195,9 +205,14 @@ metadata have no effect on stemming or analysis in the pinned reference and
 are ignored. The active compound and affix directives remain applicable.
 
 `HunspellStemmer.analyze(text)` returns an immutable list of distinct analyses
-as space-separated Hunspell fields. Entries without `st:` use the entry text;
-affixes without morphological fields contribute `fl:` and the affix flag.
-Compound components begin with `pa:`. Unknown input returns an empty list.
+as space-separated Hunspell fields in the reference field order. Entries without
+`st:` use the entry text. A suffix without morphological fields contributes `fl:`
+and its flag after the entry fields. A prefix without morphological fields
+contributes its affix text before the stem when no suffix follows and `fl:` with
+its flag otherwise; an entry without fields then contributes the prefix's `fl:`
+field after the stem. Compound components begin with `pa:`, and a closing
+component without affixes or entry fields carries no `st:` field. Unknown input
+returns an empty list.
 Analysis preserves field text without `OCONV`. The shared `Stemmer` interface
 is unchanged. The manual contains an executable example.
 
