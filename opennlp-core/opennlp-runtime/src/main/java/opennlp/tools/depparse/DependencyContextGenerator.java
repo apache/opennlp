@@ -33,7 +33,7 @@ import opennlp.tools.commons.ThreadSafe;
  * @since 3.0.0
  */
 @ThreadSafe
-public class DependencyContextGenerator {
+class DependencyContextGenerator {
 
   /** The feature value standing for the artificial root position. */
   private static final String ROOT_VALUE = "*ROOT*";
@@ -71,11 +71,11 @@ public class DependencyContextGenerator {
    * @throws IllegalArgumentException Thrown if a parameter is invalid or the arrays do
    *         not match the state.
    */
-  public String[] getContext(ArcStandardState state, String[] tokens, String[] tags) {
+  String[] getContext(ArcStandardState state, String[] tokens, String[] tags) {
     if (state == null) {
       throw new IllegalArgumentException("state must not be null");
     }
-    DependencySample.checkTokensAndTags(tokens, tags);
+    ParserInput.check(tokens, tags);
     if (tokens.length != state.tokenCount()) {
       throw new IllegalArgumentException("tokens and tags must match state token count: "
           + tokens.length + " != " + state.tokenCount());

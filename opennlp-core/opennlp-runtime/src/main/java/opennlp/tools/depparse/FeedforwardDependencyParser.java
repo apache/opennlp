@@ -99,7 +99,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
    */
   @Override
   public DependencyGraph parse(String[] tokens, String[] tags) {
-    DependencySample.checkTokensAndTags(tokens, tags);
+    ParserInput.check(tokens, tags);
     if (beamSize == GREEDY_BEAM_SIZE) {
       return greedyParse(tokens, tags);
     }

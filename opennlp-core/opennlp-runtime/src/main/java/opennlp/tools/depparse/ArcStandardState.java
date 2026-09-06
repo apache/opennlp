@@ -34,7 +34,7 @@ import java.util.Arrays;
  *
  * @since 3.0.0
  */
-public final class ArcStandardState {
+final class ArcStandardState {
 
   /** The stack value representing the artificial root node. */
   public static final int ROOT = -1;
@@ -60,7 +60,7 @@ public final class ArcStandardState {
    * @param tokenCount The number of tokens in the sentence. Must be greater than zero.
    * @throws IllegalArgumentException Thrown if {@code tokenCount} is not positive.
    */
-  public ArcStandardState(int tokenCount) {
+  ArcStandardState(int tokenCount) {
     if (tokenCount <= 0) {
       throw new IllegalArgumentException("tokenCount must be positive: " + tokenCount);
     }
@@ -100,7 +100,7 @@ public final class ArcStandardState {
    *
    * @return A copy that can be advanced without affecting this state. Never {@code null}.
    */
-  public ArcStandardState copy() {
+  ArcStandardState copy() {
     return new ArcStandardState(this);
   }
 

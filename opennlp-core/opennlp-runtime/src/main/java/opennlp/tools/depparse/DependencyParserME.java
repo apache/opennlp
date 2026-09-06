@@ -126,7 +126,7 @@ public class DependencyParserME implements DependencyParser {
    */
   @Override
   public DependencyGraph parse(String[] tokens, String[] tags) {
-    DependencySample.checkTokensAndTags(tokens, tags);
+    ParserInput.check(tokens, tags);
     final ArcStandardState state = new ArcStandardState(tokens.length);
     while (!state.isTerminal()) {
       state.apply(bestApplicable(state, tokens, tags));
