@@ -24,6 +24,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -79,6 +80,16 @@ public class ArcStandardOracleTest {
     assertEquals(gold, replay(gold));
   }
 
+  /** Checks the projectivity test on a graph with crossed arcs, a chain, and a null. */
+  @Test
+  void testIsProjective() {
+    assertFalse(ArcStandardOracle.isProjective(DependencyGraph.of(new int[] {2, 3, -1, 2},
+        new String[] {"a", "b", "root", "c"})));
+    assertTrue(ArcStandardOracle.isProjective(DependencyGraph.of(new int[] {1, -1, 1},
+        new String[] {"nsubj", "root", "obj"})));
+    assertThrows(IllegalArgumentException.class, () -> ArcStandardOracle.isProjective(null));
+  }
+
   @Test
   void testNonProjectiveThrows() {
     // arcs (2,0) and (3,1) cross, so there is no arc-standard derivation
@@ -122,6 +133,7 @@ public class ArcStandardOracleTest {
       return;
     }
 
+    assertEquals(isProjective(graph), ArcStandardOracle.isProjective(graph), graph.toString());
     if (isProjective(graph)) {
       assertEquals(graph, replay(graph), graph.toString());
     } else {

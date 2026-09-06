@@ -282,12 +282,10 @@ public final class FeedforwardDependencyTrainer {
     final List<DependencySample> trainable = new ArrayList<>();
     final List<int[]> oracles = new ArrayList<>();
     for (final DependencySample s : corpus) {
-      final List<Transition> oracle;
-      try {
-        oracle = ArcStandardOracle.transitions(s.getGraph());
-      } catch (IllegalArgumentException e) {
+      if (!ArcStandardOracle.isProjective(s.getGraph())) {
         continue;
       }
+      final List<Transition> oracle = ArcStandardOracle.transitions(s.getGraph());
       final int[] encoded = new int[oracle.size()];
       for (int i = 0; i < encoded.length; i++) {
         final String outcome = oracle.get(i).encode();
@@ -738,12 +736,10 @@ public final class FeedforwardDependencyTrainer {
     final Map<String, Integer> labelIds = new HashMap<>();
     final Map<String, Integer> transitionIds = new HashMap<>();
     for (final DependencySample s : corpus) {
-      final List<Transition> oracle;
-      try {
-        oracle = ArcStandardOracle.transitions(s.getGraph());
-      } catch (IllegalArgumentException e) {
+      if (!ArcStandardOracle.isProjective(s.getGraph())) {
         continue;
       }
+      final List<Transition> oracle = ArcStandardOracle.transitions(s.getGraph());
       for (final String token : s.getTokens()) {
         wordCounts.merge(FeedforwardDependencyModel.normalize(token), 1, Integer::sum);
       }
@@ -861,13 +857,11 @@ public final class FeedforwardDependencyTrainer {
     }
     int skipped = 0;
     for (final DependencySample sample : corpus) {
-      final List<Transition> oracle;
-      try {
-        oracle = ArcStandardOracle.transitions(sample.getGraph());
-      } catch (IllegalArgumentException e) {
+      if (!ArcStandardOracle.isProjective(sample.getGraph())) {
         skipped++;
         continue;
       }
+      final List<Transition> oracle = ArcStandardOracle.transitions(sample.getGraph());
       final ArcStandardState state = new ArcStandardState(sample.getGraph().size());
       final String[] tokens = sample.getTokens();
       final String[] tags = sample.getTags();

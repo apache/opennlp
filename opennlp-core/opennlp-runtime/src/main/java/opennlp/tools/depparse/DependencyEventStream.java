@@ -84,13 +84,11 @@ class DependencyEventStream implements ObjectStream<Event> {
         }
         return null;
       }
-      final List<Transition> transitions;
-      try {
-        transitions = ArcStandardOracle.transitions(sample.getGraph());
-      } catch (IllegalArgumentException e) {
+      if (!ArcStandardOracle.isProjective(sample.getGraph())) {
         skipped++;
         continue;
       }
+      final List<Transition> transitions = ArcStandardOracle.transitions(sample.getGraph());
       final ArcStandardState state = new ArcStandardState(sample.getGraph().size());
       final String[] tokens = sample.getTokens();
       final String[] tags = sample.getTags();
