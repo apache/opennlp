@@ -420,6 +420,11 @@ public final class HunspellStemmer implements Stemmer {
       variants.add(lowered);
       if (allUpper) {
         variants.add(initialUpper(lowered));
+        if (surface.charAt(0) == 'İ') {
+          // the reference keeps a dotted capital I when it capitalizes an all-uppercase
+          // word, so an entry such as İzmir is found outside the Turkic languages too
+          variants.add("İ" + lowered.substring(Character.charCount(lowered.codePointAt(0))));
+        }
         if (dictionary.checkSharps()) {
           addSharpVariants(lowered, 0, variants);
         }
