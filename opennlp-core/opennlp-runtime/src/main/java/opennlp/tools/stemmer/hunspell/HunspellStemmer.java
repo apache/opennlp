@@ -29,7 +29,6 @@ import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.Affix;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.CompoundPattern;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.CompoundPosition;
-import opennlp.tools.util.StringUtil;
 
 /**
  * A dictionary-backed {@link Stemmer} over a {@link HunspellDictionary}: a surface form
@@ -151,6 +150,11 @@ public final class HunspellStemmer implements Stemmer {
   private final class Results {
     private final boolean morphological;
     private final Set<String> values = new LinkedHashSet<>();
+    /**
+     * Whether a direct or affixed reading reached a forbidden entry, which blocks the
+     * compound and break readings of the same input.
+     */
+    private boolean forbidden;
 
     /**
      * Selects the output representation.
@@ -196,13 +200,14 @@ public final class HunspellStemmer implements Stemmer {
       for (CompoundPart part : parts) {
         final List<String> next = new ArrayList<>();
         for (String fields : dictionary.morphologicalAnalyses(part.root(), part.flags(),
-            part.affixes().toArray(Affix[]::new))) {
+            part == parts.get(parts.size() - 1), part.affixes().toArray(Affix[]::new))) {
           for (String prior : accumulated) {
             if (next.size() >= MAX_ANALYSES) {
               break;
             }
             next.add(new StringBuilder(prior).append(prior.isEmpty() ? "" : " ")
-                .append("pa:").append(part.surface()).append(' ').append(fields).toString());
+                .append("pa:").append(part.surface())
+                .append(fields.isEmpty() ? "" : " ").append(fields).toString());
           }
         }
         accumulated = next;
@@ -258,19 +263,22 @@ public final class HunspellStemmer implements Stemmer {
       return cached;
     }
     final List<int[]> entries = dictionary.lookup(input);
-    if (entries != null && dictionary.anyForbidden(entries)) {
+    if (entries != null && dictionary.firstForbidden(entries)) {
       return List.of();
     }
     final Results analyses = new Results(morphological);
+    final boolean allCaps = HunspellDictionary.caseType(input) == HunspellDictionary.CaseType.ALLCAP;
     for (final String variant : variants(input)) {
-      analyze(variant, new Analysis(input, variant, analyses));
+      analyze(variant, new Analysis(input, variant, analyses, allCaps));
     }
-    if (analyses.isEmpty() && dictionary.compoundsDeclared()) {
+    // a forbidden direct or affixed reading forbids the spelling as a whole, so no
+    // compound or break reading is attempted, as in the reference implementation
+    if (analyses.isEmpty() && !analyses.forbidden && dictionary.compoundsDeclared()) {
       for (final String variant : variants(input)) {
         decompose(variant, input, analyses);
       }
     }
-    if (analyses.isEmpty()) {
+    if (analyses.isEmpty() && !analyses.forbidden) {
       for (String declaration : dictionary.wordBreaks()) {
         if (budget[0] <= 0) {
           break;
@@ -312,8 +320,9 @@ public final class HunspellStemmer implements Stemmer {
 
   /**
    * Collects the case variants to analyze: the surface form first, then its lowercase
-   * form when the two differ. Ordering matters because the first analysis found wins
-   * in {@link #stem(CharSequence)}.
+   * form when the two differ. A capitalized word with a further inner capital, such as a
+   * mixed-case word at the start of a sentence, is also tried with a lowercase initial.
+   * Ordering matters because the first analysis found wins in {@link #stem(CharSequence)}.
    *
    * @param surface The surface form.
    * @return The variants in analysis order. Never {@code null} or empty.
@@ -324,6 +333,8 @@ public final class HunspellStemmer implements Stemmer {
     boolean upper = false;
     boolean lowerAfterFirst = true;
     boolean allUpper = true;
+    boolean firstUpper = false;
+    int uppers = 0;
     int letters = 0;
     for (int i = 0; i < surface.length();) {
       final int point = surface.codePointAt(i);
@@ -334,7 +345,9 @@ public final class HunspellStemmer implements Stemmer {
         if (letters > 0) {
           lowerAfterFirst = false;
         }
+        firstUpper |= letters == 0;
         upper = true;
+        uppers++;
         letters++;
       }
       i += Character.charCount(point);
@@ -348,21 +361,20 @@ public final class HunspellStemmer implements Stemmer {
           addSharpVariants(lowered, 0, variants);
         }
       }
+    } else if (firstUpper && uppers > 1 && !allUpper) {
+      variants.add(dictionary.lowerCaseInitial(surface));
     }
     return List.copyOf(variants);
   }
 
   /**
-   * Converts the initial code point to uppercase.
+   * Converts the initial code point to uppercase with the dictionary's case mapping.
    *
    * @param word The nonempty word.
    * @return The capitalized form.
    */
   private String initialUpper(String word) {
-    final int first = word.codePointAt(0);
-    return new StringBuilder().append(StringUtil.toUpperCase(
-        word.substring(0, Character.charCount(first))))
-        .append(word, Character.charCount(first), word.length()).toString();
+    return dictionary.upperCaseInitial(word);
   }
 
   /**
@@ -392,6 +404,11 @@ public final class HunspellStemmer implements Stemmer {
     private final String surface;
     private final String variant;
     private final Results stems;
+    /**
+     * Whether the input is all uppercase, in which case the reference implementation
+     * also matches the hidden capitalized forms of mixed-case entries.
+     */
+    private final boolean allCaps;
 
     /**
      * Creates an analysis context.
@@ -399,11 +416,23 @@ public final class HunspellStemmer implements Stemmer {
      * @param surface The input after conversion.
      * @param variant The current case variant.
      * @param stems The destination for recognized stems.
+     * @param allCaps Whether the input is all uppercase.
      */
-    private Analysis(String surface, String variant, Results stems) {
+    private Analysis(String surface, String variant, Results stems, boolean allCaps) {
       this.surface = surface;
       this.variant = variant;
       this.stems = stems;
+      this.allCaps = allCaps;
+    }
+
+    /**
+     * Looks up a spelling, including hidden capitalized forms for all-uppercase input.
+     *
+     * @param word The spelling to look up.
+     * @return The flag sets, or {@code null} when absent.
+     */
+    private List<int[]> lookup(String word) {
+      return dictionary.lookup(word, allCaps);
     }
 
     /**
@@ -415,8 +444,21 @@ public final class HunspellStemmer implements Stemmer {
      */
     private void add(String root, int[] flags, Affix... affixes) {
       if (dictionary.acceptsCase(flags, surface, variant, affixes)) {
-        stems.addAll(stems.morphological ? dictionary.morphologicalAnalyses(root, flags, affixes)
+        stems.addAll(stems.morphological
+            ? dictionary.morphologicalAnalyses(root, flags, false, affixes)
             : dictionary.morphologicalStems(root, flags, affixes));
+      }
+    }
+
+    /**
+     * Records that an affix analysis reached a forbidden entry.
+     *
+     * @param flagSets The stem's flag sets.
+     * @param flag The removed affix's flag.
+     */
+    private void noteForbidden(List<int[]> flagSets, int flag) {
+      if (dictionary.forbidsAffixed(flagSets, flag)) {
+        stems.forbidden = true;
       }
     }
   }
@@ -433,9 +475,10 @@ public final class HunspellStemmer implements Stemmer {
    * @param analyses The mutable, insertion-ordered set collecting the stems found.
    */
   private void analyze(String word, Analysis analyses) {
-    final List<int[]> entries = dictionary.lookup(word);
+    final List<int[]> entries = analyses.lookup(word);
     if (entries != null) {
-      if (dictionary.anyForbidden(entries)) {
+      if (dictionary.firstForbidden(entries)) {
+        analyses.stems.forbidden = true;
         return;
       }
       for (int[] flags : entries) {
@@ -472,17 +515,11 @@ public final class HunspellStemmer implements Stemmer {
    */
   private void decompose(String word, String surface, Results analyses) {
     final List<int[]> entries = dictionary.lookup(word);
-    if (entries != null && dictionary.anyForbidden(entries)) {
+    if (entries != null && dictionary.firstForbidden(entries)) {
       return;
     }
-    if (dictionary.rejectsCompoundReplacement(word, this::isNoncompoundForm)) {
+    if (rejectsCompoundText(word)) {
       return;
-    }
-    for (int at = Character.charCount(word.codePointAt(0)); at < word.length();
-        at += Character.charCount(word.codePointAt(at))) {
-      if (isNoncompoundForm(word.substring(0, at) + " " + word.substring(at))) {
-        return;
-      }
     }
     // lowercasing may change the length in exceptional mappings, in which case the
     // offsets no longer align and the variant itself is the only usable case source
@@ -510,6 +547,27 @@ public final class HunspellStemmer implements Stemmer {
     for (HunspellCompoundRule rule : dictionary.compoundRules()) {
       searchRule(word, caseSource, 0, rule, new ArrayList<>(), new ArrayList<>(), analyses, budget);
     }
+  }
+
+  /**
+   * Applies the text-level compound checks the reference implementation runs on the
+   * text every compound level splits: a {@code CHECKCOMPOUNDREP} replacement or a
+   * space inserted at any position must not produce a recognized non-compound form.
+   *
+   * @param text The complete input or the remainder a compound level splits.
+   * @return {@code true} if a check forbids splitting the text.
+   */
+  private boolean rejectsCompoundText(String text) {
+    if (dictionary.rejectsCompoundReplacement(text, this::isNoncompoundForm)) {
+      return true;
+    }
+    for (int at = Character.charCount(text.codePointAt(0)); at < text.length();
+        at += Character.charCount(text.codePointAt(at))) {
+      if (isNoncompoundForm(text.substring(0, at) + " " + text.substring(at))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -586,7 +644,8 @@ public final class HunspellStemmer implements Stemmer {
       offset += Character.charCount(word.codePointAt(offset));
     }
     offsets[count] = word.length();
-    search(word, surface, offsets, 0, new ArrayList<>(), analyses, budget, junctions);
+    search(word, surface, offsets, 0, new ArrayList<>(), analyses, budget, junctions,
+        new byte[count + 1]);
   }
 
   /**
@@ -627,6 +686,10 @@ public final class HunspellStemmer implements Stemmer {
         final String part = word.substring(from, end);
         final String caseSource = surface.substring(from, end);
         for (CompoundPart candidate : ruleParts(part, caseSource, last)) {
+          if (last && dictionary.checkCompoundDup() && !parts.isEmpty()
+              && parts.get(parts.size() - 1).root().equals(candidate.root())) {
+            continue;
+          }
           parts.add(candidate);
           flags.add(candidate.flags());
           if (rule.matches(flags, last)) {
@@ -688,7 +751,7 @@ public final class HunspellStemmer implements Stemmer {
   private void addRulePart(String part, String root, String surface, boolean last,
       List<CompoundPart> result, Affix... affixes) {
     final List<int[]> entries = dictionary.lookup(root);
-    if (entries == null || dictionary.anyForbidden(entries)) {
+    if (entries == null || dictionary.firstForbidden(entries)) {
       return;
     }
     for (int[] entry : entries) {
@@ -718,10 +781,13 @@ public final class HunspellStemmer implements Stemmer {
    * @param analyses The mutable, insertion-ordered set collecting the part stems.
    * @param budget The remaining part-licensing attempts, counted down in place.
    * @param junctions The required boundaries for substitutions.
+   * @param remainderChecks The cached outcome of {@link #rejectsCompoundText(String)}
+   *                        per code point index: {@code 0} unknown, {@code 1} allowed,
+   *                        {@code 2} rejected.
    */
   private void search(String word, String caseSource, int[] codePointOffsets,
       int fromPoint, List<CompoundPart> parts, Results analyses, int[] budget,
-      List<Junction> junctions) {
+      List<Junction> junctions, byte[] remainderChecks) {
     final int from = codePointOffsets[fromPoint];
     Junction current = null;
     for (Junction junction : junctions) {
@@ -739,6 +805,16 @@ public final class HunspellStemmer implements Stemmer {
     final int remaining = codePointOffsets.length - 1 - fromPoint;
     if (remaining < min) {
       return;
+    }
+    // this call splits the remainder into further parts, which the reference
+    // implementation subjects to the same text checks as the complete input
+    if (!first) {
+      if (remainderChecks[fromPoint] == 0) {
+        remainderChecks[fromPoint] = (byte) (rejectsCompoundText(word.substring(from)) ? 2 : 1);
+      }
+      if (remainderChecks[fromPoint] == 2) {
+        return;
+      }
     }
     for (int endPoint = fromPoint + min; endPoint < codePointOffsets.length; endPoint++) {
       if (budget[0] <= 0) {
@@ -761,7 +837,7 @@ public final class HunspellStemmer implements Stemmer {
       for (CompoundPart candidate : partReadings(part, caseSource.substring(from, end),
           position, first, last)) {
         if (!parts.isEmpty() && rejectsJunction(parts.get(parts.size() - 1), candidate,
-            current == null ? null : current.pattern())) {
+            current == null ? null : current.pattern(), last)) {
           continue;
         }
         parts.add(candidate);
@@ -779,7 +855,7 @@ public final class HunspellStemmer implements Stemmer {
           }
         } else {
           search(word, caseSource, codePointOffsets, endPoint, parts, analyses,
-              budget, junctions);
+              budget, junctions, remainderChecks);
         }
         parts.remove(parts.size() - 1);
       }
@@ -787,24 +863,30 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Applies the {@code CHECKCOMPOUNDDUP} declaration: a part must not repeat the
-   * part directly before it.
+   * Applies the junction declarations. {@code CHECKCOMPOUNDDUP} forbids the closing
+   * part from repeating the part before it; the reference implementation compares the
+   * two parts it joins at each level, so an earlier repetition is not checked. A
+   * junction restored from a pattern replacement must satisfy that pattern's flag
+   * conditions and is exempt from the other patterns; any other junction is forbidden
+   * when some pattern matches it.
    *
    * @param left The preceding part.
    * @param right The candidate part.
    * @param allowed The rule allowing this substituted junction, or {@code null}.
-   * @return {@code true} if the declaration forbids this part here.
+   * @param last Whether the candidate closes the compound.
+   * @return {@code true} if a declaration forbids this part here.
    */
-  private boolean rejectsJunction(CompoundPart left, CompoundPart right, CompoundPattern allowed) {
-    if (dictionary.checkCompoundDup() && left.root().equals(right.root())) {
+  private boolean rejectsJunction(CompoundPart left, CompoundPart right, CompoundPattern allowed,
+      boolean last) {
+    if (last && dictionary.checkCompoundDup() && left.root().equals(right.root())) {
       return true;
     }
-    if (allowed != null && !allowed.matches(left.surface(), left.flags(), right.surface(),
-        right.flags(), left.affixes(), right.affixes())) {
-      return true;
+    if (allowed != null) {
+      return !allowed.matches(left.surface(), left.flags(), right.surface(),
+          right.flags(), left.affixes(), right.affixes());
     }
     for (CompoundPattern pattern : dictionary.compoundPatterns()) {
-      if (pattern != allowed && pattern.matches(left.surface(), left.flags(), right.surface(),
+      if (pattern.matches(left.surface(), left.flags(), right.surface(),
           right.flags(), left.affixes(), right.affixes())) {
         return true;
       }
@@ -859,6 +941,11 @@ public final class HunspellStemmer implements Stemmer {
   private List<CompoundPart> partReadings(String part, String surface, CompoundPosition position,
       boolean first, boolean last) {
     final List<CompoundPart> readings = new ArrayList<>();
+    final List<int[]> listed = last ? null : dictionary.lookup(part);
+    if (listed != null && dictionary.forbidsCompoundStart(listed)) {
+      // a listed spelling barred from compounding is barred in its affixed readings too
+      return readings;
+    }
     collectPartReadings(part, surface, position, first, last, readings);
     if (readings.isEmpty() && !part.isEmpty()) {
       final int initial = part.codePointAt(0);
@@ -1001,8 +1088,10 @@ public final class HunspellStemmer implements Stemmer {
       CompoundPosition position, boolean first, boolean last, List<CompoundPart> readings) {
     final boolean suffix = affix.suffix();
     final boolean atEdge = suffix ? last : first;
+    // a compound-only suffix joins parts and never closes a compound on its own
     if (dictionary.circumfixOnly(affix) || dictionary.forbidsInCompound(affix)
-        || (!atEdge && !dictionary.permitsInside(affix))) {
+        || (!atEdge && !dictionary.permitsInside(affix))
+        || (suffix && last && dictionary.compoundOnly(affix))) {
       return;
     }
     final String stem = removeAffixInCompound(part, affix, suffix);
@@ -1173,7 +1262,7 @@ public final class HunspellStemmer implements Stemmer {
     }
     final Results stems = new Results(false);
     for (String variant : variants(word)) {
-      analyze(variant, new Analysis(word, variant, stems));
+      analyze(variant, new Analysis(word, variant, stems, false));
     }
     return !stems.isEmpty();
   }
@@ -1200,8 +1289,8 @@ public final class HunspellStemmer implements Stemmer {
    * the intermediate stem, adding dictionary-confirmed analyses. A rule that applies
    * only inside compounds or requires the matching circumfix member is not undone
    * because no prefix accompanies this path. A rule requiring a further affix produces
-   * no single-removal analysis. An identity rule also produces no single-removal
-   * analysis, but it can complete a two-suffix analysis through continuation classes.
+   * no single-removal analysis. A rule that adds and strips no material is undone like
+   * any other, which recognizes a virtual stem it completes and reports its fields.
    *
    * @param word The case variant under analysis.
    * @param suffix The suffix rule to undo.
@@ -1211,14 +1300,14 @@ public final class HunspellStemmer implements Stemmer {
     if (dictionary.compoundOnly(suffix) || dictionary.circumfixOnly(suffix)) {
       return;
     }
-    final boolean identity = isIdentityRule(suffix);
     final String stem = removeSuffixAllowingIdentity(word, suffix);
     if (stem == null) {
       return;
     }
-    if (!identity && !dictionary.needsFurtherAffix(suffix)) {
-      final List<int[]> flagSets = dictionary.lookup(stem);
+    if (!dictionary.needsFurtherAffix(suffix)) {
+      final List<int[]> flagSets = analyses.lookup(stem);
       if (flagSets != null) {
+        analyses.noteForbidden(flagSets, suffix.flag());
         for (int[] flags : flagSets) {
           if (dictionary.supports(List.of(flags), suffix.flag())) {
             analyses.add(stem, flags, suffix);
@@ -1258,7 +1347,7 @@ public final class HunspellStemmer implements Stemmer {
     if (doubleStem == null) {
       return;
     }
-    final List<int[]> innerFlags = dictionary.lookup(doubleStem);
+    final List<int[]> innerFlags = analyses.lookup(doubleStem);
     if (innerFlags != null) {
       for (int[] flags : innerFlags) {
         if (dictionary.supports(List.of(flags), inner.flag())) {
@@ -1273,8 +1362,8 @@ public final class HunspellStemmer implements Stemmer {
    * intermediate stem, adding dictionary-confirmed analyses. A rule that
    * applies only inside compounds is not undone at all. A rule marked as needing a
    * further affix or the matching circumfix member produces no single-removal analysis.
-   * An identity rule also produces no single-removal analysis. A valid cross-product
-   * suffix can combine with either kind of rule.
+   * A rule that adds and strips no material is undone like any other. A valid
+   * cross-product suffix can combine with either kind of rule.
    *
    * @param word The case variant under analysis.
    * @param prefix The prefix rule to undo.
@@ -1284,15 +1373,14 @@ public final class HunspellStemmer implements Stemmer {
     if (dictionary.compoundOnly(prefix)) {
       return;
     }
-    final boolean identity = isIdentityRule(prefix);
     final String stem = removePrefixAllowingIdentity(word, prefix);
     if (stem == null) {
       return;
     }
-    if (!identity && !dictionary.needsFurtherAffix(prefix)
-        && !dictionary.circumfixOnly(prefix)) {
-      final List<int[]> flagSets = dictionary.lookup(stem);
+    if (!dictionary.needsFurtherAffix(prefix) && !dictionary.circumfixOnly(prefix)) {
+      final List<int[]> flagSets = analyses.lookup(stem);
       if (flagSets != null) {
+        analyses.noteForbidden(flagSets, prefix.flag());
         for (int[] flags : flagSets) {
           if (dictionary.supports(List.of(flags), prefix.flag())) {
             analyses.add(stem, flags, prefix);
@@ -1343,10 +1431,13 @@ public final class HunspellStemmer implements Stemmer {
     }
     // One member can satisfy the other member's needs-further-affix marker. Both rule
     // flags must occur in one homonym's flag set.
-    final List<int[]> both = dictionary.lookup(doubleStem);
+    final List<int[]> both = analyses.lookup(doubleStem);
     if (both != null && !(dictionary.needsFurtherAffix(prefix)
         && dictionary.needsFurtherAffix(suffix))) {
       for (int[] flags : both) {
+        if (dictionary.licensesCrossProduct(flags, prefix, suffix)) {
+          analyses.noteForbidden(List.of(flags), suffix.flag());
+        }
         if (dictionary.supportsCrossProduct(List.of(flags), prefix, suffix)) {
           analyses.add(doubleStem, flags, prefix, suffix);
         }
@@ -1387,7 +1478,7 @@ public final class HunspellStemmer implements Stemmer {
     if (root == null) {
       return;
     }
-    final List<int[]> flagSets = dictionary.lookup(root);
+    final List<int[]> flagSets = analyses.lookup(root);
     if (flagSets != null) {
       for (int[] flags : flagSets) {
         if (dictionary.supportsCrossProduct(List.of(flags), prefix, inner)) {
@@ -1414,7 +1505,7 @@ public final class HunspellStemmer implements Stemmer {
     if (root == null) {
       return;
     }
-    final List<int[]> entries = dictionary.lookup(root);
+    final List<int[]> entries = analyses.lookup(root);
     if (entries != null && !dictionary.circumfixOnly(inner)) {
       for (int[] flags : entries) {
         if (dictionary.supports(List.of(flags), inner.flag())) {
@@ -1449,7 +1540,7 @@ public final class HunspellStemmer implements Stemmer {
     }
     final String root = removeSuffixAllowingIdentity(word, suffix);
     if (root != null) {
-      final List<int[]> entries = dictionary.lookup(root);
+      final List<int[]> entries = analyses.lookup(root);
       if (entries != null) {
         for (int[] flags : entries) {
           if (dictionary.supportsCrossProduct(List.of(flags), inner, suffix)) {
@@ -1465,10 +1556,11 @@ public final class HunspellStemmer implements Stemmer {
    * the strip string the rule removed on application, and checks the rule's condition
    * against the restored stem. A strip-only rule, whose affix material is empty, is
    * undone by restoring its strip string alone. Rules that neither add nor remove
-   * material and candidates that would leave an empty stem are rejected. A word the
-   * affix material covers entirely reverses a full-strip application, which hunspell
-   * only performs when the affix file declares {@code FULLSTRIP}; without that
-   * declaration the rule does not apply.
+   * material are handled by {@link #removeSuffixAllowingIdentity(String, Affix)}, and
+   * candidates that would leave an empty stem are rejected. A word the affix material
+   * covers entirely reverses a full-strip application, which hunspell only performs
+   * when the affix file declares {@code FULLSTRIP}; without that declaration the rule
+   * does not apply.
    *
    * @param word The surface form.
    * @param suffix The rule to undo.
@@ -1531,7 +1623,8 @@ public final class HunspellStemmer implements Stemmer {
    * restores the strip string the rule removed on application, and checks the rule's
    * condition against the restored stem. A strip-only rule, whose affix material is
    * empty, is undone by restoring its strip string alone. Rules that neither add nor
-   * remove material and candidates that would leave an empty stem are rejected. A
+   * remove material are handled by {@link #removePrefixAllowingIdentity(String, Affix)},
+   * and candidates that would leave an empty stem are rejected. A
    * word the affix material covers entirely reverses a full-strip application, which
    * hunspell only performs when the affix file declares {@code FULLSTRIP}; without
    * that declaration the rule does not apply.

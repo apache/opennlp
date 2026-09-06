@@ -139,10 +139,18 @@ public final class HunspellDictionary {
    * @param condition The condition the stem must satisfy for the rule to apply.
    * @param continuation The flags of the further affixes that may stack on this one.
    * @param suffix Whether the rule adds a suffix.
-   * @param morphology The expanded morphological fields.
+   * @param morphology The expanded morphological fields, empty when the rule declares none.
+   * @param flagText The flag as written in the rule, reported as the {@code fl:} field of
+   *                 a rule without morphological fields.
    */
   record Affix(int flag, boolean crossProduct, String strip, String affix,
-      AffixCondition condition, int[] continuation, boolean suffix, List<String> morphology) {
+      AffixCondition condition, int[] continuation, boolean suffix, List<String> morphology,
+      String flagText) {
+
+    /** {@return the morphological fields, or the {@code fl:} flag field when none are declared} */
+    List<String> analysisFields() {
+      return morphology.isEmpty() ? List.of(FLAG_FIELD + flagText) : morphology;
+    }
 
     /**
      * Checks whether a further affix may stack on this one.
@@ -204,6 +212,7 @@ public final class HunspellDictionary {
   private static final String STEM_FIELD = "st:";
   private static final String SURFACE_PREFIX_FIELD = "sp:";
   private static final String DERIVATIONAL_SUFFIX_FIELD = "ds:";
+  private static final String FLAG_FIELD = "fl:";
 
   private static final List<String> DEFAULT_WORD_BREAKS = List.of("-", "^-", "-$");
 
@@ -234,6 +243,12 @@ public final class HunspellDictionary {
   private static final int MAX_COMPOUND_MIN = Integer.MAX_VALUE / 2;
 
   private final Map<String, List<int[]>> entries;
+  /**
+   * The capitalized forms of mixed-case and flagged all-uppercase entries, which the
+   * reference implementation adds as hidden homonyms so that all-uppercase input
+   * matches them. Keyed like {@link #entries}, sharing the entry flag arrays.
+   */
+  private final Map<String, List<int[]>> hiddenEntries;
   private final BoundaryIndex suffixesByLast;
   private final List<Affix> suffixesWithoutMaterial;
   private final BoundaryIndex prefixesByFirst;
@@ -331,6 +346,7 @@ public final class HunspellDictionary {
     this.hungarian = affix.language.equals("hu") || affix.language.startsWith("hu_");
     this.syllableNumber = affix.syllableNumber;
     this.entries = entries;
+    this.hiddenEntries = hiddenCapitalizedEntries(entries);
     this.unsupportedDirectives = List.copyOf(unsupportedDirectives);
     // A material-bearing rule can only be undone from a word whose boundary
     // character matches its affix material, so bucketing by that character
@@ -579,7 +595,7 @@ public final class HunspellDictionary {
           final String directive = new String(bytes, fieldStart,
               fieldEnd - fieldStart, StandardCharsets.US_ASCII);
           if (isParsedAffixDirective(directive) && (!REPLACEMENT_TAG.equals(directive) || useReplacements)) {
-            maskInlineComment(bytes, fieldEnd, i);
+            maskInlineComment(bytes, fieldStart, i, directive);
             parsed = true;
           } else if (!isIgnoredAffixDirective(directive)) {
             if (mode == LoadMode.STRICT) {
@@ -660,24 +676,76 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Replaces an inline comment after an affix field separator with spaces.
+   * Replaces a trailing comment with spaces. A number sign starts a comment only in a
+   * field the directive does not consume, because the format allows {@code #} as a
+   * flag, a separator, affix material, and conversion text. The reference
+   * implementation ignores the fields after the ones it reads.
    *
    * @param bytes The mutable file content.
-   * @param from The first byte of the line.
+   * @param from The first byte of the directive.
    * @param to The exclusive end of the line.
+   * @param directive The directive name.
    */
-  private static void maskInlineComment(byte[] bytes, int from, int to) {
-    boolean fieldStart = false;
-    for (int i = from; i < to; i++) {
-      if (isAsciiFieldSpace(bytes[i])) {
-        fieldStart = true;
-      } else if (fieldStart && bytes[i] == '#') {
-        Arrays.fill(bytes, i, to, (byte) ' ');
-        return;
-      } else {
-        fieldStart = false;
+  private static void maskInlineComment(byte[] bytes, int from, int to, String directive) {
+    final List<int[]> fields = new ArrayList<>();
+    for (int i = from; i < to;) {
+      while (i < to && isAsciiFieldSpace(bytes[i])) {
+        i++;
+      }
+      final int start = i;
+      while (i < to && !isAsciiFieldSpace(bytes[i])) {
+        i++;
+      }
+      if (i > start) {
+        fields.add(new int[] {start, i});
       }
     }
+    final int firstComment = firstCommentField(bytes, fields, directive);
+    for (int index = firstComment; index < fields.size(); index++) {
+      if (bytes[fields.get(index)[0]] == '#') {
+        Arrays.fill(bytes, fields.get(index)[0], to, (byte) ' ');
+        return;
+      }
+    }
+  }
+
+  /**
+   * Finds the first field index a trailing comment may occupy.
+   *
+   * @param bytes The file content.
+   * @param fields The field boundaries of the line.
+   * @param directive The directive name.
+   * @return The index after the fields the directive consumes.
+   */
+  private static int firstCommentField(byte[] bytes, List<int[]> fields, String directive) {
+    return switch (directive) {
+      case PREFIX_TAG, SUFFIX_TAG -> isAffixHeader(bytes, fields) ? 4 : 5;
+      case REPLACEMENT_TAG, INPUT_CONVERSION_TAG, OUTPUT_CONVERSION_TAG,
+          COMPOUND_PATTERN_TAG, MORPHOLOGY_ALIAS_TAG -> Integer.MAX_VALUE;
+      case COMPOUND_SYLLABLE_TAG -> 3;
+      default -> 2;
+    };
+  }
+
+  /**
+   * Distinguishes an affix block header, which carries a cross-product marker and a
+   * rule count, from a rule line.
+   *
+   * @param bytes The file content.
+   * @param fields The field boundaries of the line.
+   * @return Whether the line is a block header.
+   */
+  private static boolean isAffixHeader(byte[] bytes, List<int[]> fields) {
+    if (fields.size() < 4 || fields.get(2)[1] - fields.get(2)[0] != 1
+        || (bytes[fields.get(2)[0]] != 'Y' && bytes[fields.get(2)[0]] != 'N')) {
+      return false;
+    }
+    for (int i = fields.get(3)[0]; i < fields.get(3)[1]; i++) {
+      if (bytes[i] < '0' || bytes[i] > '9') {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -980,21 +1048,139 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Looks up a word's flag sets.
+   * Looks up a word's flag sets among the listed entries.
    *
    * @param word The word exactly as listed.
    * @return The flag sets of all matching entries, or {@code null} when absent.
    */
   List<int[]> lookup(String word) {
+    return lookup(word, false);
+  }
+
+  /**
+   * Looks up a word's flag sets, optionally including the hidden capitalized forms
+   * that all-uppercase input may match.
+   *
+   * @param word The word exactly as listed or in hidden capitalized form.
+   * @param includeHidden Whether hidden capitalized forms count, which the reference
+   *                      implementation allows for all-uppercase input outside compounds.
+   * @return The flag sets of all matching entries, or {@code null} when absent.
+   */
+  List<int[]> lookup(String word, boolean includeHidden) {
     final List<int[]> found = entries.get(word);
-    if (found == null) {
+    final List<int[]> hidden = includeHidden ? hiddenEntries.get(word) : null;
+    if (found == null && hidden == null) {
       return null;
     }
-    final List<int[]> copy = new ArrayList<>(found.size());
-    for (final int[] flags : found) {
-      copy.add(flags.clone());
-    }
+    final List<int[]> copy = new ArrayList<>();
+    copyFlags(found, copy);
+    copyFlags(hidden, copy);
     return copy;
+  }
+
+  /**
+   * Appends defensive copies of flag sets.
+   *
+   * @param source The flag sets to copy, or {@code null}.
+   * @param target The destination.
+   */
+  private static void copyFlags(List<int[]> source, List<int[]> target) {
+    if (source != null) {
+      for (final int[] flags : source) {
+        target.add(flags.clone());
+      }
+    }
+  }
+
+  /**
+   * The capitalization classes of the reference implementation.
+   */
+  enum CaseType {
+    /** No uppercase letter. */
+    NOCAP,
+    /** Exactly one uppercase letter, at the start. */
+    INITCAP,
+    /** Every letter uppercase. */
+    ALLCAP,
+    /** An uppercase start and a further uppercase letter among lowercase ones. */
+    HUHINITCAP,
+    /** Uppercase letters after a lowercase start or among lowercase ones. */
+    HUHCAP
+  }
+
+  /**
+   * Classifies a word's capitalization as the reference implementation does, judging
+   * the initial by the first character.
+   *
+   * @param word The word to classify.
+   * @return The capitalization class.
+   */
+  static CaseType caseType(String word) {
+    int letters = 0;
+    int uppers = 0;
+    boolean firstUpper = false;
+    for (int i = 0; i < word.length();) {
+      final int point = word.codePointAt(i);
+      if (Character.isLowerCase(point)) {
+        letters++;
+      } else if (Character.isUpperCase(point) || Character.isTitleCase(point)) {
+        firstUpper |= i == 0;
+        uppers++;
+        letters++;
+      }
+      i += Character.charCount(point);
+    }
+    if (uppers == 0) {
+      return CaseType.NOCAP;
+    }
+    if (uppers == 1 && firstUpper) {
+      return CaseType.INITCAP;
+    }
+    if (uppers == letters) {
+      return CaseType.ALLCAP;
+    }
+    return firstUpper ? CaseType.HUHINITCAP : CaseType.HUHCAP;
+  }
+
+  /**
+   * Derives the hidden capitalized forms the reference implementation adds for
+   * mixed-case entries and for all-uppercase entries carrying flags, so that
+   * all-uppercase input such as {@code IPOD} or {@code UNICEF'S} matches them. A form
+   * that is itself listed is not added, and forbidden entries contribute none.
+   *
+   * @param listed The words mapped to the flag sets of their entries.
+   * @return The capitalized forms mapped to the flag sets they share with their entries.
+   */
+  private Map<String, List<int[]>> hiddenCapitalizedEntries(Map<String, List<int[]>> listed) {
+    final Map<String, List<int[]>> hidden = new HashMap<>();
+    for (final Map.Entry<String, List<int[]>> entry : listed.entrySet()) {
+      final CaseType type = caseType(entry.getKey());
+      if (type != CaseType.HUHCAP && type != CaseType.HUHINITCAP && type != CaseType.ALLCAP) {
+        continue;
+      }
+      final String capitalized = upperCaseInitial(lowerCase(entry.getKey()));
+      if (listed.containsKey(capitalized)) {
+        continue;
+      }
+      for (final int[] flags : entry.getValue()) {
+        if ((type == CaseType.ALLCAP && flags.length == 0) || contains(flags, forbiddenWord)) {
+          continue;
+        }
+        hidden.computeIfAbsent(capitalized, key -> new ArrayList<>(1)).add(flags);
+      }
+    }
+    return hidden;
+  }
+
+  /**
+   * The flag sets of a root's entries, listed or hidden capitalized.
+   *
+   * @param root The entry spelling a reading selected.
+   * @return The flag sets in list order. Never {@code null}.
+   */
+  private List<int[]> homonyms(String root) {
+    final List<int[]> found = entries.get(root);
+    return found != null ? found : hiddenEntries.getOrDefault(root, List.of());
   }
 
   /**
@@ -1377,7 +1563,7 @@ public final class HunspellDictionary {
    */
   List<String> morphologicalStems(String root, int[] flags, Affix... affixes) {
     final List<String> stems = new ArrayList<>();
-    for (int[] entryFlags : entries.get(root)) {
+    for (int[] entryFlags : homonyms(root)) {
       if (Arrays.equals(entryFlags, flags)) {
         stems.add(morphologicalStem(root, morphology.getOrDefault(entryFlags, List.of()), affixes));
       }
@@ -1386,33 +1572,61 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Returns morphological fields for matching dictionary entries and applied rules.
+   * Returns morphological fields for matching dictionary entries and applied rules, in
+   * the reference implementation's field order. A prefix without morphological fields
+   * contributes its affix text when no suffix follows and its {@code fl:} flag field
+   * otherwise; after the entry fields, an entry without fields contributes that prefix's
+   * {@code fl:} field. A bare closing compound part without entry fields contributes
+   * no stem field.
    *
    * @param root The dictionary entry text.
    * @param flags The selected homonym flags.
+   * @param compoundEnd Whether the reading closes a compound.
    * @param affixes The applied rules in order.
-   * @return The complete field strings.
+   * @return The complete field strings, possibly empty strings.
    */
-  List<String> morphologicalAnalyses(String root, int[] flags, Affix... affixes) {
+  List<String> morphologicalAnalyses(String root, int[] flags, boolean compoundEnd,
+      Affix... affixes) {
     final List<String> result = new ArrayList<>();
-    for (int[] entryFlags : entries.get(root)) {
+    boolean hasSuffix = false;
+    Affix prefixOnly = null;
+    for (Affix affix : affixes) {
+      hasSuffix |= affix.suffix();
+    }
+    for (int[] entryFlags : homonyms(root)) {
       if (!Arrays.equals(entryFlags, flags)) {
         continue;
       }
       final List<String> fields = new ArrayList<>();
       for (int i = affixes.length - 1; i >= 0; i--) {
-        if (!affixes[i].suffix()) {
-          fields.addAll(affixes[i].morphology());
+        final Affix prefix = affixes[i];
+        if (prefix.suffix()) {
+          continue;
+        }
+        if (hasSuffix || !prefix.morphology().isEmpty()) {
+          fields.addAll(prefix.analysisFields());
+        } else {
+          fields.add(prefix.affix());
+        }
+        if (!hasSuffix) {
+          prefixOnly = prefix;
         }
       }
       final List<String> entry = morphology.getOrDefault(entryFlags, List.of());
+      if (compoundEnd && affixes.length == 0 && entry.isEmpty()) {
+        result.add("");
+        continue;
+      }
       if (!hasField(entry, STEM_FIELD)) {
         fields.add(STEM_FIELD + root);
       }
       fields.addAll(entry);
+      if (entry.isEmpty() && prefixOnly != null) {
+        fields.add(FLAG_FIELD + prefixOnly.flagText());
+      }
       for (Affix affix : affixes) {
         if (affix.suffix()) {
-          fields.addAll(affix.morphology());
+          fields.addAll(affix.analysisFields());
         }
       }
       result.add(String.join(" ", fields));
@@ -1433,14 +1647,17 @@ public final class HunspellDictionary {
     if (hasField(fields, DERIVATIONAL_SUFFIX_FIELD)) {
       result = root;
     }
+    // A derivational suffix makes the derived form the stem. The reference
+    // implementation generates that form from the entry and its suffixes alone; prefix
+    // material appears in the stem only through a surface prefix field.
     String derived = root;
     final StringBuilder surfacePrefix = new StringBuilder(fieldValue(fields, SURFACE_PREFIX_FIELD, ""));
     for (Affix affix : affixes) {
-      derived = affix.suffix()
-          ? derived.substring(0, derived.length() - affix.strip().length()) + affix.affix()
-          : affix.affix() + derived.substring(affix.strip().length());
-      if (hasField(affix.morphology(), DERIVATIONAL_SUFFIX_FIELD)) {
-        result = derived;
+      if (affix.suffix()) {
+        derived = derived.substring(0, derived.length() - affix.strip().length()) + affix.affix();
+        if (hasField(affix.morphology(), DERIVATIONAL_SUFFIX_FIELD)) {
+          result = derived;
+        }
       }
       surfacePrefix.append(fieldValue(affix.morphology(), SURFACE_PREFIX_FIELD, ""));
     }
@@ -1618,14 +1835,71 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Checks whether any of a word's flag sets is forbidden, which a dictionary uses
-   * to block one specific ill-formed compound while its parts stay productive.
+   * Checks whether a spelling is forbidden as a whole. Only the first listed homonym
+   * decides, as in the reference implementation, so a dictionary can list a valid word
+   * first and a forbidden compound-only homonym after it.
    *
-   * @param flagSets The word's flag sets from {@link #lookup(String)}.
-   * @return {@code true} if some homonym carries the forbidden-word flag.
+   * @param flagSets The word's flag sets from {@link #lookup(String)}, in list order.
+   * @return {@code true} if the first homonym carries the forbidden-word flag.
    */
-  boolean anyForbidden(List<int[]> flagSets) {
-    return hasFlag(flagSets, forbiddenWord);
+  boolean firstForbidden(List<int[]> flagSets) {
+    return !flagSets.isEmpty() && contains(flagSets.get(0), forbiddenWord);
+  }
+
+  /**
+   * Checks whether an affix analysis reaches a forbidden entry, which forbids the
+   * affixed spelling and thereby its compound and break readings.
+   *
+   * @param flagSets The stem's flag sets from {@link #lookup(String)}.
+   * @param flag The removed affix's flag.
+   * @return {@code true} if a homonym carries both the affix flag and the forbidden flag.
+   */
+  boolean forbidsAffixed(List<int[]> flagSets, int flag) {
+    for (final int[] flags : flagSets) {
+      if (contains(flags, flag) && contains(flags, forbiddenWord)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether a spelling may not open a compound part sequence: its first listed
+   * homonym carries {@code COMPOUNDFORBIDFLAG}, which the reference implementation
+   * applies to every part but the last, overriding affixed readings of the same
+   * spelling.
+   *
+   * @param flagSets The part's flag sets from {@link #lookup(String)}, in list order.
+   * @return {@code true} if the spelling is barred from non-final compound positions.
+   */
+  boolean forbidsCompoundStart(List<int[]> flagSets) {
+    return !flagSets.isEmpty() && contains(flagSets.get(0), compoundForbid);
+  }
+
+  /**
+   * Converts the initial code point to uppercase with the dictionary's case mapping.
+   *
+   * @param word The nonempty word.
+   * @return The word with an uppercase initial.
+   */
+  String upperCaseInitial(String word) {
+    final int first = word.codePointAt(0);
+    final String initial = word.substring(0, Character.charCount(first));
+    final String upper = turkicCase && first == 'i' ? "İ"
+        : turkicCase && first == 'ı' ? "I" : StringUtil.toUpperCase(initial);
+    return upper + word.substring(initial.length());
+  }
+
+  /**
+   * Converts the initial code point to lowercase with the dictionary's case mapping.
+   *
+   * @param word The nonempty word.
+   * @return The word with a lowercase initial.
+   */
+  String lowerCaseInitial(String word) {
+    final int first = word.codePointAt(0);
+    final String initial = word.substring(0, Character.charCount(first));
+    return lowerCase(initial) + word.substring(initial.length());
   }
 
   /**
@@ -1810,7 +2084,8 @@ public final class HunspellDictionary {
     for (final String line : splitLines(ascii)) {
       final String trimmed = trim(line);
       if (trimmed.startsWith(SET_PREFIX) || trimmed.startsWith(SET_TAB_PREFIX)) {
-        final String name = trim(trimmed.substring(SET_PREFIX.length()));
+        // the encoding is the first field after the directive; later fields are ignored
+        final String name = split(trimmed.substring(SET_PREFIX.length()))[0];
         try {
           return Charset.forName(name);
         } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
@@ -2226,7 +2501,7 @@ public final class HunspellDictionary {
           result.morphologyAliases, line + 1);
       final Affix affix = new Affix(flag, crossProduct, strip, affixText,
           AffixCondition.parse(hasCondition ? fields[4] : ".", suffix, line + 1), continuation, suffix,
-          morphology.isEmpty() ? List.of("fl:" + fields[1]) : morphology);
+          morphology, fields[1]);
       if (suffix) {
         result.suffixes.add(affix);
       } else {

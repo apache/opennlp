@@ -24,12 +24,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.LoadMode;
@@ -126,6 +129,57 @@ class HunspellDictionaryLoadTest {
         stream(setting + "\n" + RULES), stream(WORDS));
     Assertions.assertEquals("dog", new HunspellStemmer(dictionary).stem("dogs").toString());
     Assertions.assertTrue(dictionary.getUnsupportedDirectives().isEmpty());
+  }
+
+  /**
+   * Keeps a number sign that is a directive value, which the reference format allows
+   * for flags, separators, and affix material.
+   *
+   * @param affix Affix content in which {@code #} is a value.
+   * @param input The stemmed word.
+   * @param expected The stem.
+   * @throws IOException If loading fails.
+   */
+  @ParameterizedTest
+  @MethodSource("numberSignValues")
+  void testNumberSignValuesAreKept(String affix, String words, String input, String expected)
+      throws IOException {
+    final HunspellDictionary dictionary = HunspellDictionary.load(stream(affix), stream(words));
+    Assertions.assertEquals(expected, new HunspellStemmer(dictionary).stem(input).toString());
+  }
+
+  /**
+   * Directive values consisting of a number sign.
+   *
+   * @return Affix content, word list, input, and expected stem.
+   */
+  private static Stream<Arguments> numberSignValues() {
+    return Stream.of(
+        Arguments.of("BREAK 1\nBREAK #\n" + RULES, WORDS, "dogs#dogs", "dog"),
+        Arguments.of("NEEDAFFIX #\n" + RULES, "1\ndog/#A\n", "dogs", "dog"),
+        Arguments.of("FLAG long\nAF 1\nAF #A\nSFX #A Y 1\nSFX #A 0 s .\n", "1\ndog/1\n", "dogs", "dog"),
+        Arguments.of("SFX A Y 1\nSFX A 0 # .\n", WORDS, "dog#", "dog"),
+        Arguments.of("SFX A Y 1\nSFX A # s [#]\n", "1\ndog#/A\n", "dogs", "dog#"));
+  }
+
+  /**
+   * Ignores trailing comments after the fields a directive consumes, as the reference
+   * implementation ignores those fields.
+   *
+   * @param affix Affix content with a trailing comment.
+   * @throws IOException If loading fails.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "COMPOUNDMIN 3 # comment\nSFX A Y 1 # comment\nSFX A 0 s . # comment",
+      "NEEDAFFIX X # comment\nSFX A Y 1\nSFX A 0 s .",
+      "SET UTF-8 # comment\nFLAG UTF-8 # comment\nSFX A Y 1\nSFX A 0 s .",
+      "AF 1\nAF A # comment\nSFX A Y 1\nSFX A 0 s ."
+  })
+  void testTrailingCommentsAreIgnored(String affix) throws IOException {
+    final String words = affix.startsWith("AF") ? "1\ndog/1\n" : WORDS;
+    final HunspellDictionary dictionary = HunspellDictionary.load(stream(affix), stream(words));
+    Assertions.assertEquals("dog", new HunspellStemmer(dictionary).stem("dogs").toString());
   }
 
   /**

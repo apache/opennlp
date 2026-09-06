@@ -128,8 +128,12 @@ for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupported
 			checks, simplified junctions, and recursive <code>BREAK</code> separators
 			return recognized part stems in order, without duplicates.
 			Morphological <code>st:</code> fields supply explicit stems,
-			<code>ds:</code> suffixes remain in stems, and <code>sp:</code> fields
-			prepend surface material. <code>AM</code> expands morphology aliases.
+			<code>ds:</code> suffixes make the derived form the stem, and <code>sp:</code>
+			fields prepend surface material. <code>AM</code> expands morphology aliases.
+			Rules that add and strip no material are undone like any other rule. The
+			first listed homonym decides whether a spelling is forbidden, and a
+			forbidden direct or affixed reading also blocks compound and
+			<code>BREAK</code> readings.
 			<code>SYLLABLENUM</code> applies Hungarian compound syllable adjustments.
 			The deprecated <code>LEMMA_PRESENT</code> directive is accepted without
 			changing results, consistent with the pinned native reference.
@@ -137,10 +141,13 @@ for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupported
 		<para>
 			<code>HunspellStemmer.analyze</code> returns an immutable list of distinct
 			morphological analyses. Each analysis contains space-separated fields
-			from the dictionary entry and applied affixes. A missing <code>st:</code>
-			field defaults to the entry text. An affix without morphological fields
-			contributes <code>fl:</code> followed by the flag. Compound components
-			begin with <code>pa:</code>. Analysis preserves field text without
+			from the dictionary entry and applied affixes, in the field order of the
+			native reference. A missing <code>st:</code> field defaults to the entry
+			text. A suffix without morphological fields contributes <code>fl:</code>
+			followed by the flag after the entry fields; a prefix without them
+			contributes its affix text before the stem, such as
+			<code>un st:done fl:U</code>. Compound components begin with
+			<code>pa:</code>. Analysis preserves field text without
 			<code>OCONV</code> output conversion. Unknown input returns an empty list:
 			<programlisting language="java"><![CDATA[
 HunspellStemmer analyzer = new HunspellStemmer(dictionary);
@@ -156,12 +163,7 @@ analyzer.analyze("table");   // []]]>
 			compound-only restrictions before returning stems or analyses. A compound
 			can have OpenNLP component results but no native stem or analysis.
 			The tests check native recognition separately from native stem and field
-			output, with explicit expectations for such differences.
-			For prefix-only rules without morphology, OpenNLP returns a tagged prefix
-			flag before the stem, such as <code>fl:U st:done</code>. Native Hunspell can
-			return untagged prefix text and place the flag after the stem:
-			<code>un st:done fl:U</code>. The compatibility evaluation reports this
-			formatting difference separately from exact matches. See
+			output, with explicit expectations for such differences. See
 			<xref linkend="opennlp.evaltest.hunspell"/> for evaluation commands.
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
