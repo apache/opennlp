@@ -150,7 +150,7 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 			The module includes two build-once, read-many implementations of
 			<code>VectorIndex</code>. <code>FlatFloatIndex</code> keeps full-precision vectors and
 			scans each row for exact cosine scores. <code>TurboQuantIndex</code> scans packed 2-bit,
-			3-bit, or 4-bit rows, using less memory at the cost of recall. Both are for bounded
+			3-bit, or 4-bit vectors. Quantization introduces approximation error. Both are for bounded
 			collections in one JVM, such as the passages of one document. They are not graph indexes
 			or distributed search engines.
 		</para>
@@ -163,7 +163,7 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 		<programlisting language="java">
 			<![CDATA[
 StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
-VectorIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
+TurboQuantIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
 
 index.add("wonderland-excerpt", model.embed("Alice met the Queen in the garden."));
 index.add("orchard-notes", model.embed("A ripe apple hangs from the tree."));
@@ -172,14 +172,31 @@ index.freeze();
 List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);]]>
 		</programlisting>
 		<para>
-			<code>VectorIndexUsageExampleTest</code> asserts this lifecycle. Use
-			<code>FlatFloatIndex</code> in the same listing when exact float scoring matters more
-			than storage. A zero query returns no results, and an indexed zero vector scores zero.
-			A frozen, non-empty index of either type can be saved with
-			<code>write(Path)</code> and reopened with that class's <code>read(Path)</code>; the loaded
-			index is already frozen. A SHA-256 manifest detects changed or mismatched vector and id
-			files. The interface has no delete or update operation. Rebuild a new index when the
-			bounded collection changes.
+			<code>VectorIndexUsageExampleTest</code> tests this listing. Choose
+			<code>FlatFloatIndex</code> for unquantized cosine scoring. A zero query returns no
+			results, and an indexed zero vector scores zero. A frozen, non-empty index can be
+			saved and reopened for queries. Saving replaces the index files in the selected directory:
+		</para>
+		<programlisting language="java"><![CDATA[Path indexDirectory = Path.of("/path/to/index-directory");
+index.write(indexDirectory);
+
+TurboQuantIndex loaded = TurboQuantIndex.read(indexDirectory);
+List<VectorIndex.Hit> savedHits = loaded.topK(model.embed("queen"), 5);
+double encodedBytesPerVector = loaded.bytesPerVector();]]></programlisting>
+		<para>
+			<code>FlatFloatIndex</code> also provides <code>write(Path)</code> and
+			<code>read(Path)</code>. The loaded index is frozen. A SHA-256 manifest detects changed
+			or mismatched vector and id files. Malformed or truncated index content causes
+			<code>InvalidFormatException</code>. The interface has no delete or update operation.
+			Rebuild an index when the collection changes.
+		</para>
+		<para>
+			<code>TurboQuantIndex.bytesPerVector()</code> reports packed coordinate storage,
+			including dimension padding, an 8-byte scale and an 8-byte norm. A 300-dimensional
+			vector at 4 bits uses 512 padded coordinates: 256 bytes of codes plus 16 bytes of
+			metadata, or 272 bytes per vector. Ids, shared headers, the quantization grid, checksum
+			files and Java object overhead are excluded. Padding and metadata can exceed the
+			coordinate savings for small vectors.
 		</para>
 	</section>
 

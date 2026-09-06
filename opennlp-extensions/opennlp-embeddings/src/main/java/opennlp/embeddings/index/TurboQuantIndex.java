@@ -16,6 +16,7 @@
  */
 package opennlp.embeddings.index;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -28,8 +29,9 @@ import opennlp.tools.util.java.Experimental;
  * A quantized index backed by {@link QuantizedEmbeddingMatrix}. Freezing normalizes and encodes
  * the indexed vectors with a seeded rotation, per-coordinate grid codes, and a fitted scale per
  * row. A query is normalized and rotated once, then compared with each packed row without
- * decoding the matrix to original space. Compared with {@link FlatFloatIndex}, it uses fewer
- * bytes per row at the cost of some recall.
+ * decoding the matrix to original space. Quantization introduces approximation error.
+ * Storage depends on bit width, dimension padding, and scale and norm metadata; see
+ * {@link #bytesPerVector()}.
  *
  * <p>Follows the {@link VectorIndex} lifecycle: single-threaded build, then
  * {@link #freeze()}, then concurrent queries. A frozen, non-empty index persists as a
@@ -188,8 +190,8 @@ public final class TurboQuantIndex implements VectorIndex {
   }
 
   /**
-   * {@return the storage cost of one indexed vector: the packed codes over the padded
-   * dimension plus the per-row scale and norm floats}
+   * {@return the encoded-vector storage in bytes} Includes dimension padding,
+   * an 8-byte scale and an 8-byte norm. Excludes ids, shared metadata and Java object overhead.
    *
    * @throws IllegalStateException Thrown if the index is not frozen or is empty.
    */
@@ -200,7 +202,8 @@ public final class TurboQuantIndex implements VectorIndex {
     if (matrix == null) {
       throw new IllegalStateException("An empty index stores no vectors");
     }
-    return (matrix.paddedDimension() * bits + Byte.SIZE - 1) / Byte.SIZE + 2 * Float.BYTES;
+    return ((long) matrix.paddedDimension() * bits + Byte.SIZE - 1) / Byte.SIZE
+        + 2 * Double.BYTES;
   }
 
   /**
@@ -234,8 +237,8 @@ public final class TurboQuantIndex implements VectorIndex {
    * @return The loaded index.
    * @throws IllegalArgumentException Thrown if {@code directory} is {@code null}, is not a
    *     directory, or lacks one of the three files.
-   * @throws InvalidFormatException Thrown if a file is malformed, an id repeats or is blank,
-   *     or the id count and the matrix's row count disagree.
+   * @throws InvalidFormatException Thrown if a file is malformed or truncated,
+   *     an id repeats or is blank, or the id count does not match the vector count.
    * @throws IOException Thrown if reading fails.
    */
   public static TurboQuantIndex read(Path directory) throws IOException {
@@ -245,7 +248,12 @@ public final class TurboQuantIndex implements VectorIndex {
     final Path vectorsFile = directory.resolve(VECTORS_FILE);
     final Path idsFile = directory.resolve(IDS_FILE);
     final List<String> ids = IndexFiles.readIds(directory, VECTORS_FILE, IDS_FILE);
-    final QuantizedEmbeddingMatrix matrix = QuantizedEmbeddingMatrix.read(vectorsFile);
+    final QuantizedEmbeddingMatrix matrix;
+    try {
+      matrix = QuantizedEmbeddingMatrix.read(vectorsFile);
+    } catch (EOFException e) {
+      throw new InvalidFormatException(vectorsFile + " is truncated", e);
+    }
     if (matrix.rowCount() != ids.size()) {
       throw new InvalidFormatException(idsFile + " contains " + ids.size() + " ids but "
           + vectorsFile + " contains " + matrix.rowCount()
