@@ -158,6 +158,7 @@ class HunspellCompletionTest {
         // deviations listed in the manual: Unicode case mapping, the suggester-based
         // rejection of multi-part compounds, and numeric tokens
         new Example("dotted-capital-i", "", "1\nimply\n", "İmply", List.of("imply"), false),
+        new Example("dotted-capital-i-all-caps", "", "1\nİzmir\n", "İZMİR", List.of("İzmir"), true),
         // KEEPCASE with CHECKSHARPS admits the SS spelling of an all-uppercase form only
         new Example("keepcase-sharp-s-double-s", "CHECKSHARPS\nKEEPCASE k\n", "1\nmüßig/k\n",
             "MÜSSIG", List.of("müßig"), true),
