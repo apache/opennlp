@@ -185,6 +185,14 @@ For a multilingual SentencePiece table (for example one distilled from a bge-m3 
 - Static tables do not disambiguate word senses in context. If the task turns on context, use a contextual model.
 - Input with no known pieces embeds to a zero vector. Decide whether that represents "no signal" for the application.
 
+## Testing distillation
+
+The executable [ModelDistillerExampleTest](src/test/java/opennlp/embeddings/ModelDistillerExampleTest.java)
+tests local ONNX inference, PCA, weighting, saved-model loading and search with original numeric
+fixtures. It runs without a downloaded model or Python. To regenerate the ONNX constants, run
+`uv run --with onnx==1.19.0 python dev/embeddings/generate_test_teacher.py` from the repository root.
+The fixture tests data flow, not language quality.
+
 ## See also
 
 - [`TRAINING.md`](TRAINING.md) for distilling your own table from a sentence-transformer teacher, including the multilingual SentencePiece worked example.
