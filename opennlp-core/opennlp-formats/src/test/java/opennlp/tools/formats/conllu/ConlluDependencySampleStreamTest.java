@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.depparse.DependencyArc;
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -132,7 +133,7 @@ public class ConlluDependencySampleStreamTest {
   void testMalformedLineIsRejected() {
     final InputStreamFactory bad = () -> new ByteArrayInputStream(
         "1\ttoo\tfew\tcolumns\n".getBytes(StandardCharsets.UTF_8));
-    assertThrows(IOException.class,
+    assertThrows(InvalidFormatException.class,
         () -> new ConlluDependencySampleStream(bad, ConlluTagset.U).read());
   }
 
@@ -141,7 +142,7 @@ public class ConlluDependencySampleStreamTest {
     final InputStreamFactory bad = () -> new ByteArrayInputStream(
         (line("1", "word", "word", "NOUN", "NN", "_", "0", "root", "_", "_",
             "extra") + "\n").getBytes(StandardCharsets.UTF_8));
-    assertThrows(IOException.class,
+    assertThrows(InvalidFormatException.class,
         () -> new ConlluDependencySampleStream(bad, ConlluTagset.U).read());
   }
 

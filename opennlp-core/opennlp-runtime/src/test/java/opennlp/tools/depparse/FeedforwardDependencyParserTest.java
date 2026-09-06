@@ -32,6 +32,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.StringUtil;
 
@@ -411,15 +412,15 @@ public class FeedforwardDependencyParserTest {
         new ByteArrayInputStream("not a model".getBytes(StandardCharsets.UTF_8))));
   }
 
-  /** Checks that a negative vocabulary size is rejected with an IOException. */
+  /** Checks that a negative vocabulary size is rejected with an InvalidFormatException. */
   @Test
-  void testNegativeVocabularyCountFailsWithIOException() throws IOException {
+  void testNegativeVocabularyCountFailsWithInvalidFormat() throws IOException {
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     try (DataOutputStream data = new DataOutputStream(out)) {
       data.writeUTF(MAGIC);
       data.writeInt(-1);
     }
-    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+    assertThrows(InvalidFormatException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream(out.toByteArray())));
   }
 
@@ -430,7 +431,7 @@ public class FeedforwardDependencyParserTest {
     try (DataOutputStream data = new DataOutputStream(out)) {
       writeMinimalModel(data, FIRST_TAG_ID, 1, 0.0f);
     }
-    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+    assertThrows(InvalidFormatException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream(out.toByteArray())));
   }
 
@@ -441,7 +442,7 @@ public class FeedforwardDependencyParserTest {
     try (DataOutputStream data = new DataOutputStream(out)) {
       writeMinimalModel(data, 0, FeedforwardContext.FEATURE_COUNT, 0.0f);
     }
-    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+    assertThrows(InvalidFormatException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream(out.toByteArray())));
   }
 
@@ -452,7 +453,7 @@ public class FeedforwardDependencyParserTest {
     try (DataOutputStream data = new DataOutputStream(out)) {
       writeMinimalModel(data, FIRST_TAG_ID, FeedforwardContext.FEATURE_COUNT, Float.NaN);
     }
-    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+    assertThrows(InvalidFormatException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream(out.toByteArray())));
   }
 
@@ -462,7 +463,7 @@ public class FeedforwardDependencyParserTest {
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
     out.write(1);
-    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+    assertThrows(InvalidFormatException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream(out.toByteArray())));
   }
 
@@ -473,7 +474,7 @@ public class FeedforwardDependencyParserTest {
     try (DataOutputStream data = new DataOutputStream(out)) {
       writeModelWithTransitions(data, Transition.rightArc("root").encode());
     }
-    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+    assertThrows(InvalidFormatException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream(out.toByteArray())));
   }
 
@@ -484,7 +485,7 @@ public class FeedforwardDependencyParserTest {
     try (DataOutputStream data = new DataOutputStream(out)) {
       writeModelWithTransitions(data, Transition.SHIFT.encode());
     }
-    assertThrows(IOException.class, () -> FeedforwardDependencyModel.load(
+    assertThrows(InvalidFormatException.class, () -> FeedforwardDependencyModel.load(
         new ByteArrayInputStream(out.toByteArray())));
   }
 
@@ -715,5 +716,45 @@ public class FeedforwardDependencyParserTest {
     final String[] tags = {"*UNK*", "NN", "VBZ"};
     assertEquals(new FeedforwardDependencyParser(trained).parse(tokens, tags),
         new FeedforwardDependencyParser(reloaded).parse(tokens, tags));
+  }
+  /**
+   * Checks that training on samples without an arc-standard derivation fails with the
+   * documented message instead of producing an empty model.
+   */
+  @Test
+  void testTrainingWithOnlyNonProjectiveSamplesFailsLoud() {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> FeedforwardDependencyTrainer.train(
+            ObjectStreamUtils.createObjectStream(nonProjectiveCorpus()), settings));
+    assertEquals("no trainable examples in the samples", e.getMessage());
+  }
+
+  /**
+   * Checks that refining on samples without an arc-standard derivation fails with the
+   * documented message instead of returning the model unchanged.
+   */
+  @Test
+  void testRefiningWithOnlyNonProjectiveSamplesFailsLoud() {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> FeedforwardDependencyTrainer.refine(model,
+            ObjectStreamUtils.createObjectStream(nonProjectiveCorpus()), settings, 2));
+    assertEquals("no trainable samples for refinement", e.getMessage());
+  }
+
+  /**
+   * Builds samples whose arcs cross, so that none has an arc-standard derivation.
+   *
+   * @return Two non-projective samples. Never {@code null}.
+   */
+  private static List<DependencySample> nonProjectiveCorpus() {
+    return List.of(
+        sample(new String[] {"a", "b", "c", "d"}, new String[] {"DT", "NN", "VBZ", "NN"},
+            new int[] {2, 3, -1, 2}, new String[] {"det", "dislocated", "root", "obj"}),
+        sample(new String[] {"the", "dog", "barks", "loud"}, new String[] {"DT", "NN", "VBZ", "RB"},
+            new int[] {2, 3, -1, 2}, new String[] {"det", "nsubj", "root", "advmod"}));
   }
 }
