@@ -570,4 +570,31 @@ public class FeedforwardDependencyParserTest {
     assertThrows(IllegalArgumentException.class,
         () -> parser.parse(new String[] {"the"}, new String[] {"DT", "NN"}));
   }
+  /**
+   * Verifies that training data using the model's reserved symbols as ordinary tags,
+   * labels, or tokens does not displace the reserved rows: the model reloads and the
+   * colliding symbols share the reserved rows the way unknown symbols do.
+   *
+   * @throws IOException Thrown if serialization or loading fails.
+   */
+  @Test
+  void testReservedSymbolsInTrainingDataSurviveReload() throws IOException {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
+    final List<DependencySample> colliding = List.of(
+        sample(new String[] {"*ROOT*", "*UNK*", "barks"}, new String[] {"*UNK*", "NN", "VBZ"},
+            new int[] {1, 2, -1}, new String[] {"*NULL*", "nsubj", "root"}),
+        sample(new String[] {"dogs", "bark"}, new String[] {"*NULL*", "*ROOT*"},
+            new int[] {1, -1}, new String[] {"*UNK*", "root"}));
+    final FeedforwardDependencyModel trained = FeedforwardDependencyTrainer.train(
+        ObjectStreamUtils.createObjectStream(colliding), settings);
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    trained.serialize(out);
+    final FeedforwardDependencyModel reloaded =
+        FeedforwardDependencyModel.load(new ByteArrayInputStream(out.toByteArray()));
+    final String[] tokens = {"*ROOT*", "*UNK*", "barks"};
+    final String[] tags = {"*UNK*", "NN", "VBZ"};
+    assertEquals(new FeedforwardDependencyParser(trained).parse(tokens, tags),
+        new FeedforwardDependencyParser(reloaded).parse(tokens, tags));
+  }
 }
