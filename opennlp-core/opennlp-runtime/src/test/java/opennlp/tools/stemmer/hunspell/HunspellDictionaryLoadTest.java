@@ -51,12 +51,8 @@ class HunspellDictionaryLoadTest {
    */
   @ParameterizedTest
   @ValueSource(strings = {
-      "ICONV 1", "OCONV 1", "COMPLEXPREFIXES", "COMPOUNDRULE 1",
-      "COMPOUNDMORESUFFIXES", "COMPOUNDROOT R", "CHECKCOMPOUNDREP",
-      "SIMPLIFIEDTRIPLE", "CHECKCOMPOUNDPATTERN 1", "FORCEUCASE U",
-      "COMPOUNDSYLLABLE 6 aeiou", "SYLLABLENUM ABC", "LANG tr",
-      "CHECKSHARPS", "BREAK 1", "FORBIDWARN", "IGNORE x", "KEEPCASE k",
-      "AM 1", "LEMMA_PRESENT L", "UNRECOGNIZED value"
+      "UNSUPPORTED_CONVERSION 1", "UNSUPPORTED_CASE k", "UNSUPPORTED_SYLLABLES ABC",
+      "UNSUPPORTED_LEMMA L", "UNRECOGNIZED value"
   })
   void testUnsupportedDirectiveFailsByDefault(String line) {
     final IOException error = Assertions.assertThrows(IOException.class,
@@ -77,10 +73,10 @@ class HunspellDictionaryLoadTest {
   @ParameterizedTest
   @ValueSource(strings = {"\n", "\r\n", "\r"})
   void testUnsupportedDirectiveLineNumber(String separator) {
-    final String affix = "# comment" + separator + separator + "  KEEPCASE K";
+    final String affix = "# comment" + separator + separator + "  UNSUPPORTED_CASE K";
     final IOException error = Assertions.assertThrows(IOException.class,
         () -> HunspellDictionary.load(stream(affix), stream(WORDS)));
-    Assertions.assertTrue(error.getMessage().contains("KEEPCASE"));
+    Assertions.assertTrue(error.getMessage().contains("UNSUPPORTED_CASE"));
     Assertions.assertTrue(error.getMessage().contains("line 3"));
   }
 
@@ -88,8 +84,8 @@ class HunspellDictionaryLoadTest {
   @Test
   void testByteOrderMarkDoesNotHideUnsupportedDirective() {
     final IOException error = Assertions.assertThrows(IOException.class,
-        () -> HunspellDictionary.load(stream("\uFEFFICONV 1\n"), stream(WORDS)));
-    Assertions.assertTrue(error.getMessage().contains("ICONV"));
+        () -> HunspellDictionary.load(stream("\uFEFFUNSUPPORTED_CONVERSION 1\n"), stream(WORDS)));
+    Assertions.assertTrue(error.getMessage().contains("UNSUPPORTED_CONVERSION"));
     Assertions.assertTrue(error.getMessage().contains("line 1"));
   }
 
@@ -102,7 +98,7 @@ class HunspellDictionaryLoadTest {
   void testPathErrorIdentifiesAffixFile() throws IOException {
     final Path affix = directory.resolve("sample.aff");
     final Path words = directory.resolve("sample.dic");
-    Files.writeString(affix, "SET UTF-8\nKEEPCASE K\n");
+    Files.writeString(affix, "SET UTF-8\nUNSUPPORTED_CASE K\n");
     Files.writeString(words, WORDS);
     final IOException error = Assertions.assertThrows(IOException.class,
         () -> HunspellDictionary.load(affix, words));
@@ -141,14 +137,14 @@ class HunspellDictionaryLoadTest {
   @ParameterizedTest
   @ValueSource(strings = {"\n", "\r\n", "\r"})
   void testPartialLoadingReportsFirstOccurrences(String separator) throws IOException {
-    final String affix = String.join(separator, "ICONV 1", "ICONV a b",
-        "KEEPCASE K", "UNRECOGNIZED 1", "UNRECOGNIZED x", RULES);
+    final String affix = String.join(separator, "UNSUPPORTED_CONVERSION 1", "UNSUPPORTED_CONVERSION a b",
+        "UNSUPPORTED_CASE K", "UNRECOGNIZED 1", "UNRECOGNIZED x", RULES);
     final HunspellDictionary dictionary = HunspellDictionary.load(
         stream(affix), stream(WORDS), LoadMode.ALLOW_PARTIAL);
     final List<UnsupportedDirective> diagnostics = dictionary.getUnsupportedDirectives();
     Assertions.assertEquals(List.of(
-        new UnsupportedDirective("ICONV", "affix stream", 1),
-        new UnsupportedDirective("KEEPCASE", "affix stream", 3),
+        new UnsupportedDirective("UNSUPPORTED_CONVERSION", "affix stream", 1),
+        new UnsupportedDirective("UNSUPPORTED_CASE", "affix stream", 3),
         new UnsupportedDirective("UNRECOGNIZED", "affix stream", 4)), diagnostics);
     Assertions.assertThrows(UnsupportedOperationException.class, diagnostics::clear);
     Assertions.assertEquals("dog", new HunspellStemmer(dictionary).stem("dogs").toString());
@@ -163,12 +159,12 @@ class HunspellDictionaryLoadTest {
   void testPartialLoadingReportsFilePath() throws IOException {
     final Path affix = directory.resolve("partial.aff");
     final Path words = directory.resolve("partial.dic");
-    Files.writeString(affix, "SET UTF-8\nKEEPCASE K\n" + RULES);
+    Files.writeString(affix, "SET UTF-8\nUNSUPPORTED_CASE K\n" + RULES);
     Files.writeString(words, WORDS);
     final HunspellDictionary dictionary = HunspellDictionary.load(
         affix, words, LoadMode.ALLOW_PARTIAL);
     Assertions.assertEquals(List.of(new UnsupportedDirective(
-        "KEEPCASE", affix.toString(), 2)), dictionary.getUnsupportedDirectives());
+        "UNSUPPORTED_CASE", affix.toString(), 2)), dictionary.getUnsupportedDirectives());
     Assertions.assertEquals("dog", new HunspellStemmer(dictionary).stem("dogs").toString());
   }
 
@@ -179,12 +175,37 @@ class HunspellDictionaryLoadTest {
    */
   @ParameterizedTest
   @ValueSource(strings = {"AF -1\n", "FLAG num\nSFX 65001 Y 0\n",
-      "COMPOUNDMIN -1\n", "SFX A Y 2\nSFX A 0 s .\n", "FLAG short\n"})
+      "COMPOUNDMIN -1\n", "SFX A Y 2\nSFX A 0 s .\n", "FLAG short\n",
+      "ICONV 1\n", "ICONV -1\n", "ICONV 1\nICONV a b\nICONV c d\n",
+      "OCONV 1\nOCONV _ x\n", "AM 1\n", "AM -1\n",
+      "COMPOUNDRULE 1\n", "COMPOUNDRULE 1\nCOMPOUNDRULE *A\n",
+      "COMPOUNDRULE 1\nCOMPOUNDRULE (\n", "CHECKCOMPOUNDPATTERN 1\n",
+      "CHECKCOMPOUNDPATTERN -1\n", "BREAK 1\n", "BREAK -1\n", "BREAK 1\nBREAK ^\n",
+      "IGNORE\n", "LANG\n", "COMPOUNDSYLLABLE -1 ae\n", "KEEPCASE\n",
+      "SYLLABLENUM\n", "LEMMA_PRESENT\n", "LEMMA_PRESENT AB\n",
+      "AM 1 extra\nAM po:noun\n", "CHECKCOMPOUNDPATTERN 0 extra\n"})
   void testPartialLoadingDoesNotIgnoreMalformedRules(String malformed) {
     Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(
         stream(malformed), stream("1\ndog\n"), LoadMode.STRICT));
     Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(
-        stream("KEEPCASE K\n" + malformed), stream("1\ndog\n"), LoadMode.ALLOW_PARTIAL));
+        stream("UNSUPPORTED_CASE K\n" + malformed), stream("1\ndog\n"), LoadMode.ALLOW_PARTIAL));
+  }
+
+  /**
+   * Rejects invalid AM references in entries and affix fields under either policy.
+   *
+   * @param reference The invalid reference.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"-1", "0", "2", "invalid", "1 1"})
+  void testInvalidMorphologyAliases(String reference) {
+    final String aliases = "AM 1\nAM po:noun\n";
+    for (LoadMode mode : LoadMode.values()) {
+      Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(
+          stream(aliases), stream("1\ndog\t" + reference + "\n"), mode));
+      Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(
+          stream(aliases + "SFX A Y 1\nSFX A 0 s . " + reference + "\n"), stream(WORDS), mode));
+    }
   }
 
   /**
@@ -197,8 +218,8 @@ class HunspellDictionaryLoadTest {
   void testPartialLoadingRejectsMalformedText(String file) {
     final byte[] malformed = {(byte) 0xc3};
     final ByteArrayInputStream affix = "affix".equals(file)
-        ? new ByteArrayInputStream(concat("SET UTF-8\nKEEPCASE K\nSFX A Y 1\nSFX A 0 ",
-            malformed)) : stream("KEEPCASE K\n");
+        ? new ByteArrayInputStream(concat("SET UTF-8\nUNSUPPORTED_CASE K\nSFX A Y 1\nSFX A 0 ",
+            malformed)) : stream("UNSUPPORTED_CASE K\n");
     final ByteArrayInputStream words = "dictionary".equals(file)
         ? new ByteArrayInputStream(concat("1\n", malformed)) : stream(WORDS);
     final IOException error = Assertions.assertThrows(IOException.class,
@@ -218,6 +239,30 @@ class HunspellDictionaryLoadTest {
         new ByteArrayInputStream(affix), stream(WORDS));
     Assertions.assertNotNull(dictionary.lookup("dog"));
     Assertions.assertTrue(dictionary.getUnsupportedDirectives().isEmpty());
+  }
+
+  /**
+   * Preserves raw flag bytes in compound-boundary conditions without changing word text.
+   *
+   * @param matchingFlag Whether the left entry has the boundary flag.
+   * @throws IOException If loading fails.
+   */
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testCompoundPatternByteFlag(boolean matchingFlag) throws IOException {
+    final byte[] prefix = concat("SET UTF-8\nCOMPOUNDFLAG C\nCOMPOUNDMIN 1\n"
+        + "CHECKCOMPOUNDPATTERN 1\nCHECKCOMPOUNDPATTERN er/", new byte[] {(byte) 0xc3});
+    final byte[] affix = Arrays.copyOf(prefix, prefix.length + 3);
+    System.arraycopy(" b\n".getBytes(StandardCharsets.UTF_8), 0, affix, prefix.length, 3);
+    final byte[] wordPrefix = concat("2\nriver/C", matchingFlag
+        ? new byte[] {(byte) 0xc3} : new byte[0]);
+    final byte[] ending = "\nboat/C\n".getBytes(StandardCharsets.UTF_8);
+    final byte[] words = Arrays.copyOf(wordPrefix, wordPrefix.length + ending.length);
+    System.arraycopy(ending, 0, words, wordPrefix.length, ending.length);
+    final HunspellStemmer stemmer = new HunspellStemmer(HunspellDictionary.load(
+        new ByteArrayInputStream(affix), new ByteArrayInputStream(words)));
+    Assertions.assertEquals(matchingFlag ? List.of("riverboat") : List.of("river", "boat"),
+        stemmer.stemAll("riverboat"));
   }
 
   /**
@@ -290,11 +335,11 @@ class HunspellDictionaryLoadTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new UnsupportedDirective(" ", "source", 1));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new UnsupportedDirective("ICONV", null, 1));
+        () -> new UnsupportedDirective("UNSUPPORTED_CONVERSION", null, 1));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new UnsupportedDirective("ICONV", " ", 1));
+        () -> new UnsupportedDirective("UNSUPPORTED_CONVERSION", " ", 1));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new UnsupportedDirective("ICONV", "source", 0));
+        () -> new UnsupportedDirective("UNSUPPORTED_CONVERSION", "source", 0));
   }
 
   /** Detects close calls while allowing further input operations. */

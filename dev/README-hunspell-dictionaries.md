@@ -79,7 +79,7 @@ CharSequence stem = stemmer.stem("workers");
 ```
 
 The result depends on the loaded dictionary. The in-tree manual example uses a
-small dictionary and checks that `workers` stems to `worker`.
+small dictionary and checks that `workers` stems to `work`.
 
 The dictionary is immutable and safe to share between threads. The factory creates a
 new stemmer for each call, so each thread can use its own instance. A dictionary that
@@ -88,28 +88,118 @@ accordingly; no conversion is required.
 
 ## Testing against real dictionaries
 
-The in-tree tests use project-authored fixtures only. An opt-in test class, `HunspellRealDictionaryTest`, checks inflections with the LibreOffice `en_US`, `de_DE_frami`, and `hu_HU` dictionaries using `ALLOW_PARTIAL`. It also checks that strict loading rejects dictionaries requiring unsupported directives. Point it at one directory containing the listed `<name>.aff` and `<name>.dic` files. A missing dictionary skips the associated test; a dictionary that cannot be loaded in partial mode fails it. These checks do not establish full Hunspell compatibility.
+The runtime tests use project-authored fixtures. `HunspellCompatibilityEval`
+in `opennlp-eval-tests` loads external LibreOffice `en_US`, `de_DE_frami`, and
+`hu_HU` dictionaries. It checks strict loading, expected inflections, compounds,
+and concurrent stemming and analysis. Native comparisons check complete stem
+and analysis sets, preserving the order of fields within each analysis.
+Separator whitespace is normalized. Recognition is checked separately.
+
+The reference dictionary revision is
+[`32b006a2c22a4ac7e8ed3f03346f7b3d85a970a4`](https://github.com/LibreOffice/dictionaries/tree/32b006a2c22a4ac7e8ed3f03346f7b3d85a970a4).
+The evaluation verifies SHA-256 digests before loading these files. Point it at
+a directory containing all of the `<name>.aff` and `<name>.dic` files. A missing
+dictionary property skips dictionary evaluation; configured missing files,
+changed digests and loading errors fail. These checks cover selected examples,
+not all possible words or dictionaries.
 
 Keep these downloads outside the checkout and out of source archives and JARs.
 The English dictionary's `README_en_US.txt` contains the SCOWL and Ispell
 copyright and license notices. The German dictionary is GPL-licensed and must
 not be bundled in an Apache release. The Hungarian dictionary offers MPL-2.0
-or LGPL-3.0-or-later; select MPL-2.0 and retain that license text with its README.
+or LGPL-3.0-or-later; select MPL-2.0 and retain that license text with the README.
 These are optional local test inputs, not redistributed OpenNLP resources.
 See the [ASF third-party license policy](https://www.apache.org/legal/resolved.html)
 before proposing to bundle any dictionary.
 
 ```
-./mvnw test -pl opennlp-core/opennlp-runtime -am \
-    -Dtest=HunspellRealDictionaryTest -Dsurefire.failIfNoSpecifiedTests=false \
+./mvnw test -pl opennlp-eval-tests -am -Peval-tests \
+    -Dtest=HunspellCompatibilityEval -Dsurefire.failIfNoSpecifiedTests=false \
+    -Dopennlp.forkCount=1 \
     -Dopennlp.hunspell.dict.dir=/tmp/hunspell-dicts
 ```
+
+Add `-Dopennlp.hunspell.reference=/tmp/opennlp-hunspell-reference` for native
+comparisons, after building the driver below. Without this property, the Java
+evaluations run and native comparisons skip. A configured invalid executable
+fails. Maven does not obtain any dictionaries or native libraries for this test.
+
+The evaluation includes 49 original input forms. It reports exact result-set
+matches, expected differences, unknown-input identity fallbacks, and unexpected
+results separately. Expected differences specify the complete output of both
+implementations; a change to either output fails. Missing native analyses do
+not count as exact matches. Input and executable digests appear in test output.
+
+For additional inputs, set `-Dopennlp.hunspell.eval.words.dir=/path/to/word-lists`.
+That directory must contain `en_US.txt`, `de_DE_frami.txt`, and `hu_HU.txt`, each
+UTF-8 with one input per line, no blank lines, and at most 10,000 inputs.
+Duplicate inputs are evaluated separately. The native driver uses each
+dictionary's encoding; characters it cannot encode cause failure. Unexpected
+results fail the evaluation, including differences outside the explicit
+examples. The word-list files remain external and are not downloaded.
+
+Concurrency checks compare repeated results with a single-threaded reference.
+They do not measure throughput. Compatibility counts are not accuracy scores.
+
+### Native reference checks
+
+`HunspellCompatibilityTest` and `HunspellCompletionTest` create project-authored
+dictionaries for comparison with an external Hunspell build. The reference revision is
+[`e184e22c51fe213f4490e9b36998f0ad3e5e606b`](https://github.com/hunspell/hunspell/commit/e184e22c51fe213f4490e9b36998f0ad3e5e606b).
+Keep that source, the license files, and generated binaries outside this checkout.
+After obtaining the reference source, build the small C API driver locally:
+
+```sh
+g++ -std=c++17 -O2 -DHUNSPELL_STATIC \
+    -I/path/to/hunspell/src/hunspell \
+    /path/to/hunspell/src/hunspell/*.cxx dev/hunspell-reference.cc \
+    -o /tmp/opennlp-hunspell-reference
+./mvnw test -pl opennlp-core/opennlp-runtime -am \
+    '-Dtest=Hunspell*Test' -Dsurefire.failIfNoSpecifiedTests=false \
+    -Dopennlp.forkCount=1 \
+    -Dopennlp.hunspell.reference=/tmp/opennlp-hunspell-reference
+```
+
+The driver is test tooling, not a runtime dependency. Maven does not download or
+build Hunspell. Without the reference property, native comparisons are skipped;
+Java fixture tests still run. A configured executable that fails is a test failure.
 
 ## What the engine supports
 
 The engine applies `PFX` and `SFX` rules with strip strings and character-class conditions. It supports a prefix and suffix cross-product, a double suffix sequence connected by continuation classes, identity rules in continuation paths, file-wide `FLAG` modes, file-wide `AF` aliases, and the `SET` encoding declaration. Numeric flags range from 1 through 65000.
 
-Compound decomposition supports `COMPOUNDFLAG`, `COMPOUNDBEGIN`, `COMPOUNDMIDDLE`, `COMPOUNDEND`, `COMPOUNDMIN`, `COMPOUNDWORDMAX`, `COMPOUNDPERMITFLAG`, `COMPOUNDFORBIDFLAG`, `CHECKCOMPOUNDDUP`, `CHECKCOMPOUNDCASE`, and `CHECKCOMPOUNDTRIPLE`. Compound boundaries and minimum lengths use Unicode code points. `NEEDAFFIX` (also named `PSEUDOROOT`), `ONLYINCOMPOUND`, `FORBIDDENWORD`, `CIRCUMFIX`, and `FULLSTRIP` control whether an analysis is accepted.
+`COMPLEXPREFIXES` selects 2 prefix levels and 1 suffix level instead of 1
+prefix and 2 suffixes. `ICONV` and `OCONV` use longest-match conversions;
+`IGNORE` removes configured characters from input, entries, and affix material.
+`KEEPCASE`, `CHECKSHARPS`, `LANG`, `WARN`, and `FORBIDWARN` control case variants
+and warning-marked entries.
+
+Compound decomposition supports positional flags and independent `COMPOUNDRULE`
+patterns, including optional and repeated flags. It applies compound permit and
+forbid flags, word-count limits, `COMPOUNDROOT`, `COMPOUNDSYLLABLE`, duplicate,
+case, triple-letter and pattern restrictions, simplified junctions,
+`COMPOUNDMORESUFFIXES`, and `FORCEUCASE`. `CHECKCOMPOUNDREP` checks both `REP`
+entries and dictionary `ph:` replacements. Compound boundaries and minimum
+lengths use Unicode code points. `BREAK` splits recognized parts recursively;
+the default separators are `-`, `^-`, and `-$`, and `BREAK 0` disables them.
+
+`NEEDAFFIX` (also named `PSEUDOROOT`), `ONLYINCOMPOUND`, `FORBIDDENWORD`,
+`CIRCUMFIX`, and `FULLSTRIP` control whether an analysis is accepted. Morphology
+aliases use `AM`; `st:` supplies an explicit stem, `sp:` prepends surface
+material, and `ds:` retains derivational suffixes.
+
+`SYLLABLENUM` supports Hungarian compound syllable adjustments. The deprecated
+`LEMMA_PRESENT` directive is validated but has no effect. Obsolete
+`COMPOUNDFIRST`, `COMPOUNDLAST`, `ONLYROOT`, `HU_KOTOHANGZO`, and `GENERATE`
+metadata have no effect on stemming or analysis in the pinned reference and
+are ignored. The active compound and affix directives remain applicable.
+
+`HunspellStemmer.analyze(text)` returns an immutable list of distinct analyses
+as space-separated Hunspell fields. Entries without `st:` use the entry text;
+affixes without morphological fields contribute `fl:` and the affix flag.
+Compound components begin with `pa:`. Unknown input returns an empty list.
+Analysis preserves field text without `OCONV`. The shared `Stemmer` interface
+is unchanged. The manual contains an executable example.
 
 Comments and unused metadata may contain legacy-encoded bytes even when the file uses UTF-8. Parsed rules and dictionary text are decoded strictly. Default and `long` flag modes preserve raw one-byte flag values used by published UTF-8 dictionaries. Invalid rule counts, aliases, flags, and compound limits fail during loading in both modes. Each affix or dictionary stream is rejected when it exceeds `HunspellDictionary.MAX_STREAM_BYTES` (64 MiB).
 
@@ -120,12 +210,10 @@ directives cause an `IOException` identifying the directive and source line.
 Path-based loading includes the affix path. Valid Hunspell dictionaries using
 unsupported features require an explicit choice to load partially.
 
-Unsupported directives include `ICONV`, `OCONV`, `COMPLEXPREFIXES`, `COMPOUNDRULE`,
-`IGNORE`, and `KEEPCASE`. Unknown directive names also cause rejection. Recognized
-metadata and settings outside stemming, such as `NAME`, `TRY`, `REP`, and
-`WORDCHARS`, are ignored. `CHECKCOMPOUNDREP` and `FORBIDWARN` affect accepted
-analyses and remain unsupported, even though their associated suggestion or
-warning settings can be ignored independently.
+Unknown directive names cause rejection. Recognized metadata and settings outside stemming,
+such as `NAME`, `TRY`, and `WORDCHARS`, are ignored. `REP` is parsed when
+`CHECKCOMPOUNDREP` makes replacements affect compound recognition; otherwise it
+is unused suggestion data.
 
 Use `ALLOW_PARTIAL` to skip unsupported directives and inspect the diagnostics:
 
@@ -144,6 +232,36 @@ source location of each unsupported directive in file order. Recognized settings
 outside stemming are excluded from the list. File paths identify file-based
 loads; stream-based loads use `affix stream` as the source description.
 
-Partial loading does not apply the skipped behavior. Dictionary morphology
-fields are ignored in both modes. Strict affix loading does not establish
-complete Hunspell compatibility.
+Partial loading does not apply skipped behavior. Strict loading does not
+establish complete Hunspell compatibility. The engine does not generate
+inflected forms or spelling suggestions.
+
+Compound search permits at most 64 parts and 2048 candidate checks per spelling
+variant. Recursive word-break search has the same depth and candidate limits.
+Sharp-s case expansion permits at most 64 variants. Compound-rule patterns are
+limited to 4096 flag elements. Results are limited to 2048 distinct stems or
+analyses. These limits can exclude valid analyses; all included candidates
+must pass validation. Simplified triple letters can be restored at multiple
+junctions. `CHECKCOMPOUNDPATTERN` replacement applies at one junction.
+
+Native Hunspell's `stem()` and `spell()` do not have equivalent acceptance rules.
+The native stemmer can return a stem for KEEPCASE or FORBIDWARN input rejected by
+the spell checker, or return no stem for accepted complex-prefix and simplified
+compound forms. OpenNLP applies the dictionary restrictions and returns recognized
+compound part stems separately. Tests record native stemming and recognition
+results independently. Compatibility requires checking recognition and output.
+
+The German comparisons also distinguish standalone entries from compound-only
+readings. For example, OpenNLP returns `Kind` for `Kinder`; native stemming also
+returns the compound-only `kind` and an identity-affixed `kinder` reading.
+For `Vorschläge`, the pinned native implementation recognizes the input but
+returns no stem or morphological analysis. OpenNLP returns component stems and
+fields. These are documented differences, not exact matches or a general
+accuracy claim.
+
+For prefix-only forms without morphological fields, native analysis may include
+untagged prefix text, such as `un st:done fl:U` for `undone`. OpenNLP uses
+`fl:U st:done`. The evaluation classifies this formatting distinction as an
+expected difference. It also checks incomplete native output for `well-known`
+and German compounds such as `Haustür`, without treating additional OpenNLP
+output as a general correctness advantage.

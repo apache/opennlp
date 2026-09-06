@@ -1255,24 +1255,9 @@ public class HunspellStemmerTest {
    */
   @ParameterizedTest
   @ValueSource(strings = {
-      "ICONV 1",
-      "OCONV 1",
-      "COMPLEXPREFIXES",
-      "COMPOUNDRULE 1",
-      "COMPOUNDMORESUFFIXES",
-      "COMPOUNDROOT R",
-      "CHECKCOMPOUNDREP",
-      "SIMPLIFIEDTRIPLE",
-      "CHECKCOMPOUNDPATTERN 1",
-      "FORCEUCASE U",
-      "COMPOUNDSYLLABLE 6 aeiou",
-      "SYLLABLENUM ABC",
-      "LANG tr",
-      "CHECKSHARPS",
-      "BREAK 1",
-      "FORBIDWARN",
-      "IGNORE x",
-      "KEEPCASE k"
+      "UNSUPPORTED_SYLLABLES ABC",
+      "UNSUPPORTED_LEMMA L",
+      "UNSUPPORTED value"
   })
   void testUnsupportedDirectiveDoesNotBlockSupportedRules(String line)
       throws IOException {
