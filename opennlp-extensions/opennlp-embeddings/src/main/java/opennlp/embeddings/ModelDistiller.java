@@ -57,6 +57,9 @@ import opennlp.tools.util.java.Experimental;
  * ONNX export every sentence-transformer ships on the Hugging Face hub); a local
  * {@code tokenizer_config.json} supplies the pad token when present.</p>
  *
+ * <p>The teacher must produce a consistent vector length across batches. A change in length
+ * causes an {@link IllegalArgumentException} before output files are written.</p>
+ *
  * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
 @Experimental

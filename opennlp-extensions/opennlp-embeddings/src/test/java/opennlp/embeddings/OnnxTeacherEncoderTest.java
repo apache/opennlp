@@ -20,6 +20,8 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,9 +29,32 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The encoder's argument contract, checked before the ONNX runtime is touched.
+ * Validates graph inputs and pooled output using small ONNX models.
  */
 class OnnxTeacherEncoderTest {
+
+  /**
+   * Requires a stable vector length across batches in one session.
+   *
+   * @param initialSize The initial batch size and vector length.
+   * @param changedSize The next batch size and vector length.
+   * @param directory The test directory.
+   * @throws Exception Thrown if the test graph cannot be written or loaded.
+   */
+  @ParameterizedTest
+  @CsvSource({"1, 3", "3, 1"})
+  void testRejectsChangingHiddenDimension(int initialSize, int changedSize,
+                                         @TempDir Path directory) throws Exception {
+    final Path model = EmbeddingTestFixtures.writeVariableDimensionOnnxModel(directory);
+    try (OnnxTeacherEncoder encoder = OnnxTeacherEncoder.load(model)) {
+      assertEquals(initialSize, encoder.encodeBatch(new long[initialSize][1])[0].length);
+
+      final IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+          () -> encoder.encodeBatch(new long[changedSize][1]));
+      assertTrue(error.getMessage().contains("hidden dimension"), error.getMessage());
+      assertEquals(initialSize, encoder.encodeBatch(new long[initialSize][1])[0].length);
+    }
+  }
 
   @Test
   void testRejectsNullFile() {
