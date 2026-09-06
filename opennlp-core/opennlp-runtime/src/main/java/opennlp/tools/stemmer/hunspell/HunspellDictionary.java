@@ -233,11 +233,18 @@ public final class HunspellDictionary {
   private static final String NO_MATERIAL = "0";
 
   /**
-   * Largest flag value permitted by {@code FLAG num}, as specified by the
+   * Largest flag value permitted by {@code FLAG num}. The
    * <a href="https://github.com/hunspell/hunspell/blob/e184e22c51fe213f4490e9b36998f0ad3e5e606b/man/hunspell.5#L133-L139">
-   * Hunspell format manual</a>.
+   * Hunspell format manual</a> names 65000, while the reference parser accepts the
+   * full unsigned 16-bit range and published dictionaries use values above 65000.
    */
-  private static final int MAX_NUMERIC_FLAG = 65_000;
+  private static final int MAX_NUMERIC_FLAG = 65_535;
+
+  /**
+   * The flags the reference implementation hardwires for Hungarian: an entry carrying
+   * one of them may open a compound written before a hyphen.
+   */
+  private static final int[] HUNGARIAN_HYPHEN_FLAGS = {'F', 'G', 'H'};
 
   /** Largest {@code COMPOUNDMIN} value that can be doubled without overflow. */
   private static final int MAX_COMPOUND_MIN = Integer.MAX_VALUE / 2;
@@ -1342,6 +1349,36 @@ public final class HunspellDictionary {
       at += Character.charCount(point);
     }
     return syllables;
+  }
+
+  /**
+   * {@return whether the Hungarian moving rule applies} The reference implementation
+   * checks the part of a Hungarian word before a hyphen as a compound with relaxed
+   * rules: the opening part may qualify through the hardwired flags {@code F},
+   * {@code G}, and {@code H}, a compound-forbidden opening entry is allowed, and the
+   * size limits do not apply.
+   */
+  boolean hyphenMovingRule() {
+    return hungarian;
+  }
+
+  /**
+   * Checks whether an entry may open a compound under the Hungarian moving rule.
+   *
+   * @param flags One entry's flag set.
+   * @return {@code true} if the entry carries one of the hardwired opening flags and is
+   *     not forbidden.
+   */
+  boolean opensHyphenatedCompound(int[] flags) {
+    if (contains(flags, forbiddenWord)) {
+      return false;
+    }
+    for (final int flag : HUNGARIAN_HYPHEN_FLAGS) {
+      if (contains(flags, flag)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

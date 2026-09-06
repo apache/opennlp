@@ -109,13 +109,7 @@ public final class HunspellStemmer implements Stemmer {
       throw new IllegalArgumentException("word must not be null");
     }
     final String surface = word.toString();
-    final String input = dictionary.inputForm(surface);
-    if (input.isEmpty()) {
-      // a zero-length word has no morphology; without this guard a strip-only rule
-      // could restore its strip string onto nothing and answer a non-empty stem
-      return List.of(surface);
-    }
-    final List<String> analyses = findStems(input, 0, new int[] {PART_CHECK_BUDGET}, new HashMap<>(), false);
+    final List<String> analyses = findWord(dictionary.inputForm(surface), false);
     if (analyses.isEmpty()) {
       return List.of(surface);
     }
@@ -142,8 +136,35 @@ public final class HunspellStemmer implements Stemmer {
     if (word == null) {
       throw new IllegalArgumentException("word must not be null");
     }
-    return findStems(dictionary.inputForm(word.toString()), 0,
-        new int[] {PART_CHECK_BUDGET}, new HashMap<>(), true);
+    return findWord(dictionary.inputForm(word.toString()), true);
+  }
+
+  /**
+   * Finds the readings of a complete input. Trailing periods are removed first, as
+   * the reference implementation does for abbreviations; when the shortened form has
+   * no reading, one period is restored for entries listed with it.
+   *
+   * @param input The input after conversion.
+   * @param morphological Whether results contain morphological fields.
+   * @return Recognized stems or analyses, or an empty list.
+   */
+  private List<String> findWord(String input, boolean morphological) {
+    int end = input.length();
+    while (end > 0 && input.charAt(end - 1) == '.') {
+      end--;
+    }
+    if (end == 0) {
+      // a zero-length word has no morphology; without this guard a strip-only rule
+      // could restore its strip string onto nothing and answer a non-empty stem
+      return List.of();
+    }
+    final List<String> analyses = findStems(input.substring(0, end), 0,
+        new int[] {PART_CHECK_BUDGET}, new HashMap<>(), morphological);
+    if (analyses.isEmpty() && end < input.length()) {
+      return findStems(input.substring(0, end + 1), 0,
+          new int[] {PART_CHECK_BUDGET}, new HashMap<>(), morphological);
+    }
+    return analyses;
   }
 
   /** Accumulates stems or complete morphology readings for one request. */
@@ -155,6 +176,11 @@ public final class HunspellStemmer implements Stemmer {
      * compound and break readings of the same input.
      */
     private boolean forbidden;
+    /**
+     * Whether compound decomposition follows the Hungarian moving rule for the part of
+     * a word before a hyphen.
+     */
+    private boolean hyphenatedFirstPart;
 
     /**
      * Selects the output representation.
@@ -300,8 +326,11 @@ public final class HunspellStemmer implements Stemmer {
           } else if (end && !start) {
             analyses.addAll(findStems(input.substring(0, at), depth + 1, budget, cache, morphological));
           } else if (!start) {
-            final List<String> left = findStems(input.substring(0, at), depth + 1,
+            List<String> left = findStems(input.substring(0, at), depth + 1,
                 budget, cache, morphological);
+            if (left.isEmpty() && "-".equals(separator) && dictionary.hyphenMovingRule()) {
+              left = hyphenatedFirstPart(input.substring(0, at), morphological);
+            }
             if (!left.isEmpty()) {
               final List<String> right = findStems(input.substring(after), depth + 1,
                   budget, cache, morphological);
@@ -319,9 +348,36 @@ public final class HunspellStemmer implements Stemmer {
   }
 
   /**
+   * Finds the readings of the part of a Hungarian word before a hyphen, which the
+   * reference implementation accepts as a listed word ending in the hyphen or as a
+   * compound under the moving rule.
+   *
+   * @param text The part before the hyphen.
+   * @param morphological Whether results contain morphological fields.
+   * @return Recognized stems or analyses, or an empty list.
+   */
+  private List<String> hyphenatedFirstPart(String text, boolean morphological) {
+    final Results analyses = new Results(morphological);
+    final String hyphenated = text + "-";
+    final boolean allCaps = HunspellDictionary.caseType(text) == HunspellDictionary.CaseType.ALLCAP;
+    for (final String variant : variants(hyphenated)) {
+      analyze(variant, new Analysis(hyphenated, variant, analyses, allCaps));
+    }
+    if (analyses.isEmpty() && !analyses.forbidden && dictionary.compoundsDeclared()) {
+      analyses.hyphenatedFirstPart = true;
+      for (final String variant : variants(text)) {
+        decompose(variant, text, analyses);
+      }
+    }
+    return List.copyOf(analyses.values);
+  }
+
+  /**
    * Collects the case variants to analyze: the surface form first, then its lowercase
    * form when the two differ. A capitalized word with a further inner capital, such as a
    * mixed-case word at the start of a sentence, is also tried with a lowercase initial.
+   * An all-uppercase word containing an apostrophe is also tried with the part after
+   * the apostrophe capitalized, for the elided articles of Catalan, French, and Italian.
    * Ordering matters because the first analysis found wins in {@link #stem(CharSequence)}.
    *
    * @param surface The surface form.
@@ -354,6 +410,13 @@ public final class HunspellStemmer implements Stemmer {
     }
     if (upper && (allUpper || lowerAfterFirst)) {
       final String lowered = dictionary.lowerCase(surface);
+      final int apostrophe = lowered.indexOf('\'');
+      if (allUpper && apostrophe > 0 && apostrophe < lowered.length() - 1) {
+        final String elided = lowered.substring(0, apostrophe + 1)
+            + initialUpper(lowered.substring(apostrophe + 1));
+        variants.add(elided);
+        variants.add(initialUpper(elided));
+      }
       variants.add(lowered);
       if (allUpper) {
         variants.add(initialUpper(lowered));
@@ -835,7 +898,7 @@ public final class HunspellStemmer implements Stemmer {
       final CompoundPosition position = first ? CompoundPosition.BEGIN
           : last ? CompoundPosition.END : CompoundPosition.MIDDLE;
       for (CompoundPart candidate : partReadings(part, caseSource.substring(from, end),
-          position, first, last)) {
+          position, first, last, analyses.hyphenatedFirstPart)) {
         if (!parts.isEmpty() && rejectsJunction(parts.get(parts.size() - 1), candidate,
             current == null ? null : current.pattern(), last)) {
           continue;
@@ -849,7 +912,7 @@ public final class HunspellStemmer implements Stemmer {
             syllables += dictionary.compoundSyllables(selected.surface(), selected.flags(),
                 selected.affixes(), selected == candidate);
           }
-          if (dictionary.compoundSizeAllowed(syllables, units)
+          if ((analyses.hyphenatedFirstPart || dictionary.compoundSizeAllowed(syllables, units))
               && dictionary.compoundCaseAllowed(candidate.flags(), caseSource)) {
             analyses.addCompound(parts);
           }
@@ -936,24 +999,25 @@ public final class HunspellStemmer implements Stemmer {
    * @param position The component position.
    * @param first Whether the part opens the word.
    * @param last Whether the part closes the word.
+   * @param movingRule Whether the Hungarian moving rule relaxes the opening parts.
    * @return The permitted readings in discovery order.
    */
   private List<CompoundPart> partReadings(String part, String surface, CompoundPosition position,
-      boolean first, boolean last) {
+      boolean first, boolean last, boolean movingRule) {
     final List<CompoundPart> readings = new ArrayList<>();
-    final List<int[]> listed = last ? null : dictionary.lookup(part);
+    final List<int[]> listed = last || movingRule ? null : dictionary.lookup(part);
     if (listed != null && dictionary.forbidsCompoundStart(listed)) {
       // a listed spelling barred from compounding is barred in its affixed readings too
       return readings;
     }
-    collectPartReadings(part, surface, position, first, last, readings);
+    collectPartReadings(part, surface, position, first, last, movingRule, readings);
     if (readings.isEmpty() && !part.isEmpty()) {
       final int initial = part.codePointAt(0);
       final int upper = Character.toUpperCase(initial);
       if (upper != initial) {
         collectPartReadings(new StringBuilder().appendCodePoint(upper)
             .append(part, Character.charCount(initial), part.length()).toString(),
-            surface, position, first, last, readings);
+            surface, position, first, last, movingRule, readings);
       }
     }
     return readings;
@@ -967,14 +1031,17 @@ public final class HunspellStemmer implements Stemmer {
    * @param position The part's place in the compound.
    * @param first Whether the part opens the word.
    * @param last Whether the part closes the word.
+   * @param movingRule Whether an opening entry may also qualify through the hardwired
+   *                   Hungarian flags.
    * @param readings The destination for selected readings.
    */
   private void collectPartReadings(String part, String surface, CompoundPosition position,
-      boolean first, boolean last, List<CompoundPart> readings) {
+      boolean first, boolean last, boolean movingRule, List<CompoundPart> readings) {
     final List<int[]> entries = dictionary.lookup(part);
     if (entries != null) {
       for (int[] flags : entries) {
-        if (dictionary.mayStand(List.of(flags), position)
+        if ((dictionary.mayStand(List.of(flags), position)
+            || (movingRule && !last && dictionary.opensHyphenatedCompound(flags)))
             && dictionary.acceptsCase(flags, surface, part)) {
           readings.add(new CompoundPart(part, part, flags, List.of(),
               dictionary.morphologicalStems(part, flags)));

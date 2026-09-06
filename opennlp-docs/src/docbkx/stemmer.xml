@@ -168,7 +168,7 @@ analyzer.analyze("table");   // []]]>
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
 			rejects malformed text in parsed rules, invalid counts, numeric flags
-			outside the range 1 through 65000, and <code>COMPOUNDMIN</code> values
+			outside the range 1 through 65535, and <code>COMPOUNDMIN</code> values
 			that cannot be doubled safely. Comments and unused metadata may retain a
 			legacy encoding. Default and <code>long</code> flag modes preserve raw
 			one-byte flag values in UTF-8 files. Compound length and boundary checks
