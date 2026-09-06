@@ -75,6 +75,9 @@ final class OnnxTeacherEncoder implements AutoCloseable {
   private final String hiddenStateOutput;
   private final AtomicBoolean closed = new AtomicBoolean();
 
+  /** Expected vector length after a successful inference. */
+  private int hiddenDimension = -1;
+
   /** Holds the open session; created by {@link #load(Path)}. */
   private OnnxTeacherEncoder(OrtEnvironment environment, OrtSession session,
                              OnnxJavaType inputIdsType, OnnxJavaType attentionMaskType,
@@ -237,7 +240,8 @@ final class OnnxTeacherEncoder implements AutoCloseable {
    *              {@code null} or empty and must not contain a null or empty sequence.
    * @return The pooled vectors, {@code [batchSize][hiddenDimension]}.
    * @throws IllegalArgumentException Thrown if the batch is empty, contains a null or empty
-   *     sequence, is ragged, or the runtime rejects the input.
+   *     sequence, is ragged, the vector length changes between batches, or the runtime rejects
+   *     the input.
    */
   float[][] encodeBatch(long[][] batch) {
     if (batch == null || batch.length == 0) {
@@ -344,11 +348,12 @@ final class OnnxTeacherEncoder implements AutoCloseable {
   }
 
   /**
-   * Verifies that the graph preserved the input batch and sequence dimensions.
+   * Validates output dimensions and requires a consistent vector length between batches.
    *
    * @param hidden         The last hidden state.
    * @param batchSize      The input batch size.
    * @param sequenceLength The input sequence length.
+   * @throws IllegalArgumentException Thrown if output dimensions are inconsistent.
    */
   private void validateOutputShape(float[][][] hidden, int batchSize, int sequenceLength) {
     if (hidden.length != batchSize) {
@@ -377,6 +382,12 @@ final class OnnxTeacherEncoder implements AutoCloseable {
         }
       }
     }
+    if (hiddenDimension >= 0 && dimension != hiddenDimension) {
+      throw new IllegalArgumentException("ONNX output '" + hiddenStateOutput
+          + "' has hidden dimension " + dimension + ", expected " + hiddenDimension
+          + " from the initial batch");
+    }
+    hiddenDimension = dimension;
   }
 
   /**
