@@ -97,6 +97,19 @@ opennlp-embeddings EvalVectorSearch \
 
 The command builds an exact float index and a TurboQuant index. The markdown and TSV reports contain fidelity, definition-to-headword retrieval, half-passage retrieval, single-thread throughput, and storage per vector.
 
+For `-out vector-search-report.md`, the TSV file is `vector-search-report.tsv`.
+The paths must refer to separate files. A `.tsv` output name (any case), links to the same
+file, and dangling symbolic links are rejected before evaluation. Separate
+existing reports are replaced.
+
+Report paths must not refer to the passage or dictionary input file, including
+through symbolic or hard links. File identity is checked before evaluation and
+again before writing reports.
+
+Index build time includes construction, vector insertion and `freeze()`.
+Text embedding and queries are excluded. The TSV field `index.buildScope`
+contains `construction,insertion,freeze`.
+
 Inputs that embed to a zero vector have no search direction and are not indexed or evaluated. The report records total and indexable passage and headword counts, so this coverage remains visible. Fidelity recall uses the number of exact results actually returned, including when `topK` exceeds the index size.
 
 ## 6. Benchmark against Lucene HNSW
@@ -118,6 +131,8 @@ From the repository root, set `CORPUS_DIR` to the legal corpus directory and run
 ```
 
 The reports contain graph recall against the exact scan, rank-1 agreement, both retrieval evaluations, build time, single-thread throughput, and serialized vector and graph storage. Storage does not measure live JVM memory.
+
+The HNSW command uses the same report naming and replacement rules as `EvalVectorSearch`.
 
 ## The WordPiece path
 

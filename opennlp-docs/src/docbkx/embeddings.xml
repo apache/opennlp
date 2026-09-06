@@ -280,6 +280,13 @@ List<Neighbor> related = model.mostSimilar("coffee espresso", 3);]]></programlis
 				The bit width defaults to 4, the rotation seed defaults to 42, and the
 				evaluation depth defaults to 10. The tool writes a human-readable Markdown
 				report and a key-value TSV with the same metrics.
+				For <code>-out report.md</code>, the TSV file is <code>report.tsv</code>.
+				The paths must refer to separate files. A <code>.tsv</code> output name (any case),
+				links to the same file, and dangling symbolic links are rejected before
+				evaluation. Separate existing reports are replaced.
+				Report paths must not refer to the passage or dictionary input file,
+				including through symbolic or hard links. File identity is checked before
+				evaluation and again before writing reports.
 			</para>
 			<para>
 				A text that embeds to a zero vector has no search direction, so the evaluator
@@ -287,6 +294,9 @@ List<Neighbor> related = model.mostSimilar("coffee espresso", 3);]]></programlis
 				indexable passage and headword embeddings. Fidelity recall divides by the
 				number of exact results actually returned, so it remains valid when the
 				requested depth exceeds the index size.
+				Index build time includes construction, vector insertion and
+				<code>freeze()</code>. Text embedding and query execution are excluded.
+				The TSV field <code>index.buildScope</code> identifies this timing scope.
 			</para>
 		</section>
 	</section>

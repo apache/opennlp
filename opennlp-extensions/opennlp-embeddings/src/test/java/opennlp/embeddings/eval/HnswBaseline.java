@@ -17,19 +17,20 @@
 package opennlp.embeddings.eval;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import opennlp.embeddings.StaticEmbeddingModel;
+import opennlp.embeddings.cmdline.HnswBaselineRunner;
 import opennlp.embeddings.corpus.CasePassage;
 import opennlp.embeddings.corpus.DictionaryEntry;
 import opennlp.embeddings.eval.SearchEvaluator.IndexMetrics;
 import opennlp.embeddings.eval.SearchEvaluator.RetrievalMetrics;
 import opennlp.embeddings.index.FlatFloatIndex;
 import opennlp.embeddings.index.HnswFloatIndex;
+import opennlp.embeddings.index.VectorIndex;
 
 /**
  * Runs the Lucene HNSW index through the same measurements as
@@ -141,6 +142,7 @@ public final class HnswBaseline {
           .append(". Evaluation depth: top ").append(topK).append(".\n\n");
 
       md.append("## Passage index build and throughput\n\n");
+      md.append(IndexBuild.DESCRIPTION).append("\n\n");
       md.append("| index | rows | storage bytes/vector | build (ms) | QPS (1 thread) |\n");
       md.append("|---|---|---|---|---|\n");
       for (final IndexMetrics index : List.of(exact, hnsw)) {
@@ -198,6 +200,7 @@ public final class HnswBaseline {
       line(tsv, "headwords.indexed", indexedHeadwordCount);
       line(tsv, "dimension", dimension);
       line(tsv, "topK", topK);
+      line(tsv, IndexBuild.SCOPE_KEY, IndexBuild.SCOPE);
       for (final IndexMetrics index : List.of(exact, hnsw)) {
         line(tsv, index.name() + ".storageBytesPerVector",
             format(index.storageBytesPerVector()));
@@ -290,28 +293,27 @@ public final class HnswBaseline {
           "passages must contain at least one text with a usable embedding");
     }
 
-    final FlatFloatIndex exact = new FlatFloatIndex(model.dimension());
-    try (HnswFloatIndex hnsw = new HnswFloatIndex(model.dimension())) {
+    final Consumer<VectorIndex> populate = index -> {
       for (int i = 0; i < indexed.size(); i++) {
-        exact.add(indexed.get(i).id(), vectors.get(i));
-        hnsw.add(indexed.get(i).id(), vectors.get(i));
+        index.add(indexed.get(i).id(), vectors.get(i));
       }
-      final long exactBuildStart = System.nanoTime();
-      exact.freeze();
-      final long exactBuildMillis = SearchEvaluator.millisSince(exactBuildStart);
-      final long hnswBuildStart = System.nanoTime();
-      hnsw.freeze();
-      final long hnswBuildMillis = SearchEvaluator.millisSince(hnswBuildStart);
+    };
+    final IndexBuild<FlatFloatIndex> exactBuild = IndexBuild.measure(
+        () -> new FlatFloatIndex(model.dimension()), populate, System::nanoTime);
+    final FlatFloatIndex exact = exactBuild.index();
+    final IndexBuild<HnswFloatIndex> hnswBuild = IndexBuild.measure(
+        () -> new HnswFloatIndex(model.dimension()), populate, System::nanoTime);
+    try (HnswFloatIndex hnsw = hnswBuild.index()) {
 
       // Fidelity doubles as the warm-up pass for the throughput measurement after it.
       final SearchEvaluator.Fidelity fidelity =
           SearchEvaluator.fidelity(exact, hnsw, vectors, topK);
       final float[][] timedQueries = vectors.toArray(float[][]::new);
       final IndexMetrics exactMetrics = new IndexMetrics("exact", exact.size(),
-          model.dimension() * (double) Float.BYTES, exactBuildMillis,
+          model.dimension() * (double) Float.BYTES, exactBuild.millis(),
           SearchEvaluator.queriesPerSecond(exact, timedQueries, topK));
       final IndexMetrics hnswMetrics = new IndexMetrics(INDEX_NAME, hnsw.size(),
-          hnsw.serializedBytesPerVector(), hnswBuildMillis,
+          hnsw.serializedBytesPerVector(), hnswBuild.millis(),
           SearchEvaluator.queriesPerSecond(hnsw, timedQueries, topK));
 
       RetrievalMetrics definitionToHeadword = null;
@@ -354,34 +356,14 @@ public final class HnswBaseline {
   /**
    * Runs the baseline from the command line, on the test classpath:
    * {@code HnswBaseline model-dir passages-jsonl dictionary-tsv out-md [topK]}. Writes the
-   * markdown report to the given path and its TSV twin next to it.
+   * Markdown report to the given path and a TSV report next to it.
    *
    * @param args The arguments above.
    * @throws IOException Thrown if an input cannot be read or a report cannot be written.
+   * @throws IllegalArgumentException If an evaluation argument or report path is invalid.
    */
   public static void main(String[] args) throws IOException {
-    if (args.length < 4 || args.length > 5) {
-      System.err.println(
-          "Usage: HnswBaseline model-dir passages-jsonl dictionary-tsv out-md [topK]");
-      System.exit(1);
-    }
-    final StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of(args[0]));
-    final List<CasePassage> passages = CasePassage.readJsonl(Path.of(args[1]));
-    final List<DictionaryEntry> dictionary = DictionaryEntry.readTsv(Path.of(args[2]));
-    final Path out = Path.of(args[3]);
-    final int topK = args.length == 5 ? Integer.parseInt(args[4]) : 10;
-    System.out.println("Evaluating " + passages.size() + " passages and " + dictionary.size()
-        + " headwords against Lucene HNSW, top " + topK);
-    final Report report = run(model, passages, dictionary, topK);
-    Files.writeString(out, report.toMarkdown());
-    final String name = out.getFileName().toString();
-    final int dot = name.lastIndexOf('.');
-    final Path tsv = out.resolveSibling((dot > 0 ? name.substring(0, dot) : name) + ".tsv");
-    Files.writeString(tsv, report.toTsv());
-    System.out.println("Fidelity recall@" + topK + " " + report.fidelityRecallAtK()
-        + ", exact QPS " + Math.round(report.exact().queriesPerSecond())
-        + ", hnsw QPS " + Math.round(report.hnsw().queriesPerSecond()));
-    System.out.println("Wrote " + out + " and " + tsv);
+    HnswBaselineRunner.main(args);
   }
 
 }
