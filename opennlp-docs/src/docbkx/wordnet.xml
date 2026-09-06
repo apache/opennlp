@@ -27,6 +27,24 @@
 			<code>WndbReader</code> for the classic Princeton WordNet database file
 			layout. Both return an immutable, thread-safe knowledge base.
 		</para>
+		<para>
+			<code>WnLmfReader</code> requires a <code>LexicalResource</code> root
+			with lexicons as direct children. Parsed entries, senses, synsets,
+			relations and dependency declarations must have their WN-LMF parent;
+			each lexical entry must contain a lemma. Incorrect placement or a
+			missing lemma raises <code>InvalidFormatException</code> with the
+			resource name and source line. Elements outside the reader's supported
+			subset are skipped with all descendants, which cannot add lexical
+			content or dependencies. Skipped XML must still be well formed. The
+			reader does not perform full DTD validation.
+		</para>
+		<para>
+			A sense must point to a synset with the same part of speech and a
+			member lemma matching after case and underscore normalization. Missing
+			targets or members and mismatched parts of speech raise <code>InvalidFormatException</code>
+			with the source name and line. An explicit <code>members</code> list
+			orders the lemmas; it cannot exclude a sense's lemma from the synset.
+		</para>
 	</section>
 
 	<section xml:id="tools.wordnet.load">
