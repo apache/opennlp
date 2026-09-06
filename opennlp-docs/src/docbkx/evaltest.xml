@@ -67,7 +67,10 @@ under the License.
 			dictionaries for strict loading, inflections, compounds, and concurrent analysis.
 			An optional native Hunspell executable compares stems, morphological fields, and recognition.
 			Exact matches, expected differences, unknown-input fallbacks, and unexpected results
-			are reported separately. Unexpected results fail the evaluation.
+			are reported separately. Unexpected results fail the evaluation. The expected
+			differences are instances of the deviations listed in
+			<xref linkend="tools.stemmer.hunspell"/>, each recorded with the complete output of
+			both implementations, so a change on either side fails the evaluation.
 		</para>
 		<screen><![CDATA[./mvnw test -pl opennlp-eval-tests -am -Peval-tests \
   -Dtest=HunspellCompatibilityEval -Dsurefire.failIfNoSpecifiedTests=false \

@@ -269,7 +269,10 @@ class HunspellCompatibilityTest {
         new Example("trailing-period-entry", PLURAL, "2\ntext/A\netc.\n", "etc.", List.of("etc.")),
         new Example("trailing-period-not-added", PLURAL, "2\ntext/A\netc.\n", "etc", List.of("etc")),
         new Example("numeric-flag-maximum", "FLAG num\nSFX 65535 Y 1\nSFX 65535 0 s .\n",
-            "1\ndog/65535\n", "dogs", List.of("dog")));
+            "1\ndog/65535\n", "dogs", List.of("dog")),
+        // the manual's example of part stems here against the concatenated native stem
+        new Example("compound-part-stems", COMPOUND + PLURAL, "2\nriver/C\nboat/CA\n",
+            "riverboats", List.of("river", "boat")));
   }
 
   private static final String HUNGARIAN_HYPHEN = "LANG hu\nCOMPOUNDFLAG Y\nCOMPOUNDMIN 2\n"

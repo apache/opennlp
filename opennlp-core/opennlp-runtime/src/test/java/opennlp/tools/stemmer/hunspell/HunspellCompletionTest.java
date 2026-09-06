@@ -154,7 +154,21 @@ class HunspellCompletionTest {
             + "COMPOUNDMORESUFFIXES\nCOMPOUNDPERMITFLAG P\n"
             + "PFX A Y 1\nPFX A 0 re/B .\nPFX B Y 1\nPFX B 0 un .\n"
             + "SFX S Y 1\nSFX S 0 s/P .\n", "2\nriver/CAS\nboat/C\n",
-            "unreriversboat", List.of("river", "boat"), true));
+            "unreriversboat", List.of("river", "boat"), true),
+        // deviations listed in the manual: Unicode case mapping, the suggester-based
+        // rejection of multi-part compounds, and numeric tokens
+        new Example("dotted-capital-i", "", "1\nimply\n", "İmply", List.of("imply"), false),
+        // KEEPCASE with CHECKSHARPS admits the SS spelling of an all-uppercase form only
+        new Example("keepcase-sharp-s-double-s", "CHECKSHARPS\nKEEPCASE k\n", "1\nmüßig/k\n",
+            "MÜSSIG", List.of("müßig"), true),
+        new Example("keepcase-capital-sharp-s", "CHECKSHARPS\nKEEPCASE k\n", "1\nmüßig/k\n",
+            "MÜẞIG", List.of("MÜẞIG"), false),
+        new Example("keepcase-sharp-s-capitalized", "CHECKSHARPS\nKEEPCASE k\n", "1\nmüßig/k\n",
+            "Müßig", List.of("müßig"), true),
+        new Example("multi-part-compound-near-listed-word", "TRY esianrtolcdugmphbyfvkwz\n"
+            + "COMPOUNDFLAG x\n", "5\nfoo/x\nbar/x\nbaz/x\ngoobar\ngoobarbaz\n",
+            "foobarbaz", List.of("foo", "bar", "baz"), false),
+        new Example("numeric-token", "", "1\nfoo\n", "1.5", List.of("1.5"), true));
   }
 
   /**
