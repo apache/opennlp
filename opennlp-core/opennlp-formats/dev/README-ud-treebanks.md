@@ -32,20 +32,19 @@ Every UD treebank lives in its own repository under `github.com/UniversalDepende
 
 produces `/tmp/ud-ewt/train.conllu` and `/tmp/ud-ewt/test.conllu`. Any treebank that publishes both splits works the same way.
 
-## Running the gated evaluation
+## Running the accuracy evaluation
 
-`ConlluDependencyParserEvalTest` is disabled unless the `opennlp.depparse.ud.dir` system property points at a directory containing `train.conllu` and `test.conllu`:
+`UniversalDependencyParserEval` in `opennlp-eval-tests` extends `AbstractEvalTest` and trains and scores both parsers on the `UD_English` treebank of the Universal Dependencies 2.0 release under `ud20/` in `OPENNLP_DATA_DIR`, the shared `opennlp-data.zip` archive all evaluations use. It verifies the MD5 digests of the train and dev splits before training and checks the exact unlabeled and labeled attachment scores of the transition-based and the feedforward parser on the held-out dev split:
 
 ```
-./mvnw -pl opennlp-core/opennlp-formats -am test \
-    -Dtest=ConlluDependencyParserEvalTest \
-    -Dopennlp.forkCount=1 \
-    -Dopennlp.depparse.ud.dir=/tmp/ud-ewt
+./mvnw test -pl opennlp-eval-tests -am -Peval-tests \
+    -Dtest=UniversalDependencyParserEval -Dsurefire.failIfNoSpecifiedTests=false \
+    -Dopennlp.forkCount=1 -DOPENNLP_DATA_DIR=/path/to/opennlp-data
 ```
 
-Without the property the test reports as skipped, which is why a plain build never needs network access or external data.
+A plain build needs no network access or external data; the evaluation runs only under the profile. The download helper above lets you repeat the measurement on another treebank or a newer release of the same one.
 
-The score uses the treebank's sentence boundaries, tokens, and part-of-speech tags. It measures dependency parsing rather than the errors of an upstream text pipeline. The reader retains the syntactic rows of multiword tokens. The arc-standard trainer skips non-projective trees because that transition system cannot derive them.
+The score uses the treebank's segmentation, tokens, and part-of-speech tags. It measures dependency parsing by itself, not the errors of an upstream text pipeline. The reader retains the syntactic lines of multiword tokens and skips trees with a placeholder in the head or relation column. The arc-standard trainer skips non-projective trees because that transition system cannot derive them.
 
 ## Licensing
 
