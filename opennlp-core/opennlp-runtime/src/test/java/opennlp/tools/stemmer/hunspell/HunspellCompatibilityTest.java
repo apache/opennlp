@@ -1,0 +1,276 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.stemmer.hunspell;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+/** Original dictionary fixtures for Hunspell conversion, casing and morphology. */
+class HunspellCompatibilityTest {
+
+  private static final String PLURAL = "SFX A Y 1\nSFX A 0 s .\n";
+  private static final String COMPOUND = "COMPOUNDFLAG C\nCOMPOUNDMIN 1\n";
+
+  @TempDir
+  private Path directory;
+
+  /**
+   * One original dictionary and an expected stemming result.
+   *
+   * @param name The test identifier.
+   * @param affix The affix content.
+   * @param words The dictionary content.
+   * @param input The input form.
+   * @param expected The expected stems, with identity for unknown input.
+   */
+  private record Example(String name, String affix, String words,
+                         String input, List<String> expected) {
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
+
+  /**
+   * Supplies independently written fixtures, not excerpts from published dictionaries.
+   *
+   * @return The examples.
+   */
+  private static Stream<Example> examples() {
+    return Stream.of(
+        new Example("input-ligature", "ICONV 1\nICONV ﬁ fi\n" + PLURAL,
+            "1\nfield/A\n", "ﬁelds", List.of("field")),
+        new Example("longest-input-match", "ICONV 2\nICONV æ ae\nICONV æx ax\n" + PLURAL,
+            "1\nax/A\n", "æxs", List.of("ax")),
+        new Example("input-end-anchor", "ICONV 1\nICONV z_ s\n" + PLURAL,
+            "1\nquartz/A\n", "quartzz", List.of("quartz")),
+        new Example("output-conversion", "OCONV 1\nOCONV ae ä\n" + PLURAL,
+            "1\nbaer/A\n", "baers", List.of("bär")),
+        new Example("ignored-input-and-dictionary", "IGNORE ’\n" + PLURAL,
+            "1\npe’arl/A\n", "pear’ls", List.of("pearl")),
+        new Example("ignored-affix", "IGNORE ’\nSFX A Y 1\nSFX A 0 s’ .\n",
+            "1\npearl/A\n", "pearls", List.of("pearl")),
+        new Example("keepcase-exact", "KEEPCASE K\n" + PLURAL,
+            "1\ncard/AK\n", "cards", List.of("card")),
+        new Example("keepcase-title", "KEEPCASE K\n" + PLURAL,
+            "1\ncard/AK\n", "Cards", List.of("Cards")),
+        new Example("keepcase-uppercase", "KEEPCASE K\n" + PLURAL,
+            "1\ncard/AK\n", "CARDS", List.of("CARDS")),
+        new Example("mixed-case-is-not-lowercase", PLURAL,
+            "1\ncard/A\n", "cArds", List.of("cArds")),
+        new Example("uppercase-proper-name", PLURAL,
+            "1\nMaren/A\n", "MARENS", List.of("Maren")),
+        new Example("turkish-case", "LANG tr\n" + PLURAL,
+            "1\nılık/A\n", "ILIKS", List.of("ılık")),
+        new Example("complex-prefixes", "COMPLEXPREFIXES\nPFX B Y 1\n"
+            + "PFX B 0 re/C .\nPFX C Y 1\nPFX C 0 un .\n" + PLURAL,
+            "1\ndo/AB\n", "unredos", List.of("do")),
+        new Example("complex-prefix-requires-continuation", "COMPLEXPREFIXES\n"
+            + "PFX B Y 1\nPFX B 0 re .\nPFX C Y 1\nPFX C 0 un .\n",
+            "1\ndo/BC\n", "unredo", List.of("unredo")),
+        new Example("complex-prefix-single-suffix", "COMPLEXPREFIXES\n"
+            + "SFX B Y 1\nSFX B 0 er/C .\nSFX C Y 1\nSFX C 0 s .\n",
+            "1\nwalk/B\n", "walkers", List.of("walkers")),
+        new Example("explicit-stem", PLURAL, "1\nfeet/A st:foot is:plural\n",
+            "feet", List.of("foot")),
+        new Example("affixed-explicit-stem", PLURAL,
+            "1\nfeet/A st:foot is:plural\n", "feets", List.of("foot")),
+        new Example("morphology-alias", "AM 1\nAM st:goose is:plural\n" + PLURAL,
+            "1\ngeese/A\t1\n", "geese", List.of("goose")),
+        new Example("derivational-suffix", "SFX A Y 1\nSFX A 0 ness/B . ds:noun\n"
+            + "SFX B Y 1\nSFX B 0 es . is:plural\n",
+            "1\nkind/A po:adj\n", "kindnesses", List.of("kindness")),
+        new Example("surface-prefix", PLURAL, "1\nroot/A sp:pre st:base\n",
+            "roots", List.of("prebase")),
+        new Example("sharp-s-uppercase", "CHECKSHARPS\n" + PLURAL,
+            "1\nstraße/A\n", "STRASSES", List.of("straße")),
+        new Example("sharp-s-keepcase", "CHECKSHARPS\nKEEPCASE K\n" + PLURAL,
+            "1\nstraße/AK\n", "STRASSES", List.of("straße")),
+        new Example("forbidden-warning", "WARN W\nFORBIDWARN\n" + PLURAL,
+            "1\ncard/AW\n", "cards", List.of("cards")),
+        new Example("compound-rule", "COMPOUNDMIN 1\nCOMPOUNDRULE 1\nCOMPOUNDRULE RS\n"
+            + PLURAL, "2\nriver/R\nboat/AS\n", "riverboats", List.of("river", "boat")),
+        new Example("compound-rule-order", "COMPOUNDMIN 1\nCOMPOUNDRULE 1\nCOMPOUNDRULE RS\n",
+            "2\nriver/R\nboat/S\n", "boatriver", List.of("boatriver")),
+        new Example("compound-rule-star", "COMPOUNDMIN 1\nCOMPOUNDRULE 1\nCOMPOUNDRULE R*S\n",
+            "3\nriver/R\nstone/R\nboat/S\n", "riverstoneboat", List.of("river", "stone", "boat")),
+        new Example("compound-rule-optional", "COMPOUNDMIN 1\nCOMPOUNDRULE 1\nCOMPOUNDRULE R?TS\n",
+            "3\nriver/R\nstone/T\nboat/S\n", "stoneboat", List.of("stone", "boat")),
+        new Example("compound-rule-long", "FLAG long\nCOMPOUNDMIN 1\nCOMPOUNDRULE 1\n"
+            + "COMPOUNDRULE (Ra)(Sa)\n", "2\nriver/Ra\nboat/Sa\n",
+            "riverboat", List.of("river", "boat")),
+        new Example("compound-rule-numeric", "FLAG num\nCOMPOUNDMIN 1\nCOMPOUNDRULE 1\n"
+            + "COMPOUNDRULE (12)(34)\n", "2\nriver/12\nboat/34\n",
+            "riverboat", List.of("river", "boat")),
+        new Example("compound-rule-homonyms", "COMPOUNDMIN 1\nCOMPOUNDRULE 1\n"
+            + "COMPOUNDRULE RTS\n", "3\nriver/R\nriver/T\nboat/S\n",
+            "riverboat", List.of("riverboat")),
+        new Example("compound-force-uppercase", COMPOUND + "FORCEUCASE U\n",
+            "2\nriver/C\nboat/CU\n", "Riverboat", List.of("river", "boat")),
+        new Example("compound-force-uppercase-reject", COMPOUND + "FORCEUCASE U\n",
+            "2\nriver/C\nboat/CU\n", "riverboat", List.of("riverboat")),
+        new Example("compound-root-count", COMPOUND + "COMPOUNDROOT R\nCOMPOUNDWORDMAX 3\n",
+            "3\nrain/CR\ncoat/C\nrack/C\n", "raincoatrack", List.of("raincoatrack")),
+        new Example("compound-root-count-accept", COMPOUND + "COMPOUNDROOT R\nCOMPOUNDWORDMAX 4\n",
+            "3\nrain/CR\ncoat/C\nrack/C\n", "raincoatrack", List.of("rain", "coat", "rack")),
+        new Example("compound-replacement-check", COMPOUND + "CHECKCOMPOUNDREP\nREP 1\nREP coat boat\n",
+            "3\nrain/C\ncoat/C\nrainboat\n", "raincoat", List.of("raincoat")),
+        new Example("compound-pattern", COMPOUND + "CHECKCOMPOUNDPATTERN 1\n"
+            + "CHECKCOMPOUNDPATTERN er b\n", "2\nriver/C\nboat/C\n",
+            "riverboat", List.of("riverboat")),
+        new Example("compound-pattern-flags", COMPOUND + "CHECKCOMPOUNDPATTERN 1\n"
+            + "CHECKCOMPOUNDPATTERN er/X b/Y\n", "2\nriver/C\nboat/CY\n",
+            "riverboat", List.of("river", "boat")),
+        new Example("compound-pattern-replacement", COMPOUND + "CHECKCOMPOUNDPATTERN 1\n"
+            + "CHECKCOMPOUNDPATTERN er b X\n", "2\nriver/C\nboat/C\n",
+            "rivXoat", List.of("river", "boat")),
+        new Example("compound-simplified-triple", COMPOUND + "CHECKCOMPOUNDTRIPLE\nSIMPLIFIEDTRIPLE\n",
+            "2\nmill/C\nloom/C\n", "milloom", List.of("mill", "loom")),
+        new Example("compound-more-suffixes", COMPOUND + "COMPOUNDMORESUFFIXES\n"
+            + "SFX A Y 1\nSFX A 0 er/B .\nSFX B Y 1\nSFX B 0 s .\n",
+            "2\nriver/C\nboat/CA\n", "riverboaters", List.of("river", "boat")),
+        new Example("compound-syllable-limit", COMPOUND + "LANG hu\nCOMPOUNDWORDMAX 2\n"
+            + "COMPOUNDSYLLABLE 4 aeiouy\n", "3\nray/C\nme/C\nfa/C\n",
+            "raymefa", List.of("ray", "me", "fa")),
+        new Example("compound-syllable-limit-reject", COMPOUND + "LANG hu\nCOMPOUNDWORDMAX 2\n"
+            + "COMPOUNDSYLLABLE 2 aeiouy\n", "3\nray/C\nme/C\nfa/C\n",
+            "raymefa", List.of("raymefa")),
+        new Example("break-default", PLURAL, "2\nriver/A\nboat/A\n",
+            "rivers-boats", List.of("river", "boat")),
+        new Example("break-recursive", PLURAL, "2\nriver/A\nboat/A\n",
+            "rivers-boats-rivers", List.of("river", "boat")),
+        new Example("break-start", PLURAL, "1\nriver/A\n", "-rivers", List.of("river")),
+        new Example("break-end", PLURAL, "1\nriver/A\n", "rivers-", List.of("river")),
+        new Example("break-custom", "BREAK 1\nBREAK ::\n" + PLURAL,
+            "2\nriver/A\nboat/A\n", "rivers::boats", List.of("river", "boat")),
+        new Example("break-disabled", "BREAK 0\n" + PLURAL,
+            "2\nriver/A\nboat/A\n", "rivers-boats", List.of("rivers-boats")),
+        new Example("break-unknown-part", PLURAL, "1\nriver/A\n",
+            "rivers-absent", List.of("rivers-absent")),
+        new Example("break-internal-only", "BREAK 1\nBREAK -\n" + PLURAL,
+            "1\nriver/A\n", "-rivers", List.of("-rivers")),
+        new Example("replacement-trailing-fields", COMPOUND + "CHECKCOMPOUNDREP\n"
+            + "REP 1\nREP coat boat trailing_metadata\n",
+            "3\nrain/C\ncoat/C\nrainboat\n", "raincoat", List.of("raincoat")),
+        new Example("replacement-morphology", COMPOUND + "CHECKCOMPOUNDREP\n",
+            "3\nrain/C\ncoat/C\nrainboat ph:raincoat\n", "raincoat", List.of("raincoat")),
+        new Example("replacement-morphology-arrow", COMPOUND + "CHECKCOMPOUNDREP\n",
+            "3\nrain/C\ncoat/C\nrainboat ph:coat->boat\n", "raincoat", List.of("raincoat")),
+        new Example("replacement-morphology-star-unlisted", COMPOUND + "CHECKCOMPOUNDREP\n" + PLURAL,
+            "3\nrain/C\ncoat/C\nrainboats/A ph:raincoats*\n", "raincoat", List.of("rain", "coat")),
+        new Example("replacement-morphology-star", COMPOUND + "CHECKCOMPOUNDREP\n" + PLURAL,
+            "4\nrain/C\ncoat/C\nrainboats/A ph:raincoats*\nrainboat\n",
+            "raincoat", List.of("raincoat")));
+  }
+
+  /**
+   * Checks the Java implementation using the original fixture.
+   *
+   * @param example The dictionary and assertion.
+   * @throws IOException If loading fails.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("examples")
+  void testStemming(Example example) throws IOException {
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream(("SET UTF-8\n" + example.affix())
+            .getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream(example.words().getBytes(StandardCharsets.UTF_8)));
+    final List<String> actual = new HunspellStemmer(dictionary).stemAll(example.input())
+        .stream().map(CharSequence::toString).toList();
+    Assertions.assertEquals(example.expected(), actual);
+  }
+
+  /**
+   * Checks the expectations using an optional external Hunspell executable.
+   *
+   * @param example The dictionary and assertion.
+   * @throws Exception If preparing or running the reference fails.
+   */
+  @ParameterizedTest(name = "native {0}")
+  @MethodSource("examples")
+  void testNativeStemming(Example example) throws Exception {
+    final String result = runNative(example, "stem").strip();
+    final List<String> actual = result.isEmpty() ? List.of(example.input())
+        : List.of(result.split("\t"));
+    final List<String> expected = switch (example.name()) {
+      case "keepcase-title", "keepcase-uppercase", "forbidden-warning" -> List.of("card");
+      case "complex-prefixes", "sharp-s-uppercase", "sharp-s-keepcase" -> List.of(example.input());
+      case "compound-rule", "compound-force-uppercase", "compound-force-uppercase-reject",
+          "compound-pattern-flags" -> List.of("river");
+      case "compound-root-count-accept" -> List.of("raincoat");
+      case "compound-replacement-check", "replacement-trailing-fields",
+          "replacement-morphology", "replacement-morphology-arrow", "replacement-morphology-star",
+          "replacement-morphology-star-unlisted" ->
+          List.of("rain");
+      case "compound-pattern-replacement", "compound-simplified-triple" -> List.of(example.input());
+      case "compound-syllable-limit" -> List.of("rayme");
+      case "break-default", "break-recursive", "break-start", "break-end", "break-custom" ->
+          List.of(example.input());
+      default -> example.name().startsWith("compound-") && example.expected().size() > 1
+          ? List.of(String.join("", example.expected())) : example.expected();
+    };
+    Assertions.assertEquals(expected, actual);
+  }
+
+  /**
+   * Checks recognition separately from native stemming, which can return stems
+   * for rejected forms and no stems for accepted forms.
+   *
+   * @param example The dictionary and input.
+   * @throws Exception If the reference fails.
+   */
+  @ParameterizedTest(name = "native recognition {0}")
+  @MethodSource("examples")
+  void testNativeRecognition(Example example) throws Exception {
+    final boolean accepted = switch (example.name()) {
+      case "keepcase-title", "keepcase-uppercase", "forbidden-warning",
+          "mixed-case-is-not-lowercase", "complex-prefix-requires-continuation",
+          "complex-prefix-single-suffix", "compound-rule-order", "compound-rule-homonyms",
+          "compound-force-uppercase-reject", "compound-root-count", "compound-replacement-check",
+          "compound-pattern", "compound-syllable-limit-reject", "break-disabled",
+          "break-unknown-part", "break-internal-only", "replacement-trailing-fields",
+          "replacement-morphology", "replacement-morphology-arrow", "replacement-morphology-star" -> false;
+      default -> true;
+    };
+    Assertions.assertEquals(accepted ? "1" : "0", runNative(example, "spell").strip());
+  }
+
+  /**
+   * Runs an optional reference process on an original fixture.
+   *
+   * @param example The dictionary and input.
+   * @param operation The native operation.
+   * @return The native output.
+   * @throws Exception If file preparation or reference execution fails.
+   */
+  private String runNative(Example example, String operation) throws Exception {
+    return HunspellTestSupport.nativeResult(directory, example.affix(), example.words(),
+        example.input(), operation);
+  }
+}

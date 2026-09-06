@@ -60,6 +60,28 @@ under the License.
 		</screen>
 		</para>
 	</section>
+	<section xml:id="opennlp.evaltest.hunspell">
+		<title>Hunspell compatibility</title>
+		<para>
+			<code>HunspellCompatibilityEval</code> checks external English, German, and Hungarian
+			dictionaries for strict loading, inflections, compounds, and concurrent analysis.
+			An optional native Hunspell executable compares stems, morphological fields, and recognition.
+			Exact matches, expected differences, unknown-input fallbacks, and unexpected results
+			are reported separately. Unexpected results fail the evaluation.
+		</para>
+		<screen><![CDATA[./mvnw test -pl opennlp-eval-tests -am -Peval-tests \
+  -Dtest=HunspellCompatibilityEval -Dsurefire.failIfNoSpecifiedTests=false \
+  -Dopennlp.forkCount=1 \
+  -Dopennlp.hunspell.dict.dir=/path/to/dictionaries \
+  -Dopennlp.hunspell.reference=/path/to/opennlp-hunspell-reference]]></screen>
+		<para>
+			The evaluation does not download or bundle dictionaries or native libraries.
+			The dictionary files must match the SHA-256 digests in the test. Refer to
+			<code>dev/README-hunspell-dictionaries.md</code> for versions, licenses, native driver
+			instructions, and optional external word lists. These dictionary files are not part
+			of the shared <code>opennlp-data.zip</code> archive.
+		</para>
+	</section>
 	<section xml:id="opennlp.evaltest.howtochangeit">
 		<title>How to change evaluation data?</title>
 		<para>

@@ -76,7 +76,7 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 			<code>opennlp.tools.stemmer.hunspell</code> loads a user-supplied
 			<code>.aff</code> affix file and its <code>.dic</code> word list. OpenNLP
 			bundles no dictionary data; dictionaries are downloaded separately, and
-			each states its own license. Retain the dictionary's copyright notices and
+			each provides license information. Retain the dictionary's copyright notices and
 			license text with downloaded files. OpenNLP's Apache License does not
 			relicense those files. The dictionary is immutable and safe to share;
 			<code>HunspellStemmerFactory</code> creates a fresh stemmer per call.
@@ -103,12 +103,8 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			Loading uses <code>HunspellDictionary.LoadMode.STRICT</code> by default.
 			Unsupported affix directives cause an <code>IOException</code> with the
 			directive name and source line. File-based loading also includes the path.
-			This applies to <code>ICONV</code>, <code>OCONV</code>,
-			<code>COMPLEXPREFIXES</code>, <code>COMPOUNDRULE</code>,
-			<code>IGNORE</code>, <code>KEEPCASE</code>, and unknown directive names.
-			Such dictionaries may be valid Hunspell input; the error identifies
-			behavior that OpenNLP does not support. Metadata and suggestion settings
-			that do not affect stemming are ignored.
+			Unknown directive names are rejected. Metadata and suggestion settings
+			that do not affect stemming or analysis are ignored.
 			Applications can select <code>ALLOW_PARTIAL</code> to use the supported
 			rules and inspect skipped directives:
 			<programlisting language="java"><![CDATA[
@@ -122,9 +118,51 @@ for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupported
 			</programlisting>
 			The diagnostic list is immutable and contains the first source location
 			for each unsupported directive, in file order. Partial loading does not
-			apply conversion, casing, or compound behavior from skipped directives.
-			Dictionary morphology fields are ignored in both modes. Strict affix
-			loading does not establish complete Hunspell compatibility.
+			apply behavior from skipped directives. Strict affix loading does not
+			establish complete Hunspell compatibility.
+			<code>ICONV</code> and <code>OCONV</code> convert input and output;
+			<code>IGNORE</code> removes configured characters. <code>KEEPCASE</code>,
+			<code>CHECKSHARPS</code>, and language-specific lowercase mappings govern
+			case variants. <code>COMPLEXPREFIXES</code> permits 2 prefixes and 1
+			suffix instead of 1 prefix and 2 suffixes. Compound rules, boundary
+			checks, simplified junctions, and recursive <code>BREAK</code> separators
+			return recognized part stems in order, without duplicates.
+			Morphological <code>st:</code> fields supply explicit stems,
+			<code>ds:</code> suffixes remain in stems, and <code>sp:</code> fields
+			prepend surface material. <code>AM</code> expands morphology aliases.
+			<code>SYLLABLENUM</code> applies Hungarian compound syllable adjustments.
+			The deprecated <code>LEMMA_PRESENT</code> directive is accepted without
+			changing results, consistent with the pinned native reference.
+		</para>
+		<para>
+			<code>HunspellStemmer.analyze</code> returns an immutable list of distinct
+			morphological analyses. Each analysis contains space-separated fields
+			from the dictionary entry and applied affixes. A missing <code>st:</code>
+			field defaults to the entry text. An affix without morphological fields
+			contributes <code>fl:</code> followed by the flag. Compound components
+			begin with <code>pa:</code>. Analysis preserves field text without
+			<code>OCONV</code> output conversion. Unknown input returns an empty list:
+			<programlisting language="java"><![CDATA[
+HunspellStemmer analyzer = new HunspellStemmer(dictionary);
+analyzer.analyze("workers"); // ["st:work fl:E fl:S"]
+analyzer.analyze("table");   // []]]>
+			</programlisting>
+			These examples use the miniature dictionary above. OpenNLP does not
+			generate inflected forms or spelling suggestions.
+		</para>
+		<para>
+			Native Hunspell's spelling, stemming, and analysis operations can return
+			different results. OpenNLP applies case, forbidden-word, warning, and
+			compound-only restrictions before returning stems or analyses. A compound
+			can have OpenNLP component results but no native stem or analysis.
+			The tests check native recognition separately from native stem and field
+			output, with explicit expectations for such differences.
+			For prefix-only rules without morphology, OpenNLP returns a tagged prefix
+			flag before the stem, such as <code>fl:U st:done</code>. Native Hunspell can
+			return untagged prefix text and place the flag after the stem:
+			<code>un st:done fl:U</code>. The compatibility evaluation reports this
+			formatting difference separately from exact matches. See
+			<xref linkend="opennlp.evaltest.hunspell"/> for evaluation commands.
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
 			rejects malformed text in parsed rules, invalid counts, numeric flags
@@ -137,6 +175,14 @@ for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupported
 			declares <code>FULLSTRIP</code>, as in Hunspell itself.
 			Each affix or dictionary stream is rejected when it exceeds
 			<code>HunspellDictionary.MAX_STREAM_BYTES</code> (64&#160;MiB).
+			Search permits at most 64 compound components, 2048 compound candidate
+			checks per case variant, and 2048 word-break attempts per input. Sharp-s
+			expansion permits at most 64 case variants. Output is limited to 2048
+			distinct results. Compound-rule patterns permit 4096 flag elements.
+			Simplified triple letters can be restored at multiple junctions;
+			<code>CHECKCOMPOUNDPATTERN</code> replacement applies at one junction.
+			These limits can exclude valid analyses; candidates must pass validation
+			before inclusion in the result.
 		</para>
 	</section>
 </chapter>
