@@ -641,7 +641,9 @@ public final class FeedforwardDependencyTrainer {
   }
 
   /**
-   * Builds the vocabularies and randomly initialized weights.
+   * Builds the vocabularies and randomly initialized weights. A word, tag, or label in
+   * the training data that spells a reserved symbol shares the reserved row, as an
+   * unknown symbol does, so the reserved rows are never displaced.
    *
    * @param corpus The training samples.
    * @param settings The hyperparameters.
@@ -690,13 +692,17 @@ public final class FeedforwardDependencyTrainer {
     row = addSpecialSymbols(tags, row, FeedforwardDependencyModel.UNKNOWN,
         FeedforwardDependencyModel.ABSENT, FeedforwardDependencyModel.ROOT_SYMBOL);
     for (final String tag : tagIds.keySet()) {
-      tags.put(tag, row++);
+      if (!tags.containsKey(tag)) {
+        tags.put(tag, row++);
+      }
     }
     final Map<String, Integer> labels = new HashMap<>();
     row = addSpecialSymbols(labels, row, FeedforwardDependencyModel.UNKNOWN,
         FeedforwardDependencyModel.ABSENT);
     for (final String label : labelIds.keySet()) {
-      labels.put(label, row++);
+      if (!labels.containsKey(label)) {
+        labels.put(label, row++);
+      }
     }
 
     final String[] transitions = transitionIds.keySet().toArray(String[]::new);
