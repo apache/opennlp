@@ -20,6 +20,8 @@ package opennlp.tools.depparse;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -86,17 +88,19 @@ public class ArcStandardOracleTest {
         () -> ArcStandardOracle.transitions(nonProjective));
   }
 
-  @Test
-  void testAllTreesThroughFiveTokens() {
-    for (int size = 1; size <= 5; size++) {
-      final int[] heads = new int[size];
-      checkHeadAssignments(heads, 0);
-    }
+  @ParameterizedTest(name = "all trees with {0} token(s)")
+  @ValueSource(ints = {1, 2, 3, 4, 5})
+  void testAllTreesOfSize(int size) {
+    checkHeadAssignments(new int[size], 0);
   }
 
   /**
    * Enumerates every head assignment and checks each valid tree against the
    * arc-crossing definition of projectivity.
+   *
+   * @param heads The head assignment under construction; positions before {@code index}
+   *              are fixed.
+   * @param index The next position to assign a head to.
    */
   private static void checkHeadAssignments(int[] heads, int index) {
     if (index < heads.length) {
@@ -126,7 +130,12 @@ public class ArcStandardOracleTest {
     }
   }
 
-  /** Returns whether no pair of arcs crosses in token order. */
+  /**
+   * Decides projectivity by the arc-crossing definition.
+   *
+   * @param graph The graph to inspect.
+   * @return {@code true} if no pair of arcs crosses in token order.
+   */
   private static boolean isProjective(DependencyGraph graph) {
     for (int first = 0; first < graph.size(); first++) {
       final int firstLow = Math.min(first, graph.headOf(first));

@@ -19,7 +19,10 @@ package opennlp.tools.depparse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,6 +43,28 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class DependencyParserMETest {
 
+  /** The language code of the test corpus. */
+  private static final String LANGUAGE = "eng";
+
+  /** The tokens of the first corpus sentence. */
+  private static final String[] THE_DOG_BARKS_TOKENS = {"the", "dog", "barks"};
+
+  /** The tags of the first corpus sentence. */
+  private static final String[] THE_DOG_BARKS_TAGS = {"DT", "NN", "VBZ"};
+
+  /** The gold graph of the first corpus sentence. */
+  private static final DependencyGraph THE_DOG_BARKS_GRAPH =
+      DependencyGraph.of(new int[] {1, 2, -1}, new String[] {"det", "nsubj", "root"});
+
+  /** The total token count of {@link DependencyTestSamples#corpus()}. */
+  private static final int CORPUS_WORD_COUNT = 320;
+
+  /** The encoded shift outcome. */
+  private static final String SHIFT_OUTCOME = "SHIFT";
+
+  /** The encoded right arc outcome attaching a token to the root. */
+  private static final String ROOT_ARC_OUTCOME = "RIGHT_ARC:root";
+
   private static DependencyModel model;
   private static DependencyParserME parser;
 
@@ -53,17 +78,15 @@ public class DependencyParserMETest {
   static void trainParser() throws IOException {
     final TrainingParameters parameters = TrainingParameters.defaultParams();
     parameters.put(Parameters.CUTOFF_PARAM, 0);
-    model = DependencyParserME.train("eng",
+    model = DependencyParserME.train(LANGUAGE,
         ObjectStreamUtils.createObjectStream(corpus()), parameters);
     parser = new DependencyParserME(model);
   }
 
   @Test
   void testMemorizesTrainingSentences() {
-    final DependencyGraph parsed = parser.parse(new String[] {"the", "dog", "barks"},
-        new String[] {"DT", "NN", "VBZ"});
-    assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
-        new String[] {"det", "nsubj", "root"}), parsed);
+    final DependencyGraph parsed = parser.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS);
+    assertEquals(THE_DOG_BARKS_GRAPH, parsed);
   }
 
   @Test
@@ -81,7 +104,7 @@ public class DependencyParserMETest {
     evaluator.evaluate(ObjectStreamUtils.createObjectStream(corpus()));
     assertEquals(1.0d, evaluator.getUas());
     assertEquals(1.0d, evaluator.getLas());
-    assertEquals(320, evaluator.getWordCount());
+    assertEquals(CORPUS_WORD_COUNT, evaluator.getWordCount());
   }
 
   @Test
@@ -105,11 +128,25 @@ public class DependencyParserMETest {
   }
 
   @Test
+  void testModelConstructorsRejectNullArguments() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyModel(null, model.getParserModel(), null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyModel(LANGUAGE, null, null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyModel((InputStream) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyModel((File) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyModel((Path) null));
+  }
+
+  @Test
   void testTrainValidatesArguments() {
     assertThrows(IllegalArgumentException.class,
-        () -> DependencyParserME.train("eng", null, TrainingParameters.defaultParams()));
+        () -> DependencyParserME.train(LANGUAGE, null, TrainingParameters.defaultParams()));
     assertThrows(IllegalArgumentException.class,
-        () -> DependencyParserME.train("eng",
+        () -> DependencyParserME.train(LANGUAGE,
             ObjectStreamUtils.createObjectStream(corpus()), null));
     assertThrows(IllegalArgumentException.class,
         () -> DependencyParserME.train(null,
@@ -124,15 +161,14 @@ public class DependencyParserMETest {
     final DependencyModel reloaded = new DependencyModel(
         new ByteArrayInputStream(out.toByteArray()));
     final DependencyGraph parsed = new DependencyParserME(reloaded)
-        .parse(new String[] {"the", "dog", "barks"}, new String[] {"DT", "NN", "VBZ"});
-    assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
-        new String[] {"det", "nsubj", "root"}), parsed);
+        .parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS);
+    assertEquals(THE_DOG_BARKS_GRAPH, parsed);
   }
 
   @Test
   void testModelRejectsNullParserModel() {
     assertThrows(IllegalArgumentException.class,
-        () -> new DependencyModel("eng", null, null));
+        () -> new DependencyModel(LANGUAGE, null, null));
   }
 
   @Test
@@ -146,22 +182,22 @@ public class DependencyParserMETest {
   @Test
   void testIncompleteActionInventoriesAreRejectedAtConstruction() {
     assertThrows(IllegalArgumentException.class,
-        () -> new DependencyParserME(new OutcomeOnlyModel("SHIFT")));
+        () -> new DependencyParserME(new OutcomeOnlyModel(SHIFT_OUTCOME)));
     assertThrows(IllegalArgumentException.class,
-        () -> new DependencyParserME(new OutcomeOnlyModel("RIGHT_ARC:root")));
+        () -> new DependencyParserME(new OutcomeOnlyModel(ROOT_ARC_OUTCOME)));
   }
 
   @Test
   void testDuplicateActionsAreRejectedAtConstruction() {
     assertThrows(IllegalArgumentException.class,
         () -> new DependencyParserME(
-            new OutcomeOnlyModel("SHIFT", "SHIFT", "RIGHT_ARC:root")));
+            new OutcomeOnlyModel(SHIFT_OUTCOME, SHIFT_OUTCOME, ROOT_ARC_OUTCOME)));
   }
 
   @Test
   void testModelScoreCountIsValidated() {
     final DependencyParserME invalid = new DependencyParserME(
-        new OutcomeOnlyModel(new double[] {1.0}, "SHIFT", "RIGHT_ARC:root"));
+        new OutcomeOnlyModel(new double[] {1.0}, SHIFT_OUTCOME, ROOT_ARC_OUTCOME));
     final IllegalStateException exception = assertThrows(IllegalStateException.class,
         () -> invalid.parse(new String[] {"word"}, new String[] {"NN"}));
     assertEquals("model returned 1 scores for 2 outcomes", exception.getMessage());
@@ -171,7 +207,7 @@ public class DependencyParserMETest {
   void testNonFiniteModelScoreIsRejected() {
     final DependencyParserME invalid = new DependencyParserME(
         new OutcomeOnlyModel(new double[] {Double.NaN, 1.0},
-            "SHIFT", "RIGHT_ARC:root"));
+            SHIFT_OUTCOME, ROOT_ARC_OUTCOME));
     assertThrows(IllegalStateException.class,
         () -> invalid.parse(new String[] {"word"}, new String[] {"NN"}));
   }
@@ -185,10 +221,21 @@ public class DependencyParserMETest {
     private final String[] outcomes;
     private final double[] scores;
 
+    /**
+     * Initializes a model that fails on every evaluation.
+     *
+     * @param outcomes The outcome inventory, in index order.
+     */
     private OutcomeOnlyModel(String... outcomes) {
       this(null, outcomes);
     }
 
+    /**
+     * Initializes a model returning fixed scores.
+     *
+     * @param scores The scores every evaluation returns, or {@code null} to fail instead.
+     * @param outcomes The outcome inventory, in index order.
+     */
     private OutcomeOnlyModel(double[] scores, String... outcomes) {
       this.scores = scores;
       this.outcomes = outcomes;

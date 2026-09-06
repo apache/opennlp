@@ -92,7 +92,7 @@ public class ConlluDependencySampleStreamTest {
       assertEquals(3, first.getGraph().headOf(2));
       assertEquals("obj", first.getGraph().relationOf(3));
 
-      // the underscore-head sentence is skipped; the contraction sentence is KEPT,
+      // the underscore-head sentence is skipped; the contraction sentence is kept,
       // with the range line dropped and its syntactic words intact
       final DependencySample second = samples.read();
       assertNotNull(second);
