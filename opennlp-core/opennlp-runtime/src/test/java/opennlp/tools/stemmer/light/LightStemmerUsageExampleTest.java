@@ -17,8 +17,14 @@
 
 package opennlp.tools.stemmer.light;
 
+import java.text.Normalizer;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import opennlp.tools.util.StringUtil;
 
 /**
  * Checks the light-stemmer examples in the manual. Behavior changes must update both locations.
@@ -30,6 +36,20 @@ class LightStemmerUsageExampleTest {
   void testGermanLightStemmerStemsPlural() {
     final GermanLightStemmer light = new GermanLightStemmer();
     Assertions.assertEquals("haus", light.stem("h\u00E4usern").toString());
+  }
+
+  /**
+   * Prepares uppercase or decomposed German text before stemming.
+   *
+   * @param input The input word.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"HA\u0308USERN", "H\u00C4USERN", "ha\u0308usern"})
+  void testNormalizeAndLowercaseBeforeStemming(String input) {
+    final String prepared = StringUtil.toLowerCase(
+        Normalizer.normalize(input, Normalizer.Form.NFC));
+    Assertions.assertEquals("h\u00E4usern", prepared);
+    Assertions.assertEquals("haus", new GermanLightStemmer().stem(prepared).toString());
   }
 
   /** Spanish minimal stemming reduces a plural ending. */

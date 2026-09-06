@@ -151,5 +151,18 @@ NorwegianLightStemmer bokmaal =
 bokmaal.stem("hemmeligheten");                       // "hemmelig"]]>
 			</programlisting>
 		</para>
+		<para>
+			For uppercase or decomposed input, normalize to NFC and lowercase before
+			stemming. This example prepares a German word with a combining diaeresis:
+		</para>
+		<programlisting language="java"><![CDATA[import java.text.Normalizer;
+import opennlp.tools.stemmer.light.GermanLightStemmer;
+import opennlp.tools.util.StringUtil;
+
+String input = "HA\u0308USERN";
+String prepared = StringUtil.toLowerCase(
+    Normalizer.normalize(input, Normalizer.Form.NFC));
+new GermanLightStemmer().stem(prepared);             // "haus"]]>
+		</programlisting>
 	</section>
 </chapter>
