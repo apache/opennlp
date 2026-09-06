@@ -58,6 +58,9 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
   private static final int HEAD = 6;
   private static final int DEPREL = 7;
 
+  /** The CoNLL-U placeholder of a missing value. */
+  private static final String PLACEHOLDER = "_";
+
   private final InputStreamFactory in;
   private final int tagColumn;
 
@@ -173,7 +176,8 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
    *
    * @param words The word lines of the sentence.
    * @return The converted sample, or {@code null} when the sentence's annotation is
-   *         unusable, for example an underscore head or a graph that is not a tree.
+   *         unusable, for example an underscore head or relation or a graph that is not
+   *         a tree.
    */
   private DependencySample convert(List<String[]> words) {
     final int n = words.size();
@@ -188,6 +192,9 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
       }
       tokens[i] = word[FORM];
       tags[i] = word[tagColumn];
+      if (PLACEHOLDER.equals(word[DEPREL])) {
+        return null;
+      }
       relations[i] = word[DEPREL];
       try {
         heads[i] = Integer.parseInt(word[HEAD]) - 1;
