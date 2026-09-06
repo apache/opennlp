@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Fetches one Universal Dependencies treebank and lays its splits out the way the
-# gated dependency-parser evaluation expects: <target-dir>/train.conllu and
-# <target-dir>/test.conllu. See README-ud-treebanks.md in this directory for the
-# evaluation command and the licensing notes; each treebank carries its own license,
-# which you accept by downloading it. Nothing is bundled with Apache OpenNLP.
+# Fetches one Universal Dependencies treebank at a pinned commit and copies its train and
+# test splits to <target-dir>/train.conllu and <target-dir>/test.conllu. See
+# README-ud-treebanks.md in this directory for the evaluation command and the licensing
+# notes; each treebank carries its own license, which you accept by downloading it.
+# Nothing is bundled with Apache OpenNLP.
 
 set -euo pipefail
 
@@ -37,13 +37,15 @@ treebank="$1"
 commit="$2"
 target="$3"
 
-if [ "${#commit}" -ne 40 ]; then
-  echo "commit must be a full 40-character lowercase SHA" >&2
+commit_length=40
+commit_error="commit must be a full ${commit_length}-character lowercase SHA"
+if [ "${#commit}" -ne "${commit_length}" ]; then
+  echo "${commit_error}" >&2
   exit 2
 fi
 case "${commit}" in
   *[!0-9a-f]*)
-    echo "commit must be a full 40-character lowercase SHA" >&2
+    echo "${commit_error}" >&2
     exit 2
     ;;
 esac
@@ -82,8 +84,4 @@ for split in train test; do
 done
 
 echo ""
-echo "run the gated evaluation with:"
-echo "  ./mvnw -pl opennlp-core/opennlp-formats -am test \\"
-echo "      -Dtest=ConlluDependencyParserEvalTest \\"
-echo "      -Dopennlp.forkCount=1 \\"
-echo "      -Dopennlp.depparse.ud.dir=${target}"
+echo "see README-ud-treebanks.md for running UniversalDependencyParserEval on the data"
