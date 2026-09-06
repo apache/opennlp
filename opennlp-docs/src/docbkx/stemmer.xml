@@ -159,12 +159,96 @@ analyzer.analyze("table");   // []]]>
 		</para>
 		<para>
 			Native Hunspell's spelling, stemming, and analysis operations can return
-			different results. OpenNLP applies case, forbidden-word, warning, and
-			compound-only restrictions before returning stems or analyses. A compound
-			can have OpenNLP component results but no native stem or analysis.
-			The tests check native recognition separately from native stem and field
-			output, with explicit expectations for such differences. See
-			<xref linkend="opennlp.evaltest.hunspell"/> for evaluation commands.
+			different results from one another. OpenNLP has one engine, so it follows
+			the spell checker for recognition and the analyzer for stems and fields
+			wherever the two agree, and resolves each disagreement the same way for
+			every caller. The results deviate from the native library in the
+			following cases. The compatibility evaluation in
+			<xref linkend="opennlp.evaltest.hunspell"/> lists each expected difference
+			with the complete output of both implementations.
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					Compound stems are the stems of the recognized parts, in order. The
+					native library concatenates the parts and stems the last one, so
+					<code>riverboats</code> gives <code>river</code> and
+					<code>boat</code> here and <code>riverboat</code> natively. To obtain
+					the native form, join the <code>pa:</code> surfaces of every part but
+					the last from <code>analyze</code> and append the last part's
+					<code>st:</code> value.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Purely numeric tokens such as <code>1.5</code> or <code>42-42</code>
+					are accepted by the native spell checker before any dictionary lookup.
+					Here they are unknown input and are returned unchanged. Recognize
+					numbers in the tokenizer or before stemming.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					A word starting with a dotted capital I is lowercased with Unicode
+					mapping outside the Turkic languages, so <code>İmply</code> is
+					recognized when <code>imply</code> is listed. The native checker
+					never tries the lowercase form of such a word without a Turkic
+					<code>LANG</code>. Declare <code>LANG tr</code>, <code>az</code>, or
+					<code>crh</code> for Turkic data, where both implementations keep the
+					dotted and dotless letters apart.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					A compound of three or more parts that is one edit away from a listed
+					word, such as <code>foobarbaz</code> next to <code>goobarbaz</code>, is
+					rejected natively by running the spelling suggester, which OpenNLP
+					does not provide. Such compounds are recognized here. An application
+					that needs the rejection can validate multi-part compounds with a
+					spelling checker, or limit <code>COMPOUNDWORDMAX</code> in the affix
+					file where the language allows.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Analyses keep the dictionary field text. The native analyzer applies
+					<code>OCONV</code> to the whole analysis string and, under
+					<code>COMPLEXPREFIXES</code>, returns field text reversed. Use
+					<code>stemAll</code> for converted stems.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Where the native spell checker and analyzer disagree, recognition
+					follows the spell checker and output follows the analyzer. This
+					affects all-uppercase Turkish words such as <code>İPEK</code>, which
+					the native checker rejects while its analyzer stems them; mixed-case
+					words with a capitalized initial such as <code>NoLinda</code> and
+					<code>BREAK</code> forms, which the native analyzer does not handle;
+					and forbidden affixed compounds, which the native analyzer stems. In
+					each case OpenNLP recognizes the word when the native checker does and
+					returns the analyzer's stems.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					An affix file without <code>SET</code> is read as UTF-8 and rejected
+					when it is not valid UTF-8; the native default is ISO-8859-1. Add
+					<code>SET ISO8859-1</code> to such a file.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Malformed declarations are rejected where the native parser guesses:
+					a multi-character flag under the default flag mode, an <code>AF</code>
+					or <code>AM</code> table whose entry count does not match its header,
+					and a numeric flag outside 1 through 65535. Correct the declaration;
+					<code>ALLOW_PARTIAL</code> skips unsupported directives, not malformed
+					ones.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
 			rejects malformed text in parsed rules, invalid counts, numeric flags

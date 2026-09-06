@@ -1585,9 +1585,14 @@ public final class HunspellDictionary {
       }
       preserveCase |= keepCase != 0 && affix.allowsContinuation(keepCase);
     }
-    return !preserveCase || surface.equals(variant)
-        || (checkSharps && variant.indexOf('ß') >= 0
-            && (surface.indexOf('ß') < 0 || Character.isUpperCase(surface.codePointAt(0))));
+    if (!preserveCase || surface.equals(variant)) {
+      return true;
+    }
+    // CHECKSHARPS lets a case-preserving entry with a sharp s be written all-uppercase
+    // with SS, or capitalized; an all-uppercase form with a capital sharp s stays rejected
+    return checkSharps && variant.indexOf('ß') >= 0
+        && (surface.contains("SS") || (caseType(surface) != CaseType.ALLCAP
+            && Character.isUpperCase(surface.codePointAt(0))));
   }
 
   /**
