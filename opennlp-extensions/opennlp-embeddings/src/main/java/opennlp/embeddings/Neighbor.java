@@ -26,13 +26,18 @@ import opennlp.tools.util.java.Experimental;
  *
  * @param token      The matrix row's text: a tokenizer piece or a term-table entry.
  * @param similarity Cosine similarity to the query vector, in {@code [-1, 1]}.
- * @throws IllegalArgumentException Thrown if {@code token} is {@code null}, or
- *     {@code similarity} is non-finite or outside {@code [-1, 1]}.
  */
 @Experimental
 public record Neighbor(String token, double similarity) {
 
-  /** Validates the neighbor returned by a similarity search. */
+  /**
+   * Creates a search result.
+   *
+   * @param token The token or term text.
+   * @param similarity Cosine similarity in {@code [-1, 1]}.
+   * @throws IllegalArgumentException Thrown if {@code token} is {@code null}, or
+   *     {@code similarity} is non-finite or outside {@code [-1, 1]}.
+   */
   public Neighbor {
     if (token == null) {
       throw new IllegalArgumentException("token must not be null");
