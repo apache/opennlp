@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import opennlp.tools.depparse.DependencyGraph;
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringUtil;
 
@@ -143,7 +144,8 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
    *
    * @return The word lines of the next sentence, or an empty list at the end of the
    *         content. Never {@code null}.
-   * @throws IOException Thrown if reading fails or a word line does not have ten columns.
+   * @throws IOException Thrown if reading fails.
+   * @throws InvalidFormatException Thrown if a word line does not have the expected column count.
    */
   private List<String[]> nextSentence() throws IOException {
     final List<String[]> words = new ArrayList<>();
@@ -166,7 +168,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
       }
       final String[] fields = splitFields(line);
       if (fields.length != COLUMNS) {
-        throw new IOException("CoNLL-U word line has " + fields.length
+        throw new InvalidFormatException("CoNLL-U word line has " + fields.length
             + " columns, expected " + COLUMNS + ": " + line);
       }
       final String id = fields[ID];

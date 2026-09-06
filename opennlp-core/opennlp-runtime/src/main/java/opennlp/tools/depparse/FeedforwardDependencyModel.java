@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -159,7 +160,7 @@ public class FeedforwardDependencyModel {
    * @throws IllegalArgumentException Thrown if {@code features} is {@code null}, does not
    *         have the required length, or contains an invalid embedding index.
    */
-  public double[] score(int[] features) {
+  double[] score(int[] features) {
     if (features == null) {
       throw new IllegalArgumentException("features must not be null");
     }
@@ -315,7 +316,7 @@ public class FeedforwardDependencyModel {
    * @throws IllegalArgumentException Thrown if {@code symbols} is {@code null} or does
    *         not have the required length.
    */
-  public int[] featureIds(String[] symbols) {
+  int[] featureIds(String[] symbols) {
     if (symbols == null) {
       throw new IllegalArgumentException("symbols must not be null");
     }
@@ -520,7 +521,8 @@ public class FeedforwardDependencyModel {
    *
    * @param in The stream to read from. Must not be {@code null}. Not closed.
    * @return The loaded model. Never {@code null}.
-   * @throws IOException Thrown if reading fails or the content is malformed.
+   * @throws IOException Thrown if reading fails.
+   * @throws InvalidFormatException Thrown if the content is not a valid model.
    */
   public static FeedforwardDependencyModel load(InputStream in) throws IOException {
     if (in == null) {
@@ -529,7 +531,7 @@ public class FeedforwardDependencyModel {
     final DataInputStream data = new DataInputStream(new BufferedInputStream(in));
     final String magic = data.readUTF();
     if (!MAGIC.equals(magic)) {
-      throw new IOException("not a feedforward dependency model: " + magic);
+      throw new InvalidFormatException("not a feedforward dependency model: " + magic);
     }
     final Map<String, Integer> wordIds = readVocabulary(data, WORD_VOCABULARY);
     final Map<String, Integer> tagIds = readVocabulary(data, TAG_VOCABULARY);
@@ -543,21 +545,21 @@ public class FeedforwardDependencyModel {
     for (int i = 0; i < transitions.length; i++) {
       transitions[i] = data.readUTF();
       if (!transitionSet.add(transitions[i])) {
-        throw new IOException("duplicate transition: " + transitions[i]);
+        throw new InvalidFormatException("duplicate transition: " + transitions[i]);
       }
       try {
         final Transition transition = Transition.decode(transitions[i]);
         hasShift |= transition.type() == Transition.Type.SHIFT;
         hasRightArc |= transition.type() == Transition.Type.RIGHT_ARC;
       } catch (IllegalArgumentException e) {
-        throw new IOException("invalid transition: " + transitions[i], e);
+        throw new InvalidFormatException("invalid transition: " + transitions[i], e);
       }
     }
     if (!hasShift) {
-      throw new IOException("transition inventory has no SHIFT action");
+      throw new InvalidFormatException("transition inventory has no SHIFT action");
     }
     if (!hasRightArc) {
-      throw new IOException("transition inventory has no RIGHT_ARC action");
+      throw new InvalidFormatException("transition inventory has no RIGHT_ARC action");
     }
     final int embeddingSize = readCount(data, "embedding size", MAX_EMBEDDING_SIZE, false);
     final long[] remainingFloats = {MAX_MODEL_FLOAT_VALUES};
@@ -573,7 +575,7 @@ public class FeedforwardDependencyModel {
     final float[] outputBias = readVector(data, transitions.length,
         remainingFloats, "output bias");
     if (data.read() != -1) {
-      throw new IOException("trailing data after feedforward dependency model");
+      throw new InvalidFormatException("trailing data after feedforward dependency model");
     }
     return new FeedforwardDependencyModel(wordIds, tagIds, labelIds, transitions,
         embeddingSize, embeddings, hiddenWeights, hiddenBias, outputWeights, outputBias);
@@ -584,7 +586,8 @@ public class FeedforwardDependencyModel {
    *
    * @param path The file to read. Must not be {@code null}.
    * @return The loaded model. Never {@code null}.
-   * @throws IOException Thrown if reading fails or the content is not this format.
+   * @throws IOException Thrown if reading fails.
+   * @throws InvalidFormatException Thrown if the content is not a valid model.
    */
   public static FeedforwardDependencyModel load(Path path) throws IOException {
     if (path == null) {
@@ -631,7 +634,7 @@ public class FeedforwardDependencyModel {
       final String symbol = data.readUTF();
       final int id = data.readInt();
       if (ids.put(symbol, id) != null) {
-        throw new IOException("duplicate symbol in " + label + ": " + symbol);
+        throw new InvalidFormatException("duplicate symbol in " + label + ": " + symbol);
       }
     }
     return ids;
@@ -652,7 +655,7 @@ public class FeedforwardDependencyModel {
       Map<String, Integer> tagIds, Map<String, Integer> labelIds) throws IOException {
     final long total = (long) wordIds.size() + tagIds.size() + labelIds.size();
     if (total > MAX_VOCABULARY_ENTRIES) {
-      throw new IOException("combined vocabulary size exceeds " + MAX_VOCABULARY_ENTRIES);
+      throw new InvalidFormatException("combined vocabulary size exceeds " + MAX_VOCABULARY_ENTRIES);
     }
     final boolean[] present = new boolean[(int) total];
     validateVocabulary(wordIds, present, WORD_VOCABULARY, UNKNOWN, ABSENT, ROOT_SYMBOL);
@@ -660,7 +663,7 @@ public class FeedforwardDependencyModel {
     validateVocabulary(labelIds, present, LABEL_VOCABULARY, UNKNOWN, ABSENT);
     for (int i = 0; i < present.length; i++) {
       if (!present[i]) {
-        throw new IOException("missing embedding id: " + i);
+        throw new InvalidFormatException("missing embedding id: " + i);
       }
     }
     return present.length;
@@ -680,16 +683,16 @@ public class FeedforwardDependencyModel {
       String label, String... requiredSymbols) throws IOException {
     for (final String required : requiredSymbols) {
       if (!ids.containsKey(required)) {
-        throw new IOException(label + " has no " + required + " symbol");
+        throw new InvalidFormatException(label + " has no " + required + " symbol");
       }
     }
     for (final Map.Entry<String, Integer> entry : ids.entrySet()) {
       final int id = entry.getValue();
       if (id < 0 || id >= present.length) {
-        throw new IOException(label + " id out of range for " + entry.getKey() + ": " + id);
+        throw new InvalidFormatException(label + " id out of range for " + entry.getKey() + ": " + id);
       }
       if (present[id]) {
-        throw new IOException("duplicate embedding id: " + id);
+        throw new InvalidFormatException("duplicate embedding id: " + id);
       }
       present[id] = true;
     }
@@ -733,10 +736,10 @@ public class FeedforwardDependencyModel {
     final int rows = readCount(data, label + " rows", maxRows, false);
     final int columns = readCount(data, label + " columns", Integer.MAX_VALUE, false);
     if (expectedRows >= 0 && rows != expectedRows) {
-      throw new IOException(label + " row count is " + rows + ", expected " + expectedRows);
+      throw new InvalidFormatException(label + " row count is " + rows + ", expected " + expectedRows);
     }
     if (columns != expectedColumns) {
-      throw new IOException(label + " column count is " + columns
+      throw new InvalidFormatException(label + " column count is " + columns
           + ", expected " + expectedColumns);
     }
     reserveFloats(remainingFloats, (long) rows * columns, label);
@@ -778,7 +781,7 @@ public class FeedforwardDependencyModel {
       long[] remainingFloats, String label) throws IOException {
     final int length = readCount(data, label + " length", Integer.MAX_VALUE, false);
     if (length != expectedLength) {
-      throw new IOException(label + " length is " + length + ", expected " + expectedLength);
+      throw new InvalidFormatException(label + " length is " + length + ", expected " + expectedLength);
     }
     reserveFloats(remainingFloats, length, label);
     final float[] vector = new float[length];
@@ -802,7 +805,7 @@ public class FeedforwardDependencyModel {
       boolean allowZero) throws IOException {
     final int value = data.readInt();
     if (value < 0 || !allowZero && value == 0 || value > maximum) {
-      throw new IOException(label + " out of range: " + value);
+      throw new InvalidFormatException(label + " out of range: " + value);
     }
     return value;
   }
@@ -818,7 +821,7 @@ public class FeedforwardDependencyModel {
   private static void reserveFloats(long[] remaining, long count, String label)
       throws IOException {
     if (count > remaining[0]) {
-      throw new IOException(label + " exceeds the model allocation limit");
+      throw new InvalidFormatException(label + " exceeds the model allocation limit");
     }
     remaining[0] -= count;
   }
@@ -835,7 +838,7 @@ public class FeedforwardDependencyModel {
       throws IOException {
     final float value = data.readFloat();
     if (!Float.isFinite(value)) {
-      throw new IOException(label + " contains a non-finite value");
+      throw new InvalidFormatException(label + " contains a non-finite value");
     }
     return value;
   }
