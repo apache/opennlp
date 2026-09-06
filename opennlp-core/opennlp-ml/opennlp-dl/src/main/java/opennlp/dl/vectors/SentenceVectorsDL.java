@@ -30,7 +30,6 @@ import ai.onnxruntime.OrtSession;
 import opennlp.dl.AbstractDL;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.tokenize.SubwordTokenizer;
 
 /**
  * Facilitates the generation of sentence vectors using
@@ -105,7 +104,7 @@ public class SentenceVectorsDL extends AbstractDL {
    */
   public float[] getVectors(final String sentence) throws OrtException {
 
-    final Tokens tokens = encode(sentence, tokenizer);
+    final Tokens tokens = encodeTokens(sentence);
 
     final Map<String, OnnxTensor> inputs = new HashMap<>();
 
@@ -128,11 +127,6 @@ public class SentenceVectorsDL extends AbstractDL {
       inputs.values().forEach(OnnxTensor::close);
     }
 
-  }
-
-  /** Encodes one sentence with model vocabulary ids. */
-  static Tokens encode(String text, SubwordTokenizer tokenizer) {
-    return encodeTokens(tokenizer, text);
   }
 
 }

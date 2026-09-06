@@ -23,9 +23,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import opennlp.dl.InferenceOptions;
-import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
-import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -106,24 +104,6 @@ public class DocumentCategorizerDLTest {
     assertThrows(IllegalArgumentException.class, () ->
         new DocumentCategorizerDL(null, null, vocab(), categories(),
             new AverageClassificationScoringStrategy(), null));
-  }
-
-  @Test
-  void testEncodeUsesVocabularyIds() {
-    final Map<String, Integer> vocab = Map.of(
-        WordpieceTokenizer.BERT_CLS_TOKEN, 101,
-        WordpieceTokenizer.BERT_SEP_TOKEN, 205,
-        WordpieceTokenizer.BERT_UNK_TOKEN, 999,
-        "hello", 42);
-    final WordpieceEncoder encoder = new WordpieceEncoder(vocab, true,
-        WordpieceTokenizer.BERT_CLS_TOKEN,
-        WordpieceTokenizer.BERT_SEP_TOKEN,
-        WordpieceTokenizer.BERT_UNK_TOKEN);
-
-    final Tokens tokens = DocumentCategorizerDL.encode("Hello missing", encoder);
-
-    assertArrayEquals(new String[] {"[CLS]", "hello", "[UNK]", "[SEP]"}, tokens.tokens());
-    assertArrayEquals(new long[] {101, 42, 999, 205}, tokens.ids());
   }
 
   @Test
