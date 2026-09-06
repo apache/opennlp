@@ -352,6 +352,26 @@ opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4]]>
 		</para>
 	</section>
 
+	<section xml:id="tools.embeddings.benchmarks">
+		<title>Loading and Inference Benchmarks</title>
+		<para>
+			The optional <code>jmh</code> Maven profile compiles
+			<code>StaticEmbeddingModelBenchmark</code>. Run the class with the module's test
+			classpath and <code>-t 1 -prof gc</code> to collect timing and allocation statistics.
+			Use <code>-p modelDir=/path/to/model</code> for a local model. The default
+			<code>synthetic</code> fixture is a generated 29,528 by 256 F32 table and requires
+			no downloads. The module README provides build and launch commands.
+		</para>
+		<para>
+			Embedding throughput and allocated bytes are reported per input text. Top-10 search
+			uses one query per operation. Model loading reports milliseconds and allocated bytes
+			per load, including file access, decoding and construction. Fixture generation is
+			outside timing. Repeated loads can use the operating system's file cache, so the
+			loading result does not describe disk startup. Allocated bytes include temporary
+			objects and do not describe retained or peak memory.
+		</para>
+	</section>
+
 	<section xml:id="tools.embeddings.safetensors">
 		<title>The safetensors Reader</title>
 		<para>

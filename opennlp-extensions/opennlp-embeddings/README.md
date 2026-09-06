@@ -112,7 +112,38 @@ flowchart TD
 
 ## Performance
 
-A static table avoids a model forward pass. Its embedding path performs vocabulary lookups, vector additions, pooling, and optional normalization. The Java Microbenchmark Harness (JMH) benchmark (`StaticEmbeddingModelBenchmark`) measures `embed()` and `mostSimilar()` throughput on a model directory (`-p modelDir=/path/to/model`).
+A static table avoids a model forward pass. `StaticEmbeddingModelBenchmark` uses the Java
+Microbenchmark Harness (JMH) to report loading time, embedding throughput and top-10 search
+throughput. Add `-prof gc` for allocation statistics.
+
+Compile the benchmarks and run the fixture tests from the repository root:
+
+```sh
+./mvnw -pl opennlp-extensions/opennlp-embeddings -am -Pjmh \
+  -Dopennlp.forkCount=1 -Dtest=StaticEmbeddingModelBenchmarkTest \
+  -Dsurefire.failIfNoSpecifiedTests=false clean test
+```
+
+With the `jmh` Maven profile enabled in an IDE, run
+`opennlp.embeddings.StaticEmbeddingModelBenchmark.main` using the module's test classpath.
+For a command-line launch, use that test classpath with `java -cp`:
+
+```sh
+java -cp "$JMH_CLASSPATH" opennlp.embeddings.StaticEmbeddingModelBenchmark \
+  -t 1 -prof gc -rf json -rff embeddings-jmh.json
+```
+
+Set `JMH_CLASSPATH` to the compiled test and main classes plus the test dependencies, including
+the reactor modules. Use current reactor classes, not older snapshot JARs. The default
+`modelDir=synthetic` generates a 29,528 by 256 F32 table without downloads. To use a local model,
+add `-p modelDir=/path/to/model`. The program accepts JMH options and uses forked JVMs by default.
+
+`embed` reports operations and `gc.alloc.rate.norm` bytes per input text, although each
+invocation processes a batch of 5 texts. `mostSimilarTop10` reports them per query. `load`
+reports milliseconds and allocated bytes per model load, including file access, decoding and
+construction. Fixture generation is outside timing. Repeated loads can use the operating
+system's file cache; this is not a disk-startup or peak-memory measurement. The allocation
+statistic includes temporary objects, not just the retained model.
 
 `embed()` tokenizes and pools only the rows used by the input. `mostSimilar()` scans every matrix row, so its cost grows with the vocabulary. Use a vector index when a full scan is too expensive. The harness in `dev/embeddings/parity/` compares single-thread speed and vector output with the Model2Vec Python implementation. Run it with the model and hardware used for deployment.
 
