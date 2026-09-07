@@ -31,6 +31,7 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * <b>Note:</b>
@@ -149,19 +150,21 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
   }
 
-  /*
-   * Replicates replaceAll("=") of the \s+ pattern: every run of ASCII
-   * whitespace, including leading and trailing runs, is replaced by a single
+  /**
+   * Replaces every run of ASCII whitespace, leading and trailing runs included, with a single
    * equals sign.
+   *
+   * @param tag The tag.
+   * @return The joined tag.
    */
   static String replaceWhitespaceWithEquals(String tag) {
     StringBuilder replaced = new StringBuilder(tag.length());
     int i = 0;
     while (i < tag.length()) {
       char c = tag.charAt(i);
-      if (isAsciiWhitespace(c)) {
+      if (StringUtil.isAsciiWhitespace(c)) {
         replaced.append('=');
-        while (i + 1 < tag.length() && isAsciiWhitespace(tag.charAt(i + 1))) {
+        while (i + 1 < tag.length() && StringUtil.isAsciiWhitespace(tag.charAt(i + 1))) {
           i++;
         }
       } else {
@@ -170,16 +173,6 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       i++;
     }
     return replaced.toString();
-  }
-
-  /**
-   * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
-   *
-   * @param c The character.
-   * @return {@code true} for one of those six characters.
-   */
-  private static boolean isAsciiWhitespace(char c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
   }
 
   @Override

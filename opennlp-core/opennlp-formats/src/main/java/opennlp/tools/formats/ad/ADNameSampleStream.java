@@ -38,6 +38,7 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -244,7 +245,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       String c = PortugueseContractionUtility.toContraction(
           leftContractionPart, right);
       if (c != null) {
-        String[] parts = splitOnWhitespace(c);
+        String[] parts = StringUtil.splitOnAsciiWhitespace(c);
         sentence.addAll(Arrays.asList(parts));
         alreadyAdded = true;
       } else {
@@ -365,51 +366,15 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
   }
 
-  /*
-   * Replicates String.split("\\s+"): runs of ASCII whitespace collapse, a
-   * leading run yields one empty leading field, trailing empty fields are
-   * dropped, and an all-whitespace input yields no fields.
+  /**
+   * Splits on runs of underscores with the result of {@code String.split("[_]+")}: a leading
+   * run yields one empty first element, trailing empty elements are dropped, and
+   * underscore-only input yields an empty array.
+   *
+   * @param s The text.
+   * @return The elements in order.
    */
-  private static String[] splitOnWhitespace(String s) {
-    if (s.isEmpty()) {
-      return new String[] {""};
-    }
-    boolean hasToken = false;
-    for (int i = 0; i < s.length(); i++) {
-      if (!isAsciiWhitespace(s.charAt(i))) {
-        hasToken = true;
-        break;
-      }
-    }
-    if (!hasToken) {
-      return new String[0];
-    }
-    List<String> tokens = new ArrayList<>();
-    if (isAsciiWhitespace(s.charAt(0))) {
-      tokens.add("");
-    }
-    int start = 0;
-    for (int i = 0; i < s.length(); i++) {
-      if (isAsciiWhitespace(s.charAt(i))) {
-        if (i > start) {
-          tokens.add(s.substring(start, i));
-        }
-        while (i + 1 < s.length() && isAsciiWhitespace(s.charAt(i + 1))) {
-          i++;
-        }
-        start = i + 1;
-      }
-    }
-    if (s.length() > start) {
-      tokens.add(s.substring(start));
-    }
-    return tokens.toArray(new String[0]);
-  }
-
-  /*
-   * Replicates split on [_]+ with the same semantics as splitOnWhitespace.
-   */
-  private static String[] splitOnUnderscores(String s) {
+  static String[] splitOnUnderscores(String s) {
     if (s.isEmpty()) {
       return new String[] {""};
     }
@@ -445,10 +410,14 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return tokens.toArray(new String[0]);
   }
 
-  /*
-   * Replicates matches() of ^[\p{L}\p{Nd}]+$ at code point granularity.
+  /**
+   * Tests whether a token consists of letters and decimal digits only, by code point.
+   *
+   * @param tok The token.
+   * @return {@code true} if the token is non-empty and every code point is a letter or a
+   *         decimal digit.
    */
-  private static boolean isAlphaNumeric(String tok) {
+  static boolean isAlphaNumeric(String tok) {
     if (tok.isEmpty()) {
       return false;
     }
@@ -463,16 +432,19 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return true;
   }
 
-  /*
-   * Replicates matches() of the three-branch hyphen pattern
-   * ((\p{L}+)-$)|(^-(\p{L}+)(.*))|((\p{L}+)-(\p{L}+)(.*)). Returns the first
-   * token, second token, and rest, any of them null, or null when no branch
-   * matches.
+  /**
+   * Splits a hyphenated token into the letters before the hyphen, the letters after it, and
+   * the rest. Three shapes match: letters followed by a final hyphen, a leading hyphen followed
+   * by letters and anything, and letters, a hyphen, letters, and anything.
+   *
+   * @param tok The token, at least two characters long.
+   * @return The first token, second token, and rest, each {@code null} when absent, or
+   *         {@code null} if the token has none of the three shapes.
    */
-  private static String[] matchHyphenatedToken(String tok) {
+  static String[] matchHyphenatedToken(String tok) {
     int len = tok.length();
     // (\p{L}+)-$
-    if (tok.charAt(len - 1) == '-' && isAllLetters(tok, 0, len - 1)) {
+    if (len > 1 && tok.charAt(len - 1) == '-' && isAllLetters(tok, 0, len - 1)) {
       return new String[] {tok.substring(0, len - 1), null, null};
     }
     // ^-(\p{L}+)(.*)
@@ -535,21 +507,13 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
-   * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
+   * Extracts the content of a NER tag in Arvores Deitadas format, between the optional
+   * {@code NER:} prefix and the closing angle bracket.
    *
-   * @param c The character.
-   * @return {@code true} for one of those six characters.
+   * @param t The tag.
+   * @return The content, or {@code null} if {@code t} is not enclosed in angle brackets.
    */
-  private static boolean isAsciiWhitespace(char c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
-  }
-
-  /*
-   * Replicates matches() of <(NER:)?(.*?)>: the content between the optional
-   * NER: prefix and the closing angle bracket, or null when the tag does not
-   * match.
-   */
-  private static String tagContent(String t) {
+  static String tagContent(String t) {
     if (t.length() < 2 || t.charAt(0) != '<' || t.charAt(t.length() - 1) != '>') {
       return null;
     }
@@ -567,7 +531,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     if (tags.contains("<NER2>")) {
       return null;
     }
-    String[] tag = splitOnWhitespace(tags);
+    String[] tag = StringUtil.splitOnAsciiWhitespace(tags);
     for (String t : tag) {
       String ner = tagContent(t);
       if (ner != null && HAREM.containsKey(ner)) {

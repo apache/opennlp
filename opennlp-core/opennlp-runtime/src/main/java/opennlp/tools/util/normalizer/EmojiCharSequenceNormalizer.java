@@ -34,7 +34,19 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * The lowest code point that is replaced: the first high surrogate of the emoji planes.
+   * Lone surrogates and every BMP character from here up count as well.
+   */
+  private static final int LOWER_CODE_POINT = 0xD83C;
+
+  /** The highest code point that is replaced. */
+  private static final int UPPER_CODE_POINT = 0x10FC00;
+
+  /**
+   * {@inheritDoc}
+   * Every maximal run of code points in {@code [U+D83C, U+10FC00]} becomes one space.
+   */
   @Override
   public CharSequence normalize (CharSequence text) {
     if (text == null) {
@@ -62,11 +74,4 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
     }
     return normalized.toString();
   }
-
-  // The replaced pattern "[\uD83C-\uDBFF\uDC00-\uDFFF]+" contains a high surrogate
-  // range, so the regex engine matches whole code points in the flattened range
-  // [\uD83C, U+10FC00]: BMP chars from U+D83C up and supplementary code points
-  // up to U+10FC00, collapsing each maximal run into a single space.
-  private static final int LOWER_CODE_POINT = 0xD83C;
-  private static final int UPPER_CODE_POINT = 0x10FC00;
 }

@@ -235,12 +235,14 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     return textLang;
   }
 
-  /*
-   * Replicates String.split("-") on a token id: every hyphen is a boundary,
-   * empty fields between consecutive hyphens are kept, and trailing empty
-   * fields are dropped.
+  /**
+   * Splits a token id on hyphens with the result of {@code String.split("-")}: empty elements
+   * between consecutive hyphens are kept, trailing empty elements are dropped.
+   *
+   * @param id The token id.
+   * @return The elements in order.
    */
-  private static String[] splitOnHyphen(String id) {
+  private String[] splitOnHyphen(String id) {
     if (id.isEmpty()) {
       return new String[] {""};
     }
@@ -261,11 +263,15 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     return parts.toArray(new String[0]);
   }
 
-  /*
-   * Replicates find() of the text_([a-z]{2,3}) pattern: the first "text_"
-   * followed by two to three ASCII lowercase letters, preferring three.
+  /**
+   * Extracts the language code from a {@code text_xx} or {@code text_xxx} comment key: the two
+   * or three ASCII lowercase letters, preferring three, after the first {@code text_} that at
+   * least two follow.
+   *
+   * @param firstPart The comment key.
+   * @return The language code, or an empty string if there is none.
    */
-  private static String extractTextLang(String firstPart) {
+  private String extractTextLang(String firstPart) {
     int from = 0;
     while ((from = firstPart.indexOf("text_", from)) != -1) {
       int i = from + "text_".length();

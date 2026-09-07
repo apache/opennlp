@@ -74,36 +74,35 @@ public class DownloadParserTest {
     );
   }
 
-  @Test
-  void testExtractLinks() {
-    assertEquals(List.of("a.bin", "b.bin"),
-        DownloadUtil.DownloadParser.extractLinks(
-            "<a href=\"a.bin\">x</a><a href=\"b.bin\">y</a>"));
+  private static Stream<Arguments> indexPages() {
+    return Stream.of(
+        Arguments.of("<a href=\"a.bin\">x</a><a href=\"b.bin\">y</a>", List.of("a.bin", "b.bin")),
+        // tag and attribute names ignore case
+        Arguments.of("<A HREF=\"c.bin\">z</A>", List.of("c.bin")),
+        Arguments.of("<a href=\"a.bin\">x</a><A hRef=\"b.bin\">y</A>", List.of("a.bin", "b.bin")),
+        // an anchor without closing tag is skipped, an earlier one is still found
+        Arguments.of("<a href=\"d.bin\">x", List.of()),
+        Arguments.of("<a href=\"a.bin\">x</a><a href=\"d.bin\">y", List.of("a.bin")),
+        // the first "</a>" closes the link, so nested anchor markup is swallowed
+        Arguments.of("<a href=\"d.bin\">x <a href=\"e.bin\">y</a>", List.of("d.bin")),
+        // the href value ends at the first "\">", so it may hold other markup
+        Arguments.of("<a href=\"f<b>g.bin\">f</a>", List.of("f<b>g.bin")),
+        // values and link text may span lines
+        Arguments.of("<a href=\"a.bin\">x</a> <a href=\"h\ni.bin\">y\nz</a>", List.of("a.bin", "h\ni.bin")),
+        Arguments.of("no links here", List.of()),
+        Arguments.of("", List.of()),
+        // an empty href value is kept, a single-quoted one is not an anchor
+        Arguments.of("<a href=\"\"></a>", List.of("")),
+        Arguments.of("<a href='a.bin'>x</a>", List.of()),
+        // the closing tag is matched case-insensitively and only as "</a>"
+        Arguments.of("<a href=\"a.bin\">x</ A><a href=\"b.bin\">y</A >z</a>", List.of("a.bin")),
+        Arguments.of("<a href=\"\uD83D\uDE00.bin\">x</a>", List.of("\uD83D\uDE00.bin")));
+  }
 
-    // the pattern is case-insensitive
-    assertEquals(List.of("c.bin"),
-        DownloadUtil.DownloadParser.extractLinks("<A HREF=\"c.bin\">z</A>"));
-
-    // a link without closing tag is skipped, later valid links are still found
-    assertEquals(List.of(),
-        DownloadUtil.DownloadParser.extractLinks("<a href=\"d.bin\">x"));
-
-    // the first "</a>" closes the whole match, swallowing nested link markup
-    assertEquals(List.of("d.bin"),
-        DownloadUtil.DownloadParser.extractLinks("<a href=\"d.bin\">x <a href=\"e.bin\">y</a>"));
-
-    // the href value ends at the first "\">", so it may contain other markup
-    assertEquals(List.of("f<b>g.bin"),
-        DownloadUtil.DownloadParser.extractLinks("<a href=\"f<b>g.bin\">f</a>"));
-
-    // DOTALL allows matches to span lines
-    assertEquals(List.of("a.bin", "h\ni.bin"),
-        DownloadUtil.DownloadParser.extractLinks(
-            "<a href=\"a.bin\">x</a> <a href=\"h\ni.bin\">y</a>"));
-
-    assertEquals(List.of(), DownloadUtil.DownloadParser.extractLinks("no links here"));
-    assertEquals(List.of(), DownloadUtil.DownloadParser.extractLinks(
-        "<a href=\"d.bin\">no closing tag"));
+  @ParameterizedTest
+  @MethodSource("indexPages")
+  void testExtractLinks(String page, List<String> expected) {
+    assertEquals(expected, DownloadUtil.DownloadParser.extractLinks(page));
   }
 
   @Test

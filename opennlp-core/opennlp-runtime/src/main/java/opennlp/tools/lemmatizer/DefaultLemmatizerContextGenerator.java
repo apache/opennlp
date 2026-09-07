@@ -20,6 +20,8 @@ package opennlp.tools.lemmatizer;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Simple feature generator for learning statistical lemmatizers.
  * <p>
@@ -101,47 +103,15 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
       features.add("h");
     }
 
-    if (containsAsciiUpperCase(lex)) {
+    if (StringUtil.containsAsciiUpperCase(lex)) {
       features.add("c");
     }
 
-    if (containsAsciiDigit(lex)) {
+    if (StringUtil.containsAsciiDigit(lex)) {
       features.add("d");
     }
 
     return features.toArray(new String[0]);
-  }
-
-  /**
-   * Tests whether a token contains an ASCII capital letter.
-   *
-   * @param token The token.
-   * @return {@code true} if a character is in {@code A} to {@code Z}.
-   */
-  private static boolean containsAsciiUpperCase(String token) {
-    for (int i = 0; i < token.length(); i++) {
-      char c = token.charAt(i);
-      if (c >= 'A' && c <= 'Z') {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Tests whether a token contains an ASCII digit.
-   *
-   * @param token The token.
-   * @return {@code true} if a character is in {@code 0} to {@code 9}.
-   */
-  private static boolean containsAsciiDigit(String token) {
-    for (int i = 0; i < token.length(); i++) {
-      char c = token.charAt(i);
-      if (c >= '0' && c <= '9') {
-        return true;
-      }
-    }
-    return false;
   }
 }
 

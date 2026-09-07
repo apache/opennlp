@@ -254,8 +254,11 @@ public class DownloadUtil {
   /**
    * Extracts the hash from the content of a checksum file, which holds the hash followed by the
    * name of the file it applies to.
+   *
+   * @param checksumFileContent The file content.
+   * @return The hash, or {@code null} if the content is {@code null} or blank.
    */
-  private static String parseChecksum(String checksumFileContent) {
+  static String parseChecksum(String checksumFileContent) {
     if (checksumFileContent == null) {
       return null;
     }
@@ -264,20 +267,10 @@ public class DownloadUtil {
       return null;
     }
     int end = 0;
-    while (end < trimmed.length() && !isAsciiWhitespace(trimmed.charAt(end))) {
+    while (end < trimmed.length() && !StringUtil.isAsciiWhitespace(trimmed.charAt(end))) {
       end++;
     }
     return trimmed.substring(0, end);
-  }
-
-  /**
-   * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
-   *
-   * @param c The character.
-   * @return {@code true} for one of those six characters.
-   */
-  private static boolean isAsciiWhitespace(char c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
   }
 
   private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
@@ -351,11 +344,14 @@ public class DownloadUtil {
       return toMap(extractLinks(fetchPageIndex()));
     }
 
-    /*
-     * Replicates find() of the <a href="(.*?)">(.*?)</a> link pattern with
-     * CASE_INSENSITIVE and DOTALL flags: the first "\">" closes the href value
-     * and the first case-insensitive "</a>" closes the link. Only the href
-     * value is used.
+    /**
+     * Collects the href values of the anchor elements in an index page. The tag name and
+     * attribute are matched ignoring ASCII case, a value ends at the first {@code ">}, a link
+     * ends at the first {@code </a>}, and both may span lines. An anchor without a closing tag
+     * is skipped.
+     *
+     * @param page The page content.
+     * @return The href values in order.
      */
     static List<String> extractLinks(String page) {
       final List<String> links = new ArrayList<>();

@@ -54,8 +54,8 @@ public class EmojiCharSequenceNormalizerTest {
 
   @Test
   void normalizeMatchesCodePointsNotOnlyEmoji() {
-    // the replaced pattern flattens to the code point range [U+D83C, U+10FC00]:
-    // BMP chars above U+D83C are replaced as well
+    // the matched code point range is [U+D83C, U+10FC00], so BMP characters
+    // from U+D83C up are replaced as well
     Assertions.assertEquals("a b", normalizer.normalize("a" + '\uE000' + "b"));
 
     // supplementary code points beyond U+10FC00 are kept verbatim

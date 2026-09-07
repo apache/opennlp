@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -262,16 +265,17 @@ public class BioCodecTest {
         new String[] {A_START, A_START, A_CONTINUE, A_CONTINUE, B_START, B_START, OTHER, OTHER}));
   }
 
-  @Test
-  void testExtractNameType() {
-    Assertions.assertEquals("atype", BioCodec.extractNameType("atype-start"));
-    Assertions.assertEquals("a-b", BioCodec.extractNameType("a-b-start"));
-    Assertions.assertEquals("type_1", BioCodec.extractNameType("type_1-cont"));
-    Assertions.assertNull(BioCodec.extractNameType("start"));
-    Assertions.assertNull(BioCodec.extractNameType("other"));
-    Assertions.assertNull(BioCodec.extractNameType("-start"));
-    Assertions.assertNull(BioCodec.extractNameType("atype-"));
-    Assertions.assertNull(BioCodec.extractNameType("atype-st.art"));
+  @ParameterizedTest
+  @CsvSource({"atype-start, atype", "a-b-start, a-b", "type_1-cont, type_1", "Type9-X_1, Type9"})
+  void testExtractNameType(String outcome, String type) {
+    Assertions.assertEquals(type, BioCodec.extractNameType(outcome));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"start", "other", "-start", "atype-", "atype-st.art", "atype-st art",
+      "atype-stärt"})
+  void testExtractNameTypeWithoutType(String outcome) {
+    Assertions.assertNull(BioCodec.extractNameType(outcome));
   }
 
 }

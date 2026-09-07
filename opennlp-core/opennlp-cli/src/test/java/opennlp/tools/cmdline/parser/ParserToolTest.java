@@ -17,39 +17,69 @@
 
 package opennlp.tools.cmdline.parser;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import opennlp.tools.parser.Parse;
+import opennlp.tools.parser.Parser;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ParserToolTest {
 
   /*
-   * Expected values replicate the original two sequential replaceAll passes:
-   * the first pass inserts a space before every paren that follows a non-space
-   * character, the second pass inserts a space after every paren that precedes
-   * a non-space character. Each pass resumes scanning after its last match, so
-   * the pair overlapping a match is only reconsidered by the second pass.
+   * The first pass puts a space before a bracket that follows a non-space character, the
+   * second after a bracket that precedes one. Each pass resumes after the pair it spaced, so
+   * "((" gets its space from the second pass only, and only a space, not a tab, separates.
    */
-  @Test
-  void testSpaceUntokenizedParens() {
-    assertEquals("a ( b ) c", ParserTool.spaceUntokenizedParens("a(b)c"));
-    assertEquals("a ( b ) c", ParserTool.spaceUntokenizedParens("a (b) c"));
-    assertEquals("foo ( bar ) {baz }", ParserTool.spaceUntokenizedParens("foo(bar){baz}"));
-    assertEquals("( ( a ) (b ) )", ParserTool.spaceUntokenizedParens("((a)(b))"));
-    assertEquals("a ( b ( c ) d ) e", ParserTool.spaceUntokenizedParens("a(b(c)d)e"));
-    assertEquals("x ( (", ParserTool.spaceUntokenizedParens("x(("));
-    assertEquals("( ( x", ParserTool.spaceUntokenizedParens("((x"));
-    assertEquals("( )", ParserTool.spaceUntokenizedParens("()"));
-    assertEquals("(", ParserTool.spaceUntokenizedParens("("));
-    assertEquals("", ParserTool.spaceUntokenizedParens(""));
-    assertEquals("no parens here", ParserTool.spaceUntokenizedParens("no parens here"));
-    assertEquals("«quoted»", ParserTool.spaceUntokenizedParens("«quoted»"));
+  private static Stream<Arguments> parenLines() {
+    return Stream.of(
+        Arguments.of("a(b)c", "a ( b ) c"),
+        Arguments.of("a (b) c", "a ( b ) c"),
+        Arguments.of("foo(bar){baz}", "foo ( bar ) {baz }"),
+        Arguments.of("((a)(b))", "( ( a ) (b ) )"),
+        Arguments.of("a(b(c)d)e", "a ( b ( c ) d ) e"),
+        Arguments.of("x((", "x ( ("),
+        Arguments.of("((x", "( ( x"),
+        Arguments.of("()", "( )"),
+        Arguments.of("(", "("),
+        Arguments.of("", ""),
+        Arguments.of("no parens here", "no parens here"),
+        Arguments.of("«quoted»", "«quoted»"),
+        Arguments.of("tab\there(", "tab\there ("),
+        Arguments.of("a  (b", "a  ( b"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("parenLines")
+  void testSpaceUntokenizedParens(String line, String expected) {
+    assertEquals(expected, ParserTool.spaceUntokenizedParens(line));
   }
 
   @Test
-  void testSpaceUntokenizedParensOnlySplitsOnSpace() {
-    // the patterns use [^ ], so tabs do not act as separators
-    assertEquals("tab\there (", ParserTool.spaceUntokenizedParens("tab\there("));
-    assertEquals("a  ( b", ParserTool.spaceUntokenizedParens("a  (b"));
+  void testParseLineSeparatesParensBeforeTokenizing() {
+    Parser echo = new Parser() {
+      @Override
+      public Parse[] parse(Parse tokens, int numParses) {
+        return new Parse[] {tokens};
+      }
+
+      @Override
+      public Parse parse(Parse tokens) {
+        return tokens;
+      }
+    };
+    Parse[] parses = ParserTool.parseLine("f(x)+g({y})", echo, WhitespaceTokenizer.INSTANCE, 1);
+    assertEquals(1, parses.length);
+    String[] tokens = Stream.of(parses[0].getChildren()).map(Parse::getCoveredText)
+        .toArray(String[]::new);
+    // "{y" stays joined: the second pass consumed "{" while spacing "( {"
+    assertArrayEquals(new String[] {"f", "(", "x", ")", "+g", "(", "{y", "}", ")"}, tokens);
   }
 }
