@@ -24,8 +24,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -120,5 +125,53 @@ public class LoadVocabTest {
     final Map<String, Integer> jsonVocab = AbstractDL.loadVocabFile(getResource("vocab.json"));
 
     assertEquals(plainVocab, jsonVocab);
+  }
+
+  static Stream<Arguments> jsonVocabs() {
+    return Stream.of(
+        Arguments.of("", Map.of()),
+        Arguments.of("{}", Map.of()),
+        Arguments.of("{\"a\": 1, \"b\": 2}", Map.of("a", 1, "b", 2)),
+        Arguments.of("{\"a\"\n:\r\n  3}", Map.of("a", 3)),
+        Arguments.of("{\"a\":\t4\u000B}", Map.of("a", 4)),
+        Arguments.of("{\"a\":\u00A05}", Map.of()),
+        Arguments.of("{\"a\": 1, \"b\": \"x\", \"c\": 2}", Map.of("a", 1, "c", 2)),
+        Arguments.of("{\"a\": 1.5, \"b\": 2}", Map.of("a", 1, "b", 2)),
+        Arguments.of("{\"a\": -1, \"b\": 2}", Map.of("b", 2)),
+        Arguments.of("{\"a\": 12abc}", Map.of("a", 12)),
+        Arguments.of("{\"a\": \u0661, \"b\": 2}", Map.of("b", 2)),
+        Arguments.of("{\"a\\\"b\": 1}", Map.of("a\"b", 1)),
+        Arguments.of("{\"a\\\"b\": x, \"c\": 1}", Map.of("c", 1)),
+        Arguments.of("{\"a\\\\\": 1}", Map.of("a\\", 1)),
+        Arguments.of("{\"\\u0120x\": 7, \"\\u00e9\": 8}", Map.of("\u0120x", 7, "\u00E9", 8)),
+        Arguments.of("{\"\uD83D\uDE00\": 1}", Map.of("\uD83D\uDE00", 1)),
+        Arguments.of("{\"a\nb\": 1}", Map.of("a\nb", 1)),
+        Arguments.of("{\"a\\\nb\": 1}", Map.of()),
+        Arguments.of("{\"a\\\u2028b\": 1, \"c\": 2}", Map.of("c", 2)),
+        Arguments.of("{\"\": 1}", Map.of("", 1)),
+        Arguments.of("{\"a\": 1, \"a\": 2}", Map.of("a", 2)),
+        Arguments.of("{\"a\": 1, \"\\u0061\": 2}", Map.of("a", 2)),
+        Arguments.of("{\"x\": {\"a\": 1}, \"b\": 2}", Map.of("a", 1, "b", 2)),
+        Arguments.of("\"a\":1\"b\":2", Map.of("a", 1, "b", 2)),
+        Arguments.of("\"a\": ", Map.of()),
+        Arguments.of("\"a\"", Map.of()),
+        Arguments.of("\"", Map.of()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("jsonVocabs")
+  void testLoadJsonVocab(String json, Map<String, Integer> expected) {
+    assertEquals(expected, AbstractDL.loadJsonVocab(json));
+  }
+
+  @Test
+  void testLoadJsonVocabRejectsOverflowingId() {
+    assertThrows(NumberFormatException.class, () -> AbstractDL.loadJsonVocab("{\"a\": 99999999999}"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"a\\q\": 1}", "{\"\\\uD83D\uDE00\": 2}", "{\"\\u12\": 3}"})
+  void testLoadJsonVocabRejectsInvalidEscape(String json) {
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(json));
   }
 }
