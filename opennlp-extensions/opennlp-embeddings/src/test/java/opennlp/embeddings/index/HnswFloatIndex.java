@@ -40,7 +40,7 @@ import org.apache.lucene.store.ByteBuffersDirectory;
  * In-memory Lucene HNSW index used by the evaluation tests. It adapts one graph-searched vector
  * field to the {@link VectorIndex} contract.
  *
- * <p>Vectors are L2-normalized at add time and searched with
+ * <p>Vectors are L2-normalized during {@link #freeze()} and searched with
  * {@link VectorSimilarityFunction#DOT_PRODUCT}, which is cosine similarity on unit vectors;
  * Lucene's {@code (1 + dot) / 2} scores are mapped back to cosine in the returned hits. A
  * zero vector is indexed unchanged and so scores zero, like the exact index scores it. The

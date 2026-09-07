@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import opennlp.embeddings.QuantizedEmbeddingMatrix;
 import opennlp.embeddings.StaticEmbeddingModel;
@@ -67,7 +68,7 @@ public final class SearchEvaluator {
    * @param name                  The index's display name.
    * @param rows                  The number of indexed vectors.
    * @param storageBytesPerVector The index's reported storage cost of one vector.
-   * @param buildMillis           The index build time in milliseconds.
+   * @param buildMillis           Milliseconds for construction, vector insertion and freeze.
    * @param queriesPerSecond      Single-thread queries per second, measured after a warm-up pass.
    */
   public record IndexMetrics(String name, int rows, double storageBytesPerVector,
@@ -205,6 +206,7 @@ public final class SearchEvaluator {
       md.append("Embedding the passages took ").append(embedMillis).append(" ms.\n\n");
 
       md.append("## Passage index build and throughput\n\n");
+      md.append(IndexBuild.DESCRIPTION).append("\n\n");
       md.append("| index | rows | storage bytes/vector | build (ms) | QPS (1 thread) |\n");
       md.append("|---|---|---|---|---|\n");
       for (final IndexMetrics index : List.of(flat, quantized)) {
@@ -266,6 +268,7 @@ public final class SearchEvaluator {
       line(tsv, "bits", bits);
       line(tsv, "topK", topK);
       line(tsv, "embed.millis", embedMillis);
+      line(tsv, IndexBuild.SCOPE_KEY, IndexBuild.SCOPE);
       for (final IndexMetrics index : List.of(flat, quantized)) {
         line(tsv, index.name() + ".storageBytesPerVector",
             format(index.storageBytesPerVector()));
@@ -373,21 +376,19 @@ public final class SearchEvaluator {
     }
     final long embedMillis = millisSince(embedStart);
 
-    final FlatFloatIndex flat = new FlatFloatIndex(model.dimension());
-    final TurboQuantIndex quantized = new TurboQuantIndex(model.dimension(), bits, seed);
-    for (int i = 0; i < passages.size(); i++) {
-      if (!indexedPassages[i]) {
-        continue;
+    final Consumer<VectorIndex> populate = index -> {
+      for (int i = 0; i < passages.size(); i++) {
+        if (indexedPassages[i]) {
+          index.add(passages.get(i).id(), passageVectors[i]);
+        }
       }
-      flat.add(passages.get(i).id(), passageVectors[i]);
-      quantized.add(passages.get(i).id(), passageVectors[i]);
-    }
-    final long flatBuildStart = System.nanoTime();
-    flat.freeze();
-    final long flatBuildMillis = millisSince(flatBuildStart);
-    final long quantizedBuildStart = System.nanoTime();
-    quantized.freeze();
-    final long quantizedBuildMillis = millisSince(quantizedBuildStart);
+    };
+    final IndexBuild<FlatFloatIndex> flatBuild = IndexBuild.measure(
+        () -> new FlatFloatIndex(model.dimension()), populate, System::nanoTime);
+    final IndexBuild<TurboQuantIndex> quantizedBuild = IndexBuild.measure(
+        () -> new TurboQuantIndex(model.dimension(), bits, seed), populate, System::nanoTime);
+    final FlatFloatIndex flat = flatBuild.index();
+    final TurboQuantIndex quantized = quantizedBuild.index();
 
     // Fidelity: quantized against exact on every indexable passage vector; this also warms both
     // indexes for the throughput measurement after it.
@@ -396,11 +397,11 @@ public final class SearchEvaluator {
     final float[][] timedQueries = fidelityQueries.toArray(float[][]::new);
 
     final IndexMetrics flatMetrics = new IndexMetrics(EXACT_INDEX_NAME, flat.size(),
-        model.dimension() * (double) Float.BYTES, flatBuildMillis,
+        model.dimension() * (double) Float.BYTES, flatBuild.millis(),
         queriesPerSecond(flat, timedQueries, topK));
     final IndexMetrics quantizedMetrics = new IndexMetrics(
         QUANTIZED_INDEX_NAME, quantized.size(),
-        quantized.bytesPerVector(), quantizedBuildMillis,
+        quantized.bytesPerVector(), quantizedBuild.millis(),
         queriesPerSecond(quantized, timedQueries, topK));
 
     // Definition to headword: an index of headword embeddings queried by definitions.
