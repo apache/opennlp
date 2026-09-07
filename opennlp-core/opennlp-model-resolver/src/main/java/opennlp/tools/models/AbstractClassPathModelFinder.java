@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 
 /**
  * A base implementation of a {@link ClassPathModelFinder} for the detection of
@@ -137,20 +136,16 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   }
 
   /**
-   * Escapes a {@code wildcard} expressions for usage as a Java regular expression.
+   * Tests whether the file part of {@code url} matches {@code wildcard} from start to end,
+   * where {@code *} stands for any run of characters and {@code ?} for exactly one.
    *
-   * @param wildcard A valid expression. It must not be {@code null}.
-   * @return The escaped regex.
+   * @param url The {@link URL} whose {@link URL#getFile() file part} is tested.
+   *            Must not be {@code null}.
+   * @param wildcard The wildcard expression. Must not be {@code null}.
+   * @return {@code true} if the file part matches, {@code false} otherwise.
    */
-  protected String asRegex(String wildcard) {
-    return wildcard
-        .replace(".", "\\.")
-        .replace("*", ".*")
-        .replace("?", ".");
-  }
-
-  protected boolean matchesPattern(URL url, Pattern pattern) {
-    return pattern.matcher(url.getFile()).matches();
+  protected boolean matchesWildcard(URL url, String wildcard) {
+    return GlobMatcher.matches(wildcard, url.getFile());
   }
 
   /**

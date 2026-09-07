@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,14 +103,14 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     final boolean isWindows = isWindows();
     final List<URL> cp = getClassPathElements();
     final List<URI> cpu = new ArrayList<>();
-    final Pattern jarPattern = Pattern.compile(asRegex("*" + getJarModelPrefix()));
-    final Pattern filePattern = Pattern.compile(asRegex("*" + wildcardPattern));
+    final String jarWildcard = "*" + getJarModelPrefix();
+    final String fileWildcard = "*" + wildcardPattern;
 
     for (URL url : cp) {
-      if (matchesPattern(url, jarPattern)) {
+      if (matchesWildcard(url, jarWildcard)) {
         try {
           for (URI u : getURIsFromJar(url, isWindows)) {
-            if (matchesPattern(u.toURL(), filePattern)) {
+            if (matchesWildcard(u.toURL(), fileWildcard)) {
               cpu.add(u);
             }
           }
