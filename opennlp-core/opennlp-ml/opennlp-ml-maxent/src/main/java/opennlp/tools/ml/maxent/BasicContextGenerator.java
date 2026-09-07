@@ -17,6 +17,8 @@
 
 package opennlp.tools.ml.maxent;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A {@link ContextGenerator} implementation for maxent decisions, assuming that the input
@@ -28,24 +30,53 @@ package opennlp.tools.ml.maxent;
  */
 public class BasicContextGenerator implements ContextGenerator<String> {
 
-  private String separator = " ";
+  private static final String DEFAULT_SEPARATOR = " ";
 
-  public BasicContextGenerator() {}
+  private final String separator;
+
+  public BasicContextGenerator() {
+    this(DEFAULT_SEPARATOR);
+  }
 
   /**
-   * Initializes a {@link BasicContextGenerator} with a different separator char.
-   * This overwrites the default whitespace separator.
+   * Initializes a {@link BasicContextGenerator} with a different separator.
+   * This overwrites the default single space.
    *
-   * @param sep The {@link String separator character} to use.
+   * @param sep The separator, taken as written and not as a regular expression.
+   *            Must not be {@code null} or empty.
+   * @throws IllegalArgumentException If {@code sep} is {@code null} or empty.
    */
   public BasicContextGenerator(String sep) {
+    if (sep == null || sep.isEmpty()) {
+      throw new IllegalArgumentException("sep must not be null or empty");
+    }
     separator = sep;
   }
 
+  /**
+   * {@inheritDoc}
+   * Splits at each occurrence of the separator with the result {@code String.split} gives for
+   * a literal: a leading occurrence gives an empty first element, trailing empty elements
+   * are removed.
+   */
   @Override
   public String[] getContext(String o) {
-    return o.split(separator);
+    final List<String> contexts = new ArrayList<>();
+    int start = 0;
+    int next;
+    while ((next = o.indexOf(separator, start)) != -1) {
+      contexts.add(o.substring(start, next));
+      start = next + separator.length();
+    }
+    contexts.add(o.substring(start));
+    int end = contexts.size();
+    while (end > 0 && contexts.get(end - 1).isEmpty()) {
+      end--;
+    }
+    if (end == 0 && o.isEmpty()) {
+      return new String[] {""};
+    }
+    return contexts.subList(0, end).toArray(new String[0]);
   }
 
 }
-
