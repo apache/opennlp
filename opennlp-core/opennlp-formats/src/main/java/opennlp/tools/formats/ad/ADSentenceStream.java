@@ -522,15 +522,11 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
 
   }
 
-  private static final Pattern SENT_START = Pattern.compile("<s[^>]*>");
-  private static final Pattern SENT_END = Pattern.compile("</s>");
-  private static final Pattern EXT_END = Pattern.compile("</ext>");
-  private static final Pattern TITLE_START = Pattern.compile("<t[^>]*>");
-  private static final Pattern TITLE_END = Pattern.compile("</t>");
-  private static final Pattern BOX_START = Pattern.compile("<caixa[^>]*>");
-  private static final Pattern BOX_END = Pattern.compile("</caixa>");
-  private static final Pattern PARA_START = Pattern.compile("<p[^>]*>");
-  private static final Pattern TEXT_START = Pattern.compile("<ext[^>]*>");
+  private static final String SENTENCE_TAG = "s";
+  private static final String TEXT_TAG = "ext";
+  private static final String TITLE_TAG = "t";
+  private static final String BOX_TAG = "caixa";
+  private static final String PARAGRAPH_TAG = "p";
 
   private final SentenceParser parser;
 
@@ -556,25 +552,25 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       if (line != null) {
 
         if (sentenceStarted) {
-          if (SENT_END.matcher(line).matches() || EXT_END.matcher(line).matches()) {
+          if (isClosingTag(line, SENTENCE_TAG) || isClosingTag(line, TEXT_TAG)) {
             sentenceStarted = false;
           } else if (!line.startsWith("A1")) {
             sentence.append(line).append('\n');
           }
         } else {
-          if (SENT_START.matcher(line).matches()) {
+          if (isOpeningTag(line, SENTENCE_TAG)) {
             sentenceStarted = true;
-          } else if (PARA_START.matcher(line).matches()) {
+          } else if (isOpeningTag(line, PARAGRAPH_TAG)) {
             paraID++;
-          } else if (TITLE_START.matcher(line).matches()) {
+          } else if (isOpeningTag(line, TITLE_TAG)) {
             isTitle = true;
-          } else if (TITLE_END.matcher(line).matches()) {
+          } else if (isClosingTag(line, TITLE_TAG)) {
             isTitle = false;
-          } else if (TEXT_START.matcher(line).matches()) {
+          } else if (isOpeningTag(line, TEXT_TAG)) {
             paraID = 0;
-          } else if (BOX_START.matcher(line).matches()) {
+          } else if (isOpeningTag(line, BOX_TAG)) {
             isBox = true;
-          } else if (BOX_END.matcher(line).matches()) {
+          } else if (isClosingTag(line, BOX_TAG)) {
             isBox = false;
           }
         }
@@ -595,5 +591,35 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         }
       }
     }
+  }
+
+  /**
+   * Tests whether a line is an opening markup tag with the given name: the name right after the
+   * opening angle bracket, then any characters other than a closing angle bracket, then the
+   * closing angle bracket as the last character.
+   *
+   * @param line The line.
+   * @param name The tag name.
+   * @return {@code true} if the whole line is such a tag.
+   */
+  static boolean isOpeningTag(String line, String name) {
+    int last = line.length() - 1;
+    if (last <= name.length() || line.charAt(0) != '<' || !line.startsWith(name, 1)
+        || line.charAt(last) != '>') {
+      return false;
+    }
+    return line.indexOf('>', name.length() + 1) == last;
+  }
+
+  /**
+   * Tests whether a line is the closing markup tag with the given name and nothing else.
+   *
+   * @param line The line.
+   * @param name The tag name.
+   * @return {@code true} if the whole line is that closing tag.
+   */
+  static boolean isClosingTag(String line, String name) {
+    return line.length() == name.length() + 3 && line.startsWith("</") && line.startsWith(name, 2)
+        && line.charAt(line.length() - 1) == '>';
   }
 }

@@ -19,6 +19,8 @@ package opennlp.tools.formats.ad;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser;
@@ -74,5 +76,53 @@ public class ADSentenceStreamTest {
     sentence = parser.parse(
         "<s>\nSOURCE: src\n1001 Olá mundo ».\n</s>\n", 1, false, false);
     Assertions.assertEquals("Olá mundo ».", sentence.text());
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', ignoreLeadingAndTrailingWhitespace = false, value = {
+      "<s>|s|true",
+      "<s id=\"63955\" ref=\"1001.porto-poesia-2\" source=\"SELVA 1001\">|s|true",
+      "<sx>|s|true",
+      "<ext id=\"1001.porto-poesia\">|ext|true",
+      "<caixa>|caixa|true",
+      "<p par=\"1\">|p|true",
+      "<t>|t|true",
+      "<s|s|false",
+      "<s>>|s|false",
+      "<s> |s|false",
+      " <s>|s|false",
+      "<s>x</s>|s|false",
+      "</s>|s|false",
+      "<p>|s|false",
+      "<caixa>|s|false",
+      "<>|s|false",
+      "''|s|false",
+      "<ext>|t|false",
+      "<t>|ext|false",
+      "< s>|s|false"
+  })
+  void testIsOpeningTag(String line, String name, boolean expected) {
+    Assertions.assertEquals(expected, ADSentenceStream.isOpeningTag(line, name));
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', ignoreLeadingAndTrailingWhitespace = false, value = {
+      "</s>|s|true",
+      "</ext>|ext|true",
+      "</t>|t|true",
+      "</caixa>|caixa|true",
+      "</s> |s|false",
+      " </s>|s|false",
+      "</s|s|false",
+      "</sx>|s|false",
+      "</t>|s|false",
+      "<s>|s|false",
+      "</s>>|s|false",
+      "</ext>|t|false",
+      "''|s|false",
+      "</ s>|s|false"
+  })
+  void testIsClosingTag(String line, String name, boolean expected) {
+    Assertions.assertEquals(expected, ADSentenceStream.isClosingTag(line, name));
   }
 }
