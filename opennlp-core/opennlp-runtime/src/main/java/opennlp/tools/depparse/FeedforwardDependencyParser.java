@@ -45,6 +45,9 @@ import opennlp.tools.commons.ThreadSafe;
 @ThreadSafe
 public class FeedforwardDependencyParser implements DependencyParser {
 
+  /** The beam size at which decoding is greedy. */
+  private static final int GREEDY_BEAM_SIZE = 1;
+
   private final FeedforwardDependencyModel model;
   private final Transition[] transitions;
   private final int beamSize;
@@ -57,7 +60,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
    *         outcome of the model does not decode to a transition.
    */
   public FeedforwardDependencyParser(FeedforwardDependencyModel model) {
-    this(model, 1);
+    this(model, GREEDY_BEAM_SIZE);
   }
 
   /**
@@ -74,7 +77,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
     if (model == null) {
       throw new IllegalArgumentException("model must not be null");
     }
-    if (beamSize < 1) {
+    if (beamSize < GREEDY_BEAM_SIZE) {
       throw new IllegalArgumentException("beamSize must be positive: " + beamSize);
     }
     this.model = model;
@@ -88,10 +91,16 @@ public class FeedforwardDependencyParser implements DependencyParser {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalStateException Thrown if no model outcome is applicable in some
+   *         configuration, which indicates a model with an incomplete action inventory.
+   */
   @Override
   public DependencyGraph parse(String[] tokens, String[] tags) {
-    DependencySample.checkTokensAndTags(tokens, tags);
-    if (beamSize == 1) {
+    ParserInput.check(tokens, tags);
+    if (beamSize == GREEDY_BEAM_SIZE) {
       return greedyParse(tokens, tags);
     }
     return beamParse(tokens, tags);
@@ -103,6 +112,8 @@ public class FeedforwardDependencyParser implements DependencyParser {
    * @param tokens The sentence tokens.
    * @param tags The POS tags, aligned with {@code tokens}.
    * @return The parse. Never {@code null}.
+   * @throws IllegalStateException Thrown if no model outcome is applicable in some
+   *         configuration.
    */
   private DependencyGraph greedyParse(String[] tokens, String[] tags) {
     final ArcStandardState state = new ArcStandardState(tokens.length);
@@ -126,8 +137,14 @@ public class FeedforwardDependencyParser implements DependencyParser {
     return state.toGraph();
   }
 
-  /** One search alternative: a configuration, its summed log-probability score, and the
-   * transition that would advance it, {@code null} once complete. */
+  /**
+   * One search alternative of the beam.
+   *
+   * @param state The configuration reached so far.
+   * @param score The summed log-probability of the transitions taken to reach it.
+   * @param next The transition that would advance {@code state}, or {@code null} once
+   *             it has been applied or the state is complete.
+   */
   private record Alternative(ArcStandardState state, double score, Transition next) {
   }
 
@@ -137,6 +154,8 @@ public class FeedforwardDependencyParser implements DependencyParser {
    * @param tokens The sentence tokens.
    * @param tags The POS tags, aligned with {@code tokens}.
    * @return The parse. Never {@code null}.
+   * @throws IllegalStateException Thrown if no beam alternative can be advanced by any
+   *         model outcome.
    */
   private DependencyGraph beamParse(String[] tokens, String[] tags) {
     List<Alternative> beam =

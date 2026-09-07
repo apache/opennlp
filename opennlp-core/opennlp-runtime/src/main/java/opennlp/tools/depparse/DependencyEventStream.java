@@ -55,13 +55,23 @@ class DependencyEventStream implements ObjectStream<Event> {
    */
   DependencyEventStream(ObjectStream<DependencySample> samples,
       DependencyContextGenerator contextGenerator) {
-    if (samples == null || contextGenerator == null) {
-      throw new IllegalArgumentException("samples and contextGenerator must not be null");
+    if (samples == null) {
+      throw new IllegalArgumentException("samples must not be null");
+    }
+    if (contextGenerator == null) {
+      throw new IllegalArgumentException("contextGenerator must not be null");
     }
     this.samples = samples;
     this.contextGenerator = contextGenerator;
   }
 
+  /**
+   * {@inheritDoc}
+   * Returns the events of one sample at a time and moves on to the next sample once
+   * they are exhausted.
+   *
+   * @throws IOException Thrown if reading the underlying samples fails.
+   */
   @Override
   public Event read() throws IOException {
     while (pending.isEmpty()) {
@@ -74,13 +84,11 @@ class DependencyEventStream implements ObjectStream<Event> {
         }
         return null;
       }
-      final List<Transition> transitions;
-      try {
-        transitions = ArcStandardOracle.transitions(sample.getGraph());
-      } catch (IllegalArgumentException e) {
+      if (!ArcStandardOracle.isProjective(sample.getGraph())) {
         skipped++;
         continue;
       }
+      final List<Transition> transitions = ArcStandardOracle.transitions(sample.getGraph());
       final ArcStandardState state = new ArcStandardState(sample.getGraph().size());
       final String[] tokens = sample.getTokens();
       final String[] tags = sample.getTags();
@@ -93,6 +101,13 @@ class DependencyEventStream implements ObjectStream<Event> {
     return pending.poll();
   }
 
+  /**
+   * {@inheritDoc}
+   * Also discards buffered events and the skipped sample count.
+   *
+   * @throws IOException Thrown if resetting the underlying samples fails.
+   * @throws UnsupportedOperationException Thrown if the underlying samples cannot be reset.
+   */
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     samples.reset();
@@ -100,6 +115,11 @@ class DependencyEventStream implements ObjectStream<Event> {
     skipped = 0;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IOException Thrown if closing the underlying samples fails.
+   */
   @Override
   public void close() throws IOException {
     samples.close();

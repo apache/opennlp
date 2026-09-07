@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -48,6 +49,44 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * model formats, which must reproduce the exact parses of the original models.
  */
 public class DependencyParserEdgeCaseTest {
+
+  /** The language code of the test corpus. */
+  private static final String LANGUAGE = "eng";
+
+  /** The random seed making the feedforward training runs reproducible. */
+  private static final long SEED = 17L;
+
+  /**
+   * Single-epoch feedforward settings for tests that only inspect the trained inventory.
+   */
+  private static final FeedforwardDependencyTrainer.Settings SINGLE_EPOCH_SETTINGS =
+      new FeedforwardDependencyTrainer.Settings(8, 8, 1, 32, 0.05, 0.0, 0.0, 1, SEED);
+
+  /** The tokens of the first corpus sentence. */
+  private static final String[] THE_DOG_BARKS_TOKENS = {"the", "dog", "barks"};
+
+  /** The tags of the first corpus sentence. */
+  private static final String[] THE_DOG_BARKS_TAGS = {"DT", "NN", "VBZ"};
+
+  /** The gold graph of the first corpus sentence. */
+  private static final DependencyGraph THE_DOG_BARKS_GRAPH =
+      DependencyGraph.of(new int[] {1, 2, -1}, new String[] {"det", "nsubj", "root"});
+
+  /** The tokens of the third corpus sentence. */
+  private static final String[] SHE_EATS_FISH_TOKENS = {"she", "eats", "fish"};
+
+  /** The tags of the third corpus sentence. */
+  private static final String[] SHE_EATS_FISH_TAGS = {"PRP", "VBZ", "NN"};
+
+  /** The gold graph of the third corpus sentence. */
+  private static final DependencyGraph SHE_EATS_FISH_GRAPH =
+      DependencyGraph.of(new int[] {1, -1, 1}, new String[] {"nsubj", "root", "obj"});
+
+  /** The number of threads parsing concurrently in the sharing test. */
+  private static final int THREADS = 8;
+
+  /** The number of parses each thread performs in the sharing test. */
+  private static final int ITERATIONS_PER_THREAD = 50;
 
   private static DependencyModel maxentModel;
   private static DependencyParserME maxentParser;
@@ -77,12 +116,12 @@ public class DependencyParserEdgeCaseTest {
   static void trainParsers() throws IOException {
     final TrainingParameters parameters = TrainingParameters.defaultParams();
     parameters.put(Parameters.CUTOFF_PARAM, 0);
-    maxentModel = DependencyParserME.train("eng",
+    maxentModel = DependencyParserME.train(LANGUAGE,
         ObjectStreamUtils.createObjectStream(corpus()), parameters);
     maxentParser = new DependencyParserME(maxentModel);
 
     final FeedforwardDependencyTrainer.Settings settings =
-        new FeedforwardDependencyTrainer.Settings(16, 32, 60, 32, 0.05, 0.0, 0.0, 1, 17L);
+        new FeedforwardDependencyTrainer.Settings(16, 32, 60, 32, 0.05, 0.0, 0.0, 1, SEED);
     feedforwardModel = FeedforwardDependencyTrainer.train(
         ObjectStreamUtils.createObjectStream(corpus()), settings);
     feedforwardParser = new FeedforwardDependencyParser(feedforwardModel);
@@ -140,17 +179,11 @@ public class DependencyParserEdgeCaseTest {
     mixed.add(nonProjectiveSample());
     final TrainingParameters parameters = TrainingParameters.defaultParams();
     parameters.put(Parameters.CUTOFF_PARAM, 0);
-    final DependencyModel model = DependencyParserME.train("eng",
+    final DependencyModel model = DependencyParserME.train(LANGUAGE,
         ObjectStreamUtils.createObjectStream(mixed), parameters);
     final DependencyParserME parser = new DependencyParserME(model);
-    assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
-            new String[] {"det", "nsubj", "root"}),
-        parser.parse(new String[] {"the", "dog", "barks"},
-            new String[] {"DT", "NN", "VBZ"}));
-    assertEquals(DependencyGraph.of(new int[] {1, -1, 1},
-            new String[] {"nsubj", "root", "obj"}),
-        parser.parse(new String[] {"she", "eats", "fish"},
-            new String[] {"PRP", "VBZ", "NN"}));
+    assertEquals(THE_DOG_BARKS_GRAPH, parser.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS));
+    assertEquals(SHE_EATS_FISH_GRAPH, parser.parse(SHE_EATS_FISH_TOKENS, SHE_EATS_FISH_TAGS));
   }
 
   @Test
@@ -159,11 +192,9 @@ public class DependencyParserEdgeCaseTest {
     mixed.add(sample(new String[] {"a", "b", "c", "d"},
         new String[] {"DT", "NN", "VBZ", "RB"}, new int[] {2, 3, -1, 2},
         new String[] {"det", "dislocated", "root", "obj"}));
-    final FeedforwardDependencyTrainer.Settings settings =
-        new FeedforwardDependencyTrainer.Settings(8, 8, 1, 32, 0.05, 0.0, 0.0, 1, 17L);
 
     final FeedforwardDependencyModel trained = FeedforwardDependencyTrainer.train(
-        ObjectStreamUtils.createObjectStream(mixed), settings);
+        ObjectStreamUtils.createObjectStream(mixed), SINGLE_EPOCH_SETTINGS);
 
     assertEquals(0, List.of(trained.transitions()).stream()
         .filter(transition -> transition.contains("dislocated")).count());
@@ -184,19 +215,17 @@ public class DependencyParserEdgeCaseTest {
 
   @Test
   void testFeedforwardTrainingRejectsNoProjectiveSamples() {
-    final FeedforwardDependencyTrainer.Settings settings =
-        new FeedforwardDependencyTrainer.Settings(8, 8, 1, 32, 0.05, 0.0, 0.0, 1, 17L);
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> FeedforwardDependencyTrainer.train(
             ObjectStreamUtils.createObjectStream(List.of(nonProjectiveSample())),
-            settings));
+            SINGLE_EPOCH_SETTINGS));
     assertEquals("no trainable examples in the samples", e.getMessage());
   }
 
   @Test
   void testRefinementRejectsNoProjectiveSamples() {
     final FeedforwardDependencyTrainer.Settings settings =
-        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
+        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, SEED);
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> FeedforwardDependencyTrainer.refine(feedforwardModel,
             ObjectStreamUtils.createObjectStream(List.of(nonProjectiveSample())),
@@ -212,12 +241,10 @@ public class DependencyParserEdgeCaseTest {
     final DependencyParserME reloaded = new DependencyParserME(new DependencyModel(file));
     for (final DependencySample sample : corpus()) {
       assertEquals(maxentParser.parse(sample.getTokens(), sample.getTags()),
-          reloaded.parse(sample.getTokens(), sample.getTags()));
+          reloaded.parse(sample.getTokens(), sample.getTags()),
+          Arrays.toString(sample.getTokens()));
     }
-    assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
-            new String[] {"det", "nsubj", "root"}),
-        reloaded.parse(new String[] {"the", "dog", "barks"},
-            new String[] {"DT", "NN", "VBZ"}));
+    assertEquals(THE_DOG_BARKS_GRAPH, reloaded.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS));
   }
 
   @Test
@@ -231,32 +258,28 @@ public class DependencyParserEdgeCaseTest {
         new FeedforwardDependencyParser(FeedforwardDependencyModel.load(file));
     for (final DependencySample sample : corpus()) {
       assertEquals(feedforwardParser.parse(sample.getTokens(), sample.getTags()),
-          reloaded.parse(sample.getTokens(), sample.getTags()));
+          reloaded.parse(sample.getTokens(), sample.getTags()),
+          Arrays.toString(sample.getTokens()));
     }
-    assertEquals(DependencyGraph.of(new int[] {1, -1, 1},
-            new String[] {"nsubj", "root", "obj"}),
-        reloaded.parse(new String[] {"she", "eats", "fish"},
-            new String[] {"PRP", "VBZ", "NN"}));
+    assertEquals(SHE_EATS_FISH_GRAPH, reloaded.parse(SHE_EATS_FISH_TOKENS, SHE_EATS_FISH_TAGS));
   }
 
   @Test
   void testParserInstancesCanBeSharedBetweenThreads() throws Exception {
-    final DependencyGraph expected = DependencyGraph.of(new int[] {1, 2, -1},
-        new String[] {"det", "nsubj", "root"});
     final List<Callable<Void>> tasks = new ArrayList<>();
-    for (int task = 0; task < 8; task++) {
+    for (int task = 0; task < THREADS; task++) {
       tasks.add(() -> {
-        for (int iteration = 0; iteration < 50; iteration++) {
-          final String[] tokens = {"the", "dog", "barks"};
-          final String[] tags = {"DT", "NN", "VBZ"};
-          assertEquals(expected, maxentParser.parse(tokens, tags));
-          assertEquals(expected, feedforwardParser.parse(tokens, tags));
+        for (int iteration = 0; iteration < ITERATIONS_PER_THREAD; iteration++) {
+          assertEquals(THE_DOG_BARKS_GRAPH,
+              maxentParser.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS));
+          assertEquals(THE_DOG_BARKS_GRAPH,
+              feedforwardParser.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS));
         }
         return null;
       });
     }
 
-    final ExecutorService executor = Executors.newFixedThreadPool(8);
+    final ExecutorService executor = Executors.newFixedThreadPool(THREADS);
     try {
       final List<Future<Void>> results = executor.invokeAll(tasks);
       for (final Future<Void> result : results) {

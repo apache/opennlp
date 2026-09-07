@@ -38,11 +38,23 @@ import opennlp.tools.util.StringUtil;
 @ThreadSafe
 public final class DependencyGraph {
 
+  /** Traversal state of a token whose head chain has not been followed yet. */
+  private static final byte UNVISITED = 0;
+
+  /** Traversal state of a token on the head chain currently being followed. */
+  private static final byte VISITING = 1;
+
+  /** Traversal state of a token whose head chain is known to reach the root. */
+  private static final byte VISITED = 2;
+
   private final int[] heads;
   private final String[] relations;
 
   /**
    * Wraps already validated arrays; instances are created through {@link #of}.
+   *
+   * @param heads The validated head array, owned by the new instance.
+   * @param relations The validated relation array, owned by the new instance.
    */
   private DependencyGraph(int[] heads, String[] relations) {
     this.heads = heads;
@@ -95,22 +107,29 @@ public final class DependencyGraph {
     return new DependencyGraph(heads.clone(), relations.clone());
   }
 
-  /** Rejects a cycle that is disconnected from the single root. */
+  /**
+   * Rejects a cycle that is disconnected from the single root by following every token's
+   * head chain until it reaches the root or a token already known to reach it.
+   *
+   * @param heads The head array, already checked for range, self-heads, and root count.
+   * @throws IllegalArgumentException Thrown if a head chain returns to a token on that
+   *         same chain.
+   */
   private static void checkAcyclic(int[] heads) {
     final byte[] states = new byte[heads.length];
     for (int start = 0; start < heads.length; start++) {
       int current = start;
-      while (current != DependencyArc.ROOT_HEAD && states[current] == 0) {
-        states[current] = 1;
+      while (current != DependencyArc.ROOT_HEAD && states[current] == UNVISITED) {
+        states[current] = VISITING;
         current = heads[current];
       }
-      if (current != DependencyArc.ROOT_HEAD && states[current] == 1) {
+      if (current != DependencyArc.ROOT_HEAD && states[current] == VISITING) {
         throw new IllegalArgumentException(
             "dependency graph contains a cycle at token " + current);
       }
       current = start;
-      while (current != DependencyArc.ROOT_HEAD && states[current] == 1) {
-        states[current] = 2;
+      while (current != DependencyArc.ROOT_HEAD && states[current] == VISITING) {
+        states[current] = VISITED;
         current = heads[current];
       }
     }
@@ -150,6 +169,8 @@ public final class DependencyGraph {
 
   /**
    * @return The zero-based index of the sentence root token.
+   * @throws IllegalStateException Thrown if no token carries {@link DependencyArc#ROOT_HEAD},
+   *         which {@link #of} rules out.
    */
   public int root() {
     for (int i = 0; i < heads.length; i++) {
