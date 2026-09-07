@@ -45,6 +45,9 @@ import opennlp.tools.commons.ThreadSafe;
 @ThreadSafe
 public class FeedforwardDependencyParser implements DependencyParser {
 
+  /** The beam size at which decoding is greedy. */
+  private static final int GREEDY_BEAM_SIZE = 1;
+
   private final FeedforwardDependencyModel model;
   private final Transition[] transitions;
   private final int beamSize;
@@ -57,7 +60,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
    *         outcome of the model does not decode to a transition.
    */
   public FeedforwardDependencyParser(FeedforwardDependencyModel model) {
-    this(model, 1);
+    this(model, GREEDY_BEAM_SIZE);
   }
 
   /**
@@ -74,7 +77,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
     if (model == null) {
       throw new IllegalArgumentException("model must not be null");
     }
-    if (beamSize < 1) {
+    if (beamSize < GREEDY_BEAM_SIZE) {
       throw new IllegalArgumentException("beamSize must be positive: " + beamSize);
     }
     this.model = model;
@@ -88,10 +91,16 @@ public class FeedforwardDependencyParser implements DependencyParser {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalStateException If no model outcome is applicable in a configuration
+   *         or the model produces a non-finite transition score.
+   */
   @Override
   public DependencyGraph parse(String[] tokens, String[] tags) {
-    DependencySample.checkTokensAndTags(tokens, tags);
-    if (beamSize == 1) {
+    ParserInput.check(tokens, tags);
+    if (beamSize == GREEDY_BEAM_SIZE) {
       return greedyParse(tokens, tags);
     }
     return beamParse(tokens, tags);
@@ -103,6 +112,8 @@ public class FeedforwardDependencyParser implements DependencyParser {
    * @param tokens The sentence tokens.
    * @param tags The POS tags, aligned with {@code tokens}.
    * @return The parse. Never {@code null}.
+   * @throws IllegalStateException If no model outcome is applicable in a configuration
+   *         or the model produces a non-finite transition score.
    */
   private DependencyGraph greedyParse(String[] tokens, String[] tags) {
     final ArcStandardState state = new ArcStandardState(tokens.length);
@@ -126,8 +137,14 @@ public class FeedforwardDependencyParser implements DependencyParser {
     return state.toGraph();
   }
 
-  /** One search alternative: a configuration, its summed log-probability score, and the
-   * transition that would advance it, {@code null} once complete. */
+  /**
+   * One search alternative of the beam.
+   *
+   * @param state The configuration reached so far.
+   * @param score The summed log-probability of the transitions taken to reach it.
+   * @param next The transition that would advance {@code state}, or {@code null} once
+   *             it has been applied or the state is complete.
+   */
   private record Alternative(ArcStandardState state, double score, Transition next) {
   }
 
@@ -137,6 +154,8 @@ public class FeedforwardDependencyParser implements DependencyParser {
    * @param tokens The sentence tokens.
    * @param tags The POS tags, aligned with {@code tokens}.
    * @return The parse. Never {@code null}.
+   * @throws IllegalStateException If no beam alternative can be advanced by a model
+   *         outcome or the model produces a non-finite transition score.
    */
   private DependencyGraph beamParse(String[] tokens, String[] tags) {
     List<Alternative> beam =
@@ -187,7 +206,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
   /**
    * Normalizes raw transition scores to log-probabilities.
    *
-   * @param scores The raw output scores.
+   * @param scores The finite, non-empty raw output scores.
    * @return The log-softmax of {@code scores}. Never {@code null}.
    */
   private double[] logSoftmax(double[] scores) {
@@ -199,10 +218,10 @@ public class FeedforwardDependencyParser implements DependencyParser {
     for (final double score : scores) {
       sum += Math.exp(score - max);
     }
-    final double logSum = max + Math.log(sum);
+    final double logSum = Math.log(sum);
     final double[] logProbabilities = new double[scores.length];
     for (int i = 0; i < scores.length; i++) {
-      logProbabilities[i] = scores[i] - logSum;
+      logProbabilities[i] = (scores[i] - max) - logSum;
     }
     return logProbabilities;
   }

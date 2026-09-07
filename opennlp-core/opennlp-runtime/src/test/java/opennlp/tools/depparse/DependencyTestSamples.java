@@ -28,8 +28,8 @@ final class DependencyTestSamples {
   /** How often the distinct sentences are repeated in {@link #corpus()}. */
   private static final int REPETITIONS = 40;
 
+  /** Prevents construction of this utility class. */
   private DependencyTestSamples() {
-    // This class only exposes static sample builders and is never instantiated.
   }
 
   /**
@@ -47,18 +47,28 @@ final class DependencyTestSamples {
   }
 
   /**
-   * Builds three repeated projective samples for deterministic parser tests.
+   * Builds the three distinct projective sentences of the test corpus.
    *
-   * @return The training samples. Never {@code null}.
+   * @return One sample per sentence. Never {@code null}.
    */
-  static List<DependencySample> corpus() {
-    final List<DependencySample> distinct = List.of(
+  static List<DependencySample> sentences() {
+    return List.of(
         sample(new String[] {"the", "dog", "barks"}, new String[] {"DT", "NN", "VBZ"},
             new int[] {1, 2, -1}, new String[] {"det", "nsubj", "root"}),
         sample(new String[] {"dogs", "bark"}, new String[] {"NNS", "VBP"},
             new int[] {1, -1}, new String[] {"nsubj", "root"}),
         sample(new String[] {"she", "eats", "fish"}, new String[] {"PRP", "VBZ", "NN"},
             new int[] {1, -1, 1}, new String[] {"nsubj", "root", "obj"}));
+  }
+
+  /**
+   * Builds the training corpus: {@link #sentences()} repeated {@code REPETITIONS}
+   * times, which makes the small parsers memorize them deterministically.
+   *
+   * @return The training samples. Never {@code null}.
+   */
+  static List<DependencySample> corpus() {
+    final List<DependencySample> distinct = sentences();
     final List<DependencySample> corpus = new ArrayList<>(REPETITIONS * distinct.size());
     for (int i = 0; i < REPETITIONS; i++) {
       corpus.addAll(distinct);

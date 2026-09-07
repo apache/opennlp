@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @since 3.0.0
  */
-public final class ArcStandardOracle {
+final class ArcStandardOracle {
 
   /** Prevents construction of this utility class. */
   private ArcStandardOracle() {
@@ -48,7 +48,7 @@ public final class ArcStandardOracle {
    * @throws IllegalArgumentException Thrown if {@code gold} is {@code null} or not
    *         projective.
    */
-  public static List<Transition> transitions(DependencyGraph gold) {
+  static List<Transition> transitions(DependencyGraph gold) {
     if (gold == null) {
       throw new IllegalArgumentException("gold must not be null");
     }
@@ -76,8 +76,13 @@ public final class ArcStandardOracle {
   }
 
   /**
-   * Picks the gold transition for the current configuration, or {@code null} when the
-   * configuration is stuck, which only happens for non-projective input.
+   * Picks the gold transition for the current configuration.
+   *
+   * @param gold The gold graph being derived.
+   * @param goldDependents The gold dependent count per token, indexed by head.
+   * @param state The current configuration.
+   * @return The next gold transition, or {@code null} when the configuration is stuck,
+   *         which only happens for non-projective input.
    */
   private static Transition nextTransition(DependencyGraph gold, int[] goldDependents,
       ArcStandardState state) {
@@ -100,5 +105,33 @@ public final class ArcStandardOracle {
       return Transition.SHIFT;
     }
     return null;
+  }
+  /**
+   * Tests whether a gold graph is projective: no pair of arcs crosses when the arcs are
+   * placed above the token sequence. The projective graphs are the ones with an
+   * arc-standard derivation, so callers apply this test before requesting
+   * {@link #transitions}.
+   *
+   * @param gold The gold graph. Must not be {@code null}.
+   * @return {@code true} if no pair of arcs crosses.
+   * @throws IllegalArgumentException Thrown if {@code gold} is {@code null}.
+   */
+  static boolean isProjective(DependencyGraph gold) {
+    if (gold == null) {
+      throw new IllegalArgumentException("gold must not be null");
+    }
+    for (int first = 0; first < gold.size(); first++) {
+      final int firstLow = Math.min(first, gold.headOf(first));
+      final int firstHigh = Math.max(first, gold.headOf(first));
+      for (int other = first + 1; other < gold.size(); other++) {
+        final int otherLow = Math.min(other, gold.headOf(other));
+        final int otherHigh = Math.max(other, gold.headOf(other));
+        if ((firstLow < otherLow && otherLow < firstHigh && firstHigh < otherHigh)
+            || (otherLow < firstLow && firstLow < otherHigh && otherHigh < firstHigh)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

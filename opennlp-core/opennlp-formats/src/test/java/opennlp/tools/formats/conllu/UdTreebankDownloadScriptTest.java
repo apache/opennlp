@@ -31,6 +31,10 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Checks the argument handling of {@code dev/download-ud-treebank.sh} without network
+ * access: a stub {@code git} on the {@code PATH} fails loudly if the script ever reaches it.
+ */
 @EnabledOnOs({OS.LINUX, OS.MAC})
 public class UdTreebankDownloadScriptTest {
 
