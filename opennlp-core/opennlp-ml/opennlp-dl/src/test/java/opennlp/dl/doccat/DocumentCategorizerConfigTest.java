@@ -17,14 +17,62 @@
 package opennlp.dl.doccat;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class DocumentCategorizerConfigTest {
+
+  static Stream<Arguments> id2labels() {
+    return Stream.of(
+        Arguments.of("{\"id2label\": {\"0\": \"x\"}}", Map.of("0", "x")),
+        Arguments.of("{\"id2label\":{}}", Map.of()),
+        Arguments.of("{\"id2label\" : {\n\"0\" : \"neg\" ,\n\"1\"\t:\r\n\"pos\"\n}}",
+            Map.of("0", "neg", "1", "pos")),
+        Arguments.of("{\"id2label\":\u00A0{\"0\": \"x\"}}", Map.of()),
+        Arguments.of("{\"vocab_size\": 5}", Map.of()),
+        Arguments.of("{\"id2label\": {\"0\": \"x\"", Map.of()),
+        Arguments.of("{\"id2label\": \"nope\", \"id2label\": {\"0\": \"x\"}}", Map.of("0", "x")),
+        Arguments.of("{\"id2label\"id2label\": {\"0\": \"x\"}}", Map.of("0", "x")),
+        Arguments.of("{\"other\": {\"id2label\": {\"0\": \"x\"}}}", Map.of("0", "x")),
+        Arguments.of("{\"id2label\": [\"0\", \"x\"]}", Map.of()),
+        Arguments.of("{\"id2label\": {\"0\": \"x\", \"1\": {\"n\": \"y\"}, \"2\": \"z\"}}",
+            Map.of("0", "x", "n", "y")),
+        Arguments.of("{\"id2label\": {\"0\": \"x\", \"1\": \"y}\", \"2\": \"z\"}}", Map.of("0", "x")),
+        Arguments.of("{\"id2label\": {\"0\": \"say \\\"hi\\\"\", \"1\": \"ok\"}}",
+            Map.of("0", "say \\", "1", "ok")),
+        Arguments.of("{\"id2label\": {\"a\\\"b\": \"c\"}}", Map.of("b", "c")),
+        Arguments.of("{\"id2label\": {\"0\": \"li\nne\", \"1\": \"ok\"}}", Map.of("1", "ok")),
+        Arguments.of("{\"id2label\": {\"0\": \"li\u2028ne\", \"1\": \"ok\"}}", Map.of("1", "ok")),
+        Arguments.of("{\"id2label\": {\"0\": \"tab\there\"}}", Map.of("0", "tab\there")),
+        Arguments.of("{\"id2label\": {\"k\ney\": \"v\"}}", Map.of("k\ney", "v")),
+        Arguments.of("{\"id2label\": {\"\": \"x\", \"1\": \"y\"}}", Map.of("1", "y")),
+        Arguments.of("{\"id2label\": {\"0\": 5, \"1\": \"y\"}}", Map.of("1", "y")),
+        Arguments.of("{\"id2label\": {\"0\":\"\"}}", Map.of("0", "")),
+        Arguments.of("{\"id2label\": {\"0\": \"x\" \"1\": \"y\"}}", Map.of("0", "x", "1", "y")),
+        Arguments.of("{\"id2label\": {\"0\": \"x\", \"0\": \"y\"}}", Map.of("0", "y")),
+        Arguments.of("{\"id2label\": {\"\uD83D\uDE00\": \"\uD801\uDC12\", \"\u00E9\": \"\u3000x\"}}",
+            Map.of("\uD83D\uDE00", "\uD801\uDC12", "\u00E9", "\u3000x")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("id2labels")
+  public void testId2LabelsFromJson(String json, Map<String, String> expected) {
+    assertEquals(expected, DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  @Test
+  public void testId2LabelsFromJsonNullThrows() {
+    assertThrows(NullPointerException.class, () -> DocumentCategorizerConfig.fromJson(null));
+  }
 
   @Test
   public void testId2LabelsFromJsonPrettyValid() {
