@@ -38,6 +38,7 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -65,16 +66,6 @@ import opennlp.tools.util.Span;
  */
 @Internal
 public class ADNameSampleStream implements ObjectStream<NameSample> {
-
-  /*
-   * Pattern of a NER tag in Arvores Deitadas
-   */
-  private static final Pattern TAG_PATTERN = Pattern.compile("<(NER:)?(.*?)>");
-  private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
-  private static final Pattern UNDERLINE_PATTERN = Pattern.compile("[_]+");
-  private static final Pattern HYPHEN_PATTERN =
-      Pattern.compile("((\\p{L}+)-$)|(^-(\\p{L}+)(.*))|((\\p{L}+)-(\\p{L}+)(.*))");
-  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[\\p{L}\\p{Nd}]+$");
 
   /*
    * Map to the Arvores Deitadas types to our types. It is read-only.
@@ -254,7 +245,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       String c = PortugueseContractionUtility.toContraction(
           leftContractionPart, right);
       if (c != null) {
-        String[] parts = WHITESPACE_PATTERN.split(c);
+        String[] parts = StringUtil.splitOnAsciiWhitespace(c);
         sentence.addAll(Arrays.asList(parts));
         alreadyAdded = true;
       } else {
@@ -273,7 +264,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     if (leafTag != null) {
       if (leafTag.contains("<sam->") && !alreadyAdded) {
-        String[] lexemes = UNDERLINE_PATTERN.split(leaf.getLexeme());
+        String[] lexemes = splitOnUnderscores(leaf.getLexeme());
         if (lexemes.length > 1) {
           sentence.addAll(Arrays.asList(lexemes).subList(0, lexemes.length - 1));
         }
@@ -318,9 +309,9 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private List<String> processLexeme(String lexemeStr) {
     List<String> out = new ArrayList<>();
-    String[] parts = UNDERLINE_PATTERN.split(lexemeStr);
+    String[] parts = splitOnUnderscores(lexemeStr);
     for (String tok : parts) {
-      if (tok.length() > 1 && !ALPHANUMERIC_PATTERN.matcher(tok).matches()) {
+      if (tok.length() > 1 && !isAlphaNumeric(tok)) {
         out.addAll(processTok(tok));
       } else {
         out.add(tok);
@@ -347,35 +338,19 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     // lets split all hyphens
     if (this.splitHyphenatedTokens && tok.contains("-") && tok.length() > 1) {
-      Matcher matcher = HYPHEN_PATTERN.matcher(tok);
+      String[] parts = matchHyphenatedToken(tok);
 
-      String firstTok = null;
-      String hyphen = "-";
-      String secondTok = null;
-      String rest = null;
-
-      if (matcher.matches()) {
-        if (matcher.group(1) != null) {
-          firstTok = matcher.group(2);
-        } else if (matcher.group(3) != null) {
-          secondTok = matcher.group(4);
-          rest = matcher.group(5);
-        } else if (matcher.group(6) != null) {
-          firstTok = matcher.group(7);
-          secondTok = matcher.group(8);
-          rest = matcher.group(9);
-        }
-
-        addIfNotEmpty(firstTok, out);
-        addIfNotEmpty(hyphen, out);
-        addIfNotEmpty(secondTok, out);
-        addIfNotEmpty(rest, out);
+      if (parts != null) {
+        addIfNotEmpty(parts[0], out);
+        addIfNotEmpty("-", out);
+        addIfNotEmpty(parts[1], out);
+        addIfNotEmpty(parts[2], out);
         tokAdded = true;
       }
     }
     if (!tokAdded) {
       if (!original.equals(tok) && tok.length() > 1
-          && !ALPHANUMERIC_PATTERN.matcher(tok).matches()) {
+          && !isAlphaNumeric(tok)) {
         out.addAll(processTok(tok));
       } else {
         out.add(tok);
@@ -392,6 +367,161 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
+   * Splits on runs of underscores with the result of {@code String.split("[_]+")}: a leading
+   * run yields one empty first element, trailing empty elements are dropped, and
+   * underscore-only input yields an empty array.
+   *
+   * @param s The text.
+   * @return The elements in order.
+   */
+  static String[] splitOnUnderscores(String s) {
+    if (s.isEmpty()) {
+      return new String[] {""};
+    }
+    boolean hasToken = false;
+    for (int i = 0; i < s.length(); i++) {
+      if (s.charAt(i) != '_') {
+        hasToken = true;
+        break;
+      }
+    }
+    if (!hasToken) {
+      return new String[0];
+    }
+    List<String> tokens = new ArrayList<>();
+    if (s.charAt(0) == '_') {
+      tokens.add("");
+    }
+    int start = 0;
+    for (int i = 0; i < s.length(); i++) {
+      if (s.charAt(i) == '_') {
+        if (i > start) {
+          tokens.add(s.substring(start, i));
+        }
+        while (i + 1 < s.length() && s.charAt(i + 1) == '_') {
+          i++;
+        }
+        start = i + 1;
+      }
+    }
+    if (s.length() > start) {
+      tokens.add(s.substring(start));
+    }
+    return tokens.toArray(new String[0]);
+  }
+
+  /**
+   * Tests whether a token consists of letters and decimal digits only, by code point.
+   *
+   * @param tok The token.
+   * @return {@code true} if the token is non-empty and every code point is a letter or a
+   *         decimal digit.
+   */
+  static boolean isAlphaNumeric(String tok) {
+    if (tok.isEmpty()) {
+      return false;
+    }
+    int i = 0;
+    while (i < tok.length()) {
+      int cp = tok.codePointAt(i);
+      if (!Character.isLetter(cp) && !Character.isDigit(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
+  }
+
+  /**
+   * Splits a hyphenated token into the letters before the hyphen, the letters after it, and
+   * the rest. Three shapes match: letters followed by a final hyphen, a leading hyphen followed
+   * by letters and anything, and letters, a hyphen, letters, and anything.
+   *
+   * @param tok The token, at least two characters long.
+   * @return The first token, second token, and rest, each {@code null} when absent, or
+   *         {@code null} if the token has none of the three shapes.
+   */
+  static String[] matchHyphenatedToken(String tok) {
+    int len = tok.length();
+    // (\p{L}+)-$
+    if (len > 1 && tok.charAt(len - 1) == '-' && isAllLetters(tok, 0, len - 1)) {
+      return new String[] {tok.substring(0, len - 1), null, null};
+    }
+    // ^-(\p{L}+)(.*)
+    if (tok.charAt(0) == '-') {
+      int lettersEnd = lettersEnd(tok, 1);
+      if (lettersEnd > 1) {
+        return new String[] {null, tok.substring(1, lettersEnd), tok.substring(lettersEnd)};
+      }
+      return null;
+    }
+    // (\p{L}+)-(\p{L}+)(.*)
+    int firstEnd = lettersEnd(tok, 0);
+    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == '-') {
+      int secondEnd = lettersEnd(tok, firstEnd + 1);
+      if (secondEnd > firstEnd + 1) {
+        return new String[] {tok.substring(0, firstEnd),
+            tok.substring(firstEnd + 1, secondEnd), tok.substring(secondEnd)};
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Finds the end of the run of letters starting at an offset.
+   *
+   * @param s The text.
+   * @param from The start offset.
+   * @return The offset after the run, or {@code from} if no letter starts there.
+   */
+  private static int lettersEnd(String s, int from) {
+    int i = from;
+    while (i < s.length()) {
+      int cp = s.codePointAt(i);
+      if (!Character.isLetter(cp)) {
+        break;
+      }
+      i += Character.charCount(cp);
+    }
+    return i;
+  }
+
+  /**
+   * Tests whether a range holds letters only.
+   *
+   * @param s The text.
+   * @param from The inclusive start.
+   * @param to The exclusive end.
+   * @return {@code true} if every code point in the range is a letter.
+   */
+  private static boolean isAllLetters(String s, int from, int to) {
+    int i = from;
+    while (i < to) {
+      int cp = s.codePointAt(i);
+      if (!Character.isLetter(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
+  }
+
+  /**
+   * Extracts the content of a NER tag in Arvores Deitadas format, between the optional
+   * {@code NER:} prefix and the closing angle bracket.
+   *
+   * @param t The tag.
+   * @return The content, or {@code null} if {@code t} is not enclosed in angle brackets.
+   */
+  static String tagContent(String t) {
+    if (t.length() < 2 || t.charAt(0) != '<' || t.charAt(t.length() - 1) != '>') {
+      return null;
+    }
+    int start = t.startsWith("NER:", 1) ? 5 : 1;
+    return t.substring(start, t.length() - 1);
+  }
+
+  /**
    * Parses a NER tag in Arvores Deitadas format.
    *
    * @param tags The NER tag in Arvores Deitadas format.
@@ -401,14 +531,11 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     if (tags.contains("<NER2>")) {
       return null;
     }
-    String[] tag = tags.split("\\s+");
+    String[] tag = StringUtil.splitOnAsciiWhitespace(tags);
     for (String t : tag) {
-      Matcher matcher = TAG_PATTERN.matcher(t);
-      if (matcher.matches()) {
-        String ner = matcher.group(2);
-        if (HAREM.containsKey(ner)) {
-          return HAREM.get(ner);
-        }
+      String ner = tagContent(t);
+      if (ner != null && HAREM.containsKey(ner)) {
+        return HAREM.get(ner);
       }
     }
     return null;
