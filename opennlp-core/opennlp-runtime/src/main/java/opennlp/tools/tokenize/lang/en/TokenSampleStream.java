@@ -24,13 +24,13 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Class which produces an Iterator&lt;TokenSample&gt; from a file of space delimited token.
@@ -42,7 +42,6 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   private static final Logger logger = LoggerFactory.getLogger(TokenSampleStream.class);
   private final BufferedReader in;
   private String line;
-  private final Pattern alphaNumeric = Pattern.compile("[A-Za-z0-9]");
   private boolean evenq = true;
 
   public TokenSampleStream(InputStream is) throws IOException {
@@ -55,7 +54,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   public TokenSample next() {
-    String[] tokens = line.split("\\s+");
+    String[] tokens = StringUtil.splitOnAsciiWhitespace(line);
     if (tokens.length == 0) {
       evenq = true;
     }
@@ -73,7 +72,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         default -> token;
       };
       if (sb.length() != 0) {
-        if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
+        if (!containsAsciiAlphaNum(token) || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
           if ((token.equals("``") || token.equals("--") || token.equals("$") ||
               token.equals("(")  || token.equals("&")  || token.equals("#") ||
               (token.equals("\"") && (evenq && ti != tokens.length - 1)))
@@ -111,6 +110,23 @@ public class TokenSampleStream implements Iterator<TokenSample> {
 
   public void remove() {
     throw new UnsupportedOperationException();
+  }
+
+
+  /**
+   * Tests whether a token contains an ASCII letter or digit.
+   *
+   * @param token The token.
+   * @return {@code true} if one is present.
+   */
+  private boolean containsAsciiAlphaNum(String token) {
+    for (int i = 0; i < token.length(); i++) {
+      char c = token.charAt(i);
+      if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void usage() {

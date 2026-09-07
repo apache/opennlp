@@ -71,4 +71,19 @@ public class TokenPatternFeatureGeneratorTest {
     Assertions.assertEquals("st=sentence", features.get(12));
     Assertions.assertEquals("pta=iclclclclc", features.get(13));
   }
+
+  @Test
+  void testSkipsNonLetterSubTokens() {
+
+    String[] testSentence = new String[] {"well-known"};
+    final int testTokenIndex = 0;
+
+    AdaptiveFeatureGenerator generator = new TokenPatternFeatureGenerator();
+
+    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    // the hyphen sub-token must not produce an "st=" feature
+    Assertions.assertFalse(features.contains("st=-"));
+    Assertions.assertTrue(features.contains("st=well"));
+    Assertions.assertTrue(features.contains("st=known"));
+  }
 }

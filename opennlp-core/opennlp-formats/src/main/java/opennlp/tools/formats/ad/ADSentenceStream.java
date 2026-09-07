@@ -33,6 +33,7 @@ import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Stream filter which merges text lines into sentences, following the Arvores
@@ -69,9 +70,6 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         .compile("^([=-]*)([^:=]+):([^\\(\\s]+)\\([\"'](.+)[\"']\\s*((?:<.+>)*)\\s*([^\\)]+)?\\)\\s+(.+)");
     private static final Pattern BIZARRE_LEAF_PATTERN = Pattern
         .compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
-    private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("^(=*)(\\W+)$");
-    private static final Pattern PUNCTUATION_DOT_PATTERN = Pattern.compile("\\»\\s+\\.");
-    private static final Pattern PUNCTUATION_COMMA_PATTERN = Pattern.compile("\\»\\s+\\,");
 
     private String text,meta;
 
@@ -208,9 +206,80 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     private String fixPunctuation(String text) {
-      text = PUNCTUATION_DOT_PATTERN.matcher(text).replaceAll("».");
-      text = PUNCTUATION_COMMA_PATTERN.matcher(text).replaceAll("»,");
+      text = replaceGuillemetPunctuation(text, '.', "».");
+      text = replaceGuillemetPunctuation(text, ',', "»,");
       return text;
+    }
+
+    /**
+     * Removes the ASCII whitespace between a closing guillemet and a following punctuation
+     * character.
+     *
+     * @param text The text.
+     * @param punct The punctuation character.
+     * @param replacement The two characters to write in place of guillemet, whitespace, and
+     *                    punctuation.
+     * @return The text with those runs joined.
+     */
+    private String replaceGuillemetPunctuation(String text, char punct, String replacement) {
+      StringBuilder fixed = new StringBuilder(text.length());
+      int i = 0;
+      while (i < text.length()) {
+        char c = text.charAt(i);
+        if (c == '»' && i + 1 < text.length()) {
+          int j = i + 1;
+          while (j < text.length() && StringUtil.isAsciiWhitespace(text.charAt(j))) {
+            j++;
+          }
+          if (j > i + 1 && j < text.length() && text.charAt(j) == punct) {
+            fixed.append(replacement);
+            i = j + 1;
+            continue;
+          }
+        }
+        fixed.append(c);
+        i++;
+      }
+      return fixed.toString();
+    }
+
+    /**
+     * Parses a punctuation line: leading equals signs followed by one or more characters that
+     * are not ASCII letters, digits, or underscores. A line of equals signs only also matches,
+     * with the last one as lexeme.
+     *
+     * @param line The line.
+     * @return The level, as one more than the count of leading equals signs, and the lexeme,
+     *         or {@code null} if the line is not a punctuation line.
+     */
+    private String[] parsePunctuationLine(String line) {
+      if (line.isEmpty()) {
+        return null;
+      }
+      for (int i = 0; i < line.length(); i++) {
+        if (isAsciiWord(line.charAt(i))) {
+          return null;
+        }
+      }
+      int equals = 0;
+      while (equals < line.length() && line.charAt(equals) == '=') {
+        equals++;
+      }
+      if (equals == line.length()) {
+        return new String[] {String.valueOf(equals), "="};
+      }
+      return new String[] {String.valueOf(equals + 1), line.substring(equals)};
+    }
+
+    /**
+     * Tests for an ASCII letter, digit, or underscore.
+     *
+     * @param c The character.
+     * @return {@code true} for a word character.
+     */
+    private boolean isAsciiWord(char c) {
+      return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9') || c == '_';
     }
 
     /**
@@ -255,13 +324,11 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return leaf;
       }
 
-      Matcher punctuationMatcher = PUNCTUATION_PATTERN.matcher(line);
-      if (punctuationMatcher.matches()) {
-        int level = punctuationMatcher.group(1).length() + 1;
-        String lexeme = punctuationMatcher.group(2);
+      String[] punctuation = parsePunctuationLine(line);
+      if (punctuation != null) {
         Leaf leaf = new Leaf();
-        leaf.setLevel(level);
-        leaf.setLexeme(lexeme);
+        leaf.setLevel(Integer.parseInt(punctuation[0]));
+        leaf.setLexeme(punctuation[1]);
         return leaf;
       }
 
