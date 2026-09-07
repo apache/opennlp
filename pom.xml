@@ -303,6 +303,7 @@
 							<phase>validate</phase>
 							<configuration>
 								<configLocation>${maven.multiModuleProjectDirectory}/checkstyle.xml</configLocation>
+								<suppressionsLocation>${maven.multiModuleProjectDirectory}/checkstyle-suppressions.xml</suppressionsLocation>
 								<consoleOutput>true</consoleOutput>
 								<includeTestSourceDirectory>true</includeTestSourceDirectory>
 								<testSourceDirectories>${project.basedir}/src/test/java</testSourceDirectories>
