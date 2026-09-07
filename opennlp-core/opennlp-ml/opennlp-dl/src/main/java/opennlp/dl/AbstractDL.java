@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import ai.onnxruntime.OrtEnvironment;
@@ -73,9 +71,6 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected record TextChunk(String text, int start, int end) {
   }
-
-  private static final Pattern JSON_ENTRY_PATTERN =
-      Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"\\s*:\\s*(\\d+)");
 
   /**
    * Initializes the shared, immutable inference state: the ONNX environment and session,
@@ -499,16 +494,37 @@ public abstract class AbstractDL implements AutoCloseable {
     return List.copyOf(ranges);
   }
 
-  private static Map<String, Integer> loadJsonVocab(final String json) {
+  /**
+   * Collects every string literal that is followed by a colon and a run of ASCII digits,
+   * wherever it occurs in the text, mapping the unescaped string to the integer. A literal
+   * followed by anything else is not an entry; the scan then resumes with the character
+   * after its opening quote, so a quote inside it may open the next candidate. A later
+   * entry for the same token overwrites an earlier one.
+   *
+   * @param json The JSON text of the vocabulary.
+   * @return A map of vocabulary tokens to IDs.
+   * @throws IllegalArgumentException Thrown if a token contains an invalid escape.
+   * @throws NumberFormatException Thrown if an ID does not fit into an {@code int}.
+   */
+  static Map<String, Integer> loadJsonVocab(final String json) {
 
     final Map<String, Integer> vocab = new HashMap<>();
-    final Matcher matcher = JSON_ENTRY_PATTERN.matcher(json);
 
-    while (matcher.find()) {
-      final String token = matcher.group(1)
-          .transform(AbstractDL::unescapeJsonString);
-      final int id = Integer.parseInt(matcher.group(2));
-      vocab.put(token, id);
+    int open = json.indexOf('"');
+    while (open >= 0) {
+      int next = open + 1;
+      final int close = JsonScan.closingQuote(json, open);
+      if (close >= 0) {
+        final int idStart = JsonScan.afterColon(json, close + 1);
+        final int idEnd = idStart < 0 ? -1 : JsonScan.endOfDigits(json, idStart);
+        if (idEnd > idStart) {
+          final String token = unescapeJsonString(json.substring(open + 1, close));
+          final int id = Integer.parseInt(json.substring(idStart, idEnd));
+          vocab.put(token, id);
+          next = idEnd;
+        }
+      }
+      open = json.indexOf('"', next);
     }
 
     return vocab;
