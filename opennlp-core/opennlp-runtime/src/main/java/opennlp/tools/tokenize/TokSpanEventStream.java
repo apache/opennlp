@@ -44,7 +44,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
   private final boolean skipAlphaNumerics;
 
-  private final Pattern alphaNumeric;
+  private final AlphaNumericCheck alphaNumeric;
 
   /**
    * Initializes a new event stream based on the data stream using a {@link TokenContextGenerator}.
@@ -59,7 +59,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
                             Pattern alphaNumeric, TokenContextGenerator cg) {
     super(tokenSamples);
-    this.alphaNumeric = alphaNumeric;
+    this.alphaNumeric = AlphaNumericCheck.of(alphaNumeric);
     this.skipAlphaNumerics = skipAlphaNumerics;
     this.cg = cg;
   }
@@ -119,7 +119,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
         //adjust cSpan to text offsets
         cSpan = new Span(cSpan.getStart() + start, cSpan.getEnd() + start);
         //should we skip this token
-        if (ctok.length() > 1 && (!skipAlphaNumerics || !alphaNumeric.matcher(ctok).matches())) {
+        if (ctok.length() > 1 && (!skipAlphaNumerics || !alphaNumeric.test(ctok))) {
 
           //find offsets of annotated tokens inside of candidate tokens
           boolean foundTrainingTokens = false;
