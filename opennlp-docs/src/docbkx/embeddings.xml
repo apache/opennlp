@@ -211,6 +211,27 @@ List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);]]>
 				printed only after the directory loads successfully.
 			</para>
 			<para>
+				The teacher must return the same vector length for all batches, including
+				phrase batches with different sequence lengths. An inconsistent length causes
+				an <code>IllegalArgumentException</code> before output files are written.
+			</para>
+			<para>
+				Java applications can distill a local teacher and load the saved table directly:
+			</para>
+			<programlisting language="java"><![CDATA[Path teacher = Path.of("teacher");
+Path output = Path.of("static-model");
+ModelDistiller.distill(teacher, output, 2, List.of("coffee espresso"), null);
+StaticEmbeddingModel model = StaticEmbeddingModel.load(output);
+float[] vector = model.embed("coffee espresso");
+List<Neighbor> related = model.mostSimilar("coffee espresso", 3);]]></programlisting>
+			<para>
+				This small example requests 2 PCA components. Select the dimension using
+				retrieval quality on application data. The executable
+				<code>ModelDistillerExampleTest</code> uses an original ONNX lookup table to
+				check inference, PCA, weighting, saved files and search. That test is not a
+				language-quality evaluation.
+			</para>
+			<para>
 				<code>-terms</code> names an optional term file: one term per line, with text after
 				a tab ignored, so a learned vocabulary TSV works unchanged. Each term, a whole word
 				or a multi-word phrase such as a domain vocabulary entry, is segmented by the
@@ -301,6 +322,26 @@ opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4]]>
 			rejected at load time, so the deployment must choose which matrix is authoritative.
 			Embedding, <code>similarity</code>, and <code>mostSimilar</code> use the same API as the
 			float model. Fewer bits reduce the file size and increase quantization error.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.benchmarks">
+		<title>Loading and Inference Benchmarks</title>
+		<para>
+			The optional <code>jmh</code> Maven profile compiles
+			<code>StaticEmbeddingModelBenchmark</code>. Run the class with the module's test
+			classpath and <code>-t 1 -prof gc</code> to collect timing and allocation statistics.
+			Use <code>-p modelDir=/path/to/model</code> for a local model. The default
+			<code>synthetic</code> fixture is a generated 29,528 by 256 F32 table and requires
+			no downloads. The module README provides build and launch commands.
+		</para>
+		<para>
+			Embedding throughput and allocated bytes are reported per input text. Top-10 search
+			uses one query per operation. Model loading reports milliseconds and allocated bytes
+			per load, including file access, decoding and construction. Fixture generation is
+			outside timing. Repeated loads can use the operating system's file cache, so the
+			loading result does not describe disk startup. Allocated bytes include temporary
+			objects and do not describe retained or peak memory.
 		</para>
 	</section>
 
