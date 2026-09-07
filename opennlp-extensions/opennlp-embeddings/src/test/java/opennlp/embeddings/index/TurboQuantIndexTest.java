@@ -16,9 +16,11 @@
  */
 package opennlp.embeddings.index;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -27,11 +29,13 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -138,20 +142,45 @@ class TurboQuantIndexTest {
     assertThrows(IllegalArgumentException.class, () -> empty.write(null));
   }
 
+  /**
+   * Checks the reported vector size using file growth after adding vectors.
+   *
+   * @param dimension The vector dimension.
+   * @param bits The quantization width.
+   * @param expected The expected bytes per vector.
+   * @param dir The temporary directory.
+   * @throws IOException Thrown if file access fails.
+   */
   @ParameterizedTest
-  @ValueSource(ints = {2, 3, 4})
-  void testBytesPerVectorIncludesPaddedCodesScaleAndNorm(int bits) {
-    final int unpaddedDimension = 65;
-    final TurboQuantIndex index = new TurboQuantIndex(unpaddedDimension, bits, 42);
-    final float[] vector = new float[unpaddedDimension];
+  @CsvSource({"1,2,17", "1,3,17", "1,4,17", "3,2,17", "3,3,18", "3,4,18",
+      "65,2,48", "65,3,64", "65,4,80", "300,4,272"})
+  void testBytesPerVectorMatchesFileGrowth(int dimension, int bits, int expected,
+                                         @TempDir Path dir) throws IOException {
+    final TurboQuantIndex small = new TurboQuantIndex(dimension, bits, 42);
+    final TurboQuantIndex large = new TurboQuantIndex(dimension, bits, 42);
+    final float[] vector = new float[dimension];
     vector[0] = 1;
-    index.add("one", vector);
-    index.freeze();
+    small.add("v0", vector);
+    for (int i = 0; i < 3; i++) {
+      large.add("v" + i, vector);
+    }
+    small.freeze();
+    large.freeze();
+    final Path smallDirectory = dir.resolve("small");
+    final Path largeDirectory = dir.resolve("large");
+    small.write(smallDirectory);
+    large.write(largeDirectory);
 
-    final int paddedDimension = 128;
-    final double expected = (paddedDimension * bits + Byte.SIZE - 1) / Byte.SIZE
-        + 2 * Float.BYTES;
-    assertEquals(expected, index.bytesPerVector());
+    final long smallBytes = Files.size(smallDirectory.resolve(TurboQuantIndex.VECTORS_FILE));
+    final long largeBytes = Files.size(largeDirectory.resolve(TurboQuantIndex.VECTORS_FILE));
+    final double bytesPerAddedVector = (double) (largeBytes - smallBytes)
+        / (large.size() - small.size());
+
+    assertEquals(expected, bytesPerAddedVector);
+    assertEquals(bytesPerAddedVector, small.bytesPerVector());
+    assertEquals(bytesPerAddedVector, large.bytesPerVector());
+    assertEquals(bytesPerAddedVector, TurboQuantIndex.read(smallDirectory).bytesPerVector());
+    assertEquals(bytesPerAddedVector, TurboQuantIndex.read(largeDirectory).bytesPerVector());
   }
 
   @Test
@@ -169,6 +198,33 @@ class TurboQuantIndexTest {
   void testReadRejectsAMissingFile(@TempDir Path dir) {
     assertThrows(IllegalArgumentException.class, () -> TurboQuantIndex.read(dir));
     assertThrows(IllegalArgumentException.class, () -> TurboQuantIndex.read(null));
+  }
+
+  /**
+   * Reports an incomplete vector header as an invalid index format.
+   *
+   * @param length The retained header byte count.
+   * @param dir The temporary directory.
+   * @throws IOException Thrown if writing fails.
+   */
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, 3, 4, 7, 8, 11, 12, 15, 16, 23, 24, 27})
+  void testReadReportsTruncatedHeaderAsInvalidFormat(int length, @TempDir Path dir)
+      throws IOException {
+    final TurboQuantIndex index = new TurboQuantIndex(3, 4, 42);
+    index.add("Alice", new float[] {1f, 0f, 0f});
+    index.freeze();
+    index.write(dir);
+    final byte[] vectors = Files.readAllBytes(dir.resolve(TurboQuantIndex.VECTORS_FILE));
+    final byte[] truncated = Arrays.copyOf(vectors, length);
+    IndexFiles.write(dir, TurboQuantIndex.VECTORS_FILE, TurboQuantIndex.IDS_FILE,
+        List.of("Alice"), file -> Files.write(file, truncated));
+
+    final InvalidFormatException error = assertThrows(InvalidFormatException.class,
+        () -> TurboQuantIndex.read(dir));
+    assertInstanceOf(EOFException.class, error.getCause());
+    assertTrue(error.getMessage().contains(TurboQuantIndex.VECTORS_FILE));
+    assertTrue(error.getMessage().contains("truncated"));
   }
 
   @Test

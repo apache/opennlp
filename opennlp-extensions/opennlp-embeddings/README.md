@@ -223,7 +223,7 @@ For a larger corpus, embed each document once, store the vectors in a vector ind
 
 ### Bounded in-memory search
 
-`FlatFloatIndex` scans full-precision vectors for exact cosine scores. `TurboQuantIndex` scans packed 2-bit, 3-bit, or 4-bit rows, using less memory at the cost of recall. Both are for bounded collections in one JVM. Build either index on one thread, freeze it, then share it for concurrent queries:
+`FlatFloatIndex` scans full-precision vectors for exact cosine scores. `TurboQuantIndex` approximates scores using packed 2-bit, 3-bit, or 4-bit vectors. Both are for bounded collections in one JVM. Build either index on one thread, freeze it, then share it for concurrent queries:
 
 ```java
 StaticEmbeddingModel model = StaticEmbeddingModel.load(modelDir);
@@ -237,6 +237,11 @@ List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);
 ```
 
 A frozen, non-empty index can be written to a directory and loaded through the concrete class's `write(Path)` and `read(Path)` methods. The directory includes a SHA-256 manifest, so loading rejects a changed or mismatched vector or id file. Rebuild the index to add, replace, or remove a vector.
+
+`TurboQuantIndex.bytesPerVector()` includes padded codes, an 8-byte scale and an 8-byte norm.
+At dimension 300 and width 4, this is 272 bytes per vector. Ids, shared headers and grid,
+checksum files and Java object overhead are excluded. For small vectors, padding and metadata
+can exceed the coordinate savings. The manual includes a tested save-and-reload example.
 
 ## Getting a model
 
