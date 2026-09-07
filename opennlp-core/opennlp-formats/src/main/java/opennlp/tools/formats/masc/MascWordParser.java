@@ -42,7 +42,8 @@ class MascWordParser extends DefaultHandler {
     try {
       // create a word and put it into the list of words
       if (qName.equalsIgnoreCase("region")) {
-        int id = Integer.parseInt(attributes.getValue("xml:id").replaceFirst("seg-r", ""));
+        int id = Integer.parseInt(MascIdentifiers.removeFirst(
+            attributes.getValue("xml:id"), MascIdentifiers.REGION_ID_PREFIX));
         String[] anchors = attributes.getValue("anchors").split(" ");
 
         int left = Integer.parseInt(anchors[0]);
