@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Class for using a file of real-valued {@link Event events} as an
@@ -137,7 +138,7 @@ public class RealValueFileEventStream extends FileEventStream {
     if ((line = reader.readLine()) != null) {
       int si = line.indexOf(' ');
       String outcome = line.substring(0, si);
-      String[] contexts = line.substring(si + 1).split("\\s+");
+      String[] contexts = StringUtil.splitOnAsciiWhitespace(line.substring(si + 1));
       float[] values = parseContexts(contexts);
       return new Event(outcome, contexts, values);
     }
