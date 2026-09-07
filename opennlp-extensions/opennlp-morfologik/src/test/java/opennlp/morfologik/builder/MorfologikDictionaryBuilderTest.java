@@ -23,8 +23,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import morfologik.stemming.DictionaryMetadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.morfologik.AbstractMorfologikTest;
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
@@ -70,6 +73,35 @@ public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
     MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
     Assertions.assertNotNull(ml);
     output.toFile().deleteOnExit();
+  }
+
+  @Test
+  public void testBuildNamesTheDictionaryAfterTheMetadataFile() throws Exception {
+    final Path rawLemmaDictionary =
+        new File(getResource("/dictionaryWithLemma.txt").getFile()).toPath();
+    Path output = new MorfologikDictionaryBuilder().build(rawLemmaDictionary);
+    Assertions.assertEquals("dictionaryWithLemma.dict", output.getFileName().toString());
+    Assertions.assertEquals(rawLemmaDictionary.getParent(), output.getParent());
+    output.toFile().deleteOnExit();
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "dictionaryWithLemma.info|dictionaryWithLemma.dict",
+      "a.info.info|a.info.dict",
+      ".info|.dict",
+      "info.info|info.dict",
+      "dictionary.txt|dictionary.txt",
+      "dictionary.info.bak|dictionary.info.bak",
+      "dictionaryXinfo|dictionaryXinfo",
+      "dictionary.INFO|dictionary.INFO",
+      "info|info",
+      "''|''"})
+  public void testToDictionaryFileNameExchangesTheTrailingSuffixOnly(String input, String expected) {
+    Assertions.assertEquals(expected, MorfologikDictionaryBuilder.toDictionaryFileName(input));
+    Assertions.assertEquals(input.replaceAll(
+        "\\." + DictionaryMetadata.METADATA_FILE_EXTENSION + "$", ".dict"),
+        MorfologikDictionaryBuilder.toDictionaryFileName(input));
   }
 
 }
