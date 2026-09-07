@@ -95,6 +95,12 @@ public class BrownCluster implements SerializableArtifact {
     }
   }
 
+  /**
+   * Splits on tabs like {@code String.split("\\t")}: trailing empty fields are dropped.
+   *
+   * @param line The line.
+   * @return The fields. Never {@code null}.
+   */
   private static String[] splitTabs(String line) {
     List<String> fields = new ArrayList<>();
     int start = 0;

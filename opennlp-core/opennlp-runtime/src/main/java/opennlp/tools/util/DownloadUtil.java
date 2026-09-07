@@ -270,6 +270,12 @@ public class DownloadUtil {
     return trimmed.substring(0, end);
   }
 
+  /**
+   * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
+   *
+   * @param c The character.
+   * @return {@code true} for one of those six characters.
+   */
   private static boolean isAsciiWhitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
   }
@@ -370,6 +376,14 @@ public class DownloadUtil {
       return links;
     }
 
+    /**
+     * Finds a lowercase ASCII literal, ignoring the case of ASCII letters in the text.
+     *
+     * @param text The text.
+     * @param literal The lowercase literal.
+     * @param from The start offset.
+     * @return The first match offset, or {@code -1}.
+     */
     private static int indexOfIgnoreCase(String text, String literal, int from) {
       outer:
       for (int i = from; i + literal.length() <= text.length(); i++) {

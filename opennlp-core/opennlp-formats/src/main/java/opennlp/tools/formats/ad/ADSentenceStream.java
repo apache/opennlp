@@ -236,6 +236,12 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       return fixed.toString();
     }
 
+    /**
+     * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
+     *
+     * @param c The character.
+     * @return {@code true} for one of those six characters.
+     */
     private static boolean isAsciiWhitespace(char c) {
       return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
     }
@@ -267,6 +273,12 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       return new String[] {String.valueOf(equals + 1), line.substring(equals)};
     }
 
+    /**
+     * Tests for an ASCII letter, digit, or underscore.
+     *
+     * @param c The character.
+     * @return {@code true} for a word character.
+     */
     private static boolean isAsciiWord(char c) {
       return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
           || (c >= '0' && c <= '9') || c == '_';

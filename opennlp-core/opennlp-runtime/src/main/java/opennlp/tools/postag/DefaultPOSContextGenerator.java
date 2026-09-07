@@ -192,6 +192,12 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     return e.toArray(new String[0]);
   }
 
+  /**
+   * Tests whether a token contains an ASCII capital letter.
+   *
+   * @param token The token.
+   * @return {@code true} if a character is in {@code A} to {@code Z}.
+   */
   private static boolean containsAsciiUpperCase(String token) {
     for (int i = 0; i < token.length(); i++) {
       char c = token.charAt(i);
@@ -202,6 +208,12 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     return false;
   }
 
+  /**
+   * Tests whether a token contains an ASCII digit.
+   *
+   * @param token The token.
+   * @return {@code true} if a character is in {@code 0} to {@code 9}.
+   */
   private static boolean containsAsciiDigit(String token) {
     for (int i = 0; i < token.length(); i++) {
       char c = token.charAt(i);

@@ -54,6 +54,14 @@ public class BioCodec implements SequenceCodec<String> {
     return null;
   }
 
+  /**
+   * Tests whether the rest of an outcome is a non-empty run of ASCII letters, digits, or
+   * underscores.
+   *
+   * @param outcome The outcome label.
+   * @param from The offset the run starts at.
+   * @return {@code true} if at least one character follows and all are word characters.
+   */
   private static boolean isWordChars(String outcome, int from) {
     if (from >= outcome.length()) {
       return false;
