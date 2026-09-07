@@ -197,10 +197,22 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     return null;
   }
 
+  /**
+   * Tests for an ASCII letter.
+   *
+   * @param c The character.
+   * @return {@code true} for {@code a} to {@code z} or {@code A} to {@code Z}.
+   */
   private static boolean isAsciiLetter(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
   }
 
+  /**
+   * Tests for an ASCII digit.
+   *
+   * @param c The character.
+   * @return {@code true} for {@code 0} to {@code 9}.
+   */
   private static boolean isAsciiDigit(char c) {
     return c >= '0' && c <= '9';
   }

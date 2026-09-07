@@ -172,6 +172,12 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
     return replaced.toString();
   }
 
+  /**
+   * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
+   *
+   * @param c The character.
+   * @return {@code true} for one of those six characters.
+   */
   private static boolean isAsciiWhitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
   }

@@ -107,10 +107,22 @@ public class FeatureGeneratorUtil {
     return (feat);
   }
 
+  /**
+   * Tests for a single capital followed by a period.
+   *
+   * @param token The token.
+   * @return {@code true} for exactly that shape.
+   */
   private static boolean isCapPeriod(String token) {
     return token.length() == 2 && isCapPeriodStart(token.charAt(0)) && token.charAt(1) == '.';
   }
 
+  /**
+   * Tests for an ASCII capital or a German umlaut capital.
+   *
+   * @param c The character.
+   * @return {@code true} for one of those capitals.
+   */
   private static boolean isCapPeriodStart(char c) {
     return (c >= 'A' && c <= 'Z') || c == 'Ä' || c == 'Ö' || c == 'Ü';
   }

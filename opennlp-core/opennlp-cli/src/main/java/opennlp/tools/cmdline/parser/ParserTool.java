@@ -83,6 +83,13 @@ public final class ParserTool extends BasicCmdLineTool {
     return insertParenSpaces(insertParenSpaces(line, false), true);
   }
 
+  /**
+   * Inserts a space between a bracket and an adjacent non-space character, left to right.
+   *
+   * @param line The untokenized line.
+   * @param parenFirst {@code true} to space a bracket before a character, {@code false} after one.
+   * @return The spaced line.
+   */
   private static String insertParenSpaces(String line, boolean parenFirst) {
     StringBuilder spaced = new StringBuilder(line.length() + 8);
     int i = 0;
@@ -105,6 +112,12 @@ public final class ParserTool extends BasicCmdLineTool {
     return spaced.toString();
   }
 
+  /**
+   * Tests for a round or curly bracket.
+   *
+   * @param c The character.
+   * @return {@code true} for {@code (}, {@code )}, <code>{</code>, or <code>}</code>.
+   */
   private static boolean isParen(char c) {
     return c == '(' || c == ')' || c == '{' || c == '}';
   }

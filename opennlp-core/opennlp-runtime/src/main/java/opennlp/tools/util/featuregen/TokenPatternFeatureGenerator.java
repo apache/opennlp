@@ -93,6 +93,12 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
     feats.add("pta=" + pattern);
   }
 
+  /**
+   * Tests whether a token contains a character outside the ASCII letters.
+   *
+   * @param token The token.
+   * @return {@code true} if one is present.
+   */
   private static boolean containsNonLetter(String token) {
     for (int i = 0; i < token.length(); i++) {
       char c = token.charAt(i);

@@ -495,6 +495,13 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return null;
   }
 
+  /**
+   * Finds the end of the run of letters starting at an offset.
+   *
+   * @param s The text.
+   * @param from The start offset.
+   * @return The offset after the run, or {@code from} if no letter starts there.
+   */
   private static int lettersEnd(String s, int from) {
     int i = from;
     while (i < s.length()) {
@@ -507,6 +514,14 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return i;
   }
 
+  /**
+   * Tests whether a range holds letters only.
+   *
+   * @param s The text.
+   * @param from The inclusive start.
+   * @param to The exclusive end.
+   * @return {@code true} if every code point in the range is a letter.
+   */
   private static boolean isAllLetters(String s, int from, int to) {
     int i = from;
     while (i < to) {
@@ -519,6 +534,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return true;
   }
 
+  /**
+   * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
+   *
+   * @param c The character.
+   * @return {@code true} for one of those six characters.
+   */
   private static boolean isAsciiWhitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
   }
