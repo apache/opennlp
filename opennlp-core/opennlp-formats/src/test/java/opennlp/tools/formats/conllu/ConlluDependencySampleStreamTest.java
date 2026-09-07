@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.depparse.DependencyArc;
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -92,7 +93,7 @@ public class ConlluDependencySampleStreamTest {
       assertEquals(3, first.getGraph().headOf(2));
       assertEquals("obj", first.getGraph().relationOf(3));
 
-      // the underscore-head sentence is skipped; the contraction sentence is KEPT,
+      // the underscore-head sentence is skipped; the contraction sentence is kept,
       // with the range line dropped and its syntactic words intact
       final DependencySample second = samples.read();
       assertNotNull(second);
@@ -132,7 +133,7 @@ public class ConlluDependencySampleStreamTest {
   void testMalformedLineIsRejected() {
     final InputStreamFactory bad = () -> new ByteArrayInputStream(
         "1\ttoo\tfew\tcolumns\n".getBytes(StandardCharsets.UTF_8));
-    assertThrows(IOException.class,
+    assertThrows(InvalidFormatException.class,
         () -> new ConlluDependencySampleStream(bad, ConlluTagset.U).read());
   }
 
@@ -141,7 +142,7 @@ public class ConlluDependencySampleStreamTest {
     final InputStreamFactory bad = () -> new ByteArrayInputStream(
         (line("1", "word", "word", "NOUN", "NN", "_", "0", "root", "_", "_",
             "extra") + "\n").getBytes(StandardCharsets.UTF_8));
-    assertThrows(IOException.class,
+    assertThrows(InvalidFormatException.class,
         () -> new ConlluDependencySampleStream(bad, ConlluTagset.U).read());
   }
 
@@ -193,6 +194,34 @@ public class ConlluDependencySampleStreamTest {
         content.getBytes(StandardCharsets.UTF_8));
     try (ConlluDependencySampleStream samples =
         new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      assertNull(samples.read());
+    }
+  }
+
+  /**
+   * Verifies that a word whose relation is the underscore placeholder makes the
+   * sentence incomplete: it is skipped like an underscore head, and reading continues
+   * with the next sentence.
+   *
+   * @throws IOException Thrown if reading fails.
+   */
+  @Test
+  void testUnderscoreRelationIsSkipped() throws IOException {
+    final String content = String.join("\n",
+        line("1", "Dogs", "dog", "NOUN", "NNS", "_", "2", "_", "_", "_"),
+        line("2", "bark", "bark", "VERB", "VBP", "_", "0", "root", "_", "_"),
+        "",
+        line("1", "Cats", "cat", "NOUN", "NNS", "_", "2", "nsubj", "_", "_"),
+        line("2", "purr", "purr", "VERB", "VBP", "_", "0", "root", "_", "_"),
+        "") + "\n";
+    final InputStreamFactory in = () -> new ByteArrayInputStream(
+        content.getBytes(StandardCharsets.UTF_8));
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      final DependencySample sample = samples.read();
+      assertNotNull(sample);
+      assertArrayEquals(new String[] {"Cats", "purr"}, sample.getTokens());
+      assertEquals("nsubj", sample.getGraph().relationOf(0));
       assertNull(samples.read());
     }
   }

@@ -42,7 +42,10 @@ public class DependencyModel extends BaseModel {
   @Serial
   private static final long serialVersionUID = -2928968185269611443L;
 
+  /** The component name recorded in the model manifest. */
   private static final String COMPONENT_NAME = "DependencyParserME";
+
+  /** The artifact map entry holding the transition classification model. */
   static final String PARSER_MODEL_ENTRY_NAME = "depparse.model";
 
   /**
@@ -52,11 +55,12 @@ public class DependencyModel extends BaseModel {
    *                     {@code null}.
    * @param parserModel The transition classification model. Must not be {@code null}.
    * @param manifestInfoEntries Additional entries for the manifest, or {@code null}.
-   * @throws IllegalArgumentException Thrown if {@code parserModel} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code languageCode} or
+   *         {@code parserModel} is {@code null}.
    */
   public DependencyModel(String languageCode, MaxentModel parserModel,
       Map<String, String> manifestInfoEntries) {
-    super(COMPONENT_NAME, languageCode, manifestInfoEntries);
+    super(COMPONENT_NAME, notNull(languageCode, "languageCode"), manifestInfoEntries);
     if (parserModel == null) {
       throw new IllegalArgumentException("parserModel must not be null");
     }
@@ -69,9 +73,10 @@ public class DependencyModel extends BaseModel {
    *
    * @param in The stream to read the model from. Must not be {@code null}.
    * @throws IOException Thrown if reading fails or the content is not a valid model.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    */
   public DependencyModel(InputStream in) throws IOException {
-    super(COMPONENT_NAME, in);
+    super(COMPONENT_NAME, notNull(in, "in"));
   }
 
   /**
@@ -79,9 +84,10 @@ public class DependencyModel extends BaseModel {
    *
    * @param modelFile The file to read the model from. Must not be {@code null}.
    * @throws IOException Thrown if reading fails or the content is not a valid model.
+   * @throws IllegalArgumentException Thrown if {@code modelFile} is {@code null}.
    */
   public DependencyModel(File modelFile) throws IOException {
-    super(COMPONENT_NAME, modelFile);
+    super(COMPONENT_NAME, notNull(modelFile, "modelFile"));
   }
 
   /**
@@ -89,11 +95,34 @@ public class DependencyModel extends BaseModel {
    *
    * @param modelPath The path to read the model from. Must not be {@code null}.
    * @throws IOException Thrown if reading fails or the content is not a valid model.
+   * @throws IllegalArgumentException Thrown if {@code modelPath} is {@code null}.
    */
   public DependencyModel(Path modelPath) throws IOException {
-    super(COMPONENT_NAME, modelPath);
+    super(COMPONENT_NAME, notNull(modelPath, "modelPath"));
   }
 
+  /**
+   * Rejects a {@code null} constructor argument before it reaches the superclass.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name for the error message.
+   * @param <T> The argument type.
+   * @return {@code value}, unchanged.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
+   */
+  private static <T> T notNull(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " must not be null");
+    }
+    return value;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @throws InvalidFormatException Thrown if the transition model artifact is missing or
+   *         not a supported model type.
+   */
   @Override
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();

@@ -19,7 +19,9 @@ package opennlp.tools.formats.conllu;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +34,14 @@ import opennlp.tools.depparse.DependencyArc;
 import opennlp.tools.depparse.DependencyEvaluator;
 import opennlp.tools.depparse.DependencyGraph;
 import opennlp.tools.depparse.DependencyModel;
+import opennlp.tools.depparse.DependencyParser;
 import opennlp.tools.depparse.DependencyParserME;
 import opennlp.tools.depparse.DependencySample;
+import opennlp.tools.depparse.FeedforwardDependencyModel;
+import opennlp.tools.depparse.FeedforwardDependencyParser;
+import opennlp.tools.depparse.FeedforwardDependencyTrainer;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
@@ -87,7 +94,23 @@ public class ConlluDependencyParserUsageTest {
       line("3", "Bob", "Bob", "PROPN", "NNP", "_", "2", "iobj", "_", "_"),
       line("4", "a", "a", "DET", "DT", "_", "5", "det", "_", "_"),
       line("5", "message", "message", "NOUN", "NN", "_", "2", "obj", "_", "_"),
+      line("6", ".", ".", "PUNCT", ".", "_", "2", "punct", "_", "_"),
       "") + "\n";
+
+  /** How often the fixture is repeated so the trainer sees enough evidence per feature. */
+  private static final int REPETITIONS = 40;
+
+  /** The tokens of the four fixture sentences. */
+  private static final long FIXTURE_WORDS = 14;
+
+  /** The beam size of the manual's feedforward example. */
+  private static final int BEAM_SIZE = 4;
+
+  private static final String[] ALICE_TOKENS = {"Alice", "sent", "Bob", "a", "message", "."};
+  private static final String[] ALICE_TAGS = {"PROPN", "VERB", "PROPN", "DET", "NOUN", "PUNCT"};
+  private static final DependencyGraph ALICE_GRAPH = DependencyGraph.of(
+      new int[] {1, -1, 1, 4, 1, 1},
+      new String[] {"nsubj", "root", "iobj", "det", "obj", "punct"});
 
   private static DependencyModel model;
   private static DependencyParserME parser;
@@ -122,7 +145,7 @@ public class ConlluDependencyParserUsageTest {
   static void trainParser() throws IOException {
     final List<DependencySample> fixture = readFixture();
     final List<DependencySample> trainingSamples = new ArrayList<>();
-    for (int i = 0; i < 40; i++) {
+    for (int i = 0; i < REPETITIONS; i++) {
       trainingSamples.addAll(fixture);
     }
     final TrainingParameters parameters = TrainingParameters.defaultParams();
@@ -159,22 +182,85 @@ public class ConlluDependencyParserUsageTest {
 
   @Test
   void testParseAliceSentence() {
-    final DependencyGraph parse = parser.parse(
-        new String[] {"Alice", "sent", "Bob", "a", "message"},
-        new String[] {"PROPN", "VERB", "PROPN", "DET", "NOUN"});
-    assertEquals(DependencyGraph.of(new int[] {1, -1, 1, 4, 1},
-        new String[] {"nsubj", "root", "iobj", "det", "obj"}), parse);
+    assertEquals(ALICE_GRAPH, parser.parse(ALICE_TOKENS, ALICE_TAGS));
+  }
+
+  @Test
+  void testArcsNameDependentHeadAndRelation() {
+    // The manual's loop over the arcs of a parse, collecting instead of printing.
+    final String[] tokens = ALICE_TOKENS;
+    final String[] tags = ALICE_TAGS;
+    final DependencyGraph graph = parser.parse(tokens, tags);
+    final List<String> lines = new ArrayList<>();
+    for (DependencyArc arc : graph.arcs()) {
+      final String dependent = tokens[arc.dependent()];
+      final String head = arc.head() == DependencyArc.ROOT_HEAD
+          ? "ROOT" : tokens[arc.head()];
+      lines.add(dependent + " -> " + head + " (" + arc.relation() + ")");
+    }
+    assertEquals(List.of(
+        "Alice -> sent (nsubj)",
+        "sent -> ROOT (root)",
+        "Bob -> sent (iobj)",
+        "a -> message (det)",
+        "message -> sent (obj)",
+        ". -> sent (punct)"), lines);
+  }
+
+  @Test
+  void testFeedforwardTrainSaveReloadAndParse(@TempDir Path dir) throws IOException {
+    // The manual's feedforward example: train from the CoNLL-U reader with the default
+    // settings, save the model, load it back, and parse with a beam of four. The parse
+    // of the reloaded model must equal the parse of the model in memory.
+    final Path treebank = dir.resolve("train.conllu");
+    Files.writeString(treebank, repeat(CONLLU, REPETITIONS), StandardCharsets.UTF_8);
+    final Path modelFile = dir.resolve("en-depparse-ff.bin");
+    final InputStreamFactory trainingData = () -> Files.newInputStream(treebank);
+
+    FeedforwardDependencyModel model;
+    try (ObjectStream<DependencySample> samples =
+        new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+      model = FeedforwardDependencyTrainer.train(
+          samples, FeedforwardDependencyTrainer.Settings.defaults());
+    }
+    try (OutputStream out = Files.newOutputStream(modelFile)) {
+      model.serialize(out);
+    }
+
+    DependencyParser reloaded = new FeedforwardDependencyParser(
+        FeedforwardDependencyModel.load(modelFile), BEAM_SIZE);
+    final DependencyGraph expected =
+        new FeedforwardDependencyParser(model, BEAM_SIZE).parse(ALICE_TOKENS, ALICE_TAGS);
+    final DependencyGraph parse = reloaded.parse(ALICE_TOKENS, ALICE_TAGS);
+    assertEquals(expected, parse);
+    assertEquals(ALICE_TOKENS.length, parse.size());
+    assertEquals(ALICE_GRAPH.root(), parse.root());
+  }
+
+  /**
+   * Repeats CoNLL-U content so a small fixture gives the trainers enough evidence.
+   *
+   * @param conllu The content to repeat; sentences are separated by a blank line.
+   * @param times How often to repeat it.
+   * @return The repeated content. Never {@code null}.
+   */
+  private static String repeat(String conllu, int times) {
+    final StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < times; i++) {
+      sb.append(conllu).append("\n\n");
+    }
+    return sb.toString();
   }
 
   @Test
   void testEvaluatorScoresTheParserAgainstGoldSamples() throws IOException {
     // The evaluator parses each gold sentence and accumulates the two standard scores;
-    // The expected score is exact because the parser is evaluated on its training data.
+    // the expected score is exact because the parser is evaluated on its training data.
     final DependencyEvaluator evaluator = new DependencyEvaluator(parser);
     evaluator.evaluate(ObjectStreamUtils.createObjectStream(readFixture()));
     assertEquals(1.0d, evaluator.getUas());
     assertEquals(1.0d, evaluator.getLas());
-    assertEquals(13, evaluator.getWordCount());
+    assertEquals(FIXTURE_WORDS, evaluator.getWordCount());
   }
 
   @Test
