@@ -42,6 +42,10 @@ import opennlp.tools.util.StringUtil;
  * vocabulary, because each emitted piece must have an id. Vocabulary entries starting with
  * {@code ##} are continuation pieces and can match only after the first piece of a word.</p>
  *
+ * <p>Lower casing applies the Unicode full case mapping, including the {@code Final_Sigma}
+ * context, so a word-final Greek capital sigma becomes U+03C2 as in the reference
+ * implementation.</p>
+ *
  * <p>A word exceeding the configured maximum number of normalized Unicode code points becomes
  * the unknown piece. The default is 100, matching the BERT reference implementation.</p>
  *
@@ -357,6 +361,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
 
     private final TrieNode root = new TrieNode();
 
+    /**
+     * Indexes the initial or the continuation pieces of a vocabulary.
+     *
+     * @param vocabulary   The piece-to-id mapping.
+     * @param continuation {@code true} to index pieces starting with the continuation prefix,
+     *                     stored without it; {@code false} to index all other pieces.
+     */
     private VocabularyTrie(Map<String, Integer> vocabulary, boolean continuation) {
       for (final Map.Entry<String, Integer> entry : vocabulary.entrySet()) {
         final String piece = entry.getKey();

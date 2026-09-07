@@ -351,6 +351,16 @@ class WordpieceEncoderTest {
 
     final List<SubwordPiece> pieces = encoder.encode(text);
 
+    // The manual's WordPiece example prints one line per piece: id, piece, and source text.
+    final List<String> lines = new ArrayList<>();
+    for (final SubwordPiece piece : pieces) {
+      final CharSequence source = text.subSequence(piece.start(), piece.end());
+      lines.add(piece.id() + "\t" + piece.piece() + "\t" + source);
+    }
+    assertEquals(List.of(
+        "1\t[CLS]\t", "3\talice\tAlice", "4\twas\twas", "5\tbegin\tbegin", "6\t##ning\tning",
+        "7\tto\tto", "8\tget\tget", "9\tvery\tvery", "10\ttired\ttired", "11\t.\t.",
+        "2\t[SEP]\t"), lines);
     assertArrayEquals(new String[] {
         "[CLS]", "alice", "was", "begin", "##ning", "to", "get", "very", "tired", ".",
         "[SEP]"}, encoder.encodeToPieces(text));
