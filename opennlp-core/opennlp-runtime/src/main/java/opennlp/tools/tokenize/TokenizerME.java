@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
@@ -102,7 +101,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    */
   public static final String NO_SPLIT = "F";
 
-  private final Pattern alphanumeric;
+  private final AlphaNumericCheck alphanumeric;
 
   /*
    * The maximum entropy model to use to evaluate contexts.
@@ -165,7 +164,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
     this.abbDict = abbDict;
     TokenizerFactory factory = model.getFactory();
     this.cg = factory.getContextGenerator();
-    this.alphanumeric = factory.getAlphaNumericPattern();
+    this.alphanumeric = AlphaNumericCheck.of(factory.getAlphaNumericPattern());
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
   }
 
@@ -210,7 +209,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
       if (tok.length() < 2) {
         localTokens.add(s);
         localProbs.add(1d);
-      } else if (useAlphaNumericOptimization() && alphanumeric.matcher(tok).matches()) {
+      } else if (useAlphaNumericOptimization() && alphanumeric.test(tok)) {
         localTokens.add(s);
         localProbs.add(1d);
       } else {
