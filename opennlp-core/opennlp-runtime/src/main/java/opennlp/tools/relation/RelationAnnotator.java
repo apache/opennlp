@@ -43,6 +43,9 @@ import opennlp.tools.util.StringUtil;
  * entity. For each ordered entity pair, matching follows the path through the lowest
  * common ancestor.</p>
  *
+ * <p>Tokens need not be stored in text order. An overlap requires at least one shared
+ * character, so empty spans do not select entity heads.</p>
+ *
  * <p>The annotator holds no per-call state and is safe to share between threads.</p>
  *
  * @since 3.0.0
@@ -241,11 +244,9 @@ public final class RelationAnnotator implements DocumentAnnotator {
   }
 
   /**
-   * Finds the head token of an entity: the first token overlapping the entity span
-   * whose dependency head lies outside the index range of the overlapping tokens. A
-   * token overlaps the entity when their spans share at least one character. When no
-   * overlapping token is headed outside that range, which only cyclic arcs inside the
-   * range can cause, the first overlapping token is used as a fallback.
+   * Selects the first token in layer order that overlaps the entity and has a root
+   * arc or a dependency head that does not overlap the entity. Token indexes need
+   * not be contiguous within an entity.
    *
    * @param entity The entity span in text coordinates.
    * @param tokens The token layer.
@@ -253,26 +254,24 @@ public final class RelationAnnotator implements DocumentAnnotator {
    * @return The head token index, or {@code -1} if no token overlaps the entity.
    */
   private int entityHead(Span entity, List<Annotation<String>> tokens, int[] heads) {
-    int first = -1;
-    int last = -1;
     for (int t = 0; t < tokens.size(); t++) {
-      final Span span = tokens.get(t).span();
-      if (span.getStart() < entity.getEnd() && span.getEnd() > entity.getStart()) {
-        if (first < 0) {
-          first = t;
-        }
-        last = t;
-      }
-    }
-    if (first < 0) {
-      return -1;
-    }
-    for (int t = first; t <= last; t++) {
-      if (heads[t] < first || heads[t] > last) {
+      if (overlaps(entity, tokens.get(t).span())
+          && (heads[t] == DependencyArc.ROOT_HEAD || !overlaps(entity, tokens.get(heads[t]).span()))) {
         return t;
       }
     }
-    return first;
+    return -1;
+  }
+
+  /**
+   * Checks whether an entity and token share at least one character.
+   *
+   * @param entity The entity span.
+   * @param token The token span.
+   * @return Whether the intersection has positive length.
+   */
+  private boolean overlaps(Span entity, Span token) {
+    return Math.max(entity.getStart(), token.getStart()) < Math.min(entity.getEnd(), token.getEnd());
   }
 
   /** Rejects a cycle in the document dependency forest. */

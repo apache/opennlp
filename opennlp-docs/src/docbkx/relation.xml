@@ -43,6 +43,12 @@
 			entity.
 		</para>
 		<para>
+			Entity heads are selected in token-layer order, which need not be text order.
+			Overlap requires at least one shared character. An empty entity has no head;
+			empty tokens cannot be entity heads. Adjacent spans without shared characters
+			do not overlap. Dependency indexes must refer to the supplied token-layer order.
+		</para>
+		<para>
 			The trigger is optional and constrains the pivot token: the pattern matches
 			only when the pivot's lowercased form equals it. A <code>null</code> trigger
 			accepts any pivot. The constructor does not rewrite triggers, so a trigger must be
