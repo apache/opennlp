@@ -228,8 +228,8 @@ public final class HungarianLightStemmer extends AbstractCharArrayStemmer
     return len;
   }
 
-  @SuppressWarnings("fallthrough")
   /** Removes plural endings and returns the remaining length. */
+  @SuppressWarnings("fallthrough")
   private int removePlural(char[] s, int len) {
     if (len > 3 && s[len - 1] == 'k')
       switch (s[len - 2]) {

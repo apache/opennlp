@@ -16,6 +16,7 @@
  */
 package opennlp.tools.stemmer.light;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +32,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import opennlp.tools.stemmer.Stemmer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -84,10 +86,16 @@ class LightStemmerContractTest {
     assertEquals("TESTS", stemmer.stem("TESTS").toString());
   }
 
+  /**
+   * Checks decomposed input that would change under NFC normalization.
+   *
+   * @param stemmer The implementation under test.
+   */
   @ParameterizedTest
   @MethodSource("stemmers")
   void testDoesNotNormalizeDecomposedInput(Stemmer stemmer) {
-    final String decomposed = "x\u0301q";
+    final String decomposed = "e\u0301q";
+    assertFalse(Normalizer.isNormalized(decomposed, Normalizer.Form.NFC));
     assertEquals(decomposed, stemmer.stem(decomposed).toString());
   }
 
