@@ -138,7 +138,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   private void updateMeta() {
     if (this.sent != null) {
       String meta = this.sent.metadata();
-      int[] textAndPara = parseTextAndParagraph(meta);
+      int[] textAndPara = ADMetadata.parseTextAndParagraph(meta);
       if (textAndPara == null) {
         throw new RuntimeException("Invalid metadata: " + meta);
       }
@@ -159,41 +159,6 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     } else {
       this.isSamePara = this.isSameText = false;
     }
-  }
-
-  /**
-   * Parses the text and paragraph ids from sentence metadata, which differs between corpora:
-   * the text id is the ASCII digit run after any leading ASCII letters and hyphens, the
-   * paragraph id is the digit run after the first {@code p=} that at least one digit follows.
-   *
-   * @param meta The metadata.
-   * @return The text id and the paragraph id, or {@code null} if either is missing.
-   */
-  static int[] parseTextAndParagraph(String meta) {
-    int i = 0;
-    while (i < meta.length() && (StringUtil.isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
-      i++;
-    }
-    int textStart = i;
-    i = StringUtil.endOfAsciiDigits(meta, i);
-    if (i == textStart) {
-      return null;
-    }
-    int text = Integer.parseInt(meta.substring(textStart, i));
-    int from = i;
-    while (from <= meta.length() - PARAGRAPH_KEY.length()) {
-      int p = meta.indexOf(PARAGRAPH_KEY, from);
-      if (p == -1) {
-        return null;
-      }
-      int paraStart = p + PARAGRAPH_KEY.length();
-      int paraEnd = StringUtil.endOfAsciiDigits(meta, paraStart);
-      if (paraEnd > paraStart) {
-        return new int[] {text, Integer.parseInt(meta.substring(paraStart, paraEnd))};
-      }
-      from = p + 1;
-    }
-    return null;
   }
 
   @Override
