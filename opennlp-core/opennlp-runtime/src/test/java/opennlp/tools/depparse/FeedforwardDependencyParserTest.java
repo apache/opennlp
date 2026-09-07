@@ -339,21 +339,7 @@ public class FeedforwardDependencyParserTest {
     for (int round = 0; round < 3; round++) {
       final double[] cached = model.score(features);
       final double[] direct = uncached.score(features);
-      assertEquals(direct.length, cached.length);
-      int bestCached = 0;
-      int bestDirect = 0;
-      for (int o = 0; o < cached.length; o++) {
-        assertEquals(direct[o], cached[o],
-            Math.max(1.0e-6, Math.abs(direct[o]) * 1.0e-6),
-            "score " + o + " must agree to float rounding");
-        if (cached[o] > cached[bestCached]) {
-          bestCached = o;
-        }
-        if (direct[o] > direct[bestDirect]) {
-          bestDirect = o;
-        }
-      }
-      assertEquals(bestDirect, bestCached, "the winning transition must be identical");
+      assertArrayEquals(direct, cached);
     }
   }
 

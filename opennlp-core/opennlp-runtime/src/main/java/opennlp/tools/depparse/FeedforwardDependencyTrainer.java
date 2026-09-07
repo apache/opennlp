@@ -653,9 +653,9 @@ public final class FeedforwardDependencyTrainer {
       for (final double score : scores) {
         sum += Math.exp(score - max);
       }
-      final double logSum = max + Math.log(sum);
+      final double logSum = Math.log(sum);
       for (int i = 0; i < scores.length; i++) {
-        scores[i] -= logSum;
+        scores[i] = (scores[i] - max) - logSum;
       }
     }
   }
