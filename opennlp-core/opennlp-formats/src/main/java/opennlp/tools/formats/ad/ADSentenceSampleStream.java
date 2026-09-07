@@ -135,7 +135,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   private void updateMeta() {
     if (this.sent != null) {
       String meta = this.sent.metadata();
-      int[] textAndPara = parseTextAndParagraph(meta);
+      int[] textAndPara = ADMetadata.parseTextAndParagraph(meta);
       if (textAndPara == null) {
         throw new RuntimeException("Invalid metadata: " + meta);
       }
@@ -156,66 +156,6 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     } else {
       this.isSamePara = this.isSameText = false;
     }
-  }
-
-  /**
-   * Parses the text and paragraph ids from sentence metadata, which differs between corpora:
-   * the text id is the ASCII digit run after any leading ASCII letters and hyphens, the
-   * paragraph id is the digit run after the first {@code p=} that at least one digit follows.
-   *
-   * @param meta The metadata.
-   * @return The text id and the paragraph id, or {@code null} if either is missing.
-   */
-  private int[] parseTextAndParagraph(String meta) {
-    int i = 0;
-    while (i < meta.length() && (isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
-      i++;
-    }
-    int textStart = i;
-    while (i < meta.length() && isAsciiDigit(meta.charAt(i))) {
-      i++;
-    }
-    if (i == textStart) {
-      return null;
-    }
-    int text = Integer.parseInt(meta.substring(textStart, i));
-    int from = i;
-    while (from <= meta.length() - "p=".length()) {
-      int p = meta.indexOf("p=", from);
-      if (p == -1) {
-        return null;
-      }
-      int paraStart = p + 2;
-      int paraEnd = paraStart;
-      while (paraEnd < meta.length() && isAsciiDigit(meta.charAt(paraEnd))) {
-        paraEnd++;
-      }
-      if (paraEnd > paraStart) {
-        return new int[] {text, Integer.parseInt(meta.substring(paraStart, paraEnd))};
-      }
-      from = p + 1;
-    }
-    return null;
-  }
-
-  /**
-   * Tests for an ASCII letter.
-   *
-   * @param c The character.
-   * @return {@code true} for {@code a} to {@code z} or {@code A} to {@code Z}.
-   */
-  private boolean isAsciiLetter(char c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-  }
-
-  /**
-   * Tests for an ASCII digit.
-   *
-   * @param c The character.
-   * @return {@code true} for {@code 0} to {@code 9}.
-   */
-  private boolean isAsciiDigit(char c) {
-    return c >= '0' && c <= '9';
   }
 
   @Override

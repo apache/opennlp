@@ -19,6 +19,8 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -197,5 +200,49 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   @ValueSource(strings = {"", "<", ">", "PROP", "<PROP", "PROP>"})
   void testTagContentRejects(String tag) {
     Assertions.assertNull(ADNameSampleStream.tagContent(tag));
+  }
+
+  private static ObjectStream<String> lineStream(List<String> lines) {
+    Iterator<String> iterator = lines.iterator();
+    return new ObjectStream<>() {
+      @Override
+      public String read() {
+        return iterator.hasNext() ? iterator.next() : null;
+      }
+    };
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "1001|SOURCE: ref=\"x\"",
+      "LIT-1|SOURCE: ref=\"x\"",
+      "CIE1|SOURCE: source=\"text\""
+  })
+  void testTextIdFromCorpusMetadata(String sentenceId, String source) throws IOException {
+    List<String> lines = List.of("<s>", source, sentenceId + " Olá .", "STA:fcl",
+        "=H:intj(\"olá\" <x>)\tOlá", ".", "</s>");
+    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"Olá", "."}, sample.getSentence());
+      Assertions.assertNull(stream.read());
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      // no digits after the prefix
+      "LIT|SOURCE: ref=\"x\"",
+      // no source attribute
+      "CIE1|SOURCE: ref=\"x\"",
+      // no digits
+      "AX|SOURCE: ref=\"x\""
+  })
+  void testInvalidMetadataIsRejected(String sentenceId, String source) throws IOException {
+    List<String> lines = List.of("<s>", source, sentenceId + " Olá .", "</s>");
+    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      Assertions.assertTrue(e.getMessage().startsWith("Invalid metadata: " + sentenceId + " p="));
+    }
   }
 }
