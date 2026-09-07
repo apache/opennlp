@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
@@ -57,9 +56,7 @@ public class DirectoryModelFinder extends AbstractClassPathModelFinder implement
 
   private final Path directory;
   private final boolean recursive;
-  private final Pattern jarPattern;
-  private Pattern filePattern;
-  private String prevFilePattern;
+  private final String jarWildcard;
 
   /**
    * Instantiates a new {@link DirectoryModelFinder} with the specified parameters.
@@ -78,7 +75,7 @@ public class DirectoryModelFinder extends AbstractClassPathModelFinder implement
     }
     this.directory = directory;
     this.recursive = recursive;
-    this.jarPattern = Pattern.compile(asRegex("*" + getJarModelPrefix()));
+    this.jarWildcard = "*" + getJarModelPrefix();
   }
 
   /**
@@ -101,17 +98,13 @@ public class DirectoryModelFinder extends AbstractClassPathModelFinder implement
     final boolean isWindows = isWindows();
     final List<URL> cp = getDirectoryContent();
     final List<URI> cpu = new ArrayList<>();
-    final String filePatternString = asRegex("*" + wildcardPattern);
-    if (!filePatternString.equals(prevFilePattern)) {
-      this.filePattern = Pattern.compile(filePatternString);
-      this.prevFilePattern = filePatternString;
-    }
+    final String fileWildcard = "*" + wildcardPattern;
 
     for (URL url : cp) {
-      if (matchesPattern(url, jarPattern)) {
+      if (matchesWildcard(url, jarWildcard)) {
         try {
           for (URI u : getURIsFromJar(url, isWindows)) {
-            if (matchesPattern(u.toURL(), filePattern)) {
+            if (matchesWildcard(u.toURL(), fileWildcard)) {
               cpu.add(u);
             }
           }
