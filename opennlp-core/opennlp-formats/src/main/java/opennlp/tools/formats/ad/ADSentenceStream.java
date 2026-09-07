@@ -33,6 +33,7 @@ import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Stream filter which merges text lines into sentences, following the Arvores
@@ -210,18 +211,24 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       return text;
     }
 
-    /*
-     * Replicates replaceAll of the »\s+punct pattern: every run of ASCII
-     * whitespace between » and the given punctuation character is removed.
+    /**
+     * Removes the ASCII whitespace between a closing guillemet and a following punctuation
+     * character.
+     *
+     * @param text The text.
+     * @param punct The punctuation character.
+     * @param replacement The two characters to write in place of guillemet, whitespace, and
+     *                    punctuation.
+     * @return The text with those runs joined.
      */
-    private static String replaceGuillemetPunctuation(String text, char punct, String replacement) {
+    private String replaceGuillemetPunctuation(String text, char punct, String replacement) {
       StringBuilder fixed = new StringBuilder(text.length());
       int i = 0;
       while (i < text.length()) {
         char c = text.charAt(i);
         if (c == '»' && i + 1 < text.length()) {
           int j = i + 1;
-          while (j < text.length() && isAsciiWhitespace(text.charAt(j))) {
+          while (j < text.length() && StringUtil.isAsciiWhitespace(text.charAt(j))) {
             j++;
           }
           if (j > i + 1 && j < text.length() && text.charAt(j) == punct) {
@@ -237,24 +244,15 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
+     * Parses a punctuation line: leading equals signs followed by one or more characters that
+     * are not ASCII letters, digits, or underscores. A line of equals signs only also matches,
+     * with the last one as lexeme.
      *
-     * @param c The character.
-     * @return {@code true} for one of those six characters.
+     * @param line The line.
+     * @return The level, as one more than the count of leading equals signs, and the lexeme,
+     *         or {@code null} if the line is not a punctuation line.
      */
-    private static boolean isAsciiWhitespace(char c) {
-      return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
-    }
-
-    /*
-     * Replicates matches() of the ^(=*)(\W+)$ punctuation pattern: the line
-     * consists of leading equals signs followed by one or more non-word
-     * characters, where a word character is an ASCII letter, digit, or
-     * underscore. A line of only equals signs matches, with the last equals
-     * sign as lexeme. Returns the level and lexeme, or null when the line
-     * does not match.
-     */
-    private static String[] parsePunctuationLine(String line) {
+    private String[] parsePunctuationLine(String line) {
       if (line.isEmpty()) {
         return null;
       }
@@ -279,7 +277,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @param c The character.
      * @return {@code true} for a word character.
      */
-    private static boolean isAsciiWord(char c) {
+    private boolean isAsciiWord(char c) {
       return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
           || (c >= '0' && c <= '9') || c == '_';
     }

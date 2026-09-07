@@ -99,7 +99,7 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
    * @param token The token.
    * @return {@code true} if one is present.
    */
-  private static boolean containsNonLetter(String token) {
+  private boolean containsNonLetter(String token) {
     for (int i = 0; i < token.length(); i++) {
       char c = token.charAt(i);
       if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {

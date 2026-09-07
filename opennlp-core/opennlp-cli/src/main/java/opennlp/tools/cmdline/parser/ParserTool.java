@@ -73,11 +73,14 @@ public final class ParserTool extends BasicCmdLineTool {
     return parseLine(tokens, parser, numParses);
   }
 
-  /*
-   * Replicates the two sequential replaceAll passes over ([^ ])([({)}]) and
-   * ([({)}])([^ ]): each pass scans left to right, inserts a single space into
-   * every match, and resumes scanning after the matched pair, so pairs
-   * overlapping a match are only reconsidered by the second pass.
+  /**
+   * Separates round and curly brackets from adjacent text in two left-to-right passes: the
+   * first puts a space between a non-space character and a following bracket, the second
+   * between a bracket and a following non-space character. Each pass resumes after the pair
+   * it just spaced, so a pair overlapping that match is only seen by the second pass.
+   *
+   * @param line The untokenized line.
+   * @return The spaced line.
    */
   static String spaceUntokenizedParens(String line) {
     return insertParenSpaces(insertParenSpaces(line, false), true);

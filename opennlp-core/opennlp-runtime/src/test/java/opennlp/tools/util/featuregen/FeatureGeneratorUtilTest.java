@@ -19,6 +19,8 @@ package opennlp.tools.util.featuregen;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class FeatureGeneratorUtilTest {
 
@@ -70,19 +72,12 @@ public class FeatureGeneratorUtilTest {
     Assertions.assertEquals("sc", FeatureGeneratorUtil.tokenFeature("Ü"));
   }
 
-  @Test
-  void testCapPeriod() {
-    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("A."));
-    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Z."));
-    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ä."));
-    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ö."));
-    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ü."));
-
-    // reject sides: lower case initial, other second char, longer tokens
-    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("a."));
-    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("A,"));
-    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("Ab."));
-    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("AB."));
+  @ParameterizedTest
+  @CsvSource({"A., cp", "Z., cp", "Ä., cp", "Ö., cp", "Ü., cp",
+      // lower case initial, other capital, other second character, longer tokens
+      "a., other", "É., ic", "'A,', ic", "Ab., ic", "AB., ic"})
+  void testCapPeriod(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
   }
 
   @Test

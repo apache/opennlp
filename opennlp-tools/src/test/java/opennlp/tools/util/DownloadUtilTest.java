@@ -36,6 +36,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -63,6 +64,31 @@ public class DownloadUtilTest {
     assertNotNull(model);
     assertEquals(language, model.getLanguage());
     assertTrue(model.isLoadedFromSerialized());
+  }
+
+  @ParameterizedTest
+  @MethodSource("checksumFiles")
+  void testParseChecksum(String content, String expected) {
+    assertEquals(expected, DownloadUtil.parseChecksum(content));
+  }
+
+  private static Stream<Arguments> checksumFiles() {
+    return Stream.of(
+        Arguments.of("abc123  model.bin", "abc123"),
+        Arguments.of("abc123\tmodel.bin\n", "abc123"),
+        Arguments.of("  abc123 model.bin", "abc123"),
+        Arguments.of("abc123", "abc123"),
+        Arguments.of("abc123 *model.bin\r\n", "abc123"),
+        Arguments.of("abc123 model.bin\ndef456 other.bin\n", "abc123"),
+        Arguments.of("abc123\u000Bmodel.bin", "abc123"),
+        Arguments.of("abc123\u00A0model.bin", "abc123\u00A0model.bin"));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = {" ", "\t\n"})
+  void testParseChecksumOfBlankContent(String content) {
+    assertNull(DownloadUtil.parseChecksum(content));
   }
 
   @Test

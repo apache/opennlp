@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Class which produces an Iterator&lt;TokenSample&gt; from a file of space delimited token.
@@ -53,7 +54,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   public TokenSample next() {
-    String[] tokens = splitOnWhitespace(line);
+    String[] tokens = StringUtil.splitOnAsciiWhitespace(line);
     if (tokens.length == 0) {
       evenq = true;
     }
@@ -111,48 +112,6 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * Splits on ASCII whitespace runs like {@code String.split("\\s+")}: a leading run gives one
-   * empty field, runs collapse, trailing empty fields are dropped.
-   *
-   * @param line The line.
-   * @return The fields. Never {@code null}.
-   */
-  private static String[] splitOnWhitespace(String line) {
-    if (line.isEmpty()) {
-      return new String[] {""};
-    }
-    List<String> tokens = new ArrayList<>();
-    if (isAsciiWhitespace(line.charAt(0))) {
-      tokens.add("");
-    }
-    int start = 0;
-    for (int i = 0; i < line.length(); i++) {
-      if (isAsciiWhitespace(line.charAt(i))) {
-        if (i > start) {
-          tokens.add(line.substring(start, i));
-        }
-        while (i + 1 < line.length() && isAsciiWhitespace(line.charAt(i + 1))) {
-          i++;
-        }
-        start = i + 1;
-      }
-    }
-    if (line.length() > start) {
-      tokens.add(line.substring(start));
-    }
-    return tokens.toArray(new String[0]);
-  }
-
-  /**
-   * Tests for ASCII whitespace: space, tab, line feed, vertical tab, form feed, carriage return.
-   *
-   * @param c The character.
-   * @return {@code true} for one of those six characters.
-   */
-  private static boolean isAsciiWhitespace(char c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
-  }
 
   /**
    * Tests whether a token contains an ASCII letter or digit.
@@ -160,7 +119,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
    * @param token The token.
    * @return {@code true} if one is present.
    */
-  private static boolean containsAsciiAlphaNum(String token) {
+  private boolean containsAsciiAlphaNum(String token) {
     for (int i = 0; i < token.length(); i++) {
       char c = token.charAt(i);
       if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {

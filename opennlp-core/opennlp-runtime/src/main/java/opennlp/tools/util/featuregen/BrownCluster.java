@@ -96,12 +96,16 @@ public class BrownCluster implements SerializableArtifact {
   }
 
   /**
-   * Splits on tabs like {@code String.split("\\t")}: trailing empty fields are dropped.
+   * Splits on tabs with the result of {@code String.split("\\t")}: trailing empty fields are
+   * dropped and an empty line yields a single empty field.
    *
    * @param line The line.
-   * @return The fields. Never {@code null}.
+   * @return The fields in order.
    */
-  private static String[] splitTabs(String line) {
+  private String[] splitTabs(String line) {
+    if (line.isEmpty()) {
+      return new String[] {""};
+    }
     List<String> fields = new ArrayList<>();
     int start = 0;
     int separator;
@@ -110,7 +114,7 @@ public class BrownCluster implements SerializableArtifact {
       start = separator + 1;
     }
     fields.add(line.substring(start));
-    while (fields.size() > 1 && fields.get(fields.size() - 1).isEmpty()) {
+    while (!fields.isEmpty() && fields.get(fields.size() - 1).isEmpty()) {
       fields.remove(fields.size() - 1);
     }
     return fields.toArray(new String[0]);

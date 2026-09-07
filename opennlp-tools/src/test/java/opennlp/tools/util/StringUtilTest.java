@@ -28,6 +28,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -183,6 +184,95 @@ public class StringUtilTest {
     Assertions.assertTrue(StringUtil.isUnicodeWhitespace(0x2028));
     Assertions.assertFalse(StringUtil.isUnicodeWhitespace('a'));
     Assertions.assertFalse(StringUtil.isUnicodeWhitespace(0x200B));
+  }
+
+  // -------------------------------------------------------------------------
+  // isAsciiWhitespace
+  // -------------------------------------------------------------------------
+
+  @ParameterizedTest
+  @ValueSource(chars = {' ', '\t', '\n', '\u000B', '\f', '\r'})
+  void testIsAsciiWhitespaceAccepts(char c) {
+    Assertions.assertTrue(StringUtil.isAsciiWhitespace(c));
+  }
+
+  @ParameterizedTest
+  @ValueSource(chars = {'a', '0', '_', '\u0000', '\u001C', '\u0085', '\u00A0', '\u2003', '\u3000'})
+  void testIsAsciiWhitespaceRejects(char c) {
+    Assertions.assertFalse(StringUtil.isAsciiWhitespace(c));
+  }
+
+  // -------------------------------------------------------------------------
+  // splitOnAsciiWhitespace
+  // -------------------------------------------------------------------------
+
+  @Test
+  void testSplitOnAsciiWhitespaceNullThrows() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.splitOnAsciiWhitespace(null));
+  }
+
+  private static Stream<Arguments> asciiSplits() {
+    return Stream.of(
+        Arguments.of("", new String[] {""}),
+        Arguments.of("   ", new String[0]),
+        Arguments.of("\t\n\r", new String[0]),
+        Arguments.of("a", new String[] {"a"}),
+        Arguments.of("a b", new String[] {"a", "b"}),
+        Arguments.of("hello   world", new String[] {"hello", "world"}),
+        Arguments.of("a\t\u000B\fb", new String[] {"a", "b"}),
+        Arguments.of("  a", new String[] {"", "a"}),
+        Arguments.of("a  ", new String[] {"a"}),
+        Arguments.of("  a\tb  ", new String[] {"", "a", "b"}),
+        Arguments.of("a\u00A0b", new String[] {"a\u00A0b"}),
+        Arguments.of("a\u2003b c", new String[] {"a\u2003b", "c"}),
+        Arguments.of("\uD801\uDC12 \uD83D\uDE00", new String[] {"\uD801\uDC12", "\uD83D\uDE00"}),
+        Arguments.of(" \r\n ", new String[0]));
+  }
+
+  @ParameterizedTest
+  @MethodSource("asciiSplits")
+  void testSplitOnAsciiWhitespaceMatchesStringSplit(String input, String[] expected) {
+    Assertions.assertArrayEquals(expected, StringUtil.splitOnAsciiWhitespace(input));
+    Assertions.assertArrayEquals(input.split("\\s+"), StringUtil.splitOnAsciiWhitespace(input));
+  }
+
+  // -------------------------------------------------------------------------
+  // containsAsciiUpperCase, containsAsciiDigit
+  // -------------------------------------------------------------------------
+
+  @Test
+  void testContainsAsciiNullThrows() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.containsAsciiUpperCase(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.containsAsciiDigit(null));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"A", "Z", "aBc", "token-X", "1A", "Q\uD801\uDC12"})
+  void testContainsAsciiUpperCaseAccepts(String input) {
+    Assertions.assertTrue(StringUtil.containsAsciiUpperCase(input));
+    Assertions.assertTrue(StringUtil.containsAsciiUpperCase(new StringBuilder(input)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "abc", "123", "Étudiant", "ÄÖÜ", "\uFF21", "\uD801\uDC12", "_-."})
+  void testContainsAsciiUpperCaseRejects(String input) {
+    Assertions.assertFalse(StringUtil.containsAsciiUpperCase(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"0", "9", "a1b", "x-2", "9A", "\uD801\uDC120"})
+  void testContainsAsciiDigitAccepts(String input) {
+    Assertions.assertTrue(StringUtil.containsAsciiDigit(input));
+    Assertions.assertTrue(StringUtil.containsAsciiDigit(new StringBuilder(input)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "abc", "ABC", "\u0661", "\uFF11", "\u00BD", "\uD835\uDFCE", "_-."})
+  void testContainsAsciiDigitRejects(String input) {
+    Assertions.assertFalse(StringUtil.containsAsciiDigit(input));
   }
 
   // -------------------------------------------------------------------------

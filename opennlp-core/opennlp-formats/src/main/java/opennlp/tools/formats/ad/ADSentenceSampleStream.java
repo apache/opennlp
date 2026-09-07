@@ -158,14 +158,15 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     }
   }
 
-  /*
-   * Replicates matches() of the ^(?:[a-zA-Z\-]*(\d+)).*?p=(\d+).* metadata
-   * pattern: after the optional ASCII letters and hyphens, the text id is the
-   * first ASCII digit run and the paragraph id is the digit run after the
-   * first "p=" that is followed by at least one digit. Returns null when the
-   * metadata does not match.
+  /**
+   * Parses the text and paragraph ids from sentence metadata, which differs between corpora:
+   * the text id is the ASCII digit run after any leading ASCII letters and hyphens, the
+   * paragraph id is the digit run after the first {@code p=} that at least one digit follows.
+   *
+   * @param meta The metadata.
+   * @return The text id and the paragraph id, or {@code null} if either is missing.
    */
-  private static int[] parseTextAndParagraph(String meta) {
+  private int[] parseTextAndParagraph(String meta) {
     int i = 0;
     while (i < meta.length() && (isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
       i++;
@@ -203,7 +204,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
    * @param c The character.
    * @return {@code true} for {@code a} to {@code z} or {@code A} to {@code Z}.
    */
-  private static boolean isAsciiLetter(char c) {
+  private boolean isAsciiLetter(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
   }
 
@@ -213,7 +214,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
    * @param c The character.
    * @return {@code true} for {@code 0} to {@code 9}.
    */
-  private static boolean isAsciiDigit(char c) {
+  private boolean isAsciiDigit(char c) {
     return c >= '0' && c <= '9';
   }
 
