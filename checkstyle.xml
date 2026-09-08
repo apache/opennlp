@@ -63,8 +63,30 @@
     <property name="message" value="CRLF line endings are prohibited"/>
   </module>
 
+  <!--
+    Production code stays free of java.util.regex; the exceptions are listed in
+    checkstyle-suppressions.xml with the reason for each.
+  -->
+  <module name="SuppressionFilter">
+    <property name="file" value="${checkstyle.suppressions.file}"/>
+    <property name="optional" value="false"/>
+  </module>
+
   <module name="TreeWalker">
     <module name="SuppressionCommentFilter"/>
+    <module name="IllegalImport">
+      <property name="id" value="NoRegexImport"/>
+      <property name="illegalPkgs" value="java.util.regex"/>
+      <message key="import.illegal"
+               value="java.util.regex is not used in production code; write a cursor or code-point scan (see checkstyle-suppressions.xml for the documented exceptions)."/>
+    </module>
+    <module name="RegexpSinglelineJava">
+      <property name="id" value="NoRegexStringCall"/>
+      <property name="format" value="\.(replaceAll|replaceFirst)\s*\(|\.matches\s*\(\s*&quot;|\.split\s*\(\s*&quot;\\\\"/>
+      <property name="ignoreComments" value="true"/>
+      <property name="message"
+                value="String.replaceAll, replaceFirst, matches, and split with a regex compile a Pattern on each call; write a cursor scan or use the StringUtil helpers."/>
+    </module>
     <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
       <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
