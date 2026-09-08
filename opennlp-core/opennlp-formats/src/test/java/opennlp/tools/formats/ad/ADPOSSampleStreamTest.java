@@ -19,10 +19,14 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -106,6 +110,25 @@ public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample>
       Assertions.assertEquals("Porto_Poesia", sample.getSentence()[9]);
       Assertions.assertEquals("prop=M=S", sample.getTags()[9]);
     }
+  }
+
+  private static Stream<Arguments> tags() {
+    return Stream.of(
+        Arguments.of("v-fin", "v-fin"),
+        Arguments.of("PR 3S IND", "PR=3S=IND"),
+        Arguments.of("PR  \t3S", "PR=3S"),
+        Arguments.of(" PR 3S ", "=PR=3S="),
+        Arguments.of(" ", "="),
+        Arguments.of("", ""),
+        Arguments.of("PR\u00A03S", "PR\u00A03S"),
+        Arguments.of("\r\n\u000B\f", "="),
+        Arguments.of("\uD83D\uDE00 x", "\uD83D\uDE00=x"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("tags")
+  void testReplaceWhitespaceWithEquals(String tag, String expected) {
+    Assertions.assertEquals(expected, ADPOSSampleStream.replaceWhitespaceWithEquals(tag));
   }
 
 }

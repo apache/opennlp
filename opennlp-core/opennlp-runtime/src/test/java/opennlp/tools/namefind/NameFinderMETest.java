@@ -22,6 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -32,6 +35,7 @@ import opennlp.tools.util.TrainingParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -323,6 +327,18 @@ public class NameFinderMETest extends AbstractNameFinderTest {
     assertEquals(new Span(7, 15, "organization"), names2[1]);
     assertEquals("person", names2[0].getType());
     assertEquals("organization", names2[1].getType());
+  }
+
+  @ParameterizedTest
+  @CsvSource({"atype-start, atype", "a-b-start, a-b", "type_1-cont, type_1"})
+  void testExtractNameType(String outcome, String type) {
+    assertEquals(type, NameFinderME.extractNameType(outcome));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"start", "other", "-start", "atype-", "atype-st.art"})
+  void testExtractNameTypeWithoutType(String outcome) {
+    assertNull(NameFinderME.extractNameType(outcome));
   }
 
 }

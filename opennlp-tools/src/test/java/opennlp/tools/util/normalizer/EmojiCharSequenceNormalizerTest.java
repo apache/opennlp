@@ -40,4 +40,29 @@ public class EmojiCharSequenceNormalizerTest {
         "Any funny text goes here    ", normalizer.normalize(s));
   }
 
+  @Test
+  void normalizeUnpairedSurrogates() {
+    // a lone high surrogate and a lone low surrogate are matched individually
+    String s = "a" + '\uD83C' + "b" + '\uDC00' + "c";
+    Assertions.assertEquals("a b c", normalizer.normalize(s));
+
+    // adjacent surrogates, paired or not, collapse into a single space
+    StringBuilder sb = new StringBuilder();
+    sb.append("x").append('\uD83C').append('\uDC00').append("y");
+    Assertions.assertEquals("x y", normalizer.normalize(sb));
+  }
+
+  @Test
+  void normalizeMatchesCodePointsNotOnlyEmoji() {
+    // the matched code point range is [U+D83C, U+10FC00], so BMP characters
+    // from U+D83C up are replaced as well
+    Assertions.assertEquals("a b", normalizer.normalize("a" + '\uE000' + "b"));
+
+    // supplementary code points beyond U+10FC00 are kept verbatim
+    StringBuilder sb = new StringBuilder();
+    sb.append("a").appendCodePoint(0x10FFFF).append("b");
+    Assertions.assertEquals("a" + new String(Character.toChars(0x10FFFF)) + "b",
+        normalizer.normalize(sb));
+  }
+
 }

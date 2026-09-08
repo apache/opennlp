@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
@@ -32,6 +31,7 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * <b>Note:</b>
@@ -39,8 +39,6 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 @Internal
 public class ADPOSSampleStream implements ObjectStream<POSSample> {
-
-  private static final Pattern WHITESPACES_PATTERN = Pattern.compile("\\s+");
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
   private final boolean expandME;
@@ -118,7 +116,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       if (isIncludeFeatures && leaf.getMorphologicalTag() != null) {
         tag += " " + leaf.getMorphologicalTag();
       }
-      tag = WHITESPACES_PATTERN.matcher(tag).replaceAll("=");
+      tag = replaceWhitespaceWithEquals(tag);
 
       if (tag == null)
         tag = lexeme;
@@ -150,6 +148,31 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       }
     }
 
+  }
+
+  /**
+   * Replaces every run of ASCII whitespace, leading and trailing runs included, with a single
+   * equals sign.
+   *
+   * @param tag The tag.
+   * @return The joined tag.
+   */
+  static String replaceWhitespaceWithEquals(String tag) {
+    StringBuilder replaced = new StringBuilder(tag.length());
+    int i = 0;
+    while (i < tag.length()) {
+      char c = tag.charAt(i);
+      if (StringUtil.isAsciiWhitespace(c)) {
+        replaced.append('=');
+        while (i + 1 < tag.length() && StringUtil.isAsciiWhitespace(tag.charAt(i + 1))) {
+          i++;
+        }
+      } else {
+        replaced.append(c);
+      }
+      i++;
+    }
+    return replaced.toString();
   }
 
   @Override
