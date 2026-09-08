@@ -36,18 +36,42 @@ import opennlp.tools.util.StringUtil;
  * ranges at the text boundaries, so {@link #encode(CharSequence)} includes both control
  * entries.</p>
  *
+ * <p>The wordpiece inventory was introduced by Schuster and Nakajima (2012) as the
+ * {@code WordPieceModel}: word units learned greedily from unsegmented text to maximize the
+ * language-model likelihood, so that no input is out of vocabulary. Wu et al. (2016), section
+ * 4.1, adopt it for neural machine translation, and Devlin et al. (2019), section 3, build BERT
+ * on a 30,000 entry WordPiece vocabulary with a leading classification token. Those papers
+ * describe how an inventory is <i>trained</i>; the greedy longest-match-first segmentation and
+ * the {@code ##} continuation marker applied here are the <i>inference</i> conventions of the
+ * BERT reference implementation. Wu et al. instead mark word starts with {@code _}.</p>
+ *
  * <p>Ids follow the line-number convention of BERT {@code vocab.txt} files. List constructors use
  * the list index, while the map constructor uses the supplied ids. The classification, separator,
  * and unknown tokens must all be present in the
  * vocabulary, because each emitted piece must have an id. Vocabulary entries starting with
  * {@code ##} are continuation pieces and can match only after the first piece of a word.</p>
  *
+ * <p>Lower casing applies the <a href="https://www.unicode.org/Public/15.0.0/ucd/SpecialCasing.txt">
+ * Unicode full case mapping</a>, including the {@code Final_Sigma}
+ * context, so a word-final Greek capital sigma becomes U+03C2 as in the reference
+ * implementation.</p>
+ *
  * <p>A word exceeding the configured maximum number of normalized Unicode code points becomes
- * the unknown piece. The default is 100, matching the BERT reference implementation.</p>
+ * the unknown piece. The default is 100, the value used by the Hugging Face {@code transformers}
+ * BERT tokenizer; the original {@code google-research/bert} code uses 200. Both count code
+ * points, and a constructor parameter selects another limit.</p>
  *
  * @see WordpieceTokenizer
  * @see <a href="https://github.com/google-research/bert/blob/master/tokenization.py">
  *     BERT tokenization reference</a>
+ * @see <a href="https://research.google/pubs/pub37842/">Mike Schuster, Kaisuke Nakajima (2012):
+ *     Japanese and Korean Voice Search. ICASSP 2012, pages 5149-5152</a>
+ * @see <a href="https://arxiv.org/abs/1609.08144">Yonghui Wu et al. (2016): Google's Neural
+ *     Machine Translation System: Bridging the Gap between Human and Machine Translation.
+ *     arXiv:1609.08144</a>
+ * @see <a href="https://aclanthology.org/N19-1423/">Jacob Devlin, Ming-Wei Chang, Kenton Lee,
+ *     Kristina Toutanova (2019): BERT: Pre-training of Deep Bidirectional Transformers for
+ *     Language Understanding. NAACL-HLT 2019, pages 4171-4186</a>
  * @since 3.0.0
  */
 @ThreadSafe
@@ -357,6 +381,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
 
     private final TrieNode root = new TrieNode();
 
+    /**
+     * Indexes the initial or the continuation pieces of a vocabulary.
+     *
+     * @param vocabulary   The piece-to-id mapping.
+     * @param continuation {@code true} to index pieces starting with the continuation prefix,
+     *                     stored without it; {@code false} to index all other pieces.
+     */
     private VocabularyTrie(Map<String, Integer> vocabulary, boolean continuation) {
       for (final Map.Entry<String, Integer> entry : vocabulary.entrySet()) {
         final String piece = entry.getKey();
