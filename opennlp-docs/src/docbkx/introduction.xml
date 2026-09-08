@@ -315,6 +315,23 @@ Arguments description:
         </section>
     </section>
 
+	<section xml:id="intro.stream.resources">
+		<title>Closing and resetting input streams</title>
+		<para>
+			Close corpus streams after use, preferably with try-with-resources. Since 3.0.0,
+			<code>PlainTextByLineStream.reset()</code> closes the reader from the previous
+			pass before asking its <code>InputStreamFactory</code> for a new stream. The
+			factory must therefore provide a fresh, readable stream for each pass, rather
+			than return the stream that has just been closed.
+		</para>
+		<para>
+			The markable file stream that the command line tools and the format converters open
+			for corpus files releases its file handle on close, including when closed through
+			a wrapping reader. The Leipzig language-sample reader also
+			closes the stream used to count source lines. These fixes prevent file handles
+			from accumulating during repeated reads and training passes.
+		</para>
+	</section>
     <section xml:id="intro.sysprops">
         <title>System Properties</title>
         <section xml:id="intro.sysprops.interner">

@@ -211,7 +211,7 @@ public class GermEval2014NameSampleStream implements ObjectStream<NameSample> {
         continue;
       }
 
-      final String[] fields = line.split("\t");
+      final String[] fields = StringUtil.split(line, '\t');
 
       if (fields.length >= 4) {
         sentence.add(fields[1]);

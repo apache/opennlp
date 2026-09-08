@@ -18,10 +18,16 @@
 package opennlp.tools.tokenize;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class WordpieceTokenizerTest {
 
@@ -89,6 +95,77 @@ public class WordpieceTokenizerTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new WordpieceTokenizer(getVocabulary(), "[CLS]", "[SEP]", "[UNK]", -1));
 
+  }
+
+  @Test
+  void testDefaultMaximumMatchesTheReferencePipeline() {
+    final WordpieceTokenizer tokenizer = new WordpieceTokenizer(Set.of("a", "##a"));
+
+    final String[] tokens = tokenizer.tokenize("a".repeat(100));
+
+    Assertions.assertEquals(102, tokens.length);
+    Assertions.assertEquals("a", tokens[1]);
+    Assertions.assertEquals("##a", tokens[100]);
+  }
+
+  @Test
+  void testMaximumLengthCountsCodePoints() {
+    final String face = "\uD83D\uDE00";
+    final WordpieceTokenizer tokenizer = new WordpieceTokenizer(
+        Set.of(face, "##" + face), 2);
+
+    final String[] tokens = tokenizer.tokenize(face.repeat(2));
+
+    Assertions.assertArrayEquals(
+        new String[] {"[CLS]", face, "##" + face, "[SEP]"}, tokens);
+  }
+
+  @Test
+  void testSegmentationDoesNotSplitSupplementaryCodePoints() {
+    final WordpieceTokenizer tokenizer = new WordpieceTokenizer(
+        Set.of("\uD83D", "##\uDE00"));
+
+    final String[] tokens = tokenizer.tokenize("\uD83D\uDE00");
+
+    Assertions.assertArrayEquals(new String[] {"[CLS]", "[UNK]", "[SEP]"}, tokens);
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidVocabularies")
+  void testRejectsInvalidVocabulary(Set<String> vocabulary) {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceTokenizer(vocabulary));
+  }
+
+  private static Stream<Set<String>> invalidVocabularies() {
+    final Set<String> withNull = new LinkedHashSet<>(List.of("word"));
+    withNull.add(null);
+    return Stream.of(null, Set.of(""), withNull);
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidSpecialTokens")
+  void testRejectsInvalidSpecialTokens(String classificationToken, String separatorToken,
+      String unknownToken) {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new WordpieceTokenizer(
+        getVocabulary(), classificationToken, separatorToken, unknownToken));
+  }
+
+  private static Stream<Arguments> invalidSpecialTokens() {
+    return Stream.of(
+        Arguments.of(null, "[SEP]", "[UNK]"),
+        Arguments.of("", "[SEP]", "[UNK]"),
+        Arguments.of("[CLS]", null, "[UNK]"),
+        Arguments.of("[CLS]", "", "[UNK]"),
+        Arguments.of("[CLS]", "[SEP]", null),
+        Arguments.of("[CLS]", "[SEP]", ""));
+  }
+
+  @Test
+  void testTokenizeRejectsNullText() {
+    final WordpieceTokenizer tokenizer = new WordpieceTokenizer(getVocabulary());
+
+    Assertions.assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenize(null));
   }
 
   @Test

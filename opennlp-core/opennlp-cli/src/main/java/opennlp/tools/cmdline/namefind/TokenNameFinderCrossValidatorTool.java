@@ -44,6 +44,7 @@ import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
@@ -86,7 +87,7 @@ public final class TokenNameFinderCrossValidatorTool
     }
 
     if (params.getNameTypes() != null) {
-      String[] nameTypes = params.getNameTypes().split(",");
+      String[] nameTypes = StringUtil.split(params.getNameTypes(), ',');
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
 

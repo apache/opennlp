@@ -152,6 +152,80 @@ public class StringUtil {
   }
 
   /**
+   * Splits {@code input} around literal occurrences of {@code separator}, with the
+   * same result as {@link String#split(String)} called with the single-character
+   * pattern {@link Character#toString(char) Character.toString(separator)} and a
+   * limit of {@code 0}: leading and middle empty fields are kept, trailing empty
+   * fields are removed, and empty input yields an array containing one empty
+   * string. The scan compares characters, so {@code separator} is always treated
+   * as a literal, including when it is a regular-expression metacharacter such as
+   * {@code '.'}, {@code '$'} or {@code '|'}, and supplementary code points in the
+   * input pass through untouched.
+   *
+   * @param input The text to split. Must not be {@code null}.
+   * @param separator The literal field separator.
+   * @return The fields in order.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String[] split(CharSequence input, char separator) {
+    return split(input, separator, 0);
+  }
+
+  /**
+   * Splits {@code input} around literal occurrences of {@code separator}, with
+   * the same limit contract as {@link String#split(String, int)} applied to the
+   * single-character pattern
+   * {@link Character#toString(char) Character.toString(separator)}: a positive
+   * {@code limit} applies at most {@code limit - 1} splits and keeps trailing
+   * empty fields; {@code 0} applies unlimited splits and removes trailing empty
+   * fields, exactly like {@link #split(CharSequence, char)}; a negative
+   * {@code limit} applies unlimited splits and keeps trailing empty fields.
+   * Empty input yields an array containing one empty string at every limit.
+   * The scan compares characters, so {@code separator} is always treated as a
+   * literal, including when it is a regular-expression metacharacter, and
+   * supplementary code points in the input pass through untouched.
+   *
+   * @param input The text to split. Must not be {@code null}.
+   * @param separator The literal field separator.
+   * @param limit The maximum number of fields, or {@code 0} for the default
+   *     behavior, or negative for no limit.
+   * @return The fields in order.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String[] split(CharSequence input, char separator, int limit) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    final int length = input.length();
+    if (length == 0) {
+      return new String[] {""};
+    }
+    final List<String> fields = new ArrayList<>();
+    int start = 0;
+    int i = 0;
+    // A positive limit applies at most limit - 1 splits; every other limit
+    // leaves the scan unbounded, and only 0 trims the trailing empty fields.
+    while (i < length && (limit <= 0 || fields.size() < limit - 1)) {
+      if (input.charAt(i) == separator) {
+        fields.add(input.subSequence(start, i).toString());
+        start = i + 1;
+      }
+      i++;
+    }
+    fields.add(input.subSequence(start, length).toString());
+    if (limit == 0) {
+      int end = fields.size();
+      while (end > 0 && fields.get(end - 1).isEmpty()) {
+        end--;
+      }
+      if (end < fields.size()) {
+        fields.subList(end, fields.size()).clear();
+      }
+    }
+    return fields.toArray(new String[0]);
+  }
+
+  /**
    * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
    * {@link #splitOnUnicodeWhitespace(CharSequence)} breaks terms on.
    *

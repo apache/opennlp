@@ -44,6 +44,7 @@ import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.namefind.TokenNameFinderEvaluator;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -103,7 +104,7 @@ public final class TokenNameFinderEvaluatorTool
     }
 
     if (params.getNameTypes() != null) {
-      String[] nameTypes = params.getNameTypes().split(",");
+      String[] nameTypes = StringUtil.split(params.getNameTypes(), ',');
       sampleStream = new NameSampleTypeFilter(nameTypes, sampleStream);
     }
 

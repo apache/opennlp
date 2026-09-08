@@ -34,6 +34,7 @@ import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.languagemodel.NGramLanguageModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Command line tool for {@link opennlp.tools.languagemodel.NGramLanguageModel}.
@@ -65,7 +66,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
           double probability;
           String[] predicted;
           // TODO : use a Tokenizer here
-          String[] tokens = line.split(" ");
+          String[] tokens = StringUtil.split(line, ' ');
           try {
             probability = nGramLanguageModel.calculateProbability(tokens);
             predicted = nGramLanguageModel.predictNextTokens(tokens);

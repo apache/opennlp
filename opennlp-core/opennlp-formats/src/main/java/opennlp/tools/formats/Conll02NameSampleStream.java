@@ -140,7 +140,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
         continue;
       }
 
-      String[] fields = line.split(" ");
+      String[] fields = StringUtil.split(line, ' ');
 
       if (fields.length == 3) {
         sentence.add(fields[0]);
