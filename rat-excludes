@@ -70,3 +70,12 @@ src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
 src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
 src/main/resources/opennlp/tools/util/normalizer/confusables.txt
 src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
+
+<!-- Miniature WNDB morphology exception-list fixtures; the *.exc format is bare
+     "inflected base" lines with no comment syntax, so no header can be carried.
+     The index.* and data.* fixtures in the same directory do carry the header
+     in their space-prefixed WNDB license preamble and are not excluded. -->
+src/test/resources/opennlp/wordnet/mini-wndb/noun.exc
+src/test/resources/opennlp/wordnet/mini-wndb/verb.exc
+src/test/resources/opennlp/wordnet/mini-wndb/adj.exc
+src/test/resources/opennlp/wordnet/mini-wndb/adv.exc
