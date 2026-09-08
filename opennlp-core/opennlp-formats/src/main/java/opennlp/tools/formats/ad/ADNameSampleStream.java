@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
@@ -551,72 +549,29 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     adSentenceStream.close();
   }
 
-  enum Type {
-    ama, cie, lit
-  }
-
-  // works for Amazonia
-  //  private static final Pattern meta1 = Pattern
-  //      .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-  //
-  //  // works for selva cie
-  //  private static final Pattern meta2 = Pattern
-  //    .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-
   private int getTextID(Sentence paragraph) {
-    
+
     final String meta = paragraph.metadata();
-    Type corpusType;
-    Pattern metaPattern;
     int textIdMeta2 = -1;
     String textMeta2 = "";
 
-    if (meta.startsWith("LIT")) {
-      corpusType = Type.lit;
-      metaPattern = Pattern.compile("^([a-zA-Z\\-]+)(\\d+).*?p=(\\d+).*");
-    } else if (meta.startsWith("CIE")) {
-      corpusType = Type.cie;
-      metaPattern = Pattern.compile("^.*?source=\"(.*?)\".*");
-    } else { // ama
-      corpusType = Type.ama;
-      metaPattern = Pattern.compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
+    if (meta.startsWith("LIT") || meta.startsWith("CIE")) {
+      String textId = meta.startsWith("LIT") ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
+      if (textId == null) {
+        throw new RuntimeException("Invalid metadata: " + meta);
+      }
+      if (!textId.equals(textMeta2)) {
+        textIdMeta2++;
+        textMeta2 = textId;
+      }
+      return textIdMeta2;
     }
-
-    if (corpusType.equals(Type.lit)) {
-      Matcher m2 = metaPattern.matcher(meta);
-      if (m2.matches()) {
-        String textId = m2.group(1);
-        if (!textId.equals(textMeta2)) {
-          textIdMeta2++;
-          textMeta2 = textId;
-        }
-        return textIdMeta2;
-      } else {
-        throw new RuntimeException("Invalid metadata: " + meta);
-      }
-    } else if (corpusType.equals(Type.cie)) {
-      Matcher m2 = metaPattern.matcher(meta);
-      if (m2.matches()) {
-        String textId = m2.group(1);
-        if (!textId.equals(textMeta2)) {
-          textIdMeta2++;
-          textMeta2 = textId;
-        }
-        return textIdMeta2;
-      } else {
-        throw new RuntimeException("Invalid metadata: " + meta);
-      }
-    } else if (corpusType.equals(Type.ama)) {
-      Matcher m2 = metaPattern.matcher(meta);
-      if (m2.matches()) {
-        return Integer.parseInt(m2.group(1));
-        // currentPara = Integer.parseInt(m.group(2));
-      } else {
-        throw new RuntimeException("Invalid metadata: " + meta);
-      }
+    // Amazonia
+    String textId = ADMetadata.textId(meta);
+    if (textId == null) {
+      throw new RuntimeException("Invalid metadata: " + meta);
     }
-
-    return 0;
+    return Integer.parseInt(textId);
   }
 
 }
