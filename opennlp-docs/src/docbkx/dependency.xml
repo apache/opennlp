@@ -135,4 +135,35 @@ double lasExcludingPunctuation = validator.getLasExcludingPunctuation();]]>
 			in <code>opennlp-formats/dev</code>.
 		</para>
 	</section>
+
+	<section xml:id="tools.dependency.annotator">
+		<title>DependencyAnnotator</title>
+		<para>
+			<code>DependencyAnnotator</code> adapts a <code>DependencyParser</code> to
+			the document pipeline. It requires sentence, token, and POS-tag layers,
+			parses each sentence separately, and shifts sentence-local arcs so every
+			head and dependent is an index into the document-wide token layer. Each
+			arc annotation sits on its dependent token's span in original text
+			coordinates. The required layers must be present, but they may be empty:
+			a document without content yields a present-but-empty arc layer.
+			<code>DependencyAnnotatorPipelineTest</code> asserts the behavior shown here.
+			<programlisting language="java">
+<![CDATA[DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
+    .add(new SentenceDetectorAnnotator(sentenceDetector))
+    .add(new TokenizerAnnotator(tokenizer))
+    .add(new POSTaggerAnnotator(tagger))
+    .add(new DependencyAnnotator(parser))
+    .build();
+
+Document document = analyzer.analyze("Alice sent Bob a message.");
+List<Annotation<DependencyArc>> arcs =
+    document.get(DependencyAnnotator.DEPENDENCIES);
+
+Annotation<DependencyArc> bob = arcs.get(2);
+CharSequence original = bob.span().getCoveredText(document.text()); // "Bob"
+Annotation<String> head =
+    document.get(Layers.TOKENS).get(bob.value().head()); // "sent"]]>
+			</programlisting>
+		</para>
+	</section>
 </chapter>
