@@ -82,6 +82,13 @@ DependencyParser parser = new FeedforwardDependencyParser(
     FeedforwardDependencyModel.load(Path.of("en-depparse-ff.bin")), 4);]]>
 			</programlisting>
 		</para>
+		<para>
+			Scoring uses double precision for input products and cached contributions.
+			Cached and direct scoring produce the same values. The shared cache retains
+			at most 32,768 template-position and embedding-row pairs; other pairs use
+			direct calculation. Greedy and beam parsing throw <code>IllegalStateException</code>
+			if the model produces a non-finite transition score.
+		</para>
 	</section>
 
 	<section xml:id="tools.dependency.parsing">

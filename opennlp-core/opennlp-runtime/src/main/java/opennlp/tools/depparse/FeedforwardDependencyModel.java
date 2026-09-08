@@ -159,6 +159,7 @@ public class FeedforwardDependencyModel {
    *         {@link #transitions()}. Never {@code null}.
    * @throws IllegalArgumentException Thrown if {@code features} is {@code null}, does not
    *         have the required length, or contains an invalid embedding index.
+   * @throws IllegalStateException If the model produces a non-finite transition score.
    */
   double[] score(int[] features) {
     if (features == null) {
@@ -182,7 +183,7 @@ public class FeedforwardDependencyModel {
     final ContributionCache cache = this.cache;
     for (int f = 0; f < features.length; f++) {
       final int row = features[f];
-      final float[] contribution = cache == null ? null : cache.contribution(this, f, row);
+      final double[] contribution = cache == null ? null : cache.contribution(this, f, row);
       if (contribution != null) {
         for (int j = 0; j < hidden; j++) {
           h[j] += contribution[j];
@@ -194,7 +195,7 @@ public class FeedforwardDependencyModel {
           final float[] weights = hiddenWeights[j];
           double sum = 0.0;
           for (int d = 0; d < embeddingSize; d++) {
-            sum += weights[offset + d] * embedding[d];
+            sum += (double) weights[offset + d] * embedding[d];
           }
           h[j] += sum;
         }
@@ -210,46 +211,39 @@ public class FeedforwardDependencyModel {
       for (int j = 0; j < hidden; j++) {
         sum += row[j] * h[j];
       }
+      if (!Double.isFinite(sum)) {
+        throw new IllegalStateException("the model produced a non-finite transition score");
+      }
       scores[o] = sum;
     }
     return scores;
   }
 
   /**
-   * Turns on the scoring cache: the hidden-layer contribution of a (template position,
-   * embedding row) pair is a fixed vector while the weights do not change, so it is
-   * computed once on first sight and afterwards added instead of being re-derived from
-   * the embedding on every configuration.
+   * Caches hidden-layer contributions by template position and embedding row.
    *
-   * <p>Cached contributions are rounded to floats once, so scores may differ from the
-   * uncached path in the last bits. The cache is bounded, safe for concurrent readers,
-   * and only valid on a model whose weights stay fixed: training and refinement
-   * work on uncached copies, and {@link #copy()} never carries a cache over.</p>
+   * <p>Contributions retain double precision so cached and direct scoring use the
+   * same values. Training and refinement use uncached copies; {@link #copy()}
+   * does not copy the cache.</p>
    */
-  void enableScoringCache() {
+  synchronized void enableScoringCache() {
     if (cache == null) {
       cache = new ContributionCache(FeedforwardContext.FEATURE_COUNT, embeddings.length);
     }
   }
 
   /**
-   * The bounded lazy contribution cache behind {@link #enableScoringCache()}: one
-   * slot per (template position, embedding row) pair, filled on first use. Filling is
-   * idempotent, so concurrent readers may compute a contribution twice but never see
-   * a partial one, and a shared budget bounds the total memory; pairs beyond the
-   * budget use direct scoring.
+   * Stores contributions on first use up to a shared entry limit. Reference tables
+   * are allocated for every template position and embedding row. Pairs beyond the
+   * entry limit use direct scoring.
    */
   private static final class ContributionCache {
 
-    /**
-     * The most (position, row) pairs the cache will hold. At a hidden size of 400 this
-     * bounds the cache near 100 MB; typical models stay far below the cap because tag
-     * and label inventories are small and word usage is Zipf-shaped.
-     */
-    private static final int MAX_PAIRS = 65536;
+    /** The maximum number of cached (position, row) pairs. */
+    private static final int MAX_PAIRS = 32768;
 
     /** The cached contribution vectors, indexed by template position and embedding row. */
-    private final AtomicReferenceArray<float[]>[] byPosition;
+    private final AtomicReferenceArray<double[]>[] byPosition;
 
     /** The number of pairs the cache may still add before the budget is spent. */
     private final AtomicInteger remaining = new AtomicInteger(MAX_PAIRS);
@@ -278,33 +272,52 @@ public class FeedforwardDependencyModel {
      * @return The contribution vector, or {@code null} when the budget is spent and
      *         the pair is not cached.
      */
-    private float[] contribution(FeedforwardDependencyModel model, int position, int row) {
-      final AtomicReferenceArray<float[]> slots = byPosition[position];
-      float[] contribution = slots.get(row);
+    private double[] contribution(FeedforwardDependencyModel model, int position, int row) {
+      final AtomicReferenceArray<double[]> slots = byPosition[position];
+      double[] contribution = slots.get(row);
       if (contribution != null) {
         return contribution;
       }
-      if (remaining.get() <= 0) {
+      if (!reserve()) {
         return null;
       }
-      final int hidden = model.hiddenBias.length;
-      final float[] embedding = model.embeddings[row];
-      final int offset = position * model.embeddingSize;
-      contribution = new float[hidden];
-      for (int j = 0; j < hidden; j++) {
-        final float[] weights = model.hiddenWeights[j];
-        double sum = 0.0;
-        for (int d = 0; d < model.embeddingSize; d++) {
-          sum += weights[offset + d] * embedding[d];
+      boolean published = false;
+      try {
+        final int hidden = model.hiddenBias.length;
+        final float[] embedding = model.embeddings[row];
+        final int offset = position * model.embeddingSize;
+        contribution = new double[hidden];
+        for (int j = 0; j < hidden; j++) {
+          final float[] weights = model.hiddenWeights[j];
+          double sum = 0.0;
+          for (int d = 0; d < model.embeddingSize; d++) {
+            sum += (double) weights[offset + d] * embedding[d];
+          }
+          contribution[j] = sum;
         }
-        contribution[j] = (float) sum;
+        published = slots.compareAndSet(row, null, contribution);
+        return published ? contribution : slots.get(row);
+      } finally {
+        if (!published) {
+          remaining.incrementAndGet();
+        }
       }
-      if (slots.compareAndSet(row, null, contribution)) {
-        remaining.decrementAndGet();
-      } else {
-        contribution = slots.get(row);
+    }
+
+    /**
+     * Reserves capacity before allocating a contribution array.
+     *
+     * @return Whether one entry was reserved.
+     */
+    private boolean reserve() {
+      int available = remaining.get();
+      while (available > 0) {
+        if (remaining.compareAndSet(available, available - 1)) {
+          return true;
+        }
+        available = remaining.get();
       }
-      return contribution;
+      return false;
     }
   }
 
