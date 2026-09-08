@@ -23,29 +23,26 @@ import java.util.List;
 import opennlp.tools.util.StringUtil;
 
 /**
- * One extraction rule for {@link RelationAnnotator}: a dependency path shape between two
- * entity heads and the relation type to emit when the shape matches.
+ * An extraction rule with a dependency path, output relation type, and optional trigger.
  *
- * <p>The path is a whitespace-separated sequence of steps; every character that
+ * <p>The path is a whitespace-separated sequence of steps. Each character that
  * {@link StringUtil#isWhitespace(char)} accepts separates steps, so no-break spaces and
- * the other Unicode space separators delimit exactly like ASCII blanks. A step
+ * other Unicode space separators act like ASCII blanks. A step
  * {@code <label} walks up from the subject's head token over an arc with that relation
  * label; a step {@code >label} walks down toward the object's head token. All up steps
- * come before all down steps, so the path always runs from the subject up to a single
- * pivot token and down to the object. {@code <nsubj >obj} matches a subject and object
- * of the same verb; {@code >nmod} matches an object directly attached below the
- * subject.</p>
+ * precede all down steps. For example, {@code <nsubj >obj} matches a subject and object
+ * of the same verb.</p>
  *
  * <p>The optional trigger constrains the pivot token, the highest token on the path: the
  * pattern matches only when the pivot's form, lowercased with
  * {@link StringUtil#toLowerCase(CharSequence)}, equals the trigger. Without a trigger the
- * path shape alone decides. The trigger is never rewritten and must already be lowercased
- * under that mapping, so {@code founded} is accepted and {@code Founded} is rejected; a
- * trigger the mapping would change could never equal a pivot form.</p>
+ * path alone decides. The trigger is not rewritten and must already be lowercased under
+ * that mapping, so {@code founded} is accepted and {@code Founded} is rejected.</p>
  *
  * @param type The relation type to emit. Must not be {@code null} or blank.
- * @param path The path shape as described above. Must not be {@code null} or blank, and
- *             every up step must come before the first down step.
+ * @param path The path shape as described above. Must not be {@code null} or blank,
+ *             direction markers may appear only at the start of a step, and all up
+ *             steps must precede the first down step.
  * @param trigger The required pivot form, or {@code null} for any pivot. Must not be
  *                blank or contain whitespace, since it is matched against a single
  *                token, and must be unchanged by
@@ -62,8 +59,7 @@ public record RelationPattern(String type, String path, String trigger) {
   public static final char DOWN_STEP = '>';
 
   /**
-   * Validates the rule. Blankness follows {@link StringUtil#isBlank(CharSequence)}, the
-   * same whitespace definition the step scan splits on.
+   * Validates the rule.
    *
    * @throws IllegalArgumentException Thrown if {@code type} or {@code path} is
    *         {@code null} or blank, {@code path} is malformed, or {@code trigger} is
@@ -95,7 +91,7 @@ public record RelationPattern(String type, String path, String trigger) {
     }
     boolean down = false;
     for (final String step : splitSteps(path)) {
-      if (step.length() < 2 || (step.charAt(0) != UP_STEP && step.charAt(0) != DOWN_STEP)) {
+      if (!isValidStep(step)) {
         throw new IllegalArgumentException("not a valid path step: " + step);
       }
       if (step.charAt(0) == DOWN_STEP) {
@@ -114,6 +110,19 @@ public record RelationPattern(String type, String path, String trigger) {
    */
   public List<String> steps() {
     return splitSteps(path);
+  }
+
+  /** Returns whether a step has one direction marker followed by a relation label. */
+  private static boolean isValidStep(String step) {
+    if (step.length() < 2 || (step.charAt(0) != UP_STEP && step.charAt(0) != DOWN_STEP)) {
+      return false;
+    }
+    for (int i = 1; i < step.length(); i++) {
+      if (step.charAt(i) == UP_STEP || step.charAt(i) == DOWN_STEP) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

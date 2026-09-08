@@ -30,31 +30,9 @@ import opennlp.tools.document.Document;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 
-/**
- * Demonstrates the complete relation extraction flow as an application would run it: a
- * {@link Document} carrying token, entity, and dependency layers is passed through a
- * {@link RelationAnnotator} configured with two {@link RelationPattern} rules, and the
- * extracted relations are read back from {@link RelationAnnotator#RELATIONS}.
- *
- * <p>The token, entity, and dependency layers are constructed directly with the values a
- * tokenizer, a name finder, and a dependency parser would produce for the example
- * sentence, so the test is self-contained and every expected value is exact.</p>
- */
+/** Exercises the acquisition example from the relation extraction manual. */
 public class RelationExtractionExampleTest {
 
-  /**
-   * Builds the fully analyzed document "Acme Corp acquired Bolt in 2024." with the
-   * layers a relation annotator consumes: tokens, entities, and dependency arcs.
-   *
-   * <p>The dependency analysis is the standard one for the sentence: {@code acquired} is
-   * the root, {@code Corp} is its {@code nsubj} with {@code Acme} attached as
-   * {@code compound}, {@code Bolt} is its {@code obj}, and {@code 2024} is its
-   * {@code obl} with {@code in} attached as {@code case}. The entity layer holds
-   * {@code Acme Corp} (index 0), {@code Bolt} (index 1), and {@code 2024} (index 2).</p>
-   *
-   * @return A document with aligned token, entity, and dependency layers. Never
-   *         {@code null}.
-   */
   private static Document analyzedDocument() {
     final String text = "Acme Corp acquired Bolt in 2024.";
     final List<Annotation<String>> tokens = List.of(
@@ -86,11 +64,6 @@ public class RelationExtractionExampleTest {
         .with(DependencyAnnotator.DEPENDENCIES, dependencies);
   }
 
-  /**
-   * Runs the annotator with two registered patterns and verifies the exact result: each
-   * pattern fires exactly once, with the expected relation type, subject and object
-   * entity indexes, argument direction, and covering span over the original text.
-   */
   @Test
   void testTwoPatternsExtractTwoRelations() {
     final Document input = analyzedDocument();
@@ -118,10 +91,6 @@ public class RelationExtractionExampleTest {
         acquisitionDate.span().getStart(), acquisitionDate.span().getEnd()).toString());
   }
 
-  /**
-   * Verifies that annotation is non-destructive: the result carries the relations layer
-   * while the input document stays without it, so callers can keep both versions.
-   */
   @Test
   void testAnnotateAddsTheLayerWithoutTouchingTheInput() {
     final Document input = analyzedDocument();

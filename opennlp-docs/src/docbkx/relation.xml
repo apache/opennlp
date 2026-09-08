@@ -43,9 +43,15 @@
 			entity.
 		</para>
 		<para>
+			Entity heads are selected in token-layer order, which need not be text order.
+			Overlap requires at least one shared character. An empty entity has no head;
+			empty tokens cannot be entity heads. Adjacent spans without shared characters
+			do not overlap. Dependency indexes must refer to the supplied token-layer order.
+		</para>
+		<para>
 			The trigger is optional and constrains the pivot token: the pattern matches
 			only when the pivot's lowercased form equals it. A <code>null</code> trigger
-			accepts any pivot. A trigger is never rewritten, so it must already be
+			accepts any pivot. The constructor does not rewrite triggers, so a trigger must be
 			lowercase and must not contain whitespace; anything else is rejected when the
 			pattern is constructed.
 		</para>
@@ -55,8 +61,8 @@
 		<title>Pattern-based extraction</title>
 		<para>
 			Given a document that already carries tokens, entities, and dependency
-			arcs for <code>Acme Corp acquired Bolt in 2024.</code>, two patterns fire
-			once each: an acquisition between the two organizations, and an
+			arcs for <code>Acme Corp acquired Bolt in 2024.</code>, two patterns produce
+			an acquisition between the two organizations and an
 			acquisition date linking the object organization to the date.
 			<code>RelationExtractionExampleTest</code> asserts the behavior shown
 			here.
@@ -72,6 +78,33 @@ List<Annotation<RelationMention>> relations =
 // acquisition: entities 0 -> 1 over "Acme Corp acquired Bolt"
 // acquisition_date: entities 1 -> 2 over "Bolt in 2024"]]>
 			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.relation.dependency.model">
+		<title>Extracting relations from a dependency model</title>
+		<para>
+			<code>DependencyAnnotator</code> can supply the dependency layer from a saved
+			feedforward model. The input document must already have sentence, token,
+			POS-tag, and entity layers. Relation patterns must use the dependency labels
+			produced by the model.
+		</para>
+		<programlisting language="java">
+<![CDATA[FeedforwardDependencyModel model = FeedforwardDependencyModel.load(modelInput);
+DependencyAnnotator dependencies = new DependencyAnnotator(
+    new FeedforwardDependencyParser(model));
+RelationAnnotator relations = new RelationAnnotator(List.of(
+    new RelationPattern("agent_of", "<nsubj", "barks"),
+    new RelationPattern("eats", "<nsubj >obj", "eats")));
+
+Document parsed = dependencies.annotate(preparedDocument);
+Document annotated = relations.annotate(parsed);]]>
+		</programlisting>
+		<para>
+			<code>FeedforwardRelationPipelineTest</code> trains and reloads a small test
+			model, then checks this sequence on <code>the dog barks. she eats fish.</code>
+			with greedy and beam decoding. It verifies relation spans and entity indexes,
+			not model accuracy on unseen text.
 		</para>
 	</section>
 </chapter>
