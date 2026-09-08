@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,21 +60,69 @@ public final class ParserTool extends BasicCmdLineTool {
             + "Defaults to a WhitespaceTokenizer.";
   }
 
-  private static final Pattern UNTOKENIZED_PAREN_PATTERN_1 = Pattern.compile("([^ ])([({)}])");
-  private static final Pattern UNTOKENIZED_PAREN_PATTERN_2 = Pattern.compile("([({)}])([^ ])");
-
   public static Parse[] parseLine(String line, Parser parser, int numParses) {
     return parseLine( line, parser, WhitespaceTokenizer.INSTANCE, numParses );
   }
 
   public static Parse[] parseLine(String line, Parser parser, Tokenizer tokenizer, int numParses) {
     // fix some parens patterns
-    line = UNTOKENIZED_PAREN_PATTERN_1.matcher(line).replaceAll("$1 $2");
-    line = UNTOKENIZED_PAREN_PATTERN_2.matcher(line).replaceAll("$1 $2");
+    line = spaceUntokenizedParens(line);
 
     // tokenize
     String[] tokens = tokenizer.tokenize(line);
     return parseLine(tokens, parser, numParses);
+  }
+
+  /**
+   * Separates round and curly brackets from adjacent text in two left-to-right passes: the
+   * first puts a space between a non-space character and a following bracket, the second
+   * between a bracket and a following non-space character. Each pass resumes after the pair
+   * it just spaced, so a pair overlapping that match is only seen by the second pass.
+   *
+   * @param line The untokenized line.
+   * @return The spaced line.
+   */
+  static String spaceUntokenizedParens(String line) {
+    return insertParenSpaces(insertParenSpaces(line, false), true);
+  }
+
+  /**
+   * Inserts a space between a bracket and an adjacent non-space character, left to right.
+   *
+   * @param line The untokenized line.
+   * @param parenFirst {@code true} to space a bracket before a character, {@code false} after one.
+   * @return The spaced line.
+   */
+  private static String insertParenSpaces(String line, boolean parenFirst) {
+    StringBuilder spaced = new StringBuilder(line.length() + 8);
+    int i = 0;
+    while (i < line.length()) {
+      char c = line.charAt(i);
+      if (i + 1 < line.length()) {
+        char next = line.charAt(i + 1);
+        boolean match = parenFirst
+            ? isParen(c) && next != ' '
+            : c != ' ' && isParen(next);
+        if (match) {
+          spaced.append(c).append(' ').append(next);
+          i += 2;
+          continue;
+        }
+      }
+      spaced.append(c);
+      i++;
+    }
+    return spaced.toString();
+  }
+
+  /**
+   * Tests for a round or curly bracket.
+   *
+   * @param c The character.
+   * @return {@code true} for {@code (}, {@code )}, <code>{</code>, or <code>}</code>.
+   */
+  private static boolean isParen(char c) {
+    return c == '(' || c == ')' || c == '{' || c == '}';
   }
 
   /**

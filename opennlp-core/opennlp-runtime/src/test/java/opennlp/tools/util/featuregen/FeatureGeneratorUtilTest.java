@@ -19,6 +19,8 @@ package opennlp.tools.util.featuregen;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class FeatureGeneratorUtilTest {
 
@@ -68,6 +70,14 @@ public class FeatureGeneratorUtilTest {
     Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ö."));
     Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ü."));
     Assertions.assertEquals("sc", FeatureGeneratorUtil.tokenFeature("Ü"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"A., cp", "Z., cp", "Ä., cp", "Ö., cp", "Ü., cp",
+      // lower case initial, other capital, other second character, longer tokens
+      "a., other", "É., ic", "'A,', ic", "Ab., ic", "AB., ic"})
+  void testCapPeriod(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
   }
 
   @Test

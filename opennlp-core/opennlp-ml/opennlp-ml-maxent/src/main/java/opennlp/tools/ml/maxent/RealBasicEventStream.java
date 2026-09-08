@@ -22,6 +22,7 @@ import java.io.IOException;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Class for real-valued {@link Event events} as an
@@ -60,7 +61,7 @@ public class RealBasicEventStream implements ObjectStream<Event> {
       return null;
     else {
       String outcome = obs.substring(0, si);
-      String[] contexts = obs.substring(si + 1).split("\\s+");
+      String[] contexts = StringUtil.splitOnAsciiWhitespace(obs.substring(si + 1));
       float[] values = RealValueFileEventStream.parseContexts(contexts);
       return new Event(outcome,contexts,values);
     }
