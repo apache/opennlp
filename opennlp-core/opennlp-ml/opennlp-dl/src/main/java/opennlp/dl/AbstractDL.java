@@ -272,26 +272,14 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Encodes text as the token strings and numeric inputs consumed by a BERT model.
+   * Encodes text as the inputs consumed by a BERT model: the piece strings, their vocabulary
+   * ids, an attention mask of ones, and single-segment token types.
    *
    * @param text The text to encode; must not be {@code null}.
    * @return The encoded pieces, ids, attention mask, and token types.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   protected final Tokens encodeTokens(CharSequence text) {
-    return encodeTokens(tokenizer, text);
-  }
-
-  /**
-   * Encodes text with the supplied tokenizer.
-   *
-   * @param tokenizer The tokenizer to use; must not be {@code null}.
-   * @param text The text to encode; must not be {@code null}.
-   * @return The encoded pieces, ids, attention mask, and token types.
-   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
-   */
-  protected static Tokens encodeTokens(SubwordTokenizer tokenizer, CharSequence text) {
-    requireNonNullArg(tokenizer, "tokenizer");
     final List<SubwordPiece> pieces = tokenizer.encode(text);
     final String[] tokens = new String[pieces.size()];
     final long[] ids = new long[pieces.size()];
