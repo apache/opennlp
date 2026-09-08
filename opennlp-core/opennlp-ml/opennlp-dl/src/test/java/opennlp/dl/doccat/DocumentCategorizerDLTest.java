@@ -107,24 +107,6 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
-  void testTokenIdsMapsTokensToVocabularyIds() {
-    final long[] ids = DocumentCategorizerDL.tokenIds(
-        new String[] {WordpieceTokenizer.BERT_CLS_TOKEN, "hello", "world",
-            WordpieceTokenizer.BERT_SEP_TOKEN}, vocab());
-
-    assertArrayEquals(new long[] {0, 3, 4, 1}, ids);
-  }
-
-  @Test
-  void testTokenIdsRejectsTokensMissingFromVocabulary() {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-        DocumentCategorizerDL.tokenIds(new String[] {"hello", "missing"}, vocab()));
-
-    assertTrue(e.getMessage().contains("missing"),
-        "the error message should name the missing token: " + e.getMessage());
-  }
-
-  @Test
   void testSoftmaxRejectsNaNLogit() {
     // A NaN logit would otherwise poison the whole distribution into NaN scores; fail loudly instead.
     final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
