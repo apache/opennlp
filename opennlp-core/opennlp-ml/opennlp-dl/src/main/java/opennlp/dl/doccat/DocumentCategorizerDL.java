@@ -43,7 +43,6 @@ import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.doccat.DocumentCategorizer;
-import opennlp.tools.tokenize.SubwordTokenizer;
 
 
 /**
@@ -376,17 +375,12 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     final List<Tokens> t = new ArrayList<>(groups.size());
     for (final String group : groups) {
 
-      t.add(encode(group, tokenizer));
+      t.add(encodeTokens(group));
 
     }
 
     return t;
 
-  }
-
-  /** Encodes one classifier input with model vocabulary ids. */
-  static Tokens encode(String text, SubwordTokenizer tokenizer) {
-    return encodeTokens(tokenizer, text);
   }
 
   /**

@@ -40,7 +40,6 @@ import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.namefind.OffsetMappingNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
-import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -789,17 +788,12 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
     final List<ChunkTokens> t = new ArrayList<>(chunks.size());
     for (final TextChunk chunk : chunks) {
 
-      t.add(new ChunkTokens(encode(chunk.text(), tokenizer), chunk.start(), chunk.end()));
+      t.add(new ChunkTokens(encodeTokens(chunk.text()), chunk.start(), chunk.end()));
 
     }
 
     return t;
 
-  }
-
-  /** Encodes one name finder input with model vocabulary ids. */
-  static Tokens encode(String text, SubwordTokenizer tokenizer) {
-    return encodeTokens(tokenizer, text);
   }
 
 }
