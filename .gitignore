@@ -10,4 +10,6 @@ nb-configuration.xml
 *.DS_Store
 .checkstyle
 *.onnx
+# Committed test fixture, generated once by the script beside it, not build output.
+!opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx
 vocab.txt
