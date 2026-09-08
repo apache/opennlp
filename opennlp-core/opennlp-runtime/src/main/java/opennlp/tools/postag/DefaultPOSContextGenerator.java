@@ -20,10 +20,10 @@ package opennlp.tools.postag;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A default {@link POSContextGenerator context generator} for a {@link POSTagger}.
@@ -37,9 +37,6 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
   protected final String SB = "*SB*";
   private static final int PREFIX_LENGTH = 4;
   private static final int SUFFIX_LENGTH = 4;
-
-  private static final Pattern hasCap = Pattern.compile("[A-Z]");
-  private static final Pattern hasNum = Pattern.compile("[0-9]");
 
   private final Dictionary dict;
 
@@ -165,11 +162,11 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
         e.add("h");
       }
 
-      if (hasCap.matcher(lex).find()) {
+      if (StringUtil.containsAsciiUpperCase(lex)) {
         e.add("c");
       }
 
-      if (hasNum.matcher(lex).find()) {
+      if (StringUtil.containsAsciiDigit(lex)) {
         e.add("d");
       }
     }
