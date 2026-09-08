@@ -36,7 +36,6 @@ import opennlp.dl.AbstractDL;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.TextEmbedder;
-import opennlp.tools.tokenize.SubwordTokenizer;
 
 /**
  * Facilitates the generation of sentence vectors using
@@ -126,7 +125,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       throw new IllegalArgumentException("sentence must not be null");
     }
 
-    final Tokens tokens = encode(sentence, tokenizer);
+    final Tokens tokens = encodeTokens(sentence);
 
     final Map<String, OnnxTensor> inputs = new HashMap<>();
 
@@ -300,11 +299,6 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
     final long[] shape = tensorInfo.getShape();
     final long last = shape.length > 0 ? shape[shape.length - 1] : -1;
     return last > 0 && last <= Integer.MAX_VALUE ? (int) last : -1;
-  }
-
-  /** Encodes one sentence with model vocabulary ids. */
-  static Tokens encode(String text, SubwordTokenizer tokenizer) {
-    return encodeTokens(tokenizer, text);
   }
 
 }
