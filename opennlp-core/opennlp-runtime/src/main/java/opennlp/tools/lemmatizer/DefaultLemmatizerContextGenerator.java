@@ -19,7 +19,8 @@ package opennlp.tools.lemmatizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+
+import opennlp.tools.util.StringUtil;
 
 /**
  * Simple feature generator for learning statistical lemmatizers.
@@ -33,9 +34,6 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
 
   private static final int PREFIX_LENGTH = 5;
   private static final int SUFFIX_LENGTH = 7;
-
-  private static final Pattern PATTERN_HAS_CAP = Pattern.compile("[A-Z]");
-  private static final Pattern PATTERN_HAS_NUM = Pattern.compile("[0-9]");
 
   public DefaultLemmatizerContextGenerator() {
   }
@@ -105,11 +103,11 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
       features.add("h");
     }
 
-    if (PATTERN_HAS_CAP.matcher(lex).find()) {
+    if (StringUtil.containsAsciiUpperCase(lex)) {
       features.add("c");
     }
 
-    if (PATTERN_HAS_NUM.matcher(lex).find()) {
+    if (StringUtil.containsAsciiDigit(lex)) {
       features.add("d");
     }
 

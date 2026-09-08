@@ -19,7 +19,6 @@
 package opennlp.tools.util.featuregen;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
@@ -38,7 +37,6 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
   private static final String SUB_TOKEN_PART2_PREFIX = "pt2=" ;
   private static final String SUB_TOKEN_PART3_PREFIX = "pt3=" ;
 
-  private final Pattern noLetters = Pattern.compile("[^a-zA-Z]");
   private final Tokenizer tokenizer;
 
   /**
@@ -87,11 +85,27 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
 
       pattern.append(FeatureGeneratorUtil.tokenFeature(tokenized[i]));
 
-      if (!noLetters.matcher(tokenized[i]).find()) {
+      if (!containsNonLetter(tokenized[i])) {
         feats.add(SUB_TOKEN_PREFIX + StringUtil.toLowerCase(tokenized[i]));
       }
     }
 
     feats.add("pta=" + pattern);
+  }
+
+  /**
+   * Tests whether a token contains a character outside the ASCII letters.
+   *
+   * @param token The token.
+   * @return {@code true} if one is present.
+   */
+  private boolean containsNonLetter(String token) {
+    for (int i = 0; i < token.length(); i++) {
+      char c = token.charAt(i);
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
+        return true;
+      }
+    }
+    return false;
   }
 }
