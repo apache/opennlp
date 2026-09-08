@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * A {@link Lemmatizer} implementation that works by simple dictionary lookup into
  * a {@link Map} built from a file containing, for each line:
@@ -143,8 +145,8 @@ public class DictionaryLemmatizer implements Lemmatizer {
         new InputStreamReader(dictionary, charset));
     String line;
     while ((line = breader.readLine()) != null) {
-      final String[] elems = line.split("\t");
-      final String[] lemmas = elems[2].split("#");
+      final String[] elems = StringUtil.split(line, '\t');
+      final String[] lemmas = StringUtil.split(elems[2], '#');
       this.dictMap.put(Arrays.asList(elems[0], elems[1]), Arrays.asList(lemmas));
     }
   }

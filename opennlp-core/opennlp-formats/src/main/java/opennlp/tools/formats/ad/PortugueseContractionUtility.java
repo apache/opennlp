@@ -168,7 +168,7 @@ public class PortugueseContractionUtility {
       return CONTRACTIONS.get(key);
     } else {
       StringBuilder sb = new StringBuilder();
-      String[] parts = left.split("_");
+      String[] parts = StringUtil.split(left, '_');
       for (int i = 0; i < parts.length - 1; i++) {
         sb.append(parts[i]).append(" ");
       }
@@ -179,7 +179,7 @@ public class PortugueseContractionUtility {
       }
 
       if (right.contains("_")) {
-        parts = right.split("_");
+        parts = StringUtil.split(right, '_');
 
         key = left + SYMBOL_PLUS + parts[0];
         if (CONTRACTIONS.containsKey(key)) {

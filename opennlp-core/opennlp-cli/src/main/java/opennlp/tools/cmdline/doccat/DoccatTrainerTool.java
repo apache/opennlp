@@ -30,6 +30,7 @@ import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.doccat.FeatureGenerator;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -87,7 +88,7 @@ public class DoccatTrainerTool
     if (featureGeneratorsNames == null) {
       return new FeatureGenerator[]{new BagOfWordsFeatureGenerator()};
     }
-    String[] classes = featureGeneratorsNames.split(",");
+    String[] classes = StringUtil.split(featureGeneratorsNames, ',');
     FeatureGenerator[] featureGenerators = new FeatureGenerator[classes.length];
     for (int i = 0; i < featureGenerators.length; i++) {
       featureGenerators[i] = ExtensionLoader.instantiateExtension(

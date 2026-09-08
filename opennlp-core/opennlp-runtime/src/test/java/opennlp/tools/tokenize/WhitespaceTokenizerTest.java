@@ -144,4 +144,17 @@ public class WhitespaceTokenizerTest {
     Assertions.assertArrayEquals(new String[] {"a" + nextLine + "b"},
         WhitespaceTokenizer.INSTANCE.tokenize("a" + nextLine + "b"));
   }
+
+  @Test
+  void testNewInstanceIsNotTheSharedInstance() {
+    WhitespaceTokenizer.INSTANCE.setKeepNewLines(false);
+    WhitespaceTokenizer keeping = WhitespaceTokenizer.newInstance(true);
+    WhitespaceTokenizer dropping = WhitespaceTokenizer.newInstance(false);
+    Assertions.assertNotSame(WhitespaceTokenizer.INSTANCE, keeping);
+    Assertions.assertNotSame(WhitespaceTokenizer.INSTANCE, dropping);
+    Assertions.assertNotSame(keeping, dropping);
+    Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, keeping.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, WhitespaceTokenizer.INSTANCE.tokenize("a\nb"));
+  }
 }

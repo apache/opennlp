@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A class to parse the sentence segmentation stand-off annotation.
@@ -44,7 +45,7 @@ class MascSentenceParser extends DefaultHandler {
     try {
       // create a sentence and put it into the list of sentences
       if (qName.equalsIgnoreCase("region")) {
-        String[] anchors = attributes.getValue("anchors").split(" ");
+        String[] anchors = StringUtil.split(attributes.getValue("anchors"), ' ');
 
         int left = Integer.parseInt(anchors[0]);
         int right = Integer.parseInt(anchors[1]);

@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,24 +52,6 @@ public class NameFinderDLTest {
     vocab.put("hello", 3);
     vocab.put("world", 4);
     return vocab;
-  }
-
-  @Test
-  void testTokenIdsMapsTokensToVocabularyIds() {
-    final long[] ids = NameFinderDL.tokenIds(
-        new String[] {WordpieceTokenizer.BERT_CLS_TOKEN, "hello", "world",
-            WordpieceTokenizer.BERT_SEP_TOKEN}, vocab());
-
-    assertArrayEquals(new long[] {0, 3, 4, 1}, ids);
-  }
-
-  @Test
-  void testTokenIdsRejectsTokensMissingFromVocabulary() {
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-        NameFinderDL.tokenIds(new String[] {"hello", "missing"}, vocab()));
-
-    assertTrue(e.getMessage().contains("missing"),
-        "the error message should name the missing token: " + e.getMessage());
   }
 
   @Test

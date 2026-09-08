@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Reads data for training and testing the {@link Lemmatizer}.
@@ -54,7 +55,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
     List<String> preds = new ArrayList<>();
 
     for (String line = samples.read(); line != null && !line.isEmpty(); line = samples.read()) {
-      String[] parts = line.split("\t");
+      String[] parts = StringUtil.split(line, '\t');
       if (parts.length != 3) {
         logger.warn("Skipping corrupt line: {}", line);
       }
