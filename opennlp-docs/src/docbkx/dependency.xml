@@ -155,11 +155,14 @@ double lasExcludingPunctuation = validator.getLasExcludingPunctuation();]]>
     .add(new DependencyAnnotator(parser))
     .build();
 
-Document document = analyzer.analyze("the dog barks. she eats fish.");
+Document document = analyzer.analyze("Alice sent Bob a message.");
 List<Annotation<DependencyArc>> arcs =
     document.get(DependencyAnnotator.DEPENDENCIES);
-// one arc per token; second-sentence heads are document-wide indices
-// "she" is token 3 with head 4 ("eats"), span [15..18)]]>
+
+Annotation<DependencyArc> bob = arcs.get(2);
+CharSequence original = bob.span().getCoveredText(document.text()); // "Bob"
+Annotation<String> head =
+    document.get(Layers.TOKENS).get(bob.value().head()); // "sent"]]>
 			</programlisting>
 		</para>
 	</section>

@@ -29,40 +29,29 @@ import opennlp.tools.util.Span;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Tests {@link DependencyAnnotator} as the container's first graph-shaped layer: arcs
- * reference tokens by layer index, and resolving an arc through the token layer lands on
- * the right span of the original text.
- */
+/** Tests dependency arcs, token references, and original-text spans. */
 public class DependencyAnnotatorTest {
 
-  /**
-   * A parser stub that always returns the gold graph of {@code "the dog barks"}, so the
-   * assertions in this class depend only on the annotator's own layer handling and not on
-   * any trained model.
-   */
   private static final DependencyParser FIXED = (tokens, tags) ->
-      DependencyGraph.of(new int[] {1, 2, -1}, new String[] {"det", "nsubj", "root"});
+      DependencyGraph.of(new int[] {1, -1, 1, 4, 1},
+          new String[] {"nsubj", "root", "iobj", "det", "obj"});
 
-  /**
-   * Builds a document over the text {@code "the dog barks"} carrying a one-sentence layer plus
-   * aligned token and tag layers, mirroring what the upstream sentence, tokenizer, and
-   * tagger annotators would produce.
-   *
-   * @return A document ready for dependency annotation. Never {@code null}.
-   */
   private static Document tokenized() {
-    return Document.of("the dog barks")
+    return Document.of("Alice sent Bob a message.")
         .with(Layers.SENTENCES, List.of(
-            new Annotation<>(new Span(0, 13), "the dog barks")))
+            new Annotation<>(new Span(0, 25), "Alice sent Bob a message.")))
         .with(Layers.TOKENS, List.of(
-            new Annotation<>(new Span(0, 3), "the"),
-            new Annotation<>(new Span(4, 7), "dog"),
-            new Annotation<>(new Span(8, 13), "barks")))
+            new Annotation<>(new Span(0, 5), "Alice"),
+            new Annotation<>(new Span(6, 10), "sent"),
+            new Annotation<>(new Span(11, 14), "Bob"),
+            new Annotation<>(new Span(15, 16), "a"),
+            new Annotation<>(new Span(17, 24), "message")))
         .with(Layers.POS_TAGS, List.of(
-            new Annotation<>(new Span(0, 3), "DT"),
-            new Annotation<>(new Span(4, 7), "NN"),
-            new Annotation<>(new Span(8, 13), "VBZ")));
+            new Annotation<>(new Span(0, 5), "NNP"),
+            new Annotation<>(new Span(6, 10), "VBD"),
+            new Annotation<>(new Span(11, 14), "NNP"),
+            new Annotation<>(new Span(15, 16), "DT"),
+            new Annotation<>(new Span(17, 24), "NN")));
   }
 
   @Test
@@ -70,26 +59,24 @@ public class DependencyAnnotatorTest {
     final Document document = new DependencyAnnotator(FIXED).annotate(tokenized());
     final List<Annotation<DependencyArc>> arcs =
         document.get(DependencyAnnotator.DEPENDENCIES);
-    assertEquals(3, arcs.size());
+    assertEquals(5, arcs.size());
 
-    // the arc of "dog" is anchored on the dependent token's span in the original text
-    final Annotation<DependencyArc> dog = arcs.get(1);
-    assertEquals(new Span(4, 7), dog.span());
-    assertEquals("nsubj", dog.value().relation());
+    final Annotation<DependencyArc> bob = arcs.get(2);
+    assertEquals(new Span(11, 14), bob.span());
+    assertEquals("iobj", bob.value().relation());
 
-    // cross-layer reference: the arc stores its head as an index, and looking that index
-    // up in the token layer lands on the head token and its span in the original text
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
-    final Annotation<String> head = tokens.get(dog.value().head());
-    assertEquals("barks", head.value());
-    assertEquals("barks", head.span().getCoveredText(document.text()).toString());
+    final Annotation<String> head = tokens.get(bob.value().head());
+    assertEquals("sent", head.value());
+    assertEquals("sent", head.span().getCoveredText(document.text()).toString());
+    assertEquals("Bob", bob.span().getCoveredText(document.text()).toString());
   }
 
   @Test
   void testRootArcCarriesRootHead() {
     final Document document = new DependencyAnnotator(FIXED).annotate(tokenized());
     final DependencyArc root =
-        document.get(DependencyAnnotator.DEPENDENCIES).get(2).value();
+        document.get(DependencyAnnotator.DEPENDENCIES).get(1).value();
     assertEquals(DependencyArc.ROOT_HEAD, root.head());
     assertEquals("root", root.relation());
   }

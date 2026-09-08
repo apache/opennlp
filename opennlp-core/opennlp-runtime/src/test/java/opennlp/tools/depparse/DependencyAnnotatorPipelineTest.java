@@ -43,41 +43,15 @@ import opennlp.tools.util.TrainingParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Demonstrates {@link DependencyAnnotator} at the end of a complete {@link DocumentAnalyzer}
- * pipeline: raw text goes in, and the dependency layer comes out anchored on the original
- * text. The upstream steps are deliberately simple inline implementations of the task
- * interfaces, and the parser is a {@link DependencyParserME} trained here on a tiny corpus
- * it can memorize, so every expected head, relation, and span is exact and reproducible.
- *
- * <p>The central property under test is coordinate anchoring for multi-sentence input: the
- * annotator parses each sentence separately and shifts the sentence-local arcs by the
- * sentence's first token position, so every head and dependent is an index into the
- * document-wide token layer and each arc's annotation sits on its dependent token's span in
- * document coordinates. For the second sentence this only works when the shift is applied
- * consistently, which the assertions verify by reading the covered text of the arcs' spans
- * back out of the original document.</p>
- */
+/** Tests dependency annotation in a complete raw-text document pipeline. */
 public class DependencyAnnotatorPipelineTest {
 
-  /**
-   * The two-sentence input text; sentence one covers offsets 0..14 and sentence two covers
-   * offsets 15..29 of the original document.
-   */
   private static final String TEXT = "the dog barks. she eats fish.";
 
-  /**
-   * Maps every token of the test corpus to its part-of-speech tag, standing in for a
-   * trained tagger.
-   */
   private static final Map<String, String> LEXICON = Map.of(
       "the", "DT", "dog", "NN", "barks", "VBZ",
       "she", "PRP", "eats", "VBZ", "fish", "NN");
 
-  /**
-   * A sentence detector stub that closes a sentence after every period and skips the one
-   * following blank, producing sentence spans in document coordinates.
-   */
   private static final SentenceDetector PERIOD_SPLITTER = new SentenceDetector() {
 
     @Override
@@ -100,10 +74,6 @@ public class DependencyAnnotatorPipelineTest {
     }
   };
 
-  /**
-   * A tokenizer stub that treats blanks and periods as token boundaries, so word tokens
-   * come out without trailing punctuation.
-   */
   private static final Tokenizer WORD_TOKENIZER = new Tokenizer() {
 
     @Override
@@ -129,10 +99,6 @@ public class DependencyAnnotatorPipelineTest {
     }
   };
 
-  /**
-   * A dictionary tagger over {@link #LEXICON} that fails loud on any token the test corpus
-   * does not define, so a tokenization mistake cannot silently degrade the parse.
-   */
   private static final POSTagger LEXICON_TAGGER = new POSTagger() {
 
     @Override
@@ -166,14 +132,6 @@ public class DependencyAnnotatorPipelineTest {
 
   private static DependencyParserME parser;
 
-  /**
-   * Builds the training corpus: the two sentences of the example document with their
-   * gold trees, plus a one-token sentence, each repeated often enough for the model to
-   * memorize them. Every sample is one sentence, the unit the annotator hands to the
-   * parser, so each sentence carries its own root.
-   *
-   * @return The training samples. Never {@code null} or empty.
-   */
   private static List<DependencySample> corpus() {
     final List<DependencySample> distinct = List.of(
         new DependencySample(
@@ -195,12 +153,6 @@ public class DependencyAnnotatorPipelineTest {
     return corpus;
   }
 
-  /**
-   * Trains the shared parser once for all tests. The trainer is deterministic for a fixed
-   * corpus and fixed parameters, so the assertions below hold on every run.
-   *
-   * @throws IOException Thrown if training fails, which fails the test class.
-   */
   @BeforeAll
   static void trainParser() throws IOException {
     final TrainingParameters parameters = TrainingParameters.defaultParams();
@@ -209,12 +161,6 @@ public class DependencyAnnotatorPipelineTest {
         ObjectStreamUtils.createObjectStream(corpus()), parameters));
   }
 
-  /**
-   * Assembles the complete pipeline: sentence splitting, tokenization, tagging, and
-   * dependency parsing with the trained model.
-   *
-   * @return A {@link DocumentAnalyzer} ready to analyze raw text. Never {@code null}.
-   */
   private static DocumentAnalyzer pipeline() {
     return DocumentAnalyzer.builder()
         .add(new SentenceDetectorAnnotator(PERIOD_SPLITTER))
@@ -228,7 +174,6 @@ public class DependencyAnnotatorPipelineTest {
   void testTwoSentenceTextYieldsOneExactArcPerTokenInDocumentCoordinates() {
     final Document document = pipeline().analyze(TEXT);
 
-    // sanity of the upstream layers the dependency annotator consumed
     assertEquals(2, document.get(Layers.SENTENCES).size());
     assertEquals(6, document.get(Layers.TOKENS).size());
 
@@ -236,8 +181,6 @@ public class DependencyAnnotatorPipelineTest {
         document.get(DependencyAnnotator.DEPENDENCIES);
     assertEquals(6, arcs.size());
 
-    // the memorized gold trees, one root per sentence, every span and head index in
-    // document coordinates
     final int[] heads = {1, 2, DependencyArc.ROOT_HEAD, 4, DependencyArc.ROOT_HEAD, 4};
     final String[] relations = {"det", "nsubj", "root", "nsubj", "root", "obj"};
     final Span[] spans = {new Span(0, 3), new Span(4, 7), new Span(8, 13),
@@ -257,13 +200,11 @@ public class DependencyAnnotatorPipelineTest {
     final List<Annotation<DependencyArc>> arcs =
         document.get(DependencyAnnotator.DEPENDENCIES);
 
-    // "she" is token 3 of the document-wide token layer, not token 0 of its sentence
     final Annotation<DependencyArc> she = arcs.get(3);
     assertEquals(new Span(15, 18), she.span());
     assertEquals("she", she.span().getCoveredText(document.text()).toString());
     assertEquals("nsubj", she.value().relation());
 
-    // its head index is likewise document-wide: 4 points at "eats", never 1 at "dog"
     assertEquals(4, she.value().head());
     final Annotation<String> head = document.get(Layers.TOKENS).get(she.value().head());
     assertEquals("eats", head.value());
@@ -285,9 +226,6 @@ public class DependencyAnnotatorPipelineTest {
 
   @Test
   void testTextWithZeroSentencesYieldsAnEmptyDependencyLayer() {
-    // empty text yields present-but-empty sentence, token, and tag layers, which every
-    // annotator of the pipeline passes through under the empty-versus-absent
-    // distinction, so the dependency layer comes out present and empty
     final Document document = pipeline().analyze("");
     assertEquals(List.of(), document.get(Layers.TOKENS));
     assertEquals(List.of(), document.get(DependencyAnnotator.DEPENDENCIES));
