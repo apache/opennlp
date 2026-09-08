@@ -81,6 +81,10 @@
     <!-- OpenNLP Extensions -->
     <dependency>
       <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-geo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-morfologik</artifactId>
     </dependency>
     <dependency>
