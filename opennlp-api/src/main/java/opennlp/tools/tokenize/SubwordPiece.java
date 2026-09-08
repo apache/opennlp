@@ -26,10 +26,22 @@ package opennlp.tools.tokenize;
  * adjacent source characters when normalization reorders characters. Pieces without source text,
  * such as control symbols, report an empty span with {@code start == end}.</p>
  *
+ * <p>The piece, id and span triple follows the representation established by SentencePiece
+ * (Kudo and Richardson, 2018), whose {@code SentencePieceText.SentencePiece} message carries
+ * {@code piece}, {@code id} and a {@code [begin, end)} range into the input, and gives control
+ * symbols an empty surface with {@code begin == end}. The {@code surface} field of that message
+ * has no counterpart here because it is {@code text.subSequence(start, end)}. The offsets are
+ * UTF-16 indices rather than the UTF-8 byte offsets used there.</p>
+ *
  * @param piece The piece in the vocabulary's normalized form; must not be {@code null} or empty.
  * @param id    The non-negative vocabulary id of the piece.
  * @param start The inclusive start offset in the original text.
  * @param end   The exclusive end offset in the original text; at least {@code start}.
+ *
+ * @see SubwordTokenizer
+ * @see <a href="https://aclanthology.org/D18-2012/">Taku Kudo, John Richardson (2018):
+ *     SentencePiece: A simple and language independent subword tokenizer and detokenizer for
+ *     Neural Text Processing. EMNLP 2018 (system demonstrations), pages 66-71</a>
  * @since 3.0.0
  */
 public record SubwordPiece(String piece, int id, int start, int end) {
