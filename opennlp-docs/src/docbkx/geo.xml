@@ -43,6 +43,14 @@
 			compose without a file in between. All are immutable and thread-safe
 			after loading, so one instance can be shared across threads.
 		</para>
+		<para>
+			These implementations order name matches by population descending.
+			Equal populations use <code>CITY</code>, <code>ADMIN</code>,
+			<code>POI</code>, then any other or null feature class, followed by
+			source and record id in lexical order. Their <code>byRegion</code>
+			method uses the same order among all entries in the requested country.
+			Record ids are strings: <code>10</code> sorts before <code>2</code>.
+		</para>
 	</section>
 
 	<section xml:id="tools.geo.user">
@@ -75,6 +83,21 @@ plant-3	Acme Plant 3	Plant 3|The Plant	33.75	-84.39	US	POI	0		Georgia|Fulton Cou
 campus-east	Acme Campus East				US	POI	0	-84.5,33.6,-84.2,33.9]]>
 			</programlisting>
 		</para>
+		<para>
+			With equal populations and feature classes, the record id determines
+			the country representative regardless of file order. This example is
+			covered by <code>GazetteerRegionRankingTest</code>.
+			<programlisting language="java"><![CDATA[
+String input =
+    "2\tRegion Candidate\t\t1\t2\tUS\tCITY\t500\n"
+        + "10\tRegion Candidate\t\t3\t4\tUS\tCITY\t500\n";
+Gazetteer gazetteer = UserGazetteer.load(
+    new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), "customer");
+
+String representative = gazetteer.byRegion("us").orElseThrow().recordId();
+// representative = "10"]]>
+			</programlisting>
+		</para>
 	</section>
 
 	<section xml:id="tools.geo.geonames">
@@ -100,6 +123,11 @@ GeoNamesGazetteer gazetteer = GeoNamesGazetteer.load(Path.of("cities500.txt"));
 List<GazetteerEntry> candidates = gazetteer.lookup("Paris");
 // candidates.get(0).countryCode() = "FR": the most populous Paris ranks first]]>
 			</programlisting>
+		</para>
+		<para>
+			The first input column, the GeoNames identifier, is available as
+			<code>GazetteerEntry.recordId()</code>. Retrieve a record directly with
+			<code>byId(GeoNamesGazetteer.SOURCE, recordId)</code>.
 		</para>
 	</section>
 
@@ -136,6 +164,14 @@ OvertureGazetteer gazetteer = OvertureGazetteer.load(Path.of("divisions.tsv"));
 			rank first in lookups. Suppressions hide entries of the base only,
 			never additions, so a rule plus an addition with the same name replaces
 			a base entry.
+		</para>
+		<para>
+			Without suppression rules, records from distinct sources remain
+			separate, including records with the same name and local record id.
+			Use <code>byId(source, recordId)</code> to select each original record.
+			The overlay does not reconcile their fields. For <code>byRegion</code>,
+			it chooses the more populous side's representative; equal populations
+			select the additions.
 		</para>
 		<para>
 			A suppression rule is a place name with optional country and

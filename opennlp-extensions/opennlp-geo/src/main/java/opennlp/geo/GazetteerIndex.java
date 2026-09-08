@@ -37,7 +37,7 @@ import opennlp.tools.util.StringUtil;
 /**
  * The shared in-memory index behind the file-loading gazetteers: entries keyed by
  * every name variant (case-insensitively), by record id, and by country, where the
- * country representative is the most populous entry.
+ * country representative is the first entry in {@link CandidateRanking#BY_PRIOR} order.
  *
  * <p>Mutable while loading; {@link #freeze()} ranks every candidate list by the
  * population prior and must be called once before queries.
@@ -68,6 +68,7 @@ final class GazetteerIndex {
   /**
    * Indexes one entry under its canonical and alternate names, its record id, and, when it
    * has a country code, as that country's candidate representative.
+   * The representative follows {@link CandidateRanking#BY_PRIOR} order.
    *
    * @param entry The entry to index.
    * @return {@code true} if the entry was added, or {@code false} if its record id was present.
@@ -81,8 +82,8 @@ final class GazetteerIndex {
       index(alternate, entry);
     }
     if (entry.countryCode() != null) {
-      byCountry.merge(entry.countryCode(), entry,
-          (a, b) -> a.population() >= b.population() ? a : b);
+      byCountry.merge(entry.countryCode(), entry, (existing, candidate) ->
+          CandidateRanking.BY_PRIOR.compare(candidate, existing) < 0 ? candidate : existing);
     }
     return true;
   }
@@ -158,7 +159,7 @@ final class GazetteerIndex {
   }
 
   /**
-   * Finds the most populous entry of a country.
+   * Finds the first entry of a country in {@link CandidateRanking#BY_PRIOR} order.
    *
    * @param isoCountryCode The <a href="https://www.iso.org/iso-3166-country-codes.html">ISO
    *                       3166-1</a> alpha-2 code, two ASCII letters of either case. Must
