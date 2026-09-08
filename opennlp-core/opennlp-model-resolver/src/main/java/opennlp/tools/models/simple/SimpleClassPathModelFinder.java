@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,9 +62,8 @@ import opennlp.tools.models.ClassPathModelFinder;
 public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder implements ClassPathModelFinder {
 
   private static final Logger logger = LoggerFactory.getLogger(SimpleClassPathModelFinder.class);
-  private static final Pattern CLASSPATH_SEPARATOR_PATTERN_WINDOWS = Pattern.compile(";");
-  private static final Pattern CLASSPATH_SEPARATOR_PATTERN_UNIX = Pattern.compile(":");
-  // ; for Windows, : for Linux/OSX
+  private static final char CLASSPATH_SEPARATOR_WINDOWS = ';';
+  private static final char CLASSPATH_SEPARATOR_UNIX = ':';
 
   /**
    * By default, it scans for {@link #OPENNLP_MODEL_JAR_PREFIX}.
@@ -105,14 +103,14 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     final boolean isWindows = isWindows();
     final List<URL> cp = getClassPathElements();
     final List<URI> cpu = new ArrayList<>();
-    final Pattern jarPattern = Pattern.compile(asRegex("*" + getJarModelPrefix()));
-    final Pattern filePattern = Pattern.compile(asRegex("*" + wildcardPattern));
+    final String jarWildcard = "*" + getJarModelPrefix();
+    final String fileWildcard = "*" + wildcardPattern;
 
     for (URL url : cp) {
-      if (matchesPattern(url, jarPattern)) {
+      if (matchesWildcard(url, jarWildcard)) {
         try {
           for (URI u : getURIsFromJar(url, isWindows)) {
-            if (matchesPattern(u.toURL(), filePattern)) {
+            if (matchesWildcard(u.toURL(), fileWildcard)) {
               cpu.add(u);
             }
           }
@@ -154,11 +152,8 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
 
   private List<URL> getClassPathUrlsFromSystemProperty() {
     final String cp = System.getProperty("java.class.path", "");
-    final String[] matches = isWindows()
-            ? CLASSPATH_SEPARATOR_PATTERN_WINDOWS.split(cp)
-            : CLASSPATH_SEPARATOR_PATTERN_UNIX.split(cp);
     final List<URL> jarUrls = new ArrayList<>();
-    for (String classPath: matches) {
+    for (String classPath : splitClassPath(cp, isWindows())) {
       try {
         jarUrls.add(Path.of(classPath).toUri().toURL());
       } catch (MalformedURLException ignored) {
@@ -167,6 +162,39 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
       }
     }
     return jarUrls;
+  }
+
+  /**
+   * Splits {@code classPath} on the platform's path separator, {@code ;} on Windows and
+   * {@code :} elsewhere, with the result of {@code String.split} for that separator: a
+   * leading separator yields one empty first element, empty elements between consecutive
+   * separators are kept, trailing empty elements are dropped, separator-only input yields
+   * an empty array, and empty input yields a single empty element.
+   *
+   * @param classPath The class path value to split. Must not be {@code null}.
+   * @param isWindows {@code true} to split on {@code ;}, {@code false} to split on {@code :}.
+   * @return The class path elements in order.
+   */
+  static String[] splitClassPath(String classPath, boolean isWindows) {
+    final char separator = isWindows ? CLASSPATH_SEPARATOR_WINDOWS : CLASSPATH_SEPARATOR_UNIX;
+    final List<String> elements = new ArrayList<>();
+    int start = 0;
+    for (int i = 0; i < classPath.length(); i++) {
+      if (classPath.charAt(i) == separator) {
+        elements.add(classPath.substring(start, i));
+        start = i + 1;
+      }
+    }
+    elements.add(classPath.substring(start));
+    int size = elements.size();
+    while (size > 0 && elements.get(size - 1).isEmpty()) {
+      size--;
+    }
+    // String.split keeps the whole input when no separator occurs, even if it is empty
+    if (size == 0 && elements.size() == 1) {
+      size = 1;
+    }
+    return elements.subList(0, size).toArray(new String[0]);
   }
 
   /*
