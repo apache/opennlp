@@ -205,6 +205,12 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>opennlp-embeddings</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId>opennlp-morfologik</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
@@ -212,6 +218,12 @@
 
 			<dependency>
 				<artifactId>opennlp-spellcheck</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-subword</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>
@@ -255,6 +267,7 @@
 		<logcaptor.version>2.12.7</logcaptor.version>
 		<classgraph.version>4.8.194</classgraph.version>
 		<zlibsvm.version>3.0.0</zlibsvm.version>
+		<lucene.version>10.4.0</lucene.version>
 		<jmh.version>1.37</jmh.version>
 
 		<!-- Plugin versions -->

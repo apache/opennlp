@@ -1,0 +1,66 @@
+The quick brown fox jumps over the lazy dog.
+Apache OpenNLP is a machine learning based toolkit for the processing of natural language text.
+It supports the most common NLP tasks, such as tokenization, sentence segmentation, and named entity extraction.
+Subword tokenization decomposes words into smaller units drawn from a fixed vocabulary.
+The unigram language model selects the segmentation with the highest total log probability.
+Byte pair encoding merges the most frequent adjacent symbol pairs until no merge applies.
+A sentence piece model carries its own text normalizer inside the model file.
+Character offsets should always point back into the original text.
+Whitespace is escaped with a special marker so word boundaries survive segmentation.
+Numbers like 3.14159 and 42 and 1024 appear in ordinary text.
+Punctuation, quotes, and dashes are folded by the normalizer!
+Questions? Answers! Ellipses... and (parentheses) too.
+The cafe served naive patrons a souffle with creme fraiche.
+Internationalization and localization are long words.
+Antidisestablishmentarianism remains one of the longest English words.
+She sells seashells by the seashore.
+Peter Piper picked a peck of pickled peppers.
+How much wood would a woodchuck chuck if a woodchuck could chuck wood?
+The rain in Spain stays mainly in the plain.
+To be or not to be, that is the question.
+All happy families are alike; each unhappy family is unhappy in its own way.
+It was the best of times, it was the worst of times.
+Call me Ishmael.
+In the beginning was the word.
+The world is everything that is the case.
+Language models assign probabilities to sequences of tokens.
+Retrieval systems rank documents by similarity to a query.
+Embeddings map text into dense vector spaces.
+Search engines combine lexical and semantic signals.
+The tokenizer must be fast, deterministic, and thread safe.
+Model files are loaded once and shared across threads.
+Tests must prove parity with the reference implementation.
+Offsets are measured in code units of the original encoding.
+The normalizer collapses repeated whitespace into one marker.
+A leading marker separates words that start a sentence.
+Unknown characters fall back to a penalty score.
+Byte fallback decomposes unknown characters into byte pieces.
+User defined symbols are never split by the tokenizer.
+Control symbols never appear in encoded output.
+The vocabulary maps each piece to an integer identifier.
+Scores are log probabilities in the unigram model.
+Merge ranks order the byte pair encoding agenda.
+The trie enumerates every piece that starts at a position.
+Dynamic programming finds the best path in one pass.
+Backtracking recovers the winning segmentation.
+The agenda is a priority queue ordered by score.
+Stale entries are skipped when their symbols have merged.
+Un texto corto en espanol para variar el corpus.
+Un petit texte en francais pour la diversite.
+Ein kurzer deutscher Satz steht auch hier.
+Ancora una frase italiana per completezza.
+Tokenization quality depends on the training corpus.
+The model was trained on a tiny corpus for testing only.
+Nothing in this file is quoted from any external work.
+Short lines help.
+One.
+Two words.
+Three little words.
+water water water water water
+running runner ran runs
+walked walking walker walks
+faster fastest fast
+apple apples applesauce
+book books bookshelf bookstore
+work works worked working worker
+play plays played playing player
