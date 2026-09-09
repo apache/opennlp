@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Model-free tests for {@link AbstractDL#whitespaceChunks(String, int, int)} and
- * {@link AbstractDL#whitespaceChunkSpans(String, int, int)}, the shared tokenize-and-chunk seam
+ * {@link AbstractDL#whitespaceChunkSpans(String, int, int)}, the shared tokenize-and-chunk path
  * used by both {@code NameFinderDL} and {@code DocumentCategorizerDL}.
  */
 public class AbstractDLChunkingTest {
