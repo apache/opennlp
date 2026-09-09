@@ -18,8 +18,6 @@ package opennlp.tools.embeddings;
 
 import java.util.List;
 
-import opennlp.tools.util.java.Experimental;
-
 /**
  * Encodes text into a fixed-length vector.
  *
@@ -27,10 +25,7 @@ import opennlp.tools.util.java.Experimental;
  * for one word, this interface accepts a sentence, paragraph, or document.</p>
  *
  * <p>Thread safety is implementation specific.</p>
- *
- * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
-@Experimental
 public interface TextEmbedder {
 
   /**
