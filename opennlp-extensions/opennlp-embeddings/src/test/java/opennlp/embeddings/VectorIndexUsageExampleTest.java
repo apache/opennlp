@@ -1,0 +1,64 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package opennlp.embeddings;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import opennlp.embeddings.index.TurboQuantIndex;
+import opennlp.embeddings.index.VectorIndex;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+/** Exercises the bounded in-memory vector search listing in {@code embeddings.xml}. */
+class VectorIndexUsageExampleTest {
+
+  /**
+   * Builds, saves and queries a quantized index using a small test model.
+   *
+   * @param modelDirectory The temporary model directory.
+   * @throws IOException Thrown if model or index file access fails.
+   */
+  @Test
+  void testBuildFreezeSaveAndQuery(@TempDir Path modelDirectory) throws IOException {
+    EmbeddingTestFixtures.writeAnalogyDirectory(modelDirectory);
+
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(modelDirectory);
+    final TurboQuantIndex index = new TurboQuantIndex(model.dimension(), 4, 42L);
+
+    index.add("wonderland-excerpt", model.embed("Alice met the Queen in the garden."));
+    index.add("orchard-notes", model.embed("A ripe apple hangs from the tree."));
+    index.freeze();
+
+    final List<VectorIndex.Hit> hits = index.topK(model.embed("queen"), 5);
+    assertEquals(2, hits.size());
+    assertEquals("wonderland-excerpt", hits.get(0).id());
+
+    final Path indexDirectory = modelDirectory.resolve("index");
+    index.write(indexDirectory);
+
+    final TurboQuantIndex loaded = TurboQuantIndex.read(indexDirectory);
+    final List<VectorIndex.Hit> savedHits = loaded.topK(model.embed("queen"), 5);
+    final double encodedBytesPerVector = loaded.bytesPerVector();
+    assertEquals(hits, savedHits);
+    assertEquals(index.bytesPerVector(), encodedBytesPerVector);
+  }
+}
