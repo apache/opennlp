@@ -40,8 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -256,13 +254,23 @@ public class DownloadUtil {
   /**
    * Extracts the hash from the content of a checksum file, which holds the hash followed by the
    * name of the file it applies to.
+   *
+   * @param checksumFileContent The file content.
+   * @return The hash, or {@code null} if the content is {@code null} or blank.
    */
-  private static String parseChecksum(String checksumFileContent) {
+  static String parseChecksum(String checksumFileContent) {
     if (checksumFileContent == null) {
       return null;
     }
     final String trimmed = checksumFileContent.trim();
-    return trimmed.isEmpty() ? null : trimmed.split("\\s")[0];
+    if (trimmed.isEmpty()) {
+      return null;
+    }
+    int end = 0;
+    while (end < trimmed.length() && !StringUtil.isAsciiWhitespace(trimmed.charAt(end))) {
+      end++;
+    }
+    return trimmed.substring(0, end);
   }
 
   private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
@@ -324,7 +332,6 @@ public class DownloadUtil {
   @Internal
   static class DownloadParser {
 
-    private static final Pattern LINK_PATTERN = Pattern.compile("<a href=\\\"(.*?)\\\">(.*?)</a>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     private final URL indexUrl;
 
     DownloadParser(URL indexUrl) {
@@ -334,14 +341,60 @@ public class DownloadUtil {
 
     Map<String, Map<ModelType, URL>> getAvailableModels()
         throws MalformedURLException, URISyntaxException {
-      final Matcher matcher = LINK_PATTERN.matcher(fetchPageIndex());
+      return toMap(extractLinks(fetchPageIndex()));
+    }
 
+    /**
+     * Collects the href values of the anchor elements in an index page. The tag name and
+     * attribute are matched ignoring ASCII case, a value ends at the first {@code ">}, a link
+     * ends at the first {@code </a>}, and both may span lines. An anchor without a closing tag
+     * is skipped.
+     *
+     * @param page The page content.
+     * @return The href values in order.
+     */
+    static List<String> extractLinks(String page) {
       final List<String> links = new ArrayList<>();
-      while (matcher.find()) {
-        links.add(matcher.group(1));
+      int from = 0;
+      while ((from = indexOfIgnoreCase(page, "<a href=\"", from)) != -1) {
+        final int valueStart = from + "<a href=\"".length();
+        final int valueEnd = page.indexOf("\">", valueStart);
+        if (valueEnd != -1) {
+          final int close = indexOfIgnoreCase(page, "</a>", valueEnd + 2);
+          if (close != -1) {
+            links.add(page.substring(valueStart, valueEnd));
+            from = close + "</a>".length();
+            continue;
+          }
+        }
+        from++;
       }
+      return links;
+    }
 
-      return toMap(links);
+    /**
+     * Finds a lowercase ASCII literal, ignoring the case of ASCII letters in the text.
+     *
+     * @param text The text.
+     * @param literal The lowercase literal.
+     * @param from The start offset.
+     * @return The first match offset, or {@code -1}.
+     */
+    private static int indexOfIgnoreCase(String text, String literal, int from) {
+      outer:
+      for (int i = from; i + literal.length() <= text.length(); i++) {
+        for (int j = 0; j < literal.length(); j++) {
+          char c = text.charAt(i + j);
+          if (c >= 'A' && c <= 'Z') {
+            c += 'a' - 'A';
+          }
+          if (c != literal.charAt(j)) {
+            continue outer;
+          }
+        }
+        return i;
+      }
+      return -1;
     }
 
     private Map<String, Map<ModelType, URL>> toMap(List<String> links)

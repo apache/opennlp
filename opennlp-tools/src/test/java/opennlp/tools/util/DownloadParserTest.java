@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -71,6 +72,37 @@ public class DownloadParserTest {
   void testNullUrl() {
     assertThrows(NullPointerException.class, () -> new DownloadUtil.DownloadParser(null)
     );
+  }
+
+  private static Stream<Arguments> indexPages() {
+    return Stream.of(
+        Arguments.of("<a href=\"a.bin\">x</a><a href=\"b.bin\">y</a>", List.of("a.bin", "b.bin")),
+        // tag and attribute names ignore case
+        Arguments.of("<A HREF=\"c.bin\">z</A>", List.of("c.bin")),
+        Arguments.of("<a href=\"a.bin\">x</a><A hRef=\"b.bin\">y</A>", List.of("a.bin", "b.bin")),
+        // an anchor without closing tag is skipped, an earlier one is still found
+        Arguments.of("<a href=\"d.bin\">x", List.of()),
+        Arguments.of("<a href=\"a.bin\">x</a><a href=\"d.bin\">y", List.of("a.bin")),
+        // the first "</a>" closes the link, so nested anchor markup is swallowed
+        Arguments.of("<a href=\"d.bin\">x <a href=\"e.bin\">y</a>", List.of("d.bin")),
+        // the href value ends at the first "\">", so it may hold other markup
+        Arguments.of("<a href=\"f<b>g.bin\">f</a>", List.of("f<b>g.bin")),
+        // values and link text may span lines
+        Arguments.of("<a href=\"a.bin\">x</a> <a href=\"h\ni.bin\">y\nz</a>", List.of("a.bin", "h\ni.bin")),
+        Arguments.of("no links here", List.of()),
+        Arguments.of("", List.of()),
+        // an empty href value is kept, a single-quoted one is not an anchor
+        Arguments.of("<a href=\"\"></a>", List.of("")),
+        Arguments.of("<a href='a.bin'>x</a>", List.of()),
+        // the closing tag is matched case-insensitively and only as "</a>"
+        Arguments.of("<a href=\"a.bin\">x</ A><a href=\"b.bin\">y</A >z</a>", List.of("a.bin")),
+        Arguments.of("<a href=\"\uD83D\uDE00.bin\">x</a>", List.of("\uD83D\uDE00.bin")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("indexPages")
+  void testExtractLinks(String page, List<String> expected) {
+    assertEquals(expected, DownloadUtil.DownloadParser.extractLinks(page));
   }
 
   @Test

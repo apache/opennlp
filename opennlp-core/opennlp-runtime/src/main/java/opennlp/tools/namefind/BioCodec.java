@@ -20,8 +20,6 @@ package opennlp.tools.namefind;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.Span;
@@ -47,15 +45,35 @@ public class BioCodec implements SequenceCodec<String> {
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
-  private static final Pattern TYPED_OUTCOME_PATTERN = Pattern.compile("(.+)-\\w+");
-
   static String extractNameType(String outcome) {
-    Matcher matcher = TYPED_OUTCOME_PATTERN.matcher(outcome);
-    if (matcher.matches()) {
-      return matcher.group(1);
+    int separator = outcome.lastIndexOf('-');
+    if (separator > 0 && isWordChars(outcome, separator + 1)) {
+      return outcome.substring(0, separator);
     }
 
     return null;
+  }
+
+  /**
+   * Tests whether the rest of an outcome is a non-empty run of ASCII letters, digits, or
+   * underscores.
+   *
+   * @param outcome The outcome label.
+   * @param from The offset the run starts at.
+   * @return {@code true} if at least one character follows and all are word characters.
+   */
+  private static boolean isWordChars(String outcome, int from) {
+    if (from >= outcome.length()) {
+      return false;
+    }
+    for (int i = from; i < outcome.length(); i++) {
+      char c = outcome.charAt(i);
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9') || c == '_')) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override

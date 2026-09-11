@@ -36,6 +36,12 @@ import morfologik.tools.DictCompile;
  */
 public class MorfologikDictionaryBuilder {
 
+  /** The file name suffix of a dictionary metadata file, a dot and the Morfologik extension. */
+  private static final String METADATA_FILE_SUFFIX = "." + DictionaryMetadata.METADATA_FILE_EXTENSION;
+
+  /** The file name suffix of a compiled dictionary automaton. */
+  private static final String DICTIONARY_FILE_SUFFIX = ".dict";
+
   /**
    * Helper to compile a morphological dictionary automaton.
    *
@@ -61,8 +67,23 @@ public class MorfologikDictionaryBuilder {
     Path metadataPath = DictionaryMetadata.getExpectedMetadataLocation(input);
 
     return metadataPath.resolveSibling(
-        metadataPath.getFileName().toString().replaceAll(
-            "\\." + DictionaryMetadata.METADATA_FILE_EXTENSION + "$", ".dict"));
+        toDictionaryFileName(metadataPath.getFileName().toString()));
+  }
+
+  /**
+   * Derives the compiled dictionary file name from a metadata file name by exchanging the
+   * trailing {@code .info} for {@code .dict}. A name without that trailing suffix is
+   * returned unchanged.
+   *
+   * @param metadataFileName The metadata file name. Must not be {@code null}.
+   * @return The dictionary file name.
+   */
+  static String toDictionaryFileName(String metadataFileName) {
+    if (metadataFileName.endsWith(METADATA_FILE_SUFFIX)) {
+      return metadataFileName.substring(0, metadataFileName.length() - METADATA_FILE_SUFFIX.length())
+          + DICTIONARY_FILE_SUFFIX;
+    }
+    return metadataFileName;
   }
 
   /**

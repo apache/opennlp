@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import opennlp.tools.util.InputStreamFactory;
@@ -44,8 +41,6 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class ConlluStream implements ObjectStream<ConlluSentence> {
   private final ObjectStream<String> sentenceStream;
-
-  private static final Pattern regex = Pattern.compile("text_([a-z]{2,3})");
 
   /**
    * Initializes a {@link ConlluStream}.
@@ -155,7 +150,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       index.put(line.getId(), i);
       if (line.getId().contains("-")) {
         List<String> expandedContractions = new ArrayList<>();
-        String[] ids = line.getId().split("-");
+        String[] ids = splitOnHyphen(line.getId());
         int start = Integer.parseInt(ids[0]);
         int end = Integer.parseInt(ids[1]);
         for (int j = start; j <= end; j++) {
@@ -230,15 +225,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
   private Map<Locale, String> addTextLang(String firstPart, String secondPart,
                                           Map<Locale, String> textLang) throws InvalidFormatException {
-    String lang = "";
-    try {
-      Matcher regexMatcher = regex.matcher(firstPart);
-      if (regexMatcher.find()) {
-        lang = regexMatcher.group(1);
-      }
-    } catch (PatternSyntaxException e) {
-      throw new InvalidFormatException(e);
-    }
+    String lang = extractTextLang(firstPart);
     if (!lang.isEmpty()) {
       textLang.put(Locale.of(lang), secondPart);
     }
@@ -246,6 +233,59 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       throw new InvalidFormatException(String.format("Locale language code is invalid: %s", lang));
     }
     return textLang;
+  }
+
+  /**
+   * Splits a token id on hyphens with the result of {@code String.split("-")}: empty elements
+   * between consecutive hyphens are kept, trailing empty elements are dropped.
+   *
+   * @param id The token id.
+   * @return The elements in order.
+   */
+  private String[] splitOnHyphen(String id) {
+    if (id.isEmpty()) {
+      return new String[] {""};
+    }
+    List<String> parts = new ArrayList<>();
+    int start = 0;
+    for (int i = 0; i < id.length(); i++) {
+      if (id.charAt(i) == '-') {
+        parts.add(id.substring(start, i));
+        start = i + 1;
+      }
+    }
+    if (id.length() > start) {
+      parts.add(id.substring(start));
+    }
+    while (!parts.isEmpty() && parts.get(parts.size() - 1).isEmpty()) {
+      parts.remove(parts.size() - 1);
+    }
+    return parts.toArray(new String[0]);
+  }
+
+  /**
+   * Extracts the language code from a {@code text_xx} or {@code text_xxx} comment key: the two
+   * or three ASCII lowercase letters, preferring three, after the first {@code text_} that at
+   * least two follow.
+   *
+   * @param firstPart The comment key.
+   * @return The language code, or an empty string if there is none.
+   */
+  private String extractTextLang(String firstPart) {
+    int from = 0;
+    while ((from = firstPart.indexOf("text_", from)) != -1) {
+      int i = from + "text_".length();
+      int len = 0;
+      while (len < 3 && i + len < firstPart.length()
+          && firstPart.charAt(i + len) >= 'a' && firstPart.charAt(i + len) <= 'z') {
+        len++;
+      }
+      if (len >= 2) {
+        return firstPart.substring(i, i + len);
+      }
+      from++;
+    }
+    return "";
   }
 
   @Override

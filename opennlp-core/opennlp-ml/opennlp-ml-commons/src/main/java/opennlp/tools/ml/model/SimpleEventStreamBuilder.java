@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 public class SimpleEventStreamBuilder {
 
@@ -40,7 +41,7 @@ public class SimpleEventStreamBuilder {
     }
 
     // look for context (and values)
-    String[] cvPairs = ss[1].split("\\s+");
+    String[] cvPairs = StringUtil.splitOnAsciiWhitespace(ss[1]);
     if (cvPairs[0].contains(";")) { // has values?
       String[] context = new String[cvPairs.length];
       float[] values = new float[cvPairs.length];

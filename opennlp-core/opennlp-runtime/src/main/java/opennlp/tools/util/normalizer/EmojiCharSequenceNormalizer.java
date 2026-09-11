@@ -16,8 +16,6 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.util.regex.Pattern;
-
 /**
  * A {@link EmojiCharSequenceNormalizer} implementation that normalizes text
  * in terms of emojis. Every encounter will be replaced by a whitespace.
@@ -36,15 +34,44 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
-  private static final Pattern EMOJI_REGEX =
-      Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
+  /**
+   * The lowest code point that is replaced: the first high surrogate of the emoji planes.
+   * Lone surrogates and every BMP character from here up count as well.
+   */
+  private static final int LOWER_CODE_POINT = 0xD83C;
 
-  /** {@inheritDoc} */
+  /** The highest code point that is replaced. */
+  private static final int UPPER_CODE_POINT = 0x10FC00;
+
+  /**
+   * {@inheritDoc}
+   * Every maximal run of code points in {@code [U+D83C, U+10FC00]} becomes one space.
+   */
   @Override
   public CharSequence normalize (CharSequence text) {
     if (text == null) {
       throw new IllegalArgumentException("The text must not be null.");
     }
-    return EMOJI_REGEX.matcher(text).replaceAll(" ");
+    StringBuilder normalized = new StringBuilder(text.length());
+    int i = 0;
+    while (i < text.length()) {
+      int cp = Character.codePointAt(text, i);
+      if (cp >= LOWER_CODE_POINT && cp <= UPPER_CODE_POINT) {
+        i += Character.charCount(cp);
+        while (i < text.length()) {
+          int next = Character.codePointAt(text, i);
+          if (next < LOWER_CODE_POINT || next > UPPER_CODE_POINT) {
+            break;
+          }
+          i += Character.charCount(next);
+        }
+        normalized.append(' ');
+      }
+      else {
+        normalized.appendCodePoint(cp);
+        i += Character.charCount(cp);
+      }
+    }
+    return normalized.toString();
   }
 }

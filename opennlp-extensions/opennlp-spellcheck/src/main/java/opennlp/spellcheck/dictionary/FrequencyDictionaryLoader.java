@@ -20,9 +20,10 @@ package opennlp.spellcheck.dictionary;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.tools.util.InputStreamFactory;
@@ -61,9 +62,6 @@ public final class FrequencyDictionaryLoader {
 
   /** The default character set used when none is supplied. */
   public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-
-  /** Splits a line into columns on a TAB or a run of spaces. */
-  private static final Pattern COLUMN_SEPARATOR = Pattern.compile("[\\t ]+");
 
   /** UTF-8 byte-order mark (U+FEFF); stripped if it leads a line. */
   private static final char BOM = (char) 0xFEFF;
@@ -158,7 +156,7 @@ public final class FrequencyDictionaryLoader {
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = COLUMN_SEPARATOR.split(content.strip());
+        final String[] columns = splitColumns(content.strip());
         if (columns.length < 2 || columns[0].isEmpty()) {
           throw new MalformedDictionaryLineException(lineNo, line, "expected 'word<sep>count'");
         }
@@ -182,7 +180,7 @@ public final class FrequencyDictionaryLoader {
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = COLUMN_SEPARATOR.split(content.strip());
+        final String[] columns = splitColumns(content.strip());
         if (columns.length < 3 || columns[0].isEmpty() || columns[1].isEmpty()) {
           throw new MalformedDictionaryLineException(lineNo, line, "expected 'w1<sep>w2<sep>count'");
         }
@@ -192,6 +190,54 @@ public final class FrequencyDictionaryLoader {
       }
     }
     return read;
+  }
+
+  /**
+   * Splits {@code line} into columns on runs of TAB and space characters. A leading run
+   * yields one empty first column, trailing empty columns are dropped, a line of only
+   * separators yields an empty array, and an empty line yields a single empty column. Other
+   * whitespace, such as a no-break space or a vertical tab, stays inside a column.
+   *
+   * @param line The line to split. Must not be {@code null}.
+   * @return The columns in order.
+   */
+  static String[] splitColumns(String line) {
+    if (line.isEmpty()) {
+      return new String[] {""};
+    }
+    final List<String> columns = new ArrayList<>();
+    if (isColumnSeparator(line.charAt(0))) {
+      columns.add("");
+    }
+    int start = 0;
+    for (int i = 0; i < line.length(); i++) {
+      if (isColumnSeparator(line.charAt(i))) {
+        if (i > start) {
+          columns.add(line.substring(start, i));
+        }
+        while (i + 1 < line.length() && isColumnSeparator(line.charAt(i + 1))) {
+          i++;
+        }
+        start = i + 1;
+      }
+    }
+    if (line.length() > start) {
+      columns.add(line.substring(start));
+    }
+    while (!columns.isEmpty() && columns.get(columns.size() - 1).isEmpty()) {
+      columns.remove(columns.size() - 1);
+    }
+    return columns.toArray(new String[0]);
+  }
+
+  /**
+   * Tests whether {@code c} separates dictionary columns, which only a TAB or a space does.
+   *
+   * @param c The character to check.
+   * @return {@code true} if {@code c} is a TAB or a space.
+   */
+  private static boolean isColumnSeparator(char c) {
+    return c == '\t' || c == ' ';
   }
 
   private static String stripBom(String line) {

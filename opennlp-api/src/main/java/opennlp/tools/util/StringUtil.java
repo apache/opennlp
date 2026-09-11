@@ -117,6 +117,23 @@ public class StringUtil {
   }
 
   /**
+   * Determines if the specified {@link Character} is one of the six ASCII whitespace
+   * characters, the set the regular expression class {@code \s} matches: space, tab,
+   * line feed, vertical tab, form feed, and carriage return. Unlike
+   * {@link #isWhitespace(char)}, this ignores the {@link WhitespaceMode} and rejects
+   * every non-ASCII space.
+   *
+   * @param charCode The character to check.
+   *
+   * @return {@code true} if {@code charCode} is one of those six characters,
+   *     {@code false} otherwise.
+   */
+  public static boolean isAsciiWhitespace(char charCode) {
+    return charCode == ' ' || charCode == '\t' || charCode == '\n' || charCode == '\u000B'
+        || charCode == '\f' || charCode == '\r';
+  }
+
+  /**
    * Splits {@code input} on runs of Unicode {@code White_Space}. Leading and trailing
    * runs are ignored, so whitespace-only input yields an empty array. This is a
    * code-point scan, not a regular expression.
@@ -149,6 +166,91 @@ public class StringUtil {
       terms.add(input.subSequence(start, n).toString());
     }
     return terms.toArray(new String[0]);
+  }
+
+  /**
+   * Splits {@code input} on runs of ASCII whitespace with the result of
+   * {@code String.split("\\s+")}: a leading run yields one empty first element, trailing
+   * empty elements are dropped, whitespace-only input yields an empty array, and empty
+   * input yields a single empty element. This is a character scan, not a regular
+   * expression.
+   *
+   * @param input The text to split. Must not be {@code null}.
+   * @return The elements in order.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String[] splitOnAsciiWhitespace(String input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    if (input.isEmpty()) {
+      return new String[] {""};
+    }
+    final List<String> elements = new ArrayList<>();
+    if (isAsciiWhitespace(input.charAt(0))) {
+      elements.add("");
+    }
+    int start = 0;
+    for (int i = 0; i < input.length(); i++) {
+      if (isAsciiWhitespace(input.charAt(i))) {
+        if (i > start) {
+          elements.add(input.substring(start, i));
+        }
+        while (i + 1 < input.length() && isAsciiWhitespace(input.charAt(i + 1))) {
+          i++;
+        }
+        start = i + 1;
+      }
+    }
+    if (input.length() > start) {
+      elements.add(input.substring(start));
+    }
+    while (!elements.isEmpty() && elements.get(elements.size() - 1).isEmpty()) {
+      elements.remove(elements.size() - 1);
+    }
+    return elements.toArray(new String[0]);
+  }
+
+  /**
+   * Tests whether {@code input} contains an ASCII capital letter, {@code A} to {@code Z}.
+   * Capitals outside ASCII do not count. This is a character scan, not a regular expression.
+   *
+   * @param input The text to check. Must not be {@code null}.
+   * @return {@code true} if at least one character is an ASCII capital letter.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static boolean containsAsciiUpperCase(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    for (int i = 0; i < input.length(); i++) {
+      final char c = input.charAt(i);
+      if (c >= 'A' && c <= 'Z') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Tests whether {@code input} contains an ASCII digit, {@code 0} to {@code 9}. Digits outside
+   * ASCII do not count. This is a character scan, not a regular expression.
+   *
+   * @param input The text to check. Must not be {@code null}.
+   * @return {@code true} if at least one character is an ASCII digit.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static boolean containsAsciiDigit(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    for (int i = 0; i < input.length(); i++) {
+      final char c = input.charAt(i);
+      if (c >= '0' && c <= '9') {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

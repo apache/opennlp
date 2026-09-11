@@ -32,6 +32,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.langdetect.Language;
@@ -67,7 +68,10 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
       // The file name contains the number of lines, but to make this more stable
       // the file is once scanned for the count even tough this is slower
-      int totalLineCount = (int) Files.lines(sentencesFile.toPath()).count();
+      int totalLineCount;
+      try (Stream<String> lines = Files.lines(sentencesFile.toPath())) {
+        totalLineCount = (int) lines.count();
+      }
       int requiredLines = sentencesPerSample * numberOfSamples;
 
       if (totalLineCount < requiredLines)
@@ -130,6 +134,9 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     }
   }
 
+  /** The number of leading file name characters that carry the ISO 639-3 language code. */
+  private static final int LANG_CODE_LENGTH = 3;
+
   private final int sentencesPerSample;
 
   private final Map<String, Integer> langSampleCounts;
@@ -154,8 +161,8 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     this.sentencesPerSample = sentencesPerSample;
 
     sentencesFiles = leipzigFolder.listFiles(pathname -> !pathname.isHidden() && pathname.isFile()
-            && pathname.getName().length() >= 3
-            && pathname.getName().substring(0,3).matches("[a-z]+"));
+            && pathname.getName().length() >= LANG_CODE_LENGTH
+            && isAsciiLowerCaseWord(pathname.getName().substring(0, LANG_CODE_LENGTH)));
 
     if (null == sentencesFiles) {
       throw new TerminateToolException(-1 , "Directory " + leipzigFolder + " empty , No files to read!");
@@ -164,7 +171,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     Arrays.sort(sentencesFiles);
 
     Map<String, Integer> langCounts = Arrays.stream(sentencesFiles)
-        .map(file -> file.getName().substring(0, 3))
+        .map(file -> file.getName().substring(0, LANG_CODE_LENGTH))
         .collect(Collectors.groupingBy(String::toString, Collectors.summingInt(v -> 1)));
 
     langSampleCounts = langCounts.entrySet().stream()
@@ -173,6 +180,27 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     random = new Random(23);
 
     reset();
+  }
+
+  /**
+   * Tests whether {@code text} is a non-empty run of ASCII lower case letters, {@code a} to
+   * {@code z}. Letters outside that range, digits, and punctuation are rejected.
+   *
+   * @param text The text to check. Must not be {@code null}.
+   * @return {@code true} if {@code text} has at least one character and all of them are
+   *     ASCII lower case letters.
+   */
+  static boolean isAsciiLowerCaseWord(CharSequence text) {
+    if (text.isEmpty()) {
+      return false;
+    }
+    for (int i = 0; i < text.length(); i++) {
+      final char c = text.charAt(i);
+      if (c < 'a' || c > 'z') {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
@@ -185,7 +213,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
       if (sentencesFilesIt.hasNext()) {
         File sentencesFile = sentencesFilesIt.next();
 
-        String lang = sentencesFile.getName().substring(0, 3);
+        String lang = sentencesFile.getName().substring(0, LANG_CODE_LENGTH);
 
         sampleStream = new LeipzigSentencesStream(lang, sentencesFile,
             sentencesPerSample, langSampleCounts.get(lang));
