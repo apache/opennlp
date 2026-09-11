@@ -19,10 +19,16 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -117,4 +123,79 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
     Assertions.assertEquals(new Span(5, 6, "person"), samples.get(7).getNames()[2]);
   }
 
+  private static Stream<Arguments> underscoreLexemes() {
+    return Stream.of(
+        Arguments.of("Rio_de_Janeiro", new String[] {"Rio", "de", "Janeiro"}),
+        Arguments.of("a__b", new String[] {"a", "b"}),
+        Arguments.of("_a", new String[] {"", "a"}),
+        Arguments.of("a_", new String[] {"a"}),
+        Arguments.of("__", new String[0]),
+        Arguments.of("_", new String[0]),
+        Arguments.of("\uD801\uDC12_\uD83D\uDE00", new String[] {"\uD801\uDC12", "\uD83D\uDE00"}),
+        Arguments.of("", new String[] {""}),
+        Arguments.of("casa", new String[] {"casa"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("underscoreLexemes")
+  void testSplitOnUnderscores(String lexeme, String[] expected) {
+    Assertions.assertArrayEquals(expected, ADNameSampleStream.splitOnUnderscores(lexeme));
+    Assertions.assertArrayEquals(lexeme.split("[_]+"), ADNameSampleStream.splitOnUnderscores(lexeme));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"casa", "São", "1990", "R2D2", "\uD801\uDC12\u0661"})
+  void testIsAlphaNumericAccepts(String token) {
+    Assertions.assertTrue(ADNameSampleStream.isAlphaNumeric(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "guarda-chuva", "R$", "a b", "\u00BD", "\uD83D\uDE00"})
+  void testIsAlphaNumericRejects(String token) {
+    Assertions.assertFalse(ADNameSampleStream.isAlphaNumeric(token));
+  }
+
+  private static Stream<Arguments> hyphenatedTokens() {
+    return Stream.of(
+        Arguments.of("guarda-", new String[] {"guarda", null, null}),
+        Arguments.of("a-", new String[] {"a", null, null}),
+        Arguments.of("-chuva", new String[] {null, "chuva", ""}),
+        Arguments.of("-chuva2!", new String[] {null, "chuva", "2!"}),
+        Arguments.of("guarda-chuva", new String[] {"guarda", "chuva", ""}),
+        Arguments.of("guarda-chuva-sol", new String[] {"guarda", "chuva", "-sol"}),
+        Arguments.of("São-Paulo", new String[] {"São", "Paulo", ""}),
+        // supplementary-plane letters are letters, a combining mark ends the letter run
+        Arguments.of("\uD801\uDC12-\uD801\uDC3A", new String[] {"\uD801\uDC12", "\uD801\uDC3A", ""}),
+        Arguments.of("e\u0301-a", new String[] {null, null, null}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("hyphenatedTokens")
+  void testMatchHyphenatedToken(String token, String[] expected) {
+    String[] actual = ADNameSampleStream.matchHyphenatedToken(token);
+    if (expected[0] == null && expected[1] == null && expected[2] == null) {
+      Assertions.assertNull(actual);
+    } else {
+      Assertions.assertArrayEquals(expected, actual);
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"-", "--", "-1", "1-", "a1-b", "a-1", "a--b", "ab", "a -"})
+  void testMatchHyphenatedTokenRejects(String token) {
+    Assertions.assertNull(ADNameSampleStream.matchHyphenatedToken(token));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"<NER:PROP>, PROP", "<PROP>, PROP", "<>, ''", "<NER:>, ''", "<a<b>, a<b",
+      "<NER:NER:X>, NER:X", "<ner:PROP>, ner:PROP", "<\uD83D\uDE00>, \uD83D\uDE00"})
+  void testTagContent(String tag, String expected) {
+    Assertions.assertEquals(expected, ADNameSampleStream.tagContent(tag));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "<", ">", "PROP", "<PROP", "PROP>"})
+  void testTagContentRejects(String tag) {
+    Assertions.assertNull(ADNameSampleStream.tagContent(tag));
+  }
 }
