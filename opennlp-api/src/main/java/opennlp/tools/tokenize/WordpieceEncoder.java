@@ -51,7 +51,8 @@ import opennlp.tools.util.StringUtil;
  * vocabulary, because each emitted piece must have an id. Vocabulary entries starting with
  * {@code ##} are continuation pieces and can match only after the first piece of a word.</p>
  *
- * <p>Lower casing applies the Unicode full case mapping, including the {@code Final_Sigma}
+ * <p>Lower casing applies the <a href="https://www.unicode.org/Public/15.0.0/ucd/SpecialCasing.txt">
+ * Unicode full case mapping</a>, including the {@code Final_Sigma}
  * context, so a word-final Greek capital sigma becomes U+03C2 as in the reference
  * implementation.</p>
  *
