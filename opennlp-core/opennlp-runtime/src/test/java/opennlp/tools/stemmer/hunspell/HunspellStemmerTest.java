@@ -1915,4 +1915,28 @@ public class HunspellStemmerTest {
     Assertions.assertEquals(List.of(surface), stemmer.stemAll(surface));
   }
 
+  /**
+   * Verifies that a FORBIDDENWORD flag among an affix rule's continuation classes
+   * marks the generated form as forbidden, as in the reference implementation: the
+   * derived surface has no analysis even without a listed forbidden entry, in suffix
+   * position, in prefix position, and through a cross product involving the marked
+   * rule. A derivation over rules without the flag still reaches the listed stem.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testForbiddenWordOnContinuationBlocksTheDerivedForm() throws IOException {
+    final HunspellStemmer markedSuffix = new HunspellStemmer(load(
+        "FORBIDDENWORD F\nPFX P Y 1\nPFX P 0 un .\n"
+            + "SFX S Y 1\nSFX S 0 s/F .\n",
+        "1\ndog/PS\n"));
+    Assertions.assertEquals(List.of("dogs"), markedSuffix.stemAll("dogs"));
+    Assertions.assertEquals(List.of("undogs"), markedSuffix.stemAll("undogs"));
+    Assertions.assertEquals(List.of("dog"), markedSuffix.stemAll("undog"));
+
+    final HunspellStemmer markedPrefix = new HunspellStemmer(load(
+        "FORBIDDENWORD F\nPFX P Y 1\nPFX P 0 un/F .\n",
+        "1\ndog/P\n"));
+    Assertions.assertEquals(List.of("undog"), markedPrefix.stemAll("undog"));
+  }
 }
