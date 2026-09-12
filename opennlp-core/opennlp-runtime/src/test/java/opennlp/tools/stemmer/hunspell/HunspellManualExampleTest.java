@@ -20,10 +20,13 @@ package opennlp.tools.stemmer.hunspell;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.stemmer.Stemmer;
 
@@ -69,5 +72,45 @@ public class HunspellManualExampleTest {
         stemmer.stemAll("workers").stream().map(CharSequence::toString).toList());
     // unknown vocabulary passes through unchanged
     Assertions.assertEquals("table", stemmer.stem("table").toString());
+  }
+
+  /**
+   * Checks the morphological analysis example in the manual.
+   *
+   * @throws IOException If fixture loading fails.
+   */
+  @Test
+  void testAnalyzeWorkers() throws IOException {
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream(AFFIX.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream(WORDS.getBytes(StandardCharsets.UTF_8)));
+    final HunspellStemmer analyzer = new HunspellStemmer(dictionary);
+    Assertions.assertEquals(List.of("st:work fl:E fl:S"), analyzer.analyze("workers"));
+    Assertions.assertEquals(List.of(), analyzer.analyze("table"));
+  }
+
+  /**
+   * Checks partial loading and the diagnostic format used in the manual.
+   *
+   * @param directory The temporary fixture directory.
+   * @throws IOException If fixture creation or loading fails.
+   */
+  @Test
+  void testPartialLoadingDiagnostics(@TempDir Path directory) throws IOException {
+    final Path affix = directory.resolve("dictionary.aff");
+    final Path words = directory.resolve("dictionary.dic");
+    Files.writeString(affix, "UNSUPPORTED value\n" + AFFIX);
+    Files.writeString(words, WORDS);
+    final HunspellDictionary partial = HunspellDictionary.load(
+        affix, words, HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+
+    Assertions.assertEquals("work",
+        new HunspellStemmerFactory(partial).newStemmer().stem("workers").toString());
+    Assertions.assertEquals(1, partial.getUnsupportedDirectives().size());
+    for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupportedDirectives()) {
+      final String message = diagnostic.directive() + " at "
+          + diagnostic.source() + ":" + diagnostic.lineNumber();
+      Assertions.assertEquals("UNSUPPORTED at " + affix + ":1", message);
+    }
   }
 }
