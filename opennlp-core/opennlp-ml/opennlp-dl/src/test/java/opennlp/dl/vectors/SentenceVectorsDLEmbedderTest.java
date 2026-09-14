@@ -25,12 +25,15 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.embeddings.TextEmbedder;
+import opennlp.tools.embeddings.TextEmbedderProvider;
+import opennlp.tools.embeddings.TextEmbedderProviders;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,6 +69,30 @@ class SentenceVectorsDLEmbedderTest {
     Files.write(file, List.of("[PAD]", "unused1", "[UNK]", "[SEP]", "hello", "world",
         "unused2", "[CLS]"));
     return file.toFile();
+  }
+
+  @Test
+  void testDefaultProviderPreservesInference(@TempDir Path dir) throws Exception {
+    TextEmbedderProvider provider = TextEmbedderProviders.getDefault();
+    assertEquals("onnx", provider.name());
+    Path graph = model(dir).toPath();
+    vocab(dir);
+    Map<String, String> options = Map.of("vocabulary", "vocab.txt");
+    try (TextEmbedder first = provider.load(graph, options);
+         TextEmbedder second = provider.load(graph, options)) {
+      assertArrayEquals(CLS_VECTOR, first.embed("hello world"));
+      first.close();
+      assertArrayEquals(CLS_VECTOR, second.embed("hello"));
+      assertArrayEquals(CLS_VECTOR, second.embedAll(List.of("hello", "world"))[1]);
+    }
+    assertThrows(IllegalArgumentException.class, () -> provider.load(null, options));
+    assertThrows(IllegalArgumentException.class, () -> provider.load(graph.getRoot(), options));
+    assertThrows(IllegalArgumentException.class, () -> provider.load(graph, null));
+    assertThrows(IllegalArgumentException.class, () -> provider.load(graph, Map.of()));
+    assertThrows(IllegalArgumentException.class,
+        () -> provider.load(graph, Map.of("vocabulary", "vocab.txt", "lowerCase", "invalid")));
+    assertThrows(IllegalArgumentException.class,
+        () -> provider.load(graph, Map.of("vocabulary", "vocab.txt", "typo", "true")));
   }
 
   @Test
