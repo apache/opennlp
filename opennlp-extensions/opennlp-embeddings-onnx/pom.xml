@@ -27,8 +27,8 @@
     <artifactId>opennlp-extensions</artifactId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
-  <artifactId>opennlp-embeddings</artifactId>
-  <name>Apache OpenNLP :: Ext :: Embeddings</name>
+  <artifactId>opennlp-embeddings-onnx</artifactId>
+  <name>Apache OpenNLP :: Ext :: Embeddings :: ONNX</name>
   <dependencies>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
@@ -36,7 +36,14 @@
     </dependency>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-embeddings-onnx</artifactId>
+      <artifactId>opennlp-dl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-embeddings-core</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

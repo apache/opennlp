@@ -10,3 +10,5 @@ nb-configuration.xml
 .checkstyle
 *.onnx
 vocab.txt
+
+!opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx

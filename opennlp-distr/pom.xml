@@ -98,7 +98,7 @@
 
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-embeddings</artifactId>
+      <artifactId>opennlp-embeddings-cli</artifactId>
     </dependency>
 
     <!-- OpenNLP Docs - Ensure that "docs" are build before distribution -->

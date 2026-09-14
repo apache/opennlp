@@ -108,7 +108,7 @@
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-extensions/opennlp-embeddings/src/main/bin</directory>
+      <directory>../opennlp-extensions/opennlp-embeddings-cli/src/main/bin</directory>
       <fileMode>755</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>bin</outputDirectory>
@@ -240,10 +240,24 @@
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-extensions/opennlp-embeddings/target/reports/apidocs</directory>
+      <directory>../opennlp-extensions/opennlp-embeddings-core/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-embeddings</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-extensions/opennlp-embeddings-onnx/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-embeddings-onnx</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-extensions/opennlp-embeddings-cli/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-embeddings-cli</outputDirectory>
     </fileSet>
 
     <fileSet>

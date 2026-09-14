@@ -25,9 +25,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import opennlp.embeddings.cmdline.AssembleModelTool;
 import opennlp.subword.sentencepiece.SentencePieceTokenizer;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The assembler completes a distilled directory into a loadable one: it derives the WordPiece
  * {@code vocab.txt} and {@code tokenizer_config.json} from {@code tokenizer.json}, leaves existing
  * files alone, and assembles a Model2Vec Unigram tokenizer directly from {@code tokenizer.json}.
- * The CLI tool wraps it and turns failures into a {@link TerminateToolException}.
  */
 class ModelAssemblerTest {
 
@@ -61,7 +58,7 @@ class ModelAssemblerTest {
       {4f, 40f, 400f},    // cat
   };
 
-  private static Path writeWordpieceDistillation(Path dir) throws IOException {
+  static Path writeWordpieceDistillation(Path dir) throws IOException {
     Files.writeString(dir.resolve("tokenizer.json"), WORDPIECE_TOKENIZER_JSON);
     Files.writeString(dir.resolve("config.json"),
         "{\"model_type\":\"model2vec\",\"normalize\":false}");
@@ -265,17 +262,4 @@ class ModelAssemblerTest {
     assertFalse(result.wroteVocabulary());
   }
 
-  @Test
-  void testToolPrintsASummaryAndRejectsABadDirectory(@TempDir Path dir) throws IOException {
-    writeWordpieceDistillation(dir);
-    // The tool runs the assembly without throwing on a good directory.
-    new AssembleModelTool().run(new String[] {"-modelDir", dir.toString()});
-
-    // A directory that is not a model fails as a TerminateToolException, not a raw exception.
-    final Path empty = Files.createDirectory(dir.resolve("empty"));
-    final TerminateToolException e = assertThrows(TerminateToolException.class,
-        () -> new AssembleModelTool().run(new String[] {"-modelDir", empty.toString()}));
-    assertTrue(e.getMessage().contains("tokenizer.json") || e.getMessage().contains("distilled"),
-        e.getMessage());
-  }
 }

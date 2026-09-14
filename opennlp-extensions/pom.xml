@@ -38,7 +38,10 @@
   </properties>
 
   <modules>
+    <module>opennlp-embeddings-core</module>
+    <module>opennlp-embeddings-onnx</module>
     <module>opennlp-embeddings</module>
+    <module>opennlp-embeddings-cli</module>
     <module>opennlp-morfologik</module>
     <module>opennlp-spellcheck</module>
     <module>opennlp-subword</module>

@@ -21,6 +21,41 @@ Turn text into embedding vectors from a static (non-contextual) table: a per-tok
 
 OpenNLP also supports contextual ONNX models, which preserve word-sense context at a higher inference cost. Both embedding methods implement the same `TextEmbedder` interface.
 
+## Dependencies and providers
+
+`opennlp-embeddings` includes `opennlp-embeddings-core` and the default
+`opennlp-embeddings-onnx` provider. CLI commands are distributed separately as
+`opennlp-embeddings-cli`; they are also included in the binary distribution.
+
+For static inference without ONNX, depend directly on `opennlp-embeddings-core`, or
+exclude the provider from the default bundle:
+
+```xml
+<dependency>
+  <groupId>org.apache.opennlp</groupId>
+  <artifactId>opennlp-embeddings</artifactId>
+  <version>3.0.0-SNAPSHOT</version>
+  <exclusions>
+    <exclusion>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-embeddings-onnx</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+```
+
+Existing `StaticEmbeddingModel.load` calls are unchanged. The common SPI also exposes
+`TextEmbedderProviders.get("static")` and `TextEmbedderProviders.get("onnx")`.
+`getDefault()` selects `onnx`; excluding that provider requires explicit selection of
+an installed alternative. Factories can coexist and open multiple independently owned
+models. Close models through `TextEmbedder.close()` when finished.
+
+Distillation preserves its prepared-token and mean-pooling contract through the
+separate `TeacherEncoderProvider` SPI. The existing `ModelDistiller.distill` overloads
+select `onnx`. The local-directory overload with a final provider identifier selects
+an alternative. Register its factory in
+`META-INF/services/opennlp.embeddings.spi.TeacherEncoderProvider`.
+
 ## Quickstart
 
 Point `load` at a downloaded model directory, then embed:
@@ -119,7 +154,7 @@ throughput. Add `-prof gc` for allocation statistics.
 Compile the benchmarks and run the fixture tests from the repository root:
 
 ```sh
-./mvnw -pl opennlp-extensions/opennlp-embeddings -am -Pjmh \
+./mvnw -pl opennlp-extensions/opennlp-embeddings-core -am -Pjmh \
   -Dopennlp.forkCount=1 -Dtest=StaticEmbeddingModelBenchmarkTest \
   -Dsurefire.failIfNoSpecifiedTests=false clean test
 ```
@@ -218,7 +253,7 @@ For a multilingual SentencePiece table (for example one distilled from a bge-m3 
 
 ## Testing distillation
 
-The executable [ModelDistillerExampleTest](src/test/java/opennlp/embeddings/ModelDistillerExampleTest.java)
+The executable [ModelDistillerExampleTest](../opennlp-embeddings-onnx/src/test/java/opennlp/embeddings/ModelDistillerExampleTest.java)
 tests local ONNX inference, PCA, weighting, saved-model loading and search with original numeric
 fixtures. It runs without a downloaded model or Python. To regenerate the ONNX constants, run
 `uv run --with onnx==1.19.0 python dev/embeddings/generate_test_teacher.py` from the repository root.

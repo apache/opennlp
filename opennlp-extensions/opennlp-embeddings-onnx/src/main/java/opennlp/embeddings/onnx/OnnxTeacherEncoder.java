@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.embeddings;
+package opennlp.embeddings.onnx;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +36,8 @@ import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 import ai.onnxruntime.TensorInfo;
 
+import opennlp.embeddings.spi.TeacherEncoder;
+
 /**
  * Runs a teacher transformer over id sequences through its ONNX graph and mean-pools the last
  * hidden states, the forward pass
@@ -50,7 +52,7 @@ import ai.onnxruntime.TensorInfo;
  * <p>Not thread-safe; a distillation drives one instance from a single thread. Close it to
  * release the native session.</p>
  */
-final class OnnxTeacherEncoder implements AutoCloseable {
+final class OnnxTeacherEncoder implements TeacherEncoder {
 
   /** The id-sequence input every transformer encoder graph declares. */
   private static final String INPUT_IDS = "input_ids";
@@ -243,7 +245,8 @@ final class OnnxTeacherEncoder implements AutoCloseable {
    *     sequence, is ragged, the vector length changes between batches, or the runtime rejects
    *     the input.
    */
-  float[][] encodeBatch(long[][] batch) {
+  @Override
+  public float[][] encodeBatch(long[][] batch) {
     if (batch == null || batch.length == 0) {
       throw new IllegalArgumentException("batch must not be null or empty");
     }

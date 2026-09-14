@@ -54,6 +54,34 @@
 		</para>
 	</section>
 
+	<section xml:id="tools.embeddings.providers">
+		<title>Dependencies and provider selection</title>
+		<para>
+			<code>opennlp-embeddings</code> includes <code>opennlp-embeddings-core</code> and the
+			default <code>opennlp-embeddings-onnx</code> provider. Exclude
+			<code>opennlp-embeddings-onnx</code>, or depend directly on
+			<code>opennlp-embeddings-core</code>, for static inference without ONNX Runtime.
+			CLI commands are in <code>opennlp-embeddings-cli</code>, which the binary distribution
+			includes. The embedding library does not depend on CLI tooling.
+		</para>
+		<para>
+			<code>TextEmbedderProviders.get("static")</code> and
+			<code>TextEmbedderProviders.get("onnx")</code> select factories implementing the common
+			<code>TextEmbedderProvider</code> SPI. <code>getDefault()</code> selects ONNX and fails
+			if that provider is absent. Several factories and model instances may coexist;
+			close each returned <code>TextEmbedder</code> when finished.
+			Existing direct model constructors and static-model loading calls remain available.
+		</para>
+		<para>
+			Distillation uses <code>TeacherEncoderProvider</code>, whose encoders accept prepared
+			token ids and return mean-pooled vectors without L2 normalization. Its default is ONNX.
+			The local-directory <code>ModelDistiller.distill</code> overload with a final provider
+			identifier selects another implementation registered through
+			<code>META-INF/services/opennlp.embeddings.spi.TeacherEncoderProvider</code>.
+			Changing the backend does not change the required tokenization or pooling semantics.
+		</para>
+	</section>
+
 	<section xml:id="tools.embeddings.api">
 		<title>Embedding Text with the API</title>
 		<para>
@@ -186,7 +214,7 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 	<section xml:id="tools.embeddings.cmdline">
 		<title>Command Line Tools</title>
 		<para>
-			The module ships its own command line launcher, <code>bin/embeddings</code>, next to
+			The <code>opennlp-embeddings-cli</code> module ships the command line launcher, <code>bin/embeddings</code>, next to
 			<code>bin/opennlp</code> in the binary distribution. Invoked without arguments it lists
 			the available tools, and every tool prints its help when invoked with the
 			<code>help</code> parameter.

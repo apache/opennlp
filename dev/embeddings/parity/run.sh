@@ -33,7 +33,7 @@ PYTHON="${PYTHON:-python3}"
 
 # The repository root is three levels above this script.
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
-CP="$ROOT/opennlp-api/target/classes:$ROOT/opennlp-core/opennlp-runtime/target/classes:$ROOT/opennlp-extensions/opennlp-subword/target/classes:$ROOT/opennlp-extensions/opennlp-embeddings/target/classes"
+CP="$ROOT/opennlp-api/target/classes:$ROOT/opennlp-core/opennlp-runtime/target/classes:$ROOT/opennlp-extensions/opennlp-subword/target/classes:$ROOT/opennlp-extensions/opennlp-embeddings-core/target/classes"
 
 echo "Model: $MODEL_DIR"
 echo "Sentences: $(grep -c . sentences.txt) lines, multilingual"
