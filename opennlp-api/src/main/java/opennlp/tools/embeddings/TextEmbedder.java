@@ -26,7 +26,7 @@ import java.util.List;
  *
  * <p>Thread safety is implementation specific.</p>
  */
-public interface TextEmbedder {
+public interface TextEmbedder extends AutoCloseable {
 
   /**
    * Embeds a piece of text.
@@ -67,6 +67,16 @@ public interface TextEmbedder {
       vectors[i] = embed(text);
     }
     return vectors;
+  }
+
+  /**
+   * Releases resources owned by this embedder. The default implementation does nothing.
+   * Callers must not race this method with embedding calls.
+   *
+   * @throws Exception Thrown if releasing backend resources fails.
+   */
+  @Override
+  default void close() throws Exception {
   }
 
   /** {@return the dimension of every vector this embedder produces} */
