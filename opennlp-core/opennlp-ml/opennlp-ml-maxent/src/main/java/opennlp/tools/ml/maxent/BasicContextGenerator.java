@@ -61,6 +61,9 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    */
   @Override
   public String[] getContext(String o) {
+    if (o == null) {
+      throw new IllegalArgumentException("Input must not be null.");
+    }
     final List<String> contexts = new ArrayList<>();
     int start = 0;
     int next;
