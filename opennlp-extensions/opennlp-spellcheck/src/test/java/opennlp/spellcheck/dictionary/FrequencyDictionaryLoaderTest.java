@@ -161,6 +161,19 @@ public class FrequencyDictionaryLoaderTest {
     Assertions.assertTrue(ex.getMessage().contains("(" + reason + ")"), ex.getMessage());
   }
 
+  @ParameterizedTest
+  // Arabic-Indic, fullwidth, mixed with ASCII, and a supplementary digit
+  @ValueSource(strings = {"\u0665", "\uFF15", "5\u0665", "\u0661\u0662\u0663", "+\uFF15",
+      "\uD835\uDFCE"})
+  void testCountInDigitsOfAnotherScriptIsMalformed(String count) {
+    final FrequencyDictionaryLoader loader = new FrequencyDictionaryLoader();
+    final MalformedDictionaryLineException ex = Assertions.assertThrows(
+        MalformedDictionaryLineException.class,
+        () -> loader.parseUnigrams(stringResource("the\t" + count + "\n"), new LinkedHashMap<>()));
+    Assertions.assertEquals(1, ex.getLineNumber());
+    Assertions.assertTrue(ex.getMessage().contains("(count "), ex.getMessage());
+  }
+
   @Test
   void testBigramLineWithTwoColumnsNamesTheReason() {
     final FrequencyDictionaryLoader loader = new FrequencyDictionaryLoader();
