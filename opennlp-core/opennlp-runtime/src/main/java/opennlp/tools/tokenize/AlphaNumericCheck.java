@@ -17,62 +17,38 @@
 
 package opennlp.tools.tokenize;
 
-import java.util.BitSet;
 import java.util.regex.Pattern;
+
+import opennlp.tools.util.normalizer.CodePointSet;
 
 /**
  * Decides whether a token is alphanumeric under the alphanumeric {@link Pattern} of a
  * tokenizer model. The pattern is user-supplied, stored in the model manifest, and read back
  * as a regular expression. A pattern of the form {@code ^[...]+$} with a class of plain
  * characters and simple ranges, the form of all built-in language defaults, is evaluated as a
- * character set lookup. Other patterns are evaluated by the regular expression engine.
- *
- * <p>Both ways give the result of {@code pattern.matcher(token).matches()}, with one exception:
- * a set lookup rejects an unpaired surrogate, which is not a character, where the engine
- * accepts it as a code point inside a range that spans the surrogate block.
- * Supplementary-plane characters are never in a set, and a class that names one is evaluated
- * by the engine.
+ * {@link CodePointSet} lookup. Other patterns are evaluated by the regular expression engine.
+ * Both give the result of {@code pattern.matcher(token).matches()}.
  */
 final class AlphaNumericCheck {
 
   private static final String CLASS_PREFIX = "^[";
   private static final String CLASS_SUFFIX = "]+$";
 
-  private static final int SURROGATE_MIN = Character.MIN_SURROGATE;
-  private static final int SURROGATE_MAX = Character.MAX_SURROGATE;
-
-  private final BitSet characters;
   private final Pattern pattern;
+  private final CodePointSet characters;
 
   /**
-   * Creates the check, using a set lookup when the pattern has the supported form.
+   * Creates the check for a pattern, using a set lookup when the pattern has the supported form.
    *
    * @param pattern The alphanumeric pattern. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code pattern} is {@code null}.
    */
-  private AlphaNumericCheck(Pattern pattern) {
-    if (pattern.flags() != 0) {
-      characters = null;
-      this.pattern = pattern;
-    }
-    else {
-      final BitSet parsed = parseCharacterClass(pattern.pattern());
-      characters = parsed;
-      this.pattern = parsed == null ? pattern : null;
-    }
-  }
-
-  /**
-   * Creates the check for a pattern.
-   *
-   * @param pattern The alphanumeric pattern. Must not be {@code null}.
-   * @return A check that accepts the tokens the pattern matches as a whole.
-   * @throws IllegalArgumentException If {@code pattern} is {@code null}.
-   */
-  static AlphaNumericCheck of(Pattern pattern) {
+  AlphaNumericCheck(Pattern pattern) {
     if (pattern == null) {
       throw new IllegalArgumentException("pattern must not be null");
     }
-    return new AlphaNumericCheck(pattern);
+    this.pattern = pattern;
+    this.characters = pattern.flags() == 0 ? parseCharacterClass(pattern.pattern()) : null;
   }
 
   /**
@@ -90,7 +66,7 @@ final class AlphaNumericCheck {
     }
     for (int i = 0; i < token.length();) {
       final int codePoint = Character.codePointAt(token, i);
-      if (codePoint > Character.MAX_VALUE || !characters.get(codePoint)) {
+      if (!characters.contains(codePoint)) {
         return false;
       }
       i += Character.charCount(codePoint);
@@ -99,7 +75,8 @@ final class AlphaNumericCheck {
   }
 
   /**
-   * Tells whether the check runs as a character set lookup.
+   * Tells whether the check runs as a set lookup. The result of {@link #test(CharSequence)} is
+   * the same either way; this method exists so tests can pin which patterns take the lookup.
    *
    * @return {@code true} for a set lookup, {@code false} when the pattern is evaluated as
    *         a regular expression.
@@ -109,22 +86,23 @@ final class AlphaNumericCheck {
   }
 
   /**
-   * Reads a pattern of the form {@code ^[...]+$} into the set of characters its class accepts.
+   * Reads a pattern of the form {@code ^[...]+$} into the set of code points its class accepts.
    * Inside the class only plain characters and ranges written as {@code x-y} are understood; a
    * hyphen in first or last position, or directly after a range, is a plain hyphen. A range
-   * over the surrogate block skips that block. Escapes, negation, nested classes,
-   * intersections, and characters outside the Basic Multilingual Plane are left to the engine.
+   * covers each code unit in it, surrogates included, as it does for the engine. Escapes,
+   * negation, nested classes, intersections, and characters outside the Basic Multilingual
+   * Plane are left to the engine.
    *
    * @param regex The pattern text.
-   * @return The accepted characters, or {@code null} if the pattern is not of that form.
+   * @return The accepted code points, or {@code null} if the pattern is not of that form.
    */
-  private BitSet parseCharacterClass(String regex) {
+  private CodePointSet parseCharacterClass(String regex) {
     if (!regex.startsWith(CLASS_PREFIX) || !regex.endsWith(CLASS_SUFFIX)
         || regex.length() <= CLASS_PREFIX.length() + CLASS_SUFFIX.length()) {
       return null;
     }
     final String body = regex.substring(CLASS_PREFIX.length(), regex.length() - CLASS_SUFFIX.length());
-    final BitSet characters = new BitSet();
+    CodePointSet characters = CodePointSet.of();
     int i = 0;
     while (i < body.length()) {
       final char c = body.charAt(i);
@@ -136,32 +114,14 @@ final class AlphaNumericCheck {
         if (!isLiteral(to) || to < c) {
           return null;
         }
-        setRange(characters, c, to);
+        characters = characters.union(CodePointSet.ofRange(c, to));
         i += 3;
       } else {
-        characters.set(c);
+        characters = characters.union(CodePointSet.of(c));
         i++;
       }
     }
     return characters;
-  }
-
-  /**
-   * Adds a range to the set, skipping the surrogate code units when the range spans them.
-   * Neither end is a surrogate, so a range that overlaps the block covers all of it.
-   *
-   * @param characters The set to fill.
-   * @param from The first character of the range.
-   * @param to The last character of the range, not smaller than {@code from}.
-   */
-  private void setRange(BitSet characters, char from, char to) {
-    if (from <= SURROGATE_MAX && to >= SURROGATE_MIN) {
-      characters.set(from, SURROGATE_MIN);
-      characters.set(SURROGATE_MAX + 1, to + 1);
-    }
-    else {
-      characters.set(from, to + 1);
-    }
   }
 
   /**
