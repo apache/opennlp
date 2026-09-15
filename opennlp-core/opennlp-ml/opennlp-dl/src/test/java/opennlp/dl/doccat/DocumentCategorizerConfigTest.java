@@ -335,4 +335,37 @@ public class DocumentCategorizerConfigTest {
     assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
     assertTrue(e.getMessage().contains("content after the object"), e.getMessage());
   }
+
+  static Stream<Arguments> pythonWrittenConfigs() {
+    return Stream.of(
+        // NaN and the infinities in unrelated members are skipped
+        Arguments.of("{\"x\": NaN, \"id2label\": {\"0\": \"y\"}}", Map.of("0", "y")),
+        Arguments.of("{\"id2label\": {\"0\": \"y\"}, \"r\": [Infinity, -Infinity]}", Map.of("0", "y")),
+        // labels written with ensure_ascii escapes, lowercase hex and surrogate pairs included
+        Arguments.of("{\"id2label\": {\"0\": \"n\\u00e9gatif\", \"1\": \"\\ud83d\\ude00\"}}",
+            Map.of("0", "n\u00E9gatif", "1", "\uD83D\uDE00")),
+        Arguments.of("{\"id2label\": {\"0\": \"n\u00E9gatif\", \"1\": \"say \\\"hi\\\"\", \"2\": \"x}y\","
+            + " \"3\": \"z\"}}", Map.of("0", "n\u00E9gatif", "1", "say \"hi\"", "2", "x}y", "3", "z")),
+        // id2label nested in another member is not the configuration's map
+        Arguments.of("{\"text_config\": {\"id2label\": {\"0\": \"y\"}}}", Map.of()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("pythonWrittenConfigs")
+  public void testId2LabelsFromJsonPythonWrittenConfigs(String json, Map<String, String> expected) {
+    assertEquals(expected, DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      // a trailing comma and a comment line are not JSON
+      "{\"id2label\": {\"0\": \"y\"},}", "{\"id2label\": {\"0\": \"y\",}}",
+      "// labels\n{\"id2label\": {\"0\": \"y\"}}",
+      // NaN is never a label
+      "{\"id2label\": {\"0\": NaN}}",
+      // a control character alone is not blank text under any whitespace mode
+      "\u001C", "\u0085", "\u00A0", "\u2028", "\uFEFF\u001C"})
+  public void testId2LabelsFromJsonRejectsTextThatIsNotAnObject(String json) {
+    assertThrows(IllegalArgumentException.class, () -> DocumentCategorizerConfig.fromJson(json));
+  }
 }

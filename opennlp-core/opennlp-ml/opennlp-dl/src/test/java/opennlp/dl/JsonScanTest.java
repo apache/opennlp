@@ -421,4 +421,110 @@ public class JsonScanTest {
   void testLineEndingsAndEscapedKeys(String text, List<String> expected) {
     Assertions.assertEquals(expected, render(text, JsonScan.document(text)));
   }
+
+  private static final int DEEP = 100_000;
+
+  static Stream<Arguments> deepDocuments() {
+    return Stream.of(
+        Arguments.of("{\"a\":" + "[".repeat(DEEP) + "]".repeat(DEEP) + "}"),
+        Arguments.of("{\"a\":" + "{\"a\":".repeat(DEEP) + "0" + "}".repeat(DEEP) + "}"),
+        Arguments.of("{\"a\":" + "[{\"k\":".repeat(DEEP) + "0" + "}]".repeat(DEEP) + ",\"b\":1}"));
+  }
+
+  @ParameterizedTest(name = "deep document {index}")
+  @MethodSource("deepDocuments")
+  void testDeeplyNestedValuesAreSkippedWithoutRecursion(String text) {
+    final List<Member> members = JsonScan.document(text);
+    Assertions.assertEquals("a", members.get(0).key());
+    Assertions.assertEquals(6, members.get(0).valueStart());
+  }
+
+  @ParameterizedTest(name = "deep document {index} cut off")
+  @MethodSource("deepDocuments")
+  void testDeeplyNestedValueCutOffIsRejectedWithoutRecursion(String text) {
+    final String cut = text.substring(0, text.length() - 2);
+    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> JsonScan.document(cut));
+    Assertions.assertTrue(e.getMessage().contains("offset " + cut.length() + ","), e.getMessage());
+  }
+
+  static Stream<Arguments> badEscapesInsideValues() {
+    return Stream.of(
+        Arguments.of("{\"a\":\"\\q\"}", 6, "unknown escape \\q"),
+        Arguments.of("{\"a\":[\"\\q\"]}", 7, "unknown escape \\q"),
+        Arguments.of("{\"a\":{\"\\q\":1}}", 7, "unknown escape \\q"),
+        Arguments.of("{\"a\":[\"\\u12\"]}", 7, "four hexadecimal digits"),
+        Arguments.of("{\"a\":{\"b\":\"\\u12G4\"}}", 11, "four hexadecimal digits"),
+        Arguments.of("{\"a\":\"x\\", 5, "unterminated string"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("badEscapesInsideValues")
+  void testDocumentRejectsABadEscapeInsideAnyString(String text, int offset, String reason) {
+    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> JsonScan.document(text));
+    Assertions.assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
+    Assertions.assertTrue(e.getMessage().contains(reason), e.getMessage());
+  }
+
+  static Stream<Arguments> nonFiniteNumbers() {
+    return Stream.of(
+        Arguments.of("{\"a\": NaN, \"b\": 1}", List.of("a=NaN", "b=1")),
+        Arguments.of("{\"a\": Infinity}", List.of("a=Infinity")),
+        Arguments.of("{\"a\": -Infinity}", List.of("a=-Infinity")),
+        Arguments.of("{\"a\": [NaN, -Infinity, Infinity], \"b\": {\"c\": NaN}}",
+            List.of("a=[NaN, -Infinity, Infinity]", "b={\"c\": NaN}")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("nonFiniteNumbers")
+  void testDocumentSkipsTheNonFiniteNumbersPythonWrites(String text, List<String> expected) {
+    Assertions.assertEquals(expected, render(text, JsonScan.document(text)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"a\": nan}", "{\"a\": NAN}", "{\"a\": -NaN}", "{\"a\": +Infinity}",
+      "{\"a\": inf}", "{\"a\": Infinit}", "{\"a\": NaNx}"})
+  void testDocumentRejectsOtherSpellingsOfNonFiniteNumbers(String text) {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.document(text));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"a\": NaN}", "{\"a\": Infinity}", "{\"a\": -Infinity}"})
+  void testNonNegativeIntValueRejectsNonFiniteNumbers(String text) {
+    final Member a = JsonScan.document(text).get(0);
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> JsonScan.nonNegativeIntValue(text, a));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {-1, 2, 3, Integer.MAX_VALUE})
+  void testMembersRejectsAnOffsetOutsideTheText(int brace) {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.members("{}", brace));
+  }
+
+  @Test
+  void testMemberRecordRejectsAnInvalidRange() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new Member("k", 5, 3));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new Member("k", -1, 3));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new Member(null, 0, 1));
+  }
+
+  @Test
+  void testValueReadersRejectAMemberOutsideTheText() {
+    final Member outside = new Member("k", 5, 9);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.isObject("{}", outside));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.stringValue("{}", outside));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> JsonScan.nonNegativeIntValue("{}", outside));
+  }
+
+  @Test
+  void testMemberRejectsNullArguments() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.member(null, "k"));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.member(List.of(), null));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.stringValue("{}", null));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.stringValue(null,
+        new Member("k", 0, 1)));
+  }
 }
