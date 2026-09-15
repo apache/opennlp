@@ -44,7 +44,13 @@ public class ADMetadataTest {
       "12 pp=7|12|7",
       "1 ap=2|1|2",
       // the text id ends at the first character that is no digit
-      "12x34 p=5 p=6|12|5"
+      "12x34 p=5 p=6|12|5",
+      // digits from other scripts end a digit run
+      "12\uFF13 p=4|12|4",
+      "12 p=1\uFF12|12|1",
+      "12 p=1\u00B2|12|1",
+      "12\u00A0p=1|12|1",
+      "12\tp=1|12|1"
   })
   void testParseTextAndParagraph(String meta, int text, int paragraph) {
     Assertions.assertArrayEquals(new int[] {text, paragraph},
@@ -55,6 +61,7 @@ public class ADMetadataTest {
     // a line terminator is an ordinary character, the reader does not produce one inside a line
     return Stream.of(
         Arguments.of("12 p=1\n", 12, 1),
+        Arguments.of("12 p=1\r\n", 12, 1),
         Arguments.of("12\u2028 p=1", 12, 1),
         Arguments.of("12 p=1\u0085", 12, 1),
         Arguments.of("12 p=\r p=3", 12, 3));
@@ -71,7 +78,8 @@ public class ADMetadataTest {
   @ValueSource(strings = {"", "x p=1", "12", "12 p=", "12 P=1", "12 p=a", " 12 p=1", "p=1",
       "1 p==2", "LIT p=1", "LIT-p=1",
       // digits from other scripts are no ASCII digits
-      "١٢ p=1", "12 p=١",
+      "١٢ p=1", "12 p=١", "\uFF11\uFF12 p=1", "12 p=\uFF11", "12 p=\u00B2",
+      "\u0661\u066212 p=1", "12 p=\r\n3", "LIT\u00C3\u00A71 p=1",
       // a line terminator before the text id is no letter or hyphen
       "\r12 p=1", "\u202812 p=1"})
   void testParseTextAndParagraphRejects(String meta) {
