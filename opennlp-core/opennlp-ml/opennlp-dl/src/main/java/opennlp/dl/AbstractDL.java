@@ -40,7 +40,6 @@ import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.CharClass;
@@ -90,6 +89,7 @@ public abstract class AbstractDL implements AutoCloseable {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if the {@code model} or {@code vocabulary} cannot be read.
+   * @throws IllegalArgumentException Thrown if a JSON {@code vocabulary} is malformed.
    */
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
@@ -158,16 +158,16 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Loads a vocabulary {@link File} from disk.
-   * Supports both plain text files (one token per
-   * line) and simple JSON vocabulary files mapping tokens to integer
-   * IDs. JSON support is intentionally limited to the HuggingFace vocabulary
-   * shape; it is not a general-purpose JSON parser.
+   * Loads a vocabulary {@link File} from disk. A file with an opening brace as its first
+   * non-whitespace character is read as JSON: one object that maps each token to a non-negative
+   * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
+   * per line, the line number being the ID, as in {@code vocab.txt}.
    *
    * @param vocabFile The vocabulary file.
    * @return A map of vocabulary words to IDs.
-   * @throws IOException Thrown if the vocabulary
-   *     file cannot be opened or read.
+   * @throws IOException Thrown if the vocabulary file cannot be opened or read.
+   * @throws IllegalArgumentException Thrown if a JSON vocabulary is malformed or contains a value
+   *     that is not a non-negative integer.
    */
   public Map<String, Integer> loadVocab(
       final File vocabFile) throws IOException {
@@ -518,78 +518,22 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Collects every string literal that is followed by a colon and a run of ASCII digits,
-   * wherever it occurs in the text, mapping the unescaped string to the integer. A literal
-   * followed by anything else is not an entry; the scan then resumes with the character
-   * after its opening quote, so a quote inside it may open the next candidate. A later
-   * entry for the same token overwrites an earlier one.
+   * Reads a JSON vocabulary: one object that maps each token to its ID, the layout of the
+   * {@code vocab.json} files that accompany GPT-2 and RoBERTa style models. Keys are decoded
+   * from their escapes, and a later entry for the same token overwrites an earlier one.
    *
    * @param json The JSON text of the vocabulary.
    * @return A map of vocabulary tokens to IDs.
-   * @throws IllegalArgumentException Thrown if a token contains an invalid escape.
-   * @throws NumberFormatException Thrown if an ID does not fit into an {@code int}.
+   * @throws IllegalArgumentException Thrown if the text is not a single well-formed JSON object,
+   *     or if a value is not a non-negative integer that fits into an {@code int}. The message
+   *     names the offset or the token.
    */
   static Map<String, Integer> loadJsonVocab(final String json) {
-
     final Map<String, Integer> vocab = new HashMap<>();
-
-    int open = json.indexOf('"');
-    while (open >= 0) {
-      int next = open + 1;
-      final int close = JsonScan.closingQuote(json, open);
-      if (close >= 0) {
-        final int idStart = JsonScan.afterColon(json, close + 1);
-        final int idEnd = idStart < 0 ? -1 : StringUtil.endOfAsciiDigits(json, idStart);
-        if (idEnd > idStart) {
-          final String token = unescapeJsonString(json.substring(open + 1, close));
-          final int id = Integer.parseInt(json.substring(idStart, idEnd));
-          vocab.put(token, id);
-          next = idEnd;
-        }
-      }
-      open = json.indexOf('"', next);
+    for (JsonScan.Member member : JsonScan.document(json)) {
+      vocab.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
     }
-
     return vocab;
-  }
-
-  private static String unescapeJsonString(final String value) {
-    final StringBuilder result = new StringBuilder(value.length());
-    for (int i = 0; i < value.length(); i++) {
-      final char ch = value.charAt(i);
-      if (ch != '\\') {
-        result.append(ch);
-        continue;
-      }
-      if (++i == value.length()) {
-        throw new IllegalArgumentException("Invalid JSON string escape.");
-      }
-      final char escaped = value.charAt(i);
-      switch (escaped) {
-        case '"' -> result.append('"');
-        case '\\' -> result.append('\\');
-        case '/' -> result.append('/');
-        case 'b' -> result.append('\b');
-        case 'f' -> result.append('\f');
-        case 'n' -> result.append('\n');
-        case 'r' -> result.append('\r');
-        case 't' -> result.append('\t');
-        case 'u' -> {
-          if (i + 4 >= value.length()) {
-            throw new IllegalArgumentException("Invalid JSON unicode escape.");
-          }
-          final String hex = value.substring(i + 1, i + 5);
-          try {
-            result.append((char) Integer.parseInt(hex, 16));
-          } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid JSON unicode escape.", e);
-          }
-          i += 4;
-        }
-        default -> throw new IllegalArgumentException("Invalid JSON string escape.");
-      }
-    }
-    return result.toString();
   }
 
   /**

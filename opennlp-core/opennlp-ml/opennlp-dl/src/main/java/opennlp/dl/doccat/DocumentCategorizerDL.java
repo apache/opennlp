@@ -152,6 +152,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if {@code config} is not well-formed JSON or its
+   *     {@code id2label} member does not map keys to strings.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,
