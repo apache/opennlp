@@ -408,7 +408,9 @@ Arguments description:
                 A few classes corrected their output in 3.0.0, and a model trained with an
                 earlier release may depend on the old output until it is retrained. Each such
                 class documents what differs; the <code>EmojiCharSequenceNormalizer</code> of
-                the default language detector chain is one of them. The old output can be
+                the default language detector chain and the alphanumeric check of the
+                tokenizer for a custom pattern over the surrogate block are the ones in this
+                release. The old output can be
                 selected process-wide with the following system property:
                 <screen>
 <![CDATA[-Dopennlp.compat.mode=LEGACY]]>

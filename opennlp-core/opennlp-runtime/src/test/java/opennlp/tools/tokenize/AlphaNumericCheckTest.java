@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,6 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.tokenize.lang.Factory;
+import opennlp.tools.util.CompatibilityMode;
 
 public class AlphaNumericCheckTest {
 
@@ -68,6 +70,11 @@ public class AlphaNumericCheckTest {
       "^[\\p{L}]+$", "^[^a-z]+$", "^[a-z&&[^b]]+$", "^[\\d]+$", "^[a-z]+$|^[0-9]+$",
       "^[a-z]*$", "[a-z]+", "^(?i)[a-z]+$", "^[a-z]+\\d$", "^[ab\\]]+$", "^[😀]+$",
       "^[\\-a]+$", "^[a-z]++$", "^[a-z]+?$", "^[a-z]{1,}$", "^[a^b]+$", "^[a&b]+$");
+
+  @AfterEach
+  void resetCompatibilityMode() {
+    CompatibilityMode.reset();
+  }
 
   private static Stream<Arguments> languagesAndPatterns() {
     return LANGUAGES.stream().map(language ->
@@ -108,6 +115,31 @@ public class AlphaNumericCheckTest {
     AlphaNumericCheck check = new AlphaNumericCheck(pattern);
     Assertions.assertTrue(check.isCharacterSet(), regex + " runs as a set lookup");
     Assertions.assertEquals(expected, disagreements(pattern, check), regex);
+  }
+
+  /** Under the legacy mode the set gives the engine's result on all code points. */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("setLookupPatterns")
+  void testSetLookupAgreesWithRegexOnEveryCodePointUnderLegacyMode(String regex) {
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+    Pattern pattern = Pattern.compile(regex);
+    AlphaNumericCheck check = new AlphaNumericCheck(pattern);
+    Assertions.assertTrue(check.isCharacterSet(), regex + " runs as a set lookup");
+    Assertions.assertEquals(List.of(), disagreements(pattern, check), regex);
+  }
+
+  /** The mode is read when the check is built, so a check keeps its rule afterwards. */
+  @Test
+  void testModeIsReadAtConstruction() {
+    Pattern pattern = Pattern.compile("^[A-\uFFFF]+$");
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+    AlphaNumericCheck legacy = new AlphaNumericCheck(pattern);
+    CompatibilityMode.setActive(CompatibilityMode.CURRENT);
+    AlphaNumericCheck current = new AlphaNumericCheck(pattern);
+    Assertions.assertTrue(legacy.test("\uD800"));
+    Assertions.assertFalse(current.test("\uD800"));
+    Assertions.assertTrue(legacy.test("A"));
+    Assertions.assertTrue(current.test("A"));
   }
 
   private static Stream<Arguments> customPatternsAndTokens() {
