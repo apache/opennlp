@@ -105,9 +105,10 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
   }
 
   @Test
-  void testReadSplitsContextsOnAsciiWhitespaceRuns() throws IOException {
+  void testReadSplitsContextsOnWhitespaceRuns() throws IOException {
     String input = "other wc=ic=1.0\t\tw&c=he,ic=2.0   n1wc=lc=3.0 \t \n"
-        + "other wc=lc=1.0 w&c=belongs,lc=2.0\u00A0p1wc=ic=3.0\n";
+        + "other wc=lc=1.0 w&c=belongs,lc=2.0\u00A0p1wc=ic=3.0\n"
+        + "other   wc=lc=1.0  w&c=to,lc=2.0  \n";
     try (ObjectStream<Event> eventStream = createEventStream(input)) {
       Event e = eventStream.read();
       Assertions.assertArrayEquals(
@@ -115,7 +116,13 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
       Assertions.assertArrayEquals(new float[] {1.0f, 2.0f, 3.0f}, e.getValues());
       e = eventStream.read();
       Assertions.assertArrayEquals(
-          new String[] {"wc=lc", "w&c=belongs,lc=2.0\u00A0p1wc=ic"}, e.getContext());
+          new String[] {"wc=lc", "w&c=belongs,lc", "p1wc=ic"}, e.getContext());
+      Assertions.assertArrayEquals(new float[] {1.0f, 2.0f, 3.0f}, e.getValues());
+      // Leading and repeated runs yield no empty-string predicates.
+      e = eventStream.read();
+      Assertions.assertArrayEquals(
+          new String[] {"wc=lc", "w&c=to,lc"}, e.getContext());
+      Assertions.assertArrayEquals(new float[] {1.0f, 2.0f}, e.getValues());
       Assertions.assertNull(eventStream.read());
     }
   }

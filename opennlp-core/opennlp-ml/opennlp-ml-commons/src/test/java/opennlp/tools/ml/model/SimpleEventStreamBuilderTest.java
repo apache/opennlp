@@ -27,7 +27,7 @@ import opennlp.tools.util.ObjectStream;
 public class SimpleEventStreamBuilderTest {
 
   @Test
-  void testAddSplitsContextsOnAsciiWhitespaceRuns() throws IOException {
+  void testAddSplitsContextsOnWhitespaceRuns() throws IOException {
     try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
         .add("other/w=he\t\tn1w=belongs   n2w=to \t po=other")
         .build()) {
@@ -41,18 +41,18 @@ public class SimpleEventStreamBuilderTest {
   }
 
   @Test
-  void testAddDropsTrailingWhitespaceAndKeepsLeadingEmptyContext() throws IOException {
+  void testAddDropsLeadingAndTrailingWhitespace() throws IOException {
     try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
-        .add("other/w=he n1w=belongs  ")
-        .add("other/ w=he")
+        .add("other/  w=he n1w=belongs  ")
         .build()) {
+      // No empty-string predicate survives leading, repeated, or trailing runs.
       Assertions.assertArrayEquals(new String[] {"w=he", "n1w=belongs"}, events.read().getContext());
-      Assertions.assertArrayEquals(new String[] {"", "w=he"}, events.read().getContext());
+      Assertions.assertNull(events.read());
     }
   }
 
   @Test
-  void testAddWithValuesSplitsOnAsciiWhitespaceRuns() throws IOException {
+  void testAddWithValuesSplitsOnWhitespaceRuns() throws IOException {
     try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
         .add("other/w=he;0.5\tn1w=belongs;0.4  n2w=to;0.3")
         .build()) {
@@ -63,12 +63,12 @@ public class SimpleEventStreamBuilderTest {
   }
 
   @Test
-  void testAddDoesNotSplitOnNonAsciiSpace() throws IOException {
+  void testAddSplitsOnNonAsciiSpace() throws IOException {
     try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
         .add("other/w=he n1w=belongs n2w=to")
         .build()) {
       Assertions.assertArrayEquals(
-          new String[] {"w=he n1w=belongs", "n2w=to"}, events.read().getContext());
+          new String[] {"w=he", "n1w=belongs", "n2w=to"}, events.read().getContext());
     }
   }
 
