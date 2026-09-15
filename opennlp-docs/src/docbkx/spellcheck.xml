@@ -304,11 +304,13 @@ for (SuggestItem item : suggestions) {
 			A SpellChecker is driven by plain-text frequency dictionaries, loaded into an engine by the
 			<code>FrequencyDictionaryLoader</code>. Two UTF-8 (by default) line-based formats are supported.
 			In both, columns are separated by a TAB or by a run of spaces and TABs, so the space-delimited
-			SymSpell reference dictionaries load as they are. Leading and trailing separators on a line are
-			ignored. Other whitespace, such as a no-break space, is part of the word, so
-			<code>a&#xA0;b&lt;TAB&gt;5</code> is the single word <code>a&#xA0;b</code> with count 5 and
-			<code>the&#xA0;100</code> is reported as malformed. Blank lines, whitespace-only lines and lines
-			starting with <code>#</code> (comments) are skipped.
+			SymSpell reference dictionaries load as they are. Whitespace at the start and the end of a line
+			is removed as <code>String.strip()</code> does it, so a vertical tab, a form feed, or an em
+			space there is ignored as well. Between the columns, other whitespace such as a no-break space
+			is part of the word, so <code>a&#xA0;b&lt;TAB&gt;5</code> is the single word
+			<code>a&#xA0;b</code> with count 5 and <code>the&#xA0;100</code> is reported as malformed.
+			Blank lines, lines of Unicode whitespace only, and lines starting with <code>#</code>
+			(comments) are skipped.
 		</para>
 		<para>
 			The <emphasis>unigram</emphasis> dictionary lists one <code>word&lt;TAB&gt;count</code> per line,
