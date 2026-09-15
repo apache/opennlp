@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringUtil;
 
 public class SimpleEventStreamBuilder {
 
@@ -41,7 +41,8 @@ public class SimpleEventStreamBuilder {
     }
 
     // look for context (and values)
-    String[] cvPairs = StringUtil.splitOnAsciiWhitespace(ss[1]);
+    // Whitespace runs delimit contexts; empty fields are dropped, never kept as predicates.
+    String[] cvPairs = WhitespaceTokenizer.INSTANCE.tokenize(ss[1]);
     if (cvPairs[0].contains(";")) { // has values?
       String[] context = new String[cvPairs.length];
       float[] values = new float[cvPairs.length];
