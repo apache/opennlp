@@ -98,4 +98,14 @@ public class SimpleEventStreamBuilderTest {
     Assertions.assertThrows(RuntimeException.class,
         () -> new SimpleEventStreamBuilder().add("other/w=he;0.5 n1w=belongs"));
   }
+
+  @ParameterizedTest
+  // no name before the separator, no value after it, a second separator
+  @ValueSource(strings = {"other/;0.5", "other/w=he;0.5 ;0.4", "other/w=he;", "other/w=he;0.5 n1w=x;",
+      "other/w=he;0.5;1", "other/w=he;;0.5"})
+  void testAddRejectsAValuedContextThatIsNotNameAndValue(String event) {
+    RuntimeException e = Assertions.assertThrows(RuntimeException.class,
+        () -> new SimpleEventStreamBuilder().add(event));
+    Assertions.assertTrue(e.getMessage().startsWith("format error of the event"), e.getMessage());
+  }
 }

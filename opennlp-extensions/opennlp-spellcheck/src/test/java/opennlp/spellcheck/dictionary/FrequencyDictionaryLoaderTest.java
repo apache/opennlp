@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.InputStreamFactory;
 
@@ -103,6 +104,17 @@ public class FrequencyDictionaryLoaderTest {
     final MalformedDictionaryLineException ex = Assertions.assertThrows(
         MalformedDictionaryLineException.class, () -> loader.parseUnigrams(stringResource(text), into));
     Assertions.assertEquals(1, ex.getLineNumber());
+  }
+
+  @ParameterizedTest
+  // tabs and spaces, no-break spaces, a figure space, a narrow no-break space, an ideographic space
+  @ValueSource(strings = {"\t\t", " \t \t ", "\u00A0", "\u00A0\u00A0", " \u00A0\t", "\u2007",
+      "\u202F", "\u3000"})
+  void testLineOfWhitespaceOnlyIsSkipped(String blank) throws IOException {
+    final String text = "the\t100\n" + blank + "\nworld 5\n";
+    final Map<String, Long> into = new LinkedHashMap<>();
+    Assertions.assertEquals(2, new FrequencyDictionaryLoader().parseUnigrams(stringResource(text), into));
+    Assertions.assertEquals(Map.of("the", 100L, "world", 5L), into);
   }
 
   private static InputStreamFactory stringResource(String text) {
