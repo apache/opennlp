@@ -18,16 +18,19 @@
 package opennlp.dl.doccat;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.dl.JsonScan;
-import opennlp.tools.util.StringUtil;
 
+/**
+ * The part of a model configuration that a {@link DocumentCategorizerDL} uses: the
+ * {@code id2label} map of output index to label.
+ *
+ * @param id2label The labels by output index.
+ */
 public record DocumentCategorizerConfig(Map<String, String> id2label) {
 
   private static final String ID_TO_LABEL_KEY = "id2label";
-  private static final String BYTE_ORDER_MARK = "\uFEFF";
 
   @Override
   public Map<String, String> id2label() {
@@ -35,37 +38,24 @@ public record DocumentCategorizerConfig(Map<String, String> id2label) {
   }
 
   /**
-   * Reads the {@code id2label} member of a model configuration, the object that maps each
-   * output index to its label in the {@code config.json} files that accompany classification
-   * models. Keys and labels are decoded from their escapes, and a later entry for the same
-   * key overwrites an earlier one.
+   * Reads the top-level {@code id2label} member of a model configuration, the object that
+   * maps each output index to its label in the {@code config.json} files that accompany
+   * classification models. Keys and labels are decoded from their escapes, and a later entry
+   * for the same key overwrites an earlier one. An {@code id2label} member nested in another
+   * member is not the configuration's map.
    *
    * @param json The JSON text of the configuration. Blank text, with or without a leading
-   *     byte order mark, is a configuration without labels.
-   * @return The configuration, with an empty map if the configuration has no
+   *     byte order mark, is a configuration without labels. Must not be {@code null}.
+   * @return The configuration, with an empty map if the configuration has no top-level
    *     {@code id2label} member.
    * @throws IllegalArgumentException Thrown if {@code json} is {@code null}, if the text is
-   *     not a single well-formed JSON object, if {@code id2label} is not an object, or if a
-   *     label is not a string. The message names the offset or the key.
+   *     neither blank nor a single well-formed JSON object, if {@code id2label} is not an
+   *     object, or if a label is not a string. The message names the offset or the key.
    */
   public static DocumentCategorizerConfig fromJson(String json) {
     if (json == null) {
       throw new IllegalArgumentException("json must not be null");
     }
-    final Map<String, String> id2label = new HashMap<>();
-    final String text = json.startsWith(BYTE_ORDER_MARK) ? json.substring(1) : json;
-    if (!StringUtil.isBlank(text)) {
-      final JsonScan.Member labels = JsonScan.member(JsonScan.document(text), ID_TO_LABEL_KEY);
-      if (labels != null) {
-        if (!JsonScan.isObject(text, labels)) {
-          throw new IllegalArgumentException("\"" + ID_TO_LABEL_KEY + "\" must be an object: "
-              + text.substring(labels.valueStart(), labels.valueEnd()));
-        }
-        for (JsonScan.Member entry : JsonScan.members(text, labels.valueStart())) {
-          id2label.put(entry.key(), JsonScan.stringValue(text, entry));
-        }
-      }
-    }
-    return new DocumentCategorizerConfig(id2label);
+    return new DocumentCategorizerConfig(JsonScan.stringObject(json, ID_TO_LABEL_KEY));
   }
 }
