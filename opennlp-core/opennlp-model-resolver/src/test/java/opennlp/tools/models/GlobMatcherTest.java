@@ -19,6 +19,7 @@ package opennlp.tools.models;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -118,6 +119,51 @@ public class GlobMatcherTest {
   void testMatchesRejects(String glob, String input) {
     Assertions.assertFalse(GlobMatcher.matches(glob, input),
         "glob '" + glob + "' should reject '" + input + "'");
+  }
+
+  /**
+   * Creates a finder probe with no context and no matches.
+   *
+   * @return A minimal {@link AbstractClassPathModelFinder} for matcher tests.
+   */
+  AbstractClassPathModelFinder newProbeFinder() {
+    return new AbstractClassPathModelFinder() {
+      @Override
+      protected Object getContext() {
+        return null;
+      }
+
+      @Override
+      protected List<URI> getMatchingURIs(String wildcardPattern, Object context) {
+        return List.of();
+      }
+    };
+  }
+
+  /**
+   * Checks that the retained compatibility method keeps the glob unchanged.
+   */
+  @Test
+  void testAsRegexKeepsGlobForCompatibility() {
+    final AbstractClassPathModelFinder finder = newProbeFinder();
+    Assertions.assertEquals("*opennlp-models-*", finder.asRegex("*opennlp-models-*"));
+    Assertions.assertEquals("*.bin", finder.asRegex("*.bin"));
+  }
+
+  /**
+   * Checks that the retained compatibility method reads the pattern as a glob.
+   */
+  @Test
+  void testMatchesPatternReadsPatternAsGlob() throws Exception {
+    final AbstractClassPathModelFinder finder = newProbeFinder();
+    final URL url = new URI(MODEL_URL).toURL();
+    Assertions.assertTrue(finder.matchesPattern(url, Pattern.compile("*.bin", Pattern.LITERAL)));
+    Assertions.assertTrue(
+        finder.matchesPattern(url, Pattern.compile("*opennlp-models-*", Pattern.LITERAL)));
+    Assertions.assertFalse(
+        finder.matchesPattern(url, Pattern.compile("*.properties", Pattern.LITERAL)));
+    Assertions.assertFalse(
+        finder.matchesPattern(url, Pattern.compile("en-pos.bin", Pattern.LITERAL)));
   }
 
   @Test
