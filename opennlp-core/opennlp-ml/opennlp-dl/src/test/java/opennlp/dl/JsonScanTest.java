@@ -297,9 +297,9 @@ public class JsonScanTest {
 
   static Stream<Arguments> documentsWithAByteOrderMark() {
     return Stream.of(
-        Arguments.of("﻿{\"a\":1}", List.of("a=1")),
-        Arguments.of("﻿ \r\n{ \"a\" : 1 }\r\n", List.of("a=1")),
-        Arguments.of("﻿{}", List.of()));
+        Arguments.of("\uFEFF{\"a\":1}", List.of("a=1")),
+        Arguments.of("\uFEFF \r\n{ \"a\" : 1 }\r\n", List.of("a=1")),
+        Arguments.of("\uFEFF{}", List.of()));
   }
 
   @ParameterizedTest
@@ -310,12 +310,12 @@ public class JsonScanTest {
 
   static Stream<Arguments> byteOrderMarksElsewhere() {
     return Stream.of(
-        Arguments.of("﻿﻿{}", 1),
-        Arguments.of(" ﻿{}", 1),
-        Arguments.of("{﻿}", 1),
-        Arguments.of("{}﻿", 2),
-        Arguments.of("{\"a\":﻿1}", 5),
-        Arguments.of("﻿", 1));
+        Arguments.of("\uFEFF\uFEFF{}", 1),
+        Arguments.of(" \uFEFF{}", 1),
+        Arguments.of("{\uFEFF}", 1),
+        Arguments.of("{}\uFEFF", 2),
+        Arguments.of("{\"a\":\uFEFF1}", 5),
+        Arguments.of("\uFEFF", 1));
   }
 
   @ParameterizedTest
