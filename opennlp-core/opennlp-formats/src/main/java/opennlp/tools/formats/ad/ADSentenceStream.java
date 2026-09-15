@@ -311,7 +311,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
           return leaf;
         }
         int level = line.lastIndexOf("=") + 1;
-        String lexeme = line.substring(level + 1);
+        String lexeme = line.substring(level);
 
         if (isWordWithMarkup(lexeme)) {
           return null;
