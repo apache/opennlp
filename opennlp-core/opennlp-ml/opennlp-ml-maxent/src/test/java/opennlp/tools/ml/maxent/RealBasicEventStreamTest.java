@@ -23,8 +23,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.AbstractEventStreamTest;
 import opennlp.tools.ml.model.Event;
@@ -107,70 +105,21 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
     }
   }
 
+  /**
+   * Every line goes through {@link RealValueFileEventStream#parseEvent(String)}: an outcome-only
+   * line is an event without contexts and does not end the stream, fields are separated by
+   * Unicode whitespace, and a blank line is reported.
+   */
   @Test
-  void testReadSplitsContextsOnWhitespaceRuns() throws IOException {
-    String input = "other wc=ic=1.0\t\tw&c=he,ic=2.0   n1wc=lc=3.0 \t \n"
-        + "other wc=lc=1.0 w&c=belongs,lc=2.0\u00A0p1wc=ic=3.0\n"
-        + "other   wc=lc=1.0  w&c=to,lc=2.0  \n";
-    try (ObjectStream<Event> eventStream = createEventStream(input)) {
-      Event e = eventStream.read();
-      Assertions.assertArrayEquals(
-          new String[] {"wc=ic", "w&c=he,ic", "n1wc=lc"}, e.getContext());
-      Assertions.assertArrayEquals(new float[] {1.0f, 2.0f, 3.0f}, e.getValues());
-      e = eventStream.read();
-      Assertions.assertArrayEquals(
-          new String[] {"wc=lc", "w&c=belongs,lc", "p1wc=ic"}, e.getContext());
-      Assertions.assertArrayEquals(new float[] {1.0f, 2.0f, 3.0f}, e.getValues());
-      // repeated runs produce no empty predicate
-      e = eventStream.read();
-      Assertions.assertArrayEquals(
-          new String[] {"wc=lc", "w&c=to,lc"}, e.getContext());
-      Assertions.assertArrayEquals(new float[] {1.0f, 2.0f}, e.getValues());
-      Assertions.assertNull(eventStream.read());
-    }
-  }
-
-  @Test
-  void testOutcomeEndsAtTheFirstWhitespace() throws IOException {
-    String input = "other\twc=ic=1.0\r\n  other wc=lc=1.0\n";
-    try (ObjectStream<Event> eventStream = createEventStream(input)) {
-      Event e = eventStream.read();
-      Assertions.assertEquals("other", e.getOutcome());
-      Assertions.assertArrayEquals(new String[] {"wc=ic"}, e.getContext());
-      e = eventStream.read();
-      Assertions.assertEquals("other", e.getOutcome());
-      Assertions.assertArrayEquals(new String[] {"wc=lc"}, e.getContext());
-      Assertions.assertNull(eventStream.read());
-    }
-  }
-
-  @Test
-  void testOutcomeOnlyLineDoesNotEndTheStream() throws IOException {
-    String input = "other\nother wc=lc=1.0\n";
+  void testReadParsesEveryLineWithParseEvent() throws IOException {
+    String input = "other\r\nother\twc=lc=1.0\u00A0n1wc=ic=2.0\n \nother wc=x=1.0\n";
     try (ObjectStream<Event> eventStream = createEventStream(input)) {
       Event e = eventStream.read();
       Assertions.assertEquals("other", e.getOutcome());
       Assertions.assertEquals(0, e.getContext().length);
-      Assertions.assertArrayEquals(new String[] {"wc=lc"}, eventStream.read().getContext());
-      Assertions.assertNull(eventStream.read());
-    }
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"\n", "\r\n", "\r"})
-  void testReadAcceptsEveryLineTerminator(String terminator) throws IOException {
-    String input = "other wc=ic=1.0" + terminator + "other wc=lc=2.0" + terminator;
-    try (ObjectStream<Event> eventStream = createEventStream(input)) {
-      Assertions.assertArrayEquals(new String[] {"wc=ic"}, eventStream.read().getContext());
-      Assertions.assertArrayEquals(new String[] {"wc=lc"}, eventStream.read().getContext());
-      Assertions.assertNull(eventStream.read());
-    }
-  }
-
-  @Test
-  void testReadRejectsBlankLine() throws IOException {
-    try (ObjectStream<Event> eventStream = createEventStream("other wc=ic=1.0\n \nother wc=lc=1.0\n")) {
-      Assertions.assertEquals("other", eventStream.read().getOutcome());
+      e = eventStream.read();
+      Assertions.assertArrayEquals(new String[] {"wc=lc", "n1wc=ic"}, e.getContext());
+      Assertions.assertArrayEquals(new float[] {1.0f, 2.0f}, e.getValues());
       Assertions.assertThrows(InvalidFormatException.class, eventStream::read);
     }
   }

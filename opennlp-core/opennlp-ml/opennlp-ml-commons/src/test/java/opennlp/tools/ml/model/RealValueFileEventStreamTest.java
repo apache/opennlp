@@ -29,6 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.AbstractEventStreamTest;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
@@ -122,15 +123,56 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
     }
   }
 
+  private static Stream<Arguments> fieldSeparators() {
+    return Stream.of(
+        // a tab, a run, a no-break space, or leading whitespace between or before the fields
+        Arguments.of("other\twc=ic=1.0", "other", new String[] {"wc=ic"}),
+        Arguments.of("other  \t wc=ic=1.0", "other", new String[] {"wc=ic"}),
+        Arguments.of("other\u00A0wc=ic=1.0", "other", new String[] {"wc=ic"}),
+        Arguments.of("  other wc=ic=1.0", "other", new String[] {"wc=ic"}),
+        Arguments.of("\tother wc=ic=1.0", "other", new String[] {"wc=ic"}),
+        Arguments.of("other wc=ic=1.0\r", "other", new String[] {"wc=ic"}),
+        // next line, line separator, and ideographic space have the White_Space property
+        Arguments.of("other\u0085wc=ic=1.0", "other", new String[] {"wc=ic"}),
+        Arguments.of("other\u2028wc=ic=1.0", "other", new String[] {"wc=ic"}),
+        Arguments.of("other\u3000wc=ic=1.0", "other", new String[] {"wc=ic"}),
+        // file separator and zero width space do not, so they stay inside a field
+        Arguments.of("other\u001Cwc=ic=1.0", "other\u001Cwc=ic=1.0", new String[0]),
+        Arguments.of("other\u200Bwc=ic=1.0", "other\u200Bwc=ic=1.0", new String[0]),
+        Arguments.of("other wc\u001C=ic=1.0", "other", new String[] {"wc\u001C=ic"}),
+        // a supplementary character is one character of a field
+        Arguments.of("\uD83D\uDE00 w=\uD83D\uDE00=1.0", "\uD83D\uDE00", new String[] {"w=\uD83D\uDE00"}));
+  }
+
+  /**
+   * The fields are separated by Unicode whitespace only, independent of the whitespace mode.
+   */
   @ParameterizedTest
-  // a tab, a run, a no-break space, or leading whitespace between or before the fields
-  @ValueSource(strings = {"other\twc=ic=1.0", "other  \t wc=ic=1.0", "other wc=ic=1.0",
-      "  other wc=ic=1.0", "\tother wc=ic=1.0", "other wc=ic=1.0\r"})
-  void testOutcomeEndsAtTheFirstWhitespace(String line) throws IOException {
+  @MethodSource("fieldSeparators")
+  void testFieldsAreSeparatedByUnicodeWhitespaceOnly(String line, String outcome, String[] contexts)
+      throws IOException {
     Event e = RealValueFileEventStream.parseEvent(line);
-    Assertions.assertEquals("other", e.getOutcome());
-    Assertions.assertArrayEquals(new String[] {"wc=ic"}, e.getContext());
-    Assertions.assertArrayEquals(new float[] {1.0f}, e.getValues());
+    Assertions.assertEquals(outcome, e.getOutcome());
+    Assertions.assertArrayEquals(contexts, e.getContext());
+  }
+
+  @Test
+  void testParseEventDoesNotDependOnTheSharedWhitespaceTokenizer() throws IOException {
+    WhitespaceTokenizer.INSTANCE.setKeepNewLines(true);
+    try {
+      Event e = RealValueFileEventStream.parseEvent("other\nwc=ic=1.0\r\nn1wc=lc=2.0");
+      Assertions.assertEquals("other", e.getOutcome());
+      Assertions.assertArrayEquals(new String[] {"wc=ic", "n1wc=lc"}, e.getContext());
+    } finally {
+      WhitespaceTokenizer.INSTANCE.setKeepNewLines(false);
+    }
+  }
+
+  @Test
+  void testParseEventRejectsNull() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> RealValueFileEventStream.parseEvent(null));
+    Assertions.assertEquals("line must not be null", e.getMessage());
   }
 
   @ParameterizedTest
@@ -143,7 +185,7 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", " ", "\t", " ", "\r"})
+  @ValueSource(strings = {"", " ", "\t", "\u00A0", "\u0085", "\r"})
   void testLineWithoutOutcomeIsRejected(String line) {
     InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> RealValueFileEventStream.parseEvent(line));
