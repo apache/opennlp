@@ -265,4 +265,10 @@ public class DocumentCategorizerConfigTest {
     assertEquals("4 stars", map.get("a3"));
     assertEquals("5 stars", map.get("a4"));
   }
+
+  @Test
+  public void testId2LabelsFromJsonSkipsALeadingByteOrderMark() {
+    assertEquals(Map.of("0", "x"),
+        DocumentCategorizerConfig.fromJson("﻿{\"id2label\": {\"0\": \"x\"}}").id2label());
+  }
 }
