@@ -200,7 +200,7 @@ public class AlphaNumericCheckTest {
         "^[a-c1-3]+$", "^[a]+$", "^[a-zA-Z0-9_]+$", "^[a-b-c]+$", "^[--a]+$", "^[!-~]+$",
         "^[ -~]+$", "^[a-a]+$", "^[a-z.*+?(){}|$]+$", "^[a-z#]+$", "^[\u0001-\uD7FF]+$",
         "^[\uE000-\uFFFF]+$",
-        // the hyphen after a one-character range is a plain hyphen, nothing spans the block
+        // the hyphen after a one-character range is a plain hyphen, no range spans the block
         "^[\uD7FF-\uD7FF-\uE000]+$");
     List<String> spanSurrogates = List.of("^[A-\uFFFF]+$", "^[\uD7FF-\uE000]+$",
         "^[\u0001-\uFFFF]+$");
@@ -212,7 +212,7 @@ public class AlphaNumericCheckTest {
   /**
    * A set lookup agrees with the engine on every code point, except that a range over the
    * surrogate block leaves every unpaired surrogate to the engine, which accepts it, while
-   * the set rejects it. The disagreement is exactly that block and nothing else.
+   * the set rejects it. The difference is that block and no other code point.
    */
   @ParameterizedTest(name = "{0}")
   @MethodSource("setLookupPatternsAndExpectedDisagreements")
@@ -228,7 +228,7 @@ public class AlphaNumericCheckTest {
    * Compares the set and the engine on every code point as a one-character token, unpaired
    * surrogates included.
    *
-   * @return The code points on which they disagree, as {@code U+XXXX}, in code point order.
+   * @return The code points on which the results differ, as {@code U+XXXX}, in code point order.
    */
   private static List<String> disagreements(Pattern pattern, AlphaNumericCheck check) {
     List<String> differing = new ArrayList<>();
