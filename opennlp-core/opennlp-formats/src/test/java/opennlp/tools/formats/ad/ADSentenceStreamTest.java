@@ -266,16 +266,15 @@ public class ADSentenceStreamTest {
   @ParameterizedTest
   @CsvSource(delimiter = '|', ignoreLeadingAndTrailingWhitespace = false, value = {
       // no whitespace between the closing parenthesis and the lexeme: not a leaf line
-      "=H:n(\"casa\" M S)casa|2|:n(\"casa\" M S)casa",
+      "=H:n(\"casa\" M S)casa|2|H:n(\"casa\" M S)casa",
       // an empty lemma
-      "=H:n(\"\" M S) casa|2|:n(\"\" M S) casa",
-      "=ab|2|b",
-      "=a.b|2|.b",
-      "===x|4|''",
+      "=H:n(\"\" M S) casa|2|H:n(\"\" M S) casa",
+      "=ab|2|ab",
+      "===x|4|x",
       // whitespace only after the closing parenthesis is no lexeme
-      "=H:n(\"a)\" M S)  |2|:n(\"a)\" M S)  ",
-      "=x=y(a)  |4|(a)  ",
-      "=x=y(\"q\")\t|4|(\"q\")\t"
+      "=H:n(\"a)\" M S)  |2|H:n(\"a)\" M S)  ",
+      "=x=y(a)  |4|y(a)  ",
+      "=x=y(\"q\")\t|4|y(\"q\")\t"
   })
   void testFallbackLeafLines(String line, int level, String lexeme) {
     TreeElement element = new SentenceParser().getElement(line);
@@ -291,7 +290,7 @@ public class ADSentenceStreamTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"_", "<lixo>", "pause", "=ab.", "=xa<b", "=x1>y", "=a_b.c",
+  @ValueSource(strings = {"_", "<lixo>", "pause", "=ab.", "=a.b", "=xa<b", "=x1>y", "=a_b.c",
       // the word may start with a letter or digit of any script
       "=ção.", "=Ünïcode<x>", "=١٢.", "=ab\u2028."})
   void testIgnoredLines(String line) {
@@ -336,7 +335,7 @@ public class ADSentenceStreamTest {
     Assertions.assertTrue(element.isLeaf());
     leaf = (Leaf) element;
     Assertions.assertEquals(2, leaf.getLevel());
-    Assertions.assertEquals("b", leaf.getLexeme());
+    Assertions.assertEquals("ab", leaf.getLexeme());
   }
 
   private static Stream<Arguments> punctuationLines() {

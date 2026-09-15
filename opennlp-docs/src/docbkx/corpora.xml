@@ -456,7 +456,10 @@ Execution time: 1,955 seconds]]>
 				starts with one of these names, such as <code>&lt;sx&gt;</code>, is not a sentence tag. A
 				leaf line of a tree has its lexeme after the closing parenthesis, separated by whitespace of
 				any kind; a line with no text or only whitespace after the parenthesis has no lexeme. A line
-				separator or next line character inside a line is read as an ordinary character.
+				separator or next line character inside a line is read as an ordinary character. A tree
+				line that starts with equals signs but has no tag keeps all of the text after the equals
+				signs as its lexeme; such a line is skipped when that text is a word followed by a period
+				or an angle bracket.
 			</para>
 		</section>
 	<section xml:id="tools.corpora.arvores-deitadas.end-of-file">
