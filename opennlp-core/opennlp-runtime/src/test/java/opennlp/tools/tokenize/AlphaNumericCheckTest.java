@@ -56,6 +56,13 @@ public class AlphaNumericCheckTest {
       "^[A-\uFFFF]+$", "^[\uD7FF-\uE000]+$", "^[\u0001-\uFFFF]+$", "^[\u0001-\uD7FF]+$",
       "^[\uE000-\uFFFF]+$", "^[\uD7FF-\uD7FF-\uE000]+$");
 
+  /** The set-lookup patterns with a range over the surrogate block. */
+  private static final List<String> SURROGATE_SPANNING_PATTERNS = List.of(
+      "^[A-\uFFFF]+$", "^[\uD7FF-\uE000]+$", "^[\u0001-\uFFFF]+$");
+
+  /** Every surrogate code unit as {@code U+XXXX}, in order. */
+  private static final List<String> SURROGATE_BLOCK = surrogateBlock();
+
   /** Patterns that are left to the regular expression engine. */
   private static final List<String> ENGINE_PATTERNS = List.of(
       "^[\\p{L}]+$", "^[^a-z]+$", "^[a-z&&[^b]]+$", "^[\\d]+$", "^[a-z]+$|^[0-9]+$",
@@ -83,17 +90,24 @@ public class AlphaNumericCheckTest {
     return SET_LOOKUP_PATTERNS.stream();
   }
 
+  private static Stream<Arguments> setLookupPatternsAndExpectedDisagreements() {
+    return SET_LOOKUP_PATTERNS.stream().map(regex -> Arguments.of(regex,
+        SURROGATE_SPANNING_PATTERNS.contains(regex) ? SURROGATE_BLOCK : List.of()));
+  }
+
   /**
-   * A set lookup gives the engine's result on all code points. A range over the surrogate
-   * block covers it, so an unpaired surrogate is a member there, as it is for the engine.
+   * A set lookup gives the engine's result on all code points, except that a range over the
+   * surrogate block leaves the unpaired surrogates to the engine, which accepts them, while
+   * the set rejects them. The difference is that block and no other code point.
    */
   @ParameterizedTest(name = "{0}")
-  @MethodSource("setLookupPatterns")
-  void testSetLookupAgreesWithRegexOnEveryCodePoint(String regex) {
+  @MethodSource("setLookupPatternsAndExpectedDisagreements")
+  void testSetLookupDiffersFromRegexOnlyOnUnpairedSurrogates(String regex,
+      List<String> expected) {
     Pattern pattern = Pattern.compile(regex);
     AlphaNumericCheck check = new AlphaNumericCheck(pattern);
     Assertions.assertTrue(check.isCharacterSet(), regex + " runs as a set lookup");
-    Assertions.assertEquals(List.of(), disagreements(pattern, check), regex);
+    Assertions.assertEquals(expected, disagreements(pattern, check), regex);
   }
 
   private static Stream<Arguments> customPatternsAndTokens() {
@@ -104,11 +118,14 @@ public class AlphaNumericCheckTest {
         });
   }
 
+  /** A set lookup rejects a token with an unpaired surrogate; otherwise both agree. */
   @ParameterizedTest(name = "{0}: \"{2}\"")
   @MethodSource("customPatternsAndTokens")
   void testCustomPatternsAgreeWithRegex(String regex, Pattern pattern, String token) {
-    Assertions.assertEquals(pattern.matcher(token).matches(),
-        new AlphaNumericCheck(pattern).test(token));
+    AlphaNumericCheck check = new AlphaNumericCheck(pattern);
+    boolean expected = pattern.matcher(token).matches()
+        && !(check.isCharacterSet() && hasUnpairedSurrogate(token));
+    Assertions.assertEquals(expected, check.test(token));
   }
 
   @ParameterizedTest
@@ -154,9 +171,19 @@ public class AlphaNumericCheckTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"A", "ABC", "aBZ", "caf\u00E9", "\u00FF", "\uD800", "\uDFFF",
-      "\uD83D", "\uDE00", "a\uD800b"})
-  void testSurrogateSpanningRangeAcceptsPlaneZeroCodeUnits(String token) {
+  @ValueSource(strings = {"\uD800", "\uDFFF", "\uD83D", "\uDE00", "a\uD800b"})
+  void testSurrogateSpanningRangeRejectsUnpairedSurrogates(String token) {
+    Pattern pattern = Pattern.compile("^[A-\uFFFF]+$");
+    AlphaNumericCheck check = new AlphaNumericCheck(pattern);
+    Assertions.assertTrue(check.isCharacterSet());
+    Assertions.assertTrue(pattern.matcher(token).matches());
+    Assertions.assertFalse(check.test(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"A", "ABC", "aBZ", "caf\u00E9", "\u00FF", "\uD7FF", "\uE000",
+      "\uFFFF"})
+  void testSurrogateSpanningRangeAcceptsPlaneZeroCharacters(String token) {
     Pattern pattern = Pattern.compile("^[A-\uFFFF]+$");
     AlphaNumericCheck check = new AlphaNumericCheck(pattern);
     Assertions.assertTrue(check.isCharacterSet());
@@ -208,5 +235,18 @@ public class AlphaNumericCheckTest {
       }
     }
     return differing;
+  }
+
+  private static boolean hasUnpairedSurrogate(String token) {
+    return token.codePoints().anyMatch(
+        codePoint -> codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE);
+  }
+
+  private static List<String> surrogateBlock() {
+    List<String> names = new ArrayList<>();
+    for (int c = Character.MIN_SURROGATE; c <= Character.MAX_SURROGATE; c++) {
+      names.add(String.format("U+%04X", c));
+    }
+    return names;
   }
 }
