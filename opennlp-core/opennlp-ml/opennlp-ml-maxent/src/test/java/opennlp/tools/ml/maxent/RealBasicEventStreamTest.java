@@ -23,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.AbstractEventStreamTest;
 import opennlp.tools.ml.model.Event;
@@ -149,6 +151,17 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
       Event e = eventStream.read();
       Assertions.assertEquals("other", e.getOutcome());
       Assertions.assertEquals(0, e.getContext().length);
+      Assertions.assertArrayEquals(new String[] {"wc=lc"}, eventStream.read().getContext());
+      Assertions.assertNull(eventStream.read());
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\n", "\r\n", "\r"})
+  void testReadAcceptsEveryLineTerminator(String terminator) throws IOException {
+    String input = "other wc=ic=1.0" + terminator + "other wc=lc=2.0" + terminator;
+    try (ObjectStream<Event> eventStream = createEventStream(input)) {
+      Assertions.assertArrayEquals(new String[] {"wc=ic"}, eventStream.read().getContext());
       Assertions.assertArrayEquals(new String[] {"wc=lc"}, eventStream.read().getContext());
       Assertions.assertNull(eventStream.read());
     }
