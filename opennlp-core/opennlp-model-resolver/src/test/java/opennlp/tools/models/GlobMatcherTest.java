@@ -85,7 +85,37 @@ public class GlobMatcherTest {
         Arguments.of("*", "a\rb"),
         Arguments.of("*", "a\u0085b"),
         Arguments.of("*", "a\u2028b"),
-        Arguments.of("*", "a\u2029b"));
+        Arguments.of("*", "a\u2029b"),
+        Arguments.of("**", ""),
+        Arguments.of("***", "abc"),
+        Arguments.of("a**b", "ab"),
+        Arguments.of("a**b", "axyzb"),
+        Arguments.of("*?*", "a"),
+        Arguments.of("abc*", "abc"),
+        Arguments.of("*.bin*", ".bin"),
+        Arguments.of("[", "["),
+        Arguments.of("[a-z]", "[a-z]"),
+        Arguments.of("\\", "\\"),
+        Arguments.of("\\*", "\\lib\\a.jar"),
+        Arguments.of("\\Q*\\E", "\\Qx\\E"),
+        // path separators are plain characters
+        Arguments.of("*/models/*.bin", "/x/models/en.bin"),
+        Arguments.of("/*.bin", "/en.bin"),
+        Arguments.of("*/*", "a/"),
+        Arguments.of("*/*", "/"),
+        Arguments.of("*\\*", "C:\\lib\\a.jar"),
+        // a wildcard covers the jar separator and the entry path
+        Arguments.of("*.jar!/*.bin", "/repo/a.jar!/opennlp/en.bin"),
+        Arguments.of("*.jar!/opennlp/*", "/repo/a.jar!/opennlp/"),
+        Arguments.of("*!/*", "/repo/a.jar!/"),
+        // a drive letter in the file part of a file URL
+        Arguments.of("/C:/*.jar", "/C:/lib/a.jar"),
+        Arguments.of("*:/lib/*", "/C:/lib/a.jar"),
+        // percent-encoded file parts match as written
+        Arguments.of("*%20*", "/my%20models/en.bin"),
+        Arguments.of("/my%20models/*", "/my%20models/en.bin"),
+        Arguments.of("?%20?", "a%20b"),
+        Arguments.of("*" + SMILEY + "?", SMILEY + SMILEY));
   }
 
   @ParameterizedTest
@@ -123,7 +153,32 @@ public class GlobMatcherTest {
         Arguments.of("*?", ""),
         Arguments.of("?*", ""),
         Arguments.of("a\nb", "a b"),
-        Arguments.of("a\nb", "a\rb"));
+        Arguments.of("a\nb", "a\rb"),
+        Arguments.of("abcd", "abc"),
+        Arguments.of("a?cd", "abc"),
+        Arguments.of("*abcd", "abc"),
+        Arguments.of("abc?", "abc"),
+        Arguments.of("a**b", "a"),
+        Arguments.of("a**b", "ba"),
+        Arguments.of("*?*", ""),
+        Arguments.of("[a-z]", "b"),
+        Arguments.of("[", ""),
+        Arguments.of("\\", "\\\\"),
+        Arguments.of("\\Q*\\E", "x"),
+        Arguments.of("a/b", "a\\b"),
+        Arguments.of("a\\b", "a/b"),
+        Arguments.of("/*.bin", "en.bin"),
+        Arguments.of("*/models/*.bin", "/x/model/en.bin"),
+        Arguments.of("*.jar!/en.bin", "/repo/a.jar!/models/en.bin"),
+        Arguments.of("*.jar!/*", "/repo/a.jar/en.bin"),
+        Arguments.of("/C:/*.jar", "/D:/lib/a.jar"),
+        Arguments.of("C:/*.jar", "/C:/lib/a.jar"),
+        Arguments.of("*my models*", "/my%20models/en.bin"),
+        Arguments.of("*%20*", "/my models/en.bin"),
+        Arguments.of("?%20?", "a b"),
+        Arguments.of("?", "\r\n"),
+        Arguments.of("*" + SMILEY + "?", SMILEY),
+        Arguments.of(SMILEY + "*", "\uD83D"));
   }
 
   @ParameterizedTest
@@ -152,6 +207,73 @@ public class GlobMatcherTest {
     };
   }
 
+  private static Stream<Arguments> acceptedAndRejected() {
+    return Stream.concat(accepted(), rejected());
+  }
+
+  /**
+   * Checks that the deprecated translation agrees with the glob matcher on each glob and
+   * input of the accept and reject lists.
+   */
+  @ParameterizedTest
+  @MethodSource("acceptedAndRejected")
+  void testAsRegexAgreesWithMatcher(String glob, String input) {
+    final Pattern regex = Pattern.compile(newProbeFinder().asRegex(glob));
+    Assertions.assertEquals(GlobMatcher.matches(glob, input), regex.matcher(input).matches(),
+        "regex '" + regex + "' and glob '" + glob + "' differ on '" + input + "'");
+  }
+
+  private static Stream<Arguments> urlsAndWildcards() {
+    return Stream.of(
+        Arguments.of(MODEL_URL, "*.bin", true),
+        Arguments.of(MODEL_URL, "*.jar!/opennlp/models/*.bin", true),
+        Arguments.of(MODEL_URL, "*.jar!/*", true),
+        Arguments.of(MODEL_URL, "*.jar!/en-pos.bin", false),
+        Arguments.of(MODEL_URL, "*.jar", false),
+        Arguments.of(MODEL_URL, "*opennlp-models-???-en-*", true),
+        Arguments.of(MODEL_URL, "*opennlp-models-??-en-*", false),
+        // the file part of a file URL starts with a slash, the drive letter follows
+        Arguments.of("file:/C:/lib/opennlp-models-pos-en-1.2.0.jar", "/C:/*.jar", true),
+        Arguments.of("file:/C:/lib/opennlp-models-pos-en-1.2.0.jar", "C:/*.jar", false),
+        Arguments.of("file:/C:/lib/opennlp-models-pos-en-1.2.0.jar", "*opennlp-models-*", true),
+        // the file part of a jar URL is the inner URL, scheme included
+        Arguments.of("jar:file:/C:/lib/a.jar!/opennlp/en-pos.bin", "file:/C:/*.jar!/*.bin", true),
+        Arguments.of("jar:file:/C:/lib/a.jar!/opennlp/en-pos.bin", "/C:/*.jar!/*.bin", false),
+        Arguments.of(MODEL_URL, "file:/repo/*.jar!/opennlp/models/en-pos.bin", true),
+        Arguments.of(MODEL_URL, "/repo/*.jar!/opennlp/models/en-pos.bin", false),
+        Arguments.of("jar:file:/C:/lib/a.jar!/opennlp/en-pos.bin", "*/en-pos.bin", true),
+        Arguments.of("jar:file:/C:/lib/a.jar!/opennlp/en-pos.bin", "*\\en-pos.bin", false),
+        // the file part keeps its percent encoding
+        Arguments.of("file:/my%20models/en-pos.bin", "*%20*", true),
+        Arguments.of("file:/my%20models/en-pos.bin", "*my models*", false),
+        Arguments.of("file:/my%20models/en-pos.bin", "/my%20models/*.bin", true),
+        // a query is part of the file part, a fragment is not
+        Arguments.of("http://host/models/en-pos.bin?x=1", "*.bin", false),
+        Arguments.of("http://host/models/en-pos.bin?x=1", "*.bin?x=1", true),
+        Arguments.of("http://host/models/en-pos.bin#top", "*.bin", true),
+        Arguments.of("file:/models/en-pos.bin", "*", true),
+        Arguments.of("file:/models/en-pos.bin", "", false),
+        Arguments.of("file:/models/en-pos.bin", "?", false));
+  }
+
+  /**
+   * Checks the file part matching of {@code matchesWildcard} against jar, file, and http URLs,
+   * and that the deprecated pair {@code asRegex} and {@code matchesPattern} gives the same
+   * result.
+   */
+  @ParameterizedTest
+  @MethodSource("urlsAndWildcards")
+  void testMatchesWildcardOnUrlFilePart(String url, String wildcard, boolean expected)
+      throws Exception {
+    final AbstractClassPathModelFinder finder = newProbeFinder();
+    final URL parsed = new URI(url).toURL();
+    Assertions.assertEquals(expected, finder.matchesWildcard(parsed, wildcard),
+        "wildcard '" + wildcard + "' on '" + parsed.getFile() + "'");
+    Assertions.assertEquals(expected,
+        finder.matchesPattern(parsed, Pattern.compile(finder.asRegex(wildcard))),
+        "regex of '" + wildcard + "' on '" + parsed.getFile() + "'");
+  }
+
   private static Stream<Arguments> asRegexGlobs() {
     return Stream.of(
         Arguments.of("*.bin", "en-pos.bin", "en-posxbin"),
@@ -165,6 +287,17 @@ public class GlobMatcherTest {
         Arguments.of("a$", "a$", "a"),
         Arguments.of("a\\b", "a\\b", "ab"),
         Arguments.of("\\Q*\\E", "\\Qx\\E", "x"),
+        Arguments.of("[", "[", ""),
+        Arguments.of("[a-z]", "[a-z]", "b"),
+        Arguments.of("\\", "\\", "\\\\"),
+        Arguments.of("a**", "a", "ba"),
+        Arguments.of("*a", "\na", "\n"),
+        Arguments.of("a*", "a\r\n", "\na"),
+        Arguments.of("?", "\n", "\r\n"),
+        Arguments.of("?", "\uD83D", SMILEY + SMILEY),
+        Arguments.of("*.jar!/*.bin", "/repo/a.jar!/en.bin", "/repo/a.jar/en.bin"),
+        Arguments.of("/C:/*", "/C:/lib/a.jar", "C:/lib/a.jar"),
+        Arguments.of("*%20*", "/my%20models", "/my models"),
         Arguments.of(SMILEY + "?", SMILEY + SMILEY, SMILEY),
         Arguments.of("", "", "a"));
   }
