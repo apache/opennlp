@@ -118,6 +118,14 @@ public class SimpleEventStreamBuilderTest {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = {"w=he;-0.5", "w=he;-1", "w=he;-1e2"})
+  void testAddRejectsANegativeValueWithTheContextNamed(String context) {
+    RuntimeException e = Assertions.assertThrows(RuntimeException.class,
+        () -> new SimpleEventStreamBuilder().add("other/n=x;1 " + context));
+    Assertions.assertEquals("Negative values are not allowed: " + context, e.getMessage());
+  }
+
+  @ParameterizedTest
   @ValueSource(strings = {"other/w=he;abc", "other/w=he;1,5", "other/w=he;0.5 n=x;-", "other/w=he;0x1"})
   void testAddRejectsAValueThatIsNotANumber(String event) {
     Assertions.assertThrows(NumberFormatException.class,
