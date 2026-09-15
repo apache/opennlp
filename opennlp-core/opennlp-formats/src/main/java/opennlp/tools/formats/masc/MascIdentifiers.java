@@ -17,15 +17,23 @@
 
 package opennlp.tools.formats.masc;
 
-import opennlp.tools.tokenize.WhitespaceTokenizer;
+import java.util.ArrayList;
+import java.util.List;
+
 import opennlp.tools.util.StringUtil;
 
 /**
  * Shared handling of the identifier attributes in MASC annotation files. Node, region,
  * and named entity identifiers are a fixed text prefix followed by a number, as in
- * {@code penn-n7}; the parsers read the number and require the prefix.
+ * {@code penn-n7}; the parsers read the number and require the prefix. Attribute values
+ * that list several items separate them by spaces: the SAX parser has already turned tabs
+ * and line breaks written directly into an attribute value into spaces, see
+ * <a href="https://www.w3.org/TR/xml/#AVNormalize">XML 1.0, attribute-value
+ * normalization</a>.
  */
 final class MascIdentifiers {
+
+  private static final char ITEM_SEPARATOR = ' ';
 
   /** The prefix of a named entity node identifier, as in {@code ne-n7}. */
   static final String NAMED_ENTITY_ID_PREFIX = "ne-n";
@@ -47,7 +55,8 @@ final class MascIdentifiers {
    * @param prefix The expected prefix, such as {@link #PENN_TOKEN_ID_PREFIX}.
    * @return The number after the prefix.
    * @throws IllegalArgumentException If {@code id} is {@code null}, does not start with
-   *         {@code prefix}, or is not followed by digits only.
+   *         {@code prefix}, is not followed by digits only, or the number does not fit
+   *         an {@code int}.
    */
   static int parseId(String id, String prefix) {
     if (id == null || !id.startsWith(prefix) || id.length() == prefix.length()
@@ -55,12 +64,16 @@ final class MascIdentifiers {
       throw new IllegalArgumentException(
           "MASC identifier must be " + prefix + " followed by digits: " + id);
     }
-    return Integer.parseInt(id, prefix.length(), id.length(), 10);
+    try {
+      return Integer.parseInt(id, prefix.length(), id.length(), 10);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("MASC identifier number does not fit an int: " + id, e);
+    }
   }
 
   /**
-   * Parses a whitespace separated list of identifiers, each as {@link #parseId(String, String)}
-   * does.
+   * Parses a space separated list of identifiers, each as {@link #parseId(String, String)}
+   * does. Leading, trailing, and repeated spaces are ignored.
    *
    * @param ids The identifiers, such as {@code seg-r1 seg-r2}.
    * @param prefix The expected prefix of each identifier.
@@ -72,14 +85,41 @@ final class MascIdentifiers {
     if (ids == null) {
       throw new IllegalArgumentException("MASC identifier list must not be null");
     }
-    String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(ids);
-    if (tokens.length == 0) {
+    String[] items = splitOnSpaces(ids);
+    if (items.length == 0) {
       throw new IllegalArgumentException("MASC identifier list must name at least one identifier");
     }
-    int[] numbers = new int[tokens.length];
-    for (int i = 0; i < tokens.length; i++) {
-      numbers[i] = parseId(tokens[i], prefix);
+    int[] numbers = new int[items.length];
+    for (int i = 0; i < items.length; i++) {
+      numbers[i] = parseId(items[i], prefix);
     }
     return numbers;
+  }
+
+  /**
+   * Splits an attribute value on runs of spaces. Leading, trailing, and repeated spaces
+   * produce no empty item.
+   *
+   * @param value The attribute value. Must not be {@code null}.
+   * @return The non-empty items in order; empty for a value without one.
+   * @throws IllegalArgumentException If {@code value} is {@code null}.
+   */
+  static String[] splitOnSpaces(String value) {
+    if (value == null) {
+      throw new IllegalArgumentException("value must not be null");
+    }
+    List<String> items = new ArrayList<>();
+    int start = -1;
+    for (int i = 0; i <= value.length(); i++) {
+      if (i == value.length() || value.charAt(i) == ITEM_SEPARATOR) {
+        if (start >= 0) {
+          items.add(value.substring(start, i));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    return items.toArray(new String[0]);
   }
 }
