@@ -186,7 +186,9 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 				file is recognized by a top-level object without integer members that has a
 				<code>model</code> object with a <code>vocab</code> object; the tokens of
 				<code>model.vocab</code> form the vocabulary under the same rules, and the ids of the
-				<code>added_tokens</code> list are not entries.
+				<code>added_tokens</code> list are not entries. A byte order mark at the start of a
+				vocabulary or configuration file is skipped in both layouts, as RFC 8259 allows, so
+				a file saved by an editor that writes one still loads.
 			</para>
 			<para>
 				When a configuration file is given in place of the categories map, its top-level
