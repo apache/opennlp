@@ -86,6 +86,20 @@ under the License.
 		component which uses this functionality.
 		</para>
 		<para>
+		Events can also be read from a text file, one event per line, through
+		<code>FileEventStream</code> and, for real-valued features, <code>RealValueFileEventStream</code>.
+		The fields of a line are separated by runs of whitespace, where whitespace is what the
+		<code>WhitespaceTokenizer</code> accepts and so includes a no-break space; leading, trailing,
+		and repeated whitespace is ignored. The first field is the outcome and each further field is a
+		context, optionally followed by <code>=</code> and its real value. A line with only an outcome is
+		an event without contexts, and a blank line is reported as an
+		<code>InvalidFormatException</code>. An example with real values:
+		<screen>
+<![CDATA[other wc=ic=1.0 w&c=he,ic=2.0 n1wc=lc=3.0
+org-start wc=ic=1.0 w&c=apache,ic=2.0 p1wc=lc=3.0]]>
+		</screen>
+		</para>
+		<para>
 		We have managed to use several techniques to reduce the size of the models when writing them to
 		disk, which also means that reading in a model for use is much quicker than with less compact
 		encodings of the model. This was especially important to us since we use many maxent models in

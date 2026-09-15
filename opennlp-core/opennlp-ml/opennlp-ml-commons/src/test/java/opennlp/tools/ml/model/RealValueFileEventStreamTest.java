@@ -22,8 +22,11 @@ import java.io.StringReader;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.AbstractEventStreamTest;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -107,12 +110,47 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
       Assertions.assertArrayEquals(
           new String[] {"wc=lc", "w&c=belongs,lc", "p1wc=ic"}, e.getContext());
       Assertions.assertArrayEquals(new float[] {1.0f, 2.0f, 3.0f}, e.getValues());
-      // Leading and repeated runs yield no empty-string predicates.
+      // repeated runs produce no empty predicate
       e = eventStream.read();
       Assertions.assertArrayEquals(
           new String[] {"wc=lc", "w&c=to,lc"}, e.getContext());
       Assertions.assertArrayEquals(new float[] {1.0f, 2.0f}, e.getValues());
       Assertions.assertNull(eventStream.read());
+    }
+  }
+
+  @ParameterizedTest
+  // a tab, a run, a no-break space, or leading whitespace between or before the fields
+  @ValueSource(strings = {"other\twc=ic=1.0", "other  \t wc=ic=1.0", "other wc=ic=1.0",
+      "  other wc=ic=1.0", "\tother wc=ic=1.0", "other wc=ic=1.0\r"})
+  void testOutcomeEndsAtTheFirstWhitespace(String line) throws IOException {
+    Event e = RealValueFileEventStream.parseEvent(line);
+    Assertions.assertEquals("other", e.getOutcome());
+    Assertions.assertArrayEquals(new String[] {"wc=ic"}, e.getContext());
+    Assertions.assertArrayEquals(new float[] {1.0f}, e.getValues());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"other", "other ", " other\t"})
+  void testOutcomeOnlyLineHasNoContexts(String line) throws IOException {
+    Event e = RealValueFileEventStream.parseEvent(line);
+    Assertions.assertEquals("other", e.getOutcome());
+    Assertions.assertEquals(0, e.getContext().length);
+    Assertions.assertNull(e.getValues());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", " ", "\t", " ", "\r"})
+  void testLineWithoutOutcomeIsRejected(String line) {
+    Assertions.assertThrows(InvalidFormatException.class,
+        () -> RealValueFileEventStream.parseEvent(line));
+  }
+
+  @Test
+  void testReadRejectsBlankLine() throws IOException {
+    try (ObjectStream<Event> eventStream = createEventStream("other wc=ic=1.0\n\nother wc=lc=1.0\n")) {
+      Assertions.assertEquals("other", eventStream.read().getOutcome());
+      Assertions.assertThrows(InvalidFormatException.class, eventStream::read);
     }
   }
 }

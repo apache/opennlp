@@ -44,6 +44,9 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample> {
 
+  /** The number of leading file name characters that form the ISO 639-3 language code. */
+  private static final int LANG_CODE_LENGTH = 3;
+
   private class LeipzigSentencesStream implements ObjectStream<LanguageSample> {
 
     private final String lang;
@@ -133,9 +136,6 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
       return null;
     }
   }
-
-  /** The number of leading file name characters that carry the ISO 639-3 language code. */
-  private static final int LANG_CODE_LENGTH = 3;
 
   private final int sentencesPerSample;
 

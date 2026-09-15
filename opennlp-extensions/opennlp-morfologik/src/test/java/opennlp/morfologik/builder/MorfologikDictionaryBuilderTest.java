@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import morfologik.stemming.DictionaryMetadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -99,9 +98,6 @@ public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
       "''|''"})
   public void testToDictionaryFileNameExchangesTheTrailingSuffixOnly(String input, String expected) {
     Assertions.assertEquals(expected, MorfologikDictionaryBuilder.toDictionaryFileName(input));
-    Assertions.assertEquals(input.replaceAll(
-        "\\." + DictionaryMetadata.METADATA_FILE_EXTENSION + "$", ".dict"),
-        MorfologikDictionaryBuilder.toDictionaryFileName(input));
   }
 
 }

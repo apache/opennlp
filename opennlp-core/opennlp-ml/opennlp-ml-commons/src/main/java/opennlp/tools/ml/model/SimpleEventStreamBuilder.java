@@ -29,20 +29,32 @@ public class SimpleEventStreamBuilder {
   private final List<Event> eventList = new ArrayList<>();
   private int pos = 0;
 
-  /*
-   * the format of event should look like:
-   * without values) other/w=he n1w=belongs n2w=to po=other pow=other,He powf=other,ic
-   * with values) other/w=he;0.5 n1w=belongs;0.4 n2w=to;0.3 po=other;0.5 pow=other,He;0.25 powf=other,ic;0.5
+  /**
+   * Adds one event. The outcome runs up to the first {@code /}; the contexts follow it, separated
+   * by runs of whitespace as {@link WhitespaceTokenizer} defines it, each with an optional
+   * value after a {@code ;}:
+   * <pre>
+   * other/w=he n1w=belongs n2w=to po=other pow=other,He powf=other,ic
+   * other/w=he;0.5 n1w=belongs;0.4 n2w=to;0.3 po=other;0.5 pow=other,He;0.25 powf=other,ic;0.5
+   * </pre>
+   *
+   * @param event The event text. Must not be {@code null}.
+   * @return This builder.
+   * @throws RuntimeException If the outcome or the contexts are missing, or if the first
+   *         context has a value and another one does not.
    */
   public SimpleEventStreamBuilder add(String event) {
-    String[] ss = event.split("/");
-    if (ss.length != 2) {
+    int slash = event.indexOf('/');
+    if (slash < 1) {
       throw new RuntimeException(String.format("format error of the event \"%s\"", event));
     }
+    String outcome = event.substring(0, slash);
 
     // look for context (and values)
-    // Whitespace runs delimit contexts; empty fields are dropped, never kept as predicates.
-    String[] cvPairs = WhitespaceTokenizer.INSTANCE.tokenize(ss[1]);
+    String[] cvPairs = WhitespaceTokenizer.INSTANCE.tokenize(event.substring(slash + 1));
+    if (cvPairs.length == 0) {
+      throw new RuntimeException(String.format("format error of the event \"%s\"", event));
+    }
     if (cvPairs[0].contains(";")) { // has values?
       String[] context = new String[cvPairs.length];
       float[] values = new float[cvPairs.length];
@@ -55,9 +67,9 @@ public class SimpleEventStreamBuilder {
         context[i] = pair[0];
         values[i] = Float.parseFloat(pair[1]);
       }
-      eventList.add(new Event(ss[0], context, values));
+      eventList.add(new Event(outcome, context, values));
     } else {
-      eventList.add(new Event(ss[0], cvPairs));
+      eventList.add(new Event(outcome, cvPairs));
     }
 
     return this;

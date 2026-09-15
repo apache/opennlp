@@ -157,7 +157,7 @@ public final class FrequencyDictionaryLoader {
           continue;
         }
         final String[] columns = splitColumns(content.strip());
-        if (columns.length < 2 || columns[0].isEmpty()) {
+        if (columns.length < 2) {
           throw new MalformedDictionaryLineException(lineNo, line, "expected 'word<sep>count'");
         }
         final long count = parseCount(columns[1], lineNo, line);
@@ -181,7 +181,7 @@ public final class FrequencyDictionaryLoader {
           continue;
         }
         final String[] columns = splitColumns(content.strip());
-        if (columns.length < 3 || columns[0].isEmpty() || columns[1].isEmpty()) {
+        if (columns.length < 3) {
           throw new MalformedDictionaryLineException(lineNo, line, "expected 'w1<sep>w2<sep>count'");
         }
         final long count = parseCount(columns[2], lineNo, line);
@@ -193,39 +193,26 @@ public final class FrequencyDictionaryLoader {
   }
 
   /**
-   * Splits {@code line} into columns on runs of TAB and space characters. A leading run
-   * yields one empty first column, trailing empty columns are dropped, a line of only
-   * separators yields an empty array, and an empty line yields a single empty column. Other
-   * whitespace, such as a no-break space or a vertical tab, stays inside a column.
+   * Splits {@code line} into columns on runs of TAB and space characters. Leading, trailing,
+   * and repeated separators produce no empty column, so a line of only separators or an
+   * empty line has no columns. Other whitespace, such as a no-break space or a vertical tab,
+   * is part of a column.
    *
    * @param line The line to split. Must not be {@code null}.
-   * @return The columns in order.
+   * @return The non-empty columns in order.
    */
   static String[] splitColumns(String line) {
-    if (line.isEmpty()) {
-      return new String[] {""};
-    }
     final List<String> columns = new ArrayList<>();
-    if (isColumnSeparator(line.charAt(0))) {
-      columns.add("");
-    }
-    int start = 0;
-    for (int i = 0; i < line.length(); i++) {
-      if (isColumnSeparator(line.charAt(i))) {
-        if (i > start) {
+    int start = -1;
+    for (int i = 0; i <= line.length(); i++) {
+      if (i == line.length() || isColumnSeparator(line.charAt(i))) {
+        if (start >= 0) {
           columns.add(line.substring(start, i));
+          start = -1;
         }
-        while (i + 1 < line.length() && isColumnSeparator(line.charAt(i + 1))) {
-          i++;
-        }
-        start = i + 1;
+      } else if (start < 0) {
+        start = i;
       }
-    }
-    if (line.length() > start) {
-      columns.add(line.substring(start));
-    }
-    while (!columns.isEmpty() && columns.get(columns.size() - 1).isEmpty()) {
-      columns.remove(columns.size() - 1);
     }
     return columns.toArray(new String[0]);
   }
