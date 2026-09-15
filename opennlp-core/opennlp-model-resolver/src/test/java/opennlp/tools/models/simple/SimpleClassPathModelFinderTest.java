@@ -41,16 +41,18 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
 
   private static Stream<Arguments> unixClassPaths() {
     return Stream.of(
-        Arguments.of("", new String[] {""}),
+        Arguments.of("", new String[0]),
         Arguments.of(":", new String[0]),
         Arguments.of("::", new String[0]),
         Arguments.of("a.jar", new String[] {"a.jar"}),
         Arguments.of("a.jar:b.jar", new String[] {"a.jar", "b.jar"}),
-        Arguments.of(":a.jar", new String[] {"", "a.jar"}),
+        // empty entries are skipped wherever they appear
+        Arguments.of(":a.jar", new String[] {"a.jar"}),
         Arguments.of("a.jar:", new String[] {"a.jar"}),
         Arguments.of("a.jar::", new String[] {"a.jar"}),
-        Arguments.of("a.jar::b.jar", new String[] {"a.jar", "", "b.jar"}),
-        Arguments.of("::a.jar:", new String[] {"", "", "a.jar"}),
+        Arguments.of("a.jar::b.jar", new String[] {"a.jar", "b.jar"}),
+        Arguments.of("::a.jar:", new String[] {"a.jar"}),
+        Arguments.of(" :a.jar", new String[] {" ", "a.jar"}),
         Arguments.of("/usr/lib/a.jar:/opt/b.jar", new String[] {"/usr/lib/a.jar", "/opt/b.jar"}),
         Arguments.of("C:\\lib\\a.jar;C:\\lib\\b.jar", new String[] {"C", "\\lib\\a.jar;C", "\\lib\\b.jar"}),
         Arguments.of("\uD801\uDC12.jar:b.jar", new String[] {"\uD801\uDC12.jar", "b.jar"}));
@@ -60,22 +62,21 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
   @MethodSource("unixClassPaths")
   void testSplitClassPathUnix(String classPath, String[] expected) {
     Assertions.assertArrayEquals(expected, SimpleClassPathModelFinder.splitClassPath(classPath, false));
-    Assertions.assertArrayEquals(classPath.split(":"),
-        SimpleClassPathModelFinder.splitClassPath(classPath, false));
   }
 
   private static Stream<Arguments> windowsClassPaths() {
     return Stream.of(
-        Arguments.of("", new String[] {""}),
+        Arguments.of("", new String[0]),
         Arguments.of(";", new String[0]),
         Arguments.of(";;", new String[0]),
         Arguments.of("a.jar", new String[] {"a.jar"}),
         Arguments.of("a.jar;b.jar", new String[] {"a.jar", "b.jar"}),
-        Arguments.of(";a.jar", new String[] {"", "a.jar"}),
+        // empty entries are skipped wherever they appear
+        Arguments.of(";a.jar", new String[] {"a.jar"}),
         Arguments.of("a.jar;", new String[] {"a.jar"}),
         Arguments.of("a.jar;;", new String[] {"a.jar"}),
-        Arguments.of("a.jar;;b.jar", new String[] {"a.jar", "", "b.jar"}),
-        Arguments.of(";;a.jar;", new String[] {"", "", "a.jar"}),
+        Arguments.of("a.jar;;b.jar", new String[] {"a.jar", "b.jar"}),
+        Arguments.of(";;a.jar;", new String[] {"a.jar"}),
         Arguments.of("C:\\lib\\a.jar;C:\\lib\\b.jar", new String[] {"C:\\lib\\a.jar", "C:\\lib\\b.jar"}),
         Arguments.of("/usr/lib/a.jar:/opt/b.jar", new String[] {"/usr/lib/a.jar:/opt/b.jar"}),
         Arguments.of("\uD801\uDC12.jar;b.jar", new String[] {"\uD801\uDC12.jar", "b.jar"}));
@@ -85,7 +86,5 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
   @MethodSource("windowsClassPaths")
   void testSplitClassPathWindows(String classPath, String[] expected) {
     Assertions.assertArrayEquals(expected, SimpleClassPathModelFinder.splitClassPath(classPath, true));
-    Assertions.assertArrayEquals(classPath.split(";"),
-        SimpleClassPathModelFinder.splitClassPath(classPath, true));
   }
 }
