@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -119,16 +120,17 @@ public class LeipzigLanguageSampleStreamTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "Eng", "eNg", "en1", "123", "e-g", "en_", "en ", " en", "\u00e9ng",
-      "\u0130ng", "\uD835\uDC1Abc", "en\u00A0", "\uFF45ng"})
+  @ValueSource(strings = {"", "Eng", "eNg", "enG", "ENG", "en1", "123", "e-g", "en_", "en ", " en",
+      "\u00E9ng", "\u0130ng", "\uD835\uDC1Abc", "en\u00A0", "\uFF45ng"})
   void testIsAsciiLowerCaseWordRejects(String text) {
     Assertions.assertFalse(LeipzigLanguageSampleStream.isAsciiLowerCaseWord(text));
   }
 
   @Test
   void testOnlyFilesWithLowerCaseAsciiLanguageCodesAreRead() throws IOException {
-    String[] names = {"eng-sentences.txt", "Eng-sentences.txt", "en1-sentences.txt",
-        "e-g-sentences.txt", "en_sentences.txt", "\u00e9ng-sentences.txt", "en"};
+    String[] names = {"eng-sentences.txt", "Eng-sentences.txt", "ENG-sentences.txt",
+        "enG-sentences.txt", "en1-sentences.txt", "e-g-sentences.txt", "en_sentences.txt",
+        "\u00E9ng-sentences.txt", "en"};
     for (String name : names) {
       Files.writeString(new File(emptyTempDir, name).toPath(),
           "1\tThis is a sentence.\n2\tThis is another sentence.\n", StandardCharsets.UTF_8);
@@ -141,5 +143,21 @@ public class LeipzigLanguageSampleStreamTest {
       }
     }
     Assertions.assertEquals(List.of("eng", "eng"), languages);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\n", "\r\n", "\r"})
+  void testSentenceFilesWithEveryLineTerminatorAreRead(String terminator) throws IOException {
+    Files.writeString(new File(emptyTempDir, "eng-sentences.txt").toPath(),
+        "1\tFirst sentence." + terminator + "2\tSecond sentence." + terminator, StandardCharsets.UTF_8);
+    List<String> texts = new ArrayList<>();
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(emptyTempDir, 1, 2)) {
+      LanguageSample sample;
+      while ((sample = stream.read()) != null) {
+        texts.add(sample.context().toString());
+      }
+    }
+    Collections.sort(texts);
+    Assertions.assertEquals(List.of("First sentence. ", "Second sentence. "), texts);
   }
 }

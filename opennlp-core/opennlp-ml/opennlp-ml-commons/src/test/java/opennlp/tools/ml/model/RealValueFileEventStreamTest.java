@@ -19,10 +19,13 @@ package opennlp.tools.ml.model;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.AbstractEventStreamTest;
@@ -142,8 +145,73 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
   @ParameterizedTest
   @ValueSource(strings = {"", " ", "\t", " ", "\r"})
   void testLineWithoutOutcomeIsRejected(String line) {
-    Assertions.assertThrows(InvalidFormatException.class,
+    InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> RealValueFileEventStream.parseEvent(line));
+    Assertions.assertEquals("An event line must start with an outcome: \"" + line + "\"", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"org/start", "a=b", "x;y", "B-ORG", "\u00E9tat", "\uD83D\uDE00"})
+  void testOutcomeMayContainAnyNonWhitespace(String outcome) throws IOException {
+    Event e = RealValueFileEventStream.parseEvent(outcome + " wc=ic=1.0");
+    Assertions.assertEquals(outcome, e.getOutcome());
+    Assertions.assertArrayEquals(new String[] {"wc=ic"}, e.getContext());
+  }
+
+  private static Stream<Arguments> contextValues() {
+    return Stream.of(
+        Arguments.of("w&c=he,ic=2.0", "w&c=he,ic", 2.0f),
+        Arguments.of("a=b=c=3.5", "a=b=c", 3.5f),
+        Arguments.of("wc=ic=1e2", "wc=ic", 100f),
+        Arguments.of("wc=ic=1E-2", "wc=ic", 0.01f),
+        Arguments.of("wc=ic=.5", "wc=ic", 0.5f),
+        Arguments.of("wc=ic=+2", "wc=ic", 2f),
+        Arguments.of("wc=ic=0", "wc=ic", 0f));
+  }
+
+  /** The value follows the last {@code =}, so a context name may contain the character. */
+  @ParameterizedTest
+  @MethodSource("contextValues")
+  void testContextValueFollowsTheLastEqualsSign(String context, String name, float value)
+      throws IOException {
+    Event e = RealValueFileEventStream.parseEvent("other " + context);
+    Assertions.assertArrayEquals(new String[] {name}, e.getContext());
+    Assertions.assertArrayEquals(new float[] {value}, e.getValues());
+  }
+
+  @ParameterizedTest
+  // no equals sign, nothing after it, an equals sign in first position, text or a comma after it
+  @ValueSource(strings = {"wc", "wc=", "=5", "wc=abc", "wc=1,5", "wc=ic=1.0.0"})
+  void testContextWithoutANumberIsKeptWholeAndCountsOnce(String context) throws IOException {
+    Event e = RealValueFileEventStream.parseEvent("other " + context);
+    Assertions.assertArrayEquals(new String[] {context}, e.getContext());
+    Assertions.assertNull(e.getValues());
+  }
+
+  @Test
+  void testContextsWithAndWithoutValuesMix() throws IOException {
+    Event e = RealValueFileEventStream.parseEvent("other wc=ic=2.0 wc n1wc=lc=0.5");
+    Assertions.assertArrayEquals(new String[] {"wc=ic", "wc", "n1wc=lc"}, e.getContext());
+    Assertions.assertArrayEquals(new float[] {2.0f, 1.0f, 0.5f}, e.getValues());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"wc=ic=-1", "wc=ic=-0.5", "wc=ic=-1e2", "wc=ic=-1E-2"})
+  void testNegativeValueIsRejectedWithTheContextNamed(String context) {
+    RuntimeException e = Assertions.assertThrows(RuntimeException.class,
+        () -> RealValueFileEventStream.parseEvent("other " + context));
+    Assertions.assertEquals("Negative values are not allowed: " + context, e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\n", "\r\n", "\r"})
+  void testReadAcceptsEveryLineTerminator(String terminator) throws IOException {
+    String input = "other wc=ic=1.0" + terminator + "other wc=lc=2.0" + terminator;
+    try (ObjectStream<Event> eventStream = createEventStream(input)) {
+      Assertions.assertArrayEquals(new String[] {"wc=ic"}, eventStream.read().getContext());
+      Assertions.assertArrayEquals(new String[] {"wc=lc"}, eventStream.read().getContext());
+      Assertions.assertNull(eventStream.read());
+    }
   }
 
   @Test
