@@ -113,24 +113,15 @@ public class LeipzigLanguageSampleStreamTest {
     }
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"a", "eng", "dan", "abcdefghijklmnopqrstuvwxyz"})
-  void testIsAsciiLowerCaseWordAccepts(String text) {
-    Assertions.assertTrue(LeipzigLanguageSampleStream.isAsciiLowerCaseWord(text));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"", "Eng", "eNg", "enG", "ENG", "en1", "123", "e-g", "en_", "en ", " en",
-      "\u00E9ng", "\u0130ng", "\uD835\uDC1Abc", "en\u00A0", "\uFF45ng"})
-  void testIsAsciiLowerCaseWordRejects(String text) {
-    Assertions.assertFalse(LeipzigLanguageSampleStream.isAsciiLowerCaseWord(text));
-  }
-
   @Test
   void testOnlyFilesWithLowerCaseAsciiLanguageCodesAreRead() throws IOException {
-    String[] names = {"eng-sentences.txt", "Eng-sentences.txt", "ENG-sentences.txt",
-        "enG-sentences.txt", "en1-sentences.txt", "e-g-sentences.txt", "en_sentences.txt",
-        "\u00E9ng-sentences.txt", "en"};
+    // Leipzig corpus file names start with the three-letter language code
+    String[] names = {"eng_news_2010_10K-sentences.txt", "deu_wikipedia_2016_10K-sentences.txt",
+        "Eng_news_2010_10K-sentences.txt", "ENG_news_2010_10K-sentences.txt",
+        "enG_news_2010_10K-sentences.txt", "en1_news_2010_10K-sentences.txt",
+        "e-g_news_2010_10K-sentences.txt", "en_news_2010_10K-sentences.txt",
+        "\u00E9ng_news_2010_10K-sentences.txt", "\u0130ng_news_2010_10K-sentences.txt",
+        "\uFF45ng_news_2010_10K-sentences.txt", "\uD835\uDC1Abc_news_2010_10K-sentences.txt", "en"};
     for (String name : names) {
       Files.writeString(new File(emptyTempDir, name).toPath(),
           "1\tThis is a sentence.\n2\tThis is another sentence.\n", StandardCharsets.UTF_8);
@@ -142,7 +133,7 @@ public class LeipzigLanguageSampleStreamTest {
         languages.add(sample.language().getLang());
       }
     }
-    Assertions.assertEquals(List.of("eng", "eng"), languages);
+    Assertions.assertEquals(List.of("deu", "deu", "eng", "eng"), languages);
   }
 
   @ParameterizedTest
