@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
@@ -53,6 +52,8 @@ public abstract class AbstractDL implements AutoCloseable {
   public static final String INPUT_IDS = "input_ids";
   public static final String ATTENTION_MASK = "attention_mask";
   public static final String TOKEN_TYPE_IDS = "token_type_ids";
+
+  private static final String BYTE_ORDER_MARK = "\uFEFF";
 
   protected final OrtEnvironment env;
   protected final OrtSession session;
@@ -162,7 +163,8 @@ public abstract class AbstractDL implements AutoCloseable {
    * Loads a vocabulary {@link File} from disk. A file with an opening brace as its first
    * non-whitespace character is read as JSON: one object that maps each token to a non-negative
    * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
-   * per line, the line number being the ID, as in {@code vocab.txt}.
+   * per line, the line number being the ID, as in {@code vocab.txt}. A byte order mark at the
+   * start of the file is not content in either format.
    *
    * @param vocabFile The vocabulary file.
    * @return A map of vocabulary words to IDs.
@@ -179,10 +181,8 @@ public abstract class AbstractDL implements AutoCloseable {
   static Map<String, Integer> loadVocabFile(
       final File vocabFile) throws IOException {
 
-    final Path vocabPath =
-        Path.of(vocabFile.getPath());
-    final String content = Files.readString(
-        vocabPath, StandardCharsets.UTF_8);
+    final String read = Files.readString(Path.of(vocabFile.getPath()), StandardCharsets.UTF_8);
+    final String content = read.startsWith(BYTE_ORDER_MARK) ? read.substring(1) : read;
     final String trimmed = content.trim();
 
     // Detect JSON format by leading brace
@@ -195,12 +195,9 @@ public abstract class AbstractDL implements AutoCloseable {
     final AtomicInteger counter =
         new AtomicInteger(0);
 
-    try (Stream<String> lines = Files.lines(
-        vocabPath, StandardCharsets.UTF_8)) {
-      lines.forEach(line ->
-          vocab.put(line, counter.getAndIncrement())
-      );
-    }
+    content.lines().forEach(line ->
+        vocab.put(line, counter.getAndIncrement())
+    );
 
     return vocab;
   }

@@ -30,7 +30,9 @@ import opennlp.tools.util.StringUtil;
  * <a href="https://www.rfc-editor.org/rfc/rfc8259">RFC 8259</a> for structure, whitespace, and
  * string escapes, and reads an object as a list of {@link Member members} without building a
  * document tree. It is lenient in one respect: a control character inside a string is kept as
- * content instead of being rejected, so a label wrapped over two lines still reads.
+ * content instead of being rejected, so a label wrapped over two lines still reads. A byte
+ * order mark at the start of a document is skipped, as
+ * <a href="https://www.rfc-editor.org/rfc/rfc8259#section-8.1">section 8.1</a> allows.
  * Malformed text is reported with the offset at which reading stopped.
  */
 @Internal
@@ -39,6 +41,7 @@ public final class JsonScan {
   private static final String TRUE = "true";
   private static final String FALSE = "false";
   private static final String NULL = "null";
+  private static final char BYTE_ORDER_MARK = '\uFEFF';
 
   private JsonScan() {
   }
@@ -54,7 +57,8 @@ public final class JsonScan {
   }
 
   /**
-   * Reads the members of the single object that is the document.
+   * Reads the members of the single object that is the document. A byte order mark as the
+   * first character is skipped; at any other offset it is malformed text.
    *
    * @param text The JSON text. Must not be {@code null}.
    * @return The members in document order, an empty list for an empty object.
@@ -65,7 +69,8 @@ public final class JsonScan {
     if (text == null) {
       throw new IllegalArgumentException("text must not be null");
     }
-    final int start = skipWhitespace(text, 0);
+    final int first = !text.isEmpty() && text.charAt(0) == BYTE_ORDER_MARK ? 1 : 0;
+    final int start = skipWhitespace(text, first);
     expect(text, start, '{');
     final List<Member> members = new ArrayList<>();
     final int end = endOfObject(text, start, members);
