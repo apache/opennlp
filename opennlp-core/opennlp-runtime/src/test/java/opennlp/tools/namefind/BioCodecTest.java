@@ -286,7 +286,9 @@ public class BioCodecTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"person\u2028-start", "per\nson-start", "per\rson-start",
-      "per\u0085son-start", "per\u2029son-start", "atype\n-start", "atype-start\n", "atype-\nstart"})
+      "per\u0085son-start", "per\u2029son-start", "atype\n-start", "atype-start\n", "atype-\nstart",
+      "\u2028atype-start", "\u0085atype-start", "atype-start\u0085", "atype-start\u2028",
+      "atype-\u2029", "\u0085", "\r\n"})
   void testExtractNameTypeRejectsLineTerminators(String outcome) {
     // any line terminator in the outcome means no type
     Assertions.assertNull(BioCodec.extractNameType(outcome));

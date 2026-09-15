@@ -23,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class BrownClusterTest {
 
@@ -64,5 +66,15 @@ public class BrownClusterTest {
   void testSpacesAreNotSeparators() throws IOException {
     BrownCluster cluster = cluster("0101 the 10\n");
     Assertions.assertNull(cluster.lookupToken("the"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\n", "\r\n", "\r"})
+  void testLineTerminatorsEndLines(String terminator) throws IOException {
+    BrownCluster cluster = cluster("0101\tthe\t10" + terminator + "dog\t0111" + terminator
+        + "0110\tcat\t9");
+    Assertions.assertEquals("0101", cluster.lookupToken("the"));
+    Assertions.assertEquals("0111", cluster.lookupToken("dog"));
+    Assertions.assertEquals("0110", cluster.lookupToken("cat"));
   }
 }

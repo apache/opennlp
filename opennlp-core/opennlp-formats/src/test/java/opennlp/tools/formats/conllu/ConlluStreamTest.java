@@ -141,7 +141,8 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
 
   @ParameterizedTest
   @ValueSource(strings = {"1-", "-2", "-", "1-2-3", "1--2", "a-b", "1-b", "a-2", "1 -2", "1- 2",
-      "1.1-2", "\u0661-2", "3-1", "99999999999-2"})
+      "1.1-2", "\u0661-2", "1-\u0662", "1-2\u0662", "\uFF11-\uFF12", "1-2\n", "1-2 ", " 1-2",
+      "\u200B1-2", "1\u2011", "3-1", "99999999999-2", "1-99999999999"})
   void testParseContractionRangeRejects(String id) {
     Assertions.assertThrows(InvalidFormatException.class,
         () -> ConlluStream.parseContractionRange(id));

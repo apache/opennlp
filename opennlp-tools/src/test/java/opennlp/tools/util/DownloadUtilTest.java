@@ -79,6 +79,11 @@ public class DownloadUtilTest {
         Arguments.of("  abc123 model.bin", "abc123"),
         Arguments.of("abc123", "abc123"),
         Arguments.of("abc123 *model.bin\r\n", "abc123"),
+        Arguments.of("abc123\r\nmodel.bin", "abc123"),
+        Arguments.of("abc123 model.bin\r", "abc123"),
+        Arguments.of("\r\nabc123 model.bin\r\n", "abc123"),
+        Arguments.of("ABC123  model.bin\r\n", "ABC123"),
+        Arguments.of("abc123 *./models/model.bin\r\n", "abc123"),
         Arguments.of("abc123 model.bin\ndef456 other.bin\n", "abc123"),
         Arguments.of("abc123\u000Bmodel.bin", "abc123"),
         // a no-break space or an ideographic space ends the hash as a plain space does

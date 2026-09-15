@@ -78,7 +78,11 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
       "'1001 p= p=4', 1001, 4",
       "'1001 pp=5', 1001, 5",
       "'1001p=6', 1001, 6",
-      "'1001 p=007', 1001, 7"})
+      "'1001 p=007', 1001, 7",
+      // only ASCII digits count, a digit of another script ends or skips the value
+      "'1001 p=2\u0663', 1001, 2",
+      "'1001 p=\u0662 p=3', 1001, 3",
+      "'1001 p=\uFF12 p=4', 1001, 4"})
   void testParseTextAndParagraph(String meta, int text, int para) {
     Assertions.assertArrayEquals(new int[] {text, para},
         ADSentenceSampleStream.parseTextAndParagraph(meta));
@@ -88,7 +92,8 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
   @ValueSource(strings = {"", "AX", "CF- p=1", "1001", "1001 p=", "1001 p=x", "1001 P=2",
       "1001 p =2", "1001 p= 2",
       // the text id must be ASCII digits, and must directly follow the letters and hyphens
-      "\u0661 p=2", "CF_1001 p=2", "CF 1001 p=2"})
+      "\u0661 p=2", "CF_1001 p=2", "CF 1001 p=2",
+      "1001 p=\u0662", "1001 p=\uFF12", "1001 p=\u0662 p=", "1001 p=\u0662 p=x"})
   void testParseTextAndParagraphRejects(String meta) {
     Assertions.assertNull(ADSentenceSampleStream.parseTextAndParagraph(meta));
   }

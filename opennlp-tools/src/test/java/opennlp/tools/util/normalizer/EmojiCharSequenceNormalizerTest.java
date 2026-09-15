@@ -129,6 +129,24 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   @Test
+  void normalizeKeepsUnpairedSurrogatesAtEitherEnd() {
+    Assertions.assertEquals("a\uD83C", NORMALIZER.normalize("a\uD83C"));
+    Assertions.assertEquals("\uDC00a", NORMALIZER.normalize("\uDC00a"));
+    Assertions.assertEquals("\uD83C", NORMALIZER.normalize("\uD83C"));
+    Assertions.assertEquals("\uDC00", NORMALIZER.normalize("\uDC00"));
+    Assertions.assertEquals("a \uD83C", NORMALIZER.normalize("a" + cp(0x1F600) + "\uD83C"));
+    Assertions.assertEquals("\uDC00 a", NORMALIZER.normalize("\uDC00" + cp(0x1F600) + "a"));
+  }
+
+  @Test
+  void normalizeKeepsCombiningMarksAfterSupplementaryCodePoints() {
+    Assertions.assertEquals(" \u0301", NORMALIZER.normalize(cp(0x1F600) + "\u0301"));
+    Assertions.assertEquals(" \u20E3", NORMALIZER.normalize(cp(0x1F600) + "\u20E3"));
+    Assertions.assertEquals("e\u0301 \u0301x",
+        NORMALIZER.normalize("e\u0301" + cp(0x1F600, 0x1F601) + "\u0301x"));
+  }
+
+  @Test
   void normalizeAcceptsAnyCharSequence() {
     String text = "a" + cp(0x1F600) + "b";
     Assertions.assertEquals("a b", NORMALIZER.normalize(new StringBuilder(text)));

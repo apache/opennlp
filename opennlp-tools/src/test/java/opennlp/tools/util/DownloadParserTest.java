@@ -96,7 +96,14 @@ public class DownloadParserTest {
         Arguments.of("<a href='a.bin'>x</a>", List.of()),
         // the closing tag is matched case-insensitively and only as "</a>"
         Arguments.of("<a href=\"a.bin\">x</ A><a href=\"b.bin\">y</A >z</a>", List.of("a.bin")),
-        Arguments.of("<a href=\"\uD83D\uDE00.bin\">x</a>", List.of("\uD83D\uDE00.bin")));
+        Arguments.of("<a href=\"\uD83D\uDE00.bin\">x</a>", List.of("\uD83D\uDE00.bin")),
+        // entities and percent escapes in a value are returned as written
+        Arguments.of("<a href=\"a&amp;b.bin\">x</a>", List.of("a&amp;b.bin")),
+        Arguments.of("<a href=\"a%20b.bin\">x</a>", List.of("a%20b.bin")),
+        Arguments.of("<a href=\"&quot;.bin\">x</a>", List.of("&quot;.bin")),
+        // a page with CRLF line endings and uppercase anchors
+        Arguments.of("<A HREF=\"a.bin\">x</A>\r\n<A HREF=\"b.bin\">y</A>\r\n",
+            List.of("a.bin", "b.bin")));
   }
 
   @ParameterizedTest
