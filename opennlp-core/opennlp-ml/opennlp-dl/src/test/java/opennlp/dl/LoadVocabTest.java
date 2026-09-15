@@ -183,6 +183,45 @@ public class LoadVocabTest {
     assertTrue(e.getMessage().contains("\"bad\""), e.getMessage());
   }
 
+  private static final String TOKENIZER_JSON = """
+      {
+        "version": "1.0",
+        "truncation": null,
+        "added_tokens": [
+          {"id": 0, "content": "[PAD]", "special": true},
+          {"id": 1, "content": "[UNK]", "special": true}
+        ],
+        "normalizer": {"type": "BertNormalizer", "lowercase": true},
+        "model": {
+          "type": "WordPiece",
+          "unk_token": "[UNK]",
+          "vocab_size": 5,
+          "vocab": {"[PAD]": 0, "[UNK]": 1, "hello": 2, "##ing": 3, "\\u0120x": 4}
+        }
+      }
+      """;
+
+  @Test
+  void testLoadJsonVocabReadsTheTokenizerJsonLayout() {
+    // model.vocab is the vocabulary; the added_tokens ids and vocab_size are not entries
+    assertEquals(Map.of("[PAD]", 0, "[UNK]", 1, "hello", 2, "##ing", 3, "\u0120x", 4),
+        AbstractDL.loadJsonVocab(TOKENIZER_JSON));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      // an int-valued top-level member makes the top-level object the vocabulary
+      "{\"a\": 1, \"model\": {\"vocab\": {\"b\": 2}}}",
+      // model or vocab missing, or not an object
+      "{\"model\": {\"type\": \"WordPiece\"}}", "{\"model\": \"x\"}",
+      "{\"model\": {\"vocab\": [\"a\"]}}", "{\"vocab\": {\"a\": 1}}",
+      // the same strict rules apply inside model.vocab
+      "{\"model\": {\"vocab\": {\"a\": \"1\"}}}", "{\"model\": {\"vocab\": {\"a\": -1}}}",
+      "{\"model\": {\"vocab\": {\"a\": 1,}}}"})
+  void testLoadJsonVocabRejectsOtherNestedLayouts(String json) {
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(json));
+  }
+
   @Test
   void testMalformedJsonVocabFileIsRejected() throws IOException {
     final File tempFile = File.createTempFile("vocab-malformed", ".json");
