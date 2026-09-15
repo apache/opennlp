@@ -29,6 +29,7 @@ import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Loads plain-text frequency dictionaries into a {@link SymSpell} engine.
@@ -65,6 +66,9 @@ public final class FrequencyDictionaryLoader {
 
   /** UTF-8 byte-order mark (U+FEFF); stripped if it leads a line. */
   private static final char BOM = (char) 0xFEFF;
+
+  /** The first character of a comment line. */
+  private static final char COMMENT_MARKER = '#';
 
   private final Charset charset;
 
@@ -234,11 +238,18 @@ public final class FrequencyDictionaryLoader {
     return line;
   }
 
+  /**
+   * Tests whether a line carries no entry: it is empty, consists of whitespace as
+   * {@link StringUtil#isBlank(CharSequence)} defines it, or starts with {@code #}.
+   *
+   * @param line The line without its byte-order mark. Must not be {@code null}.
+   * @return {@code true} if the line is to be skipped.
+   */
   private static boolean isSkippable(String line) {
-    if (line.isBlank()) {
+    if (StringUtil.isBlank(line)) {
       return true;
     }
-    return line.charAt(0) == '#';
+    return line.charAt(0) == COMMENT_MARKER;
   }
 
   private static long parseCount(String raw, long lineNo, String line) throws IOException {
