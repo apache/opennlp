@@ -62,25 +62,34 @@ public class TokSpanEventStreamTest {
   }
 
   /**
-   * Tests that a {@code null} pattern stays usable with skipping disabled or enabled.
-   * A {@code null} pattern never treats a token as alphanumeric, so both settings
-   * must yield the same events as skipping disabled with the default pattern.
+   * Tests that a {@code null} pattern stands for {@link Factory#DEFAULT_ALPHANUMERIC}, as the
+   * constructor documents, with skipping disabled and enabled.
    *
    * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
    */
   @ParameterizedTest
   @ValueSource(booleans = {false, true})
-  void testNullPatternIsPreserved(boolean skipAlphaNumerics) throws IOException {
-    List<String> expected = readOutcomes(false, new Factory().getAlphanumeric(null));
+  void testNullPatternMeansDefaultPattern(boolean skipAlphaNumerics) throws IOException {
+    List<String> expected = readOutcomes(skipAlphaNumerics, Factory.DEFAULT_ALPHANUMERIC);
     List<String> actual = readOutcomes(skipAlphaNumerics, null);
     Assertions.assertFalse(actual.isEmpty());
     Assertions.assertEquals(expected, actual);
   }
 
+  @Test
+  void testSkippingLeavesOutAlphanumericTokens() throws IOException {
+    // "now" is alphanumeric and longer than one character, so it yields two events
+    // unless it is skipped; the quoted token holds punctuation and is never skipped
+    List<String> kept = readOutcomes(false, Factory.DEFAULT_ALPHANUMERIC);
+    List<String> skipped = readOutcomes(true, Factory.DEFAULT_ALPHANUMERIC);
+    Assertions.assertEquals(kept.size() - 2, skipped.size());
+    Assertions.assertEquals(kept.subList(0, skipped.size()), skipped);
+  }
+
   private static List<String> readOutcomes(boolean skipAlphaNumerics, Pattern alphaNumeric)
       throws IOException {
     ObjectStream<String> sentenceStream =
-        ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\"");
+        ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\" now");
     ObjectStream<TokenSample> tokenSampleStream = new TokenSampleStream(sentenceStream);
     List<String> outcomes = new ArrayList<>();
     try (ObjectStream<Event> eventStream = new TokSpanEventStream(tokenSampleStream,
