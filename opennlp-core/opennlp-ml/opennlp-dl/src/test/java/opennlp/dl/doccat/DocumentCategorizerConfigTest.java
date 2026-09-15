@@ -269,7 +269,7 @@ public class DocumentCategorizerConfigTest {
   @Test
   public void testId2LabelsFromJsonSkipsALeadingByteOrderMark() {
     assertEquals(Map.of("0", "x"),
-        DocumentCategorizerConfig.fromJson("﻿{\"id2label\": {\"0\": \"x\"}}").id2label());
+        DocumentCategorizerConfig.fromJson("\uFEFF{\"id2label\": {\"0\": \"x\"}}").id2label());
   }
 
   private static final String CONFIG_JSON =
