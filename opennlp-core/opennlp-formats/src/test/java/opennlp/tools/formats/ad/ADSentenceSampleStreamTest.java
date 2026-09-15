@@ -86,4 +86,27 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
     }
   }
 
+  @Test
+  void testNextLineCharacterInTheSourceIsMetadata() throws IOException {
+    List<String> lines = List.of(
+        "<s>",
+        "SOURCE: ref=\"a\u0085b\"",
+        "1001 Hello world .",
+        "STA:fcl",
+        "=H:n(\"world\" M S)\tworld",
+        "</s>");
+    Iterator<String> iterator = lines.iterator();
+    ObjectStream<String> lineStream = new ObjectStream<>() {
+      @Override
+      public String read() {
+        return iterator.hasNext() ? iterator.next() : null;
+      }
+    };
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(lineStream, true)) {
+      SentenceSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertEquals("Hello world .", sample.getDocument());
+      Assertions.assertNull(stream.read());
+    }
+  }
 }

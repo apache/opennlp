@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -43,6 +44,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.WhitespaceMode;
 
 public class ADSentenceStreamTest {
 
@@ -451,7 +453,15 @@ public class ADSentenceStreamTest {
       "<s id=\"<\">|s|true",
       "<s<|s|false",
       "<<s>>|s|false",
-      "<s/>|s|false"
+      // a self-closing tag is not a tag
+      "<s/>|s|false",
+      "<p/>|p|false",
+      "<t/>|t|false",
+      "<caixa/>|caixa|false",
+      "<ext/>|ext|false",
+      // next line is Unicode whitespace, file separator is not
+      "<s\u0085id=\"1\">|s|true",
+      "<s\u001Cid=\"1\">|s|false"
   })
   void testIsOpeningTag(String line, String name, boolean expected) {
     Assertions.assertEquals(expected, ADSentenceStream.isOpeningTag(line, name));
@@ -693,5 +703,88 @@ public class ADSentenceStreamTest {
     Assertions.assertEquals(2, sentences.size());
     Assertions.assertEquals(ola + " mundo .", sentences.get(0).text());
     Assertions.assertEquals(List.of(ola, "mundo", "."), lexemes(sentences.get(0)));
+  }
+
+  @AfterEach
+  void resetWhitespaceMode() {
+    WhitespaceMode.reset();
+  }
+
+  private static Stream<Arguments> whitespaceLinesInEveryMode() {
+    List<Arguments> rows = new ArrayList<>();
+    for (WhitespaceMode mode : WhitespaceMode.values()) {
+      // next line, no-break space, and line separator are Unicode whitespace, so they separate
+      // the closing parenthesis from the lexeme and end a tag
+      rows.add(Arguments.of(mode, "=H:n(\"casa\" F S)\u0085casa", true, "H", "casa"));
+      rows.add(Arguments.of(mode, "=H:n(\"casa\" F S)\u00A0casa", true, "H", "casa"));
+      rows.add(Arguments.of(mode, "=H:n(\"casa\" F S)\u2028casa", true, "H", "casa"));
+      rows.add(Arguments.of(mode, "=S:np\u2028", false, "S:np", null));
+      rows.add(Arguments.of(mode, "=S:np\u00A0", false, "S:np", null));
+      rows.add(Arguments.of(mode, "==PU:pu(\"\u0085\" PU)\t\u0085", false, "PU:pu", null));
+      // whitespace inside a tag ends it, and the rest of the line is not a leaf or node tail
+      rows.add(Arguments.of(mode, "=H:n\u00A0(\"o\" M S)\tx", true, "",
+          "H:n\u00A0(\"o\" M S)\tx"));
+      rows.add(Arguments.of(mode, "=S:n\u2028p", true, "", "S:n\u2028p"));
+      // the file separator is not Unicode whitespace
+      rows.add(Arguments.of(mode, "=H:n(\"casa\" F S)\u001Ccasa", true, "",
+          "H:n(\"casa\" F S)\u001Ccasa"));
+      rows.add(Arguments.of(mode, "=S:np\u001C", true, "", "S:np\u001C"));
+    }
+    return rows.stream();
+  }
+
+  @ParameterizedTest(name = "{0}: {1}")
+  @MethodSource("whitespaceLinesInEveryMode")
+  void testWhitespaceIsTheUnicodeDefinitionInEveryMode(WhitespaceMode mode, String line,
+      boolean isLeaf, String syntacticTag, String lexeme) {
+    WhitespaceMode.setActive(mode);
+    TreeElement element = new SentenceParser().getElement(line);
+    Assertions.assertNotNull(element);
+    Assertions.assertEquals(isLeaf, element.isLeaf());
+    Assertions.assertEquals(syntacticTag, element.getSyntacticTag());
+    if (isLeaf) {
+      Assertions.assertEquals(lexeme, ((Leaf) element).getLexeme());
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("whitespaceModes")
+  void testOpeningTagWhitespaceIsTheUnicodeDefinitionInEveryMode(WhitespaceMode mode) {
+    WhitespaceMode.setActive(mode);
+    Assertions.assertTrue(ADSentenceStream.isOpeningTag("<s\u0085id=\"1\">", "s"));
+    Assertions.assertTrue(ADSentenceStream.isOpeningTag("<s\u00A0id=\"1\">", "s"));
+    Assertions.assertFalse(ADSentenceStream.isOpeningTag("<s\u001Cid=\"1\">", "s"));
+  }
+
+  private static Stream<WhitespaceMode> whitespaceModes() {
+    return Stream.of(WhitespaceMode.values());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"=a=", "=ab=", "==a=", "=x=y(a) ="})
+  void testFallbackLineWithNoTextAfterTheLastEqualsSignIsSkipped(String line) {
+    Assertions.assertNull(new SentenceParser().getElement(line));
+  }
+
+  @Test
+  void testNextLineCharacterInALexemeIsWhitespaceThroughTheStream() throws IOException {
+    List<String> lines = List.of(
+        "<s id=\"1\">",
+        "SOURCE: src",
+        "CF1001-1 Ol\u00E1 \u0085 .",
+        "STA:fcl",
+        "=P:v-fin(\"ol\u00E1\" PR 3S IND VFIN)\tOl\u00E1",
+        "=PU:pu(\"\u0085\" PU)\t\u0085",
+        "=.",
+        "</s>");
+    List<Sentence> sentences = readSentences(String.join("\n", lines) + "\n");
+    Assertions.assertEquals(1, sentences.size());
+    TreeElement[] elements = ((Node) sentences.get(0).root().getElements()[0]).getElements();
+    Assertions.assertEquals(3, elements.length);
+    Assertions.assertEquals("Ol\u00E1", ((Leaf) elements[0]).getLexeme());
+    Assertions.assertFalse(elements[1].isLeaf());
+    Assertions.assertEquals("PU:pu", elements[1].getSyntacticTag());
+    Assertions.assertEquals(0, ((Node) elements[1]).getElements().length);
+    Assertions.assertEquals(".", ((Leaf) elements[2]).getLexeme());
   }
 }
