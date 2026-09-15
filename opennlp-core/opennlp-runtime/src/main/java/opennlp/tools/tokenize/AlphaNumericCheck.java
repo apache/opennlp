@@ -27,7 +27,9 @@ import opennlp.tools.util.normalizer.CodePointSet;
  * as a regular expression. A pattern of the form {@code ^[...]+$} with a class of plain
  * characters and simple ranges, the form of all built-in language defaults, is evaluated as a
  * {@link CodePointSet} lookup. Other patterns are evaluated by the regular expression engine.
- * Both give the result of {@code pattern.matcher(token).matches()}.
+ * Both give the result of {@code pattern.matcher(token).matches()}, with one exception: a set
+ * lookup rejects a token with an unpaired surrogate, which is not a character, where the
+ * engine accepts it as a code point inside a range that spans the surrogate block.
  */
 final class AlphaNumericCheck {
 
@@ -89,9 +91,9 @@ final class AlphaNumericCheck {
    * Reads a pattern of the form {@code ^[...]+$} into the set of code points its class accepts.
    * Inside the class only plain characters and ranges written as {@code x-y} are understood; a
    * hyphen in first or last position, or directly after a range, is a plain hyphen. A range
-   * covers each code unit in it, surrogates included, as it does for the engine. Escapes,
-   * negation, nested classes, intersections, and characters outside the Basic Multilingual
-   * Plane are left to the engine.
+   * over the surrogate block skips that block, since an unpaired surrogate is not a
+   * character. Escapes, negation, nested classes, intersections, and characters outside the
+   * Basic Multilingual Plane are left to the engine.
    *
    * @param regex The pattern text.
    * @return The accepted code points, or {@code null} if the pattern is not of that form.
@@ -114,7 +116,7 @@ final class AlphaNumericCheck {
         if (!isLiteral(to) || to < c) {
           return null;
         }
-        characters = characters.union(CodePointSet.ofRange(c, to));
+        characters = characters.union(rangeWithoutSurrogates(c, to));
         i += 3;
       } else {
         characters = characters.union(CodePointSet.of(c));
@@ -122,6 +124,22 @@ final class AlphaNumericCheck {
       }
     }
     return characters;
+  }
+
+  /**
+   * The code points of a range, without the surrogate block. Neither end is a surrogate, so
+   * a range that overlaps the block covers all of it.
+   *
+   * @param from The first character of the range.
+   * @param to The last character of the range, not smaller than {@code from}.
+   * @return The set of the range.
+   */
+  private CodePointSet rangeWithoutSurrogates(char from, char to) {
+    if (from <= Character.MAX_SURROGATE && to >= Character.MIN_SURROGATE) {
+      return CodePointSet.ofRange(from, Character.MIN_SURROGATE - 1)
+          .union(CodePointSet.ofRange(Character.MAX_SURROGATE + 1, to));
+    }
+    return CodePointSet.ofRange(from, to);
   }
 
   /**

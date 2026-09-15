@@ -99,17 +99,19 @@ public class TokSpanEventStreamTest {
   }
 
   /**
-   * A token with an unpaired surrogate is skipped under a class that covers the surrogate
-   * block, as the regular expression does, and kept under the ASCII default.
+   * A token with an unpaired surrogate is not alphanumeric under any class, so it yields
+   * events under a class that covers the surrogate block as under the ASCII default, although
+   * the regular expression accepts it.
    */
   @Test
-  void testUnpairedSurrogateFollowsThePattern() throws IOException {
+  void testUnpairedSurrogateIsNeverAlphanumeric() throws IOException {
     String sample = QUOTED_SAMPLE + " " + SURROGATE_TOKEN;
     Assertions.assertTrue(PLANE_ZERO.matcher(SURROGATE_TOKEN).matches());
-    List<String> kept = readEvents(sample, true, Factory.DEFAULT_ALPHANUMERIC);
-    List<String> skipped = readEvents(sample, true, PLANE_ZERO);
-    Assertions.assertEquals(kept.size() - eventsFor(SURROGATE_TOKEN), skipped.size());
-    Assertions.assertEquals(skipped, kept.subList(0, skipped.size()));
+    List<String> underDefault = readEvents(sample, true, Factory.DEFAULT_ALPHANUMERIC);
+    List<String> underPlaneZero = readEvents(sample, true, PLANE_ZERO);
+    Assertions.assertEquals(underDefault, underPlaneZero);
+    List<String> withoutToken = readEvents(QUOTED_SAMPLE, true, PLANE_ZERO);
+    Assertions.assertEquals(withoutToken.size() + eventsFor(SURROGATE_TOKEN), underPlaneZero.size());
   }
 
   /** A token longer than one character yields one event per split position. */
