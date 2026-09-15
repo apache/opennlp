@@ -23,8 +23,11 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
@@ -178,4 +181,29 @@ public class TokenizerMETest {
     Assertions.assertArrayEquals(new String[] {"a", "b"}, tokenizer.tokenize("a\nb"));
   }
 
+  /**
+   * A factory without an alphanumeric pattern tokenizes like one with
+   * {@link Factory#DEFAULT_ALPHANUMERIC}, whether the optimization is on or off.
+   */
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testNullAlphaNumericPatternMeansAsciiDefault(boolean optimization) throws IOException {
+    TokenizerModel withoutPattern = train(new NullPatternTokenizerFactory(optimization));
+    TokenizerModel withDefault = train(
+        TokenizerFactory.create(null, "eng", null, optimization, Factory.DEFAULT_ALPHANUMERIC));
+    String text = "caf\u00E9 year, it is yes.";
+    Assertions.assertArrayEquals(new TokenizerME(withDefault).tokenize(text),
+        new TokenizerME(withoutPattern).tokenize(text));
+  }
+
+  private TokenizerModel train(TokenizerFactory factory) throws IOException {
+    InputStreamFactory trainDataIn = new ResourceAsStreamFactory(
+        TokenizerModel.class, "/opennlp/tools/tokenize/token.train");
+    ObjectStream<TokenSample> samples = new TokenSampleStream(
+        new PlainTextByLineStream(trainDataIn, StandardCharsets.UTF_8));
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(Parameters.ITERATIONS_PARAM, 100);
+    mlParams.put(Parameters.CUTOFF_PARAM, 0);
+    return TokenizerME.train(samples, factory, mlParams);
+  }
 }

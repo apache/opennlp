@@ -59,9 +59,10 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
                             Pattern alphaNumeric, TokenContextGenerator cg) {
     super(tokenSamples);
-    this.alphaNumeric = AlphaNumericCheck.of(
-        alphaNumeric == null ? Factory.DEFAULT_ALPHANUMERIC : alphaNumeric);
     this.skipAlphaNumerics = skipAlphaNumerics;
+    this.alphaNumeric = skipAlphaNumerics
+        ? new AlphaNumericCheck(alphaNumeric == null ? Factory.DEFAULT_ALPHANUMERIC : alphaNumeric)
+        : null;
     this.cg = cg;
   }
 
@@ -74,7 +75,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    */
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
                             TokenContextGenerator cg) {
-    this(tokenSamples, skipAlphaNumerics, new Factory().getAlphanumeric(null), cg );
+    this(tokenSamples, skipAlphaNumerics, Factory.DEFAULT_ALPHANUMERIC, cg);
   }
 
   /**

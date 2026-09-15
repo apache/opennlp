@@ -24,8 +24,6 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.tokenize.lang.Factory;
@@ -37,14 +35,23 @@ import opennlp.tools.util.ObjectStreamUtils;
  */
 public class TokSpanEventStreamTest {
 
+  private static final String QUOTED_SAMPLE = "\"<SPLIT>out<SPLIT>.<SPLIT>\"";
+
+  /** The quoted sample, a token the ASCII default rejects, and one it accepts. */
+  private static final String MIXED_SAMPLE = QUOTED_SAMPLE + " caf\u00E9 now";
+
+  /** A token with an unpaired surrogate, which only a class over the surrogate block accepts. */
+  private static final String SURROGATE_TOKEN = "ab\uD800";
+
+  private static final Pattern PLANE_ZERO = Pattern.compile("^[A-\uFFFF]+$");
+
   /**
    * Tests the event stream for correctly generated outcomes.
    */
   @Test
   void testEventOutcomes() throws IOException {
 
-    ObjectStream<String> sentenceStream =
-        ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\"");
+    ObjectStream<String> sentenceStream = ObjectStreamUtils.createObjectStream(QUOTED_SAMPLE);
 
     ObjectStream<TokenSample> tokenSampleStream = new TokenSampleStream(sentenceStream);
 
@@ -62,43 +69,66 @@ public class TokSpanEventStreamTest {
   }
 
   /**
-   * Tests that a {@code null} pattern stands for {@link Factory#DEFAULT_ALPHANUMERIC}, as the
-   * constructor documents, with skipping disabled and enabled.
-   *
-   * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
+   * A {@code null} pattern stands for {@link Factory#DEFAULT_ALPHANUMERIC}: with skipping on,
+   * "now" yields no events while "café" still does, and the events are the ones the
+   * default pattern gives.
    */
-  @ParameterizedTest
-  @ValueSource(booleans = {false, true})
-  void testNullPatternMeansDefaultPattern(boolean skipAlphaNumerics) throws IOException {
-    List<String> expected = readOutcomes(skipAlphaNumerics, Factory.DEFAULT_ALPHANUMERIC);
-    List<String> actual = readOutcomes(skipAlphaNumerics, null);
-    Assertions.assertFalse(actual.isEmpty());
-    Assertions.assertEquals(expected, actual);
+  @Test
+  void testNullPatternMeansAsciiDefault() throws IOException {
+    List<String> withNull = readEvents(MIXED_SAMPLE, true, null);
+    Assertions.assertEquals(readEvents(MIXED_SAMPLE, true, Factory.DEFAULT_ALPHANUMERIC), withNull);
+    List<String> withAccentedClass = readEvents(MIXED_SAMPLE, true, Pattern.compile("^[a-z\u00E9]+$"));
+    Assertions.assertEquals(withNull.size() - eventsFor("caf\u00E9"), withAccentedClass.size());
+    Assertions.assertEquals(withAccentedClass, withNull.subList(0, withAccentedClass.size()));
   }
 
   @Test
   void testSkippingLeavesOutAlphanumericTokens() throws IOException {
-    // "now" is alphanumeric and longer than one character, so it yields two events
-    // unless it is skipped; the quoted token holds punctuation and is never skipped
-    List<String> kept = readOutcomes(false, Factory.DEFAULT_ALPHANUMERIC);
-    List<String> skipped = readOutcomes(true, Factory.DEFAULT_ALPHANUMERIC);
-    Assertions.assertEquals(kept.size() - 2, skipped.size());
-    Assertions.assertEquals(kept.subList(0, skipped.size()), skipped);
+    List<String> kept = readEvents(MIXED_SAMPLE, false, Factory.DEFAULT_ALPHANUMERIC);
+    List<String> skipped = readEvents(MIXED_SAMPLE, true, Factory.DEFAULT_ALPHANUMERIC);
+    Assertions.assertEquals(kept.size() - eventsFor("now"), skipped.size());
+    Assertions.assertEquals(skipped, kept.subList(0, skipped.size()));
   }
 
-  private static List<String> readOutcomes(boolean skipAlphaNumerics, Pattern alphaNumeric)
+  /** With skipping off the pattern is not consulted, so a {@code null} pattern is accepted. */
+  @Test
+  void testPatternIsIgnoredWhenNotSkipping() throws IOException {
+    List<String> withNull = readEvents(MIXED_SAMPLE, false, null);
+    Assertions.assertFalse(withNull.isEmpty());
+    Assertions.assertEquals(readEvents(MIXED_SAMPLE, false, PLANE_ZERO), withNull);
+  }
+
+  /**
+   * A token with an unpaired surrogate is skipped under a class that covers the surrogate
+   * block, as the regular expression does, and kept under the ASCII default.
+   */
+  @Test
+  void testUnpairedSurrogateFollowsThePattern() throws IOException {
+    String sample = QUOTED_SAMPLE + " " + SURROGATE_TOKEN;
+    Assertions.assertTrue(PLANE_ZERO.matcher(SURROGATE_TOKEN).matches());
+    List<String> kept = readEvents(sample, true, Factory.DEFAULT_ALPHANUMERIC);
+    List<String> skipped = readEvents(sample, true, PLANE_ZERO);
+    Assertions.assertEquals(kept.size() - eventsFor(SURROGATE_TOKEN), skipped.size());
+    Assertions.assertEquals(skipped, kept.subList(0, skipped.size()));
+  }
+
+  /** A token longer than one character yields one event per split position. */
+  private int eventsFor(String token) {
+    return token.length() - 1;
+  }
+
+  private List<String> readEvents(String sample, boolean skipAlphaNumerics, Pattern alphaNumeric)
       throws IOException {
-    ObjectStream<String> sentenceStream =
-        ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\" now");
+    ObjectStream<String> sentenceStream = ObjectStreamUtils.createObjectStream(sample);
     ObjectStream<TokenSample> tokenSampleStream = new TokenSampleStream(sentenceStream);
-    List<String> outcomes = new ArrayList<>();
+    List<String> events = new ArrayList<>();
     try (ObjectStream<Event> eventStream = new TokSpanEventStream(tokenSampleStream,
         skipAlphaNumerics, alphaNumeric, new DefaultTokenContextGenerator())) {
       Event event;
       while ((event = eventStream.read()) != null) {
-        outcomes.add(event.getOutcome());
+        events.add(event.toString());
       }
     }
-    return outcomes;
+    return events;
   }
 }
