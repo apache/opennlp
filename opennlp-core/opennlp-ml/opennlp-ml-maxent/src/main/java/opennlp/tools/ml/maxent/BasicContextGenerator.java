@@ -20,27 +20,40 @@ package opennlp.tools.ml.maxent;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.tokenize.WhitespaceTokenizer;
+
 /**
  * A {@link ContextGenerator} implementation for maxent decisions, assuming that the input
  * given to the {@link #getContext(String)} method is a String containing contextual
- * predicates separated by spaces, for instance:
+ * predicates separated by whitespace, for instance:
  * <p>
  * {@code cp_1 cp_2 ... cp_n}
+ * </p>
+ * A different separator can be given, which is taken as written. A predicate is not empty:
+ * a leading, repeated, or trailing separator does not produce one.
+ * <p>
+ * Since 3.0.0 the separator is not a regular expression and the default splits on each run
+ * of whitespace (OPENNLP-1929).
  * </p>
  */
 public class BasicContextGenerator implements ContextGenerator<String> {
 
-  private static final String DEFAULT_SEPARATOR = " ";
-
+  /**
+   * The separator, or {@code null} to split on whitespace.
+   */
   private final String separator;
 
+  /**
+   * Initializes a {@link BasicContextGenerator} that splits on whitespace, as defined by
+   * {@link WhitespaceTokenizer}.
+   */
   public BasicContextGenerator() {
-    this(DEFAULT_SEPARATOR);
+    separator = null;
   }
 
   /**
-   * Initializes a {@link BasicContextGenerator} with a different separator.
-   * This overwrites the default single space.
+   * Initializes a {@link BasicContextGenerator} that splits on {@code sep} only. Other
+   * whitespace is part of the predicates.
    *
    * @param sep The separator, taken as written and not as a regular expression.
    *            Must not be {@code null} or empty.
@@ -55,31 +68,31 @@ public class BasicContextGenerator implements ContextGenerator<String> {
 
   /**
    * {@inheritDoc}
-   * Splits at each occurrence of the separator with the result {@code String.split} gives for
-   * a literal: a leading occurrence gives an empty first element, trailing empty elements
-   * are removed.
+   * Splits {@code o} at each occurrence of the separator and leaves out empty parts.
+   *
+   * @throws IllegalArgumentException If {@code o} is {@code null}.
    */
   @Override
   public String[] getContext(String o) {
     if (o == null) {
-      throw new IllegalArgumentException("Input must not be null.");
+      throw new IllegalArgumentException("o must not be null");
+    }
+    if (separator == null) {
+      return WhitespaceTokenizer.INSTANCE.tokenize(o);
     }
     final List<String> contexts = new ArrayList<>();
     int start = 0;
     int next;
     while ((next = o.indexOf(separator, start)) != -1) {
-      contexts.add(o.substring(start, next));
+      if (next > start) {
+        contexts.add(o.substring(start, next));
+      }
       start = next + separator.length();
     }
-    contexts.add(o.substring(start));
-    int end = contexts.size();
-    while (end > 0 && contexts.get(end - 1).isEmpty()) {
-      end--;
+    if (start < o.length()) {
+      contexts.add(o.substring(start));
     }
-    if (end == 0 && o.isEmpty()) {
-      return new String[] {""};
-    }
-    return contexts.subList(0, end).toArray(new String[0]);
+    return contexts.toArray(new String[0]);
   }
 
 }
