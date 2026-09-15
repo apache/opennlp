@@ -32,6 +32,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.InvalidFormatException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -105,7 +107,7 @@ public class LoadVocabTest {
 
     assertNotNull(vocab);
     assertEquals(3, vocab.size());
-    assertEquals(0, vocab.get("Ġtoken"));
+    assertEquals(0, vocab.get("\u0120token"));
     assertEquals(1, vocab.get("line\rbreak"));
     assertEquals(2, vocab.get("form\ffeed"));
   }
@@ -234,7 +236,7 @@ public class LoadVocabTest {
   @Test
   void testLoadJsonVocabSkipsALeadingByteOrderMark() {
     assertEquals(Map.of("a", 1), AbstractDL.loadJsonVocab("\uFEFF{\"a\": 1}"));
-    assertEquals(Map.of("[PAD]", 0, "[UNK]", 1, "hello", 2, "##ing", 3, "Ġx", 4),
+    assertEquals(Map.of("[PAD]", 0, "[UNK]", 1, "hello", 2, "##ing", 3, "\u0120x", 4),
         AbstractDL.loadJsonVocab("\uFEFF" + TOKENIZER_JSON));
   }
 
@@ -354,5 +356,44 @@ public class LoadVocabTest {
     Files.writeString(tempFile.toPath(), "[CLS]\r\n[SEP]\r\nhello\r\n");
 
     assertEquals(Map.of("[CLS]", 0, "[SEP]", 1, "hello", 2), AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testMalformedJsonVocabFileIsReportedAsAnInvalidFormat() throws IOException {
+    final File tempFile = File.createTempFile("vocab-malformed", ".json");
+    tempFile.deleteOnExit();
+    Files.writeString(tempFile.toPath(), "{\"a\": 1, \"b\": }");
+
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> AbstractDL.loadVocabFile(tempFile));
+    assertTrue(e.getMessage().contains(tempFile.getName()), e.getMessage());
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  @Test
+  void testJsonVocabFileWithAnInvalidEscapeIsReportedAsAnInvalidFormat() throws IOException {
+    final File tempFile = File.createTempFile("vocab-invalid-escape", ".json");
+    tempFile.deleteOnExit();
+    Files.writeString(tempFile.toPath(), "{\"bad\\xescape\": 0}");
+
+    assertThrows(InvalidFormatException.class, () -> AbstractDL.loadVocabFile(tempFile));
+  }
+
+  private static final String UNIGRAM_TOKENIZER_JSON = "{\"version\": \"1.0\", \"model\": {\"type\": "
+      + "\"Unigram\", \"unk_id\": 0, \"vocab\": [[\"<unk>\", 0.0], [\"a\", -1.5]]}}";
+
+  @Test
+  void testLoadJsonVocabNamesTheUnsupportedUnigramLayout() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(UNIGRAM_TOKENIZER_JSON));
+    assertTrue(e.getMessage().contains("model.vocab"), e.getMessage());
+    assertTrue(e.getMessage().contains("Unigram"), e.getMessage());
+  }
+
+  @Test
+  void testLoadJsonVocabRejectsANonFiniteId() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab("{\"ok\": 1, \"bad\": NaN}"));
+    assertTrue(e.getMessage().contains("\"bad\""), e.getMessage());
   }
 }
