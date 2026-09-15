@@ -166,35 +166,30 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
 
   /**
    * Splits {@code classPath} on the platform's path separator, {@code ;} on Windows and
-   * {@code :} elsewhere, with the result of {@code String.split} for that separator: a
-   * leading separator yields one empty first element, empty elements between consecutive
-   * separators are kept, trailing empty elements are dropped, separator-only input yields
-   * an empty array, and empty input yields a single empty element.
+   * {@code :} elsewhere. Empty entries, from leading, trailing, or repeated separators, are
+   * skipped, since they name no jar file.
    *
    * @param classPath The class path value to split. Must not be {@code null}.
    * @param isWindows {@code true} to split on {@code ;}, {@code false} to split on {@code :}.
-   * @return The class path elements in order.
+   * @return The non-empty class path entries in order.
+   * @throws IllegalArgumentException If {@code classPath} is {@code null}.
    */
   static String[] splitClassPath(String classPath, boolean isWindows) {
+    if (classPath == null) {
+      throw new IllegalArgumentException("classPath must not be null");
+    }
     final char separator = isWindows ? CLASSPATH_SEPARATOR_WINDOWS : CLASSPATH_SEPARATOR_UNIX;
     final List<String> elements = new ArrayList<>();
     int start = 0;
-    for (int i = 0; i < classPath.length(); i++) {
-      if (classPath.charAt(i) == separator) {
-        elements.add(classPath.substring(start, i));
+    for (int i = 0; i <= classPath.length(); i++) {
+      if (i == classPath.length() || classPath.charAt(i) == separator) {
+        if (i > start) {
+          elements.add(classPath.substring(start, i));
+        }
         start = i + 1;
       }
     }
-    elements.add(classPath.substring(start));
-    int size = elements.size();
-    while (size > 0 && elements.get(size - 1).isEmpty()) {
-      size--;
-    }
-    // String.split keeps the whole input when no separator occurs, even if it is empty
-    if (size == 0 && elements.size() == 1) {
-      size = 1;
-    }
-    return elements.subList(0, size).toArray(new String[0]);
+    return elements.toArray(new String[0]);
   }
 
   /*

@@ -16,16 +16,11 @@
  */
 package opennlp.tools.models;
 
-import java.util.Objects;
-
-import opennlp.tools.util.StringUtil;
-
 /**
  * Matches file names against the wildcard globs accepted by {@link ClassPathModelFinder}
  * implementations. A {@code *} matches any run of characters, including none, a {@code ?}
- * matches exactly one character, and every other character stands for itself. Neither
- * wildcard crosses a line terminator (line feed, carriage return, next line, line
- * separator, or paragraph separator). The glob must cover the whole input.
+ * matches exactly one character, and every other character stands for itself; there is no
+ * escape character. The glob must cover the whole input and the comparison is case-sensitive.
  */
 final class GlobMatcher {
 
@@ -37,16 +32,22 @@ final class GlobMatcher {
 
   /**
    * Tests whether the whole {@code input} is covered by {@code glob}. Both are compared by
-   * code point, so a supplementary character counts as one character for {@code ?}.
+   * code point, so a supplementary character, or an unpaired surrogate, counts as one
+   * character for {@code ?}.
    *
    * @param glob The wildcard expression. Must not be {@code null}.
    * @param input The text to test. Must not be {@code null}.
    * @return {@code true} if {@code input} matches {@code glob} from start to end,
    *     {@code false} otherwise.
+   * @throws IllegalArgumentException If {@code glob} or {@code input} is {@code null}.
    */
   static boolean matches(String glob, String input) {
-    Objects.requireNonNull(glob, "glob must not be null");
-    Objects.requireNonNull(input, "input must not be null");
+    if (glob == null) {
+      throw new IllegalArgumentException("glob must not be null");
+    }
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
     final int[] g = glob.codePoints().toArray();
     final int[] in = input.codePoints().toArray();
     int gi = 0;
@@ -57,10 +58,10 @@ final class GlobMatcher {
       if (gi < g.length && g[gi] == ANY_RUN) {
         runStartG = gi++;
         runStartI = ii;
-      } else if (gi < g.length && matchesOne(g[gi], in[ii])) {
+      } else if (gi < g.length && (g[gi] == ANY_ONE || g[gi] == in[ii])) {
         gi++;
         ii++;
-      } else if (runStartG >= 0 && !StringUtil.isLineTerminator(in[runStartI])) {
+      } else if (runStartG >= 0) {
         // let the most recent '*' absorb one more character and retry after it
         gi = runStartG + 1;
         ii = ++runStartI;
@@ -72,12 +73,5 @@ final class GlobMatcher {
       gi++;
     }
     return gi == g.length;
-  }
-
-  private static boolean matchesOne(int globCodePoint, int inputCodePoint) {
-    if (globCodePoint == ANY_ONE) {
-      return !StringUtil.isLineTerminator(inputCodePoint);
-    }
-    return globCodePoint == inputCodePoint;
   }
 }
