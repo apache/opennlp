@@ -29,6 +29,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample> {
@@ -133,7 +134,9 @@ public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample>
   @ParameterizedTest
   @MethodSource("tags")
   void testReplaceWhitespaceWithEquals(String tag, String expected) {
-    Assertions.assertEquals(expected, ADPOSSampleStream.replaceWhitespaceWithEquals(tag));
+    ADPOSSampleStream stream =
+        new ADPOSSampleStream(ObjectStreamUtils.createObjectStream(), false, false);
+    Assertions.assertEquals(expected, stream.replaceWhitespaceWithEquals(tag));
   }
 
 }

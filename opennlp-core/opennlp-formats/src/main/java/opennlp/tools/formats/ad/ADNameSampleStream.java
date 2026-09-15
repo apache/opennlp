@@ -32,11 +32,11 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -59,6 +59,9 @@ import opennlp.tools.util.Span;
  * Detailed info about the
  * <a href="http://beta.visl.sdu.dk/visl/pt/info/portsymbol.html#semtags_names">NER tagset</a>.
  * <p>
+ * Whitespace inside the tags of a leaf and in a contraction is the Unicode White_Space property,
+ * see {@link StringUtil#isUnicodeWhitespace(char)}, independent of the whitespace mode.
+ * <p>
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
@@ -69,6 +72,16 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * Map to the Arvores Deitadas types to our types. It is read-only.
    */
   private static final Map<String, String> HAREM;
+
+  private static final String NER_PREFIX = "NER:";
+  private static final String HYPHEN = "-";
+  private static final char HYPHEN_CHAR = '-';
+  private static final char UNDERSCORE = '_';
+  private static final char TAG_OPEN = '<';
+  private static final char TAG_CLOSE = '>';
+  private static final String LITERARY_PREFIX = "LIT";
+  private static final String SCIENTIFIC_PREFIX = "CIE";
+  private static final String INVALID_METADATA = "Invalid metadata: ";
 
   static {
     Map<String, String> harem = new HashMap<>();
@@ -243,7 +256,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       String c = PortugueseContractionUtility.toContraction(
           leftContractionPart, right);
       if (c != null) {
-        String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(c);
+        String[] parts = StringUtil.splitOnUnicodeWhitespace(c);
         sentence.addAll(Arrays.asList(parts));
         alreadyAdded = true;
       } else {
@@ -266,7 +279,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         if (lexemes.length > 1) {
           sentence.addAll(Arrays.asList(lexemes).subList(0, lexemes.length - 1));
         }
-        leftContractionPart = lexemes[lexemes.length - 1];
+        leftContractionPart = lexemes.length == 0 ? null : lexemes[lexemes.length - 1];
         return;
       }
       if (leafTag.contains("<NER2>")) {
@@ -335,12 +348,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
 
     // lets split all hyphens
-    if (this.splitHyphenatedTokens && tok.contains("-") && tok.length() > 1) {
+    if (this.splitHyphenatedTokens && tok.contains(HYPHEN) && tok.length() > 1) {
       String[] parts = matchHyphenatedToken(tok);
 
       if (parts != null) {
         addIfNotEmpty(parts[0], out);
-        addIfNotEmpty("-", out);
+        addIfNotEmpty(HYPHEN, out);
         addIfNotEmpty(parts[1], out);
         addIfNotEmpty(parts[2], out);
         tokAdded = true;
@@ -372,11 +385,17 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param s The lexeme.
    * @return The parts in order; empty when the lexeme has no character other than underscores.
    */
-  static String[] splitOnUnderscores(String s) {
+  String[] splitOnUnderscores(String s) {
+    if (s.isEmpty()) {
+      return new String[0];
+    }
+    if (s.indexOf(UNDERSCORE) == -1) {
+      return new String[] {s};
+    }
     List<String> tokens = new ArrayList<>();
     int start = -1;
     for (int i = 0; i < s.length(); i++) {
-      if (s.charAt(i) == '_') {
+      if (s.charAt(i) == UNDERSCORE) {
         if (start >= 0) {
           tokens.add(s.substring(start, i));
           start = -1;
@@ -398,7 +417,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @return {@code true} if the token is non-empty and every code point is a letter or a
    *         decimal digit.
    */
-  static boolean isAlphaNumeric(String tok) {
+  boolean isAlphaNumeric(String tok) {
     if (tok.isEmpty()) {
       return false;
     }
@@ -422,23 +441,20 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @return The first token, second token, and rest, each {@code null} when absent, or
    *         {@code null} if the token has none of the three shapes.
    */
-  static String[] matchHyphenatedToken(String tok) {
+  String[] matchHyphenatedToken(String tok) {
     int len = tok.length();
-    // (\p{L}+)-$
-    if (len > 1 && tok.charAt(len - 1) == '-' && isAllLetters(tok, 0, len - 1)) {
+    if (len > 1 && tok.charAt(len - 1) == HYPHEN_CHAR && lettersEnd(tok, 0) == len - 1) {
       return new String[] {tok.substring(0, len - 1), null, null};
     }
-    // ^-(\p{L}+)(.*)
-    if (tok.charAt(0) == '-') {
+    if (tok.charAt(0) == HYPHEN_CHAR) {
       int lettersEnd = lettersEnd(tok, 1);
       if (lettersEnd > 1) {
         return new String[] {null, tok.substring(1, lettersEnd), tok.substring(lettersEnd)};
       }
       return null;
     }
-    // (\p{L}+)-(\p{L}+)(.*)
     int firstEnd = lettersEnd(tok, 0);
-    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == '-') {
+    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == HYPHEN_CHAR) {
       int secondEnd = lettersEnd(tok, firstEnd + 1);
       if (secondEnd > firstEnd + 1) {
         return new String[] {tok.substring(0, firstEnd),
@@ -455,7 +471,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param from The start offset.
    * @return The offset after the run, or {@code from} if no letter starts there.
    */
-  private static int lettersEnd(String s, int from) {
+  private int lettersEnd(String s, int from) {
     int i = from;
     while (i < s.length()) {
       int cp = s.codePointAt(i);
@@ -468,37 +484,17 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
-   * Tests whether a range holds letters only.
-   *
-   * @param s The text.
-   * @param from The inclusive start.
-   * @param to The exclusive end.
-   * @return {@code true} if every code point in the range is a letter.
-   */
-  private static boolean isAllLetters(String s, int from, int to) {
-    int i = from;
-    while (i < to) {
-      int cp = s.codePointAt(i);
-      if (!Character.isLetter(cp)) {
-        return false;
-      }
-      i += Character.charCount(cp);
-    }
-    return true;
-  }
-
-  /**
    * Extracts the content of a NER tag in Arvores Deitadas format, between the optional
    * {@code NER:} prefix and the closing angle bracket.
    *
    * @param t The tag.
    * @return The content, or {@code null} if {@code t} is not enclosed in angle brackets.
    */
-  static String tagContent(String t) {
-    if (t.length() < 2 || t.charAt(0) != '<' || t.charAt(t.length() - 1) != '>') {
+  String tagContent(String t) {
+    if (t.length() < 2 || t.charAt(0) != TAG_OPEN || t.charAt(t.length() - 1) != TAG_CLOSE) {
       return null;
     }
-    int start = t.startsWith("NER:", 1) ? 5 : 1;
+    int start = t.startsWith(NER_PREFIX, 1) ? 1 + NER_PREFIX.length() : 1;
     return t.substring(start, t.length() - 1);
   }
 
@@ -508,11 +504,11 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param tags The NER tag in Arvores Deitadas format.
    * @return The NER tag, or {@code null} if not a NER tag in Arvores Deitadas format.
    */
-  private static String getNER(String tags) {
+  private String getNER(String tags) {
     if (tags.contains("<NER2>")) {
       return null;
     }
-    String[] tag = WhitespaceTokenizer.INSTANCE.tokenize(tags);
+    String[] tag = StringUtil.splitOnUnicodeWhitespace(tags);
     for (String t : tag) {
       String ner = tagContent(t);
       if (ner != null && HAREM.containsKey(ner)) {
@@ -532,29 +528,31 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     adSentenceStream.close();
   }
 
+  /**
+   * Reads the id of the text a sentence belongs to; adaptive data is cleared when it changes. In
+   * the Amazonia corpus it is the text id of the metadata. In the literary and scientific corpora
+   * the text name stands in for it, and the id is the same for all sentences (OPENNLP-1951).
+   *
+   * @param paragraph The sentence.
+   * @return The id.
+   * @throws RuntimeException If the metadata has no id or one that does not fit into an
+   *                          {@code int}.
+   */
   private int getTextID(Sentence paragraph) {
-
     final String meta = paragraph.metadata();
-    int textIdMeta2 = -1;
-    String textMeta2 = "";
-
-    if (meta.startsWith("LIT") || meta.startsWith("CIE")) {
-      String textId = meta.startsWith("LIT") ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
-      if (textId == null) {
-        throw new RuntimeException("Invalid metadata: " + meta);
+    boolean literary = meta.startsWith(LITERARY_PREFIX);
+    if (literary || meta.startsWith(SCIENTIFIC_PREFIX)) {
+      String textName = literary ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
+      if (textName == null) {
+        throw new RuntimeException(INVALID_METADATA + meta);
       }
-      if (!textId.equals(textMeta2)) {
-        textIdMeta2++;
-        textMeta2 = textId;
-      }
-      return textIdMeta2;
+      return textName.isEmpty() ? -1 : 0;
     }
-    // Amazonia
-    String textId = ADMetadata.textId(meta);
-    if (textId == null) {
-      throw new RuntimeException("Invalid metadata: " + meta);
+    ADMetadata.TextAndParagraph ids = ADMetadata.parseTextAndParagraph(meta);
+    if (ids == null) {
+      throw new RuntimeException(INVALID_METADATA + meta);
     }
-    return Integer.parseInt(textId);
+    return ids.text();
   }
 
 }

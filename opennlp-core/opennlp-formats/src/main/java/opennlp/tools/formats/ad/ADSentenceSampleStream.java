@@ -135,23 +135,21 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   private void updateMeta() {
     if (this.sent != null) {
       String meta = this.sent.metadata();
-      int[] textAndPara = ADMetadata.parseTextAndParagraph(meta);
-      if (textAndPara == null) {
+      ADMetadata.TextAndParagraph ids = ADMetadata.parseTextAndParagraph(meta);
+      if (ids == null) {
         throw new RuntimeException("Invalid metadata: " + meta);
       }
-      int currentText = textAndPara[0];
-      int currentPara = textAndPara[1];
       isSamePara = isSameText = false;
-      if (currentText == text)
+      if (ids.text() == text)
         isSameText = true;
 
-      if (isSameText && currentPara == para)
+      if (isSameText && ids.paragraph() == para)
         isSamePara = true;
 
       isTitle = meta.contains("title");
 
-      text = currentText;
-      para = currentPara;
+      text = ids.text();
+      para = ids.paragraph();
 
     } else {
       this.isSamePara = this.isSameText = false;

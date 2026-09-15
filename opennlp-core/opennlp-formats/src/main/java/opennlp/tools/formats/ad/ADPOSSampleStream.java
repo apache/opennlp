@@ -44,6 +44,8 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
   private final boolean expandME;
   private final boolean isIncludeFeatures;
 
+  private static final char TAG_JOIN = '=';
+
   /**
    * Creates a new {@link ADPOSSampleStream} stream from a {@link ObjectStream<String>},
    * that could be a {@link PlainTextByLineStream} object.
@@ -152,19 +154,19 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
   /**
    * Replaces every run of whitespace, leading and trailing runs included, with a single equals
-   * sign. Whitespace is what {@link StringUtil#isWhitespace(char)} accepts.
+   * sign. Whitespace is what {@link StringUtil#isUnicodeWhitespace(char)} accepts.
    *
    * @param tag The tag.
    * @return The joined tag.
    */
-  static String replaceWhitespaceWithEquals(String tag) {
+  String replaceWhitespaceWithEquals(String tag) {
     StringBuilder replaced = new StringBuilder(tag.length());
     int i = 0;
     while (i < tag.length()) {
       char c = tag.charAt(i);
-      if (StringUtil.isWhitespace(c)) {
-        replaced.append('=');
-        while (i + 1 < tag.length() && StringUtil.isWhitespace(tag.charAt(i + 1))) {
+      if (StringUtil.isUnicodeWhitespace(c)) {
+        replaced.append(TAG_JOIN);
+        while (i + 1 < tag.length() && StringUtil.isUnicodeWhitespace(tag.charAt(i + 1))) {
           i++;
         }
       } else {

@@ -27,6 +27,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.formats.ad.ADMetadata.TextAndParagraph;
+
 public class ADMetadataTest {
 
   @ParameterizedTest
@@ -57,12 +59,13 @@ public class ADMetadataTest {
       "12\tp=1|12|1"
   })
   void testParseTextAndParagraph(String meta, int text, int paragraph) {
-    Assertions.assertArrayEquals(new int[] {text, paragraph},
+    Assertions.assertEquals(new TextAndParagraph(text, paragraph),
         ADMetadata.parseTextAndParagraph(meta));
   }
 
   private static Stream<Arguments> metadataWithLineTerminator() {
-    // a line terminator is an ordinary character, the reader does not produce one inside a line
+    // a line terminator is an ordinary character; the line reader splits on line feed and carriage
+    // return only, so a next line or line separator character reaches the metadata
     return Stream.of(
         Arguments.of("12 p=1\n", 12, 1),
         Arguments.of("12 p=1\r\n", 12, 1),
@@ -74,7 +77,7 @@ public class ADMetadataTest {
   @ParameterizedTest
   @MethodSource("metadataWithLineTerminator")
   void testParseTextAndParagraphWithLineTerminator(String meta, int text, int paragraph) {
-    Assertions.assertArrayEquals(new int[] {text, paragraph},
+    Assertions.assertEquals(new TextAndParagraph(text, paragraph),
         ADMetadata.parseTextAndParagraph(meta));
   }
 
@@ -88,19 +91,7 @@ public class ADMetadataTest {
       "\r12 p=1", "\u202812 p=1"})
   void testParseTextAndParagraphRejects(String meta) {
     Assertions.assertNull(ADMetadata.parseTextAndParagraph(meta));
-    Assertions.assertNull(ADMetadata.textId(meta));
     Assertions.assertNull(ADMetadata.textPrefix(meta));
-  }
-
-  @ParameterizedTest
-  @CsvSource(delimiter = '|', value = {
-      "1001 p=1 source=\"x\"|1001",
-      "LIT-1001 p=1|1001",
-      "0012 p=1|0012",
-      "12x34 p=5|12"
-  })
-  void testTextId(String meta, String textId) {
-    Assertions.assertEquals(textId, ADMetadata.textId(meta));
   }
 
   @ParameterizedTest
@@ -168,7 +159,7 @@ public class ADMetadataTest {
 
   @Test
   void testLargestIdsAreRead() {
-    Assertions.assertArrayEquals(new int[] {2147483647, 2147483647},
+    Assertions.assertEquals(new TextAndParagraph(2147483647, 2147483647),
         ADMetadata.parseTextAndParagraph("2147483647 p=2147483647"));
   }
 }
