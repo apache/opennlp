@@ -19,6 +19,7 @@ package opennlp.tools.models.simple;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -86,5 +87,11 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
   @MethodSource("windowsClassPaths")
   void testSplitClassPathWindows(String classPath, String[] expected) {
     Assertions.assertArrayEquals(expected, SimpleClassPathModelFinder.splitClassPath(classPath, true));
+  }
+
+  @Test
+  void testSplitClassPathRejectsNull() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> SimpleClassPathModelFinder.splitClassPath(null, false));
   }
 }
