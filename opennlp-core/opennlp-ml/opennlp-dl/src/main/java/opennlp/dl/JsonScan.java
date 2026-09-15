@@ -51,7 +51,7 @@ public final class JsonScan {
         return i;
       }
       if (c == '\\') {
-        if (i + 1 >= text.length() || isLineTerminator(text.charAt(i + 1))) {
+        if (i + 1 >= text.length() || StringUtil.isLineTerminator(text.charAt(i + 1))) {
           return -1;
         }
         i += 2;
@@ -77,7 +77,7 @@ public final class JsonScan {
       if (c == '"') {
         return i;
       }
-      if (isLineTerminator(c)) {
+      if (StringUtil.isLineTerminator(c)) {
         return -1;
       }
     }
@@ -102,7 +102,8 @@ public final class JsonScan {
   }
 
   /**
-   * Skips whitespace.
+   * Skips JSON whitespace: space, tab, line feed, and carriage return per RFC 8259. Other
+   * Unicode spaces are content here, not separators.
    *
    * @param text The text to scan.
    * @param from The offset to start at.
@@ -111,36 +112,19 @@ public final class JsonScan {
    */
   static int skipWhitespace(String text, int from) {
     int i = from;
-    while (i < text.length() && StringUtil.isAsciiWhitespace(text.charAt(i))) {
+    while (i < text.length() && isJsonWhitespace(text.charAt(i))) {
       i++;
     }
     return i;
   }
 
   /**
-   * Reads a run of digits.
+   * Tests for JSON whitespace.
    *
-   * @param text The text to scan.
-   * @param from The offset to start at.
-   * @return The offset after the last digit of the run starting at {@code from}, or
-   *     {@code from} itself if no digit is there.
+   * @param c The character.
+   * @return {@code true} for space, tab, line feed, or carriage return.
    */
-  static int endOfDigits(String text, int from) {
-    int i = from;
-    while (i < text.length() && text.charAt(i) >= '0' && text.charAt(i) <= '9') {
-      i++;
-    }
-    return i;
-  }
-
-  /**
-   * Tells whether a character ends a line: line feed, carriage return, next line, line
-   * separator, or paragraph separator.
-   *
-   * @param c The character to check.
-   * @return {@code true} if {@code c} is one of those five characters, {@code false} otherwise.
-   */
-  private static boolean isLineTerminator(char c) {
-    return c == '\n' || c == '\r' || c == '\u0085' || c == '\u2028' || c == '\u2029';
+  private static boolean isJsonWhitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
   }
 }
