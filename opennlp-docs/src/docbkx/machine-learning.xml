@@ -86,14 +86,20 @@ under the License.
 		component which uses this functionality.
 		</para>
 		<para>
-		Events can also be read from a text file, one event per line, through
-		<code>FileEventStream</code> and, for real-valued features, <code>RealValueFileEventStream</code>.
-		The fields of a line are separated by runs of whitespace, where whitespace is what the
-		<code>WhitespaceTokenizer</code> accepts and so includes a no-break space; leading, trailing,
-		and repeated whitespace is ignored. The first field is the outcome and each further field is a
-		context, optionally followed by <code>=</code> and its real value. A line with only an outcome is
-		an event without contexts, and a blank line is reported as an
-		<code>InvalidFormatException</code>. An example with real values:
+		Events with real-valued features can also be read from a text file, one event per line,
+		through <code>RealValueFileEventStream</code>, or from any line stream through
+		<code>RealBasicEventStream</code>. The fields of a line are separated by runs of Unicode
+		whitespace, that is characters with the <code>White_Space</code> property such as a tab or a
+		no-break space; this definition is fixed and does not depend on the
+		<code>opennlp.whitespace.mode</code> property. Leading, trailing, and repeated whitespace is
+		ignored. The first field is the outcome and each further field is a context, optionally
+		followed by <code>=</code> and its real value. The value follows the last <code>=</code>, so a
+		context name may contain that character; a context whose text after the last <code>=</code>
+		is not a number is kept as written with the value 1, and an error is logged. A line with only
+		an outcome is an event without contexts, and a blank line is reported as an
+		<code>InvalidFormatException</code>. <code>FileEventStream</code> is unchanged: it reads
+		events without values and splits on spaces, tabs, and form feeds only. An example with real
+		values:
 		<screen>
 <![CDATA[other wc=ic=1.0 w&c=he,ic=2.0 n1wc=lc=3.0
 org-start wc=ic=1.0 w&c=apache,ic=2.0 p1wc=lc=3.0]]>
