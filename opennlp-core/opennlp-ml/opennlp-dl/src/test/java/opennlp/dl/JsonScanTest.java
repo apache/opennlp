@@ -290,4 +290,39 @@ public class JsonScanTest {
   void testEndOfValue(String text, int expected) {
     Assertions.assertEquals(expected, JsonScan.endOfValue(text, 0));
   }
+
+  // -------------------------------------------------------------------------
+  // byte order mark
+  // -------------------------------------------------------------------------
+
+  static Stream<Arguments> documentsWithAByteOrderMark() {
+    return Stream.of(
+        Arguments.of("﻿{\"a\":1}", List.of("a=1")),
+        Arguments.of("﻿ \r\n{ \"a\" : 1 }\r\n", List.of("a=1")),
+        Arguments.of("﻿{}", List.of()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("documentsWithAByteOrderMark")
+  void testDocumentSkipsALeadingByteOrderMark(String text, List<String> expected) {
+    Assertions.assertEquals(expected, render(text, JsonScan.document(text)));
+  }
+
+  static Stream<Arguments> byteOrderMarksElsewhere() {
+    return Stream.of(
+        Arguments.of("﻿﻿{}", 1),
+        Arguments.of(" ﻿{}", 1),
+        Arguments.of("{﻿}", 1),
+        Arguments.of("{}﻿", 2),
+        Arguments.of("{\"a\":﻿1}", 5),
+        Arguments.of("﻿", 1));
+  }
+
+  @ParameterizedTest
+  @MethodSource("byteOrderMarksElsewhere")
+  void testDocumentRejectsAByteOrderMarkElsewhere(String text, int offset) {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> JsonScan.document(text));
+    Assertions.assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
+  }
 }

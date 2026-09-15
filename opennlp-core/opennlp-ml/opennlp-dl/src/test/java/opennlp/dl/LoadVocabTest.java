@@ -230,4 +230,29 @@ public class LoadVocabTest {
 
     assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadVocabFile(tempFile));
   }
+
+  @Test
+  void testLoadJsonVocabSkipsALeadingByteOrderMark() {
+    assertEquals(Map.of("a", 1), AbstractDL.loadJsonVocab("﻿{\"a\": 1}"));
+    assertEquals(Map.of("[PAD]", 0, "[UNK]", 1, "hello", 2, "##ing", 3, "Ġx", 4),
+        AbstractDL.loadJsonVocab("﻿" + TOKENIZER_JSON));
+  }
+
+  @Test
+  void testJsonVocabFileWithAByteOrderMarkIsReadAsJson() throws IOException {
+    final File tempFile = File.createTempFile("vocab-bom", ".json");
+    tempFile.deleteOnExit();
+    Files.writeString(tempFile.toPath(), "﻿{\"a\": 0, \"b\": 1}\n");
+
+    assertEquals(Map.of("a", 0, "b", 1), AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testPlainTextVocabFileWithAByteOrderMarkKeepsTheFirstToken() throws IOException {
+    final File tempFile = File.createTempFile("vocab-bom", ".txt");
+    tempFile.deleteOnExit();
+    Files.writeString(tempFile.toPath(), "﻿[CLS]\n[SEP]\n");
+
+    assertEquals(Map.of("[CLS]", 0, "[SEP]", 1), AbstractDL.loadVocabFile(tempFile));
+  }
 }
