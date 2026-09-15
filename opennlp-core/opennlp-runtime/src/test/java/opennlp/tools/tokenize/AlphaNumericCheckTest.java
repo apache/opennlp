@@ -17,6 +17,7 @@
 
 package opennlp.tools.tokenize;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -45,6 +46,9 @@ public class AlphaNumericCheckTest {
   /** Unpaired surrogates: not characters, so a set lookup never accepts them. */
   private static final List<String> UNPAIRED_SURROGATES =
       List.of("\uD800", "\uDFFF", "\uD83D", "\uDE00");
+
+  /** Every surrogate code unit as {@code U+XXXX}, in order. */
+  private static final List<String> SURROGATE_BLOCK = surrogateBlock();
 
   private static Stream<Arguments> builtInPatternsAndTokens() {
     return LANGUAGES.stream().flatMap(language -> {
@@ -172,5 +176,81 @@ public class AlphaNumericCheckTest {
     AlphaNumericCheck check = AlphaNumericCheck.of(Factory.DEFAULT_ALPHANUMERIC);
     Assertions.assertTrue(check.isCharacterSet());
     Assertions.assertFalse(check.test(token));
+  }
+
+  private static Stream<Arguments> languagesAndPatterns() {
+    return LANGUAGES.stream().map(language ->
+        Arguments.of(language, new Factory().getAlphanumeric(language)));
+  }
+
+  /**
+   * Every built-in language pattern agrees with the engine on every single code point,
+   * including unpaired surrogates and the supplementary planes.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("languagesAndPatterns")
+  void testBuiltInPatternsAgreeWithRegexOnEveryCodePoint(String language, Pattern pattern) {
+    AlphaNumericCheck check = AlphaNumericCheck.of(pattern);
+    Assertions.assertTrue(check.isCharacterSet(), language + " default runs as a set lookup");
+    Assertions.assertEquals(List.of(), disagreements(pattern, check), language);
+  }
+
+  private static Stream<Arguments> setLookupPatternsAndExpectedDisagreements() {
+    List<String> agreeEverywhere = List.of("^[A-Za-z0-9]+$", "^[a-z-]+$", "^[-a-z]+$", "^[a-]+$",
+        "^[a-c1-3]+$", "^[a]+$", "^[a-zA-Z0-9_]+$", "^[a-b-c]+$", "^[--a]+$", "^[!-~]+$",
+        "^[ -~]+$", "^[a-a]+$", "^[a-z.*+?(){}|$]+$", "^[a-z#]+$", "^[\u0001-\uD7FF]+$",
+        "^[\uE000-\uFFFF]+$",
+        // the hyphen after a one-character range is a plain hyphen, nothing spans the block
+        "^[\uD7FF-\uD7FF-\uE000]+$");
+    List<String> spanSurrogates = List.of("^[A-\uFFFF]+$", "^[\uD7FF-\uE000]+$",
+        "^[\u0001-\uFFFF]+$");
+    return Stream.concat(
+        agreeEverywhere.stream().map(regex -> Arguments.of(regex, List.of())),
+        spanSurrogates.stream().map(regex -> Arguments.of(regex, SURROGATE_BLOCK)));
+  }
+
+  /**
+   * A set lookup agrees with the engine on every code point, except that a range over the
+   * surrogate block leaves every unpaired surrogate to the engine, which accepts it, while
+   * the set rejects it. The disagreement is exactly that block and nothing else.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("setLookupPatternsAndExpectedDisagreements")
+  void testSetLookupDisagreesWithRegexOnlyOnUnpairedSurrogates(String regex,
+      List<String> expected) {
+    Pattern pattern = Pattern.compile(regex);
+    AlphaNumericCheck check = AlphaNumericCheck.of(pattern);
+    Assertions.assertTrue(check.isCharacterSet(), regex + " runs as a set lookup");
+    Assertions.assertEquals(expected, disagreements(pattern, check), regex);
+  }
+
+  /**
+   * Compares the set and the engine on every code point as a one-character token, unpaired
+   * surrogates included.
+   *
+   * @return The code points on which they disagree, as {@code U+XXXX}, in code point order.
+   */
+  private static List<String> disagreements(Pattern pattern, AlphaNumericCheck check) {
+    List<String> differing = new ArrayList<>();
+    for (int codePoint = Character.MIN_CODE_POINT; codePoint <= Character.MAX_CODE_POINT;
+         codePoint++) {
+      String token = new String(Character.toChars(codePoint));
+      if (pattern.matcher(token).matches() != check.test(token)) {
+        differing.add(codePointName(codePoint));
+      }
+    }
+    return differing;
+  }
+
+  private static String codePointName(int codePoint) {
+    return String.format("U+%04X", codePoint);
+  }
+
+  private static List<String> surrogateBlock() {
+    List<String> names = new ArrayList<>();
+    for (int c = Character.MIN_SURROGATE; c <= Character.MAX_SURROGATE; c++) {
+      names.add(codePointName(c));
+    }
+    return names;
   }
 }
