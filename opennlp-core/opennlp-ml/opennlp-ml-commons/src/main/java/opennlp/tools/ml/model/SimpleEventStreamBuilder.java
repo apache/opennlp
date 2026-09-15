@@ -18,13 +18,16 @@
 package opennlp.tools.ml.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
 public class SimpleEventStreamBuilder {
+
+  private static final char OUTCOME_SEPARATOR = '/';
+  private static final char VALUE_SEPARATOR = ';';
+  private static final String FORMAT_ERROR = "format error of the event \"%s\"";
 
   private final List<Event> eventList = new ArrayList<>();
   private int pos = 0;
@@ -41,31 +44,34 @@ public class SimpleEventStreamBuilder {
    * @param event The event text. Must not be {@code null}.
    * @return This builder.
    * @throws RuntimeException If the outcome or the contexts are missing, or if the first
-   *         context has a value and another one does not.
+   *         context has a value and another one is not written as {@code name;value} with
+   *         both parts present and no further {@code ;}.
+   * @throws NumberFormatException If a value is not a number.
    */
   public SimpleEventStreamBuilder add(String event) {
-    int slash = event.indexOf('/');
+    int slash = event.indexOf(OUTCOME_SEPARATOR);
     if (slash < 1) {
-      throw new RuntimeException(String.format("format error of the event \"%s\"", event));
+      throw new RuntimeException(String.format(FORMAT_ERROR, event));
     }
     String outcome = event.substring(0, slash);
 
-    // look for context (and values)
     String[] cvPairs = WhitespaceTokenizer.INSTANCE.tokenize(event.substring(slash + 1));
     if (cvPairs.length == 0) {
-      throw new RuntimeException(String.format("format error of the event \"%s\"", event));
+      throw new RuntimeException(String.format(FORMAT_ERROR, event));
     }
-    if (cvPairs[0].contains(";")) { // has values?
+    if (cvPairs[0].indexOf(VALUE_SEPARATOR) >= 0) {
       String[] context = new String[cvPairs.length];
       float[] values = new float[cvPairs.length];
       for (int i = 0; i < cvPairs.length; i++) {
-        String[] pair = cvPairs[i].split(";");
-        if (pair.length != 2) {
-          throw new RuntimeException(String.format("format error of the event \"%s\". "
-              + "\"%s\" doesn't have value", event, Arrays.toString(pair)));
+        String pair = cvPairs[i];
+        int separator = pair.indexOf(VALUE_SEPARATOR);
+        if (separator < 1 || separator == pair.length() - 1
+            || pair.indexOf(VALUE_SEPARATOR, separator + 1) >= 0) {
+          throw new RuntimeException(String.format(FORMAT_ERROR + ". \"%s\" is not name;value",
+              event, pair));
         }
-        context[i] = pair[0];
-        values[i] = Float.parseFloat(pair[1]);
+        context[i] = pair.substring(0, separator);
+        values[i] = Float.parseFloat(pair.substring(separator + 1));
       }
       eventList.add(new Event(outcome, context, values));
     } else {
