@@ -325,4 +325,100 @@ public class JsonScanTest {
         () -> JsonScan.document(text));
     Assertions.assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
   }
+
+  // -------------------------------------------------------------------------
+  // offsets, nesting depth, line endings
+  // -------------------------------------------------------------------------
+
+  static Stream<Arguments> malformedOffsets() {
+    return Stream.of(
+        // nothing, or whitespace only
+        Arguments.of("", 0, "expected '{'"),
+        Arguments.of("   ", 3, "expected '{'"),
+        Arguments.of("\u000B{}", 0, "expected '{'"),
+        // cut off after each token of a member
+        Arguments.of("{", 1, "expected '\"'"),
+        Arguments.of("{\"a", 1, "unterminated string"),
+        Arguments.of("{\"a\"", 4, "expected ':'"),
+        Arguments.of("{\"a\":", 5, "expected a value"),
+        Arguments.of("{\"a\": ", 6, "expected a value"),
+        Arguments.of("{\"a\":1", 6, "expected ','"),
+        Arguments.of("{\"a\":1,", 7, "expected '\"'"),
+        Arguments.of("{\"a\":1,}", 7, "expected '\"'"),
+        Arguments.of("{\"a\":\"x", 5, "unterminated string"),
+        Arguments.of("{\"a\":\"x\\\"", 5, "unterminated string"),
+        Arguments.of("{\"a\":[1", 7, "expected ','"),
+        Arguments.of("{\"a\":[1,", 8, "expected a value"),
+        Arguments.of("{\"a\":{\"b\":1}", 12, "expected ','"),
+        Arguments.of("{\"a\":{\"b\":", 10, "expected a value"),
+        Arguments.of("{\"a\":tr", 5, "expected a value"),
+        Arguments.of("{\"a\":-", 6, "expected a digit"),
+        Arguments.of("{\"a\":1.", 7, "expected a digit"),
+        Arguments.of("{\"a\":1e", 7, "expected a digit"),
+        Arguments.of("{\"a\":1e+", 8, "expected a digit"),
+        // content after the object
+        Arguments.of("{\"a\":1}x", 7, "content after the object"),
+        Arguments.of("{\"a\":1} \n{}", 9, "content after the object"),
+        Arguments.of("{}}", 2, "content after the object"),
+        Arguments.of("{}\u00A0", 2, "content after the object"),
+        // wrong separators and whitespace that is not JSON whitespace
+        Arguments.of("{\"a\" 1}", 5, "expected ':'"),
+        Arguments.of("{\"a\":1 \"b\":2}", 7, "expected ','"),
+        Arguments.of("{\"a\":\u00A01}", 5, "expected a value"),
+        Arguments.of("{\"a\"\u3000:1}", 4, "expected ':'"),
+        // escapes are checked where the backslash is
+        Arguments.of("{\"\\u12\":1}", 2, "four hexadecimal digits"),
+        Arguments.of("{\"a\\q\":1}", 3, "unknown escape \\q"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("malformedOffsets")
+  void testMalformedMessageNamesTheOffsetAndReason(String text, int offset, String reason) {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> JsonScan.document(text));
+    Assertions.assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
+    Assertions.assertTrue(e.getMessage().contains(reason), e.getMessage());
+  }
+
+  private static final int NESTING_DEPTH = 500;
+
+  private static String nested(int depth) {
+    return "[{\"k\":".repeat(depth) + "0" + "}]".repeat(depth);
+  }
+
+  @Test
+  void testDeeplyNestedValuesAreSkippedWhole() {
+    final String value = nested(NESTING_DEPTH);
+    final String text = "{\"a\": " + value + ", \"b\": 1}";
+    Assertions.assertEquals(List.of("a=" + value, "b=1"), render(text, JsonScan.document(text)));
+  }
+
+  @Test
+  void testDeeplyNestedValueCutOffIsRejectedAtTheEnd() {
+    final String value = nested(NESTING_DEPTH);
+    final String text = "{\"a\": " + value.substring(0, value.length() - 1);
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> JsonScan.document(text));
+    Assertions.assertTrue(e.getMessage().contains("offset " + text.length() + ","), e.getMessage());
+  }
+
+  static Stream<Arguments> lineEndings() {
+    return Stream.of(
+        Arguments.of("{\r\n\t\"a\"\r\n\t:\r\n\t1,\r\n\t\"b\": \"x\"\r\n}\r\n",
+            List.of("a=1", "b=\"x\"")),
+        Arguments.of("{\r\"a\":\r1\r}\r", List.of("a=1")),
+        Arguments.of("{\"a\":[\r\n1,\r\n2\r\n],\"o\":{\r\n}}",
+            List.of("a=[\r\n1,\r\n2\r\n]", "o={\r\n}")),
+        // a line break inside a string is content, so it stays in the key
+        Arguments.of("{\"a\r\nb\":1}", List.of("a\r\nb=1")),
+        // escaped quotes, backslashes, and solidus in keys
+        Arguments.of("{\"\\u005B\": 1, \"a\\\\\": 2, \"\\/\": 3, \"\\\\\\\"\": 4}",
+            List.of("[=1", "a\\=2", "/=3", "\\\"=4")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("lineEndings")
+  void testLineEndingsAndEscapedKeys(String text, List<String> expected) {
+    Assertions.assertEquals(expected, render(text, JsonScan.document(text)));
+  }
 }
