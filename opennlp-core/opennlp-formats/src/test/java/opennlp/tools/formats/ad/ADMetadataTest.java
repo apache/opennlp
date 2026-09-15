@@ -20,6 +20,7 @@ package opennlp.tools.formats.ad;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -156,5 +157,18 @@ public class ADMetadataTest {
       "source='a'"})
   void testSourceRejects(String meta) {
     Assertions.assertNull(ADMetadata.source(meta));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"2147483648 p=1", "12 p=2147483648", "99999999999 p=1",
+      "12 p=99999999999", "LIT-2147483648 p=1"})
+  void testIdsThatDoNotFitAnIntAreInvalid(String meta) {
+    Assertions.assertNull(ADMetadata.parseTextAndParagraph(meta));
+  }
+
+  @Test
+  void testLargestIdsAreRead() {
+    Assertions.assertArrayEquals(new int[] {2147483647, 2147483647},
+        ADMetadata.parseTextAndParagraph("2147483647 p=2147483647"));
   }
 }

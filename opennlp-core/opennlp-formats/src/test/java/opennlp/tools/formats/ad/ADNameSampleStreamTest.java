@@ -172,7 +172,8 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
         Arguments.of("São-Paulo", new String[] {"São", "Paulo", ""}),
         // supplementary-plane letters are letters, a combining mark ends the letter run
         Arguments.of("\uD801\uDC12-\uD801\uDC3A", new String[] {"\uD801\uDC12", "\uD801\uDC3A", ""}),
-        Arguments.of("e\u0301-a", new String[] {null, null, null}));
+        // a next line character is not a letter, it goes into the rest
+        Arguments.of("a-b\u0085c", new String[] {"a", "b", "\u0085c"}));
   }
 
   @ParameterizedTest
@@ -188,6 +189,8 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
 
   @ParameterizedTest
   @ValueSource(strings = {"-", "--", "-1", "1-", "a1-b", "a-1", "a--b", "ab", "a -",
+      // a combining mark ends the letter run
+      "e\u0301-a",
       // only the ASCII hyphen-minus splits; other dashes never do
       "guarda\u2011chuva", "guarda\u2013chuva", "guarda\u2014chuva"})
   void testMatchHyphenatedTokenRejects(String token) {
@@ -196,6 +199,7 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
 
   @ParameterizedTest
   @CsvSource({"<NER:PROP>, PROP", "<PROP>, PROP", "<>, ''", "<NER:>, ''", "<a<b>, a<b",
+      "<a\u0085b>, a\u0085b",
       "<NER:NER:X>, NER:X", "<ner:PROP>, ner:PROP", "<\uD83D\uDE00>, \uD83D\uDE00"})
   void testTagContent(String tag, String expected) {
     Assertions.assertEquals(expected, ADNameSampleStream.tagContent(tag));
@@ -248,6 +252,42 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
     try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
       RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
       Assertions.assertTrue(e.getMessage().startsWith("Invalid metadata: " + sentenceId + " p="));
+    }
+  }
+
+  private static List<String> sentenceLines(String leafLine) {
+    return List.of("<s>", "SOURCE: ref=\"x\"", "1001 a casa .", "STA:fcl", leafLine,
+        "=H:n(\"casa\" M S)\tcasa", ".", "</s>");
+  }
+
+  @Test
+  void testContractionLexemeOfUnderscoresOnlyHasNoLeftPart() throws IOException {
+    List<String> lines = sentenceLines("==H:prp(\"em\" <sam-> <right>)\t_");
+    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"casa", "."}, sample.getSentence());
+    }
+  }
+
+  @Test
+  void testLeadingUnderscoreYieldsNoToken() throws IOException {
+    List<String> lines = sentenceLines("=H:n(\"a\" M S)\t_a");
+    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"a", "casa", "."}, sample.getSentence());
+    }
+  }
+
+  @Test
+  void testNoBreakSpaceSeparatesTheTagsOfALeaf() throws IOException {
+    List<String> lines = sentenceLines("=H:prop(\"Lisboa\"\u00A0<NER:civ>\u00A0F S)\tLisboa");
+    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"Lisboa", "casa", "."}, sample.getSentence());
+      Assertions.assertArrayEquals(new Span[] {new Span(0, 1, "place")}, sample.getNames());
     }
   }
 }
