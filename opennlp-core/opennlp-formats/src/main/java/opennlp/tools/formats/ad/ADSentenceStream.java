@@ -394,7 +394,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       }
       int lemmaStart = tagEnd + 2;
       // the longest lemma after which the rest of the line still parses wins
-      for (int lemmaEnd = indexOfLineTerminator(line, lemmaStart) - 1; lemmaEnd > lemmaStart;
+      for (int lemmaEnd = StringUtil.indexOfLineTerminator(line, lemmaStart) - 1; lemmaEnd > lemmaStart;
            lemmaEnd--) {
         if (!isQuote(line.charAt(lemmaEnd))) {
           continue;
@@ -452,7 +452,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       String lemma = null;
       int[] rest = null;
       if (open < line.length() && isQuote(line.charAt(open))) {
-        for (int lemmaEnd = indexOfLineTerminator(line, open + 1) - 1;
+        for (int lemmaEnd = StringUtil.indexOfLineTerminator(line, open + 1) - 1;
              lemmaEnd > open + 1 && rest == null; lemmaEnd--) {
           if (isQuote(line.charAt(lemmaEnd))) {
             rest = scanMorphologyAndLexeme(line, lemmaEnd + 1);
@@ -527,7 +527,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       }
       int end = i + 1;
       while (end < line.length() && line.charAt(end) != '('
-          && !StringUtil.isAsciiWhitespace(line.charAt(end))) {
+          && !StringUtil.isWhitespace(line.charAt(end))) {
         end++;
       }
       return end == i + 1 ? -1 : end;
@@ -563,7 +563,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     private boolean isTagGroupRun(String line, int from) {
       int start = skipAsciiWhitespace(line, from);
       int end = line.length();
-      while (end > start && StringUtil.isAsciiWhitespace(line.charAt(end - 1))) {
+      while (end > start && StringUtil.isWhitespace(line.charAt(end - 1))) {
         end--;
       }
       if (start == end) {
@@ -573,7 +573,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       int contentEnd = end - TAG_GROUP_CLOSE.length();
       return contentEnd > contentStart && line.startsWith(TAG_GROUP_OPEN, start)
           && line.startsWith(TAG_GROUP_CLOSE, contentEnd)
-          && indexOfLineTerminator(line, contentStart) >= contentEnd;
+          && StringUtil.indexOfLineTerminator(line, contentStart) >= contentEnd;
     }
 
     /**
@@ -612,7 +612,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return null;
       }
       if (from < line.length() && line.charAt(from) == '<') {
-        for (int close = indexOfLineTerminator(line, from + 1) - 1; close > from + 1; close--) {
+        for (int close = StringUtil.indexOfLineTerminator(line, from + 1) - 1; close > from + 1; close--) {
           if (line.charAt(close) == '>') {
             int[] rest = scanSecondaryTags(line, close + 1, noRestAt);
             if (rest != null) {
@@ -664,10 +664,10 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       }
       if (lexemeStart == line.length()) {
         lexemeStart--;
-        return lexemeStart > close + 1 && !isLineTerminator(line.charAt(lexemeStart))
+        return lexemeStart > close + 1 && !StringUtil.isLineTerminator(line.charAt(lexemeStart))
             ? lexemeStart : -1;
       }
-      return indexOfLineTerminator(line, lexemeStart) == line.length() ? lexemeStart : -1;
+      return StringUtil.indexOfLineTerminator(line, lexemeStart) == line.length() ? lexemeStart : -1;
     }
 
     /**
@@ -678,8 +678,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @return {@code true} for such a lexeme.
      */
     private boolean isWordWithMarkup(String lexeme) {
-      if (lexeme.isEmpty() || !isAsciiWord(lexeme.charAt(0))
-          || indexOfLineTerminator(lexeme, 0) < lexeme.length()) {
+      if (lexeme.isEmpty() || !(StringUtil.isAsciiLetter(lexeme.charAt(0))
+          || StringUtil.isAsciiDigit(lexeme.charAt(0)) || lexeme.charAt(0) == '_')
+          || StringUtil.indexOfLineTerminator(lexeme, 0) < lexeme.length()) {
         return false;
       }
       for (int i = 1; i < lexeme.length(); i++) {
@@ -701,7 +702,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      */
     private int skipAsciiWhitespace(String line, int from) {
       int i = from;
-      while (i < line.length() && StringUtil.isAsciiWhitespace(line.charAt(i))) {
+      while (i < line.length() && StringUtil.isWhitespace(line.charAt(i))) {
         i++;
       }
       return i;
@@ -718,32 +719,6 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Finds the first line terminator at or after an index.
-     *
-     * @param text The text.
-     * @param from The index to start at.
-     * @return The index of the terminator, or the length of the text if there is none.
-     */
-    static int indexOfLineTerminator(CharSequence text, int from) {
-      for (int i = from; i < text.length(); i++) {
-        if (isLineTerminator(text.charAt(i))) {
-          return i;
-        }
-      }
-      return text.length();
-    }
-
-    /**
-     * Tests for a line terminator: line feed, carriage return, next line, line separator, or
-     * paragraph separator.
-     *
-     * @param c The character.
-     * @return {@code true} for one of those five characters.
-     */
-    private static boolean isLineTerminator(char c) {
-      return c == '\n' || c == '\r' || c == '\u0085' || c == '\u2028' || c == '\u2029';
-    }
-
     /** Represents a tree element, Node or Leaf */
     public abstract static class TreeElement {
 

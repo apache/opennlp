@@ -17,7 +17,7 @@
 
 package opennlp.tools.formats.ad;
 
-import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Reads the ids from the metadata of an Arvores Deitadas sentence, which differs between
@@ -101,11 +101,11 @@ final class ADMetadata {
    */
   private static int[] scanTextAndParagraph(String meta) {
     int i = 0;
-    while (i < meta.length() && (isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
+    while (i < meta.length() && (StringUtil.isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
       i++;
     }
     int textStart = i;
-    while (i < meta.length() && isAsciiDigit(meta.charAt(i))) {
+    while (i < meta.length() && StringUtil.isAsciiDigit(meta.charAt(i))) {
       i++;
     }
     if (i == textStart || hasLineTerminator(meta)) {
@@ -120,7 +120,7 @@ final class ADMetadata {
       }
       int paragraphStart = prefix + PARAGRAPH_PREFIX.length();
       int paragraphEnd = paragraphStart;
-      while (paragraphEnd < meta.length() && isAsciiDigit(meta.charAt(paragraphEnd))) {
+      while (paragraphEnd < meta.length() && StringUtil.isAsciiDigit(meta.charAt(paragraphEnd))) {
         paragraphEnd++;
       }
       if (paragraphEnd > paragraphStart) {
@@ -137,26 +137,7 @@ final class ADMetadata {
    * @return {@code true} if it does.
    */
   private static boolean hasLineTerminator(String meta) {
-    return SentenceParser.indexOfLineTerminator(meta, 0) < meta.length();
+    return StringUtil.indexOfLineTerminator(meta, 0) < meta.length();
   }
 
-  /**
-   * Tests for an ASCII letter.
-   *
-   * @param c The character.
-   * @return {@code true} for {@code a} to {@code z} or {@code A} to {@code Z}.
-   */
-  private static boolean isAsciiLetter(char c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-  }
-
-  /**
-   * Tests for an ASCII digit.
-   *
-   * @param c The character.
-   * @return {@code true} for {@code 0} to {@code 9}.
-   */
-  private static boolean isAsciiDigit(char c) {
-    return c >= '0' && c <= '9';
-  }
 }
