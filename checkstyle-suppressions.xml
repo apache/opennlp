@@ -57,4 +57,12 @@
   <suppress id="NoRegexImport"
             files="[\\/]tokenize[\\/](TokenizerFactory|TokenizerME|TokSpanEventStream|AlphaNumericCheck|lang[\\/]Factory)\.java"/>
 
+  <!--
+    Deprecated compatibility shim: matchesPattern keeps the java.util.regex.Pattern
+    signature so existing subclasses still compile, but delegates to GlobMatcher
+    and never engages the regex engine. New code uses matchesWildcard instead.
+  -->
+  <suppress id="NoRegexImport"
+            files="[\\/]models[\\/]AbstractClassPathModelFinder\.java"/>
+
 </suppressions>
