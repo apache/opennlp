@@ -56,7 +56,14 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
         Arguments.of(" :a.jar", new String[] {" ", "a.jar"}),
         Arguments.of("/usr/lib/a.jar:/opt/b.jar", new String[] {"/usr/lib/a.jar", "/opt/b.jar"}),
         Arguments.of("C:\\lib\\a.jar;C:\\lib\\b.jar", new String[] {"C", "\\lib\\a.jar;C", "\\lib\\b.jar"}),
-        Arguments.of("\uD801\uDC12.jar:b.jar", new String[] {"\uD801\uDC12.jar", "b.jar"}));
+        Arguments.of("C:/lib/a.jar", new String[] {"C", "/lib/a.jar"}),
+        Arguments.of("\uD801\uDC12.jar:b.jar", new String[] {"\uD801\uDC12.jar", "b.jar"}),
+        Arguments.of("\t:a.jar", new String[] {"\t", "a.jar"}),
+        Arguments.of("my%20lib/a.jar:my lib/b.jar", new String[] {"my%20lib/a.jar", "my lib/b.jar"}),
+        Arguments.of("a.jar!/x:b.jar", new String[] {"a.jar!/x", "b.jar"}),
+        Arguments.of("/lib/*:/opt/*.jar", new String[] {"/lib/*", "/opt/*.jar"}),
+        Arguments.of("a.jar\nb.jar", new String[] {"a.jar\nb.jar"}),
+        Arguments.of("a.jar\n:b.jar", new String[] {"a.jar\n", "b.jar"}));
   }
 
   @ParameterizedTest
@@ -80,6 +87,14 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
         Arguments.of(";;a.jar;", new String[] {"a.jar"}),
         Arguments.of("C:\\lib\\a.jar;C:\\lib\\b.jar", new String[] {"C:\\lib\\a.jar", "C:\\lib\\b.jar"}),
         Arguments.of("/usr/lib/a.jar:/opt/b.jar", new String[] {"/usr/lib/a.jar:/opt/b.jar"}),
+        Arguments.of("C:\\a.jar;D:\\b.jar", new String[] {"C:\\a.jar", "D:\\b.jar"}),
+        Arguments.of("C:/a.jar;d:/b.jar", new String[] {"C:/a.jar", "d:/b.jar"}),
+        Arguments.of("\\\\server\\share\\a.jar;b.jar",
+            new String[] {"\\\\server\\share\\a.jar", "b.jar"}),
+        Arguments.of("C:\\my lib\\a.jar; ;b.jar", new String[] {"C:\\my lib\\a.jar", " ", "b.jar"}),
+        Arguments.of("C:\\my%20lib\\a.jar", new String[] {"C:\\my%20lib\\a.jar"}),
+        Arguments.of("a.jar!/x;b.jar", new String[] {"a.jar!/x", "b.jar"}),
+        Arguments.of("C:\\lib\\*;D:\\*.jar", new String[] {"C:\\lib\\*", "D:\\*.jar"}),
         Arguments.of("\uD801\uDC12.jar;b.jar", new String[] {"\uD801\uDC12.jar", "b.jar"}));
   }
 
