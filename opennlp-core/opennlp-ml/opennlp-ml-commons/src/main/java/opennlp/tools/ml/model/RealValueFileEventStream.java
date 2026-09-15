@@ -25,15 +25,16 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Class for using a file of real-valued {@link Event events} as an
  * {@link ObjectStream event stream}.
  * The format of the file is one event per line with
- * each line consisting of outcome followed by contexts (whitespace delimited).
+ * each line consisting of outcome followed by contexts, separated by Unicode whitespace,
+ * see {@link #parseEvent(String)}.
  *
  * @see Event
  * @see FileEventStream
@@ -129,18 +130,24 @@ public class RealValueFileEventStream extends FileEventStream {
   }
 
   /**
-   * Parses one event line. The fields are separated by runs of whitespace as
-   * {@link WhitespaceTokenizer} defines it, so leading, trailing, and repeated whitespace
-   * is ignored; the first field is the outcome and each further field is a context with
-   * an optional real value, see {@link #parseContexts(String[])}.
+   * Parses one event line. The fields are separated by runs of whitespace under the Unicode
+   * {@code White_Space} property, see {@link StringUtil#isUnicodeWhitespace(int)}; this
+   * definition is fixed and does not depend on the {@code opennlp.whitespace.mode} property.
+   * Leading, trailing, and repeated whitespace is ignored; the first field is the outcome and
+   * each further field is a context with an optional real value, see
+   * {@link #parseContexts(String[])}.
    *
    * @param line The event line. Must not be {@code null}.
    * @return The event; a line with only an outcome gives an event without contexts.
+   * @throws IllegalArgumentException Thrown if {@code line} is {@code null}.
    * @throws InvalidFormatException Thrown if {@code line} has no field.
    * @throws RuntimeException Thrown if negative real values are detected in the input data.
    */
   public static Event parseEvent(String line) throws InvalidFormatException {
-    String[] fields = WhitespaceTokenizer.INSTANCE.tokenize(line);
+    if (line == null) {
+      throw new IllegalArgumentException("line must not be null");
+    }
+    String[] fields = StringUtil.splitOnUnicodeWhitespace(line);
     if (fields.length == 0) {
       throw new InvalidFormatException("An event line must start with an outcome: \"" + line + "\"");
     }

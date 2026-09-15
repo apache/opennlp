@@ -18,12 +18,16 @@
 package opennlp.tools.ml.model;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
 public class SimpleEventStreamBuilderTest {
@@ -64,14 +68,49 @@ public class SimpleEventStreamBuilderTest {
     }
   }
 
+  private static Stream<Arguments> contextSeparators() {
+    return Stream.of(
+        // no-break space, next line, line separator, and ideographic space separate contexts
+        Arguments.of("other/w=he\u00A0n1w=belongs n2w=to", new String[] {"w=he", "n1w=belongs", "n2w=to"}),
+        Arguments.of("other/w=he\u0085n1w=belongs", new String[] {"w=he", "n1w=belongs"}),
+        Arguments.of("other/w=he\u2028n1w=belongs", new String[] {"w=he", "n1w=belongs"}),
+        Arguments.of("other/w=he\u3000n1w=belongs", new String[] {"w=he", "n1w=belongs"}),
+        // file separator and zero width space are not whitespace, they stay inside a context
+        Arguments.of("other/w=he\u001Cn1w=belongs", new String[] {"w=he\u001Cn1w=belongs"}),
+        Arguments.of("other/w=he\u200Bn1w=belongs", new String[] {"w=he\u200Bn1w=belongs"}),
+        // a supplementary character is one character of a context
+        Arguments.of("other/w=\uD83D\uDE00 n1w=x", new String[] {"w=\uD83D\uDE00", "n1w=x"}));
+  }
+
+  /**
+   * The contexts are separated by Unicode whitespace only, independent of the whitespace mode.
+   */
+  @ParameterizedTest
+  @MethodSource("contextSeparators")
+  void testContextsAreSeparatedByUnicodeWhitespaceOnly(String event, String[] contexts)
+      throws IOException {
+    try (ObjectStream<Event> events = new SimpleEventStreamBuilder().add(event).build()) {
+      Assertions.assertArrayEquals(contexts, events.read().getContext());
+    }
+  }
+
   @Test
-  void testAddSplitsOnNonAsciiSpace() throws IOException {
+  void testAddDoesNotDependOnTheSharedWhitespaceTokenizer() throws IOException {
+    WhitespaceTokenizer.INSTANCE.setKeepNewLines(true);
     try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
-        .add("other/w=he n1w=belongs n2w=to")
-        .build()) {
+        .add("other/w=he\nn1w=belongs\r\nn2w=to").build()) {
       Assertions.assertArrayEquals(
           new String[] {"w=he", "n1w=belongs", "n2w=to"}, events.read().getContext());
+    } finally {
+      WhitespaceTokenizer.INSTANCE.setKeepNewLines(false);
     }
+  }
+
+  @Test
+  void testAddRejectsNull() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new SimpleEventStreamBuilder().add(null));
+    Assertions.assertEquals("event must not be null", e.getMessage());
   }
 
   @Test
@@ -120,7 +159,7 @@ public class SimpleEventStreamBuilderTest {
   @ParameterizedTest
   @ValueSource(strings = {"w=he;-0.5", "w=he;-1", "w=he;-1e2"})
   void testAddRejectsANegativeValueWithTheContextNamed(String context) {
-    RuntimeException e = Assertions.assertThrows(RuntimeException.class,
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add("other/n=x;1 " + context));
     Assertions.assertEquals("Negative values are not allowed: " + context, e.getMessage());
   }
@@ -136,13 +175,13 @@ public class SimpleEventStreamBuilderTest {
   // no slash, empty outcome, no contexts, blank contexts
   @ValueSource(strings = {"other w=he", "/w=he", "other/", "other/ \t "})
   void testAddRejectsMissingOutcomeOrContexts(String event) {
-    Assertions.assertThrows(RuntimeException.class,
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add(event));
   }
 
   @Test
   void testAddRejectsAContextWithoutValueWhenTheFirstHasOne() {
-    Assertions.assertThrows(RuntimeException.class,
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add("other/w=he;0.5 n1w=belongs"));
   }
 
@@ -151,7 +190,7 @@ public class SimpleEventStreamBuilderTest {
   @ValueSource(strings = {"other/;0.5", "other/w=he;0.5 ;0.4", "other/w=he;", "other/w=he;0.5 n1w=x;",
       "other/w=he;0.5;1", "other/w=he;;0.5"})
   void testAddRejectsAValuedContextThatIsNotNameAndValue(String event) {
-    RuntimeException e = Assertions.assertThrows(RuntimeException.class,
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add(event));
     Assertions.assertTrue(e.getMessage().startsWith("format error of the event"), e.getMessage());
   }

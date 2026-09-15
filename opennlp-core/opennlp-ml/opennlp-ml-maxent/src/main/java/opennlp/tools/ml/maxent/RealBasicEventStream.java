@@ -40,9 +40,11 @@ public class RealBasicEventStream implements ObjectStream<Event> {
 
   /**
    * {@inheritDoc}
+   * <p>
    * Each line is parsed by {@link RealValueFileEventStream#parseEvent(String)}.
    *
-   * @throws IOException Thrown if there is an error during reading, or if a line has no outcome.
+   * @throws IOException Thrown if there is an error during reading.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a line has no outcome.
    * @throws RuntimeException Thrown if negative real values are detected in the input data.
    */
   @Override
