@@ -17,7 +17,12 @@
 
 package opennlp.tools.formats.ad;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -33,8 +38,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.PlainTextByLineStream;
 
 public class ADSentenceStreamTest {
 
@@ -432,7 +440,19 @@ public class ADSentenceStreamTest {
       "''|s|false",
       "<ext>|t|false",
       "<t>|ext|false",
-      "< s>|s|false"
+      "< s>|s|false",
+      // a name that another name starts with is its own tag
+      "<text>|t|false",
+      "<text id=\"1\">|t|false",
+      "<tt>|t|false",
+      "<t>|text|false",
+      "<t\u2003id=\"1\">|t|true",
+      "<t\u3000>|t|true",
+      // an opening bracket inside the attributes is ordinary text
+      "<s id=\"<\">|s|true",
+      "<s<|s|false",
+      "<<s>>|s|false",
+      "<s/>|s|false"
   })
   void testIsOpeningTag(String line, String name, boolean expected) {
     Assertions.assertEquals(expected, ADSentenceStream.isOpeningTag(line, name));
@@ -453,9 +473,226 @@ public class ADSentenceStreamTest {
       "</s>>|s|false",
       "</ext>|t|false",
       "''|s|false",
-      "</ s>|s|false"
+      "</ s>|s|false",
+      "</text>|t|false",
+      "</t>|text|false",
+      "</t >|t|false"
   })
   void testIsClosingTag(String line, String name, boolean expected) {
     Assertions.assertEquals(expected, ADSentenceStream.isClosingTag(line, name));
+  }
+
+  @Test
+  void testTrailingCarriageReturnIsNotATag() {
+    Assertions.assertFalse(ADSentenceStream.isOpeningTag("<s>\r", "s"));
+    Assertions.assertFalse(ADSentenceStream.isClosingTag("</s>\r", "s"));
+  }
+
+  private static Stream<Arguments> leafLinesWithMarkupInside() {
+    return Stream.of(
+        // nested and doubled angle brackets extend the secondary tags to the last bracket
+        Arguments.of("=H:n(\"a\" <x<y>> M S)\ta", "a", "<x<y>>", "M S", "a"),
+        Arguments.of("=H:n(\"a\" <<x>> M S)\ta", "a", "<<x>>", "M S", "a"),
+        // an unbalanced bracket is part of the morphological tag
+        Arguments.of("=H:n(\"a\" <x> <y M S)\ta", "a", "<x>", "<y M S", "a"),
+        Arguments.of("=H:n(\"a\" x> M S)\ta", "a", "", "x> M S", "a"),
+        // angle brackets in the lemma and the lexeme are ordinary characters
+        Arguments.of("=H:n(\"a<b\" M S)\ta<b", "a<b", "", "M S", "a<b"),
+        Arguments.of("=H:n(\"a\" M S)\t<a>b", "a", "", "M S", "<a>b"),
+        // UTF-8 bytes read as ISO-8859-1, and ISO-8859-1 bytes read as UTF-8
+        Arguments.of("=H:n(\"\u00C3\u00A7\u00C3\u00A3o\" M S)\t\u00C3\u00A7\u00C3\u00A3o",
+            "\u00C3\u00A7\u00C3\u00A3o", "", "M S", "\u00C3\u00A7\u00C3\u00A3o"),
+        Arguments.of("=H:n(\"\uFFFD\uFFFDo\" M S)\t\uFFFD\uFFFDo",
+            "\uFFFD\uFFFDo", "", "M S", "\uFFFD\uFFFDo"),
+        // tabs and other whitespace separate the parts inside the parentheses
+        Arguments.of("=H:n(\"a\"\t<x>\t<y>\tM S)\ta", "a", "<x>\t<y>", "M S", "a"),
+        Arguments.of("=H:n(\"a\"\u00A0<x>\u00A0M S)\u00A0a", "a", "<x>", "M S", "a"),
+        Arguments.of("=H:n(\"a\" <x> M\tS)\ta", "a", "<x>", "M\tS", "a"),
+        Arguments.of("=H:n(\"a\" <x>\u3000)\ta", "a", "<x>", null, "a"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("leafLinesWithMarkupInside")
+  void testLeafLinesWithMarkupInside(String line, String lemma, String secondaryTag,
+                                     String morphologicalTag, String lexeme) {
+    TreeElement element = new SentenceParser().getElement(line);
+    Assertions.assertNotNull(element);
+    Assertions.assertTrue(element.isLeaf());
+    Leaf leaf = (Leaf) element;
+    Assertions.assertEquals(2, leaf.getLevel());
+    Assertions.assertEquals("H", leaf.getSyntacticTag());
+    Assertions.assertEquals("n", leaf.getFunctionalTag());
+    Assertions.assertEquals(lemma, leaf.getLemma());
+    Assertions.assertEquals(secondaryTag, leaf.getSecondaryTag());
+    Assertions.assertEquals(morphologicalTag, leaf.getMorphologicalTag());
+    Assertions.assertEquals(lexeme, leaf.getLexeme());
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', ignoreLeadingAndTrailingWhitespace = false, value = {
+      "=X:y\u00A0(<a>)|2|X:y",
+      "=X:y\t(<a>)\t|2|X:y",
+      "=X:y (<a<b>>)|2|X:y",
+      "=X:y(z)\u3000(<a>)|2|X:y"
+  })
+  void testNodeLinesWithWhitespaceAndNestedMarkup(String line, int level, String syntacticTag) {
+    TreeElement element = new SentenceParser().getElement(line);
+    Assertions.assertNotNull(element);
+    Assertions.assertFalse(element.isLeaf());
+    Assertions.assertEquals(level, element.getLevel());
+    Assertions.assertEquals(syntacticTag, element.getSyntacticTag());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"=a<b<c>>", "=a<<", "=a>>", "=a<", "=a>", "=a<b>c", "=1<", "=_>",
+      "=a<b.c>", "==ab>", "=ab\t<c>",
+      // a word in either mojibake form is a word
+      "=\u00C3\u00A7\u00C3\u00A3o.", "=\u00C3\u00A7<x>"})
+  void testWordsWithUnbalancedOrNestedMarkupAreIgnored(String line) {
+    Assertions.assertNull(new SentenceParser().getElement(line));
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', ignoreLeadingAndTrailingWhitespace = false, value = {
+      "=a|2|a",
+      "=a-b|2|a-b",
+      "=a b|2|a b",
+      "=1x|2|1x",
+      "=_x|2|_x",
+      "=ab,|2|ab,",
+      "==a|3|a",
+      "=\u00C3\u00A7\u00C3\u00A3o|2|\u00C3\u00A7\u00C3\u00A3o",
+      "=\uFFFDx|2|\uFFFDx"
+  })
+  void testFallbackLeafKeepsTheWholeWord(String line, int level, String lexeme) {
+    TreeElement element = new SentenceParser().getElement(line);
+    Assertions.assertNotNull(element);
+    Assertions.assertTrue(element.isLeaf());
+    Leaf leaf = (Leaf) element;
+    Assertions.assertEquals(level, leaf.getLevel());
+    Assertions.assertEquals("", leaf.getSyntacticTag());
+    Assertions.assertEquals(lexeme, leaf.getLexeme());
+  }
+
+  private static final List<String> CORPUS_LINES = List.of(
+      "<ext id=\"1001\" cat=\"x\">",
+      "<p par=\"1\">",
+      "<s id=\"1\">",
+      "SOURCE: src",
+      "CF1001-1 Olá mundo .",
+      "STA:fcl",
+      "=P:v-fin(\"olá\" PR 3S IND VFIN)\tOlá",
+      "=H:n(\"mundo\" M S)\tmundo",
+      "=.",
+      "</s>",
+      "<s id=\"2\">",
+      "SOURCE: src",
+      "CF1001-2 Adeus .",
+      "STA:fcl",
+      "=P:v-fin(\"adeus\" IMP)\tAdeus",
+      "=.",
+      "</s>",
+      "</p>",
+      "</ext>");
+
+  private static List<Sentence> readSentences(byte[] corpus, Charset charset) throws IOException {
+    List<Sentence> sentences = new ArrayList<>();
+    try (ObjectStream<String> lines = new PlainTextByLineStream(
+        () -> new ByteArrayInputStream(corpus), charset);
+         ADSentenceStream stream = new ADSentenceStream(lines)) {
+      Sentence sentence;
+      while ((sentence = stream.read()) != null) {
+        sentences.add(sentence);
+      }
+    }
+    return sentences;
+  }
+
+  private static List<Sentence> readSentences(String corpus) throws IOException {
+    return readSentences(corpus.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+  }
+
+  private static List<String> lexemes(Sentence sentence) {
+    List<String> lexemes = new ArrayList<>();
+    for (TreeElement element : sentence.root().getElements()) {
+      for (TreeElement child : ((Node) element).getElements()) {
+        lexemes.add(((Leaf) child).getLexeme());
+      }
+    }
+    return lexemes;
+  }
+
+  private static void assertCorpusSentences(List<Sentence> sentences) {
+    Assertions.assertEquals(2, sentences.size());
+    Assertions.assertEquals("Olá mundo .", sentences.get(0).text());
+    Assertions.assertEquals("CF1001-1 p=1 src", sentences.get(0).metadata());
+    Assertions.assertEquals(List.of("Olá", "mundo", "."), lexemes(sentences.get(0)));
+    Assertions.assertEquals("Adeus .", sentences.get(1).text());
+    Assertions.assertEquals("CF1001-2 p=1 src", sentences.get(1).metadata());
+    Assertions.assertEquals(List.of("Adeus", "."), lexemes(sentences.get(1)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\n", "\r\n", "\r"})
+  void testLineEndingsGiveTheSameSentences(String lineEnding) throws IOException {
+    List<Sentence> sentences = readSentences(String.join(lineEnding, CORPUS_LINES) + lineEnding);
+    assertCorpusSentences(sentences);
+    List<Sentence> withLineFeeds = readSentences(String.join("\n", CORPUS_LINES) + "\n");
+    for (int i = 0; i < sentences.size(); i++) {
+      Assertions.assertEquals(withLineFeeds.get(i).root().toString(),
+          sentences.get(i).root().toString());
+    }
+  }
+
+  @Test
+  void testEmptyLinesBetweenSentencesAreSkipped() throws IOException {
+    List<String> lines = new ArrayList<>();
+    lines.add("");
+    boolean inSentence = false;
+    for (String line : CORPUS_LINES) {
+      if (line.startsWith("<s ")) {
+        inSentence = true;
+      }
+      lines.add(line);
+      if (line.equals("</s>")) {
+        inSentence = false;
+      }
+      if (!inSentence) {
+        lines.add("");
+      }
+    }
+    assertCorpusSentences(readSentences(String.join("\n", lines)));
+  }
+
+  @Test
+  void testSentenceAtEndOfInputWithoutClosingTag() throws IOException {
+    List<String> lines = CORPUS_LINES.subList(0, CORPUS_LINES.indexOf("</s>"));
+    List<Sentence> sentences = readSentences(String.join("\n", lines));
+    Assertions.assertEquals(1, sentences.size());
+    Assertions.assertEquals("Olá mundo .", sentences.get(0).text());
+    Assertions.assertEquals(List.of("Olá", "mundo", "."), lexemes(sentences.get(0)));
+  }
+
+  @Test
+  void testLatin1BytesReadAsUtf8() throws IOException {
+    byte[] corpus = (String.join("\n", CORPUS_LINES) + "\n").getBytes(StandardCharsets.ISO_8859_1);
+    List<Sentence> sentences = readSentences(corpus, StandardCharsets.UTF_8);
+    String ola = new String("Olá".getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+    Assertions.assertTrue(ola.contains("\uFFFD"));
+    Assertions.assertEquals(2, sentences.size());
+    Assertions.assertEquals(ola + " mundo .", sentences.get(0).text());
+    Assertions.assertEquals(List.of(ola, "mundo", "."), lexemes(sentences.get(0)));
+    Assertions.assertEquals(List.of("Adeus", "."), lexemes(sentences.get(1)));
+  }
+
+  @Test
+  void testUtf8BytesReadAsLatin1() throws IOException {
+    byte[] corpus = (String.join("\n", CORPUS_LINES) + "\n").getBytes(StandardCharsets.UTF_8);
+    List<Sentence> sentences = readSentences(corpus, StandardCharsets.ISO_8859_1);
+    String ola = new String("Olá".getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+    Assertions.assertEquals("Ol\u00C3¡", ola);
+    Assertions.assertEquals(2, sentences.size());
+    Assertions.assertEquals(ola + " mundo .", sentences.get(0).text());
+    Assertions.assertEquals(List.of(ola, "mundo", "."), lexemes(sentences.get(0)));
   }
 }
