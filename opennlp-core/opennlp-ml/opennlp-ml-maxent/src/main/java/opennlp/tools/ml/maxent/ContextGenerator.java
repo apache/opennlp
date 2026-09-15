@@ -26,6 +26,7 @@ public interface ContextGenerator<T> {
    * Builds up the list of contextual predicates given an {@link T object}.
    *
    * @param o The {@link T object} used as input.
+   * @return The contextual predicates of {@code o}, in order.
    */
   String[] getContext(T o);
 
