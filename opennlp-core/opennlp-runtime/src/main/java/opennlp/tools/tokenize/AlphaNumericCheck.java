@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
  * characters and simple ranges, which covers every built-in language default, is evaluated
  * as a character set lookup. Any other pattern is evaluated by the regular expression engine,
  * so the result is the same as {@code pattern.matcher(token).matches()} in both cases.
+ * Regex evaluation is the documented exception and applies only outside plain JDK
+ * character-class patterns.
  * A {@code null} pattern yields a check that rejects every token, so callers documenting
  * a nullable pattern keep working with skipping disabled or enabled. Set lookups never
  * accept surrogate code units or supplementary characters, which matches the engine for
