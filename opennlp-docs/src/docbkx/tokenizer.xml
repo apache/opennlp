@@ -322,8 +322,10 @@ Path: en-custom-token.bin]]>
 				so a model applies the pattern it was trained with; a flag such as
 				<code>CASE_INSENSITIVE</code> is not stored and does not apply after the model is
 				loaded. Since 3.0.0 a pattern of the form <code>^[...]+$</code> with a class of plain
-				characters and ranges is evaluated without the regular expression engine, with the
-				same result. Characters outside the Basic Multilingual Plane, such as emoji or
+				characters and ranges is evaluated without the regular expression engine. The result
+				is the same, except that a token with an unpaired surrogate, which is not a
+				character, is never alphanumeric, where the engine accepts it inside a range that
+				spans the surrogate block. Characters outside the Basic Multilingual Plane, such as emoji or
 				mathematical alphanumerics, are not in any built-in pattern; a custom pattern such
 				as <code>^[\p{L}\p{Nd}]+$</code> accepts them.
 			</para>
