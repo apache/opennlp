@@ -38,8 +38,13 @@ public class AlphaNumericCheckTest {
   private static final List<String> TOKENS = List.of(
       "", "a", "Z", "0", "abc123", "Straße", "Café", "señor", "łódź", "ĳs", "Ÿ", "-", "a-b",
       "a b", "a\nb", "\n", "abc\n", "ñ", "Ç", "ß", "é", " ", "١٢٣", "Ａ", "𐐒", "😀a",
-      "aé", "AB.", "x_y", "[", "]", "\\", "^", "&", "$",
+      "aé", "AB.", "x_y", "[", "]", "\\", "^", "&", "$", "!", "~", "#", "a.b", "A", "M",
+      "abc-", "-abc", "a-b-c", "\u00FF", "\uD7FF", "\uE000", "\uFFFF",
       "\uD800", "\uDFFF", "\uD83D", "\uDE00", "\uD83D\uDE00", "a\uD83D\uDE00b");
+
+  /** Unpaired surrogates: not characters, so a set lookup never accepts them. */
+  private static final List<String> UNPAIRED_SURROGATES =
+      List.of("\uD800", "\uDFFF", "\uD83D", "\uDE00");
 
   private static Stream<Arguments> builtInPatternsAndTokens() {
     return LANGUAGES.stream().flatMap(language -> {
@@ -61,7 +66,11 @@ public class AlphaNumericCheckTest {
         "^[a-z-]+$", "^[-a-z]+$", "^[a-c1-3]+$", "^[a]+$", "^[a-zA-Z0-9_]+$",
         "^[\\p{L}]+$", "^[^a-z]+$", "^[a-z&&[^b]]+$", "^[\\d]+$", "^[a-z]+$|^[0-9]+$",
         "^[a-z]*$", "[a-z]+", "^(?i)[a-z]+$", "^[a-z]+\\d$", "^[ab\\]]+$", "^[a-]+$",
-        "^[😀]+$");
+        "^[😀]+$",
+        // a hyphen after a range, a range that starts at a hyphen, ranges over punctuation
+        // and space, a one-character range, and class-literal regex operators
+        "^[a-b-c]+$", "^[--a]+$", "^[!-~]+$", "^[ -~]+$", "^[a-a]+$", "^[a-z.*+?(){}|$]+$",
+        "^[a-z#]+$");
     return patterns.stream().flatMap(regex -> {
       Pattern pattern = Pattern.compile(regex);
       return TOKENS.stream().map(token -> Arguments.of(regex, pattern, token));
@@ -76,7 +85,9 @@ public class AlphaNumericCheckTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"^[A-Za-z0-9]+$", "^[a-z-]+$", "^[-a-z]+$", "^[a-]+$", "^[a-c1-3]+$",
-      "^[a]+$", "^[a-zA-Z0-9_]+$", "^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$"})
+      "^[a]+$", "^[a-zA-Z0-9_]+$", "^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$",
+      "^[a-b-c]+$", "^[--a]+$", "^[!-~]+$", "^[ -~]+$", "^[a-a]+$", "^[a-z.*+?(){}|$]+$",
+      "^[a-z#]+$", "^[A-\uFFFF]+$", "^[\uD7FF-\uE000]+$"})
   void testEligiblePatternsRunAsSetLookup(String regex) {
     Assertions.assertTrue(AlphaNumericCheck.of(Pattern.compile(regex)).isCharacterSet());
   }
@@ -97,11 +108,11 @@ public class AlphaNumericCheckTest {
     Assertions.assertTrue(check.test("ABC"));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"abc", "a1", "", "caf\u00E9", "\uD83D\uDE00", "\uD801\uDC12",
-      "\uD800", "\uDE00"})
-  void testNullPatternRejectsEveryToken(String token) {
-    Assertions.assertFalse(AlphaNumericCheck.of(null).test(token));
+  @Test
+  void testNullPatternIsRejected() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> AlphaNumericCheck.of(null));
+    Assertions.assertEquals("pattern must not be null", e.getMessage());
   }
 
   @ParameterizedTest
@@ -119,6 +130,31 @@ public class AlphaNumericCheckTest {
     AlphaNumericCheck check = AlphaNumericCheck.of(Pattern.compile("^[A-\uFFFF]+$"));
     Assertions.assertTrue(check.isCharacterSet());
     Assertions.assertFalse(check.test(token));
+  }
+
+  private static Stream<Arguments> surrogateSpanningPatternsAndTokens() {
+    return Stream.of("^[A-\uFFFF]+$", "^[\uD7FF-\uE000]+$", "^[\u0001-\uFFFF]+$")
+        .flatMap(regex -> TOKENS.stream().map(token -> Arguments.of(regex, token)));
+  }
+
+  /**
+   * A range over the surrogate block agrees with the engine on every token except an unpaired
+   * surrogate, which the engine accepts as a code point and a set lookup rejects.
+   */
+  @ParameterizedTest(name = "{0}: \"{1}\"")
+  @MethodSource("surrogateSpanningPatternsAndTokens")
+  void testSurrogateSpanningRangeDiffersFromEngineOnlyOnUnpairedSurrogates(String regex,
+      String token) {
+    Pattern pattern = Pattern.compile(regex);
+    AlphaNumericCheck check = AlphaNumericCheck.of(pattern);
+    Assertions.assertTrue(check.isCharacterSet());
+    if (UNPAIRED_SURROGATES.contains(token)) {
+      Assertions.assertTrue(pattern.matcher(token).matches());
+      Assertions.assertFalse(check.test(token));
+    }
+    else {
+      Assertions.assertEquals(pattern.matcher(token).matches(), check.test(token));
+    }
   }
 
   @ParameterizedTest
