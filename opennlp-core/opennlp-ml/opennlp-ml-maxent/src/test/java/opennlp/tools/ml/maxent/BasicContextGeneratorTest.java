@@ -28,37 +28,75 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class BasicContextGeneratorTest {
 
-  private static Stream<Arguments> contexts() {
+  private static final String[] NONE = new String[0];
+
+  private static Stream<Arguments> literalSeparators() {
     return Stream.of(
-        Arguments.of(" ", "cp_1 cp_2 cp_3", new String[] {"cp_1", "cp_2", "cp_3"}),
-        Arguments.of(" ", "single", new String[] {"single"}),
-        Arguments.of(" ", "", new String[] {""}),
+        Arguments.of(",", "a,b,c", new String[] {"a", "b", "c"}),
+        Arguments.of(",", "single", new String[] {"single"}),
         // the separator is taken as written, not as a regular expression
         Arguments.of("|", "a|b|c", new String[] {"a", "b", "c"}),
         Arguments.of(".", "a.b", new String[] {"a", "b"}),
         Arguments.of("+", "a+b", new String[] {"a", "b"}),
         Arguments.of("(", "a(b", new String[] {"a", "b"}),
         Arguments.of("\\s", "a\\sb", new String[] {"a", "b"}),
+        Arguments.of("\\s", "a b", new String[] {"a b"}),
+        // a multi-character separator, and a prefix of it in the input
         Arguments.of("::", "a::b::c", new String[] {"a", "b", "c"}),
         Arguments.of("::", "a:b", new String[] {"a:b"}),
-        // String.split shape: leading empty element kept, trailing empty elements dropped
-        Arguments.of(",", ",a,,b,,", new String[] {"", "a", "", "b"}),
-        Arguments.of(",", ",,", new String[0]),
-        Arguments.of(" ", "a b", new String[] {"a", "b"}),
-        Arguments.of("😀", "a😀b", new String[] {"a", "b"}));
+        Arguments.of("::", "a:::b", new String[] {"a", ":b"}),
+        // occurrences never overlap
+        Arguments.of("aa", "aaa", new String[] {"a"}),
+        Arguments.of("aa", "baaab", new String[] {"b", "ab"}),
+        // an empty predicate is never produced: leading, repeated, and trailing separators
+        Arguments.of(",", ",a", new String[] {"a"}),
+        Arguments.of(",", "a,", new String[] {"a"}),
+        Arguments.of(",", "a,,b", new String[] {"a", "b"}),
+        Arguments.of(",", ",a,,b,,", new String[] {"a", "b"}),
+        Arguments.of(",", ",,", NONE),
+        Arguments.of(",", ",", NONE),
+        Arguments.of(",", "", NONE),
+        // a separator that is whitespace splits only on itself, not on other whitespace
+        Arguments.of(" ", "a b\tc", new String[] {"a", "b\tc"}),
+        Arguments.of("\t", "a\tb c", new String[] {"a", "b c"}),
+        // a supplementary-plane separator, and one inside the predicates
+        Arguments.of("😀", "a😀b", new String[] {"a", "b"}),
+        Arguments.of(",", "😀,𐐒", new String[] {"😀", "𐐒"}),
+        // an unpaired surrogate is ordinary content
+        Arguments.of(",", "\uD83D,b", new String[] {"\uD83D", "b"}));
   }
 
   @ParameterizedTest
-  @MethodSource("contexts")
+  @MethodSource("literalSeparators")
   void testSplitsOnTheLiteralSeparator(String separator, String input, String[] expected) {
     Assertions.assertArrayEquals(expected, new BasicContextGenerator(separator).getContext(input));
   }
 
-  @Test
-  void testDefaultSeparatorIsSpace() {
-    Assertions.assertArrayEquals(new String[] {"a", "b"}, new BasicContextGenerator().getContext("a b"));
-    // a tab is not a separator by default
-    Assertions.assertArrayEquals(new String[] {"a\tb"}, new BasicContextGenerator().getContext("a\tb"));
+  private static Stream<Arguments> whitespaceContexts() {
+    return Stream.of(
+        Arguments.of("cp_1 cp_2 cp_3", new String[] {"cp_1", "cp_2", "cp_3"}),
+        Arguments.of("single", new String[] {"single"}),
+        // runs, tabs, and Unicode whitespace all separate; no empty predicate is produced
+        Arguments.of("a  b", new String[] {"a", "b"}),
+        Arguments.of("a\tb", new String[] {"a", "b"}),
+        Arguments.of("a b", new String[] {"a", "b"}),
+        Arguments.of("a　b", new String[] {"a", "b"}),
+        Arguments.of("a \t  b", new String[] {"a", "b"}),
+        Arguments.of(" a b ", new String[] {"a", "b"}),
+        Arguments.of(" a　", new String[] {"a"}),
+        Arguments.of("", NONE),
+        Arguments.of(" ", NONE),
+        Arguments.of(" \t 　", NONE),
+        // format characters and supplementary-plane content are not whitespace
+        Arguments.of("a​b", new String[] {"a​b"}),
+        Arguments.of("😀 𐐒", new String[] {"😀", "𐐒"}),
+        Arguments.of("\uD83D b", new String[] {"\uD83D", "b"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("whitespaceContexts")
+  void testDefaultSplitsOnWhitespace(String input, String[] expected) {
+    Assertions.assertArrayEquals(expected, new BasicContextGenerator().getContext(input));
   }
 
   @ParameterizedTest
@@ -76,5 +114,7 @@ public class BasicContextGeneratorTest {
   void testNullInputIsRejected() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new BasicContextGenerator(",").getContext(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new BasicContextGenerator().getContext(null));
   }
 }
