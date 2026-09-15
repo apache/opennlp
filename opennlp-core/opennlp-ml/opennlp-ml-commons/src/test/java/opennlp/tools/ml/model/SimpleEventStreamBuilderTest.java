@@ -85,6 +85,45 @@ public class SimpleEventStreamBuilderTest {
     }
   }
 
+  @Test
+  void testOutcomeEndsAtTheFirstSlash() throws IOException {
+    try (ObjectStream<Event> events = new SimpleEventStreamBuilder().add("a/b/w=x").build()) {
+      Event e = events.read();
+      Assertions.assertEquals("a", e.getOutcome());
+      Assertions.assertArrayEquals(new String[] {"b/w=x"}, e.getContext());
+    }
+  }
+
+  @Test
+  void testValuedContextNameMayContainEqualsSigns() throws IOException {
+    try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
+        .add("other/w=a=b;0.5 n=c;1e2 m=d;.25 k;0")
+        .build()) {
+      Event e = events.read();
+      Assertions.assertArrayEquals(new String[] {"w=a=b", "n=c", "m=d", "k"}, e.getContext());
+      Assertions.assertArrayEquals(new float[] {0.5f, 100f, 0.25f, 0f}, e.getValues());
+    }
+  }
+
+  /** The first context tells whether the event has values; a later {@code ;} is then plain text. */
+  @Test
+  void testFirstContextWithoutValueMakesAllContextsPlain() throws IOException {
+    try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
+        .add("other/w=he n1w=x;0.5")
+        .build()) {
+      Event e = events.read();
+      Assertions.assertArrayEquals(new String[] {"w=he", "n1w=x;0.5"}, e.getContext());
+      Assertions.assertNull(e.getValues());
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"other/w=he;abc", "other/w=he;1,5", "other/w=he;0.5 n=x;-", "other/w=he;0x1"})
+  void testAddRejectsAValueThatIsNotANumber(String event) {
+    Assertions.assertThrows(NumberFormatException.class,
+        () -> new SimpleEventStreamBuilder().add(event));
+  }
+
   @ParameterizedTest
   // no slash, empty outcome, no contexts, blank contexts
   @ValueSource(strings = {"other w=he", "/w=he", "other/", "other/ \t "})
