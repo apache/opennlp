@@ -332,7 +332,7 @@ public class JsonScanTest {
 
   static Stream<Arguments> malformedOffsets() {
     return Stream.of(
-        // nothing, or whitespace only
+        // empty text, or whitespace only
         Arguments.of("", 0, "expected '{'"),
         Arguments.of("   ", 3, "expected '{'"),
         Arguments.of("\u000B{}", 0, "expected '{'"),
