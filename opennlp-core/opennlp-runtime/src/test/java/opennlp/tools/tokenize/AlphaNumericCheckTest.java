@@ -38,7 +38,8 @@ public class AlphaNumericCheckTest {
   private static final List<String> TOKENS = List.of(
       "", "a", "Z", "0", "abc123", "Straße", "Café", "señor", "łódź", "ĳs", "Ÿ", "-", "a-b",
       "a b", "a\nb", "\n", "abc\n", "ñ", "Ç", "ß", "é", " ", "١٢٣", "Ａ", "𐐒", "😀a",
-      "aé", "AB.", "x_y", "[", "]", "\\", "^", "&", "$");
+      "aé", "AB.", "x_y", "[", "]", "\\", "^", "&", "$",
+      "\uD800", "\uDFFF", "\uD83D", "\uDE00", "\uD83D\uDE00", "a\uD83D\uDE00b");
 
   private static Stream<Arguments> builtInPatternsAndTokens() {
     return LANGUAGES.stream().flatMap(language -> {
@@ -96,28 +97,44 @@ public class AlphaNumericCheckTest {
     Assertions.assertTrue(check.test("ABC"));
   }
 
-  @Test
-  void testNullPatternRejectsEveryToken() {
-    AlphaNumericCheck check = AlphaNumericCheck.of(null);
-    Assertions.assertFalse(check.test("abc"));
-    Assertions.assertFalse(check.test("a1"));
-    Assertions.assertFalse(check.test(""));
-    Assertions.assertFalse(check.test("caf\u00E9"));
-    Assertions.assertFalse(check.test("\uD83D\uDE00"));
-    Assertions.assertFalse(check.test("\uD801\uDC12"));
-    Assertions.assertFalse(check.test("\uD800"));
-    Assertions.assertFalse(check.test("\uDE00"));
+  @ParameterizedTest
+  @ValueSource(strings = {"abc", "a1", "", "caf\u00E9", "\uD83D\uDE00", "\uD801\uDC12",
+      "\uD800", "\uDE00"})
+  void testNullPatternRejectsEveryToken(String token) {
+    Assertions.assertFalse(AlphaNumericCheck.of(null).test(token));
   }
 
-  @Test
-  void testSurrogateSpanningRangeRejectsEmojiAndLoneSurrogates() {
+  @ParameterizedTest
+  @ValueSource(strings = {"A", "ABC", "aBZ", "caf\u00E9", "\u00FF"})
+  void testSurrogateSpanningRangeAcceptsPlaneZero(String token) {
     AlphaNumericCheck check = AlphaNumericCheck.of(Pattern.compile("^[A-\uFFFF]+$"));
     Assertions.assertTrue(check.isCharacterSet());
-    Assertions.assertTrue(check.test("ABC"));
-    Assertions.assertTrue(check.test("caf\u00E9"));
-    Assertions.assertFalse(check.test("\uD83D\uDE00"));
-    Assertions.assertFalse(check.test("\uD801\uDC12"));
-    Assertions.assertFalse(check.test("\uD800"));
-    Assertions.assertFalse(check.test("\uDE00"));
+    Assertions.assertTrue(check.test(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "\uD800", "\uDFFF", "\uD83D", "\uDE00", "\uD83D\uDE00",
+      "\uD801\uDC12", "a\uD83D\uDE00b"})
+  void testSurrogateSpanningRangeRejectsSurrogatesAndSupplementary(String token) {
+    AlphaNumericCheck check = AlphaNumericCheck.of(Pattern.compile("^[A-\uFFFF]+$"));
+    Assertions.assertTrue(check.isCharacterSet());
+    Assertions.assertFalse(check.test(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"a", "Z", "0", "abc123"})
+  void testDefaultPatternAcceptsAsciiAlphanumerics(String token) {
+    AlphaNumericCheck check = AlphaNumericCheck.of(Factory.DEFAULT_ALPHANUMERIC);
+    Assertions.assertTrue(check.isCharacterSet());
+    Assertions.assertTrue(check.test(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "a b", "AB.", "a-b", "caf\u00E9", "\uD83D\uDE00",
+      "\uD801\uDC12", "\uD800"})
+  void testDefaultPatternRejectsOthers(String token) {
+    AlphaNumericCheck check = AlphaNumericCheck.of(Factory.DEFAULT_ALPHANUMERIC);
+    Assertions.assertTrue(check.isCharacterSet());
+    Assertions.assertFalse(check.test(token));
   }
 }
