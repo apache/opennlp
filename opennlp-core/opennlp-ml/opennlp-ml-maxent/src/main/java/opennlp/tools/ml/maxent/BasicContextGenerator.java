@@ -56,14 +56,30 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    * whitespace is part of the predicates.
    *
    * @param sep The separator, taken as written and not as a regular expression.
-   *            Must not be {@code null} or empty.
-   * @throws IllegalArgumentException If {@code sep} is {@code null} or empty.
+   *            Must not be {@code null} or empty, and must be well-formed text: an unpaired
+   *            surrogate is not a character and could split a code point of the input.
+   * @throws IllegalArgumentException If {@code sep} is {@code null}, empty, or contains an
+   *                                  unpaired surrogate.
    */
   public BasicContextGenerator(String sep) {
     if (sep == null || sep.isEmpty()) {
       throw new IllegalArgumentException("sep must not be null or empty");
     }
+    if (sep.codePoints().anyMatch(BasicContextGenerator::isUnpairedSurrogate)) {
+      throw new IllegalArgumentException("sep must not contain an unpaired surrogate");
+    }
     separator = sep;
+  }
+
+  /**
+   * Tests whether a code point read from a string is a surrogate on its own rather than
+   * the start of a supplementary character.
+   *
+   * @param codePoint A code point as returned by {@link String#codePoints()}.
+   * @return {@code true} if it is a lone surrogate code unit.
+   */
+  private static boolean isUnpairedSurrogate(int codePoint) {
+    return codePoint <= Character.MAX_VALUE && Character.isSurrogate((char) codePoint);
   }
 
   /**

@@ -86,9 +86,10 @@ under the License.
 		repeated spaces, and no-break spaces all separate. A separator given to the constructor is
 		taken as written, not as a regular expression: <code>|</code> separates on the vertical
 		bar and <code>.</code> on the period, and a separator such as <code>\s+</code> matches
-		that text only. The separator must not be null or empty. A predicate is not empty, so a
-		leading, repeated, or trailing separator does not produce one, and an empty input gives no
-		predicates. In releases before 3.0.0 the separator was compiled as a regular expression and
+		that text only. The separator must not be null or empty, and it must be well-formed text:
+		an unpaired surrogate is rejected because it could split a character of the input.
+		A predicate is not empty, so a leading, repeated, or trailing separator does not
+		produce one, and an empty input gives no predicates. In releases before 3.0.0 the separator was compiled as a regular expression and
 		empty predicates were produced; code that passed a pattern needs to pass the plain
 		separator instead, or use the default constructor for whitespace.
 		</para>
