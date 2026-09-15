@@ -27,6 +27,7 @@ import opennlp.tools.util.StringUtil;
 public record DocumentCategorizerConfig(Map<String, String> id2label) {
 
   private static final String ID_TO_LABEL_KEY = "id2label";
+  private static final String BYTE_ORDER_MARK = "\uFEFF";
 
   @Override
   public Map<String, String> id2label() {
@@ -39,8 +40,8 @@ public record DocumentCategorizerConfig(Map<String, String> id2label) {
    * models. Keys and labels are decoded from their escapes, and a later entry for the same
    * key overwrites an earlier one.
    *
-   * @param json The JSON text of the configuration. Blank text is a configuration without
-   *     labels.
+   * @param json The JSON text of the configuration. Blank text, with or without a leading
+   *     byte order mark, is a configuration without labels.
    * @return The configuration, with an empty map if the configuration has no
    *     {@code id2label} member.
    * @throws IllegalArgumentException Thrown if {@code json} is {@code null}, if the text is
@@ -52,15 +53,16 @@ public record DocumentCategorizerConfig(Map<String, String> id2label) {
       throw new IllegalArgumentException("json must not be null");
     }
     final Map<String, String> id2label = new HashMap<>();
-    if (!StringUtil.isBlank(json)) {
-      final JsonScan.Member labels = JsonScan.member(JsonScan.document(json), ID_TO_LABEL_KEY);
+    final String text = json.startsWith(BYTE_ORDER_MARK) ? json.substring(1) : json;
+    if (!StringUtil.isBlank(text)) {
+      final JsonScan.Member labels = JsonScan.member(JsonScan.document(text), ID_TO_LABEL_KEY);
       if (labels != null) {
-        if (!JsonScan.isObject(json, labels)) {
+        if (!JsonScan.isObject(text, labels)) {
           throw new IllegalArgumentException("\"" + ID_TO_LABEL_KEY + "\" must be an object: "
-              + json.substring(labels.valueStart(), labels.valueEnd()));
+              + text.substring(labels.valueStart(), labels.valueEnd()));
         }
-        for (JsonScan.Member entry : JsonScan.members(json, labels.valueStart())) {
-          id2label.put(entry.key(), JsonScan.stringValue(json, entry));
+        for (JsonScan.Member entry : JsonScan.members(text, labels.valueStart())) {
+          id2label.put(entry.key(), JsonScan.stringValue(text, entry));
         }
       }
     }
