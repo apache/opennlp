@@ -17,8 +17,6 @@
 
 package opennlp.tools.formats.masc;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,15 +24,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
-import opennlp.tools.util.XmlUtil;
-
 public class MascPennTagParserTest {
 
   private static MascPennTagParser parse(String xml) throws Exception {
-    MascPennTagParser handler = new MascPennTagParser();
-    XmlUtil.createSaxParser().parse(
-        new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), handler);
-    return handler;
+    return MascParserTestUtil.parse(xml, new MascPennTagParser());
   }
 
   @Test
@@ -51,13 +44,23 @@ public class MascPennTagParserTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"seg-r0\tseg-r1", "  seg-r0   seg-r1  ", "seg-r0\u00A0seg-r1",
-      "seg-r0\nseg-r1"})
-  void testLinkTargetsAreSeparatedByWhitespaceRuns(String targets) throws Exception {
+  // a tab or a line break written directly into the attribute is a space after XML
+  // attribute-value normalization
+  @ValueSource(strings = {"seg-r0 seg-r1", "  seg-r0   seg-r1  ", "seg-r0\tseg-r1", "seg-r0\nseg-r1"})
+  void testLinkTargetsAreSeparatedBySpaceRuns(String targets) throws Exception {
     MascPennTagParser parser = parse("<graph>"
         + "<node xml:id=\"penn-n10\"><link targets=\"" + targets + "\"/></node>"
         + "</graph>");
     Assertions.assertArrayEquals(new int[] {0, 1}, parser.getTokenToQuarks().get(10));
+  }
+
+  @ParameterizedTest
+  // a character reference keeps a tab, a line feed, or a no-break space in the value
+  @ValueSource(strings = {"seg-r0&#9;seg-r1", "seg-r0&#10;seg-r1", "seg-r0&#xA0;seg-r1"})
+  void testLinkTargetsSeparatedByOtherWhitespaceAreRejected(String targets) {
+    Assertions.assertThrows(SAXException.class, () -> parse("<graph>"
+        + "<node xml:id=\"penn-n10\"><link targets=\"" + targets + "\"/></node>"
+        + "</graph>"));
   }
 
   @ParameterizedTest

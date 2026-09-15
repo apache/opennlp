@@ -17,8 +17,6 @@
 
 package opennlp.tools.formats.masc;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -27,15 +25,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
-import opennlp.tools.util.XmlUtil;
-
 public class MascNamedEntityParserTest {
 
   private static MascNamedEntityParser parse(String xml) throws Exception {
-    MascNamedEntityParser handler = new MascNamedEntityParser();
-    XmlUtil.createSaxParser().parse(
-        new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), handler);
-    return handler;
+    return MascParserTestUtil.parse(xml, new MascNamedEntityParser());
   }
 
   @Test

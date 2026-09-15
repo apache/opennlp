@@ -17,8 +17,6 @@
 
 package opennlp.tools.formats.masc;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -27,15 +25,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
-import opennlp.tools.util.XmlUtil;
-
 public class MascWordParserTest {
 
   private static MascWordParser parse(String xml) throws Exception {
-    MascWordParser handler = new MascWordParser();
-    XmlUtil.createSaxParser().parse(
-        new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), handler);
-    return handler;
+    return MascParserTestUtil.parse(xml, new MascWordParser());
   }
 
   @Test
@@ -59,5 +52,25 @@ public class MascWordParserTest {
   void testMalformedRegionIdsAreRejected(String id) {
     Assertions.assertThrows(SAXException.class, () -> parse(
         "<graph><region xml:id=\"" + id + "\" anchors=\"0 4\"/></graph>"));
+  }
+
+  @ParameterizedTest
+  // a run of spaces, and a tab or line break that attribute-value normalization turns into a space
+  @ValueSource(strings = {"0 4", " 0  4 ", "0\t4", "0\n4"})
+  void testAnchorsAreSeparatedBySpaceRuns(String anchors) throws Exception {
+    List<MascWord> words = parse(
+        "<graph><region xml:id=\"seg-r0\" anchors=\"" + anchors + "\"/></graph>").getAnchors();
+    Assertions.assertEquals(0, words.get(0).getStart());
+    Assertions.assertEquals(4, words.get(0).getEnd());
+  }
+
+  @ParameterizedTest
+  // one number, three numbers, a tab kept by a character reference, text
+  @ValueSource(strings = {"0", "0 4 5", "0&#9;4", "0 x", "", " "})
+  void testMalformedAnchorsAreRejectedWithTheReason(String anchors) {
+    SAXException e = Assertions.assertThrows(SAXException.class, () -> parse(
+        "<graph><region xml:id=\"seg-r0\" anchors=\"" + anchors + "\"/></graph>"));
+    Assertions.assertTrue(e.getMessage().startsWith("Could not parse the word segmentation"), e.getMessage());
+    Assertions.assertNotNull(e.getCause());
   }
 }

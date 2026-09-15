@@ -17,10 +17,14 @@
 
 package opennlp.tools.formats.masc;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class MascIdentifiersTest {
@@ -51,11 +55,48 @@ public class MascIdentifiersTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"seg-r1 seg-r2", "seg-r1\tseg-r2", "  seg-r1   seg-r2  ",
-      "seg-r1\u00A0seg-r2", "seg-r1\u3000seg-r2", "seg-r1\r\nseg-r2"})
-  void testParseIdsSplitsOnWhitespaceRuns(String ids) {
+  @ValueSource(strings = {"seg-r1 seg-r2", "  seg-r1   seg-r2  ", "seg-r1 seg-r2 "})
+  void testParseIdsSplitsOnSpaceRuns(String ids) {
     Assertions.assertArrayEquals(new int[] {1, 2},
         MascIdentifiers.parseIds(ids, MascIdentifiers.REGION_ID_PREFIX));
+  }
+
+  @ParameterizedTest
+  // a tab, a no-break space, an ideographic space, or a line break is not a separator
+  @ValueSource(strings = {"seg-r1\tseg-r2", "seg-r1\u00A0seg-r2", "seg-r1\u3000seg-r2",
+      "seg-r1\r\nseg-r2", "seg-r1\u0085seg-r2"})
+  void testParseIdsRejectsOtherWhitespaceBetweenIdentifiers(String ids) {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MascIdentifiers.parseIds(ids, MascIdentifiers.REGION_ID_PREFIX));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"ne-n2147483648", "ne-n99999999999"})
+  void testParseIdNamesAnOverflowingNumber(String id) {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MascIdentifiers.parseId(id, MascIdentifiers.NAMED_ENTITY_ID_PREFIX));
+    Assertions.assertEquals("MASC identifier number does not fit an int: " + id, e.getMessage());
+  }
+
+  private static Stream<Arguments> spaceSplits() {
+    return Stream.of(
+        Arguments.of("", new String[0]),
+        Arguments.of("   ", new String[0]),
+        Arguments.of("a", new String[] {"a"}),
+        Arguments.of(" a  b ", new String[] {"a", "b"}),
+        Arguments.of("a\tb", new String[] {"a\tb"}),
+        Arguments.of("a\u00A0b c", new String[] {"a\u00A0b", "c"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("spaceSplits")
+  void testSplitOnSpacesIgnoresLeadingTrailingAndRepeatedSpaces(String value, String[] expected) {
+    Assertions.assertArrayEquals(expected, MascIdentifiers.splitOnSpaces(value));
+  }
+
+  @Test
+  void testSplitOnSpacesRejectsNull() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> MascIdentifiers.splitOnSpaces(null));
   }
 
   @Test
