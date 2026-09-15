@@ -272,6 +272,21 @@ public class DocumentCategorizerConfigTest {
         DocumentCategorizerConfig.fromJson("\uFEFF{\"id2label\": {\"0\": \"x\"}}").id2label());
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"\uFEFF", "\uFEFF \r\n\t", "\uFEFF\n", "", " \n"})
+  public void testId2LabelsFromJsonBlankTextAfterAByteOrderMarkHasNoLabels(String json) {
+    assertEquals(Map.of(), DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\uFEFF\uFEFF", " \uFEFF", "\uFEFF \uFEFF", "\uFEFF{}\uFEFF",
+      "{\uFEFF}", "\uFEFF{\"id2label\":\uFEFF{}}"})
+  public void testId2LabelsFromJsonRejectsAByteOrderMarkElsewhere(String json) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentCategorizerConfig.fromJson(json));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
   private static final String CONFIG_JSON =
       "{\"hidden_size\": 768, \"id2label\": {\"0\": \"neg\", \"1\": \"pos\"}, \"pad_token_id\": 0}";
 
