@@ -255,4 +255,104 @@ public class LoadVocabTest {
 
     assertEquals(Map.of("[CLS]", 0, "[SEP]", 1), AbstractDL.loadVocabFile(tempFile));
   }
+
+  private static final Map<String, Integer> TOKENIZER_VOCAB =
+      Map.of("[PAD]", 0, "[UNK]", 1, "hello", 2, "##ing", 3, "\u0120x", 4);
+
+  static Stream<Arguments> tokenizerLayouts() {
+    return Stream.of(
+        Arguments.of(TOKENIZER_JSON.replace("\n", "\r\n"), TOKENIZER_VOCAB),
+        Arguments.of(TOKENIZER_JSON.replace("\n", "").replace("  ", ""), TOKENIZER_VOCAB),
+        // added_tokens ids that collide with vocab ids, before or after the model, are not entries
+        Arguments.of("{\"added_tokens\": [{\"id\": 2, \"content\": \"[NEW]\", \"special\": true}],"
+            + " \"model\": {\"vocab\": {\"a\": 0, \"b\": 2}}}", Map.of("a", 0, "b", 2)),
+        Arguments.of("{\"model\": {\"vocab\": {\"a\": 0, \"b\": 2}},"
+            + " \"added_tokens\": [{\"id\": 0, \"content\": \"a\"}, {\"id\": 7, \"content\": \"q\"}]}",
+            Map.of("a", 0, "b", 2)),
+        // an empty vocab object is an empty vocabulary
+        Arguments.of("{\"model\": {\"vocab\": {}}}", Map.of()),
+        Arguments.of("{\"model\": {\"type\": \"BPE\", \"vocab\": { }, \"merges\": []}}", Map.of()),
+        // vocab objects elsewhere, at any depth, are not the vocabulary
+        Arguments.of("{\"normalizer\": {\"a\": {\"b\": {\"c\": [[[{\"vocab\": {\"x\": 9}}]]]}}},"
+            + " \"model\": {\"decoder\": {\"vocab\": {\"y\": 8}}, \"merges\": [[\"a\", \"b\"]],"
+            + " \"vocab\": {\"z\": 1}}}", Map.of("z", 1)),
+        // a later model, a later vocab, or a later token wins
+        Arguments.of("{\"model\": {\"vocab\": {\"a\": 1}}, \"model\": {\"vocab\": {\"a\": 2}}}",
+            Map.of("a", 2)),
+        Arguments.of("{\"model\": {\"vocab\": {\"a\": 1}, \"vocab\": {\"b\": 3}}}", Map.of("b", 3)),
+        Arguments.of("{\"model\": {\"vocab\": {\"a\": 1, \"a\": 5, \"\\u0061\": 6}}}", Map.of("a", 6)),
+        // the member names may be written with escapes
+        Arguments.of("{\"\\u006dodel\": {\"voc\\u0061b\": {\"a\": 1}}}", Map.of("a", 1)),
+        Arguments.of("{ \"model\"\t:\t{ \"vocab\"\r\n:\r\n{ \"a\" : 1 } } }", Map.of("a", 1)),
+        Arguments.of("{\"model\": {\"vocab\": {\"a\": 2147483647}}}", Map.of("a", Integer.MAX_VALUE)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("tokenizerLayouts")
+  void testLoadJsonVocabTokenizerLayouts(String json, Map<String, Integer> expected) {
+    assertEquals(expected, AbstractDL.loadJsonVocab(json));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"2147483648", "4294967296", "9223372036854775808",
+      "12345678901234567890"})
+  void testLoadJsonVocabNamesTheTokenOfAnIdThatDoesNotFit(String id) {
+    for (String json : new String[] {"{\"big\": " + id + "}",
+        "{\"model\": {\"vocab\": {\"big\": " + id + "}}}"}) {
+      final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+          () -> AbstractDL.loadJsonVocab(json), json);
+      assertTrue(e.getMessage().contains("\"big\""), e.getMessage());
+      assertTrue(e.getMessage().contains("does not fit into an int"), e.getMessage());
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"a\": 00}", "{\"a\": 0123}", "{\"model\": {\"vocab\": {\"a\": 01}}}"})
+  void testLoadJsonVocabRejectsLeadingZeros(String json) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(json));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  static Stream<Arguments> tokenizerJsonPrefixes() {
+    final String text = TOKENIZER_JSON.strip();
+    return Stream.iterate(0, n -> n + 1).limit(text.length())
+        .map(n -> Arguments.of(n, text.substring(0, n)));
+  }
+
+  @ParameterizedTest(name = "cut at {0}")
+  @MethodSource("tokenizerJsonPrefixes")
+  void testLoadJsonVocabRejectsATruncatedTokenizerJson(int length, String prefix) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(prefix));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{}", "x", "\uFEFF", ",", "\"vocab\"", "{\"model\": {\"vocab\": {}}}"})
+  void testLoadJsonVocabRejectsContentAfterTheTokenizerJson(String trailing) {
+    final String json = TOKENIZER_JSON + trailing;
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(json));
+    assertTrue(e.getMessage().contains("offset " + TOKENIZER_JSON.length() + ","), e.getMessage());
+    assertTrue(e.getMessage().contains("content after the object"), e.getMessage());
+  }
+
+  @Test
+  void testJsonVocabFileWithWindowsLineEndings() throws IOException {
+    final File tempFile = File.createTempFile("vocab-crlf", ".json");
+    tempFile.deleteOnExit();
+    Files.writeString(tempFile.toPath(), "{\r\n  \"a\": 0,\r\n  \"b\": 1\r\n}\r\n");
+
+    assertEquals(Map.of("a", 0, "b", 1), AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testPlainTextVocabFileWithWindowsLineEndings() throws IOException {
+    final File tempFile = File.createTempFile("vocab-crlf", ".txt");
+    tempFile.deleteOnExit();
+    Files.writeString(tempFile.toPath(), "[CLS]\r\n[SEP]\r\nhello\r\n");
+
+    assertEquals(Map.of("[CLS]", 0, "[SEP]", 1, "hello", 2), AbstractDL.loadVocabFile(tempFile));
+  }
 }
