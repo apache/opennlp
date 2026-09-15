@@ -20,7 +20,7 @@ package opennlp.tools.ml.maxent;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A {@link ContextGenerator} implementation for maxent decisions, assuming that the input
@@ -32,11 +32,12 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
  * A different separator can be given, which is taken as written. A predicate is not empty:
  * a leading, repeated, or trailing separator does not produce one.
  * <p>
- * Since 3.0.0 the separator is not a regular expression and the default splits on each run
- * of whitespace (OPENNLP-1929).
+ * Since 3.0.0 the separator is taken as written, not as a regular expression (OPENNLP-1929).
  * </p>
  */
 public class BasicContextGenerator implements ContextGenerator<String> {
+
+  private static final String[] NO_PREDICATES = new String[0];
 
   /**
    * The separator, or {@code null} to split on whitespace.
@@ -44,8 +45,10 @@ public class BasicContextGenerator implements ContextGenerator<String> {
   private final String separator;
 
   /**
-   * Initializes a {@link BasicContextGenerator} that splits on whitespace, as defined by
-   * {@link WhitespaceTokenizer}.
+   * Initializes a {@link BasicContextGenerator} that splits on runs of whitespace under the
+   * Unicode {@code White_Space} property, see {@link StringUtil#isUnicodeWhitespace(int)}.
+   * That definition is fixed and does not depend on the {@code opennlp.whitespace.mode}
+   * system property, see {@link opennlp.tools.util.WhitespaceMode}.
    */
   public BasicContextGenerator() {
     separator = null;
@@ -65,7 +68,7 @@ public class BasicContextGenerator implements ContextGenerator<String> {
     if (sep == null || sep.isEmpty()) {
       throw new IllegalArgumentException("sep must not be null or empty");
     }
-    if (sep.codePoints().anyMatch(BasicContextGenerator::isUnpairedSurrogate)) {
+    if (sep.codePoints().anyMatch(this::isUnpairedSurrogate)) {
       throw new IllegalArgumentException("sep must not contain an unpaired surrogate");
     }
     separator = sep;
@@ -78,7 +81,7 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    * @param codePoint A code point as returned by {@link String#codePoints()}.
    * @return {@code true} if it is a lone surrogate code unit.
    */
-  private static boolean isUnpairedSurrogate(int codePoint) {
+  private boolean isUnpairedSurrogate(int codePoint) {
     return codePoint <= Character.MAX_VALUE && Character.isSurrogate((char) codePoint);
   }
 
@@ -94,21 +97,25 @@ public class BasicContextGenerator implements ContextGenerator<String> {
       throw new IllegalArgumentException("o must not be null");
     }
     if (separator == null) {
-      return WhitespaceTokenizer.INSTANCE.tokenize(o);
+      return StringUtil.splitOnUnicodeWhitespace(o);
+    }
+    int next = o.indexOf(separator);
+    if (next == -1) {
+      return o.isEmpty() ? NO_PREDICATES : new String[] {o};
     }
     final List<String> contexts = new ArrayList<>();
     int start = 0;
-    int next;
-    while ((next = o.indexOf(separator, start)) != -1) {
+    do {
       if (next > start) {
         contexts.add(o.substring(start, next));
       }
       start = next + separator.length();
-    }
+      next = o.indexOf(separator, start);
+    } while (next != -1);
     if (start < o.length()) {
       contexts.add(o.substring(start));
     }
-    return contexts.toArray(new String[0]);
+    return contexts.toArray(NO_PREDICATES);
   }
 
 }
