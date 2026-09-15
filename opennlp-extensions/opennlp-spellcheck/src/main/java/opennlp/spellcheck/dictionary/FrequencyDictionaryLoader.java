@@ -243,7 +243,7 @@ public final class FrequencyDictionaryLoader {
   }
 
   /**
-   * Tests whether a line carries no entry: it is empty, consists of whitespace as
+   * Tests whether a line holds no entry: it is empty, consists of whitespace as
    * {@link StringUtil#isBlank(CharSequence)} defines it, or starts with {@code #}.
    *
    * @param line The line without its byte-order mark. Must not be {@code null}.

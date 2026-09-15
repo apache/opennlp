@@ -180,7 +180,7 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
   }
 
   @ParameterizedTest
-  // no equals sign, nothing after it, an equals sign in first position, text or a comma after it
+  // no equals sign, an empty value after it, an equals sign in first position, text or a comma after it
   @ValueSource(strings = {"wc", "wc=", "=5", "wc=abc", "wc=1,5", "wc=ic=1.0.0"})
   void testContextWithoutANumberIsKeptWholeAndCountsOnce(String context) throws IOException {
     Event e = RealValueFileEventStream.parseEvent("other " + context);
