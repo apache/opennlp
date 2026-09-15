@@ -35,6 +35,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LoadVocabTest {
 
@@ -129,33 +130,21 @@ public class LoadVocabTest {
 
   static Stream<Arguments> jsonVocabs() {
     return Stream.of(
-        Arguments.of("", Map.of()),
         Arguments.of("{}", Map.of()),
         Arguments.of("{\"a\": 1, \"b\": 2}", Map.of("a", 1, "b", 2)),
-        Arguments.of("{\"a\"\n:\r\n  3}", Map.of("a", 3)),
-        Arguments.of("{\"a\":\t4\u000B}", Map.of("a", 4)),
-        Arguments.of("{\"a\":\u00A05}", Map.of()),
-        Arguments.of("{\"a\": 1, \"b\": \"x\", \"c\": 2}", Map.of("a", 1, "c", 2)),
-        Arguments.of("{\"a\": 1.5, \"b\": 2}", Map.of("a", 1, "b", 2)),
-        Arguments.of("{\"a\": -1, \"b\": 2}", Map.of("b", 2)),
-        Arguments.of("{\"a\": 12abc}", Map.of("a", 12)),
-        Arguments.of("{\"a\": \u0661, \"b\": 2}", Map.of("b", 2)),
+        Arguments.of(" \t\r\n{\"a\"\n:\r\n  3\t}\n", Map.of("a", 3)),
+        Arguments.of("{\"a\":0}", Map.of("a", 0)),
+        Arguments.of("{\"a\": 2147483647}", Map.of("a", Integer.MAX_VALUE)),
         Arguments.of("{\"a\\\"b\": 1}", Map.of("a\"b", 1)),
-        Arguments.of("{\"a\\\"b\": x, \"c\": 1}", Map.of("c", 1)),
         Arguments.of("{\"a\\\\\": 1}", Map.of("a\\", 1)),
         Arguments.of("{\"\\u0120x\": 7, \"\\u00e9\": 8}", Map.of("\u0120x", 7, "\u00E9", 8)),
         Arguments.of("{\"\uD83D\uDE00\": 1}", Map.of("\uD83D\uDE00", 1)),
+        // a raw line break inside a token is content
         Arguments.of("{\"a\nb\": 1}", Map.of("a\nb", 1)),
-        Arguments.of("{\"a\\\nb\": 1}", Map.of()),
-        Arguments.of("{\"a\\\u2028b\": 1, \"c\": 2}", Map.of("c", 2)),
         Arguments.of("{\"\": 1}", Map.of("", 1)),
+        // a later entry for the same token, written or escaped, overwrites the earlier one
         Arguments.of("{\"a\": 1, \"a\": 2}", Map.of("a", 2)),
-        Arguments.of("{\"a\": 1, \"\\u0061\": 2}", Map.of("a", 2)),
-        Arguments.of("{\"x\": {\"a\": 1}, \"b\": 2}", Map.of("a", 1, "b", 2)),
-        Arguments.of("\"a\":1\"b\":2", Map.of("a", 1, "b", 2)),
-        Arguments.of("\"a\": ", Map.of()),
-        Arguments.of("\"a\"", Map.of()),
-        Arguments.of("\"", Map.of()));
+        Arguments.of("{\"a\": 1, \"\\u0061\": 2}", Map.of("a", 2)));
   }
 
   @ParameterizedTest
@@ -164,14 +153,42 @@ public class LoadVocabTest {
     assertEquals(expected, AbstractDL.loadJsonVocab(json));
   }
 
-  @Test
-  void testLoadJsonVocabRejectsOverflowingId() {
-    assertThrows(NumberFormatException.class, () -> AbstractDL.loadJsonVocab("{\"a\": 99999999999}"));
+  @ParameterizedTest
+  @ValueSource(strings = {
+      // not one object
+      "", " ", "[]", "\"a\"", "{\"a\": 1}{}", "{\"a\": 1} x",
+      // malformed structure
+      "{\"a\": 1", "{\"a\" 1}", "{\"a\": 1 \"b\": 2}", "{\"a\": 1,}", "{a: 1}", "\"a\":1\"b\":2",
+      // whitespace outside strings is only the four RFC 8259 characters
+      "{\"a\":\u00A05}", "{\"a\":\t4\u000B}",
+      // values that are not non-negative integers
+      "{\"a\": 1.5}", "{\"a\": -1}", "{\"a\": 12abc}", "{\"a\": \u0661}", "{\"a\": \"1\"}",
+      "{\"a\": 99999999999}", "{\"a\": {\"b\": 1}}", "{\"a\": [1]}", "{\"a\": null}",
+      // invalid escapes in a token
+      "{\"a\\q\": 1}", "{\"\\\uD83D\uDE00\": 2}", "{\"\\u12\": 3}", "{\"\\u+123\": 3}",
+      "{\"a\\\nb\": 1}"})
+  void testLoadJsonVocabRejectsMalformedText(String json) {
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(json));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"{\"a\\q\": 1}", "{\"\\\uD83D\uDE00\": 2}", "{\"\\u12\": 3}"})
-  void testLoadJsonVocabRejectsInvalidEscape(String json) {
-    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(json));
+  @Test
+  void testLoadJsonVocabRejectsNull() {
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(null));
+  }
+
+  @Test
+  void testLoadJsonVocabMessageNamesTheToken() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab("{\"ok\": 1, \"bad\": -1}"));
+    assertTrue(e.getMessage().contains("\"bad\""), e.getMessage());
+  }
+
+  @Test
+  void testMalformedJsonVocabFileIsRejected() throws IOException {
+    final File tempFile = File.createTempFile("vocab-malformed", ".json");
+    tempFile.deleteOnExit();
+    Files.writeString(tempFile.toPath(), "{\"a\": 1, \"b\": }");
+
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadVocabFile(tempFile));
   }
 }
