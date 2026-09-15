@@ -18,6 +18,8 @@ package opennlp.tools.models;
 
 import java.util.Objects;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Matches file names against the wildcard globs accepted by {@link ClassPathModelFinder}
  * implementations. A {@code *} matches any run of characters, including none, a {@code ?}
@@ -58,7 +60,7 @@ final class GlobMatcher {
       } else if (gi < g.length && matchesOne(g[gi], in[ii])) {
         gi++;
         ii++;
-      } else if (runStartG >= 0 && !isLineTerminator(in[runStartI])) {
+      } else if (runStartG >= 0 && !StringUtil.isLineTerminator(in[runStartI])) {
         // let the most recent '*' absorb one more character and retry after it
         gi = runStartG + 1;
         ii = ++runStartI;
@@ -74,13 +76,8 @@ final class GlobMatcher {
 
   private static boolean matchesOne(int globCodePoint, int inputCodePoint) {
     if (globCodePoint == ANY_ONE) {
-      return !isLineTerminator(inputCodePoint);
+      return !StringUtil.isLineTerminator(inputCodePoint);
     }
     return globCodePoint == inputCodePoint;
-  }
-
-  private static boolean isLineTerminator(int codePoint) {
-    return codePoint == '\n' || codePoint == '\r' || codePoint == '\u0085'
-        || codePoint == '\u2028' || codePoint == '\u2029';
   }
 }
