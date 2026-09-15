@@ -21,17 +21,17 @@ import java.util.BitSet;
 import java.util.regex.Pattern;
 
 /**
- * Decides whether a token is alphanumeric under a tokenizer model's alphanumeric
- * {@link Pattern}. A pattern of the shape {@code ^[...]+$} whose class holds only literal
- * characters and simple ranges, which covers every built-in language default, is evaluated
- * as a character set lookup. Any other pattern is evaluated by the regular expression engine,
- * so the result is the same as {@code pattern.matcher(token).matches()} in both cases.
- * Regex evaluation is the documented exception and applies only outside plain JDK
- * character-class patterns.
- * A {@code null} pattern yields a check that rejects every token, so callers documenting
- * a nullable pattern keep working with skipping disabled or enabled. Set lookups never
- * accept surrogate code units or supplementary characters, which matches the engine for
- * every built-in language default.
+ * Decides whether a token is alphanumeric under the alphanumeric {@link Pattern} of a
+ * tokenizer model. The pattern is user-supplied, stored in the model manifest, and read back
+ * as a regular expression. A pattern of the form {@code ^[...]+$} with a class of plain
+ * characters and simple ranges, the form of all built-in language defaults, is evaluated as a
+ * character set lookup. Other patterns are evaluated by the regular expression engine.
+ *
+ * <p>Both ways give the result of {@code pattern.matcher(token).matches()}, with one exception:
+ * a set lookup rejects an unpaired surrogate, which is not a character, where the engine
+ * accepts it as a code point inside a range that spans the surrogate block.
+ * Supplementary-plane characters are never in a set, and a class that names one is evaluated
+ * by the engine.
  */
 final class AlphaNumericCheck {
 
@@ -44,13 +44,8 @@ final class AlphaNumericCheck {
   private final BitSet characters;
   private final Pattern pattern;
 
-  private AlphaNumericCheck(BitSet characters, Pattern pattern) {
-    this.characters = characters;
-    this.pattern = pattern;
-  }
-
   /**
-   * Creates the check for a non-null pattern, using a set lookup when eligible.
+   * Creates the check, using a set lookup when the pattern has the supported form.
    *
    * @param pattern The alphanumeric pattern. Must not be {@code null}.
    */
@@ -69,12 +64,13 @@ final class AlphaNumericCheck {
   /**
    * Creates the check for a pattern.
    *
-   * @param pattern The alphanumeric pattern, or {@code null} for a check that rejects every token.
-   * @return A check that accepts exactly the tokens the pattern matches as a whole.
+   * @param pattern The alphanumeric pattern. Must not be {@code null}.
+   * @return A check that accepts the tokens the pattern matches as a whole.
+   * @throws IllegalArgumentException If {@code pattern} is {@code null}.
    */
   static AlphaNumericCheck of(Pattern pattern) {
     if (pattern == null) {
-      return new AlphaNumericCheck(new BitSet(), null);
+      throw new IllegalArgumentException("pattern must not be null");
     }
     return new AlphaNumericCheck(pattern);
   }
@@ -113,15 +109,14 @@ final class AlphaNumericCheck {
   }
 
   /**
-   * Reads a pattern of the shape {@code ^[...]+$} into the set of characters its class accepts.
-   * Inside the class only literal characters and ranges written as {@code x-y} are understood; a
-   * hyphen in first or last position is literal. A range spanning the surrogate block leaves
-   * that block out, since the shipped patterns never match it. Escapes, negation, nested
-   * classes, intersections, and anything outside the Basic Multilingual Plane make the pattern
-   * ineligible.
+   * Reads a pattern of the form {@code ^[...]+$} into the set of characters its class accepts.
+   * Inside the class only plain characters and ranges written as {@code x-y} are understood; a
+   * hyphen in first or last position, or directly after a range, is a plain hyphen. A range
+   * over the surrogate block skips that block. Escapes, negation, nested classes,
+   * intersections, and characters outside the Basic Multilingual Plane are left to the engine.
    *
    * @param regex The pattern text.
-   * @return The accepted characters, or {@code null} if the pattern is not of that shape.
+   * @return The accepted characters, or {@code null} if the pattern is not of that form.
    */
   private BitSet parseCharacterClass(String regex) {
     if (!regex.startsWith(CLASS_PREFIX) || !regex.endsWith(CLASS_SUFFIX)
@@ -152,9 +147,8 @@ final class AlphaNumericCheck {
   }
 
   /**
-   * Adds a literal range to the set, leaving out surrogate code units when the range spans them.
-   * Both ends are literal characters, so neither is a surrogate and an intersecting range
-   * always spans the whole surrogate block.
+   * Adds a range to the set, skipping the surrogate code units when the range spans them.
+   * Neither end is a surrogate, so a range that overlaps the block covers all of it.
    *
    * @param characters The set to fill.
    * @param from The first character of the range.
