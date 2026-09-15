@@ -325,7 +325,8 @@ Path: en-custom-token.bin]]>
 				characters and ranges is evaluated without the regular expression engine. The result
 				is the same, except that a token with an unpaired surrogate, which is not a
 				character, is never alphanumeric, where the engine accepts it inside a range that
-				spans the surrogate block. Characters outside the Basic Multilingual Plane, such as emoji or
+				spans the surrogate block; <code>-Dopennlp.compat.mode=LEGACY</code> restores the
+				engine's result for a model trained with such a pattern. Characters outside the Basic Multilingual Plane, such as emoji or
 				mathematical alphanumerics, are not in any built-in pattern; a custom pattern such
 				as <code>^[\p{L}\p{Nd}]+$</code> accepts them.
 			</para>
