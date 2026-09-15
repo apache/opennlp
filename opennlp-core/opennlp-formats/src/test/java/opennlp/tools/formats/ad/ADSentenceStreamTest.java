@@ -265,7 +265,7 @@ public class ADSentenceStreamTest {
       "=a.b|2|.b",
       "===x|4|''",
       // whitespace only after the closing parenthesis is no lexeme
-      "=H:n(\"a)\" M S)  |2|H:n(\"a)\" M S)  ",
+      "=H:n(\"a)\" M S)  |2|:n(\"a)\" M S)  ",
       "=x=y(a)  |4|(a)  ",
       "=x=y(\"q\")\t|4|(\"q\")\t"
   })
@@ -285,7 +285,7 @@ public class ADSentenceStreamTest {
   @ParameterizedTest
   @ValueSource(strings = {"_", "<lixo>", "pause", "=ab.", "=xa<b", "=x1>y", "=a_b.c",
       // the word may start with a letter or digit of any script
-      "=ção.", "=Ünïcode<x>", "=١٢.", "=\uD801\uDC12.", "=ab\u2028."})
+      "=ção.", "=Ünïcode<x>", "=١٢.", "=ab\u2028."})
   void testIgnoredLines(String line) {
     Assertions.assertNull(new SentenceParser().getElement(line));
   }

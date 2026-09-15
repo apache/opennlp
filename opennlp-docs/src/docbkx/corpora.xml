@@ -451,6 +451,15 @@ Execution time: 1,955 seconds]]>
 				<code>p=</code>. A punctuation line has a lexeme without any letter or digit of any
 				script, so an accented or non-Latin word is not treated as punctuation.
 			</para>
+			<para>
+				Markup lines are recognized by their exact tag name. The tags <code>&lt;s&gt;</code>,
+				<code>&lt;p&gt;</code>, <code>&lt;t&gt;</code>, <code>&lt;caixa&gt;</code>, and
+				<code>&lt;ext&gt;</code> may have attributes after whitespace, and a tag with a name that only
+				starts with one of these names, such as <code>&lt;sx&gt;</code>, is not a sentence tag. A
+				leaf line of a tree has its lexeme after the closing parenthesis, separated by whitespace of
+				any kind; a line with no text or only whitespace after the parenthesis has no lexeme. A line
+				separator or next line character inside a line is read as an ordinary character.
+			</para>
 		</section>
 	<section xml:id="tools.corpora.arvores-deitadas.end-of-file">
 		<title>End of file in AD input</title>
