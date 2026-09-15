@@ -161,8 +161,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     this.sentencesPerSample = sentencesPerSample;
 
     sentencesFiles = leipzigFolder.listFiles(pathname -> !pathname.isHidden() && pathname.isFile()
-            && pathname.getName().length() >= LANG_CODE_LENGTH
-            && isAsciiLowerCaseWord(pathname.getName().substring(0, LANG_CODE_LENGTH)));
+            && hasLanguageCodePrefix(pathname.getName()));
 
     if (null == sentencesFiles) {
       throw new TerminateToolException(-1 , "Directory " + leipzigFolder + " empty , No files to read!");
@@ -183,19 +182,19 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
   }
 
   /**
-   * Tests whether {@code text} is a non-empty run of ASCII lower case letters, {@code a} to
-   * {@code z}. Letters outside that range, digits, and punctuation are rejected.
+   * Tests whether a file name starts with a language code, that is {@value #LANG_CODE_LENGTH}
+   * ASCII lower case letters, {@code a} to {@code z}.
    *
-   * @param text The text to check. Must not be {@code null}.
-   * @return {@code true} if {@code text} has at least one character and all of them are
-   *     ASCII lower case letters.
+   * @param fileName The file name. Must not be {@code null}.
+   * @return {@code true} if the first {@value #LANG_CODE_LENGTH} characters are ASCII lower
+   *     case letters.
    */
-  static boolean isAsciiLowerCaseWord(CharSequence text) {
-    if (text.isEmpty()) {
+  private boolean hasLanguageCodePrefix(String fileName) {
+    if (fileName.length() < LANG_CODE_LENGTH) {
       return false;
     }
-    for (int i = 0; i < text.length(); i++) {
-      final char c = text.charAt(i);
+    for (int i = 0; i < LANG_CODE_LENGTH; i++) {
+      final char c = fileName.charAt(i);
       if (c < 'a' || c > 'z') {
         return false;
       }

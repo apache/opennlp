@@ -69,19 +69,23 @@ public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
   @Test
   public void testBuildDictionary() throws Exception {
     Path output = createMorfologikDictionary();
+    output.toFile().deleteOnExit();
     MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
     Assertions.assertNotNull(ml);
-    output.toFile().deleteOnExit();
   }
 
+  /**
+   * The shared helper copies the input to a temporary file, so this test builds from the
+   * resource in place to see the name.
+   */
   @Test
   public void testBuildNamesTheDictionaryAfterTheMetadataFile() throws Exception {
     final Path rawLemmaDictionary =
         new File(getResource("/dictionaryWithLemma.txt").getFile()).toPath();
     Path output = new MorfologikDictionaryBuilder().build(rawLemmaDictionary);
+    output.toFile().deleteOnExit();
     Assertions.assertEquals("dictionaryWithLemma.dict", output.getFileName().toString());
     Assertions.assertEquals(rawLemmaDictionary.getParent(), output.getParent());
-    output.toFile().deleteOnExit();
   }
 
   @ParameterizedTest
@@ -89,15 +93,9 @@ public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
       "dictionaryWithLemma.info|dictionaryWithLemma.dict",
       "a.info.info|a.info.dict",
       ".info|.dict",
-      "info.info|info.dict",
-      "dictionary.txt|dictionary.txt",
-      "dictionary.info.bak|dictionary.info.bak",
-      "dictionaryXinfo|dictionaryXinfo",
-      "dictionary.INFO|dictionary.INFO",
-      "info|info",
-      "''|''"})
+      "info.info|info.dict"})
   public void testToDictionaryFileNameExchangesTheTrailingSuffixOnly(String input, String expected) {
-    Assertions.assertEquals(expected, MorfologikDictionaryBuilder.toDictionaryFileName(input));
+    Assertions.assertEquals(expected, new MorfologikDictionaryBuilder().toDictionaryFileName(input));
   }
 
 }

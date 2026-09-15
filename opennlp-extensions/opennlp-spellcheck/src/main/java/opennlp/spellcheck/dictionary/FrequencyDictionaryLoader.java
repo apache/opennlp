@@ -70,6 +70,9 @@ public final class FrequencyDictionaryLoader {
   /** The first character of a comment line. */
   private static final char COMMENT_MARKER = '#';
 
+  private static final char COLUMN_TAB = '\t';
+  private static final char COLUMN_SPACE = ' ';
+
   private static final String COUNT_NOT_DIGITS = "count must be ASCII digits with an optional sign";
   private static final String COUNT_NEGATIVE = "count must not be negative";
   private static final String COUNT_OUT_OF_RANGE = "count is out of range";
@@ -209,7 +212,7 @@ public final class FrequencyDictionaryLoader {
    * @param line The line to split. Must not be {@code null}.
    * @return The non-empty columns in order.
    */
-  static String[] splitColumns(String line) {
+  private String[] splitColumns(String line) {
     final List<String> columns = new ArrayList<>();
     int start = -1;
     for (int i = 0; i <= line.length(); i++) {
@@ -231,8 +234,8 @@ public final class FrequencyDictionaryLoader {
    * @param c The character to check.
    * @return {@code true} if {@code c} is a TAB or a space.
    */
-  private static boolean isColumnSeparator(char c) {
-    return c == '\t' || c == ' ';
+  private boolean isColumnSeparator(char c) {
+    return c == COLUMN_TAB || c == COLUMN_SPACE;
   }
 
   private static String stripBom(String line) {
@@ -243,14 +246,14 @@ public final class FrequencyDictionaryLoader {
   }
 
   /**
-   * Tests whether a line holds no entry: it is empty, consists of whitespace as
-   * {@link StringUtil#isBlank(CharSequence)} defines it, or starts with {@code #}.
+   * Tests whether a line holds no entry: it is empty, consists of Unicode whitespace only as
+   * {@link StringUtil#isUnicodeBlank(CharSequence)} defines it, or starts with {@code #}.
    *
    * @param line The line without its byte-order mark. Must not be {@code null}.
    * @return {@code true} if the line is to be skipped.
    */
-  private static boolean isSkippable(String line) {
-    if (StringUtil.isBlank(line)) {
+  private boolean isSkippable(String line) {
+    if (StringUtil.isUnicodeBlank(line)) {
       return true;
     }
     return line.charAt(0) == COMMENT_MARKER;

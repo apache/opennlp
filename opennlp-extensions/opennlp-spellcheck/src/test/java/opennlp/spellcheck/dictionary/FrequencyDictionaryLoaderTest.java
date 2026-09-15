@@ -17,9 +17,7 @@
 
 package opennlp.spellcheck.dictionary;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -32,50 +30,68 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import opennlp.tools.util.InputStreamFactory;
+import static opennlp.spellcheck.dictionary.DictionaryTestResources.stringResource;
 
 public class FrequencyDictionaryLoaderTest {
 
-  private static Stream<Arguments> columnSplits() {
+  @Test
+  void testLoaderSkipsBlankAndCommentLines() throws IOException {
+    final String text = "the\t100\n\n# a comment\n   \nworld\t50\n";
+    final Map<String, Long> into = new LinkedHashMap<>();
+    final long read = new FrequencyDictionaryLoader().parseUnigrams(stringResource(text), into);
+    Assertions.assertEquals(2, read);
+    Assertions.assertEquals(100L, into.get("the"));
+    Assertions.assertEquals(50L, into.get("world"));
+  }
+
+  @Test
+  void testLoaderRejectsMalformedLine() {
+    final String text = "the\tnotanumber\n";
+    final Map<String, Long> into = new LinkedHashMap<>();
+    final FrequencyDictionaryLoader loader = new FrequencyDictionaryLoader();
+    final MalformedDictionaryLineException ex = Assertions.assertThrows(
+        MalformedDictionaryLineException.class,
+        () -> loader.parseUnigrams(stringResource(text), into));
+    Assertions.assertEquals(1, ex.getLineNumber());
+  }
+
+  private static Stream<Arguments> unigramColumns() {
     return Stream.of(
-        Arguments.of("", new String[0]),
-        Arguments.of(" ", new String[0]),
-        Arguments.of("\t", new String[0]),
-        Arguments.of(" \t \t", new String[0]),
-        Arguments.of("a", new String[] {"a"}),
-        Arguments.of("a b", new String[] {"a", "b"}),
-        Arguments.of("a\tb", new String[] {"a", "b"}),
-        Arguments.of("a \t  \t b", new String[] {"a", "b"}),
+        Arguments.of("a 5", "a"),
+        Arguments.of("a\t5", "a"),
+        Arguments.of("a \t  \t 5", "a"),
         // leading, trailing, and repeated separators make no empty column
-        Arguments.of(" a", new String[] {"a"}),
-        Arguments.of("\t\ta b", new String[] {"a", "b"}),
-        Arguments.of("a b \t", new String[] {"a", "b"}),
-        Arguments.of(" a  b ", new String[] {"a", "b"}),
-        // other whitespace is part of a column
-        Arguments.of("ab", new String[] {"ab"}),
-        Arguments.of("a\fb\rc\nd", new String[] {"a\fb\rc\nd"}),
-        Arguments.of("a\u00A0b 5", new String[] {"a\u00A0b", "5"}),
-        Arguments.of("a b\u3000c", new String[] {"a", "b\u3000c"}),
-        Arguments.of("\uD83D\uDE00 5\t\uD83D\uDE00",
-            new String[] {"\uD83D\uDE00", "5", "\uD83D\uDE00"}));
+        Arguments.of(" a 5", "a"),
+        Arguments.of("\t\ta 5", "a"),
+        Arguments.of("a 5 \t", "a"),
+        Arguments.of(" a  5 ", "a"),
+        // other whitespace inside a word is part of it
+        Arguments.of("a\u000Bb 5", "a\u000Bb"),
+        Arguments.of("a\fb 5", "a\fb"),
+        Arguments.of("a\u00A0b 5", "a\u00A0b"),
+        Arguments.of("a\u3000b 5", "a\u3000b"),
+        Arguments.of("\u1F600 5", "\u1F600"));
   }
 
   @ParameterizedTest
-  @MethodSource("columnSplits")
-  void testSplitColumnsOnTabAndSpaceRuns(String line, String[] expected) {
-    Assertions.assertArrayEquals(expected, FrequencyDictionaryLoader.splitColumns(line));
+  @MethodSource("unigramColumns")
+  void testUnigramWordEndsAtATabOrSpaceOnly(String line, String word) throws IOException {
+    final Map<String, Long> into = new LinkedHashMap<>();
+    Assertions.assertEquals(1,
+        new FrequencyDictionaryLoader().parseUnigrams(stringResource(line + "\n"), into));
+    Assertions.assertEquals(Map.of(word, 5L), into);
   }
 
   @Test
   void testUnigramColumnsSplitOnTabAndSpaceRunsOnly() throws IOException {
-    final String text = "the \t 100\nworld\t\t50\n  hello  7  \nab 5\nc\u00A0d\t9\n";
+    final String text = "the \t 100\nworld\t\t50\n  hello  7  \na\u000Bb 5\nc\u00A0d\t9\n";
     final Map<String, Long> into = new LinkedHashMap<>();
     final long read = new FrequencyDictionaryLoader().parseUnigrams(stringResource(text), into);
     Assertions.assertEquals(5, read);
     Assertions.assertEquals(100L, into.get("the"));
     Assertions.assertEquals(50L, into.get("world"));
     Assertions.assertEquals(7L, into.get("hello"));
-    Assertions.assertEquals(5L, into.get("ab"));
+    Assertions.assertEquals(5L, into.get("a\u000Bb"));
     Assertions.assertEquals(9L, into.get("c\u00A0d"));
   }
 
@@ -108,9 +124,10 @@ public class FrequencyDictionaryLoaderTest {
   }
 
   @ParameterizedTest
-  // tabs and spaces, no-break spaces, a figure space, a narrow no-break space, an ideographic space
+  // tabs and spaces, no-break spaces, a figure space, a narrow no-break space, an ideographic
+  // space, a next line character, and a line separator all have the White_Space property
   @ValueSource(strings = {"\t\t", " \t \t ", "\u00A0", "\u00A0\u00A0", " \u00A0\t", "\u2007",
-      "\u202F", "\u3000"})
+      "\u202F", "\u3000", "\u0085", "\u2028"})
   void testLineOfWhitespaceOnlyIsSkipped(String blank) throws IOException {
     final String text = "the\t100\n" + blank + "\nworld 5\n";
     final Map<String, Long> into = new LinkedHashMap<>();
@@ -208,9 +225,5 @@ public class FrequencyDictionaryLoaderTest {
     Assertions.assertEquals(1,
         new FrequencyDictionaryLoader().parseBigrams(stringResource("a b\u00A0c 5\n"), into));
     Assertions.assertEquals(Map.of("a b\u00A0c", 5L), into);
-  }
-
-  private static InputStreamFactory stringResource(String text) {
-    return () -> new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
   }
 }
