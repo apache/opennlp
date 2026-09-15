@@ -97,7 +97,27 @@ public class AlphaNumericCheckTest {
   }
 
   @Test
-  void testNullPatternIsRejected() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> AlphaNumericCheck.of(null));
+  void testNullPatternRejectsEveryToken() {
+    AlphaNumericCheck check = AlphaNumericCheck.of(null);
+    Assertions.assertFalse(check.test("abc"));
+    Assertions.assertFalse(check.test("a1"));
+    Assertions.assertFalse(check.test(""));
+    Assertions.assertFalse(check.test("caf\u00E9"));
+    Assertions.assertFalse(check.test("\uD83D\uDE00"));
+    Assertions.assertFalse(check.test("\uD801\uDC12"));
+    Assertions.assertFalse(check.test("\uD800"));
+    Assertions.assertFalse(check.test("\uDE00"));
+  }
+
+  @Test
+  void testSurrogateSpanningRangeRejectsEmojiAndLoneSurrogates() {
+    AlphaNumericCheck check = AlphaNumericCheck.of(Pattern.compile("^[A-\uFFFF]+$"));
+    Assertions.assertTrue(check.isCharacterSet());
+    Assertions.assertTrue(check.test("ABC"));
+    Assertions.assertTrue(check.test("caf\u00E9"));
+    Assertions.assertFalse(check.test("\uD83D\uDE00"));
+    Assertions.assertFalse(check.test("\uD801\uDC12"));
+    Assertions.assertFalse(check.test("\uD800"));
+    Assertions.assertFalse(check.test("\uDE00"));
   }
 }
