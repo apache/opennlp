@@ -142,6 +142,10 @@ public class ADSentenceStreamTest {
         Arguments.of("=X:y(z)", 2, "X:y"),
         Arguments.of("=X:y (<a>)", 2, "X:y"),
         Arguments.of("=X:y(z) (<a>)(<b>) ", 2, "X:y"),
+        // a parenthesis inside the tag group content does not end the node tail
+        Arguments.of("=X:y(z) (<a(b>)", 2, "X:y"),
+        // tag groups may follow the tag with only whitespace between
+        Arguments.of("=X:y (<a>)(<b>)", 2, "X:y"),
         Arguments.of("==P<:np(<x>)", 3, "P<:np"),
         // a leaf line followed by a tag group, or without a lexeme, is a node line
         Arguments.of("=H:n(\"casa\" M S) (<x>)", 2, "H:n"),
@@ -398,6 +402,8 @@ public class ADSentenceStreamTest {
       "<s>>|s|false",
       "<s> |s|false",
       " <s>|s|false",
+      // a bracket inside a quoted attribute still ends the tag early for both
+      "<s x=\">\">|s|false",
       "<s>x</s>|s|false",
       "</s>|s|false",
       "<p>|s|false",
