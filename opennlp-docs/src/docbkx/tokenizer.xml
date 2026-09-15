@@ -304,6 +304,31 @@ Path: en-custom-token.bin]]>
 				</screen>
 			</para>
 		</section>
+		<section xml:id="tools.tokenizer.training.alphanumeric">
+			<title>Alphanumeric optimization</title>
+			<para>
+				With <code>-alphaNumOpt true</code>, or <code>useAlphaNumericOptimization</code> set on
+				the <code>TokenizerFactory</code>, a candidate token longer than one character that
+				matches the alphanumeric pattern in full is taken as one token: the tokenizer does
+				not look for a split inside it, and training generates no events for it. The default
+				pattern is <code>^[A-Za-z0-9]+$</code>. The built-in patterns for Catalan, Dutch,
+				French, German, Italian, Polish, Portuguese, and Spanish extend the class with the
+				accented letters of that language. A custom pattern can be passed to the factory; a
+				<code>null</code> pattern means the default. The pattern is written to the model
+				manifest as <code>alphaNumericPattern</code>, so a model applies the pattern it was
+				trained with.
+			</para>
+			<para>
+				A pattern of the form <code>^[...]+$</code> with a class of plain characters and
+				ranges, which is the form of all built-in patterns, is evaluated as a character set
+				lookup. Any other pattern, for example one with <code>\p{L}</code>, a negated class,
+				an escape, or a flag, is evaluated as a regular expression. Both give the same result,
+				with one exception: an unpaired surrogate is not alphanumeric under a set lookup.
+				Characters outside the Basic Multilingual Plane, such as emoji or mathematical
+				alphanumerics, are not in any built-in pattern; a custom pattern such as
+				<code>^[\p{L}\p{Nd}]+$</code> accepts them and is evaluated as a regular expression.
+			</para>
+		</section>
 		<section xml:id="tools.tokenizer.training.api">
 			<title>Training API</title>
 				<para>
