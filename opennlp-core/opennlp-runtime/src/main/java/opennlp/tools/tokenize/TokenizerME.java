@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
@@ -32,6 +33,7 @@ import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.models.ModelType;
+import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.OwnerOrPerThreadState;
@@ -158,14 +160,20 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    *
    * @param model The {@link TokenizerModel} to be used.
    * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
+   *                If the alphanumeric optimization is on and the factory of the model has no
+   *                alphanumeric pattern, {@link Factory#DEFAULT_ALPHANUMERIC} is used.
    */
   public TokenizerME(TokenizerModel model, Dictionary abbDict) {
     this.model = model.getMaxentModel();
     this.abbDict = abbDict;
     TokenizerFactory factory = model.getFactory();
     this.cg = factory.getContextGenerator();
-    this.alphanumeric = AlphaNumericCheck.of(factory.getAlphaNumericPattern());
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
+    Pattern alphaNumericPattern = factory.getAlphaNumericPattern();
+    this.alphanumeric = useAlphaNumericOptimization
+        ? new AlphaNumericCheck(
+            alphaNumericPattern == null ? Factory.DEFAULT_ALPHANUMERIC : alphaNumericPattern)
+        : null;
   }
 
   /**
