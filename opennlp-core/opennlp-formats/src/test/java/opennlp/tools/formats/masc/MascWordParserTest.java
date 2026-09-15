@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
 import opennlp.tools.util.XmlUtil;
@@ -51,9 +53,11 @@ public class MascWordParserTest {
     Assertions.assertEquals(7, words.get(1).getEnd());
   }
 
-  @Test
-  void testOnlyTheFirstPrefixOccurrenceIsRemoved() {
+  @ParameterizedTest
+  // doubled prefix, missing prefix, other prefix, no digits, trailing text
+  @ValueSource(strings = {"seg-rseg-r3", "3", "penn-n3", "seg-r", "seg-r3x"})
+  void testMalformedRegionIdsAreRejected(String id) {
     Assertions.assertThrows(SAXException.class, () -> parse(
-        "<graph><region xml:id=\"seg-rseg-r3\" anchors=\"0 4\"/></graph>"));
+        "<graph><region xml:id=\"" + id + "\" anchors=\"0 4\"/></graph>"));
   }
 }

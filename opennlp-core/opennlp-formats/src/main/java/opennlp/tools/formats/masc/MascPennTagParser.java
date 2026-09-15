@@ -55,8 +55,8 @@ public class MascPennTagParser extends DefaultHandler {
     try {
       //get the link between region and Penn tag
       if (qName.equals("node")) {
-        tokenStack.push(Integer.parseInt(MascIdentifiers.removeFirst(
-            attributes.getValue("xml:id"), MascIdentifiers.PENN_TOKEN_ID_PREFIX)));
+        tokenStack.push(MascIdentifiers.parseId(
+            attributes.getValue("xml:id"), MascIdentifiers.PENN_TOKEN_ID_PREFIX));
       }
 
       if (qName.equals("link")) {
@@ -64,20 +64,14 @@ public class MascPennTagParser extends DefaultHandler {
           throw new SAXException("The linking of tokens to quarks is broken.");
         }
 
-        String[] targets = attributes.getValue("targets")
-            .replace(MascIdentifiers.REGION_ID_PREFIX, "").split(" ");
-
-        int[] regions = new int[targets.length];
-        for (int i = 0; i < targets.length; i++) {
-          int region = Integer.parseInt(targets[i]);
-          regions[i] = region;
-        }
+        int[] regions = MascIdentifiers.parseIds(
+            attributes.getValue("targets"), MascIdentifiers.REGION_ID_PREFIX);
         tokenToQuarks.put(tokenStack.pop(), regions);
       }
 
       if (qName.equals("a")) {
-        tokenStackTag.push(Integer.parseInt(MascIdentifiers.removeFirst(
-            attributes.getValue("ref"), MascIdentifiers.PENN_TOKEN_ID_PREFIX)));
+        tokenStackTag.push(MascIdentifiers.parseId(
+            attributes.getValue("ref"), MascIdentifiers.PENN_TOKEN_ID_PREFIX));
       }
 
       if (qName.equals("f")) {

@@ -22,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
 import opennlp.tools.util.XmlUtil;
@@ -48,11 +50,31 @@ public class MascPennTagParserTest {
     Assertions.assertEquals("test", parser.getBases().get(10));
   }
 
-  @Test
-  void testOnlyTheFirstPrefixOccurrenceIsRemoved() {
+  @ParameterizedTest
+  @ValueSource(strings = {"seg-r0\tseg-r1", "  seg-r0   seg-r1  ", "seg-r0\u00A0seg-r1",
+      "seg-r0\nseg-r1"})
+  void testLinkTargetsAreSeparatedByWhitespaceRuns(String targets) throws Exception {
+    MascPennTagParser parser = parse("<graph>"
+        + "<node xml:id=\"penn-n10\"><link targets=\"" + targets + "\"/></node>"
+        + "</graph>");
+    Assertions.assertArrayEquals(new int[] {0, 1}, parser.getTokenToQuarks().get(10));
+  }
+
+  @ParameterizedTest
+  // doubled prefix, missing prefix, other prefix, no digits, trailing text
+  @ValueSource(strings = {"penn-npenn-n2", "2", "ne-n2", "penn-n", "penn-n2x"})
+  void testMalformedTokenIdsAreRejected(String id) {
     Assertions.assertThrows(SAXException.class, () -> parse(
-        "<graph><node xml:id=\"penn-npenn-n2\"><link targets=\"seg-r0\"/></node></graph>"));
+        "<graph><node xml:id=\"" + id + "\"><link targets=\"seg-r0\"/></node></graph>"));
     Assertions.assertThrows(SAXException.class, () -> parse(
-        "<graph><a ref=\"penn-npenn-n2\"><fs><f name=\"msd\" value=\"NN\"/></fs></a></graph>"));
+        "<graph><a ref=\"" + id + "\"><fs><f name=\"msd\" value=\"NN\"/></fs></a></graph>"));
+  }
+
+  @ParameterizedTest
+  // empty list, one malformed entry, other prefix, comma separated
+  @ValueSource(strings = {"", " ", "seg-r0 seg-r", "seg-r0 penn-n1", "seg-r0,seg-r1"})
+  void testMalformedLinkTargetsAreRejected(String targets) {
+    Assertions.assertThrows(SAXException.class, () -> parse(
+        "<graph><node xml:id=\"penn-n2\"><link targets=\"" + targets + "\"/></node></graph>"));
   }
 }

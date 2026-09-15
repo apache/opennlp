@@ -21,6 +21,8 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.ObjectStream;
 
@@ -45,7 +47,7 @@ public class SimpleEventStreamBuilderTest {
     try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
         .add("other/  w=he n1w=belongs  ")
         .build()) {
-      // No empty-string predicate survives leading, repeated, or trailing runs.
+      // leading, repeated, and trailing runs produce no empty predicate
       Assertions.assertArrayEquals(new String[] {"w=he", "n1w=belongs"}, events.read().getContext());
       Assertions.assertNull(events.read());
     }
@@ -73,8 +75,27 @@ public class SimpleEventStreamBuilderTest {
   }
 
   @Test
-  void testAddRejectsMissingSlash() {
+  void testAddKeepsASlashInsideAContext() throws IOException {
+    try (ObjectStream<Event> events = new SimpleEventStreamBuilder()
+        .add("other/w=1/2 n1w=a/b/c")
+        .build()) {
+      Event e = events.read();
+      Assertions.assertEquals("other", e.getOutcome());
+      Assertions.assertArrayEquals(new String[] {"w=1/2", "n1w=a/b/c"}, e.getContext());
+    }
+  }
+
+  @ParameterizedTest
+  // no slash, empty outcome, no contexts, blank contexts
+  @ValueSource(strings = {"other w=he", "/w=he", "other/", "other/ \t "})
+  void testAddRejectsMissingOutcomeOrContexts(String event) {
     Assertions.assertThrows(RuntimeException.class,
-        () -> new SimpleEventStreamBuilder().add("other w=he"));
+        () -> new SimpleEventStreamBuilder().add(event));
+  }
+
+  @Test
+  void testAddRejectsAContextWithoutValueWhenTheFirstHasOne() {
+    Assertions.assertThrows(RuntimeException.class,
+        () -> new SimpleEventStreamBuilder().add("other/w=he;0.5 n1w=belongs"));
   }
 }
