@@ -166,6 +166,37 @@ public class GlobMatcherTest {
         finder.matchesPattern(url, Pattern.compile("en-pos.bin", Pattern.LITERAL)));
   }
 
+  private static Stream<Arguments> nullInputs() {
+    return Stream.of(
+        Arguments.of(null, "a"),
+        Arguments.of("a", null),
+        Arguments.of(null, null));
+  }
+
+  /**
+   * Checks that null glob or input fails fast instead of matching.
+   */
+  @ParameterizedTest
+  @MethodSource("nullInputs")
+  void testMatchesRejectsNull(String glob, String input) {
+    Assertions.assertThrows(NullPointerException.class, () -> GlobMatcher.matches(glob, input));
+  }
+
+  /**
+   * Checks that null arguments to the finder matchers fail fast.
+   */
+  @Test
+  void testFinderMatchersRejectNull() throws Exception {
+    final AbstractClassPathModelFinder finder = newProbeFinder();
+    final URL url = new URI(MODEL_URL).toURL();
+    Assertions.assertThrows(NullPointerException.class, () -> finder.asRegex(null));
+    Assertions.assertThrows(NullPointerException.class, () -> finder.matchesWildcard(null, "*.bin"));
+    Assertions.assertThrows(NullPointerException.class, () -> finder.matchesWildcard(url, null));
+    Assertions.assertThrows(NullPointerException.class,
+        () -> finder.matchesPattern(null, Pattern.compile("*.bin", Pattern.LITERAL)));
+    Assertions.assertThrows(NullPointerException.class, () -> finder.matchesPattern(url, null));
+  }
+
   @Test
   void testMatchesWildcardUsesFilePart() throws Exception {
     final AbstractClassPathModelFinder finder = new AbstractClassPathModelFinder() {
