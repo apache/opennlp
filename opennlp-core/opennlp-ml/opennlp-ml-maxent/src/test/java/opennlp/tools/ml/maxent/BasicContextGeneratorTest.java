@@ -233,8 +233,8 @@ public class BasicContextGeneratorTest {
   }
 
   /**
-   * The default split does not go through the shared {@link WhitespaceTokenizer#INSTANCE},
-   * whose keep-new-lines flag any {@code TokenizerME} may switch on.
+   * The default split does not go through the shared {@link WhitespaceTokenizer#INSTANCE};
+   * any {@code TokenizerME} may switch on the keep-new-lines flag of that instance.
    */
   @Test
   void testDefaultSplitIsUnaffectedByTheSharedTokenizer() {
