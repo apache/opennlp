@@ -40,7 +40,11 @@ public class ADMetadataTest {
       "12 pp=7|12|7",
       "1 ap=2|1|2",
       // the text id ends at the first character that is no digit
-      "12x34 p=5 p=6|12|5"
+      "12x34 p=5 p=6|12|5",
+      // a line terminator is an ordinary character, the reader does not produce one inside a line
+      "12 p=1\n|12|1",
+      "12\u2028 p=1|12|1",
+      "12 p=1\u0085|12|1"
   })
   void testParseTextAndParagraph(String meta, int text, int paragraph) {
     Assertions.assertArrayEquals(new int[] {text, paragraph},
@@ -52,8 +56,8 @@ public class ADMetadataTest {
       "1 p==2", "LIT p=1", "LIT-p=1",
       // digits from other scripts are no ASCII digits
       "١٢ p=1", "12 p=١",
-      // metadata is one line
-      "12 p=1\n", "12\u2028 p=1", "12 p=1\u0085", "\r12 p=1"})
+      // a line terminator before the text id is no letter or hyphen
+      "\r12 p=1", "\u202812 p=1"})
   void testParseTextAndParagraphRejects(String meta) {
     Assertions.assertNull(ADMetadata.parseTextAndParagraph(meta));
     Assertions.assertNull(ADMetadata.textId(meta));
@@ -99,7 +103,12 @@ public class ADMetadataTest {
       // the first source attribute counts, up to the next double quote
       "source=\"a\"source=\"b\"|a",
       "source=\"source=\"x\"|source=",
-      "source=\" a \" |' a '"
+      "source=\" a \" |' a '",
+      // a line terminator is an ordinary character
+      "source=\"a\nb\"|'a\nb'",
+      "source=\"a\"\n|a",
+      "source=\"a\"\u2028|a",
+      "\u0085source=\"a\"|a"
   })
   void testSource(String meta, String source) {
     Assertions.assertEquals(source, ADMetadata.source(meta));
@@ -107,9 +116,7 @@ public class ADMetadataTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"", "CIE x", "CIE source=\"a", "CIE source=a\"", "CIE Source=\"a\"",
-      "source='a'",
-      // metadata is one line
-      "source=\"a\nb\"", "source=\"a\"\n", "source=\"a\"\u2028", "\u0085source=\"a\""})
+      "source='a'"})
   void testSourceRejects(String meta) {
     Assertions.assertNull(ADMetadata.source(meta));
   }

@@ -195,8 +195,15 @@ public class ADSentenceStreamTest {
             2, "H", "n", "casa", "<a>b<c>", "M S", "casa"),
         Arguments.of("=H:n(\"casa\" <a) b> M S)\tcasa",
             2, "H", "n", "casa", "<a) b>", "M S", "casa"),
-        // the last of trailing whitespace characters is the lexeme
-        Arguments.of("=H:n(\"a)\" M S)  ", 2, "H", "n", "a)", "", "M S", " "));
+        // any whitespace separates the closing parenthesis from the lexeme
+        Arguments.of("=H:n(\"casa\" M S)\u00A0casa", 2, "H", "n", "casa", "", "M S", "casa"),
+        Arguments.of("=H:n(\"casa\" M S)\u3000 casa", 2, "H", "n", "casa", "", "M S", "casa"),
+        // a line separator inside the line is an ordinary character
+        Arguments.of("=H:n(\"a\u2028b\" <x\u2028y> M S)\tc\u2028d",
+            2, "H", "n", "a\u2028b", "<x\u2028y>", "M S", "c\u2028d"),
+        // supplementary-plane characters in lemma and lexeme
+        Arguments.of("=H:n(\"\uD83D\uDE00\" M S)\t\uD83D\uDE00",
+            2, "H", "n", "\uD83D\uDE00", "", "M S", "\uD83D\uDE00"));
   }
 
   @ParameterizedTest
@@ -226,7 +233,9 @@ public class ADSentenceStreamTest {
         Arguments.of("=x=y(\"q) b", 2, "x=y", null, "\"q", "b"),
         // the level prefix gives up hyphens so that the tag can start
         Arguments.of("==-=x(a) b", 3, "-=x", null, "a", "b"),
-        Arguments.of("=-=x=y(a) b", 4, "x=y", null, "a", "b"));
+        Arguments.of("=-=x=y(a) b", 4, "x=y", null, "a", "b"),
+        // any whitespace separates the closing parenthesis from the lexeme
+        Arguments.of("=x=y(a)\u00A0b", 2, "x=y", null, "a", "b"));
   }
 
   @ParameterizedTest
@@ -254,7 +263,11 @@ public class ADSentenceStreamTest {
       "=H:n(\"\" M S) casa|2|:n(\"\" M S) casa",
       "=ab|2|b",
       "=a.b|2|.b",
-      "===x|4|''"
+      "===x|4|''",
+      // whitespace only after the closing parenthesis is no lexeme
+      "=H:n(\"a)\" M S)  |2|H:n(\"a)\" M S)  ",
+      "=x=y(a)  |4|(a)  ",
+      "=x=y(\"q\")\t|4|(\"q\")\t"
   })
   void testFallbackLeafLines(String line, int level, String lexeme) {
     TreeElement element = new SentenceParser().getElement(line);
@@ -270,7 +283,9 @@ public class ADSentenceStreamTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"_", "<lixo>", "pause", "=ab.", "=xa<b", "=x1>y", "=a_b.c"})
+  @ValueSource(strings = {"_", "<lixo>", "pause", "=ab.", "=xa<b", "=x1>y", "=a_b.c",
+      // the word may start with a letter or digit of any script
+      "=ção.", "=Ünïcode<x>", "=١٢.", "=\uD801\uDC12.", "=ab\u2028."})
   void testIgnoredLines(String line) {
     Assertions.assertNull(new SentenceParser().getElement(line));
   }
@@ -393,7 +408,8 @@ public class ADSentenceStreamTest {
   @CsvSource(delimiter = '|', ignoreLeadingAndTrailingWhitespace = false, value = {
       "<s>|s|true",
       "<s id=\"63955\" ref=\"1001.porto-poesia-2\" source=\"SELVA 1001\">|s|true",
-      "<sx>|s|true",
+      "<s\tid=\"1\">|s|true",
+      "<s\u00A0id=\"1\">|s|true",
       "<ext id=\"1001.porto-poesia\">|ext|true",
       "<caixa>|caixa|true",
       "<p par=\"1\">|p|true",
@@ -402,7 +418,11 @@ public class ADSentenceStreamTest {
       "<s>>|s|false",
       "<s> |s|false",
       " <s>|s|false",
-      // a bracket inside a quoted attribute still ends the tag early for both
+      // the name must be followed by whitespace or the closing bracket
+      "<sx>|s|false",
+      "<sid=\"1\">|s|false",
+      "<ss>|s|false",
+      // a bracket inside a quoted attribute closes the tag
       "<s x=\">\">|s|false",
       "<s>x</s>|s|false",
       "</s>|s|false",
