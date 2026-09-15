@@ -271,4 +271,53 @@ public class DocumentCategorizerConfigTest {
     assertEquals(Map.of("0", "x"),
         DocumentCategorizerConfig.fromJson("﻿{\"id2label\": {\"0\": \"x\"}}").id2label());
   }
+
+  private static final String CONFIG_JSON =
+      "{\"hidden_size\": 768, \"id2label\": {\"0\": \"neg\", \"1\": \"pos\"}, \"pad_token_id\": 0}";
+
+  static Stream<Arguments> configLayouts() {
+    return Stream.of(
+        Arguments.of(CONFIG_JSON, Map.of("0", "neg", "1", "pos")),
+        Arguments.of("{\r\n  \"id2label\": {\r\n    \"0\": \"neg\",\r\n    \"1\": \"pos\"\r\n  }\r\n}"
+            + "\r\n", Map.of("0", "neg", "1", "pos")),
+        Arguments.of("{\r\"id2label\":\r{\"0\":\r\"neg\"}\r}", Map.of("0", "neg")),
+        // the member name may be written with escapes
+        Arguments.of("{\"id2l\\u0061bel\": {\"0\": \"x\"}}", Map.of("0", "x")),
+        // nested members of any depth before and after id2label are skipped
+        Arguments.of("{\"a\": {\"b\": [[{\"c\": {\"id2label\": {\"9\": \"no\"}}}]]},"
+            + " \"id2label\": {\"0\": \"x\"}, \"d\": [{}, [], \"}\"]}", Map.of("0", "x")),
+        // labels with line breaks written as escapes or as text
+        Arguments.of("{\"id2label\": {\"0\": \"a\\r\\nb\", \"1\": \"c\r\nd\"}}",
+            Map.of("0", "a\r\nb", "1", "c\r\nd")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("configLayouts")
+  public void testId2LabelsFromJsonLayouts(String json, Map<String, String> expected) {
+    assertEquals(expected, DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  static Stream<Arguments> configPrefixes() {
+    return Stream.iterate(1, n -> n + 1).limit(CONFIG_JSON.length() - 1)
+        .map(n -> Arguments.of(n, CONFIG_JSON.substring(0, n)));
+  }
+
+  @ParameterizedTest(name = "cut at {0}")
+  @MethodSource("configPrefixes")
+  public void testId2LabelsFromJsonRejectsATruncatedConfig(int length, String prefix) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentCategorizerConfig.fromJson(prefix));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {" {}", "x", "\uFEFF", ",", " {\"id2label\": {\"0\": \"y\"}}"})
+  public void testId2LabelsFromJsonRejectsContentAfterTheConfig(String trailing) {
+    final String json = CONFIG_JSON + trailing;
+    final int offset = CONFIG_JSON.length() + (trailing.startsWith(" ") ? 1 : 0);
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentCategorizerConfig.fromJson(json));
+    assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
+    assertTrue(e.getMessage().contains("content after the object"), e.getMessage());
+  }
 }
