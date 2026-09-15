@@ -24,11 +24,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class BasicContextGeneratorTest {
 
   private static final String[] NONE = new String[0];
+
+  private static final String NO_BREAK_SPACE = " ";
+  private static final String EM_SPACE = " ";
+  private static final String IDEOGRAPHIC_SPACE = "　";
+  private static final String ZERO_WIDTH_SPACE = "​";
+  private static final String GRINNING_FACE = "😀";
+  private static final String DESERET_BEE = "𐐒";
+  private static final String HIGH_SURROGATE = "\uD83D";
+  private static final String LOW_SURROGATE = "\uDE00";
 
   private static Stream<Arguments> literalSeparators() {
     return Stream.of(
@@ -45,9 +55,14 @@ public class BasicContextGeneratorTest {
         Arguments.of("::", "a::b::c", new String[] {"a", "b", "c"}),
         Arguments.of("::", "a:b", new String[] {"a:b"}),
         Arguments.of("::", "a:::b", new String[] {"a", ":b"}),
+        Arguments.of("<=>", "a<=>b<=", new String[] {"a", "b<="}),
         // occurrences never overlap
         Arguments.of("aa", "aaa", new String[] {"a"}),
         Arguments.of("aa", "baaab", new String[] {"b", "ab"}),
+        // the separator is the whole input, or longer than the input
+        Arguments.of("abc", "abc", NONE),
+        Arguments.of("abc", "ab", new String[] {"ab"}),
+        Arguments.of(",,", ",", new String[] {","}),
         // an empty predicate is never produced: leading, repeated, and trailing separators
         Arguments.of(",", ",a", new String[] {"a"}),
         Arguments.of(",", "a,", new String[] {"a"}),
@@ -56,19 +71,74 @@ public class BasicContextGeneratorTest {
         Arguments.of(",", ",,", NONE),
         Arguments.of(",", ",", NONE),
         Arguments.of(",", "", NONE),
-        // a separator that is whitespace splits only on itself, not on other whitespace
-        Arguments.of(" ", "a b\tc", new String[] {"a", "b\tc"}),
-        Arguments.of("\t", "a\tb c", new String[] {"a", "b c"}),
+        Arguments.of("::", "::::a::::", new String[] {"a"}),
         // a supplementary-plane separator, and one inside the predicates
-        Arguments.of("😀", "a😀b", new String[] {"a", "b"}),
-        Arguments.of(",", "😀,𐐒", new String[] {"😀", "𐐒"}),
+        Arguments.of(GRINNING_FACE, "a" + GRINNING_FACE + "b", new String[] {"a", "b"}),
+        Arguments.of(GRINNING_FACE, GRINNING_FACE + GRINNING_FACE, NONE),
+        Arguments.of(GRINNING_FACE, HIGH_SURROGATE + "a" + GRINNING_FACE + LOW_SURROGATE,
+            new String[] {HIGH_SURROGATE + "a", LOW_SURROGATE}),
+        Arguments.of(",", GRINNING_FACE + "," + DESERET_BEE,
+            new String[] {GRINNING_FACE, DESERET_BEE}),
         // an unpaired surrogate is ordinary content
-        Arguments.of(",", "\uD83D,b", new String[] {"\uD83D", "b"}));
+        Arguments.of(",", HIGH_SURROGATE + ",b", new String[] {HIGH_SURROGATE, "b"}),
+        Arguments.of(",", LOW_SURROGATE + HIGH_SURROGATE, new String[] {LOW_SURROGATE + HIGH_SURROGATE}));
   }
 
   @ParameterizedTest
   @MethodSource("literalSeparators")
   void testSplitsOnTheLiteralSeparator(String separator, String input, String[] expected) {
+    Assertions.assertArrayEquals(expected, new BasicContextGenerator(separator).getContext(input));
+  }
+
+  private static Stream<Arguments> whitespaceSeparators() {
+    return Stream.of(
+        // a whitespace separator splits on itself only; other whitespace stays in the predicates
+        Arguments.of(" ", "a b\tc", new String[] {"a", "b\tc"}),
+        Arguments.of(" ", "a b" + NO_BREAK_SPACE + "c", new String[] {"a", "b" + NO_BREAK_SPACE + "c"}),
+        Arguments.of(" ", "a" + EM_SPACE + "b", new String[] {"a" + EM_SPACE + "b"}),
+        Arguments.of(" ", NO_BREAK_SPACE, new String[] {NO_BREAK_SPACE}),
+        Arguments.of("\t", "a\tb c", new String[] {"a", "b c"}),
+        Arguments.of("\n", "a\nb c\r\nd", new String[] {"a", "b c\r", "d"}),
+        Arguments.of(NO_BREAK_SPACE, "a" + NO_BREAK_SPACE + "b c", new String[] {"a", "b c"}),
+        Arguments.of(IDEOGRAPHIC_SPACE, "a" + IDEOGRAPHIC_SPACE + "b\tc", new String[] {"a", "b\tc"}),
+        Arguments.of(EM_SPACE, EM_SPACE + "a" + EM_SPACE + EM_SPACE + "b" + EM_SPACE,
+            new String[] {"a", "b"}),
+        // a run of the separator is one boundary, other whitespace around it is kept
+        Arguments.of(" ", " a  b ", new String[] {"a", "b"}),
+        Arguments.of(" ", "\ta \t b", new String[] {"\ta", "\t", "b"}),
+        Arguments.of(" ", "   ", NONE),
+        Arguments.of(" ", "\t", new String[] {"\t"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("whitespaceSeparators")
+  void testWhitespaceSeparatorSplitsOnItselfOnly(String separator, String input, String[] expected) {
+    Assertions.assertArrayEquals(expected, new BasicContextGenerator(separator).getContext(input));
+  }
+
+  private static Stream<Arguments> predicatesWithValues() {
+    return Stream.of(
+        // the separator inside a value still separates
+        Arguments.of(" ", "w=a b=c", new String[] {"w=a", "b=c"}),
+        Arguments.of(" ", "w=a b", new String[] {"w=a", "b"}),
+        Arguments.of(",", "w=a,b x=c", new String[] {"w=a", "b x=c"}),
+        Arguments.of(",", "w=a,,x=b,", new String[] {"w=a", "x=b"}),
+        // an equals sign as separator splits names from values
+        Arguments.of("=", "w=a", new String[] {"w", "a"}),
+        Arguments.of("=", "w==a", new String[] {"w", "a"}),
+        Arguments.of("=", "w=", new String[] {"w"}),
+        // an empty value keeps the name and the sign
+        Arguments.of(" ", "w= x", new String[] {"w=", "x"}),
+        Arguments.of(",", "w=,x=1", new String[] {"w=", "x=1"}),
+        // a value that is the separator text itself
+        Arguments.of("::", "w=::x=1", new String[] {"w=", "x=1"}),
+        Arguments.of(",", "w=,", new String[] {"w="}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("predicatesWithValues")
+  void testSeparatorInsidePredicateValueSeparates(String separator, String input,
+      String[] expected) {
     Assertions.assertArrayEquals(expected, new BasicContextGenerator(separator).getContext(input));
   }
 
@@ -79,18 +149,27 @@ public class BasicContextGeneratorTest {
         // runs, tabs, and Unicode whitespace all separate; no empty predicate is produced
         Arguments.of("a  b", new String[] {"a", "b"}),
         Arguments.of("a\tb", new String[] {"a", "b"}),
-        Arguments.of("a b", new String[] {"a", "b"}),
-        Arguments.of("a　b", new String[] {"a", "b"}),
-        Arguments.of("a \t  b", new String[] {"a", "b"}),
+        Arguments.of("a" + NO_BREAK_SPACE + "b", new String[] {"a", "b"}),
+        Arguments.of("a" + EM_SPACE + "b", new String[] {"a", "b"}),
+        Arguments.of("a" + IDEOGRAPHIC_SPACE + "b", new String[] {"a", "b"}),
+        Arguments.of("a \t" + NO_BREAK_SPACE + " b", new String[] {"a", "b"}),
+        Arguments.of("a" + NO_BREAK_SPACE + "b" + EM_SPACE + "c" + IDEOGRAPHIC_SPACE + "d",
+            new String[] {"a", "b", "c", "d"}),
+        Arguments.of("a\r\nb\fc", new String[] {"a", "b", "c"}),
         Arguments.of(" a b ", new String[] {"a", "b"}),
-        Arguments.of(" a　", new String[] {"a"}),
+        Arguments.of(NO_BREAK_SPACE + "a" + IDEOGRAPHIC_SPACE, new String[] {"a"}),
         Arguments.of("", NONE),
         Arguments.of(" ", NONE),
-        Arguments.of(" \t 　", NONE),
+        Arguments.of(" \t" + NO_BREAK_SPACE + IDEOGRAPHIC_SPACE, NONE),
+        Arguments.of(NO_BREAK_SPACE + EM_SPACE + IDEOGRAPHIC_SPACE, NONE),
+        // name=value predicates are kept whole, whitespace in a value separates
+        Arguments.of("w=a b x=c", new String[] {"w=a", "b", "x=c"}),
+        Arguments.of("w=a" + NO_BREAK_SPACE + "b", new String[] {"w=a", "b"}),
+        Arguments.of("w= x", new String[] {"w=", "x"}),
         // format characters and supplementary-plane content are not whitespace
-        Arguments.of("a​b", new String[] {"a​b"}),
-        Arguments.of("😀 𐐒", new String[] {"😀", "𐐒"}),
-        Arguments.of("\uD83D b", new String[] {"\uD83D", "b"}));
+        Arguments.of("a" + ZERO_WIDTH_SPACE + "b", new String[] {"a" + ZERO_WIDTH_SPACE + "b"}),
+        Arguments.of(GRINNING_FACE + " " + DESERET_BEE, new String[] {GRINNING_FACE, DESERET_BEE}),
+        Arguments.of(HIGH_SURROGATE + " b", new String[] {HIGH_SURROGATE, "b"}));
   }
 
   @ParameterizedTest
@@ -100,21 +179,29 @@ public class BasicContextGeneratorTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {""})
-  void testEmptySeparatorIsRejected(String separator) {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> new BasicContextGenerator(separator));
+  @NullAndEmptySource
+  void testNullOrEmptySeparatorIsRejected(String separator) {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new BasicContextGenerator(separator));
+    Assertions.assertEquals("sep must not be null or empty", e.getMessage());
   }
 
-  @Test
-  void testNullSeparatorIsRejected() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> new BasicContextGenerator(null));
+  @ParameterizedTest
+  @ValueSource(strings = {HIGH_SURROGATE, LOW_SURROGATE, "a" + HIGH_SURROGATE,
+      LOW_SURROGATE + HIGH_SURROGATE})
+  void testUnpairedSurrogateSeparatorIsRejected(String separator) {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new BasicContextGenerator(separator));
+    Assertions.assertEquals("sep must not contain an unpaired surrogate", e.getMessage());
   }
 
   @Test
   void testNullInputIsRejected() {
-    Assertions.assertThrows(IllegalArgumentException.class,
+    IllegalArgumentException literal = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new BasicContextGenerator(",").getContext(null));
-    Assertions.assertThrows(IllegalArgumentException.class,
+    Assertions.assertEquals("o must not be null", literal.getMessage());
+    IllegalArgumentException whitespace = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new BasicContextGenerator().getContext(null));
+    Assertions.assertEquals("o must not be null", whitespace.getMessage());
   }
 }
