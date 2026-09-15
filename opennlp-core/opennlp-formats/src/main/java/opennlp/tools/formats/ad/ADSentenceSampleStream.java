@@ -38,8 +38,6 @@ import opennlp.tools.util.Span;
 @Internal
 public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
 
-  private static final String PARAGRAPH_KEY = "p=";
-
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
   private int text = -1;

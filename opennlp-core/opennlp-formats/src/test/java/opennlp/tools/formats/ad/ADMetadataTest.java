@@ -17,9 +17,13 @@
 
 package opennlp.tools.formats.ad;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class ADMetadataTest {
@@ -40,13 +44,25 @@ public class ADMetadataTest {
       "12 pp=7|12|7",
       "1 ap=2|1|2",
       // the text id ends at the first character that is no digit
-      "12x34 p=5 p=6|12|5",
-      // a line terminator is an ordinary character, the reader does not produce one inside a line
-      "12 p=1\n|12|1",
-      "12\u2028 p=1|12|1",
-      "12 p=1\u0085|12|1"
+      "12x34 p=5 p=6|12|5"
   })
   void testParseTextAndParagraph(String meta, int text, int paragraph) {
+    Assertions.assertArrayEquals(new int[] {text, paragraph},
+        ADMetadata.parseTextAndParagraph(meta));
+  }
+
+  private static Stream<Arguments> metadataWithLineTerminator() {
+    // a line terminator is an ordinary character, the reader does not produce one inside a line
+    return Stream.of(
+        Arguments.of("12 p=1\n", 12, 1),
+        Arguments.of("12\u2028 p=1", 12, 1),
+        Arguments.of("12 p=1\u0085", 12, 1),
+        Arguments.of("12 p=\r p=3", 12, 3));
+  }
+
+  @ParameterizedTest
+  @MethodSource("metadataWithLineTerminator")
+  void testParseTextAndParagraphWithLineTerminator(String meta, int text, int paragraph) {
     Assertions.assertArrayEquals(new int[] {text, paragraph},
         ADMetadata.parseTextAndParagraph(meta));
   }
@@ -103,14 +119,24 @@ public class ADMetadataTest {
       // the first source attribute counts, up to the next double quote
       "source=\"a\"source=\"b\"|a",
       "source=\"source=\"x\"|source=",
-      "source=\" a \" |' a '",
-      // a line terminator is an ordinary character
-      "source=\"a\nb\"|'a\nb'",
-      "source=\"a\"\n|a",
-      "source=\"a\"\u2028|a",
-      "\u0085source=\"a\"|a"
+      "source=\" a \" |' a '"
   })
   void testSource(String meta, String source) {
+    Assertions.assertEquals(source, ADMetadata.source(meta));
+  }
+
+  private static Stream<Arguments> sourceWithLineTerminator() {
+    // a line terminator is an ordinary character
+    return Stream.of(
+        Arguments.of("source=\"a\nb\"", "a\nb"),
+        Arguments.of("source=\"a\"\n", "a"),
+        Arguments.of("source=\"a\"\u2028", "a"),
+        Arguments.of("\u0085source=\"a\"", "a"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("sourceWithLineTerminator")
+  void testSourceWithLineTerminator(String meta, String source) {
     Assertions.assertEquals(source, ADMetadata.source(meta));
   }
 

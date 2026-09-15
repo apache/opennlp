@@ -361,7 +361,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     /**
      * Parses a leaf line: the level prefix, a syntactic tag, a colon, a functional tag, and in
      * parentheses a quoted lemma, secondary tags in angle brackets, and a morphological tag,
-     * then ASCII whitespace and the lexeme.
+     * then whitespace and the lexeme.
      *
      * @param line The line.
      * @return The leaf, or {@code null} if the line is not a leaf line.
@@ -393,9 +393,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return null;
       }
       int lemmaStart = tagEnd + 2;
-      // the longest lemma after which the rest of the line still parses wins
-      for (int lemmaEnd = StringUtil.indexOfLineTerminator(line, lemmaStart) - 1; lemmaEnd > lemmaStart;
-           lemmaEnd--) {
+      // the longest lemma after which the rest of the line still parses is used
+      for (int lemmaEnd = line.length() - 1; lemmaEnd > lemmaStart; lemmaEnd--) {
         if (!isQuote(line.charAt(lemmaEnd))) {
           continue;
         }
@@ -417,9 +416,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Parses a leaf line whose tag has an equals sign in place of the colon: the level prefix,
+     * Parses a leaf line with an equals sign in place of the colon in its tag: the level prefix,
      * the tag, and in parentheses an optional quoted lemma and an optional morphological tag,
-     * then ASCII whitespace and the lexeme.
+     * then whitespace and the lexeme.
      *
      * @param line The line.
      * @return The leaf, or {@code null} if the line does not have that form.
@@ -452,8 +451,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       String lemma = null;
       int[] rest = null;
       if (open < line.length() && isQuote(line.charAt(open))) {
-        for (int lemmaEnd = StringUtil.indexOfLineTerminator(line, open + 1) - 1;
-             lemmaEnd > open + 1 && rest == null; lemmaEnd--) {
+        for (int lemmaEnd = line.length() - 1; lemmaEnd > open + 1 && rest == null; lemmaEnd--) {
           if (isQuote(line.charAt(lemmaEnd))) {
             rest = scanMorphologyAndLexeme(line, lemmaEnd + 1);
             if (rest != null) {
@@ -481,8 +479,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * Scans the level prefix and the tag at the start of a line. The prefix is the run of equals
      * signs and hyphens, the tag one or more characters other than a colon or an equals sign,
      * the separator, and one or more characters that are neither an opening parenthesis nor
-     * ASCII whitespace. A longer prefix is preferred; hyphens at its end may move into the tag,
-     * so the callers try the next shorter prefix when the rest of the line does not parse.
+     * whitespace. A longer prefix is preferred; hyphens at its end may move into the tag, so
+     * the callers try the next shorter prefix when the rest of the line does not parse.
      *
      * @param line The line.
      * @param separator The character between the two parts of the tag.
@@ -509,7 +507,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
 
     /**
      * Scans a tag: one or more characters other than a colon or an equals sign, the separator,
-     * and one or more characters that are neither an opening parenthesis nor ASCII whitespace.
+     * and one or more characters that are neither an opening parenthesis nor whitespace.
      *
      * @param line The line.
      * @param from The index where the tag starts.
@@ -552,16 +550,16 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Tests for tag groups up to the end of the line: after optional ASCII whitespace either
-     * nothing, or an opening parenthesis and angle bracket, one or more characters other than a
-     * line terminator, a closing angle bracket and parenthesis, and optional ASCII whitespace.
+     * Tests for tag groups up to the end of the line: after optional whitespace either no more
+     * text, or an opening parenthesis and angle bracket, one or more characters, a closing angle
+     * bracket and parenthesis, and optional whitespace.
      *
      * @param line The line.
      * @param from The index where the tag groups start.
      * @return {@code true} if the rest of the line has that form.
      */
     private boolean isTagGroupRun(String line, int from) {
-      int start = skipAsciiWhitespace(line, from);
+      int start = skipWhitespace(line, from);
       int end = line.length();
       while (end > start && StringUtil.isWhitespace(line.charAt(end - 1))) {
         end--;
@@ -572,14 +570,13 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       int contentStart = start + TAG_GROUP_OPEN.length();
       int contentEnd = end - TAG_GROUP_CLOSE.length();
       return contentEnd > contentStart && line.startsWith(TAG_GROUP_OPEN, start)
-          && line.startsWith(TAG_GROUP_CLOSE, contentEnd)
-          && StringUtil.indexOfLineTerminator(line, contentStart) >= contentEnd;
+          && line.startsWith(TAG_GROUP_CLOSE, contentEnd);
     }
 
     /**
-     * Scans the rest of a leaf line after the lemma: optional ASCII whitespace, secondary tags,
-     * optional ASCII whitespace, an optional morphological tag, the closing parenthesis, ASCII
-     * whitespace, and the lexeme.
+     * Scans the rest of a leaf line after the lemma: optional whitespace, secondary tags,
+     * optional whitespace, an optional morphological tag, the closing parenthesis, whitespace,
+     * and the lexeme.
      *
      * @param line The line.
      * @param from The index after the lemma.
@@ -589,16 +586,15 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      *         the rest of the line does not have that form.
      */
     private int[] scanLeafRest(String line, int from, boolean[] noRestAt) {
-      int tagsStart = skipAsciiWhitespace(line, from);
+      int tagsStart = skipWhitespace(line, from);
       int[] rest = scanSecondaryTags(line, tagsStart, noRestAt);
       return rest == null ? null : new int[] {tagsStart, rest[0], rest[1], rest[2], rest[3]};
     }
 
     /**
      * Scans secondary tags and the rest of a leaf line after them. Each tag is an opening angle
-     * bracket, one or more characters other than a line terminator, and a closing angle
-     * bracket; a longer tag, and then one more tag, is preferred when the rest of the line still
-     * parses after it.
+     * bracket, one or more characters, and a closing angle bracket; a longer tag, and then one
+     * more tag, is preferred when the rest of the line still parses after it.
      *
      * @param line The line.
      * @param from The index where the next secondary tag would start.
@@ -612,7 +608,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return null;
       }
       if (from < line.length() && line.charAt(from) == '<') {
-        for (int close = StringUtil.indexOfLineTerminator(line, from + 1) - 1; close > from + 1; close--) {
+        for (int close = line.length() - 1; close > from + 1; close--) {
           if (line.charAt(close) == '>') {
             int[] rest = scanSecondaryTags(line, close + 1, noRestAt);
             if (rest != null) {
@@ -630,8 +626,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Scans the end of a leaf line: optional ASCII whitespace, an optional morphological tag up
-     * to the first closing parenthesis, that parenthesis, ASCII whitespace, and the lexeme.
+     * Scans the end of a leaf line: optional whitespace, an optional morphological tag up to the
+     * first closing parenthesis, that parenthesis, whitespace, and the lexeme.
      *
      * @param line The line.
      * @param from The index after the secondary tags.
@@ -639,7 +635,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      *         start of the lexeme, or {@code null} if the end of the line does not have that form.
      */
     private int[] scanMorphologyAndLexeme(String line, int from) {
-      int morphologyStart = skipAsciiWhitespace(line, from);
+      int morphologyStart = skipWhitespace(line, from);
       int close = line.indexOf(')', morphologyStart);
       if (close == -1) {
         return null;
@@ -649,41 +645,35 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Finds the lexeme after the closing parenthesis: ASCII whitespace, then one or more
-     * characters other than a line terminator up to the end of the line. When only whitespace
-     * follows the parenthesis, the last character is the lexeme.
+     * Finds the lexeme after the closing parenthesis: whitespace, then the rest of the line. A
+     * line with no text or only whitespace after the parenthesis has no lexeme.
      *
      * @param line The line.
      * @param close The index of the closing parenthesis.
      * @return The start of the lexeme, or -1 if there is none.
      */
     private int scanLexemeStart(String line, int close) {
-      int lexemeStart = skipAsciiWhitespace(line, close + 1);
-      if (lexemeStart == close + 1) {
-        return -1;
-      }
-      if (lexemeStart == line.length()) {
-        lexemeStart--;
-        return lexemeStart > close + 1 && !StringUtil.isLineTerminator(line.charAt(lexemeStart))
-            ? lexemeStart : -1;
-      }
-      return StringUtil.indexOfLineTerminator(line, lexemeStart) == line.length() ? lexemeStart : -1;
+      int lexemeStart = skipWhitespace(line, close + 1);
+      return lexemeStart == close + 1 || lexemeStart == line.length() ? -1 : lexemeStart;
     }
 
     /**
-     * Tests whether a lexeme starts with an ASCII letter, digit, or underscore and has a period
-     * or an angle bracket after it, with no line terminator anywhere.
+     * Tests whether a lexeme starts with a letter, a digit, or an underscore and has a period
+     * or an angle bracket after it. Letters and digits are checked by code point, so a word of
+     * any script counts.
      *
      * @param lexeme The lexeme.
      * @return {@code true} for such a lexeme.
      */
     private boolean isWordWithMarkup(String lexeme) {
-      if (lexeme.isEmpty() || !(StringUtil.isAsciiLetter(lexeme.charAt(0))
-          || StringUtil.isAsciiDigit(lexeme.charAt(0)) || lexeme.charAt(0) == '_')
-          || StringUtil.indexOfLineTerminator(lexeme, 0) < lexeme.length()) {
+      if (lexeme.isEmpty()) {
         return false;
       }
-      for (int i = 1; i < lexeme.length(); i++) {
+      int first = lexeme.codePointAt(0);
+      if (!(Character.isLetterOrDigit(first) || first == '_')) {
+        return false;
+      }
+      for (int i = Character.charCount(first); i < lexeme.length(); i++) {
         char c = lexeme.charAt(i);
         if (c == '.' || c == '<' || c == '>') {
           return true;
@@ -693,14 +683,14 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Skips ASCII whitespace.
+     * Skips whitespace as {@link StringUtil#isWhitespace(char)} defines it.
      *
      * @param line The line.
      * @param from The index to start at.
-     * @return The index of the first character at or after {@code from} that is not ASCII
+     * @return The index of the first character at or after {@code from} that is not
      *         whitespace, or the length of the line.
      */
-    private int skipAsciiWhitespace(String line, int from) {
+    private int skipWhitespace(String line, int from) {
       int i = from;
       while (i < line.length() && StringUtil.isWhitespace(line.charAt(i))) {
         i++;
@@ -718,7 +708,6 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       return c == '"' || c == '\'';
     }
 
-    /**
     /** Represents a tree element, Node or Leaf */
     public abstract static class TreeElement {
 
@@ -930,8 +919,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
 
   /**
    * Tests whether a line is an opening markup tag with the given name: the name right after the
-   * opening angle bracket, then any characters other than a closing angle bracket, then the
-   * closing angle bracket as the last character.
+   * opening angle bracket, then either the closing angle bracket or whitespace and attributes,
+   * which contain no closing angle bracket, then the closing angle bracket as the last character.
    *
    * @param line The line.
    * @param name The tag name.
@@ -939,15 +928,19 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    */
   static boolean isOpeningTag(String line, String name) {
     int last = line.length() - 1;
-    if (last <= name.length() || line.charAt(0) != '<' || !line.startsWith(name, 1)
+    int afterName = name.length() + 1;
+    if (last < afterName || line.charAt(0) != '<' || !line.startsWith(name, 1)
         || line.charAt(last) != '>') {
       return false;
     }
-    return line.indexOf('>', name.length() + 1) == last;
+    if (afterName < last && !StringUtil.isWhitespace(line.charAt(afterName))) {
+      return false;
+    }
+    return line.indexOf('>', afterName) == last;
   }
 
   /**
-   * Tests whether a line is the closing markup tag with the given name and nothing else.
+   * Tests whether a line is exactly the closing markup tag with the given name.
    *
    * @param line The line.
    * @param name The tag name.

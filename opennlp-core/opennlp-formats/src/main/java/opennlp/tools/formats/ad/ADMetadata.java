@@ -21,8 +21,7 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * Reads the ids from the metadata of an Arvores Deitadas sentence, which differs between
- * corpora. The metadata is one line; every method treats metadata with a line terminator as
- * invalid.
+ * corpora.
  */
 final class ADMetadata {
 
@@ -80,9 +79,6 @@ final class ADMetadata {
    * @return The source, or {@code null} if the metadata has none.
    */
   static String source(String meta) {
-    if (hasLineTerminator(meta)) {
-      return null;
-    }
     int start = meta.indexOf(SOURCE_PREFIX);
     if (start == -1) {
       return null;
@@ -105,10 +101,8 @@ final class ADMetadata {
       i++;
     }
     int textStart = i;
-    while (i < meta.length() && StringUtil.isAsciiDigit(meta.charAt(i))) {
-      i++;
-    }
-    if (i == textStart || hasLineTerminator(meta)) {
+    i = StringUtil.endOfAsciiDigits(meta, i);
+    if (i == textStart) {
       return null;
     }
     int textEnd = i;
@@ -119,25 +113,12 @@ final class ADMetadata {
         return null;
       }
       int paragraphStart = prefix + PARAGRAPH_PREFIX.length();
-      int paragraphEnd = paragraphStart;
-      while (paragraphEnd < meta.length() && StringUtil.isAsciiDigit(meta.charAt(paragraphEnd))) {
-        paragraphEnd++;
-      }
+      int paragraphEnd = StringUtil.endOfAsciiDigits(meta, paragraphStart);
       if (paragraphEnd > paragraphStart) {
         return new int[] {textStart, textEnd, paragraphStart, paragraphEnd};
       }
       from = prefix + 1;
     }
-  }
-
-  /**
-   * Tests whether the metadata contains a line terminator.
-   *
-   * @param meta The metadata.
-   * @return {@code true} if it does.
-   */
-  private static boolean hasLineTerminator(String meta) {
-    return StringUtil.indexOfLineTerminator(meta, 0) < meta.length();
   }
 
 }
