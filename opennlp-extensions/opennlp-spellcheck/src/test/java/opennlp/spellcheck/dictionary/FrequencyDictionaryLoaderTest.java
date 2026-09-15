@@ -142,12 +142,14 @@ public class FrequencyDictionaryLoaderTest {
         Arguments.of("the", "expected 'word<sep>count'"),
         Arguments.of("the\u00A0100", "expected 'word<sep>count'"),
         Arguments.of("the\t-5", "count must not be negative"),
-        Arguments.of("the\t5\u00A0", "count is not an integer"),
-        Arguments.of("the\t5.0", "count is not an integer"),
-        Arguments.of("the\t1e3", "count is not an integer"),
-        Arguments.of("the\t99999999999999999999", "count is not an integer"),
-        Arguments.of("the\t-", "count is not an integer"),
-        Arguments.of(" # note", "count is not an integer"));
+        Arguments.of("the\t5\u00A0", "count must be ASCII digits with an optional sign"),
+        Arguments.of("the\t5.0", "count must be ASCII digits with an optional sign"),
+        Arguments.of("the\t1e3", "count must be ASCII digits with an optional sign"),
+        Arguments.of("the\t99999999999999999999", "count is out of range"),
+        Arguments.of("the\t-", "count must be ASCII digits with an optional sign"),
+        Arguments.of("the\t+", "count must be ASCII digits with an optional sign"),
+        Arguments.of("the\t+-5", "count must be ASCII digits with an optional sign"),
+        Arguments.of(" # note", "count must be ASCII digits with an optional sign"));
   }
 
   @ParameterizedTest
@@ -171,7 +173,7 @@ public class FrequencyDictionaryLoaderTest {
         MalformedDictionaryLineException.class,
         () -> loader.parseUnigrams(stringResource("the\t" + count + "\n"), new LinkedHashMap<>()));
     Assertions.assertEquals(1, ex.getLineNumber());
-    Assertions.assertTrue(ex.getMessage().contains("(count "), ex.getMessage());
+    Assertions.assertTrue(ex.getMessage().contains("(count must be ASCII digits"), ex.getMessage());
   }
 
   @Test

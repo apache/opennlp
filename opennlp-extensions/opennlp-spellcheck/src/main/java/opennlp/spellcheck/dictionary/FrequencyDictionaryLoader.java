@@ -70,6 +70,10 @@ public final class FrequencyDictionaryLoader {
   /** The first character of a comment line. */
   private static final char COMMENT_MARKER = '#';
 
+  private static final String COUNT_NOT_DIGITS = "count must be ASCII digits with an optional sign";
+  private static final String COUNT_NEGATIVE = "count must not be negative";
+  private static final String COUNT_OUT_OF_RANGE = "count is out of range";
+
   private final Charset charset;
 
   /** Creates a loader using the {@linkplain #DEFAULT_CHARSET default UTF-8} charset. */
@@ -252,17 +256,36 @@ public final class FrequencyDictionaryLoader {
     return line.charAt(0) == COMMENT_MARKER;
   }
 
+  /**
+   * Parses the count column: one or more ASCII digits, {@code 0} to {@code 9}, after an
+   * optional {@code +} or {@code -}. Digits of other scripts, a decimal point, and an
+   * exponent are malformed.
+   *
+   * @param raw The column text. Must not be {@code null}.
+   * @param lineNo The 1-based line number, for the error message.
+   * @param line The whole line, for the error message.
+   * @return The count, zero or more.
+   * @throws MalformedDictionaryLineException Thrown if the column is not such a number, is
+   *         negative, or does not fit in a {@code long}.
+   */
   private static long parseCount(String raw, long lineNo, String line) throws IOException {
     final String trimmed = raw.trim();
-    try {
-      final long count = Long.parseLong(trimmed);
-      if (count < 0) {
-        throw new MalformedDictionaryLineException(lineNo, line, "count must not be negative");
-      }
-      return count;
-    } catch (NumberFormatException e) {
-      throw new MalformedDictionaryLineException(lineNo, line, "count is not an integer");
+    final int digitsStart = !trimmed.isEmpty() && (trimmed.charAt(0) == '+' || trimmed.charAt(0) == '-')
+        ? 1 : 0;
+    if (digitsStart == trimmed.length()
+        || StringUtil.endOfAsciiDigits(trimmed, digitsStart) != trimmed.length()) {
+      throw new MalformedDictionaryLineException(lineNo, line, COUNT_NOT_DIGITS);
     }
+    final long count;
+    try {
+      count = Long.parseLong(trimmed);
+    } catch (NumberFormatException e) {
+      throw new MalformedDictionaryLineException(lineNo, line, COUNT_OUT_OF_RANGE);
+    }
+    if (count < 0) {
+      throw new MalformedDictionaryLineException(lineNo, line, COUNT_NEGATIVE);
+    }
+    return count;
   }
 
   private static long saturatedAdd(long a, long b) {

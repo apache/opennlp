@@ -43,9 +43,9 @@ public class SimpleEventStreamBuilder {
    *
    * @param event The event text. Must not be {@code null}.
    * @return This builder.
-   * @throws RuntimeException If the outcome or the contexts are missing, or if the first
+   * @throws RuntimeException If the outcome or the contexts are missing, if the first
    *         context has a value and another one is not written as {@code name;value} with
-   *         both parts present and no further {@code ;}.
+   *         both parts present and no further {@code ;}, or if a value is negative.
    * @throws NumberFormatException If a value is not a number.
    */
   public SimpleEventStreamBuilder add(String event) {
@@ -72,6 +72,9 @@ public class SimpleEventStreamBuilder {
         }
         context[i] = pair.substring(0, separator);
         values[i] = Float.parseFloat(pair.substring(separator + 1));
+        if (values[i] < 0) {
+          throw new RuntimeException("Negative values are not allowed: " + pair);
+        }
       }
       eventList.add(new Event(outcome, context, values));
     } else {

@@ -312,7 +312,9 @@ for (SuggestItem item : suggestions) {
 		</para>
 		<para>
 			The <emphasis>unigram</emphasis> dictionary lists one <code>word&lt;TAB&gt;count</code> per line,
-			where <code>count</code> is the term's corpus frequency:
+			where <code>count</code> is the term's corpus frequency, written in ASCII digits with an
+			optional sign. A count in the digits of another script, a decimal point, an exponent, or a
+			negative count is reported as malformed:
 			<screen>
 <![CDATA[the	23135851162
 of	13151942776
