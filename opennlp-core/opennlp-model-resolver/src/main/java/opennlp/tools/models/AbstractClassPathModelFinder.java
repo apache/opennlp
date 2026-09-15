@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * A base implementation of a {@link ClassPathModelFinder} for the detection of
@@ -46,6 +47,10 @@ import java.util.jar.JarFile;
 public abstract class AbstractClassPathModelFinder implements ClassPathModelFinder {
 
   protected static final String JAR = "jar";
+
+  private static final String WILDCARD_MUST_NOT_BE_NULL = "wildcard must not be null";
+  private static final String URL_MUST_NOT_BE_NULL = "url must not be null";
+  private static final String PATTERN_MUST_NOT_BE_NULL = "pattern must not be null";
 
   private final String jarModelPrefix;
   private Set<ClassPathModelEntry> models;
@@ -145,7 +150,45 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
    * @return {@code true} if the file part matches, {@code false} otherwise.
    */
   protected boolean matchesWildcard(URL url, String wildcard) {
+    Objects.requireNonNull(url, URL_MUST_NOT_BE_NULL);
+    Objects.requireNonNull(wildcard, WILDCARD_MUST_NOT_BE_NULL);
     return GlobMatcher.matches(wildcard, url.getFile());
+  }
+
+  /**
+   * Returns {@code wildcard} unchanged for subclasses compiled against the previous
+   * implementation. It no longer translates the glob into a regular expression because
+   * matching now runs through {@link GlobMatcher}. Use {@link #matchesWildcard(URL, String)}
+   * instead.
+   *
+   * @param wildcard The wildcard expression. Must not be {@code null}.
+   * @return The given {@code wildcard} unchanged.
+   * @deprecated Kept for linkage compatibility only. It returns no regular expression.
+   */
+  @Deprecated
+  protected String asRegex(String wildcard) {
+    Objects.requireNonNull(wildcard, WILDCARD_MUST_NOT_BE_NULL);
+    return wildcard;
+  }
+
+  /**
+   * Tests whether the file part of {@code url} matches the string held by {@code pattern},
+   * read with {@link Pattern#pattern()} as a wildcard glob through {@link GlobMatcher}.
+   * The held string is not evaluated as a regular expression, so values produced by the
+   * previous translation no longer apply. Compile glob holders with
+   * {@link Pattern#LITERAL} and use {@link #matchesWildcard(URL, String)} instead.
+   *
+   * @param url The {@link URL} whose {@link URL#getFile() file part} is tested.
+   *            Must not be {@code null}.
+   * @param pattern The holder of the wildcard expression. Must not be {@code null}.
+   * @return {@code true} if the file part matches, {@code false} otherwise.
+   * @deprecated Kept for linkage compatibility only. It matches with glob semantics.
+   */
+  @Deprecated
+  protected boolean matchesPattern(URL url, Pattern pattern) {
+    Objects.requireNonNull(url, URL_MUST_NOT_BE_NULL);
+    Objects.requireNonNull(pattern, PATTERN_MUST_NOT_BE_NULL);
+    return GlobMatcher.matches(pattern.pattern(), url.getFile());
   }
 
   /**

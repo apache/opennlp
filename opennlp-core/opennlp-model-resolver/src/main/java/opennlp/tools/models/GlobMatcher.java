@@ -16,6 +16,8 @@
  */
 package opennlp.tools.models;
 
+import java.util.Objects;
+
 /**
  * Matches file names against the wildcard globs accepted by {@link ClassPathModelFinder}
  * implementations. A {@code *} matches any run of characters, including none, a {@code ?}
@@ -41,6 +43,8 @@ final class GlobMatcher {
    *     {@code false} otherwise.
    */
   static boolean matches(String glob, String input) {
+    Objects.requireNonNull(glob, "glob must not be null");
+    Objects.requireNonNull(input, "input must not be null");
     final int[] g = glob.codePoints().toArray();
     final int[] in = input.codePoints().toArray();
     int gi = 0;
