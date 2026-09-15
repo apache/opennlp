@@ -21,8 +21,8 @@ import java.io.IOException;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Class for real-valued {@link Event events} as an
@@ -61,7 +61,8 @@ public class RealBasicEventStream implements ObjectStream<Event> {
       return null;
     else {
       String outcome = obs.substring(0, si);
-      String[] contexts = StringUtil.splitOnAsciiWhitespace(obs.substring(si + 1));
+      // Whitespace runs delimit contexts; empty fields are dropped, never kept as predicates.
+      String[] contexts = WhitespaceTokenizer.INSTANCE.tokenize(obs.substring(si + 1));
       float[] values = RealValueFileEventStream.parseContexts(contexts);
       return new Event(outcome,contexts,values);
     }
