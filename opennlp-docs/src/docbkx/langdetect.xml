@@ -53,7 +53,9 @@ under the License.
 								but also other supplementary characters such as CJK Extension B
 								ideographs. Since 3.0.0 hyphens and Basic Multilingual Plane characters
 								are kept; models trained with an earlier release were built with them
-								blanked. Deprecated; use EmojiToEmoticonCharSequenceNormalizer to keep
+								blanked and get that output again under
+								<code>-Dopennlp.compat.mode=LEGACY</code> until they are retrained.
+								Deprecated; use EmojiToEmoticonCharSequenceNormalizer to keep
 								emoji as signal.</entry>
 						</row>
 						<row>

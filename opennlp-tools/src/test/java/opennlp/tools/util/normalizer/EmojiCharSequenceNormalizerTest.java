@@ -18,8 +18,12 @@
 package opennlp.tools.util.normalizer;
 
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,14 +31,25 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.CompatibilityMode;
+
 @SuppressWarnings("deprecation")
 public class EmojiCharSequenceNormalizerTest {
 
   private static final EmojiCharSequenceNormalizer NORMALIZER =
       EmojiCharSequenceNormalizer.getInstance();
 
+  /** The pattern of the 1.x/2.x releases: U+D83C to U+10FC00 and the hyphen, in runs. */
+  private static final Pattern LEGACY_PATTERN =
+      Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
+
   private static String cp(int... codePoints) {
     return new String(codePoints, 0, codePoints.length);
+  }
+
+  @AfterEach
+  void resetCompatibilityMode() {
+    CompatibilityMode.reset();
   }
 
   @Test
@@ -160,5 +175,63 @@ public class EmojiCharSequenceNormalizerTest {
     String text = "a" + cp(0x1F600, 0x1F601) + "b" + cp(0x10412) + "c";
     CharSequence once = NORMALIZER.normalize(text);
     Assertions.assertEquals(once.toString(), NORMALIZER.normalize(once).toString());
+  }
+
+  private static Stream<Arguments> legacyRuns() {
+    return Stream.of(
+        Arguments.of("a-b", "a b"),
+        Arguments.of("well-known", "well known"),
+        Arguments.of("--", " "),
+        Arguments.of("-", " "),
+        Arguments.of("a-" + cp(0x1F600) + "b", "a b"),
+        // BMP characters from U+D83C on, an unpaired surrogate in that range, and plane 16
+        // private use up to U+10FC00 are replaced; U+10FC01 and above are kept
+        Arguments.of("a\uFF21b", "a b"),
+        Arguments.of("a\uD83Cb", "a b"),
+        Arguments.of("a\uD800b", "a\uD800b"),
+        Arguments.of("a" + cp(0x10FC00) + "b", "a b"),
+        Arguments.of("a" + cp(0x10FC01) + "b", "a" + cp(0x10FC01) + "b"),
+        Arguments.of("a" + cp(0x10FFFF) + "b", "a" + cp(0x10FFFF) + "b"),
+        Arguments.of("plain text", "plain text"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyRuns")
+  void normalizeUnderLegacyModeGivesTheOldOutput(String text, String expected) {
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+    Assertions.assertEquals(expected, NORMALIZER.normalize(text));
+  }
+
+  /** Under the legacy mode the output equals the old pattern's on all code points. */
+  @Test
+  void normalizeUnderLegacyModeMatchesTheOldPatternOnEveryCodePoint() {
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+    List<String> differing = new ArrayList<>();
+    for (int codePoint = Character.MIN_CODE_POINT; codePoint <= Character.MAX_CODE_POINT;
+         codePoint++) {
+      String text = "a" + new String(Character.toChars(codePoint)) + "b";
+      if (!LEGACY_PATTERN.matcher(text).replaceAll(" ").contentEquals(NORMALIZER.normalize(text))) {
+        differing.add(String.format("U+%04X", codePoint));
+      }
+    }
+    Assertions.assertEquals(List.of(), differing);
+  }
+
+  @Test
+  void normalizeUnderLegacyModeCollapsesMixedRuns() {
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+    String text = "x-" + cp(0x1F600) + "\uD83C-" + cp(0x10FC00) + "y";
+    Assertions.assertEquals(LEGACY_PATTERN.matcher(text).replaceAll(" "),
+        NORMALIZER.normalize(text));
+    Assertions.assertEquals("x y", NORMALIZER.normalize(text));
+  }
+
+  @Test
+  void normalizeFollowsTheModeAtCallTime() {
+    Assertions.assertEquals("a-b", NORMALIZER.normalize("a-b"));
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+    Assertions.assertEquals("a b", NORMALIZER.normalize("a-b"));
+    CompatibilityMode.setActive(CompatibilityMode.CURRENT);
+    Assertions.assertEquals("a-b", NORMALIZER.normalize("a-b"));
   }
 }

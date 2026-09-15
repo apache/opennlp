@@ -402,6 +402,27 @@ Arguments description:
                 use the same value. Legacy support is scheduled for removal in 4.0.
             </para>
         </section>
+        <section xml:id="intro.compatibility.mode">
+            <title>Compatibility mode for corrected output</title>
+            <para>
+                A few classes corrected their output in 3.0.0, and a model trained with an
+                earlier release may depend on the old output until it is retrained. Each such
+                class documents what differs; the <code>EmojiCharSequenceNormalizer</code> of
+                the default language detector chain is one of them. The old output can be
+                selected process-wide with the following system property:
+                <screen>
+<![CDATA[-Dopennlp.compat.mode=LEGACY]]>
+                </screen>
+            </para>
+            <para>
+                Accepted values are <code>LEGACY</code> and <code>CURRENT</code> (the default),
+                case-insensitive; any other value throws an
+                <code>IllegalArgumentException</code>. The setting is independent of
+                <code>opennlp.whitespace.mode</code>, applies process-wide, so training and
+                decoding of a given model must use the same value, and is scheduled for
+                removal in 4.0.
+            </para>
+        </section>
     </section>
 
 </chapter>
