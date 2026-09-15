@@ -71,4 +71,10 @@ public class BasicContextGeneratorTest {
   void testNullSeparatorIsRejected() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> new BasicContextGenerator(null));
   }
+
+  @Test
+  void testNullInputIsRejected() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new BasicContextGenerator(",").getContext(null));
+  }
 }
