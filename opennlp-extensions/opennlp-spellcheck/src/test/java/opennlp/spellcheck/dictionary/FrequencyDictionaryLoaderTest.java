@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -35,11 +34,9 @@ import opennlp.tools.util.InputStreamFactory;
 
 public class FrequencyDictionaryLoaderTest {
 
-  private static final Pattern FORMER_COLUMN_SEPARATOR = Pattern.compile("[\\t ]+");
-
   private static Stream<Arguments> columnSplits() {
     return Stream.of(
-        Arguments.of("", new String[] {""}),
+        Arguments.of("", new String[0]),
         Arguments.of(" ", new String[0]),
         Arguments.of("\t", new String[0]),
         Arguments.of(" \t \t", new String[0]),
@@ -47,9 +44,12 @@ public class FrequencyDictionaryLoaderTest {
         Arguments.of("a b", new String[] {"a", "b"}),
         Arguments.of("a\tb", new String[] {"a", "b"}),
         Arguments.of("a \t  \t b", new String[] {"a", "b"}),
-        Arguments.of(" a", new String[] {"", "a"}),
-        Arguments.of("\t\ta b", new String[] {"", "a", "b"}),
+        // leading, trailing, and repeated separators make no empty column
+        Arguments.of(" a", new String[] {"a"}),
+        Arguments.of("\t\ta b", new String[] {"a", "b"}),
         Arguments.of("a b \t", new String[] {"a", "b"}),
+        Arguments.of(" a  b ", new String[] {"a", "b"}),
+        // other whitespace is part of a column
         Arguments.of("ab", new String[] {"ab"}),
         Arguments.of("a\fb\rc\nd", new String[] {"a\fb\rc\nd"}),
         Arguments.of("a\u00A0b 5", new String[] {"a\u00A0b", "5"}),
@@ -62,8 +62,6 @@ public class FrequencyDictionaryLoaderTest {
   @MethodSource("columnSplits")
   void testSplitColumnsOnTabAndSpaceRuns(String line, String[] expected) {
     Assertions.assertArrayEquals(expected, FrequencyDictionaryLoader.splitColumns(line));
-    Assertions.assertArrayEquals(FORMER_COLUMN_SEPARATOR.split(line),
-        FrequencyDictionaryLoader.splitColumns(line));
   }
 
   @Test
@@ -87,6 +85,14 @@ public class FrequencyDictionaryLoaderTest {
     Assertions.assertEquals(2, read);
     Assertions.assertEquals(3L, into.get("the world"));
     Assertions.assertEquals(4L, into.get("hello there"));
+  }
+
+  @Test
+  void testUnigramLineWithLeadingSeparatorsIsRead() throws IOException {
+    final String text = "\t the\t100\n";
+    final Map<String, Long> into = new LinkedHashMap<>();
+    Assertions.assertEquals(1, new FrequencyDictionaryLoader().parseUnigrams(stringResource(text), into));
+    Assertions.assertEquals(100L, into.get("the"));
   }
 
   @Test

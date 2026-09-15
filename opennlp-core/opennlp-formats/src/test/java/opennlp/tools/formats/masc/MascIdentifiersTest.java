@@ -17,37 +17,62 @@
 
 package opennlp.tools.formats.masc;
 
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class MascIdentifiersTest {
 
-  private static Stream<Arguments> removals() {
-    return Stream.of(
-        Arguments.of("ne-n7", MascIdentifiers.NAMED_ENTITY_ID_PREFIX, "7"),
-        Arguments.of("penn-n12", MascIdentifiers.PENN_TOKEN_ID_PREFIX, "12"),
-        Arguments.of("seg-r0", MascIdentifiers.REGION_ID_PREFIX, "0"),
-        Arguments.of("xne-n7", MascIdentifiers.NAMED_ENTITY_ID_PREFIX, "x7"),
-        Arguments.of("ne-nne-n7", MascIdentifiers.NAMED_ENTITY_ID_PREFIX, "ne-n7"),
-        Arguments.of("penn-n7penn-n", MascIdentifiers.PENN_TOKEN_ID_PREFIX, "7penn-n"),
-        Arguments.of("seg-r", MascIdentifiers.REGION_ID_PREFIX, ""),
-        Arguments.of("7", MascIdentifiers.NAMED_ENTITY_ID_PREFIX, "7"),
-        Arguments.of("", MascIdentifiers.NAMED_ENTITY_ID_PREFIX, ""),
-        Arguments.of("NE-N7", MascIdentifiers.NAMED_ENTITY_ID_PREFIX, "NE-N7"),
-        Arguments.of("ne\u2011n7", MascIdentifiers.NAMED_ENTITY_ID_PREFIX, "ne\u2011n7"),
-        Arguments.of("\uD83D\uDE00ne-n1\uD83D\uDE00", MascIdentifiers.NAMED_ENTITY_ID_PREFIX,
-            "\uD83D\uDE001\uD83D\uDE00"),
-        Arguments.of("abc", "", "abc"));
+  @ParameterizedTest
+  @CsvSource({"ne-n7, ne-n, 7", "penn-n12, penn-n, 12", "seg-r0, seg-r, 0",
+      "penn-n007, penn-n, 7", "ne-n2147483647, ne-n, 2147483647"})
+  void testParseIdReadsTheNumberAfterThePrefix(String id, String prefix, int expected) {
+    Assertions.assertEquals(expected, MascIdentifiers.parseId(id, prefix));
   }
 
   @ParameterizedTest
-  @MethodSource("removals")
-  void testRemoveFirstRemovesOnlyTheFirstOccurrence(String input, String literal, String expected) {
-    Assertions.assertEquals(expected, MascIdentifiers.removeFirst(input, literal));
-    Assertions.assertEquals(input.replaceFirst(literal, ""), MascIdentifiers.removeFirst(input, literal));
+  // other or missing prefix, prefix later in the text, doubled prefix, no digits, sign,
+  // digits of another script, trailing text, whitespace, and an overflowing number
+  @ValueSource(strings = {"7", "xne-n7", "NE-N7", "ne\u2011n7", "ne-nne-n7", "ne-n", "ne-n-7",
+      "ne-n+7", "ne-n\u0661", "ne-n\uFF17", "ne-n7x", "ne-n7 ", " ne-n7", "ne-n7\n",
+      "ne-n99999999999", ""})
+  void testParseIdRejectsAnythingElse(String id) {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MascIdentifiers.parseId(id, MascIdentifiers.NAMED_ENTITY_ID_PREFIX));
+  }
+
+  @Test
+  void testParseIdRejectsNull() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MascIdentifiers.parseId(null, MascIdentifiers.NAMED_ENTITY_ID_PREFIX));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"seg-r1 seg-r2", "seg-r1\tseg-r2", "  seg-r1   seg-r2  ",
+      "seg-r1\u00A0seg-r2", "seg-r1\u3000seg-r2", "seg-r1\r\nseg-r2"})
+  void testParseIdsSplitsOnWhitespaceRuns(String ids) {
+    Assertions.assertArrayEquals(new int[] {1, 2},
+        MascIdentifiers.parseIds(ids, MascIdentifiers.REGION_ID_PREFIX));
+  }
+
+  @Test
+  void testParseIdsReadsASingleIdentifier() {
+    Assertions.assertArrayEquals(new int[] {5},
+        MascIdentifiers.parseIds("seg-r5", MascIdentifiers.REGION_ID_PREFIX));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", " ", "\t", "seg-r1 penn-n2", "seg-r1 seg-r", "seg-r1,seg-r2"})
+  void testParseIdsRejectsEmptyOrMalformedLists(String ids) {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MascIdentifiers.parseIds(ids, MascIdentifiers.REGION_ID_PREFIX));
+  }
+
+  @Test
+  void testParseIdsRejectsNull() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MascIdentifiers.parseIds(null, MascIdentifiers.REGION_ID_PREFIX));
   }
 }

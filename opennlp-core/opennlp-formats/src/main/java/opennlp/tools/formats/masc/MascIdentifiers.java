@@ -17,10 +17,13 @@
 
 package opennlp.tools.formats.masc;
 
+import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.StringUtil;
+
 /**
  * Shared handling of the identifier attributes in MASC annotation files. Node, region,
- * and named entity identifiers carry a fixed text prefix followed by a number; the parsers
- * remove the prefix before parsing the number.
+ * and named entity identifiers are a fixed text prefix followed by a number, as in
+ * {@code penn-n7}; the parsers read the number and require the prefix.
  */
 final class MascIdentifiers {
 
@@ -37,19 +40,46 @@ final class MascIdentifiers {
   }
 
   /**
-   * Removes the first occurrence of {@code literal} from {@code input}. Later occurrences
-   * stay in place, and {@code input} is returned unchanged if it does not contain
-   * {@code literal}. The search is a plain text comparison.
+   * Parses the number of an identifier that starts with {@code prefix} and continues with
+   * one or more ASCII digits only.
    *
-   * @param input The text to search. Must not be {@code null}.
-   * @param literal The text to remove. Must not be {@code null}.
-   * @return {@code input} without its first occurrence of {@code literal}.
+   * @param id The identifier, such as {@code penn-n7}.
+   * @param prefix The expected prefix, such as {@link #PENN_TOKEN_ID_PREFIX}.
+   * @return The number after the prefix.
+   * @throws IllegalArgumentException If {@code id} is {@code null}, does not start with
+   *         {@code prefix}, or is not followed by digits only.
    */
-  static String removeFirst(String input, String literal) {
-    final int start = input.indexOf(literal);
-    if (start < 0) {
-      return input;
+  static int parseId(String id, String prefix) {
+    if (id == null || !id.startsWith(prefix) || id.length() == prefix.length()
+        || StringUtil.endOfAsciiDigits(id, prefix.length()) != id.length()) {
+      throw new IllegalArgumentException(
+          "MASC identifier must be " + prefix + " followed by digits: " + id);
     }
-    return input.substring(0, start) + input.substring(start + literal.length());
+    return Integer.parseInt(id, prefix.length(), id.length(), 10);
+  }
+
+  /**
+   * Parses a whitespace separated list of identifiers, each as {@link #parseId(String, String)}
+   * does.
+   *
+   * @param ids The identifiers, such as {@code seg-r1 seg-r2}.
+   * @param prefix The expected prefix of each identifier.
+   * @return The numbers in order.
+   * @throws IllegalArgumentException If {@code ids} is {@code null}, names no identifier, or
+   *         contains one that {@link #parseId(String, String)} rejects.
+   */
+  static int[] parseIds(String ids, String prefix) {
+    if (ids == null) {
+      throw new IllegalArgumentException("MASC identifier list must not be null");
+    }
+    String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(ids);
+    if (tokens.length == 0) {
+      throw new IllegalArgumentException("MASC identifier list must name at least one identifier");
+    }
+    int[] numbers = new int[tokens.length];
+    for (int i = 0; i < tokens.length; i++) {
+      numbers[i] = parseId(tokens[i], prefix);
+    }
+    return numbers;
   }
 }

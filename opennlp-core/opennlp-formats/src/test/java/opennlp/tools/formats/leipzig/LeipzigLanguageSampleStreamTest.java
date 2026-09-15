@@ -116,21 +116,19 @@ public class LeipzigLanguageSampleStreamTest {
   @ValueSource(strings = {"a", "eng", "dan", "abcdefghijklmnopqrstuvwxyz"})
   void testIsAsciiLowerCaseWordAccepts(String text) {
     Assertions.assertTrue(LeipzigLanguageSampleStream.isAsciiLowerCaseWord(text));
-    Assertions.assertTrue(text.matches("[a-z]+"));
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "Eng", "eNg", "en1", "123", "e-g", "en ", " en", "\u00e9ng",
-      "\u0130ng", "\uD835\uDC1Abc", "en\u00A0"})
+  @ValueSource(strings = {"", "Eng", "eNg", "en1", "123", "e-g", "en_", "en ", " en", "\u00e9ng",
+      "\u0130ng", "\uD835\uDC1Abc", "en\u00A0", "\uFF45ng"})
   void testIsAsciiLowerCaseWordRejects(String text) {
     Assertions.assertFalse(LeipzigLanguageSampleStream.isAsciiLowerCaseWord(text));
-    Assertions.assertFalse(text.matches("[a-z]+"));
   }
 
   @Test
   void testOnlyFilesWithLowerCaseAsciiLanguageCodesAreRead() throws IOException {
     String[] names = {"eng-sentences.txt", "Eng-sentences.txt", "en1-sentences.txt",
-        "e-g-sentences.txt", "\u00e9ng-sentences.txt", "en"};
+        "e-g-sentences.txt", "en_sentences.txt", "\u00e9ng-sentences.txt", "en"};
     for (String name : names) {
       Files.writeString(new File(emptyTempDir, name).toPath(),
           "1\tThis is a sentence.\n2\tThis is another sentence.\n", StandardCharsets.UTF_8);
