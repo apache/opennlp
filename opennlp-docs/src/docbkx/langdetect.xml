@@ -48,13 +48,13 @@ under the License.
 					<tbody>
 						<row>
 							<entry>EmojiCharSequenceNormalizer</entry>
-							<entry>Replaces every run of characters outside the Basic Multilingual
-								Plane (code points U+10000 and above, where emoji live) with a single
-								space. Characters of the Basic Multilingual Plane are kept, including
-								the zero width joiner and the variation selector of an emoji sequence.
-								Since 3.0.0 hyphens and other characters of the Basic Multilingual Plane
-								are no longer affected. Deprecated; use
-								EmojiToEmoticonCharSequenceNormalizer to keep emoji as signal.</entry>
+							<entry>Replaces every run of code points outside the Basic Multilingual
+								Plane (U+10000 and above) with a single space, which removes most emoji
+								but also other supplementary characters such as CJK Extension B
+								ideographs. Since 3.0.0 hyphens and Basic Multilingual Plane characters
+								are kept; models trained with an earlier release were built with them
+								blanked. Deprecated; use EmojiToEmoticonCharSequenceNormalizer to keep
+								emoji as signal.</entry>
 						</row>
 						<row>
 							<entry>UrlCharSequenceNormalizer</entry>

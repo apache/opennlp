@@ -63,6 +63,18 @@ public class BrownClusterTest {
   }
 
   @Test
+  void testLeadingTabGivesAnEmptyFirstField() throws IOException {
+    BrownCluster cluster = cluster("\tdog\t0111\n");
+    Assertions.assertEquals("", cluster.lookupToken("dog"));
+  }
+
+  @Test
+  void testEmptyMiddleFieldIsAField() throws IOException {
+    BrownCluster cluster = cluster("0101\t\t10\n");
+    Assertions.assertEquals("0101", cluster.lookupToken(""));
+  }
+
+  @Test
   void testSpacesAreNotSeparators() throws IOException {
     BrownCluster cluster = cluster("0101 the 10\n");
     Assertions.assertNull(cluster.lookupToken("the"));

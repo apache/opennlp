@@ -96,10 +96,11 @@ public class BrownCluster implements SerializableArtifact {
   }
 
   /**
-   * Splits on tabs: trailing empty fields are dropped and an empty line gives a single
-   * empty field.
+   * Splits a lexicon line into its tab-separated fields. Every tab is a separator, so a
+   * leading tab gives an empty first field and two tabs in a row give an empty field between
+   * them; trailing empty fields are dropped, and an empty line gives a single empty field.
    *
-   * @param line The line.
+   * @param line The line. Must not be {@code null}.
    * @return The fields in order.
    */
   private String[] splitTabs(String line) {

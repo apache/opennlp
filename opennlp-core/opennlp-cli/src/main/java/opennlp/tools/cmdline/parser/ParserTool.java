@@ -44,6 +44,9 @@ import opennlp.tools.util.StringUtil;
 
 public final class ParserTool extends BasicCmdLineTool {
 
+  private static final char SEPARATOR = ' ';
+  private static final int SPACING_HEADROOM = 8;
+
   private static final Logger logger = LoggerFactory.getLogger(ParserTool.class);
 
   @Override
@@ -84,24 +87,43 @@ public final class ParserTool extends BasicCmdLineTool {
    * @return The spaced line.
    */
   static String spaceUntokenizedParens(String line) {
-    StringBuilder spaced = new StringBuilder(line.length() + 8);
-    for (int i = 0; i < line.length(); i++) {
+    int first = indexOfParen(line);
+    if (first == -1) {
+      return line;
+    }
+    StringBuilder spaced = new StringBuilder(line.length() + SPACING_HEADROOM).append(line, 0, first);
+    for (int i = first; i < line.length(); i++) {
       char c = line.charAt(i);
       if (isParen(c)) {
         // judge "already separated" on the output, so the space a bracket inserted after
         // itself also serves the bracket that follows it
         if (!spaced.isEmpty() && !StringUtil.isWhitespace(spaced.charAt(spaced.length() - 1))) {
-          spaced.append(' ');
+          spaced.append(SEPARATOR);
         }
         spaced.append(c);
         if (i + 1 < line.length() && !StringUtil.isWhitespace(line.charAt(i + 1))) {
-          spaced.append(' ');
+          spaced.append(SEPARATOR);
         }
       } else {
         spaced.append(c);
       }
     }
     return spaced.toString();
+  }
+
+  /**
+   * Finds the first round or curly bracket.
+   *
+   * @param line The line.
+   * @return Its offset, or {@code -1} if the line has none.
+   */
+  private static int indexOfParen(String line) {
+    for (int i = 0; i < line.length(); i++) {
+      if (isParen(line.charAt(i))) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   /**

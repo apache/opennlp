@@ -318,16 +318,6 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   }
 
   /**
-   * Extracts the name type from the {@code outcome}.
-   *
-   * @param outcome The outcome
-   * @return The name type, or {@code null} if not set.
-   */
-  static String extractNameType(String outcome) {
-    return BioCodec.extractNameType(outcome);
-  }
-
-  /**
    * Removes {@link Span spans} with are intersecting or crossing in any way.
    *
    * <p>

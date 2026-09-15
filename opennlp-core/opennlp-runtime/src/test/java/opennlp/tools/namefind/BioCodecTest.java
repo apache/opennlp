@@ -267,9 +267,11 @@ public class BioCodecTest {
 
   @ParameterizedTest
   @CsvSource({"atype-start, atype", "a-b-start, a-b", "type_1-cont, type_1", "Type9-X_1, Type9",
-      // the type is everything before the last hyphen, whatever it holds
+      // the type is everything before the last hyphen, line terminators aside
       "type--start, type-", "a b-start, a b", "ätype-start, ätype", "\uD83D\uDE00-start, \uD83D\uDE00",
-      "type.-start, type.", "x-1, x"})
+      "type.-start, type.", "x-1, x",
+      // an unpaired surrogate is not a line terminator
+      "\uD83D-start, \uD83D", "a\uDE00-cont, a\uDE00"})
   void testExtractNameType(String outcome, String type) {
     Assertions.assertEquals(type, BioCodec.extractNameType(outcome));
   }
@@ -277,7 +279,7 @@ public class BioCodecTest {
   @ParameterizedTest
   @ValueSource(strings = {"start", "other", "-start", "atype-", "atype-st.art", "atype-st art",
       "atype-stärt", "", "-", "--", "a-b-", "type-start-", "type- start", "type-\u0661",
-      "type-\uD835\uDC00"})
+      "type-\uD835\uDC00", "type-\uD83D", "type-a\uDE00"})
   void testExtractNameTypeWithoutType(String outcome) {
     // the suffix after the last hyphen must be a non-empty run of ASCII letters, digits,
     // or underscores

@@ -191,9 +191,13 @@ public class StringUtilTest {
   // -------------------------------------------------------------------------
 
   @Test
-  void testContainsAsciiNullThrows() {
+  void testContainsAsciiUpperCaseNullThrows() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> StringUtil.containsAsciiUpperCase(null));
+  }
+
+  @Test
+  void testContainsAsciiDigitNullThrows() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> StringUtil.containsAsciiDigit(null));
   }
@@ -225,8 +229,22 @@ public class StringUtilTest {
   }
 
   // -------------------------------------------------------------------------
-  // isAsciiLetter, isAsciiDigit, endOfAsciiDigits
+  // isAsciiLetter, isAsciiLowerCase, isAsciiDigit, endOfAsciiDigits
   // -------------------------------------------------------------------------
+
+  @ParameterizedTest
+  @ValueSource(ints = {'a', 'm', 'z'})
+  void testIsAsciiLowerCaseAccepts(int codePoint) {
+    Assertions.assertTrue(StringUtil.isAsciiLowerCase(codePoint));
+  }
+
+  // the neighbors of the range, capitals, a digit, a fullwidth and an accented lowercase
+  // letter, the Deseret small letter, and the German sharp s
+  @ParameterizedTest
+  @ValueSource(ints = {'`', '{', 'A', 'Z', '0', 0xFF41, 0x00E9, 0x1043A, 0x00DF, ' ', -1})
+  void testIsAsciiLowerCaseRejects(int codePoint) {
+    Assertions.assertFalse(StringUtil.isAsciiLowerCase(codePoint));
+  }
 
   @ParameterizedTest
   @ValueSource(ints = {'a', 'z', 'A', 'Z', 'm', 'M'})
@@ -320,19 +338,19 @@ public class StringUtilTest {
 
   private static Stream<Arguments> lineTerminatorOffsets() {
     return Stream.of(
-        Arguments.of("", 0, 0),
-        Arguments.of("abc", 0, 3),
-        Arguments.of("abc", 3, 3),
+        Arguments.of("", 0, -1),
+        Arguments.of("abc", 0, -1),
+        Arguments.of("abc", 3, -1),
         Arguments.of("ab\ncd", 0, 2),
         Arguments.of("ab\ncd", 2, 2),
-        Arguments.of("ab\ncd", 3, 5),
+        Arguments.of("ab\ncd", 3, -1),
         Arguments.of("ab\r\ncd", 0, 2),
         Arguments.of("ab\u0085cd", 0, 2),
         Arguments.of("ab\u2028cd", 0, 2),
         Arguments.of("ab\u2029cd", 0, 2),
         Arguments.of("\nabc", 0, 0),
         // vertical tab, form feed, and an emoji are not line terminators
-        Arguments.of("a\u000Bb\fc\uD83D\uDE00", 0, 7));
+        Arguments.of("a\u000Bb\fc\uD83D\uDE00", 0, -1));
   }
 
   @Test

@@ -46,11 +46,18 @@ public class BioCodec implements SequenceCodec<String> {
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
+  /**
+   * Extracts the name type from an outcome such as {@code person-start}: the text before the
+   * last hyphen, provided a non-empty run of ASCII letters, digits, or underscores follows
+   * that hyphen and the outcome holds no line terminator.
+   *
+   * @param outcome The outcome label. Must not be {@code null}.
+   * @return The name type, or {@code null} if the outcome carries none.
+   */
   static String extractNameType(String outcome) {
     int separator = outcome.lastIndexOf('-');
-    // a type never spans a line terminator
     if (separator > 0 && isWordChars(outcome, separator + 1)
-        && StringUtil.indexOfLineTerminator(outcome, 0) >= separator) {
+        && StringUtil.indexOfLineTerminator(outcome, 0) == -1) {
       return outcome.substring(0, separator);
     }
 

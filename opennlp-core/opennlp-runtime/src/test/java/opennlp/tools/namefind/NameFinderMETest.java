@@ -32,7 +32,6 @@ import opennlp.tools.util.TrainingParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -324,13 +323,6 @@ public class NameFinderMETest extends AbstractNameFinderTest {
     assertEquals(new Span(7, 15, "organization"), names2[1]);
     assertEquals("person", names2[0].getType());
     assertEquals("organization", names2[1].getType());
-  }
-
-  @Test
-  void testExtractNameTypeDelegatesToBioCodec() {
-    // the contract is pinned in BioCodecTest
-    assertEquals("atype", NameFinderME.extractNameType("atype-start"));
-    assertNull(NameFinderME.extractNameType("start"));
   }
 
 }

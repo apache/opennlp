@@ -74,11 +74,35 @@ public class TokenSampleStreamTest {
 
   @Test
   void testUnicodeWhitespaceSeparatesTokens() throws IOException {
-    // no-break space, em space, and ideographic space separate tokens as a plain space does
-    TokenSample sample = stream("a\u00A0b\u2003c\u3000d\n").next();
-    Assertions.assertEquals("a b c d", sample.getText());
+    // no-break space, em space, ideographic space, and next line separate tokens as a plain
+    // space does, in every whitespace mode
+    TokenSample sample = stream("a\u00A0b\u2003c\u3000d\u0085e\n").next();
+    Assertions.assertEquals("a b c d e", sample.getText());
     Assertions.assertArrayEquals(new Span[] {new Span(0, 1), new Span(2, 3), new Span(4, 5),
-        new Span(6, 7)}, sample.getTokenSpans());
+        new Span(6, 7), new Span(8, 9)}, sample.getTokenSpans());
+  }
+
+  @Test
+  void testInformationSeparatorIsNotWhitespace() throws IOException {
+    // U+001C is not Unicode White_Space, so it stays inside the token in every mode
+    TokenSample sample = stream("a\u001Cb\n").next();
+    Assertions.assertEquals("a\u001Cb", sample.getText());
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 3)}, sample.getTokenSpans());
+  }
+
+  @Test
+  void testLineWithoutTokensResetsQuoteState() throws IOException {
+    // an opening quote on the first line leaves the quote state open, so a quote on the next
+    // line closes it and attaches to the following word
+    TokenSampleStream stream = stream("x \" y\n\" z\n");
+    Assertions.assertEquals("x \"y", stream.next().getText());
+    Assertions.assertEquals("\" z", stream.next().getText());
+
+    // a line without tokens in between resets the state, so the quote opens again
+    stream = stream("x \" y\n\n\" z\n");
+    Assertions.assertEquals("x \"y", stream.next().getText());
+    Assertions.assertEquals("", stream.next().getText());
+    Assertions.assertEquals("\"z", stream.next().getText());
   }
 
   @Test
@@ -96,7 +120,7 @@ public class TokenSampleStreamTest {
 
   @Test
   void testQuoteAndPunctuationAttachment() throws IOException {
-    // a token without an ASCII letter or digit attaches to the previous token
+    // a token without a letter or digit of any script attaches to the previous token
     TokenSample sample = stream("Hello , world !\n").next();
     Assertions.assertEquals("Hello, world!", sample.getText());
     Assertions.assertArrayEquals(new Span[] {new Span(0, 5), new Span(5, 6), new Span(7, 12),

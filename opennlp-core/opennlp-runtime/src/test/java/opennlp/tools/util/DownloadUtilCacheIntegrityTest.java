@@ -152,6 +152,22 @@ public class DownloadUtilCacheIntegrityTest {
   }
 
   /**
+   * A blank checksum sidecar verifies nothing, so the cached model is refused.
+   */
+  @Test
+  void testBlankSidecarRejectsCachedModel() throws IOException {
+    assertNotNull(DownloadUtil.downloadModel(modelUrl, ChunkerModel.class));
+    Files.writeString(downloadHome.resolve(MODEL_FILENAME + ".sha512"), " \n",
+        StandardCharsets.UTF_8);
+
+    final IOException e = assertThrows(IOException.class,
+        () -> DownloadUtil.downloadModel(modelUrl, ChunkerModel.class),
+        "A cached model with a blank checksum file must be rejected");
+    assertTrue(e.getMessage().contains("blank"),
+        "Expected a blank checksum failure, but got: " + e.getMessage());
+  }
+
+  /**
    * A cache populated by an older OpenNLP release has no checksum sidecar. When the published
    * checksum is still reachable it must be used, so that pre-existing caches are covered too.
    */

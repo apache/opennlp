@@ -23,6 +23,8 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class TokenPatternFeatureGeneratorTest {
 
@@ -72,18 +74,19 @@ public class TokenPatternFeatureGeneratorTest {
     Assertions.assertEquals("pta=iclclclclc", features.get(13));
   }
 
-  @Test
-  void testSkipsNonLetterSubTokens() {
-
-    String[] testSentence = new String[] {"well-known"};
-    final int testTokenIndex = 0;
-
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "well-known|st=well;st=known|st=-",
+      "caf\u00E9-bar|st=bar|st=caf\u00E9;st=-",
+      "abc-123|st=abc|st=123;st=-"})
+  void testSubTokenFeaturesNeedAsciiLetters(String token, String present, String absent) {
     AdaptiveFeatureGenerator generator = new TokenPatternFeatureGenerator();
-
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
-    // the hyphen sub-token must not produce an "st=" feature
-    Assertions.assertFalse(features.contains("st=-"));
-    Assertions.assertTrue(features.contains("st=well"));
-    Assertions.assertTrue(features.contains("st=known"));
+    generator.createFeatures(features, new String[] {token}, 0, null);
+    for (String feature : present.split(";")) {
+      Assertions.assertTrue(features.contains(feature), feature + " of " + token);
+    }
+    for (String feature : absent.split(";")) {
+      Assertions.assertFalse(features.contains(feature), feature + " of " + token);
+    }
   }
 }

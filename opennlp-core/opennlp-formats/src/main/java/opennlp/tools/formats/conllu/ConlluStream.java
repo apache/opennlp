@@ -43,7 +43,20 @@ import opennlp.tools.util.StringUtil;
 public class ConlluStream implements ObjectStream<ConlluSentence> {
 
   private static final String TEXT_LANG_PREFIX = "text_";
+  private static final int LANG_CODE_MIN_LENGTH = 2;
+  private static final int LANG_CODE_MAX_LENGTH = 3;
+  private static final char MULTIWORD_SEPARATOR = '-';
   private static final String INVALID_MULTIWORD_ID = "Invalid multiword token id: ";
+  private static final String BACKWARDS_MULTIWORD_ID = "Multiword token id runs backwards: ";
+
+  /**
+   * The token range a multiword token line covers.
+   *
+   * @param start The id of the first word line.
+   * @param end The id of the last word line, not smaller than {@code start}.
+   */
+  record MultiwordRange(int start, int end) {
+  }
 
   private final ObjectStream<String> sentenceStream;
 
@@ -142,9 +155,15 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     return null;
   }
 
+  /**
+   * Replaces the word lines of each multiword token with one merged line.
+   *
+   * @param lines The word lines of a sentence.
+   * @return The lines with every multiword range merged into its multiword token line.
+   * @throws InvalidFormatException If a multiword token id is malformed.
+   */
   private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines)
       throws InvalidFormatException {
-
 
     // 1. Find contractions
     Map<String, Integer> index = new HashMap<>();
@@ -154,12 +173,10 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     for (int i = 0; i < lines.size(); i++) {
       ConlluWordLine line = lines.get(i);
       index.put(line.getId(), i);
-      if (line.getId().contains("-")) {
+      if (line.getId().indexOf(MULTIWORD_SEPARATOR) != -1) {
         List<String> expandedContractions = new ArrayList<>();
-        int[] range = parseContractionRange(line.getId());
-        int start = range[0];
-        int end = range[1];
-        for (int j = start; j <= end; j++) {
+        MultiwordRange range = parseContractionRange(line.getId());
+        for (int j = range.start(); j <= range.end(); j++) {
           String js = Integer.toString(j);
           expandedContractions.add(js);
           linesToDelete.add(js);
@@ -236,25 +253,27 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       textLang.put(Locale.of(lang), secondPart);
     }
     else {
-      throw new InvalidFormatException(String.format("Locale language code is invalid: %s", lang));
+      throw new InvalidFormatException(
+          String.format("Locale language code is invalid: %s", firstPart));
     }
     return textLang;
   }
 
   /**
    * Parses a multiword token id of the form {@code start-end}, where both sides are ASCII
-   * digit runs and the range does not run backwards.
+   * digit runs without a leading zero and the range does not run backwards.
    *
    * @param id The token id, which holds a hyphen.
-   * @return The start and end of the range.
-   * @throws InvalidFormatException If the id is not two digit runs joined by one hyphen, or if
-   *         the end is less than the start.
+   * @return The range.
+   * @throws InvalidFormatException If the id is not two such digit runs joined by one hyphen,
+   *         if a side does not fit an int, or if the end is less than the start.
    */
-  static int[] parseContractionRange(String id) throws InvalidFormatException {
-    int hyphen = id.indexOf('-');
+  MultiwordRange parseContractionRange(String id) throws InvalidFormatException {
+    int hyphen = id.indexOf(MULTIWORD_SEPARATOR);
     int startEnd = StringUtil.endOfAsciiDigits(id, 0);
     int endEnd = StringUtil.endOfAsciiDigits(id, hyphen + 1);
-    if (hyphen < 1 || startEnd != hyphen || endEnd == hyphen + 1 || endEnd != id.length()) {
+    if (hyphen < 1 || startEnd != hyphen || endEnd == hyphen + 1 || endEnd != id.length()
+        || id.charAt(0) == '0' || id.charAt(hyphen + 1) == '0') {
       throw new InvalidFormatException(INVALID_MULTIWORD_ID + id);
     }
     int start;
@@ -266,15 +285,15 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       throw new InvalidFormatException(INVALID_MULTIWORD_ID + id, e);
     }
     if (end < start) {
-      throw new InvalidFormatException("Multiword token id runs backwards: " + id);
+      throw new InvalidFormatException(BACKWARDS_MULTIWORD_ID + id);
     }
-    return new int[] {start, end};
+    return new MultiwordRange(start, end);
   }
 
   /**
-   * Extracts the language code from a {@code text_xx} or {@code text_xxx} comment key: the two
-   * or three ASCII lowercase letters, preferring three, after the first {@code text_} that at
-   * least two follow.
+   * Returns the two or three lowercase ASCII letters after {@code text_}, or an empty string.
+   * Three letters are taken when three follow; the first {@code text_} with at least two
+   * letters after it counts.
    *
    * @param firstPart The comment key.
    * @return The language code, or an empty string if there is none.
@@ -284,11 +303,11 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     while ((from = firstPart.indexOf(TEXT_LANG_PREFIX, from)) != -1) {
       int i = from + TEXT_LANG_PREFIX.length();
       int len = 0;
-      while (len < 3 && i + len < firstPart.length()
-          && firstPart.charAt(i + len) >= 'a' && firstPart.charAt(i + len) <= 'z') {
+      while (len < LANG_CODE_MAX_LENGTH && i + len < firstPart.length()
+          && StringUtil.isAsciiLowerCase(firstPart.charAt(i + len))) {
         len++;
       }
-      if (len >= 2) {
+      if (len >= LANG_CODE_MIN_LENGTH) {
         return firstPart.substring(i, i + len);
       }
       from++;

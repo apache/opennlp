@@ -75,6 +75,8 @@ public class EmojiCharSequenceNormalizerTest {
         Arguments.of("a" + cp(0x10412, 0x1043A) + "b", "a b"),
         Arguments.of("a" + cp(0x1D400) + "b", "a b"),
         Arguments.of("a" + cp(0x17000) + "b", "a b"),
+        // a CJK Extension B ideograph, as found in Chinese and Japanese names
+        Arguments.of("a" + cp(0x20BB7) + "b", "a b"),
         // flags are two regional indicators, one run
         Arguments.of(cp(0x1F1E9, 0x1F1EA), " "),
         // skin tone modifier after a pictograph, one run

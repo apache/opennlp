@@ -40,6 +40,7 @@ public class FeatureGeneratorUtil {
    * <li>num - digits </li>
    * <li>sc - single capital letter </li>
    * <li>ac - all capital letters </li>
+   * <li>cp - a single capital letter followed by a period </li>
    * <li>ic - initial capital letter </li>
    * <li>other - other </li>
    * </ul>

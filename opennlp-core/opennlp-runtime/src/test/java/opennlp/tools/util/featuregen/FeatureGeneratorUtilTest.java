@@ -17,11 +17,14 @@
 
 package opennlp.tools.util.featuregen;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class FeatureGeneratorUtilTest {
 
@@ -81,12 +84,19 @@ public class FeatureGeneratorUtilTest {
     Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
   }
 
+  private static Stream<Arguments> capPeriodLookalikes() {
+    return Stream.of(
+        Arguments.of("A.\n", "ic"), Arguments.of("A.\r", "ic"), Arguments.of("A.\r\n", "ic"),
+        Arguments.of("A.\u0085", "ic"), Arguments.of("A.\u2028", "ic"),
+        Arguments.of("A.\u2029", "ic"), Arguments.of("Ä.\n", "ic"), Arguments.of("A.\n\n", "ic"),
+        Arguments.of("A. ", "ic"), Arguments.of("A.\nX", "ic"), Arguments.of("\nA.", "other"),
+        Arguments.of(" A.", "other"));
+  }
+
   @ParameterizedTest
-  @ValueSource(strings = {"A.\n", "A.\r", "A.\r\n", "A.\u0085", "A.\u2028", "A.\u2029",
-      "Ä.\n", "A.\n\n", "A. ", "A.\nX", "\nA.", " A."})
-  void testCapPeriodIsExactlyTwoCharacters(String token) {
-    // cap-period is one capital and one period, tokens do not contain line breaks
-    Assertions.assertNotEquals("cp", FeatureGeneratorUtil.tokenFeature(token));
+  @MethodSource("capPeriodLookalikes")
+  void testCapPeriodIsExactlyTwoCharacters(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
   }
 
   @Test

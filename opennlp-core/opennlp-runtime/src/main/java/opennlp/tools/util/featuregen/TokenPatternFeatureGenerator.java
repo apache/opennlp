@@ -85,7 +85,7 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
 
       pattern.append(FeatureGeneratorUtil.tokenFeature(tokenized[i]));
 
-      if (!containsNonLetter(tokenized[i])) {
+      if (!containsNonAsciiLetter(tokenized[i])) {
         feats.add(SUB_TOKEN_PREFIX + StringUtil.toLowerCase(tokenized[i]));
       }
     }
@@ -94,15 +94,14 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   /**
-   * Tests whether a token contains a character outside the ASCII letters.
+   * Tests whether a token contains a character that is not an ASCII letter.
    *
    * @param token The token.
    * @return {@code true} if one is present.
    */
-  private boolean containsNonLetter(String token) {
+  private boolean containsNonAsciiLetter(String token) {
     for (int i = 0; i < token.length(); i++) {
-      char c = token.charAt(i);
-      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
+      if (!StringUtil.isAsciiLetter(token.charAt(i))) {
         return true;
       }
     }

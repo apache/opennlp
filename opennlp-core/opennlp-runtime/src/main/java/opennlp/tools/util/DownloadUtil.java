@@ -253,30 +253,33 @@ public class DownloadUtil {
 
   /**
    * Extracts the hash from the content of a checksum file, which holds the hash followed by the
-   * name of the file it applies to. The hash is the first run of non-whitespace characters,
-   * with whitespace as {@link StringUtil#isWhitespace(char)} defines it, so leading whitespace
-   * of any kind is skipped and the hash ends at the next whitespace character.
+   * name of the file it applies to. The hash is the first run of characters that are not Unicode
+   * {@code White_Space}, see {@link StringUtil#splitOnUnicodeWhitespace(CharSequence)}, so the
+   * result does not depend on the whitespace mode.
    *
    * @param checksumFileContent The file content.
    * @return The hash, or {@code null} if the content is {@code null} or blank.
    */
   static String parseChecksum(String checksumFileContent) {
-    if (checksumFileContent == null || StringUtil.isBlank(checksumFileContent)) {
+    if (checksumFileContent == null) {
       return null;
     }
-    int start = 0;
-    while (StringUtil.isWhitespace(checksumFileContent.charAt(start))) {
-      start++;
-    }
-    int end = start;
-    while (end < checksumFileContent.length()
-        && !StringUtil.isWhitespace(checksumFileContent.charAt(end))) {
-      end++;
-    }
-    return checksumFileContent.substring(start, end);
+    final String[] fields = StringUtil.splitOnUnicodeWhitespace(checksumFileContent);
+    return fields.length == 0 ? null : fields[0];
   }
 
+  /**
+   * Compares the SHA-512 hash of a model file with the expected one.
+   *
+   * @param model The model file.
+   * @param expectedChecksum The expected hash, or {@code null} if the checksum file is blank.
+   * @throws IOException If the checksum file is blank, the hash cannot be computed, or the
+   *         hashes differ.
+   */
   private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
+    if (expectedChecksum == null) {
+      throw new IOException("The checksum file for " + model.getFileName() + " is blank");
+    }
     final String actualChecksum = calculateSHA512(model);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
       throw new IOException("SHA512 checksum validation failed for " + model.getFileName() +
@@ -336,6 +339,7 @@ public class DownloadUtil {
   static class DownloadParser {
 
     private static final String ANCHOR_START = "<a href=\"";
+    private static final String ANCHOR_VALUE_END = "\">";
     private static final String ANCHOR_END = "</a>";
 
     private final URL indexUrl;
@@ -352,9 +356,9 @@ public class DownloadUtil {
 
     /**
      * Collects the href values of the anchor elements in an index page. The tag name and
-     * attribute are matched ignoring ASCII case, a value ends at the first {@code ">}, a link
-     * ends at the first {@code </a>}, and both may span lines. An anchor without a closing tag
-     * is skipped.
+     * attribute are matched ignoring case, a value ends at the first {@code ">}, a link ends at
+     * the first {@code </a>}, and both may span lines. Scanning stops at an anchor whose value
+     * or tag is not closed, since nothing after it can complete a link.
      *
      * @param page The page content.
      * @return The href values in order.
@@ -364,41 +368,33 @@ public class DownloadUtil {
       int from = 0;
       while ((from = indexOfIgnoreCase(page, ANCHOR_START, from)) != -1) {
         final int valueStart = from + ANCHOR_START.length();
-        final int valueEnd = page.indexOf("\">", valueStart);
-        if (valueEnd != -1) {
-          final int close = indexOfIgnoreCase(page, ANCHOR_END, valueEnd + 2);
-          if (close != -1) {
-            links.add(page.substring(valueStart, valueEnd));
-            from = close + ANCHOR_END.length();
-            continue;
-          }
+        final int valueEnd = page.indexOf(ANCHOR_VALUE_END, valueStart);
+        if (valueEnd == -1) {
+          break;
         }
-        from++;
+        final int close = indexOfIgnoreCase(page, ANCHOR_END, valueEnd + ANCHOR_VALUE_END.length());
+        if (close == -1) {
+          break;
+        }
+        links.add(page.substring(valueStart, valueEnd));
+        from = close + ANCHOR_END.length();
       }
       return links;
     }
 
     /**
-     * Finds a lowercase ASCII literal, ignoring the case of ASCII letters in the text.
+     * Finds a literal in the text, ignoring case.
      *
      * @param text The text.
-     * @param literal The lowercase literal.
+     * @param literal The literal.
      * @param from The start offset.
      * @return The first match offset, or {@code -1}.
      */
     private static int indexOfIgnoreCase(String text, String literal, int from) {
-      outer:
       for (int i = from; i + literal.length() <= text.length(); i++) {
-        for (int j = 0; j < literal.length(); j++) {
-          char c = text.charAt(i + j);
-          if (c >= 'A' && c <= 'Z') {
-            c += 'a' - 'A';
-          }
-          if (c != literal.charAt(j)) {
-            continue outer;
-          }
+        if (text.regionMatches(true, i, literal, 0, literal.length())) {
+          return i;
         }
-        return i;
       }
       return -1;
     }

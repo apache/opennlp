@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -123,38 +125,36 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
       Assertions.assertEquals("1-3", sent1.getWordLines().get(0).getId());
       Assertions.assertEquals("Digámoslo", sent1.getWordLines().get(0).getForm());
       Assertions.assertEquals("15-16", sent1.getWordLines().get(12).getId());
+      Set<String> expandedParts = Set.of("1", "2", "3", "15", "16");
       for (ConlluWordLine wordLine : sent1.getWordLines()) {
-        Assertions.assertFalse(wordLine.getId().equals("1")
-            || wordLine.getId().equals("2") || wordLine.getId().equals("3")
-            || wordLine.getId().equals("15") || wordLine.getId().equals("16"),
+        Assertions.assertFalse(expandedParts.contains(wordLine.getId()),
             "Expanded contraction parts must be removed");
       }
     }
   }
 
   @ParameterizedTest
-  @CsvSource({"1-2, 1, 2", "1-3, 1, 3", "15-16, 15, 16", "7-7, 7, 7", "01-02, 1, 2"})
+  @CsvSource({"1-2, 1, 2", "1-3, 1, 3", "15-16, 15, 16", "7-7, 7, 7", "10-12, 10, 12"})
   void testParseContractionRange(String id, int start, int end) throws IOException {
-    Assertions.assertArrayEquals(new int[] {start, end},
-        ConlluStream.parseContractionRange(id));
+    Assertions.assertEquals(new ConlluStream.MultiwordRange(start, end),
+        new ConlluStream(factory("")).parseContractionRange(id));
   }
 
+  // a leading zero is rejected because the word lines are looked up by their plain decimal id
   @ParameterizedTest
   @ValueSource(strings = {"1-", "-2", "-", "1-2-3", "1--2", "a-b", "1-b", "a-2", "1 -2", "1- 2",
       "1.1-2", "\u0661-2", "1-\u0662", "1-2\u0662", "\uFF11-\uFF12", "1-2\n", "1-2 ", " 1-2",
-      "\u200B1-2", "1\u2011", "3-1", "99999999999-2", "1-99999999999"})
-  void testParseContractionRangeRejects(String id) {
-    Assertions.assertThrows(InvalidFormatException.class,
-        () -> ConlluStream.parseContractionRange(id));
+      "\u200B1-2", "1\u2011", "3-1", "99999999999-2", "1-99999999999", "01-02", "1-02", "0-1"})
+  void testParseContractionRangeRejects(String id) throws IOException {
+    ConlluStream stream = new ConlluStream(factory(""));
+    Assertions.assertThrows(InvalidFormatException.class, () -> stream.parseContractionRange(id));
   }
 
   @Test
   void testMalformedContractionIdFailsTheSentence() throws IOException {
-    InputStreamFactory in = () -> new ByteArrayInputStream(
-        ("1-\tdel\t_\t_\t_\t_\t_\t_\t_\t_\n"
-            + "1\tde\tde\tADP\t_\t_\t2\tcase\t_\t_\n"
-            + "2\tel\tel\tDET\t_\t_\t3\tdet\t_\t_\n")
-            .getBytes(StandardCharsets.UTF_8));
+    InputStreamFactory in = factory("1-\tdel\t_\t_\t_\t_\t_\t_\t_\t_\n"
+        + "1\tde\tde\tADP\t_\t_\t2\tcase\t_\t_\n"
+        + "2\tel\tel\tDET\t_\t_\t3\tdet\t_\t_\n");
 
     try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
       Assertions.assertThrows(InvalidFormatException.class, stream::read);
@@ -162,12 +162,32 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   }
 
   @Test
+  void testEmptyNodeIdIsKeptNextToAMultiwordRange() throws IOException {
+    // the empty node 2.1 is no multiword token, so it stays as it is while 1 and 2 merge into 1-2
+    InputStreamFactory in = factory("1-2\tdel\t_\t_\t_\t_\t_\t_\t_\t_\n"
+        + "1\tde\tde\tADP\t_\t_\t3\tcase\t_\t_\n"
+        + "2\tel\tel\tDET\t_\t_\t3\tdet\t_\t_\n"
+        + "2.1\t_\t_\t_\t_\t_\t_\t_\t_\t_\n"
+        + "3\tperro\tperro\tNOUN\t_\t_\t0\troot\t_\t_\n");
+
+    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
+      ConlluSentence sentence = stream.read();
+      Assertions.assertEquals(List.of("1-2", "2.1", "3"),
+          sentence.getWordLines().stream().map(ConlluWordLine::getId).toList());
+      Assertions.assertEquals("de+el", sentence.getWordLines().get(0).getLemma());
+      Assertions.assertNull(stream.read(), "Stream must be exhausted");
+    }
+  }
+
+  private static InputStreamFactory factory(String text) {
+    return () -> new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+  }
+
+  @Test
   void testThreeLetterLangCodeIsPreferred() throws IOException {
     // "text_engl" gives "eng": three ASCII lowercase letters are preferred over two
-    InputStreamFactory in = () -> new ByteArrayInputStream(
-        ("# text_engl = Hello\n"
-            + "1\tHello\thello\tINTJ\t_\t_\t0\troot\t_\t_\n")
-            .getBytes(StandardCharsets.UTF_8));
+    InputStreamFactory in = factory("# text_engl = Hello\n"
+            + "1\tHello\thello\tINTJ\t_\t_\t0\troot\t_\t_\n");
 
     try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
       ConlluSentence sent = stream.read();
@@ -180,10 +200,8 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   @Test
   void testInvalidTextLangCodeIsRejected() throws IOException {
     // "text_e" has a single lowercase letter, so no language code can be extracted
-    InputStreamFactory in = () -> new ByteArrayInputStream(
-        ("# text_e = Bonjour\n"
-            + "1\tBonjour\tbonjour\tINTJ\t_\t_\t0\troot\t_\t_\n")
-            .getBytes(StandardCharsets.UTF_8));
+    InputStreamFactory in = factory("# text_e = Bonjour\n"
+            + "1\tBonjour\tbonjour\tINTJ\t_\t_\t0\troot\t_\t_\n");
 
     try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
       Assertions.assertThrows(InvalidFormatException.class, stream::read);

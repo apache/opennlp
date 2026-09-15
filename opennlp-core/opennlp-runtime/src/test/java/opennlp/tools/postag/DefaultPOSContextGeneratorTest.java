@@ -31,6 +31,8 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.StringList;
@@ -102,21 +104,25 @@ public class DefaultPOSContextGeneratorTest {
         + Arrays.toString(actual));
   }
 
-  @Test
-  void capitalAndDigitFeatures() {
+  @ParameterizedTest
+  @CsvSource({
+      "Token9, true, true",
+      "token, false, false",
+      "TOKEN, true, false",
+      "1990, false, true",
+      // accented capitals and non-ASCII digits are not matched
+      "\u00C9tudiant\u0665, false, false",
+      // the neighbors of both ASCII ranges, fullwidth forms, a mathematical bold capital,
+      // and an unpaired surrogate
+      "@, false, false", "[, false, false", "/, false, false", ":, false, false",
+      "\uFF21, false, false", "\uFF10, false, false", "\uD835\uDC00, false, false",
+      "\uD835, false, false"})
+  void capitalAndDigitFeatures(String token, boolean capital, boolean digit) {
     DefaultPOSContextGenerator generator = new DefaultPOSContextGenerator(null);
-
-    // accept sides: ASCII capital letter and ASCII digit
-    final String[] withCapAndNum = generator.getContext(0,
-        new Object[] {"Token9"}, new String[] {"tag"});
-    Assertions.assertTrue(Arrays.asList(withCapAndNum).contains("c"));
-    Assertions.assertTrue(Arrays.asList(withCapAndNum).contains("d"));
-
-    // reject sides: accented capitals and non-ASCII digits are not matched
-    final String[] accented = generator.getContext(0,
-        new Object[] {"Étudiant٥"}, new String[] {"tag"});
-    Assertions.assertFalse(Arrays.asList(accented).contains("c"));
-    Assertions.assertFalse(Arrays.asList(accented).contains("d"));
+    List<String> features = Arrays.asList(generator.getContext(0,
+        new Object[] {token}, new String[] {"tag"}));
+    Assertions.assertEquals(capital, features.contains("c"), "capital feature of " + token);
+    Assertions.assertEquals(digit, features.contains("d"), "digit feature of " + token);
   }
 
   @Test

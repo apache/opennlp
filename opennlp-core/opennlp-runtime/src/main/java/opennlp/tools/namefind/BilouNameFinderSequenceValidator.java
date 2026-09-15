@@ -45,8 +45,8 @@ public class BilouNameFinderSequenceValidator implements SequenceValidator<Strin
       } else if (outcomesSequence[li].endsWith(BilouCodec.CONTINUE) ||
           outcomesSequence[li].endsWith(BilouCodec.START)) {
         // if it is continue, we have to check if previous match was of the same type
-        String previousNameType = NameFinderME.extractNameType(outcomesSequence[li]);
-        String nameType = NameFinderME.extractNameType(outcome);
+        String previousNameType = BioCodec.extractNameType(outcomesSequence[li]);
+        String nameType = BioCodec.extractNameType(outcome);
         if (previousNameType != null || nameType != null) {
           if (nameType != null) {
             return nameType.equals(previousNameType);
