@@ -187,57 +187,6 @@ public class StringUtilTest {
   }
 
   // -------------------------------------------------------------------------
-  // isAsciiWhitespace
-  // -------------------------------------------------------------------------
-
-  @ParameterizedTest
-  @ValueSource(chars = {' ', '\t', '\n', '\u000B', '\f', '\r'})
-  void testIsAsciiWhitespaceAccepts(char c) {
-    Assertions.assertTrue(StringUtil.isAsciiWhitespace(c));
-  }
-
-  @ParameterizedTest
-  @ValueSource(chars = {'a', '0', '_', '\u0000', '\u001C', '\u0085', '\u00A0', '\u2003', '\u3000'})
-  void testIsAsciiWhitespaceRejects(char c) {
-    Assertions.assertFalse(StringUtil.isAsciiWhitespace(c));
-  }
-
-  // -------------------------------------------------------------------------
-  // splitOnAsciiWhitespace
-  // -------------------------------------------------------------------------
-
-  @Test
-  void testSplitOnAsciiWhitespaceNullThrows() {
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> StringUtil.splitOnAsciiWhitespace(null));
-  }
-
-  private static Stream<Arguments> asciiSplits() {
-    return Stream.of(
-        Arguments.of("", new String[] {""}),
-        Arguments.of("   ", new String[0]),
-        Arguments.of("\t\n\r", new String[0]),
-        Arguments.of("a", new String[] {"a"}),
-        Arguments.of("a b", new String[] {"a", "b"}),
-        Arguments.of("hello   world", new String[] {"hello", "world"}),
-        Arguments.of("a\t\u000B\fb", new String[] {"a", "b"}),
-        Arguments.of("  a", new String[] {"", "a"}),
-        Arguments.of("a  ", new String[] {"a"}),
-        Arguments.of("  a\tb  ", new String[] {"", "a", "b"}),
-        Arguments.of("a\u00A0b", new String[] {"a\u00A0b"}),
-        Arguments.of("a\u2003b c", new String[] {"a\u2003b", "c"}),
-        Arguments.of("\uD801\uDC12 \uD83D\uDE00", new String[] {"\uD801\uDC12", "\uD83D\uDE00"}),
-        Arguments.of(" \r\n ", new String[0]));
-  }
-
-  @ParameterizedTest
-  @MethodSource("asciiSplits")
-  void testSplitOnAsciiWhitespaceMatchesStringSplit(String input, String[] expected) {
-    Assertions.assertArrayEquals(expected, StringUtil.splitOnAsciiWhitespace(input));
-    Assertions.assertArrayEquals(input.split("\\s+"), StringUtil.splitOnAsciiWhitespace(input));
-  }
-
-  // -------------------------------------------------------------------------
   // containsAsciiUpperCase, containsAsciiDigit
   // -------------------------------------------------------------------------
 
@@ -273,6 +222,127 @@ public class StringUtilTest {
   @ValueSource(strings = {"", "abc", "ABC", "\u0661", "\uFF11", "\u00BD", "\uD835\uDFCE", "_-."})
   void testContainsAsciiDigitRejects(String input) {
     Assertions.assertFalse(StringUtil.containsAsciiDigit(input));
+  }
+
+  // -------------------------------------------------------------------------
+  // isAsciiLetter, isAsciiDigit, endOfAsciiDigits
+  // -------------------------------------------------------------------------
+
+  @ParameterizedTest
+  @ValueSource(ints = {'a', 'z', 'A', 'Z', 'm', 'M'})
+  void testIsAsciiLetterAccepts(int codePoint) {
+    Assertions.assertTrue(StringUtil.isAsciiLetter(codePoint));
+  }
+
+  @ParameterizedTest
+  // the neighbors of both ranges, digits, a fullwidth letter, an accented letter, Deseret
+  @ValueSource(ints = {'@', '[', '`', '{', '0', '9', '_', '-', ' ', 0xFF21, 0xC9, 0xE9, 0x10412, 0})
+  void testIsAsciiLetterRejects(int codePoint) {
+    Assertions.assertFalse(StringUtil.isAsciiLetter(codePoint));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {'0', '5', '9'})
+  void testIsAsciiDigitAccepts(int codePoint) {
+    Assertions.assertTrue(StringUtil.isAsciiDigit(codePoint));
+  }
+
+  @ParameterizedTest
+  // the neighbors of the range, letters, Arabic-Indic one, fullwidth one, one half,
+  // mathematical bold zero
+  @ValueSource(ints = {'/', ':', 'a', 'Z', '_', ' ', 0x0661, 0xFF11, 0xBD, 0x1D7CE, 0})
+  void testIsAsciiDigitRejects(int codePoint) {
+    Assertions.assertFalse(StringUtil.isAsciiDigit(codePoint));
+  }
+
+  @ParameterizedTest
+  @MethodSource("asciiDigitRuns")
+  void testEndOfAsciiDigits(String text, int from, int expected) {
+    Assertions.assertEquals(expected, StringUtil.endOfAsciiDigits(text, from));
+    Assertions.assertEquals(expected, StringUtil.endOfAsciiDigits(new StringBuilder(text), from));
+  }
+
+  private static Stream<Arguments> asciiDigitRuns() {
+    return Stream.of(
+        Arguments.of("", 0, 0),
+        Arguments.of("123", 0, 3),
+        Arguments.of("123", 1, 3),
+        Arguments.of("123", 3, 3),
+        Arguments.of("12-34", 0, 2),
+        Arguments.of("12-34", 2, 2),
+        Arguments.of("12-34", 3, 5),
+        Arguments.of("a12", 0, 0),
+        // an Arabic-Indic digit and a fullwidth digit end the run
+        Arguments.of("12\u066134", 0, 2),
+        Arguments.of("12\uFF1134", 0, 2),
+        // a mathematical bold digit is a surrogate pair, neither half is a digit
+        Arguments.of("12\uD835\uDFCE34", 0, 2),
+        Arguments.of(" 12", 0, 0),
+        Arguments.of(" 12", 1, 3));
+  }
+
+  @Test
+  void testEndOfAsciiDigitsRejectsBadArguments() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.endOfAsciiDigits(null, 0));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.endOfAsciiDigits("12", -1));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.endOfAsciiDigits("12", 3));
+  }
+
+  // -------------------------------------------------------------------------
+  // isLineTerminator, indexOfLineTerminator
+  // -------------------------------------------------------------------------
+
+  @ParameterizedTest
+  @ValueSource(ints = {'\n', '\r', 0x85, 0x2028, 0x2029})
+  void testIsLineTerminatorAccepts(int codePoint) {
+    Assertions.assertTrue(StringUtil.isLineTerminator(codePoint));
+  }
+
+  @ParameterizedTest
+  // space, tab, vertical tab, form feed, the neighbors of U+0085 and of the separators, NBSP,
+  // zero width space, a letter, an emoji
+  @ValueSource(ints = {' ', '\t', 0x0B, 0x0C, 0x84, 0x86, 0x2027, 0x202A, 0xA0, 0x200B,
+      'a', 0x1F600, 0})
+  void testIsLineTerminatorRejects(int codePoint) {
+    Assertions.assertFalse(StringUtil.isLineTerminator(codePoint));
+  }
+
+  @ParameterizedTest
+  @MethodSource("lineTerminatorOffsets")
+  void testIndexOfLineTerminator(String text, int from, int expected) {
+    Assertions.assertEquals(expected, StringUtil.indexOfLineTerminator(text, from));
+    Assertions.assertEquals(expected,
+        StringUtil.indexOfLineTerminator(new StringBuilder(text), from));
+  }
+
+  private static Stream<Arguments> lineTerminatorOffsets() {
+    return Stream.of(
+        Arguments.of("", 0, 0),
+        Arguments.of("abc", 0, 3),
+        Arguments.of("abc", 3, 3),
+        Arguments.of("ab\ncd", 0, 2),
+        Arguments.of("ab\ncd", 2, 2),
+        Arguments.of("ab\ncd", 3, 5),
+        Arguments.of("ab\r\ncd", 0, 2),
+        Arguments.of("ab\u0085cd", 0, 2),
+        Arguments.of("ab\u2028cd", 0, 2),
+        Arguments.of("ab\u2029cd", 0, 2),
+        Arguments.of("\nabc", 0, 0),
+        // vertical tab, form feed, and an emoji are not line terminators
+        Arguments.of("a\u000Bb\fc\uD83D\uDE00", 0, 7));
+  }
+
+  @Test
+  void testIndexOfLineTerminatorRejectsBadArguments() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.indexOfLineTerminator(null, 0));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.indexOfLineTerminator("ab", -1));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.indexOfLineTerminator("ab", 3));
   }
 
   // -------------------------------------------------------------------------

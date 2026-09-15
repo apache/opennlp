@@ -389,6 +389,25 @@ Execution time: 1,955 seconds]]>
 		</para>
 		</section>
 	</section>
+	<section xml:id="tools.corpora.conll.u">
+		<title>CoNLL-U</title>
+		<para>
+		The <link xlink:href="https://universaldependencies.org/format.html">CoNLL-U</link> format of the
+		Universal Dependencies treebanks can be used directly by the tokenizer, sentence detector, POS tagger,
+		and lemmatizer trainers through the <code>conllu</code> format name, for example
+		<code>opennlp TokenizerTrainer.conllu</code>, and converted with the matching converter tools.
+		</para>
+		<para>
+		The reader interprets the format as follows. A multiword token line has a range id such
+		as <code>3-4</code>; the range must be two runs of digits joined by a single hyphen, and its end must
+		not be smaller than its start. An id that does not follow this form, such as <code>3-</code>,
+		<code>-4</code>, <code>3--4</code>, or <code>4-3</code>, stops the read with an
+		<code>InvalidFormatException</code> that names the id, so a damaged treebank is reported instead of
+		skipped. The language of a sentence is taken from <code>text_xx</code> and
+		<code>text_xxx</code> comment keys, where the code consists of two or three lowercase ASCII letters;
+		when three letters follow, all three form the code.
+		</para>
+	</section>
 	</section>
 	<section xml:id="tools.corpora.arvores-deitadas">
 		<title>Arvores Deitadas</title>
@@ -419,6 +438,16 @@ Execution time: 1,955 seconds]]>
 			    <screen>
 <![CDATA[$ opennlp ChunkerConverter ad -lang pt -data Bosque_CF_8.0.ad.txt -encoding ISO-8859-1 > bosque-chunk]]>
     			</screen>
+			</para>
+			<para>
+				The AD reader separates the parts of a line on Unicode whitespace, so tabs and no-break
+				spaces are handled like ordinary spaces. A multiword name joined with underscores, such as
+				<code>Rio_de_Janeiro</code>, is split into its words, and repeated or leading underscores
+				do not produce empty words. A POS tag that contains whitespace is joined with
+				<code>=</code> so that it remains a single token. The text and paragraph ids of a sentence
+				are read from its metadata as the first run of digits and the digits after
+				<code>p=</code>. A punctuation line has a lexeme without any letter or digit of any
+				script, so an accented or non-Latin word is not treated as punctuation.
 			</para>
 		</section>
 	<section xml:id="tools.corpora.arvores-deitadas.end-of-file">

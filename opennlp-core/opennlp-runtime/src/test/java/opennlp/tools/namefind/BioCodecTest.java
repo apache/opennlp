@@ -266,15 +266,29 @@ public class BioCodecTest {
   }
 
   @ParameterizedTest
-  @CsvSource({"atype-start, atype", "a-b-start, a-b", "type_1-cont, type_1", "Type9-X_1, Type9"})
+  @CsvSource({"atype-start, atype", "a-b-start, a-b", "type_1-cont, type_1", "Type9-X_1, Type9",
+      // the type is everything before the last hyphen, whatever it holds
+      "type--start, type-", "a b-start, a b", "ätype-start, ätype", "\uD83D\uDE00-start, \uD83D\uDE00",
+      "type.-start, type.", "x-1, x"})
   void testExtractNameType(String outcome, String type) {
     Assertions.assertEquals(type, BioCodec.extractNameType(outcome));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"start", "other", "-start", "atype-", "atype-st.art", "atype-st art",
-      "atype-stärt"})
+      "atype-stärt", "", "-", "--", "a-b-", "type-start-", "type- start", "type-\u0661",
+      "type-\uD835\uDC00"})
   void testExtractNameTypeWithoutType(String outcome) {
+    // the suffix after the last hyphen must be a non-empty run of ASCII letters, digits,
+    // or underscores
+    Assertions.assertNull(BioCodec.extractNameType(outcome));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"person\u2028-start", "per\nson-start", "per\rson-start",
+      "per\u0085son-start", "per\u2029son-start", "atype\n-start", "atype-start\n", "atype-\nstart"})
+  void testExtractNameTypeRejectsLineTerminators(String outcome) {
+    // any line terminator in the outcome means no type
     Assertions.assertNull(BioCodec.extractNameType(outcome));
   }
 

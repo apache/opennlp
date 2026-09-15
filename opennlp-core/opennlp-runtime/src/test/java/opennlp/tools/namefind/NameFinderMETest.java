@@ -22,9 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -329,16 +326,11 @@ public class NameFinderMETest extends AbstractNameFinderTest {
     assertEquals("organization", names2[1].getType());
   }
 
-  @ParameterizedTest
-  @CsvSource({"atype-start, atype", "a-b-start, a-b", "type_1-cont, type_1"})
-  void testExtractNameType(String outcome, String type) {
-    assertEquals(type, NameFinderME.extractNameType(outcome));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"start", "other", "-start", "atype-", "atype-st.art"})
-  void testExtractNameTypeWithoutType(String outcome) {
-    assertNull(NameFinderME.extractNameType(outcome));
+  @Test
+  void testExtractNameTypeDelegatesToBioCodec() {
+    // the contract is pinned in BioCodecTest
+    assertEquals("atype", NameFinderME.extractNameType("atype-start"));
+    assertNull(NameFinderME.extractNameType("start"));
   }
 
 }

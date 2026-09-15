@@ -29,8 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.tokenize.TokenSample;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Class which produces an Iterator&lt;TokenSample&gt; from a file of space delimited token.
@@ -54,7 +54,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   public TokenSample next() {
-    String[] tokens = StringUtil.splitOnAsciiWhitespace(line);
+    String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
     if (tokens.length == 0) {
       evenq = true;
     }
@@ -72,7 +72,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         default -> token;
       };
       if (sb.length() != 0) {
-        if (!containsAsciiAlphaNum(token) || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
+        if (!containsLetterOrDigit(token) || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
           if ((token.equals("``") || token.equals("--") || token.equals("$") ||
               token.equals("(")  || token.equals("&")  || token.equals("#") ||
               (token.equals("\"") && (evenq && ti != tokens.length - 1)))
@@ -114,17 +114,20 @@ public class TokenSampleStream implements Iterator<TokenSample> {
 
 
   /**
-   * Tests whether a token contains an ASCII letter or digit.
+   * Tests whether a token contains a letter or a decimal digit, by code point. A token without
+   * one is punctuation and attaches to the token before it.
    *
    * @param token The token.
    * @return {@code true} if one is present.
    */
-  private boolean containsAsciiAlphaNum(String token) {
-    for (int i = 0; i < token.length(); i++) {
-      char c = token.charAt(i);
-      if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+  private boolean containsLetterOrDigit(String token) {
+    int i = 0;
+    while (i < token.length()) {
+      int cp = token.codePointAt(i);
+      if (Character.isLetterOrDigit(cp)) {
         return true;
       }
+      i += Character.charCount(cp);
     }
     return false;
   }

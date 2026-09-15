@@ -212,8 +212,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Removes the ASCII whitespace between a closing guillemet and a following punctuation
-     * character.
+     * Removes the whitespace between a closing guillemet and a following punctuation
+     * character. Whitespace is what {@link StringUtil#isWhitespace(char)} accepts.
      *
      * @param text The text.
      * @param punct The punctuation character.
@@ -228,7 +228,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         char c = text.charAt(i);
         if (c == '»' && i + 1 < text.length()) {
           int j = i + 1;
-          while (j < text.length() && StringUtil.isAsciiWhitespace(text.charAt(j))) {
+          while (j < text.length() && StringUtil.isWhitespace(text.charAt(j))) {
             j++;
           }
           if (j > i + 1 && j < text.length() && text.charAt(j) == punct) {
@@ -244,22 +244,26 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Parses a punctuation line: leading equals signs followed by one or more characters that
-     * are not ASCII letters, digits, or underscores. A line of equals signs only also matches,
-     * with the last one as lexeme.
+     * Parses a punctuation line: leading equals signs followed by one or more characters, none
+     * of which is a letter, a decimal digit, or an underscore. Letters and digits are judged by
+     * code point, so an accented or non-Latin word is not punctuation. A line of equals signs
+     * only also matches, with the last one as lexeme.
      *
      * @param line The line.
      * @return The level, as one more than the count of leading equals signs, and the lexeme,
      *         or {@code null} if the line is not a punctuation line.
      */
-    private String[] parsePunctuationLine(String line) {
+    static String[] parsePunctuationLine(String line) {
       if (line.isEmpty()) {
         return null;
       }
-      for (int i = 0; i < line.length(); i++) {
-        if (isAsciiWord(line.charAt(i))) {
+      int i = 0;
+      while (i < line.length()) {
+        int cp = line.codePointAt(i);
+        if (Character.isLetterOrDigit(cp) || cp == '_') {
           return null;
         }
+        i += Character.charCount(cp);
       }
       int equals = 0;
       while (equals < line.length() && line.charAt(equals) == '=') {
@@ -269,17 +273,6 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return new String[] {String.valueOf(equals), "="};
       }
       return new String[] {String.valueOf(equals + 1), line.substring(equals)};
-    }
-
-    /**
-     * Tests for an ASCII letter, digit, or underscore.
-     *
-     * @param c The character.
-     * @return {@code true} for a word character.
-     */
-    private boolean isAsciiWord(char c) {
-      return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-          || (c >= '0' && c <= '9') || c == '_';
     }
 
     /**

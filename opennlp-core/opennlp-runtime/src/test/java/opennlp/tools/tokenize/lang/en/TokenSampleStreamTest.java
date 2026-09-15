@@ -53,11 +53,15 @@ public class TokenSampleStreamTest {
   }
 
   @Test
-  void testLeadingWhitespaceYieldsEmptyFirstToken() throws IOException {
-    // a leading run gives one empty token, as String.split("\\s+") does
+  void testLeadingAndTrailingWhitespaceAddNoTokens() throws IOException {
+    // a leading run is a separator like any other, not an empty first token with an empty span
     TokenSample sample = stream("  a\n").next();
     Assertions.assertEquals("a", sample.getText());
-    Assertions.assertArrayEquals(new Span[] {new Span(0, 0), new Span(0, 1)},
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, sample.getTokenSpans());
+
+    sample = stream("\t a b \t\n").next();
+    Assertions.assertEquals("a b", sample.getText());
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1), new Span(2, 3)},
         sample.getTokenSpans());
   }
 
@@ -69,11 +73,25 @@ public class TokenSampleStreamTest {
   }
 
   @Test
-  void testNonAsciiWhitespaceIsNotASeparator() throws IOException {
-    // no-break space is not in the ASCII whitespace set
-    TokenSample sample = stream("a b c\n").next();
-    Assertions.assertEquals(2, sample.getTokenSpans().length);
-    Assertions.assertEquals("a b", sample.getText().substring(0, 3));
+  void testUnicodeWhitespaceSeparatesTokens() throws IOException {
+    // no-break space, em space, and ideographic space separate tokens as a plain space does
+    TokenSample sample = stream("a\u00A0b\u2003c\u3000d\n").next();
+    Assertions.assertEquals("a b c d", sample.getText());
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1), new Span(2, 3), new Span(4, 5),
+        new Span(6, 7)}, sample.getTokenSpans());
+  }
+
+  @Test
+  void testNonAsciiWordsAreWords() throws IOException {
+    // a token made of non-ASCII letters or digits is a word and gets a space in front,
+    // it does not attach to the previous token as punctuation would
+    TokenSample sample = stream("caf\u00E9 \u03A9 \u65E5\u672C \u0661 .\n").next();
+    Assertions.assertEquals("caf\u00E9 \u03A9 \u65E5\u672C \u0661.", sample.getText());
+    Assertions.assertEquals(5, sample.getTokenSpans().length);
+
+    // a supplementary-plane letter counts too
+    sample = stream("x \uD801\uDC12 y\n").next();
+    Assertions.assertEquals("x \uD801\uDC12 y", sample.getText());
   }
 
   @Test

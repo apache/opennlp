@@ -34,12 +34,17 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The CoNNL-U Format is specified
  * <a href="http://universaldependencies.org/format.html">here</a>.
  */
 public class ConlluStream implements ObjectStream<ConlluSentence> {
+
+  private static final String TEXT_LANG_PREFIX = "text_";
+  private static final String INVALID_MULTIWORD_ID = "Invalid multiword token id: ";
+
   private final ObjectStream<String> sentenceStream;
 
   /**
@@ -105,7 +110,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
               }
             }
 
-            if (firstPart.startsWith("text_")) {
+            if (firstPart.startsWith(TEXT_LANG_PREFIX)) {
               if (textLang == null) {
                 textLang = new HashMap<>();
               }
@@ -137,7 +142,8 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     return null;
   }
 
-  private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines) {
+  private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines)
+      throws InvalidFormatException {
 
 
     // 1. Find contractions
@@ -150,9 +156,9 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       index.put(line.getId(), i);
       if (line.getId().contains("-")) {
         List<String> expandedContractions = new ArrayList<>();
-        String[] ids = splitOnHyphen(line.getId());
-        int start = Integer.parseInt(ids[0]);
-        int end = Integer.parseInt(ids[1]);
+        int[] range = parseContractionRange(line.getId());
+        int start = range[0];
+        int end = range[1];
         for (int j = start; j <= end; j++) {
           String js = Integer.toString(j);
           expandedContractions.add(js);
@@ -236,31 +242,33 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
   }
 
   /**
-   * Splits a token id on hyphens with the result of {@code String.split("-")}: empty elements
-   * between consecutive hyphens are kept, trailing empty elements are dropped.
+   * Parses a multiword token id of the form {@code start-end}, where both sides are ASCII
+   * digit runs and the range does not run backwards.
    *
-   * @param id The token id.
-   * @return The elements in order.
+   * @param id The token id, which holds a hyphen.
+   * @return The start and end of the range.
+   * @throws InvalidFormatException If the id is not two digit runs joined by one hyphen, or if
+   *         the end is less than the start.
    */
-  private String[] splitOnHyphen(String id) {
-    if (id.isEmpty()) {
-      return new String[] {""};
+  static int[] parseContractionRange(String id) throws InvalidFormatException {
+    int hyphen = id.indexOf('-');
+    int startEnd = StringUtil.endOfAsciiDigits(id, 0);
+    int endEnd = StringUtil.endOfAsciiDigits(id, hyphen + 1);
+    if (hyphen < 1 || startEnd != hyphen || endEnd == hyphen + 1 || endEnd != id.length()) {
+      throw new InvalidFormatException(INVALID_MULTIWORD_ID + id);
     }
-    List<String> parts = new ArrayList<>();
-    int start = 0;
-    for (int i = 0; i < id.length(); i++) {
-      if (id.charAt(i) == '-') {
-        parts.add(id.substring(start, i));
-        start = i + 1;
-      }
+    int start;
+    int end;
+    try {
+      start = Integer.parseInt(id, 0, hyphen, 10);
+      end = Integer.parseInt(id, hyphen + 1, id.length(), 10);
+    } catch (NumberFormatException e) {
+      throw new InvalidFormatException(INVALID_MULTIWORD_ID + id, e);
     }
-    if (id.length() > start) {
-      parts.add(id.substring(start));
+    if (end < start) {
+      throw new InvalidFormatException("Multiword token id runs backwards: " + id);
     }
-    while (!parts.isEmpty() && parts.get(parts.size() - 1).isEmpty()) {
-      parts.remove(parts.size() - 1);
-    }
-    return parts.toArray(new String[0]);
+    return new int[] {start, end};
   }
 
   /**
@@ -273,8 +281,8 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
    */
   private String extractTextLang(String firstPart) {
     int from = 0;
-    while ((from = firstPart.indexOf("text_", from)) != -1) {
-      int i = from + "text_".length();
+    while ((from = firstPart.indexOf(TEXT_LANG_PREFIX, from)) != -1) {
+      int i = from + TEXT_LANG_PREFIX.length();
       int len = 0;
       while (len < 3 && i + len < firstPart.length()
           && firstPart.charAt(i + len) >= 'a' && firstPart.charAt(i + len) <= 'z') {

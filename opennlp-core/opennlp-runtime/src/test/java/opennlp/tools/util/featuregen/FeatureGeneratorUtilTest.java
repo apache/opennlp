@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class FeatureGeneratorUtilTest {
 
@@ -78,6 +79,14 @@ public class FeatureGeneratorUtilTest {
       "a., other", "É., ic", "'A,', ic", "Ab., ic", "AB., ic"})
   void testCapPeriod(String token, String feature) {
     Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"A.\n", "A.\r", "A.\r\n", "A.\u0085", "A.\u2028", "A.\u2029",
+      "Ä.\n", "A.\n\n", "A. ", "A.\nX", "\nA.", " A."})
+  void testCapPeriodIsExactlyTwoCharacters(String token) {
+    // cap-period is one capital and one period, tokens do not contain line breaks
+    Assertions.assertNotEquals("cp", FeatureGeneratorUtil.tokenFeature(token));
   }
 
   @Test

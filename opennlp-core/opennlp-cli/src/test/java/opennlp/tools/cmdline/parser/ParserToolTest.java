@@ -34,17 +34,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ParserToolTest {
 
   /*
-   * The first pass puts a space before a bracket that follows a non-space character, the
-   * second after a bracket that precedes one. Each pass resumes after the pair it spaced, so
-   * "((" gets its space from the second pass only, and only a space, not a tab, separates.
+   * Every bracket ends up separated from adjacent text by whitespace. Whitespace that is
+   * already there is kept, so no separator is doubled, and a bracket that directly
+   * follows another bracket ("{baz}" after ")", "(b" after ")") is separated as well.
    */
   private static Stream<Arguments> parenLines() {
     return Stream.of(
         Arguments.of("a(b)c", "a ( b ) c"),
         Arguments.of("a (b) c", "a ( b ) c"),
-        Arguments.of("foo(bar){baz}", "foo ( bar ) {baz }"),
-        Arguments.of("((a)(b))", "( ( a ) (b ) )"),
+        Arguments.of("foo(bar){baz}", "foo ( bar ) { baz }"),
+        Arguments.of("((a)(b))", "( ( a ) ( b ) )"),
         Arguments.of("a(b(c)d)e", "a ( b ( c ) d ) e"),
+        Arguments.of("a))b", "a ) ) b"),
+        Arguments.of("f(x)+g({y})", "f ( x ) +g ( { y } )"),
         Arguments.of("x((", "x ( ("),
         Arguments.of("((x", "( ( x"),
         Arguments.of("()", "( )"),
@@ -52,8 +54,14 @@ public class ParserToolTest {
         Arguments.of("", ""),
         Arguments.of("no parens here", "no parens here"),
         Arguments.of("«quoted»", "«quoted»"),
+        Arguments.of("[a]", "[a]"),
+        // a tab, a no-break space, or a line break already separates
         Arguments.of("tab\there(", "tab\there ("),
-        Arguments.of("a  (b", "a  ( b"));
+        Arguments.of("a\t(\tb", "a\t(\tb"),
+        Arguments.of("a\u00A0(\u00A0b", "a\u00A0(\u00A0b"),
+        Arguments.of("a\n(", "a\n("),
+        Arguments.of("a  (b", "a  ( b"),
+        Arguments.of("caf\u00E9(\uD83D\uDE00)", "caf\u00E9 ( \uD83D\uDE00 )"));
   }
 
   @ParameterizedTest
@@ -79,7 +87,6 @@ public class ParserToolTest {
     assertEquals(1, parses.length);
     String[] tokens = Stream.of(parses[0].getChildren()).map(Parse::getCoveredText)
         .toArray(String[]::new);
-    // "{y" stays joined: the second pass consumed "{" while spacing "( {"
-    assertArrayEquals(new String[] {"f", "(", "x", ")", "+g", "(", "{y", "}", ")"}, tokens);
+    assertArrayEquals(new String[] {"f", "(", "x", ")", "+g", "(", "{", "y", "}", ")"}, tokens);
   }
 }

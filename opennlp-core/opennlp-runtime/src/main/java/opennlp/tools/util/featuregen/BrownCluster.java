@@ -96,8 +96,8 @@ public class BrownCluster implements SerializableArtifact {
   }
 
   /**
-   * Splits on tabs with the result of {@code String.split("\\t")}: trailing empty fields are
-   * dropped and an empty line yields a single empty field.
+   * Splits on tabs: trailing empty fields are dropped and an empty line gives a single
+   * empty field.
    *
    * @param line The line.
    * @return The fields in order.

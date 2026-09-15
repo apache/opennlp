@@ -127,12 +127,16 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
     return Stream.of(
         Arguments.of("Rio_de_Janeiro", new String[] {"Rio", "de", "Janeiro"}),
         Arguments.of("a__b", new String[] {"a", "b"}),
-        Arguments.of("_a", new String[] {"", "a"}),
+        // leading and trailing underscores add no part, in particular no empty one
+        Arguments.of("_a", new String[] {"a"}),
         Arguments.of("a_", new String[] {"a"}),
+        Arguments.of("_a_b_", new String[] {"a", "b"}),
         Arguments.of("__", new String[0]),
         Arguments.of("_", new String[0]),
+        Arguments.of("", new String[0]),
         Arguments.of("\uD801\uDC12_\uD83D\uDE00", new String[] {"\uD801\uDC12", "\uD83D\uDE00"}),
-        Arguments.of("", new String[] {""}),
+        // only the underscore separates, a space does not
+        Arguments.of("a b_c", new String[] {"a b", "c"}),
         Arguments.of("casa", new String[] {"casa"}));
   }
 
@@ -140,7 +144,6 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   @MethodSource("underscoreLexemes")
   void testSplitOnUnderscores(String lexeme, String[] expected) {
     Assertions.assertArrayEquals(expected, ADNameSampleStream.splitOnUnderscores(lexeme));
-    Assertions.assertArrayEquals(lexeme.split("[_]+"), ADNameSampleStream.splitOnUnderscores(lexeme));
   }
 
   @ParameterizedTest
@@ -181,7 +184,9 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"-", "--", "-1", "1-", "a1-b", "a-1", "a--b", "ab", "a -"})
+  @ValueSource(strings = {"-", "--", "-1", "1-", "a1-b", "a-1", "a--b", "ab", "a -",
+      // only the ASCII hyphen-minus splits; other dashes never do
+      "guarda\u2011chuva", "guarda\u2013chuva", "guarda\u2014chuva"})
   void testMatchHyphenatedTokenRejects(String token) {
     Assertions.assertNull(ADNameSampleStream.matchHyphenatedToken(token));
   }

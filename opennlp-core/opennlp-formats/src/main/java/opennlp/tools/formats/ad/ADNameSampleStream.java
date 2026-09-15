@@ -34,11 +34,11 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -245,7 +245,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       String c = PortugueseContractionUtility.toContraction(
           leftContractionPart, right);
       if (c != null) {
-        String[] parts = StringUtil.splitOnAsciiWhitespace(c);
+        String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(c);
         sentence.addAll(Arrays.asList(parts));
         alreadyAdded = true;
       } else {
@@ -367,44 +367,27 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
-   * Splits on runs of underscores with the result of {@code String.split("[_]+")}: a leading
-   * run yields one empty first element, trailing empty elements are dropped, and
-   * underscore-only input yields an empty array.
+   * Splits a lexeme on underscores into its non-empty parts, so a lexeme such as
+   * {@code Rio_de_Janeiro} yields its three words. Runs of underscores count as one separator,
+   * and leading or trailing underscores add no part.
    *
-   * @param s The text.
-   * @return The elements in order.
+   * @param s The lexeme.
+   * @return The parts in order; empty when the lexeme has no character other than underscores.
    */
   static String[] splitOnUnderscores(String s) {
-    if (s.isEmpty()) {
-      return new String[] {""};
-    }
-    boolean hasToken = false;
-    for (int i = 0; i < s.length(); i++) {
-      if (s.charAt(i) != '_') {
-        hasToken = true;
-        break;
-      }
-    }
-    if (!hasToken) {
-      return new String[0];
-    }
     List<String> tokens = new ArrayList<>();
-    if (s.charAt(0) == '_') {
-      tokens.add("");
-    }
-    int start = 0;
+    int start = -1;
     for (int i = 0; i < s.length(); i++) {
       if (s.charAt(i) == '_') {
-        if (i > start) {
+        if (start >= 0) {
           tokens.add(s.substring(start, i));
+          start = -1;
         }
-        while (i + 1 < s.length() && s.charAt(i + 1) == '_') {
-          i++;
-        }
-        start = i + 1;
+      } else if (start < 0) {
+        start = i;
       }
     }
-    if (s.length() > start) {
+    if (start >= 0) {
       tokens.add(s.substring(start));
     }
     return tokens.toArray(new String[0]);
@@ -531,7 +514,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     if (tags.contains("<NER2>")) {
       return null;
     }
-    String[] tag = StringUtil.splitOnAsciiWhitespace(tags);
+    String[] tag = WhitespaceTokenizer.INSTANCE.tokenize(tags);
     for (String t : tag) {
       String ner = tagContent(t);
       if (ner != null && HAREM.containsKey(ner)) {

@@ -108,7 +108,8 @@ public class FeatureGeneratorUtil {
   }
 
   /**
-   * Tests for a single capital followed by a period.
+   * Tests for a single capital followed by a period, and nothing else: the token is exactly
+   * two characters long.
    *
    * @param token The token.
    * @return {@code true} for exactly that shape.

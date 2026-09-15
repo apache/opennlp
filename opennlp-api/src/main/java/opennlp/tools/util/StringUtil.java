@@ -117,23 +117,6 @@ public class StringUtil {
   }
 
   /**
-   * Determines if the specified {@link Character} is one of the six ASCII whitespace
-   * characters, the set the regular expression class {@code \s} matches: space, tab,
-   * line feed, vertical tab, form feed, and carriage return. Unlike
-   * {@link #isWhitespace(char)}, this ignores the {@link WhitespaceMode} and rejects
-   * every non-ASCII space.
-   *
-   * @param charCode The character to check.
-   *
-   * @return {@code true} if {@code charCode} is one of those six characters,
-   *     {@code false} otherwise.
-   */
-  public static boolean isAsciiWhitespace(char charCode) {
-    return charCode == ' ' || charCode == '\t' || charCode == '\n' || charCode == '\u000B'
-        || charCode == '\f' || charCode == '\r';
-  }
-
-  /**
    * Splits {@code input} on runs of Unicode {@code White_Space}. Leading and trailing
    * runs are ignored, so whitespace-only input yields an empty array. This is a
    * code-point scan, not a regular expression.
@@ -243,51 +226,9 @@ public class StringUtil {
   }
 
   /**
-   * Splits {@code input} on runs of ASCII whitespace with the result of
-   * {@code String.split("\\s+")}: a leading run yields one empty first element, trailing
-   * empty elements are dropped, whitespace-only input yields an empty array, and empty
-   * input yields a single empty element. This is a character scan, not a regular
-   * expression.
-   *
-   * @param input The text to split. Must not be {@code null}.
-   * @return The elements in order.
-   * @throws IllegalArgumentException If {@code input} is {@code null}.
-   */
-  public static String[] splitOnAsciiWhitespace(String input) {
-    if (input == null) {
-      throw new IllegalArgumentException("input must not be null");
-    }
-    if (input.isEmpty()) {
-      return new String[] {""};
-    }
-    final List<String> elements = new ArrayList<>();
-    if (isAsciiWhitespace(input.charAt(0))) {
-      elements.add("");
-    }
-    int start = 0;
-    for (int i = 0; i < input.length(); i++) {
-      if (isAsciiWhitespace(input.charAt(i))) {
-        if (i > start) {
-          elements.add(input.substring(start, i));
-        }
-        while (i + 1 < input.length() && isAsciiWhitespace(input.charAt(i + 1))) {
-          i++;
-        }
-        start = i + 1;
-      }
-    }
-    if (input.length() > start) {
-      elements.add(input.substring(start));
-    }
-    while (!elements.isEmpty() && elements.get(elements.size() - 1).isEmpty()) {
-      elements.remove(elements.size() - 1);
-    }
-    return elements.toArray(new String[0]);
-  }
-
-  /**
    * Tests whether {@code input} contains an ASCII capital letter, {@code A} to {@code Z}.
-   * Capitals outside ASCII do not count. This is a character scan, not a regular expression.
+   * Capitals outside ASCII do not count: the POS tagger and lemmatizer context generators
+   * emit their capital feature from this definition, and trained models expect it.
    *
    * @param input The text to check. Must not be {@code null}.
    * @return {@code true} if at least one character is an ASCII capital letter.
@@ -308,7 +249,8 @@ public class StringUtil {
 
   /**
    * Tests whether {@code input} contains an ASCII digit, {@code 0} to {@code 9}. Digits outside
-   * ASCII do not count. This is a character scan, not a regular expression.
+   * ASCII do not count: the POS tagger and lemmatizer context generators emit their digit
+   * feature from this definition, and trained models expect it.
    *
    * @param input The text to check. Must not be {@code null}.
    * @return {@code true} if at least one character is an ASCII digit.
@@ -319,12 +261,96 @@ public class StringUtil {
       throw new IllegalArgumentException("input must not be null");
     }
     for (int i = 0; i < input.length(); i++) {
-      final char c = input.charAt(i);
-      if (c >= '0' && c <= '9') {
+      if (isAsciiDigit(input.charAt(i))) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Tests for an ASCII letter, {@code a} to {@code z} or {@code A} to {@code Z}. Use it for
+   * keys and identifiers that a file format defines as ASCII; natural-language text is judged
+   * with {@link Character#isLetter(int)}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII letter.
+   */
+  public static boolean isAsciiLetter(int codePoint) {
+    return (codePoint >= 'a' && codePoint <= 'z') || (codePoint >= 'A' && codePoint <= 'Z');
+  }
+
+  /**
+   * Tests for an ASCII digit, {@code 0} to {@code 9}. Use it for numbers that a file format
+   * defines as ASCII, such as token ids; digits of other scripts are judged with
+   * {@link Character#isDigit(int)}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII digit.
+   */
+  public static boolean isAsciiDigit(int codePoint) {
+    return codePoint >= '0' && codePoint <= '9';
+  }
+
+  /**
+   * Finds the end of the run of ASCII digits that starts at {@code from}.
+   *
+   * @param text The text to scan. Must not be {@code null}.
+   * @param from The offset the run starts at, between {@code 0} and {@code text.length()}.
+   * @return The offset after the last digit of the run, or {@code from} if no digit is there.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  public static int endOfAsciiDigits(CharSequence text, int from) {
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
+    if (from < 0 || from > text.length()) {
+      throw new IllegalArgumentException("from must be between 0 and " + text.length());
+    }
+    int i = from;
+    while (i < text.length() && isAsciiDigit(text.charAt(i))) {
+      i++;
+    }
+    return i;
+  }
+
+  /**
+   * Tests for a line terminator: line feed {@code U+000A}, carriage return {@code U+000D},
+   * next line {@code U+0085}, line separator {@code U+2028}, or paragraph separator
+   * {@code U+2029}. Vertical tab and form feed are whitespace but not line terminators.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} ends a line.
+   */
+  public static boolean isLineTerminator(int codePoint) {
+    return codePoint == '\n' || codePoint == '\r' || codePoint == '\u0085'
+        || codePoint == '\u2028' || codePoint == '\u2029';
+  }
+
+  /**
+   * Finds the first line terminator at or after {@code from}, as defined by
+   * {@link #isLineTerminator(int)}.
+   *
+   * @param text The text to scan. Must not be {@code null}.
+   * @param from The offset to start at, between {@code 0} and {@code text.length()}.
+   * @return The offset of the first line terminator, or {@code text.length()} if there is none.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  public static int indexOfLineTerminator(CharSequence text, int from) {
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
+    if (from < 0 || from > text.length()) {
+      throw new IllegalArgumentException("from must be between 0 and " + text.length());
+    }
+    for (int i = from; i < text.length(); i++) {
+      if (isLineTerminator(text.charAt(i))) {
+        return i;
+      }
+    }
+    return text.length();
   }
 
   /**

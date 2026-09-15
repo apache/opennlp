@@ -45,7 +45,7 @@ public class BrownClusterTest {
 
   @Test
   void testTrailingTabsAreDropped() throws IOException {
-    // trailing empty fields do not count, as with String.split("\t")
+    // trailing empty fields do not count
     BrownCluster cluster = cluster("cat\t0100\t\t\n0011\tbird\t7\t\n");
     Assertions.assertEquals("0100", cluster.lookupToken("cat"));
     Assertions.assertEquals("0011", cluster.lookupToken("bird"));

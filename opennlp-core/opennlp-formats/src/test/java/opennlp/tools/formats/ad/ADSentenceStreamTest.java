@@ -19,11 +19,14 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
@@ -160,6 +163,42 @@ public class ADSentenceStreamTest {
     Assertions.assertEquals("b", leaf.getLexeme());
   }
 
+  private static Stream<Arguments> punctuationLines() {
+    return Stream.of(
+        Arguments.of(".", 1, "."),
+        Arguments.of("==,", 3, ","),
+        Arguments.of("=!?", 2, "!?"),
+        Arguments.of("===", 3, "="),
+        Arguments.of("=", 1, "="),
+        Arguments.of("=,=", 2, ",="),
+        // guillemets, an ellipsis, an em dash, and a vulgar fraction are all punctuation
+        Arguments.of("=\u00AB", 2, "\u00AB"),
+        Arguments.of("=\u00BB", 2, "\u00BB"),
+        Arguments.of("=\u2026", 2, "\u2026"),
+        Arguments.of("=\u2014", 2, "\u2014"),
+        Arguments.of("=\u00BD", 2, "\u00BD"),
+        // whitespace is not a word character either
+        Arguments.of("= .", 2, " ."),
+        Arguments.of("=\uD83D\uDE00", 2, "\uD83D\uDE00"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("punctuationLines")
+  void testParsePunctuationLine(String line, int level, String lexeme) {
+    String[] parsed = SentenceParser.parsePunctuationLine(line);
+    Assertions.assertNotNull(parsed);
+    Assertions.assertEquals(String.valueOf(level), parsed[0]);
+    Assertions.assertEquals(lexeme, parsed[1]);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "=a", "=A", "=1", "=_", "=.a", "a.",
+      // letters and digits from any script are word characters, not punctuation
+      "=\u00E9", "=\u00C9", "=\u0661", "=\u65E5", "=\uD801\uDC12", "=\uD835\uDFCE"})
+  void testParsePunctuationLineRejectsWords(String line) {
+    Assertions.assertNull(SentenceParser.parsePunctuationLine(line));
+  }
+
   @Test
   void testFixPunctuation() {
     SentenceParser parser = new SentenceParser();
@@ -176,5 +215,24 @@ public class ADSentenceStreamTest {
     sentence = parser.parse(
         "<s>\nSOURCE: src\n1001 Olá mundo ».\n</s>\n", 1, false, false);
     Assertions.assertEquals("Olá mundo ».", sentence.text());
+
+    // tabs and longer runs are ASCII whitespace too, and collapse the same way
+    sentence = parser.parse(
+        "<s>\nSOURCE: src\n1001 Olá mundo »\t.\n</s>\n", 1, false, false);
+    Assertions.assertEquals("Olá mundo ».", sentence.text());
+
+    sentence = parser.parse(
+        "<s>\nSOURCE: src\n1001 Olá mundo »   ,\n</s>\n", 1, false, false);
+    Assertions.assertEquals("Olá mundo »,", sentence.text());
+
+    // a no-break space between » and the punctuation is whitespace too
+    sentence = parser.parse(
+        "<s>\nSOURCE: src\n1001 Olá mundo »\u00A0.\n</s>\n", 1, false, false);
+    Assertions.assertEquals("Olá mundo ».", sentence.text());
+
+    // other punctuation after » is left alone, and so is a » at the end
+    sentence = parser.parse(
+        "<s>\nSOURCE: src\n1001 Olá mundo » ! Fim »\n</s>\n", 1, false, false);
+    Assertions.assertEquals("Olá mundo » ! Fim »", sentence.text());
   }
 }

@@ -30,6 +30,7 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * <b>Note:</b>
@@ -37,6 +38,8 @@ import opennlp.tools.util.Span;
  */
 @Internal
 public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
+
+  private static final String PARAGRAPH_KEY = "p=";
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
@@ -166,56 +169,31 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
    * @param meta The metadata.
    * @return The text id and the paragraph id, or {@code null} if either is missing.
    */
-  private int[] parseTextAndParagraph(String meta) {
+  static int[] parseTextAndParagraph(String meta) {
     int i = 0;
-    while (i < meta.length() && (isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
+    while (i < meta.length() && (StringUtil.isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
       i++;
     }
     int textStart = i;
-    while (i < meta.length() && isAsciiDigit(meta.charAt(i))) {
-      i++;
-    }
+    i = StringUtil.endOfAsciiDigits(meta, i);
     if (i == textStart) {
       return null;
     }
     int text = Integer.parseInt(meta.substring(textStart, i));
     int from = i;
-    while (from <= meta.length() - "p=".length()) {
-      int p = meta.indexOf("p=", from);
+    while (from <= meta.length() - PARAGRAPH_KEY.length()) {
+      int p = meta.indexOf(PARAGRAPH_KEY, from);
       if (p == -1) {
         return null;
       }
-      int paraStart = p + 2;
-      int paraEnd = paraStart;
-      while (paraEnd < meta.length() && isAsciiDigit(meta.charAt(paraEnd))) {
-        paraEnd++;
-      }
+      int paraStart = p + PARAGRAPH_KEY.length();
+      int paraEnd = StringUtil.endOfAsciiDigits(meta, paraStart);
       if (paraEnd > paraStart) {
         return new int[] {text, Integer.parseInt(meta.substring(paraStart, paraEnd))};
       }
       from = p + 1;
     }
     return null;
-  }
-
-  /**
-   * Tests for an ASCII letter.
-   *
-   * @param c The character.
-   * @return {@code true} for {@code a} to {@code z} or {@code A} to {@code Z}.
-   */
-  private boolean isAsciiLetter(char c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-  }
-
-  /**
-   * Tests for an ASCII digit.
-   *
-   * @param c The character.
-   * @return {@code true} for {@code 0} to {@code 9}.
-   */
-  private boolean isAsciiDigit(char c) {
-    return c >= '0' && c <= '9';
   }
 
   @Override

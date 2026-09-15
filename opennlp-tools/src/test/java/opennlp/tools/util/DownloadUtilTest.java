@@ -81,12 +81,19 @@ public class DownloadUtilTest {
         Arguments.of("abc123 *model.bin\r\n", "abc123"),
         Arguments.of("abc123 model.bin\ndef456 other.bin\n", "abc123"),
         Arguments.of("abc123\u000Bmodel.bin", "abc123"),
-        Arguments.of("abc123\u00A0model.bin", "abc123\u00A0model.bin"));
+        // a no-break space or an ideographic space ends the hash as a plain space does
+        Arguments.of("abc123\u00A0model.bin", "abc123"),
+        Arguments.of("abc123\u3000model.bin", "abc123"),
+        // and leading whitespace of any kind is skipped, JDK trim stops at U+0020
+        Arguments.of("\u00A0abc123 model.bin", "abc123"),
+        Arguments.of("\u3000\tabc123\u2003model.bin", "abc123"),
+        // a zero width space is not whitespace, so it stays part of the hash
+        Arguments.of("abc123\u200Bmodel.bin", "abc123\u200Bmodel.bin"));
   }
 
   @ParameterizedTest
   @NullAndEmptySource
-  @ValueSource(strings = {" ", "\t\n"})
+  @ValueSource(strings = {" ", "\t\n", "\u00A0", "\u3000\u2003", " \u00A0\n"})
   void testParseChecksumOfBlankContent(String content) {
     assertNull(DownloadUtil.parseChecksum(content));
   }

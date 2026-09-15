@@ -17,8 +17,17 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A {@link EmojiCharSequenceNormalizer} implementation that normalizes text
- * in terms of emojis. Every encounter will be replaced by a whitespace.
+ * A {@link CharSequenceNormalizer} that replaces every maximal run of supplementary-plane code
+ * points, {@code U+10000} to {@code U+10FFFF}, with a single space. Emoji live in that range, and
+ * so do other scripts and symbols; nothing in the Basic Multilingual Plane is touched, so
+ * fullwidth and halfwidth forms, compatibility ideographs, presentation forms, and the private
+ * use area pass through, and so do the BMP characters of an emoji sequence such as the zero
+ * width joiner {@code U+200D} and the variation selector {@code U+FE0F}. An unpaired surrogate
+ * is not a code point in that range and is kept as it is.
+ *
+ * <p>Since 3.0.0 only supplementary-plane code points are replaced. Earlier releases also
+ * blanked some BMP characters and ASCII hyphens (OPENNLP-1928). The default
+ * {@link opennlp.tools.langdetect.LanguageDetectorFactory} chain uses this normalizer.
  *
  * @deprecated Replaces every supplementary-plane code point with a space, not only emoji. Use
  *     {@link EmojiToEmoticonCharSequenceNormalizer} instead.
@@ -27,7 +36,7 @@ package opennlp.tools.util.normalizer;
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = 4553401197981667914L;
-  
+
   private static final EmojiCharSequenceNormalizer INSTANCE = new EmojiCharSequenceNormalizer();
 
   public static EmojiCharSequenceNormalizer getInstance() {
@@ -35,17 +44,8 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   /**
-   * The lowest code point that is replaced: the first high surrogate of the emoji planes.
-   * Lone surrogates and every BMP character from here up count as well.
-   */
-  private static final int LOWER_CODE_POINT = 0xD83C;
-
-  /** The highest code point that is replaced. */
-  private static final int UPPER_CODE_POINT = 0x10FC00;
-
-  /**
    * {@inheritDoc}
-   * Every maximal run of code points in {@code [U+D83C, U+10FC00]} becomes one space.
+   * Every maximal run of supplementary-plane code points becomes one space.
    */
   @Override
   public CharSequence normalize (CharSequence text) {
@@ -56,20 +56,15 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
     int i = 0;
     while (i < text.length()) {
       int cp = Character.codePointAt(text, i);
-      if (cp >= LOWER_CODE_POINT && cp <= UPPER_CODE_POINT) {
-        i += Character.charCount(cp);
-        while (i < text.length()) {
-          int next = Character.codePointAt(text, i);
-          if (next < LOWER_CODE_POINT || next > UPPER_CODE_POINT) {
-            break;
-          }
-          i += Character.charCount(next);
+      if (Character.isSupplementaryCodePoint(cp)) {
+        while (i < text.length() && Character.isSupplementaryCodePoint(Character.codePointAt(text, i))) {
+          i += 2;
         }
         normalized.append(' ');
       }
       else {
-        normalized.appendCodePoint(cp);
-        i += Character.charCount(cp);
+        normalized.append(text.charAt(i));
+        i++;
       }
     }
     return normalized.toString();

@@ -120,8 +120,13 @@ public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample>
         Arguments.of(" PR 3S ", "=PR=3S="),
         Arguments.of(" ", "="),
         Arguments.of("", ""),
-        Arguments.of("PR\u00A03S", "PR\u00A03S"),
+        // no-break space, em space, and ideographic space are whitespace too
+        Arguments.of("PR\u00A03S", "PR=3S"),
+        Arguments.of("PR\u20033S\u3000IND", "PR=3S=IND"),
         Arguments.of("\r\n\u000B\f", "="),
+        // zero width space and soft hyphen are not whitespace
+        Arguments.of("PR\u200B3S", "PR\u200B3S"),
+        Arguments.of("PR\u00AD3S", "PR\u00AD3S"),
         Arguments.of("\uD83D\uDE00 x", "\uD83D\uDE00=x"));
   }
 

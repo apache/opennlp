@@ -23,6 +23,7 @@ import java.util.List;
 
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The default {@link SequenceCodec} implementation according to the {@code BIO} scheme:
@@ -47,7 +48,9 @@ public class BioCodec implements SequenceCodec<String> {
 
   static String extractNameType(String outcome) {
     int separator = outcome.lastIndexOf('-');
-    if (separator > 0 && isWordChars(outcome, separator + 1)) {
+    // a type never spans a line terminator
+    if (separator > 0 && isWordChars(outcome, separator + 1)
+        && StringUtil.indexOfLineTerminator(outcome, 0) >= separator) {
       return outcome.substring(0, separator);
     }
 
@@ -68,8 +71,7 @@ public class BioCodec implements SequenceCodec<String> {
     }
     for (int i = from; i < outcome.length(); i++) {
       char c = outcome.charAt(i);
-      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-          || (c >= '0' && c <= '9') || c == '_')) {
+      if (!(StringUtil.isAsciiLetter(c) || StringUtil.isAsciiDigit(c) || c == '_')) {
         return false;
       }
     }

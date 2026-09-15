@@ -151,8 +151,8 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
   }
 
   /**
-   * Replaces every run of ASCII whitespace, leading and trailing runs included, with a single
-   * equals sign.
+   * Replaces every run of whitespace, leading and trailing runs included, with a single equals
+   * sign. Whitespace is what {@link StringUtil#isWhitespace(char)} accepts.
    *
    * @param tag The tag.
    * @return The joined tag.
@@ -162,9 +162,9 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
     int i = 0;
     while (i < tag.length()) {
       char c = tag.charAt(i);
-      if (StringUtil.isAsciiWhitespace(c)) {
+      if (StringUtil.isWhitespace(c)) {
         replaced.append('=');
-        while (i + 1 < tag.length() && StringUtil.isAsciiWhitespace(tag.charAt(i + 1))) {
+        while (i + 1 < tag.length() && StringUtil.isWhitespace(tag.charAt(i + 1))) {
           i++;
         }
       } else {

@@ -253,24 +253,27 @@ public class DownloadUtil {
 
   /**
    * Extracts the hash from the content of a checksum file, which holds the hash followed by the
-   * name of the file it applies to.
+   * name of the file it applies to. The hash is the first run of non-whitespace characters,
+   * with whitespace as {@link StringUtil#isWhitespace(char)} defines it, so leading whitespace
+   * of any kind is skipped and the hash ends at the next whitespace character.
    *
    * @param checksumFileContent The file content.
    * @return The hash, or {@code null} if the content is {@code null} or blank.
    */
   static String parseChecksum(String checksumFileContent) {
-    if (checksumFileContent == null) {
+    if (checksumFileContent == null || StringUtil.isBlank(checksumFileContent)) {
       return null;
     }
-    final String trimmed = checksumFileContent.trim();
-    if (trimmed.isEmpty()) {
-      return null;
+    int start = 0;
+    while (StringUtil.isWhitespace(checksumFileContent.charAt(start))) {
+      start++;
     }
-    int end = 0;
-    while (end < trimmed.length() && !StringUtil.isAsciiWhitespace(trimmed.charAt(end))) {
+    int end = start;
+    while (end < checksumFileContent.length()
+        && !StringUtil.isWhitespace(checksumFileContent.charAt(end))) {
       end++;
     }
-    return trimmed.substring(0, end);
+    return checksumFileContent.substring(start, end);
   }
 
   private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
@@ -332,6 +335,9 @@ public class DownloadUtil {
   @Internal
   static class DownloadParser {
 
+    private static final String ANCHOR_START = "<a href=\"";
+    private static final String ANCHOR_END = "</a>";
+
     private final URL indexUrl;
 
     DownloadParser(URL indexUrl) {
@@ -356,14 +362,14 @@ public class DownloadUtil {
     static List<String> extractLinks(String page) {
       final List<String> links = new ArrayList<>();
       int from = 0;
-      while ((from = indexOfIgnoreCase(page, "<a href=\"", from)) != -1) {
-        final int valueStart = from + "<a href=\"".length();
+      while ((from = indexOfIgnoreCase(page, ANCHOR_START, from)) != -1) {
+        final int valueStart = from + ANCHOR_START.length();
         final int valueEnd = page.indexOf("\">", valueStart);
         if (valueEnd != -1) {
-          final int close = indexOfIgnoreCase(page, "</a>", valueEnd + 2);
+          final int close = indexOfIgnoreCase(page, ANCHOR_END, valueEnd + 2);
           if (close != -1) {
             links.add(page.substring(valueStart, valueEnd));
-            from = close + "</a>".length();
+            from = close + ANCHOR_END.length();
             continue;
           }
         }

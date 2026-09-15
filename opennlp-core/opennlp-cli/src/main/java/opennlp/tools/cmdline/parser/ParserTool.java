@@ -40,6 +40,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 public final class ParserTool extends BasicCmdLineTool {
 
@@ -74,43 +75,31 @@ public final class ParserTool extends BasicCmdLineTool {
   }
 
   /**
-   * Separates round and curly brackets from adjacent text in two left-to-right passes: the
-   * first puts a space between a non-space character and a following bracket, the second
-   * between a bracket and a following non-space character. Each pass resumes after the pair
-   * it just spaced, so a pair overlapping that match is only seen by the second pass.
+   * Separates round and curly brackets from adjacent text so that a whitespace tokenizer
+   * yields each bracket as its own token. A space is inserted before a bracket that follows a
+   * non-whitespace character and after a bracket that precedes one; whitespace already there
+   * is left alone, so the result never carries a doubled separator.
    *
    * @param line The untokenized line.
    * @return The spaced line.
    */
   static String spaceUntokenizedParens(String line) {
-    return insertParenSpaces(insertParenSpaces(line, false), true);
-  }
-
-  /**
-   * Inserts a space between a bracket and an adjacent non-space character, left to right.
-   *
-   * @param line The untokenized line.
-   * @param parenFirst {@code true} to space a bracket before a character, {@code false} after one.
-   * @return The spaced line.
-   */
-  private static String insertParenSpaces(String line, boolean parenFirst) {
     StringBuilder spaced = new StringBuilder(line.length() + 8);
-    int i = 0;
-    while (i < line.length()) {
+    for (int i = 0; i < line.length(); i++) {
       char c = line.charAt(i);
-      if (i + 1 < line.length()) {
-        char next = line.charAt(i + 1);
-        boolean match = parenFirst
-            ? isParen(c) && next != ' '
-            : c != ' ' && isParen(next);
-        if (match) {
-          spaced.append(c).append(' ').append(next);
-          i += 2;
-          continue;
+      if (isParen(c)) {
+        // judge "already separated" on the output, so the space a bracket inserted after
+        // itself also serves the bracket that follows it
+        if (!spaced.isEmpty() && !StringUtil.isWhitespace(spaced.charAt(spaced.length() - 1))) {
+          spaced.append(' ');
         }
+        spaced.append(c);
+        if (i + 1 < line.length() && !StringUtil.isWhitespace(line.charAt(i + 1))) {
+          spaced.append(' ');
+        }
+      } else {
+        spaced.append(c);
       }
-      spaced.append(c);
-      i++;
     }
     return spaced.toString();
   }
