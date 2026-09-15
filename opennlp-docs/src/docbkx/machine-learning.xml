@@ -79,19 +79,13 @@ under the License.
 		and example implementations can be found in the OpenNLP Tools preprocessing components.
 		</para>
 		<para>
-		<code>BasicContextGenerator</code> is the ready-made <code>ContextGenerator</code> for the
-		line format of the event streams: the contextual predicates of one event as a single string.
-		Without arguments it separates the predicates on whitespace, following the same definition
-		of whitespace as the event streams and the <code>WhitespaceTokenizer</code>, so tabs,
-		repeated spaces, and no-break spaces all separate. A separator given to the constructor is
-		taken as written, not as a regular expression: <code>|</code> separates on the vertical
-		bar and <code>.</code> on the period, and a separator such as <code>\s+</code> matches
-		that text only. The separator must not be null or empty, and it must be well-formed text:
-		an unpaired surrogate is rejected because it could split a character of the input.
-		A predicate is not empty, so a leading, repeated, or trailing separator does not
-		produce one, and an empty input gives no predicates. In releases before 3.0.0 the separator was compiled as a regular expression and
-		empty predicates were produced; code that passed a pattern needs to pass the plain
-		separator instead, or use the default constructor for whitespace.
+		<code>BasicContextGenerator</code> turns one string of contextual predicates into the
+		predicate array. Without arguments it separates on runs of whitespace under the Unicode
+		White_Space property (<code>StringUtil.isUnicodeWhitespace</code>), independent of the
+		<code>opennlp.whitespace.mode</code> setting. A separator given to the constructor is
+		taken as written, not as a regular expression, and must not be null, empty, or contain an
+		unpaired surrogate. A predicate is never empty: leading, repeated, or trailing separators
+		produce none, and an empty input gives no predicates.
 		</para>
 		<para>
 		We have also set in place some interfaces and code to make it easier to automate the training
