@@ -19,7 +19,6 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,11 +32,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSample> {
+
+  private final ADNameSampleStream parser =
+      new ADNameSampleStream(ObjectStreamUtils.createObjectStream(), false);
 
   @BeforeEach
   void setup() throws IOException {
@@ -146,19 +148,19 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   @ParameterizedTest
   @MethodSource("underscoreLexemes")
   void testSplitOnUnderscores(String lexeme, String[] expected) {
-    Assertions.assertArrayEquals(expected, ADNameSampleStream.splitOnUnderscores(lexeme));
+    Assertions.assertArrayEquals(expected, parser.splitOnUnderscores(lexeme));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"casa", "São", "1990", "R2D2", "\uD801\uDC12\u0661"})
   void testIsAlphaNumericAccepts(String token) {
-    Assertions.assertTrue(ADNameSampleStream.isAlphaNumeric(token));
+    Assertions.assertTrue(parser.isAlphaNumeric(token));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"", "guarda-chuva", "R$", "a b", "\u00BD", "\uD83D\uDE00"})
   void testIsAlphaNumericRejects(String token) {
-    Assertions.assertFalse(ADNameSampleStream.isAlphaNumeric(token));
+    Assertions.assertFalse(parser.isAlphaNumeric(token));
   }
 
   private static Stream<Arguments> hyphenatedTokens() {
@@ -179,12 +181,7 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   @ParameterizedTest
   @MethodSource("hyphenatedTokens")
   void testMatchHyphenatedToken(String token, String[] expected) {
-    String[] actual = ADNameSampleStream.matchHyphenatedToken(token);
-    if (expected[0] == null && expected[1] == null && expected[2] == null) {
-      Assertions.assertNull(actual);
-    } else {
-      Assertions.assertArrayEquals(expected, actual);
-    }
+    Assertions.assertArrayEquals(expected, parser.matchHyphenatedToken(token));
   }
 
   @ParameterizedTest
@@ -194,7 +191,7 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
       // only the ASCII hyphen-minus splits; other dashes never do
       "guarda\u2011chuva", "guarda\u2013chuva", "guarda\u2014chuva"})
   void testMatchHyphenatedTokenRejects(String token) {
-    Assertions.assertNull(ADNameSampleStream.matchHyphenatedToken(token));
+    Assertions.assertNull(parser.matchHyphenatedToken(token));
   }
 
   @ParameterizedTest
@@ -202,23 +199,13 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
       "<a\u0085b>, a\u0085b",
       "<NER:NER:X>, NER:X", "<ner:PROP>, ner:PROP", "<\uD83D\uDE00>, \uD83D\uDE00"})
   void testTagContent(String tag, String expected) {
-    Assertions.assertEquals(expected, ADNameSampleStream.tagContent(tag));
+    Assertions.assertEquals(expected, parser.tagContent(tag));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"", "<", ">", "PROP", "<PROP", "PROP>"})
   void testTagContentRejects(String tag) {
-    Assertions.assertNull(ADNameSampleStream.tagContent(tag));
-  }
-
-  private static ObjectStream<String> lineStream(List<String> lines) {
-    Iterator<String> iterator = lines.iterator();
-    return new ObjectStream<>() {
-      @Override
-      public String read() {
-        return iterator.hasNext() ? iterator.next() : null;
-      }
-    };
+    Assertions.assertNull(parser.tagContent(tag));
   }
 
   @ParameterizedTest
@@ -230,7 +217,8 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   void testTextIdFromCorpusMetadata(String sentenceId, String source) throws IOException {
     List<String> lines = List.of("<s>", source, sentenceId + " Olá .", "STA:fcl",
         "=H:intj(\"olá\" <x>)\tOlá", ".", "</s>");
-    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
       NameSample sample = stream.read();
       Assertions.assertNotNull(sample);
       Assertions.assertArrayEquals(new String[] {"Olá", "."}, sample.getSentence());
@@ -249,7 +237,8 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   })
   void testInvalidMetadataIsRejected(String sentenceId, String source) throws IOException {
     List<String> lines = List.of("<s>", source, sentenceId + " Olá .", "</s>");
-    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
       RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
       Assertions.assertTrue(e.getMessage().startsWith("Invalid metadata: " + sentenceId + " p="));
     }
@@ -263,7 +252,8 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   @Test
   void testContractionLexemeOfUnderscoresOnlyHasNoLeftPart() throws IOException {
     List<String> lines = sentenceLines("==H:prp(\"em\" <sam-> <right>)\t_");
-    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
       NameSample sample = stream.read();
       Assertions.assertNotNull(sample);
       Assertions.assertArrayEquals(new String[] {"casa", "."}, sample.getSentence());
@@ -273,7 +263,8 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   @Test
   void testLeadingUnderscoreYieldsNoToken() throws IOException {
     List<String> lines = sentenceLines("=H:n(\"a\" M S)\t_a");
-    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
       NameSample sample = stream.read();
       Assertions.assertNotNull(sample);
       Assertions.assertArrayEquals(new String[] {"a", "casa", "."}, sample.getSentence());
@@ -283,7 +274,8 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   @Test
   void testNoBreakSpaceSeparatesTheTagsOfALeaf() throws IOException {
     List<String> lines = sentenceLines("=H:prop(\"Lisboa\"\u00A0<NER:civ>\u00A0F S)\tLisboa");
-    try (ADNameSampleStream stream = new ADNameSampleStream(lineStream(lines), false)) {
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
       NameSample sample = stream.read();
       Assertions.assertNotNull(sample);
       Assertions.assertArrayEquals(new String[] {"Lisboa", "casa", "."}, sample.getSentence());

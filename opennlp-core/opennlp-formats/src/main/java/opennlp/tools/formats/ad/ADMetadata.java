@@ -27,36 +27,45 @@ final class ADMetadata {
 
   private static final String PARAGRAPH_PREFIX = "p=";
   private static final String SOURCE_PREFIX = "source=\"";
+  private static final char HYPHEN = '-';
+  private static final char QUOTE = '"';
+
+  /**
+   * The ids of a sentence.
+   *
+   * @param text The text id.
+   * @param paragraph The paragraph id.
+   */
+  record TextAndParagraph(int text, int paragraph) {
+  }
+
+  /**
+   * Where the digit runs of the two ids lie in the metadata, each as an inclusive start and
+   * an exclusive end.
+   */
+  private record IdSpans(int textStart, int textEnd, int paragraphStart, int paragraphEnd) {
+  }
 
   private ADMetadata() {
   }
 
   /**
-   * Parses the text id and the paragraph id: the text id is the ASCII digit run after any
-   * leading ASCII letters and hyphens, the paragraph id the digit run after the first
-   * {@code p=} that at least one digit follows.
+   * Parses the text id and the paragraph id: the text id is the ASCII digit run that directly
+   * follows the leading ASCII letters and hyphens, the paragraph id the digit run after the
+   * first {@code p=} that at least one digit follows.
    *
    * @param meta The metadata.
-   * @return The text id and the paragraph id, or {@code null} if either is missing.
+   * @return The two ids, or {@code null} if either is missing or does not fit into an
+   *         {@code int}.
    */
-  static int[] parseTextAndParagraph(String meta) {
-    int[] spans = scanTextAndParagraph(meta);
+  static TextAndParagraph parseTextAndParagraph(String meta) {
+    IdSpans spans = scanTextAndParagraph(meta);
     if (spans == null) {
       return null;
     }
-    return new int[] {Integer.parseInt(meta.substring(spans[0], spans[1])),
-        Integer.parseInt(meta.substring(spans[2], spans[3]))};
-  }
-
-  /**
-   * Reads the digits of the text id, see {@link #parseTextAndParagraph(String)}.
-   *
-   * @param meta The metadata.
-   * @return The digits, or {@code null} if the text id or the paragraph id is missing.
-   */
-  static String textId(String meta) {
-    int[] spans = scanTextAndParagraph(meta);
-    return spans == null ? null : meta.substring(spans[0], spans[1]);
+    int text = parseDigits(meta, spans.textStart(), spans.textEnd());
+    int paragraph = parseDigits(meta, spans.paragraphStart(), spans.paragraphEnd());
+    return text == -1 || paragraph == -1 ? null : new TextAndParagraph(text, paragraph);
   }
 
   /**
@@ -68,8 +77,8 @@ final class ADMetadata {
    *         missing.
    */
   static String textPrefix(String meta) {
-    int[] spans = scanTextAndParagraph(meta);
-    return spans == null || spans[0] == 0 ? null : meta.substring(0, spans[0]);
+    IdSpans spans = scanTextAndParagraph(meta);
+    return spans == null || spans.textStart() == 0 ? null : meta.substring(0, spans.textStart());
   }
 
   /**
@@ -84,7 +93,7 @@ final class ADMetadata {
       return null;
     }
     start += SOURCE_PREFIX.length();
-    int end = meta.indexOf('"', start);
+    int end = meta.indexOf(QUOTE, start);
     return end == -1 ? null : meta.substring(start, end);
   }
 
@@ -92,20 +101,18 @@ final class ADMetadata {
    * Scans the text id and the paragraph id, see {@link #parseTextAndParagraph(String)}.
    *
    * @param meta The metadata.
-   * @return The start and end of the text id and the start and end of the paragraph id, or
-   *         {@code null} if either is missing.
+   * @return The spans of the two ids, or {@code null} if either is missing.
    */
-  private static int[] scanTextAndParagraph(String meta) {
+  private static IdSpans scanTextAndParagraph(String meta) {
     int i = 0;
-    while (i < meta.length() && (StringUtil.isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == '-')) {
+    while (i < meta.length() && (StringUtil.isAsciiLetter(meta.charAt(i)) || meta.charAt(i) == HYPHEN)) {
       i++;
     }
     int textStart = i;
-    i = StringUtil.endOfAsciiDigits(meta, i);
-    if (i == textStart) {
+    int textEnd = StringUtil.endOfAsciiDigits(meta, i);
+    if (textEnd == textStart) {
       return null;
     }
-    int textEnd = i;
     int from = textEnd;
     while (true) {
       int prefix = meta.indexOf(PARAGRAPH_PREFIX, from);
@@ -115,10 +122,30 @@ final class ADMetadata {
       int paragraphStart = prefix + PARAGRAPH_PREFIX.length();
       int paragraphEnd = StringUtil.endOfAsciiDigits(meta, paragraphStart);
       if (paragraphEnd > paragraphStart) {
-        return new int[] {textStart, textEnd, paragraphStart, paragraphEnd};
+        return new IdSpans(textStart, textEnd, paragraphStart, paragraphEnd);
       }
       from = prefix + 1;
     }
+  }
+
+  /**
+   * Reads a run of ASCII digits as a number.
+   *
+   * @param meta The metadata.
+   * @param start The inclusive start of the run.
+   * @param end The exclusive end of the run.
+   * @return The number, or -1 if it does not fit into an {@code int}.
+   */
+  private static int parseDigits(String meta, int start, int end) {
+    int value = 0;
+    for (int i = start; i < end; i++) {
+      int digit = meta.charAt(i) - '0';
+      if (value > (Integer.MAX_VALUE - digit) / 10) {
+        return -1;
+      }
+      value = value * 10 + digit;
+    }
+    return value;
   }
 
 }

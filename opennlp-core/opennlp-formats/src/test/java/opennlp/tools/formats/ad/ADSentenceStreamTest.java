@@ -40,6 +40,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
+import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.PunctuationLine;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -142,6 +143,10 @@ public class ADSentenceStreamTest {
     return ((ADSentenceStream.SentenceParser.Node) top[0]).getElements().length;
   }
 
+  private static ADSentenceStream emptyStream() {
+    return new ADSentenceStream(ObjectStreamUtils.createObjectStream());
+  }
+
   private static Stream<Arguments> nodeLines() {
     return Stream.of(
         Arguments.of("STA:fcl", 1, "STA:fcl"),
@@ -208,7 +213,7 @@ public class ADSentenceStreamTest {
         // any whitespace separates the closing parenthesis from the lexeme
         Arguments.of("=H:n(\"casa\" M S)\u00A0casa", 2, "H", "n", "casa", "", "M S", "casa"),
         Arguments.of("=H:n(\"casa\" M S)\u3000 casa", 2, "H", "n", "casa", "", "M S", "casa"),
-        // a line separator inside the line is an ordinary character
+        // a line separator inside the lemma, a secondary tag, or the lexeme is kept
         Arguments.of("=H:n(\"a\u2028b\" <x\u2028y> M S)\tc\u2028d",
             2, "H", "n", "a\u2028b", "<x\u2028y>", "M S", "c\u2028d"),
         // supplementary-plane characters in lemma and lexeme
@@ -309,37 +314,6 @@ public class ADSentenceStreamTest {
     Assertions.assertEquals("random text", leaf.getLexeme());
   }
 
-  @Test
-  void testPunctuationLeaf() {
-    SentenceParser parser = new SentenceParser();
-
-    Leaf leaf = (Leaf) parser.getElement("==,");
-    Assertions.assertEquals(3, leaf.getLevel());
-    Assertions.assertEquals(",", leaf.getLexeme());
-
-    leaf = (Leaf) parser.getElement(".");
-    Assertions.assertEquals(1, leaf.getLevel());
-    Assertions.assertEquals(".", leaf.getLexeme());
-
-    // a line of only equals signs matches, with the last one as lexeme
-    leaf = (Leaf) parser.getElement("===");
-    Assertions.assertEquals(3, leaf.getLevel());
-    Assertions.assertEquals("=", leaf.getLexeme());
-
-    // non-word characters other than equals make up the lexeme
-    leaf = (Leaf) parser.getElement("=!?");
-    Assertions.assertEquals(2, leaf.getLevel());
-    Assertions.assertEquals("!?", leaf.getLexeme());
-
-    // a word character excludes the punctuation parse, the line is treated
-    // as a bizarre leaf instead
-    TreeElement element = parser.getElement("=ab");
-    Assertions.assertTrue(element.isLeaf());
-    leaf = (Leaf) element;
-    Assertions.assertEquals(2, leaf.getLevel());
-    Assertions.assertEquals("ab", leaf.getLexeme());
-  }
-
   private static Stream<Arguments> punctuationLines() {
     return Stream.of(
         Arguments.of(".", 1, "."),
@@ -362,10 +336,8 @@ public class ADSentenceStreamTest {
   @ParameterizedTest
   @MethodSource("punctuationLines")
   void testParsePunctuationLine(String line, int level, String lexeme) {
-    String[] parsed = SentenceParser.parsePunctuationLine(line);
-    Assertions.assertNotNull(parsed);
-    Assertions.assertEquals(String.valueOf(level), parsed[0]);
-    Assertions.assertEquals(lexeme, parsed[1]);
+    Assertions.assertEquals(new PunctuationLine(level, lexeme),
+        new SentenceParser().parsePunctuationLine(line));
   }
 
   @ParameterizedTest
@@ -373,44 +345,31 @@ public class ADSentenceStreamTest {
       // letters and digits from any script are word characters, not punctuation
       "=\u00E9", "=\u00C9", "=\u0661", "=\u65E5", "=\uD801\uDC12", "=\uD835\uDFCE"})
   void testParsePunctuationLineRejectsWords(String line) {
-    Assertions.assertNull(SentenceParser.parsePunctuationLine(line));
+    Assertions.assertNull(new SentenceParser().parsePunctuationLine(line));
   }
 
-  @Test
-  void testFixPunctuation() {
-    SentenceParser parser = new SentenceParser();
-
-    Sentence sentence = parser.parse(
-        "<s>\nSOURCE: src\n1001 Olá mundo » .\n</s>\n", 1, false, false);
-    Assertions.assertEquals("Olá mundo ».", sentence.text());
-
-    sentence = parser.parse(
-        "<s>\nSOURCE: src\n1001 Olá » , tudo bem » .\n</s>\n", 1, false, false);
-    Assertions.assertEquals("Olá », tudo bem ».", sentence.text());
-
-    // without whitespace between » and the punctuation nothing is replaced
-    sentence = parser.parse(
-        "<s>\nSOURCE: src\n1001 Olá mundo ».\n</s>\n", 1, false, false);
-    Assertions.assertEquals("Olá mundo ».", sentence.text());
-
-    // tabs and longer runs are ASCII whitespace too, and collapse the same way
-    sentence = parser.parse(
-        "<s>\nSOURCE: src\n1001 Olá mundo »\t.\n</s>\n", 1, false, false);
-    Assertions.assertEquals("Olá mundo ».", sentence.text());
-
-    sentence = parser.parse(
-        "<s>\nSOURCE: src\n1001 Olá mundo »   ,\n</s>\n", 1, false, false);
-    Assertions.assertEquals("Olá mundo »,", sentence.text());
-
-    // a no-break space between » and the punctuation is whitespace too
-    sentence = parser.parse(
-        "<s>\nSOURCE: src\n1001 Olá mundo »\u00A0.\n</s>\n", 1, false, false);
-    Assertions.assertEquals("Olá mundo ».", sentence.text());
-
-    // other punctuation after » is left alone, and so is a » at the end
-    sentence = parser.parse(
-        "<s>\nSOURCE: src\n1001 Olá mundo » ! Fim »\n</s>\n", 1, false, false);
-    Assertions.assertEquals("Olá mundo » ! Fim »", sentence.text());
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', ignoreLeadingAndTrailingWhitespace = false, value = {
+      "Ol\u00E1 mundo \u00BB .|Ol\u00E1 mundo \u00BB.",
+      "Ol\u00E1 \u00BB , tudo bem \u00BB .|Ol\u00E1 \u00BB, tudo bem \u00BB.",
+      // without whitespace between the guillemet and the punctuation no run is joined
+      "Ol\u00E1 mundo \u00BB.|Ol\u00E1 mundo \u00BB.",
+      // any run of Unicode whitespace collapses the same way
+      "Ol\u00E1 mundo \u00BB\t.|Ol\u00E1 mundo \u00BB.",
+      "Ol\u00E1 mundo \u00BB   ,|Ol\u00E1 mundo \u00BB,",
+      "Ol\u00E1 mundo \u00BB\u00A0.|Ol\u00E1 mundo \u00BB.",
+      "Ol\u00E1 mundo \u00BB\u0085.|Ol\u00E1 mundo \u00BB.",
+      "Ol\u00E1 mundo \u00BB\u001C.|Ol\u00E1 mundo \u00BB\u001C.",
+      // other punctuation after the guillemet is kept, and so is a guillemet at the end
+      "Ol\u00E1 mundo \u00BB ! Fim \u00BB|Ol\u00E1 mundo \u00BB ! Fim \u00BB",
+      "a \u00BB . b \u00BB ,|a \u00BB. b \u00BB,",
+      "\u00BB .|\u00BB.",
+      "sem guillemet .|sem guillemet ."
+  })
+  void testFixPunctuation(String text, String expected) {
+    Sentence sentence = new SentenceParser().parse(
+        "<s>\nSOURCE: src\n1001 " + text + "\n</s>\n", 1, false, false);
+    Assertions.assertEquals(expected, sentence.text());
   }
 
   @ParameterizedTest
@@ -464,7 +423,7 @@ public class ADSentenceStreamTest {
       "<s\u001Cid=\"1\">|s|false"
   })
   void testIsOpeningTag(String line, String name, boolean expected) {
-    Assertions.assertEquals(expected, ADSentenceStream.isOpeningTag(line, name));
+    Assertions.assertEquals(expected, emptyStream().isOpeningTag(line, name));
   }
 
   @ParameterizedTest
@@ -488,13 +447,13 @@ public class ADSentenceStreamTest {
       "</t >|t|false"
   })
   void testIsClosingTag(String line, String name, boolean expected) {
-    Assertions.assertEquals(expected, ADSentenceStream.isClosingTag(line, name));
+    Assertions.assertEquals(expected, emptyStream().isClosingTag(line, name));
   }
 
   @Test
   void testTrailingCarriageReturnIsNotATag() {
-    Assertions.assertFalse(ADSentenceStream.isOpeningTag("<s>\r", "s"));
-    Assertions.assertFalse(ADSentenceStream.isClosingTag("</s>\r", "s"));
+    Assertions.assertFalse(emptyStream().isOpeningTag("<s>\r", "s"));
+    Assertions.assertFalse(emptyStream().isClosingTag("</s>\r", "s"));
   }
 
   private static Stream<Arguments> leafLinesWithMarkupInside() {
@@ -728,7 +687,7 @@ public class ADSentenceStreamTest {
       // the file separator is not Unicode whitespace
       rows.add(Arguments.of(mode, "=H:n(\"casa\" F S)\u001Ccasa", true, "",
           "H:n(\"casa\" F S)\u001Ccasa"));
-      rows.add(Arguments.of(mode, "=S:np\u001C", true, "", "S:np\u001C"));
+      rows.add(Arguments.of(mode, "=S:np\u001C", false, "S:np\u001C", null));
     }
     return rows.stream();
   }
@@ -751,9 +710,10 @@ public class ADSentenceStreamTest {
   @MethodSource("whitespaceModes")
   void testOpeningTagWhitespaceIsTheUnicodeDefinitionInEveryMode(WhitespaceMode mode) {
     WhitespaceMode.setActive(mode);
-    Assertions.assertTrue(ADSentenceStream.isOpeningTag("<s\u0085id=\"1\">", "s"));
-    Assertions.assertTrue(ADSentenceStream.isOpeningTag("<s\u00A0id=\"1\">", "s"));
-    Assertions.assertFalse(ADSentenceStream.isOpeningTag("<s\u001Cid=\"1\">", "s"));
+    ADSentenceStream stream = emptyStream();
+    Assertions.assertTrue(stream.isOpeningTag("<s\u0085id=\"1\">", "s"));
+    Assertions.assertTrue(stream.isOpeningTag("<s\u00A0id=\"1\">", "s"));
+    Assertions.assertFalse(stream.isOpeningTag("<s\u001Cid=\"1\">", "s"));
   }
 
   private static Stream<WhitespaceMode> whitespaceModes() {
@@ -761,7 +721,7 @@ public class ADSentenceStreamTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"=a=", "=ab=", "==a=", "=x=y(a) ="})
+  @ValueSource(strings = {"=a=", "=ab=", "==a=", "=a b="})
   void testFallbackLineWithNoTextAfterTheLastEqualsSignIsSkipped(String line) {
     Assertions.assertNull(new SentenceParser().getElement(line));
   }

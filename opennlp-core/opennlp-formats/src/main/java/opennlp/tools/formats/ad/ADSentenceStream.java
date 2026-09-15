@@ -44,6 +44,9 @@ import opennlp.tools.util.StringUtil;
  * <br>
  * 12 de Fevereiro de 2006.
  * <p>
+ * Whitespace in the markup and the tree lines is the Unicode White_Space property, see
+ * {@link StringUtil#isUnicodeWhitespace(char)}, independent of the whitespace mode.
+ * <p>
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
@@ -63,10 +66,83 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
 
     private static final Logger logger = LoggerFactory.getLogger(SentenceParser.class);
 
+    private static final char LEVEL_MARK = '=';
+    private static final char LEVEL_HYPHEN = '-';
     private static final char TAG_SEPARATOR = ':';
     private static final char BIZARRE_TAG_SEPARATOR = '=';
+    private static final char GROUP_OPEN = '(';
+    private static final char GROUP_CLOSE = ')';
+    private static final char BRACKET_OPEN = '<';
+    private static final char BRACKET_CLOSE = '>';
+    private static final char DOUBLE_QUOTE = '"';
+    private static final char SINGLE_QUOTE = '\'';
+    private static final char CLOSING_GUILLEMET = '\u00BB';
+    private static final char PERIOD = '.';
+    private static final char COMMA = ',';
+    private static final char UNDERSCORE = '_';
     private static final String TAG_GROUP_OPEN = "(<";
     private static final String TAG_GROUP_CLOSE = ">)";
+
+    /**
+     * A tag at the start of a line.
+     *
+     * @param start The index where the tag starts, which is the length of the level prefix.
+     * @param separator The index of the separator between the two parts of the tag.
+     * @param end The index after the tag.
+     */
+    private record Tag(int start, int separator, int end) {
+    }
+
+    /**
+     * The end of a leaf line.
+     *
+     * @param morphologyStart The index where the morphological tag starts.
+     * @param close The index of the closing parenthesis, which ends the morphological tag.
+     * @param lexemeStart The index where the lexeme starts.
+     */
+    private record LeafEnd(int morphologyStart, int close, int lexemeStart) {
+    }
+
+    /**
+     * The part of a leaf line after the lemma.
+     *
+     * @param tagsEnd The index after the secondary tags.
+     * @param end The end of the line.
+     */
+    private record LeafRest(int tagsEnd, LeafEnd end) {
+    }
+
+    /**
+     * A punctuation line.
+     *
+     * @param level The level, one more than the count of leading equals signs.
+     * @param lexeme The lexeme.
+     */
+    record PunctuationLine(int level, String lexeme) {
+    }
+
+    /**
+     * What the scans of one line remember: for each index, whether no end of a leaf line was
+     * found there, and the index of the next closing parenthesis at or after it.
+     */
+    private static final class LineScan {
+
+      private final boolean[] noEndAt;
+      private final int[] nextClose;
+
+      LineScan(String line) {
+        noEndAt = new boolean[line.length() + 1];
+        nextClose = new int[line.length() + 1];
+        int close = -1;
+        nextClose[line.length()] = close;
+        for (int i = line.length() - 1; i >= 0; i--) {
+          if (line.charAt(i) == GROUP_CLOSE) {
+            close = i;
+          }
+          nextClose[i] = close;
+        }
+      }
+    }
 
     private String text,meta;
 
@@ -202,40 +278,31 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       return sentence;
     }
 
-    private String fixPunctuation(String text) {
-      text = replaceGuillemetPunctuation(text, '.', "».");
-      text = replaceGuillemetPunctuation(text, ',', "»,");
-      return text;
-    }
-
     /**
-     * Removes the whitespace between a closing guillemet and a following punctuation
-     * character. Whitespace is what {@link StringUtil#isWhitespace(char)} accepts.
+     * Removes the whitespace between a closing guillemet and a period or a comma that follows
+     * it.
      *
      * @param text The text.
-     * @param punct The punctuation character.
-     * @param replacement The two characters to write in place of guillemet, whitespace, and
-     *                    punctuation.
-     * @return The text with those runs joined.
+     * @return The text with those runs joined, or the text itself if it has no closing
+     *         guillemet.
      */
-    private String replaceGuillemetPunctuation(String text, char punct, String replacement) {
+    private String fixPunctuation(String text) {
+      if (text.indexOf(CLOSING_GUILLEMET) == -1) {
+        return text;
+      }
       StringBuilder fixed = new StringBuilder(text.length());
       int i = 0;
       while (i < text.length()) {
         char c = text.charAt(i);
-        if (c == '»' && i + 1 < text.length()) {
-          int j = i + 1;
-          while (j < text.length() && StringUtil.isWhitespace(text.charAt(j))) {
-            j++;
-          }
-          if (j > i + 1 && j < text.length() && text.charAt(j) == punct) {
-            fixed.append(replacement);
-            i = j + 1;
-            continue;
-          }
-        }
         fixed.append(c);
         i++;
+        if (c == CLOSING_GUILLEMET) {
+          int next = skipWhitespace(text, i);
+          if (next > i && next < text.length()
+              && (text.charAt(next) == PERIOD || text.charAt(next) == COMMA)) {
+            i = next;
+          }
+        }
       }
       return fixed.toString();
     }
@@ -247,29 +314,28 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * only also matches, with the last one as lexeme.
      *
      * @param line The line.
-     * @return The level, as one more than the count of leading equals signs, and the lexeme,
-     *         or {@code null} if the line is not a punctuation line.
+     * @return The level and the lexeme, or {@code null} if the line is not a punctuation line.
      */
-    static String[] parsePunctuationLine(String line) {
+    PunctuationLine parsePunctuationLine(String line) {
       if (line.isEmpty()) {
         return null;
       }
       int i = 0;
       while (i < line.length()) {
         int cp = line.codePointAt(i);
-        if (Character.isLetterOrDigit(cp) || cp == '_') {
+        if (Character.isLetterOrDigit(cp) || cp == UNDERSCORE) {
           return null;
         }
         i += Character.charCount(cp);
       }
       int equals = 0;
-      while (equals < line.length() && line.charAt(equals) == '=') {
+      while (equals < line.length() && line.charAt(equals) == LEVEL_MARK) {
         equals++;
       }
       if (equals == line.length()) {
-        return new String[] {String.valueOf(equals), "="};
+        return new PunctuationLine(equals, String.valueOf(LEVEL_MARK));
       }
-      return new String[] {String.valueOf(equals + 1), line.substring(equals)};
+      return new PunctuationLine(equals + 1, line.substring(equals));
     }
 
     /**
@@ -292,11 +358,11 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return leaf;
       }
 
-      String[] punctuation = parsePunctuationLine(line);
+      PunctuationLine punctuation = parsePunctuationLine(line);
       if (punctuation != null) {
         leaf = new Leaf();
-        leaf.setLevel(Integer.parseInt(punctuation[0]));
-        leaf.setLexeme(punctuation[1]);
+        leaf.setLevel(punctuation.level());
+        leaf.setLexeme(punctuation.lexeme());
         return leaf;
       }
 
@@ -305,12 +371,15 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return null;
       }
 
-      if (line.startsWith("=")) {
+      if (!line.isEmpty() && line.charAt(0) == LEVEL_MARK) {
         leaf = parseBizarreLeaf(line);
         if (leaf != null) {
           return leaf;
         }
-        int level = line.lastIndexOf("=") + 1;
+        int level = line.lastIndexOf(LEVEL_MARK) + 1;
+        if (level == line.length()) {
+          return null;
+        }
         String lexeme = line.substring(level);
 
         if (isWordWithMarkup(lexeme)) {
@@ -346,12 +415,13 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @return The node, or {@code null} if the line is not a node line.
      */
     private Node parseNode(String line) {
-      for (int[] tag = scanLevelAndTag(line, TAG_SEPARATOR, line.length()); tag != null;
-           tag = scanLevelAndTag(line, TAG_SEPARATOR, tag[0] - 1)) {
-        if (isNodeTail(line, tag[1])) {
+      int prefix = levelPrefixEnd(line);
+      for (Tag tag = scanLevelAndTag(line, prefix, TAG_SEPARATOR, prefix); tag != null;
+           tag = scanLevelAndTag(line, prefix, TAG_SEPARATOR, tag.start() - 1)) {
+        if (isNodeTail(line, tag.end())) {
           Node node = new Node();
-          node.setLevel(tag[0] + 1);
-          node.setSyntacticTag(line.substring(tag[0], tag[1]));
+          node.setLevel(tag.start() + 1);
+          node.setSyntacticTag(line.substring(tag.start(), tag.end()));
           return node;
         }
       }
@@ -367,48 +437,61 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @return The leaf, or {@code null} if the line is not a leaf line.
      */
     private Leaf parseLeaf(String line) {
-      boolean[] noRestAt = new boolean[line.length() + 1];
-      for (int[] tag = scanLevelAndTag(line, TAG_SEPARATOR, line.length()); tag != null;
-           tag = scanLevelAndTag(line, TAG_SEPARATOR, tag[0] - 1)) {
-        Leaf leaf = parseLeafAfterTag(line, tag[0], tag[1], noRestAt);
-        if (leaf != null) {
-          return leaf;
+      int prefix = levelPrefixEnd(line);
+      LineScan scan = null;
+      for (Tag tag = scanLevelAndTag(line, prefix, TAG_SEPARATOR, prefix); tag != null;
+           tag = scanLevelAndTag(line, prefix, TAG_SEPARATOR, tag.start() - 1)) {
+        if (isLemmaStart(line, tag.end())) {
+          if (scan == null) {
+            scan = new LineScan(line);
+          }
+          Leaf leaf = parseLeafAfterTag(line, tag, scan);
+          if (leaf != null) {
+            return leaf;
+          }
         }
       }
       return null;
     }
 
     /**
+     * Tests for the start of a quoted lemma: an opening parenthesis and a quote.
+     *
+     * @param line The line.
+     * @param from The index after the tag.
+     * @return {@code true} if a quoted lemma starts there.
+     */
+    private boolean isLemmaStart(String line, int from) {
+      return from + 1 < line.length() && line.charAt(from) == GROUP_OPEN
+          && isQuote(line.charAt(from + 1));
+    }
+
+    /**
      * Parses the part of a leaf line after the tag, see {@link #parseLeaf(String)}.
      *
      * @param line The line.
-     * @param start The index where the tag starts.
-     * @param tagEnd The index after the tag.
-     * @param noRestAt The indexes after which no rest was found so far, updated here.
+     * @param tag The tag.
+     * @param scan What the scans of the line remember.
      * @return The leaf, or {@code null} if the part after the tag does not have that form.
      */
-    private Leaf parseLeafAfterTag(String line, int start, int tagEnd, boolean[] noRestAt) {
-      if (tagEnd + 1 >= line.length() || line.charAt(tagEnd) != '('
-          || !isQuote(line.charAt(tagEnd + 1))) {
-        return null;
-      }
-      int lemmaStart = tagEnd + 2;
+    private Leaf parseLeafAfterTag(String line, Tag tag, LineScan scan) {
+      int lemmaStart = tag.end() + 2;
       // the longest lemma after which the rest of the line still parses is used
       for (int lemmaEnd = line.length() - 1; lemmaEnd > lemmaStart; lemmaEnd--) {
         if (!isQuote(line.charAt(lemmaEnd))) {
           continue;
         }
-        int[] rest = scanLeafRest(line, lemmaEnd + 1, noRestAt);
+        int tagsStart = skipWhitespace(line, lemmaEnd + 1);
+        LeafRest rest = scanSecondaryTags(line, tagsStart, scan);
         if (rest != null) {
-          int separator = line.indexOf(TAG_SEPARATOR, start);
           Leaf leaf = new Leaf();
-          leaf.setLevel(start + 1);
-          leaf.setSyntacticTag(line.substring(start, separator));
-          leaf.setFunctionalTag(line.substring(separator + 1, tagEnd));
+          leaf.setLevel(tag.start() + 1);
+          leaf.setSyntacticTag(line.substring(tag.start(), tag.separator()));
+          leaf.setFunctionalTag(line.substring(tag.separator() + 1, tag.end()));
           leaf.setLemma(line.substring(lemmaStart, lemmaEnd));
-          leaf.setSecondaryTag(line.substring(rest[0], rest[1]));
-          leaf.setMorphologicalTag(rest[2] == rest[3] ? null : line.substring(rest[2], rest[3]));
-          leaf.setLexeme(line.substring(rest[4]));
+          leaf.setSecondaryTag(line.substring(tagsStart, rest.tagsEnd()));
+          leaf.setMorphologicalTag(morphology(line, rest.end()));
+          leaf.setLexeme(line.substring(rest.end().lexemeStart()));
           return leaf;
         }
       }
@@ -424,81 +507,107 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @return The leaf, or {@code null} if the line does not have that form.
      */
     private Leaf parseBizarreLeaf(String line) {
-      for (int[] tag = scanLevelAndTag(line, BIZARRE_TAG_SEPARATOR, line.length()); tag != null;
-           tag = scanLevelAndTag(line, BIZARRE_TAG_SEPARATOR, tag[0] - 1)) {
-        Leaf leaf = parseBizarreLeafAfterTag(line, tag[0], tag[1]);
-        if (leaf != null) {
-          return leaf;
+      int prefix = levelPrefixEnd(line);
+      LineScan scan = null;
+      for (Tag tag = scanLevelAndTag(line, prefix, BIZARRE_TAG_SEPARATOR, prefix); tag != null;
+           tag = scanLevelAndTag(line, prefix, BIZARRE_TAG_SEPARATOR, tag.start() - 1)) {
+        if (tag.end() < line.length() && line.charAt(tag.end()) == GROUP_OPEN) {
+          if (scan == null) {
+            scan = new LineScan(line);
+          }
+          Leaf leaf = parseBizarreLeafAfterTag(line, tag, scan);
+          if (leaf != null) {
+            return leaf;
+          }
         }
       }
       return null;
     }
 
     /**
-     * Parses the part of a leaf line after a tag with an equals sign, see
-     * {@link #parseBizarreLeaf(String)}.
+     * Parses the part of a leaf line after a tag with an equals sign and the opening
+     * parenthesis, see {@link #parseBizarreLeaf(String)}.
      *
      * @param line The line.
-     * @param start The index where the tag starts.
-     * @param tagEnd The index after the tag.
+     * @param tag The tag.
+     * @param scan What the scans of the line remember.
      * @return The leaf, or {@code null} if the part after the tag does not have that form.
      */
-    private Leaf parseBizarreLeafAfterTag(String line, int start, int tagEnd) {
-      if (tagEnd == line.length() || line.charAt(tagEnd) != '(') {
-        return null;
-      }
-      int open = tagEnd + 1;
+    private Leaf parseBizarreLeafAfterTag(String line, Tag tag, LineScan scan) {
+      int open = tag.end() + 1;
       String lemma = null;
-      int[] rest = null;
+      LeafEnd end = null;
       if (open < line.length() && isQuote(line.charAt(open))) {
-        for (int lemmaEnd = line.length() - 1; lemmaEnd > open + 1 && rest == null; lemmaEnd--) {
+        for (int lemmaEnd = line.length() - 1; lemmaEnd > open + 1 && end == null; lemmaEnd--) {
           if (isQuote(line.charAt(lemmaEnd))) {
-            rest = scanMorphologyAndLexeme(line, lemmaEnd + 1);
-            if (rest != null) {
+            end = scanLeafEnd(line, lemmaEnd + 1, scan);
+            if (end != null) {
               lemma = line.substring(open + 1, lemmaEnd);
             }
           }
         }
       }
-      if (rest == null) {
-        rest = scanMorphologyAndLexeme(line, open);
-        if (rest == null) {
+      if (end == null) {
+        end = scanLeafEnd(line, open, scan);
+        if (end == null) {
           return null;
         }
       }
       Leaf leaf = new Leaf();
-      leaf.setLevel(start + 1);
-      leaf.setSyntacticTag(line.substring(start, tagEnd));
-      leaf.setMorphologicalTag(rest[0] == rest[1] ? null : line.substring(rest[0], rest[1]));
-      leaf.setLexeme(line.substring(rest[2]));
+      leaf.setLevel(tag.start() + 1);
+      leaf.setSyntacticTag(line.substring(tag.start(), tag.end()));
+      leaf.setMorphologicalTag(morphology(line, end));
+      leaf.setLexeme(line.substring(end.lexemeStart()));
       leaf.setLemma(lemma);
       return leaf;
     }
 
     /**
-     * Scans the level prefix and the tag at the start of a line. The prefix is the run of equals
-     * signs and hyphens, the tag one or more characters other than a colon or an equals sign,
-     * the separator, and one or more characters that are neither an opening parenthesis nor
-     * whitespace. A longer prefix is preferred; hyphens at its end may move into the tag, so
-     * the callers try the next shorter prefix when the rest of the line does not parse.
+     * Reads the morphological tag at the end of a leaf line.
      *
      * @param line The line.
-     * @param separator The character between the two parts of the tag.
-     * @param maxStart The highest index where the tag may start: the length of the line for the
-     *                 first candidate, one less than the previous start for the next one.
-     * @return The index where the tag starts, which is the length of the prefix, and the index
-     *         after the tag, or {@code null} if there is no further candidate.
+     * @param end The end of the line.
+     * @return The tag, or {@code null} if it is empty.
      */
-    private int[] scanLevelAndTag(String line, char separator, int maxStart) {
+    private String morphology(String line, LeafEnd end) {
+      return end.morphologyStart() == end.close()
+          ? null : line.substring(end.morphologyStart(), end.close());
+    }
+
+    /**
+     * Finds the end of the level prefix: the run of equals signs and hyphens at the start of
+     * the line.
+     *
+     * @param line The line.
+     * @return The index after the run, or 0 if the line does not start with one.
+     */
+    private int levelPrefixEnd(String line) {
       int run = 0;
-      while (run < line.length() && (line.charAt(run) == '=' || line.charAt(run) == '-')) {
+      while (run < line.length()
+          && (line.charAt(run) == LEVEL_MARK || line.charAt(run) == LEVEL_HYPHEN)) {
         run++;
       }
-      for (int start = Math.min(run, maxStart); start >= 0; start--) {
-        if (start == run || line.charAt(start) == '-') {
-          int end = scanTag(line, start, separator);
-          if (end != -1) {
-            return new int[] {start, end};
+      return run;
+    }
+
+    /**
+     * Scans the tag at the start of a line after the level prefix. A longer prefix is
+     * preferred; hyphens at its end may move into the tag, so the callers try the next shorter
+     * prefix when the rest of the line does not parse.
+     *
+     * @param line The line.
+     * @param prefix The index after the level prefix, see {@link #levelPrefixEnd(String)}.
+     * @param separator The character between the two parts of the tag.
+     * @param maxStart The highest index where the tag may start: the end of the prefix for the
+     *                 first candidate, one less than the previous start for the next one.
+     * @return The tag, or {@code null} if there is no further candidate.
+     */
+    private Tag scanLevelAndTag(String line, int prefix, char separator, int maxStart) {
+      for (int start = Math.min(prefix, maxStart); start >= 0; start--) {
+        if (start == prefix || line.charAt(start) == LEVEL_HYPHEN) {
+          Tag tag = scanTag(line, start, separator);
+          if (tag != null) {
+            return tag;
           }
         }
       }
@@ -512,23 +621,23 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @param line The line.
      * @param from The index where the tag starts.
      * @param separator The character between the two parts of the tag.
-     * @return The index after the tag, or -1 if there is no tag at {@code from}.
+     * @return The tag, or {@code null} if there is no tag at {@code from}.
      */
-    private int scanTag(String line, int from, char separator) {
+    private Tag scanTag(String line, int from, char separator) {
       int i = from;
       while (i < line.length() && line.charAt(i) != TAG_SEPARATOR
           && line.charAt(i) != BIZARRE_TAG_SEPARATOR) {
         i++;
       }
       if (i == from || i == line.length() || line.charAt(i) != separator) {
-        return -1;
+        return null;
       }
       int end = i + 1;
-      while (end < line.length() && line.charAt(end) != '('
-          && !StringUtil.isWhitespace(line.charAt(end))) {
+      while (end < line.length() && line.charAt(end) != GROUP_OPEN
+          && !StringUtil.isUnicodeWhitespace(line.charAt(end))) {
         end++;
       }
-      return end == i + 1 ? -1 : end;
+      return end == i + 1 ? null : new Tag(from, i, end);
     }
 
     /**
@@ -540,8 +649,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @return {@code true} if the rest of the line has that form.
      */
     private boolean isNodeTail(String line, int from) {
-      if (from < line.length() && line.charAt(from) == '(') {
-        int close = line.indexOf(')', from + 1);
+      if (from < line.length() && line.charAt(from) == GROUP_OPEN) {
+        int close = line.indexOf(GROUP_CLOSE, from + 1);
         if (close > from + 1 && isTagGroupRun(line, close + 1)) {
           return true;
         }
@@ -561,7 +670,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     private boolean isTagGroupRun(String line, int from) {
       int start = skipWhitespace(line, from);
       int end = line.length();
-      while (end > start && StringUtil.isWhitespace(line.charAt(end - 1))) {
+      while (end > start && StringUtil.isUnicodeWhitespace(line.charAt(end - 1))) {
         end--;
       }
       if (start == end) {
@@ -574,55 +683,36 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Scans the rest of a leaf line after the lemma: optional whitespace, secondary tags,
-     * optional whitespace, an optional morphological tag, the closing parenthesis, whitespace,
-     * and the lexeme.
-     *
-     * @param line The line.
-     * @param from The index after the lemma.
-     * @param noRestAt The indexes after which no rest was found so far, updated here.
-     * @return The start and end of the secondary tags, the start of the morphological tag, the
-     *         index of the closing parenthesis, and the start of the lexeme, or {@code null} if
-     *         the rest of the line does not have that form.
-     */
-    private int[] scanLeafRest(String line, int from, boolean[] noRestAt) {
-      int tagsStart = skipWhitespace(line, from);
-      int[] rest = scanSecondaryTags(line, tagsStart, noRestAt);
-      return rest == null ? null : new int[] {tagsStart, rest[0], rest[1], rest[2], rest[3]};
-    }
-
-    /**
-     * Scans secondary tags and the rest of a leaf line after them. Each tag is an opening angle
+     * Scans secondary tags and the end of a leaf line after them. Each tag is an opening angle
      * bracket, one or more characters, and a closing angle bracket; a longer tag, and then one
      * more tag, is preferred when the rest of the line still parses after it.
      *
      * @param line The line.
      * @param from The index where the next secondary tag would start.
-     * @param noRestAt The indexes after which no rest was found so far, updated here.
-     * @return The end of the secondary tags, the start of the morphological tag, the index of the
-     *         closing parenthesis, and the start of the lexeme, or {@code null} if the rest of the
-     *         line does not have that form.
+     * @param scan What the scans of the line remember.
+     * @return The rest of the line after the lemma, or {@code null} if it does not have that
+     *         form.
      */
-    private int[] scanSecondaryTags(String line, int from, boolean[] noRestAt) {
-      if (noRestAt[from]) {
+    private LeafRest scanSecondaryTags(String line, int from, LineScan scan) {
+      if (scan.noEndAt[from]) {
         return null;
       }
-      if (from < line.length() && line.charAt(from) == '<') {
+      if (from < line.length() && line.charAt(from) == BRACKET_OPEN) {
         for (int close = line.length() - 1; close > from + 1; close--) {
-          if (line.charAt(close) == '>') {
-            int[] rest = scanSecondaryTags(line, close + 1, noRestAt);
+          if (line.charAt(close) == BRACKET_CLOSE) {
+            LeafRest rest = scanSecondaryTags(line, close + 1, scan);
             if (rest != null) {
               return rest;
             }
           }
         }
       }
-      int[] rest = scanMorphologyAndLexeme(line, from);
-      if (rest == null) {
-        noRestAt[from] = true;
+      LeafEnd end = scanLeafEnd(line, from, scan);
+      if (end == null) {
+        scan.noEndAt[from] = true;
         return null;
       }
-      return new int[] {from, rest[0], rest[1], rest[2]};
+      return new LeafRest(from, end);
     }
 
     /**
@@ -630,18 +720,18 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * first closing parenthesis, that parenthesis, whitespace, and the lexeme.
      *
      * @param line The line.
-     * @param from The index after the secondary tags.
-     * @return The start of the morphological tag, the index of the closing parenthesis, and the
-     *         start of the lexeme, or {@code null} if the end of the line does not have that form.
+     * @param from The index after the secondary tags or the lemma.
+     * @param scan What the scans of the line remember.
+     * @return The end of the line, or {@code null} if it does not have that form.
      */
-    private int[] scanMorphologyAndLexeme(String line, int from) {
+    private LeafEnd scanLeafEnd(String line, int from, LineScan scan) {
       int morphologyStart = skipWhitespace(line, from);
-      int close = line.indexOf(')', morphologyStart);
+      int close = scan.nextClose[morphologyStart];
       if (close == -1) {
         return null;
       }
       int lexemeStart = scanLexemeStart(line, close);
-      return lexemeStart == -1 ? null : new int[] {morphologyStart, close, lexemeStart};
+      return lexemeStart == -1 ? null : new LeafEnd(morphologyStart, close, lexemeStart);
     }
 
     /**
@@ -670,12 +760,12 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return false;
       }
       int first = lexeme.codePointAt(0);
-      if (!(Character.isLetterOrDigit(first) || first == '_')) {
+      if (!(Character.isLetterOrDigit(first) || first == UNDERSCORE)) {
         return false;
       }
       for (int i = Character.charCount(first); i < lexeme.length(); i++) {
         char c = lexeme.charAt(i);
-        if (c == '.' || c == '<' || c == '>') {
+        if (c == PERIOD || c == BRACKET_OPEN || c == BRACKET_CLOSE) {
           return true;
         }
       }
@@ -683,7 +773,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /**
-     * Skips whitespace as {@link StringUtil#isWhitespace(char)} defines it.
+     * Skips whitespace as {@link StringUtil#isUnicodeWhitespace(char)} defines it.
      *
      * @param line The line.
      * @param from The index to start at.
@@ -692,7 +782,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      */
     private int skipWhitespace(String line, int from) {
       int i = from;
-      while (i < line.length() && StringUtil.isWhitespace(line.charAt(i))) {
+      while (i < line.length() && StringUtil.isUnicodeWhitespace(line.charAt(i))) {
         i++;
       }
       return i;
@@ -705,7 +795,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @return {@code true} for one of the two.
      */
     private boolean isQuote(char c) {
-      return c == '"' || c == '\'';
+      return c == DOUBLE_QUOTE || c == SINGLE_QUOTE;
     }
 
     /** Represents a tree element, Node or Leaf */
@@ -847,6 +937,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
   private static final String TITLE_TAG = "t";
   private static final String BOX_TAG = "caixa";
   private static final String PARAGRAPH_TAG = "p";
+  private static final char TAG_OPEN = '<';
+  private static final char TAG_CLOSE = '>';
+  private static final String CLOSING_TAG_OPEN = "</";
 
   private final SentenceParser parser;
 
@@ -921,22 +1014,23 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    * Tests whether a line is an opening markup tag with the given name: the name right after the
    * opening angle bracket, then either the closing angle bracket or whitespace and attributes,
    * which contain no closing angle bracket, then the closing angle bracket as the last character.
+   * A self-closing tag is not an opening tag.
    *
    * @param line The line.
    * @param name The tag name.
    * @return {@code true} if the whole line is such a tag.
    */
-  static boolean isOpeningTag(String line, String name) {
+  boolean isOpeningTag(String line, String name) {
     int last = line.length() - 1;
     int afterName = name.length() + 1;
-    if (last < afterName || line.charAt(0) != '<' || !line.startsWith(name, 1)
-        || line.charAt(last) != '>') {
+    if (last < afterName || line.charAt(0) != TAG_OPEN || !line.startsWith(name, 1)
+        || line.charAt(last) != TAG_CLOSE) {
       return false;
     }
-    if (afterName < last && !StringUtil.isWhitespace(line.charAt(afterName))) {
+    if (afterName < last && !StringUtil.isUnicodeWhitespace(line.charAt(afterName))) {
       return false;
     }
-    return line.indexOf('>', afterName) == last;
+    return line.indexOf(TAG_CLOSE, afterName) == last;
   }
 
   /**
@@ -946,8 +1040,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    * @param name The tag name.
    * @return {@code true} if the whole line is that closing tag.
    */
-  static boolean isClosingTag(String line, String name) {
-    return line.length() == name.length() + 3 && line.startsWith("</") && line.startsWith(name, 2)
-        && line.charAt(line.length() - 1) == '>';
+  boolean isClosingTag(String line, String name) {
+    return line.length() == name.length() + CLOSING_TAG_OPEN.length() + 1
+        && line.startsWith(CLOSING_TAG_OPEN) && line.startsWith(name, CLOSING_TAG_OPEN.length())
+        && line.charAt(line.length() - 1) == TAG_CLOSE;
   }
 }

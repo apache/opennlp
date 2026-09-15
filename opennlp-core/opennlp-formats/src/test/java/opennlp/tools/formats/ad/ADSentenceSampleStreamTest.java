@@ -19,7 +19,6 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -27,7 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -74,15 +73,10 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
         "SOURCE: src",
         "AX Hi there .",
         "</s>");
-    Iterator<String> iterator = lines.iterator();
-    ObjectStream<String> lineStream = new ObjectStream<>() {
-      @Override
-      public String read() {
-        return iterator.hasNext() ? iterator.next() : null;
-      }
-    };
-    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(lineStream, true)) {
-      Assertions.assertThrows(RuntimeException.class, stream::read);
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+        ObjectStreamUtils.createObjectStream(lines), true)) {
+      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      Assertions.assertEquals("Invalid metadata: AX p=0 src", e.getMessage());
     }
   }
 
@@ -95,18 +89,22 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
         "STA:fcl",
         "=H:n(\"world\" M S)\tworld",
         "</s>");
-    Iterator<String> iterator = lines.iterator();
-    ObjectStream<String> lineStream = new ObjectStream<>() {
-      @Override
-      public String read() {
-        return iterator.hasNext() ? iterator.next() : null;
-      }
-    };
-    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(lineStream, true)) {
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+        ObjectStreamUtils.createObjectStream(lines), true)) {
       SentenceSample sample = stream.read();
       Assertions.assertNotNull(sample);
       Assertions.assertEquals("Hello world .", sample.getDocument());
       Assertions.assertNull(stream.read());
+    }
+  }
+
+  @Test
+  void testIdsThatDoNotFitAnIntAreInvalidMetadata() throws IOException {
+    List<String> lines = List.of("<s>", "SOURCE: src", "2147483648 Hello .", "</s>");
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+        ObjectStreamUtils.createObjectStream(lines), true)) {
+      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      Assertions.assertEquals("Invalid metadata: 2147483648 p=0 src", e.getMessage());
     }
   }
 }
