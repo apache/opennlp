@@ -358,7 +358,7 @@ public class DownloadUtil {
      * Collects the href values of the anchor elements in an index page. The tag name and
      * attribute are matched ignoring case, a value ends at the first {@code ">}, a link ends at
      * the first {@code </a>}, and both may span lines. Scanning stops at an anchor whose value
-     * or tag is not closed, since nothing after it can complete a link.
+     * or tag is not closed, since no later text can complete a link.
      *
      * @param page The page content.
      * @return The href values in order.

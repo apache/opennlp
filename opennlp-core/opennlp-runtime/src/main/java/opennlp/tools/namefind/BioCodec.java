@@ -52,7 +52,7 @@ public class BioCodec implements SequenceCodec<String> {
    * that hyphen and the outcome holds no line terminator.
    *
    * @param outcome The outcome label. Must not be {@code null}.
-   * @return The name type, or {@code null} if the outcome carries none.
+   * @return The name type, or {@code null} if the outcome has none.
    */
   static String extractNameType(String outcome) {
     int separator = outcome.lastIndexOf('-');

@@ -152,7 +152,7 @@ public class DownloadUtilCacheIntegrityTest {
   }
 
   /**
-   * A blank checksum sidecar verifies nothing, so the cached model is refused.
+   * A blank checksum sidecar verifies no hash, so the cached model is rejected.
    */
   @Test
   void testBlankSidecarRejectsCachedModel() throws IOException {
