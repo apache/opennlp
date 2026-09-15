@@ -99,7 +99,9 @@ public class JsonScanTest {
         Arguments.of(":", 0, 1),
         Arguments.of(":1", 0, 1),
         Arguments.of(" : 1", 0, 3),
-        Arguments.of("\t\n\r\u000B\f:\t\n\r\u000B\f1", 0, 11),
+        Arguments.of(":\t\n\r1", 0, 4),
+        // vertical tab and form feed end the run: only RFC 8259 spaces skip
+        Arguments.of("\t\n\r\u000B\f:\t\n\r\u000B\f1", 0, -1),
         Arguments.of("x: 1", 1, 3),
         Arguments.of(": ", 0, 2),
         Arguments.of("", 0, -1),
@@ -127,7 +129,10 @@ public class JsonScanTest {
         Arguments.of("", 0, 0),
         Arguments.of("a", 0, 0),
         Arguments.of(" a", 0, 1),
-        Arguments.of(" \t\n\u000B\f\ra", 0, 6),
+        Arguments.of(" \t\n\ra", 0, 4),
+        // vertical tab and form feed are not JSON whitespace, scanning stops
+        Arguments.of("\u000Ba", 0, 0),
+        Arguments.of("\fa", 0, 0),
         Arguments.of("   ", 0, 3),
         Arguments.of("a  b", 1, 3),
         Arguments.of("a  b", 3, 3),
@@ -142,31 +147,5 @@ public class JsonScanTest {
   @MethodSource("whitespaceRuns")
   void testSkipWhitespace(String text, int from, int expected) {
     Assertions.assertEquals(expected, JsonScan.skipWhitespace(text, from));
-  }
-
-  // -------------------------------------------------------------------------
-  // endOfDigits
-  // -------------------------------------------------------------------------
-
-  static Stream<Arguments> digitRuns() {
-    return Stream.of(
-        Arguments.of("", 0, 0),
-        Arguments.of("0", 0, 1),
-        Arguments.of("0123456789", 0, 10),
-        Arguments.of("12abc", 0, 2),
-        Arguments.of("a12", 0, 0),
-        Arguments.of("a12", 1, 3),
-        Arguments.of("-1", 0, 0),
-        Arguments.of("1.5", 0, 1),
-        Arguments.of("\u0661\u0662", 0, 0),
-        Arguments.of("\uFF11", 0, 0),
-        Arguments.of("\uD835\uDFCE", 0, 0),
-        Arguments.of("1\u0661", 0, 1));
-  }
-
-  @ParameterizedTest
-  @MethodSource("digitRuns")
-  void testEndOfDigits(String text, int from, int expected) {
-    Assertions.assertEquals(expected, JsonScan.endOfDigits(text, from));
   }
 }

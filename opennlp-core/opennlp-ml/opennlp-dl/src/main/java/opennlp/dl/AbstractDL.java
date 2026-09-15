@@ -40,6 +40,7 @@ import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.CharClass;
@@ -538,7 +539,7 @@ public abstract class AbstractDL implements AutoCloseable {
       final int close = JsonScan.closingQuote(json, open);
       if (close >= 0) {
         final int idStart = JsonScan.afterColon(json, close + 1);
-        final int idEnd = idStart < 0 ? -1 : JsonScan.endOfDigits(json, idStart);
+        final int idEnd = idStart < 0 ? -1 : StringUtil.endOfAsciiDigits(json, idStart);
         if (idEnd > idStart) {
           final String token = unescapeJsonString(json.substring(open + 1, close));
           final int id = Integer.parseInt(json.substring(idStart, idEnd));
