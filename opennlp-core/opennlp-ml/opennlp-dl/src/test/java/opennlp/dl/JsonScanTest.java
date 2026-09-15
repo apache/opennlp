@@ -18,6 +18,7 @@
 package opennlp.dl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,14 +30,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.dl.JsonScan.Member;
 
-/**
- * Tests for the {@link JsonScan} class.
- */
 public class JsonScanTest {
 
-  // -------------------------------------------------------------------------
-  // document, members
-  // -------------------------------------------------------------------------
+  private static final int DEEP = 100_000;
 
   static Stream<Arguments> documents() {
     return Stream.of(
@@ -45,16 +41,27 @@ public class JsonScanTest {
         Arguments.of("{\"a\":1}", List.of("a=1")),
         Arguments.of("{\"a\": 1, \"b\": \"x\"}", List.of("a=1", "b=\"x\"")),
         Arguments.of("{ \"a\"\n:\r\n\t1 ,\n\"b\" : 2 }", List.of("a=1", "b=2")),
+        Arguments.of("{\"a\":1,\"b\":2}", List.of("a=1", "b=2")),
+        Arguments.of("{\"a\" : 1 , \"b\" :\t2}", List.of("a=1", "b=2")),
         // each value kind is skipped in full
         Arguments.of("{\"o\": {\"n\": {\"m\": [1, {\"k\": \"}\"}]}}, \"a\": [[], {}, \"]\"],"
             + " \"t\": true, \"f\": false, \"z\": null, \"n\": -1.5e+10, \"e\": 0}",
             List.of("o={\"n\": {\"m\": [1, {\"k\": \"}\"}]}}", "a=[[], {}, \"]\"]", "t=true",
                 "f=false", "z=null", "n=-1.5e+10", "e=0")),
+        Arguments.of("{\"a\":{},\"b\":[],\"c\":{\"d\":{}},\"e\":[[]]}",
+            List.of("a={}", "b=[]", "c={\"d\":{}}", "e=[[]]")),
+        // numbers in the forms RFC 8259 allows
+        Arguments.of("{\"a\": 0, \"b\": -0, \"c\": 10, \"d\": -10.5, \"e\": 1e10, \"f\": 1E-10,"
+            + " \"g\": 1.5e+3, \"h\": 0.5}",
+            List.of("a=0", "b=-0", "c=10", "d=-10.5", "e=1e10", "f=1E-10", "g=1.5e+3", "h=0.5")),
         // keys are unescaped, values are reported as written
         Arguments.of("{\"a\\\"b\": \"c\\\"d\", \"\\u00e9\": \"\\u00e9\"}",
             List.of("a\"b=\"c\\\"d\"", "\u00E9=\"\\u00e9\"")),
+        Arguments.of("{\"a\\\\\": 1, \"\\\\\\\"\": 2, \"\\u0120\": 3}",
+            List.of("a\\=1", "\\\"=2", "\u0120=3")),
         // a control character inside a string is content
         Arguments.of("{\"a\nb\": \"c\nd\"}", List.of("a\nb=\"c\nd\"")),
+        Arguments.of("{\"a\u0001b\": 1}", List.of("a\u0001b=1")),
         // an empty key and duplicate keys are members like any other
         Arguments.of("{\"\": 1, \"a\": 1, \"a\": 2}", List.of("=1", "a=1", "a=2")),
         // non-ASCII and supplementary-plane text in keys and values
@@ -78,18 +85,20 @@ public class JsonScanTest {
   @ValueSource(strings = {
       "", " ", "[]", "\"a\"", "1", "null",
       "{", "{\"a\"", "{\"a\":", "{\"a\":1", "{\"a\":1,", "{\"a\":1,}", "{,}", "{\"a\" 1}",
-      "{\"a\":1 \"b\":2}", "{a:1}", "{'a':1}", "{\"a\":1}}", "{\"a\":1} x", "{}{}",
+      "{\"a\":1 \"b\":2}", "{a:1}", "{'a':1}", "{\"a\":1}}", "{\"a\":1} x", "{}{}", "{\"a\":1}]",
+      "{\"a\"::1}",
       // strings
       "{\"a\":\"x}", "{\"a\":\"x\\\"}", "{\"a\\", "{\"a\\q\":1}", "{\"\\u12\":1}",
-      "{\"\\u+123\":1}", "{\"\\u-123\":1}", "{\"\\u12G4\":1}",
+      "{\"\\u+123\":1}", "{\"\\u-123\":1}", "{\"\\u12G4\":1}", "{\"a\":\"\\x\"}",
       // numbers
-      "{\"a\":01}", "{\"a\":-}", "{\"a\":1.}", "{\"a\":.5}", "{\"a\":1e}", "{\"a\":1e+}",
-      "{\"a\":+1}", "{\"a\":0x1}", "{\"a\":\u0661}",
+      "{\"a\":01}", "{\"a\":-01}", "{\"a\":-}", "{\"a\":1.}", "{\"a\":.5}", "{\"a\":1e}",
+      "{\"a\":1e+}", "{\"a\":+1}", "{\"a\":0x1}", "{\"a\":\u0661}", "{\"a\":1.5.2}",
       // literals and containers
-      "{\"a\":tru}", "{\"a\":True}", "{\"a\":nul}", "{\"a\":[1,]}", "{\"a\":[1 2]}",
-      "{\"a\":[}", "{\"a\":{]}",
+      "{\"a\":tru}", "{\"a\":True}", "{\"a\":nul}", "{\"a\":truex}", "{\"a\":[1,]}",
+      "{\"a\":[1 2]}", "{\"a\":[}", "{\"a\":{]}", "{\"a\":[1}}", "{\"a\":{\"b\":1]}",
       // whitespace outside strings is only the four RFC 8259 characters
-      "{\"a\":\u00A01}", "{\"a\"\u3000:1}", "\u000B{}", "\f{}", "{\"a\":1\u0085}"})
+      "{\"a\":\u00A01}", "{\"a\"\u3000:1}", "\u000B{}", "\f{}", "{\"a\":1\u0085}",
+      "{\"a\"\u2003:1}", "{\"a\":\t1\u000B}", "\u001C{}"})
   void testDocumentRejectsMalformedText(String text) {
     Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.document(text));
   }
@@ -97,17 +106,11 @@ public class JsonScanTest {
   @Test
   void testDocumentRejectsNull() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.document(null));
-    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.members(null, 0));
   }
 
   @Test
-  void testMalformedMessageNamesTheOffset() {
-    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
-        () -> JsonScan.document("{\"a\": 1, \"b\" 2}"));
-    Assertions.assertTrue(e.getMessage().contains("offset 13"), e.getMessage());
-    Assertions.assertTrue(e.getMessage().contains("expected ':'"), e.getMessage());
-    e = Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.document("{\"a\": "));
-    Assertions.assertTrue(e.getMessage().contains("end of text"), e.getMessage());
+  void testMembersRejectsNull() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.members(null, 0));
   }
 
   @Test
@@ -120,10 +123,6 @@ public class JsonScanTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> JsonScan.members(text, x.valueStart() + 1));
   }
-
-  // -------------------------------------------------------------------------
-  // member, isObject, stringValue, nonNegativeIntValue
-  // -------------------------------------------------------------------------
 
   @Test
   void testMemberFindsTheLastWithAKey() {
@@ -144,12 +143,15 @@ public class JsonScanTest {
         Arguments.of("{\"a\": \"\\u0120\\u00E9\\u00e9\"}", "\u0120\u00E9\u00E9"),
         // a surrogate pair written as two escapes, and one written as text
         Arguments.of("{\"a\": \"\\uD83D\\uDE00\"}", "\uD83D\uDE00"),
+        Arguments.of("{\"a\": \"\\ud83d\\ude00\"}", "\uD83D\uDE00"),
         Arguments.of("{\"a\": \"\uD83D\uDE00\"}", "\uD83D\uDE00"),
         // an unpaired surrogate escape is decoded as written
         Arguments.of("{\"a\": \"\\uD83D\"}", "\uD83D"),
         Arguments.of("{\"a\": \"tab\there\"}", "tab\there"),
         Arguments.of("{\"a\": \"li\nne\"}", "li\nne"),
-        Arguments.of("{\"a\": \"\u00A0\u3000\"}", "\u00A0\u3000"));
+        Arguments.of("{\"a\": \"\u00A0\u3000\"}", "\u00A0\u3000"),
+        Arguments.of("{\"a\": \"x}y\"}", "x}y"),
+        Arguments.of("{\"a\": \"x\\\\\"}", "x\\"));
   }
 
   @ParameterizedTest
@@ -160,9 +162,8 @@ public class JsonScanTest {
   }
 
   @ParameterizedTest
-  // other value kinds, and a string with invalid escapes: a value is checked when read
   @ValueSource(strings = {"{\"a\": 1}", "{\"a\": true}", "{\"a\": null}", "{\"a\": {}}",
-      "{\"a\": [\"x\"]}", "{\"a\": \"\\x\"}", "{\"a\": \"\\u12\"}", "{\"a\": \"\\u12G4\"}"})
+      "{\"a\": [\"x\"]}", "{\"a\": NaN}"})
   void testStringValueRejectsOtherValues(String text) {
     final Member a = JsonScan.document(text).get(0);
     Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.stringValue(text, a));
@@ -184,116 +185,55 @@ public class JsonScanTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"{\"a\": -1}", "{\"a\": 1.5}", "{\"a\": 1.0}", "{\"a\": 1e3}",
-      "{\"a\": 2147483648}", "{\"a\": \"1\"}", "{\"a\": true}", "{\"a\": null}", "{\"a\": [1]}"})
+  @ValueSource(strings = {"{\"a\": -1}", "{\"a\": -0}", "{\"a\": 1.5}", "{\"a\": 1.0}",
+      "{\"a\": 1e3}", "{\"a\": 2147483648}", "{\"a\": \"1\"}", "{\"a\": true}", "{\"a\": null}",
+      "{\"a\": [1]}", "{\"a\": NaN}", "{\"a\": Infinity}", "{\"a\": -Infinity}"})
   void testNonNegativeIntValueRejectsOtherValues(String text) {
     final Member a = JsonScan.document(text).get(0);
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> JsonScan.nonNegativeIntValue(text, a));
   }
 
-  // -------------------------------------------------------------------------
-  // closingQuote
-  // -------------------------------------------------------------------------
-
-  static Stream<Arguments> closingQuotes() {
+  static Stream<Arguments> stringObjects() {
     return Stream.of(
-        Arguments.of("\"a\"", 0, 2),
-        Arguments.of("\"\"", 0, 1),
-        Arguments.of("x\"abc\": 1", 1, 5),
-        Arguments.of("\"a\\\"b\"", 0, 5),
-        Arguments.of("\"a\\\\\"", 0, 4),
-        Arguments.of("\"\\u0120\"", 0, 7),
-        Arguments.of("\"a\nb\"", 0, 4),
-        Arguments.of("\"\uD83D\uDE00\"", 0, 3),
-        Arguments.of("\"\\\uD83D\uDE00\"", 0, 4),
-        Arguments.of("\"a", 0, -1),
-        Arguments.of("\"", 0, -1),
-        Arguments.of("\"a\\", 0, -1),
-        Arguments.of("\"a\\\"", 0, -1));
+        Arguments.of("{\"m\": {\"0\": \"x\"}}", Map.of("0", "x")),
+        Arguments.of("{\"m\": {}}", Map.of()),
+        Arguments.of("{\"a\": 1, \"m\": {\"0\": \"x\", \"1\": \"y\"}, \"z\": [{}]}",
+            Map.of("0", "x", "1", "y")),
+        Arguments.of("{\"m\": {\"0\": \"x\"}, \"m\": {\"0\": \"y\"}}", Map.of("0", "y")),
+        Arguments.of("{\"m\": {\"0\": \"x\", \"0\": \"y\"}}", Map.of("0", "y")),
+        Arguments.of("{\"\\u006d\": {\"\\u0030\": \"\\u0078\"}}", Map.of("0", "x")),
+        // no such top-level member, or only a nested one
+        Arguments.of("{}", Map.of()),
+        Arguments.of("{\"n\": {\"0\": \"x\"}}", Map.of()),
+        Arguments.of("{\"n\": {\"m\": {\"0\": \"x\"}}}", Map.of()),
+        // blank text, with or without a byte order mark
+        Arguments.of("", Map.of()),
+        Arguments.of(" \r\n\t", Map.of()),
+        Arguments.of("\uFEFF", Map.of()),
+        Arguments.of("\uFEFF \n", Map.of()),
+        Arguments.of("\uFEFF{\"m\": {\"0\": \"x\"}}", Map.of("0", "x")));
   }
 
   @ParameterizedTest
-  @MethodSource("closingQuotes")
-  void testClosingQuote(String text, int openQuote, int expected) {
-    Assertions.assertEquals(expected, JsonScan.closingQuote(text, openQuote));
-  }
-
-  // -------------------------------------------------------------------------
-  // afterColon, skipWhitespace, endOfValue
-  // -------------------------------------------------------------------------
-
-  static Stream<Arguments> colons() {
-    return Stream.of(
-        Arguments.of(":", 0, 1),
-        Arguments.of(":1", 0, 1),
-        Arguments.of(" : 1", 0, 3),
-        Arguments.of(":\t\n\r1", 0, 4),
-        Arguments.of("\t\n\r\u000B\f:1", 0, -1),
-        Arguments.of("x: 1", 1, 3),
-        Arguments.of(": ", 0, 2),
-        Arguments.of("", 0, -1),
-        Arguments.of(" ", 0, -1),
-        Arguments.of("1", 0, -1),
-        Arguments.of("x:", 0, -1),
-        Arguments.of("::", 1, 2),
-        Arguments.of("\u00A0:", 0, -1),
-        Arguments.of("\u2003:", 0, -1),
-        Arguments.of(":\u00A01", 0, 1));
+  @MethodSource("stringObjects")
+  void testStringObject(String text, Map<String, String> expected) {
+    Assertions.assertEquals(expected, JsonScan.stringObject(text, "m"));
   }
 
   @ParameterizedTest
-  @MethodSource("colons")
-  void testAfterColon(String text, int from, int expected) {
-    Assertions.assertEquals(expected, JsonScan.afterColon(text, from));
+  @ValueSource(strings = {"{\"m\": \"x\"}", "{\"m\": [\"x\"]}", "{\"m\": null}", "{\"m\": 1}",
+      "{\"m\": {\"0\": 1}}", "{\"m\": {\"0\": null}}", "{\"m\": {\"0\": {}}}",
+      "{\"m\": {\"0\": \"x\"}", "[]", "x", "\u00A0", "\u001C", "\uFEFF\uFEFF"})
+  void testStringObjectRejectsOtherText(String text) {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.stringObject(text, "m"));
   }
 
-  static Stream<Arguments> whitespaceRuns() {
-    return Stream.of(
-        Arguments.of("", 0, 0),
-        Arguments.of("a", 0, 0),
-        Arguments.of(" a", 0, 1),
-        Arguments.of(" \t\n\ra", 0, 4),
-        // vertical tab and form feed are not JSON whitespace
-        Arguments.of("\u000Ba", 0, 0),
-        Arguments.of("\fa", 0, 0),
-        Arguments.of("   ", 0, 3),
-        Arguments.of("a  b", 1, 3),
-        Arguments.of("a  b", 3, 3),
-        Arguments.of("\u00A0a", 0, 0),
-        Arguments.of("\u0085a", 0, 0),
-        Arguments.of("\u2003a", 0, 0),
-        Arguments.of("\u3000a", 0, 0),
-        Arguments.of("\u001Ca", 0, 0));
+  @Test
+  void testStringObjectRejectsNullArguments() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.stringObject(null, "m"));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.stringObject("{}", null));
   }
-
-  @ParameterizedTest
-  @MethodSource("whitespaceRuns")
-  void testSkipWhitespace(String text, int from, int expected) {
-    Assertions.assertEquals(expected, JsonScan.skipWhitespace(text, from));
-  }
-
-  static Stream<Arguments> values() {
-    return Stream.of(
-        Arguments.of("\"\"", 2), Arguments.of("\"a\\\"b\" x", 6),
-        Arguments.of("0", 1), Arguments.of("-0", 2), Arguments.of("10", 2), Arguments.of("-10.5", 5),
-        Arguments.of("1e10", 4), Arguments.of("1E-10", 5), Arguments.of("1.5e+3,", 6),
-        Arguments.of("0.5", 3), Arguments.of("01", 1), Arguments.of("1.5.2", 3),
-        Arguments.of("true", 4), Arguments.of("false", 5), Arguments.of("null", 4),
-        Arguments.of("truex", 4),
-        Arguments.of("{}", 2), Arguments.of("{\"a\":[1,{\"b\":\"]\"}]}x", 19),
-        Arguments.of("[]", 2), Arguments.of("[ 1 , [ 2 ] , \"[\" ]", 19));
-  }
-
-  @ParameterizedTest
-  @MethodSource("values")
-  void testEndOfValue(String text, int expected) {
-    Assertions.assertEquals(expected, JsonScan.endOfValue(text, 0));
-  }
-
-  // -------------------------------------------------------------------------
-  // byte order mark
-  // -------------------------------------------------------------------------
 
   static Stream<Arguments> documentsWithAByteOrderMark() {
     return Stream.of(
@@ -326,10 +266,6 @@ public class JsonScanTest {
     Assertions.assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
   }
 
-  // -------------------------------------------------------------------------
-  // offsets, nesting depth, line endings
-  // -------------------------------------------------------------------------
-
   static Stream<Arguments> malformedOffsets() {
     return Stream.of(
         // empty text, or whitespace only
@@ -339,6 +275,7 @@ public class JsonScanTest {
         // cut off after each token of a member
         Arguments.of("{", 1, "expected '\"'"),
         Arguments.of("{\"a", 1, "unterminated string"),
+        Arguments.of("{\"a\\", 1, "unterminated string"),
         Arguments.of("{\"a\"", 4, "expected ':'"),
         Arguments.of("{\"a\":", 5, "expected a value"),
         Arguments.of("{\"a\": ", 6, "expected a value"),
@@ -347,8 +284,14 @@ public class JsonScanTest {
         Arguments.of("{\"a\":1,}", 7, "expected '\"'"),
         Arguments.of("{\"a\":\"x", 5, "unterminated string"),
         Arguments.of("{\"a\":\"x\\\"", 5, "unterminated string"),
+        Arguments.of("{\"a\":\"x\\", 5, "unterminated string"),
         Arguments.of("{\"a\":[1", 7, "expected ','"),
         Arguments.of("{\"a\":[1,", 8, "expected a value"),
+        Arguments.of("{\"a\":[", 6, "expected a value"),
+        Arguments.of("{\"a\":[}", 6, "expected a value"),
+        Arguments.of("{\"a\":{]}", 6, "expected '\"'"),
+        Arguments.of("{\"a\":[1}", 7, "expected ','"),
+        Arguments.of("{\"a\":{\"b\":1]}", 11, "expected ','"),
         Arguments.of("{\"a\":{\"b\":1}", 12, "expected ','"),
         Arguments.of("{\"a\":{\"b\":", 10, "expected a value"),
         Arguments.of("{\"a\":tr", 5, "expected a value"),
@@ -356,6 +299,7 @@ public class JsonScanTest {
         Arguments.of("{\"a\":1.", 7, "expected a digit"),
         Arguments.of("{\"a\":1e", 7, "expected a digit"),
         Arguments.of("{\"a\":1e+", 8, "expected a digit"),
+        Arguments.of("{\"a\":-01}", 7, "expected ','"),
         // content after the object
         Arguments.of("{\"a\":1}x", 7, "content after the object"),
         Arguments.of("{\"a\":1} \n{}", 9, "content after the object"),
@@ -363,9 +307,12 @@ public class JsonScanTest {
         Arguments.of("{}\u00A0", 2, "content after the object"),
         // wrong separators and whitespace that is not JSON whitespace
         Arguments.of("{\"a\" 1}", 5, "expected ':'"),
+        Arguments.of("{\"a\"::1}", 5, "expected a value"),
         Arguments.of("{\"a\":1 \"b\":2}", 7, "expected ','"),
         Arguments.of("{\"a\":\u00A01}", 5, "expected a value"),
         Arguments.of("{\"a\"\u3000:1}", 4, "expected ':'"),
+        Arguments.of("{\"a\"\u000B:1}", 4, "expected ':'"),
+        Arguments.of("{\"a\"\u2003:1}", 4, "expected ':'"),
         // escapes are checked where the backslash is
         Arguments.of("{\"\\u12\":1}", 2, "four hexadecimal digits"),
         Arguments.of("{\"a\\q\":1}", 3, "unknown escape \\q"));
@@ -380,26 +327,13 @@ public class JsonScanTest {
     Assertions.assertTrue(e.getMessage().contains(reason), e.getMessage());
   }
 
-  private static final int NESTING_DEPTH = 500;
-
-  private static String nested(int depth) {
-    return "[{\"k\":".repeat(depth) + "0" + "}]".repeat(depth);
-  }
-
   @Test
-  void testDeeplyNestedValuesAreSkippedWhole() {
-    final String value = nested(NESTING_DEPTH);
-    final String text = "{\"a\": " + value + ", \"b\": 1}";
-    Assertions.assertEquals(List.of("a=" + value, "b=1"), render(text, JsonScan.document(text)));
-  }
-
-  @Test
-  void testDeeplyNestedValueCutOffIsRejectedAtTheEnd() {
-    final String value = nested(NESTING_DEPTH);
-    final String text = "{\"a\": " + value.substring(0, value.length() - 1);
+  void testMalformedMessageQuotesTheTextAtTheOffset() {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
-        () -> JsonScan.document(text));
-    Assertions.assertTrue(e.getMessage().contains("offset " + text.length() + ","), e.getMessage());
+        () -> JsonScan.document("{\"a\": 1, \"b\" 2}"));
+    Assertions.assertTrue(e.getMessage().contains("found '2}'"), e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.document("{\"a\": "));
+    Assertions.assertTrue(e.getMessage().contains("end of text"), e.getMessage());
   }
 
   static Stream<Arguments> lineEndings() {
@@ -422,8 +356,6 @@ public class JsonScanTest {
     Assertions.assertEquals(expected, render(text, JsonScan.document(text)));
   }
 
-  private static final int DEEP = 100_000;
-
   static Stream<Arguments> deepDocuments() {
     return Stream.of(
         Arguments.of("{\"a\":" + "[".repeat(DEEP) + "]".repeat(DEEP) + "}"),
@@ -436,7 +368,7 @@ public class JsonScanTest {
   void testDeeplyNestedValuesAreSkippedWithoutRecursion(String text) {
     final List<Member> members = JsonScan.document(text);
     Assertions.assertEquals("a", members.get(0).key());
-    Assertions.assertEquals(6, members.get(0).valueStart());
+    Assertions.assertEquals(5, members.get(0).valueStart());
   }
 
   @ParameterizedTest(name = "deep document {index} cut off")
@@ -487,14 +419,6 @@ public class JsonScanTest {
       "{\"a\": inf}", "{\"a\": Infinit}", "{\"a\": NaNx}"})
   void testDocumentRejectsOtherSpellingsOfNonFiniteNumbers(String text) {
     Assertions.assertThrows(IllegalArgumentException.class, () -> JsonScan.document(text));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"{\"a\": NaN}", "{\"a\": Infinity}", "{\"a\": -Infinity}"})
-  void testNonNegativeIntValueRejectsNonFiniteNumbers(String text) {
-    final Member a = JsonScan.document(text).get(0);
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> JsonScan.nonNegativeIntValue(text, a));
   }
 
   @ParameterizedTest

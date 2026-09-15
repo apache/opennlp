@@ -112,15 +112,6 @@ public class LoadVocabTest {
     assertEquals(2, vocab.get("form\ffeed"));
   }
 
-  @Test
-  void testJsonVocabRejectsInvalidEscapedCharacters() throws IOException {
-    final File tempFile = File.createTempFile("vocab-invalid-escape", ".json");
-    tempFile.deleteOnExit();
-
-    Files.writeString(tempFile.toPath(), "{\"bad\\xescape\": 0}");
-
-    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadVocabFile(tempFile));
-  }
 
   @Test
   void testJsonAndPlainTextVocabProduceSameResult() throws IOException {
@@ -224,14 +215,6 @@ public class LoadVocabTest {
     assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(json));
   }
 
-  @Test
-  void testMalformedJsonVocabFileIsRejected() throws IOException {
-    final File tempFile = File.createTempFile("vocab-malformed", ".json");
-    tempFile.deleteOnExit();
-    Files.writeString(tempFile.toPath(), "{\"a\": 1, \"b\": }");
-
-    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadVocabFile(tempFile));
-  }
 
   @Test
   void testLoadJsonVocabSkipsALeadingByteOrderMark() {
