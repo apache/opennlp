@@ -31,10 +31,10 @@ public class BasicContextGeneratorTest {
 
   private static final String[] NONE = new String[0];
 
-  private static final String NO_BREAK_SPACE = " ";
-  private static final String EM_SPACE = " ";
-  private static final String IDEOGRAPHIC_SPACE = "　";
-  private static final String ZERO_WIDTH_SPACE = "​";
+  private static final String NO_BREAK_SPACE = "\u00A0";
+  private static final String EM_SPACE = "\u2003";
+  private static final String IDEOGRAPHIC_SPACE = "\u3000";
+  private static final String ZERO_WIDTH_SPACE = "\u200B";
   private static final String GRINNING_FACE = "😀";
   private static final String DESERET_BEE = "𐐒";
   private static final String HIGH_SURROGATE = "\uD83D";
