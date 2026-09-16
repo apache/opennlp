@@ -86,3 +86,7 @@ dev/embeddings/parity/sentences.txt
 src/test/resources/opennlp/embeddings/corpus/mini-bouvier.htm
 src/test/resources/opennlp/embeddings/corpus/mini-dictionary.tsv
 src/test/resources/opennlp/embeddings/corpus/mini-passages.jsonl
+
+<!-- OPENNLP-1879 bundled Natural Earth gazetteer table (public domain data;
+     the file header carries the derivation record and the LICENSE pointer) -->
+src/main/resources/opennlp/geo/naturalearth-populated-places.txt
