@@ -69,9 +69,16 @@ public class PlainTextByLineStream implements ObjectStream<String> {
     return in.readLine();
   }
 
+  /**
+   * {@inheritDoc}
+   * Closes the reader of the previous pass before a new one is opened.
+   *
+   * @throws IOException Thrown if the previous reader cannot be closed or the new input
+   *                     stream cannot be created.
+   */
   @Override
   public void reset() throws IOException {
-
+    close();
     in = new BufferedReader(
             new InputStreamReader(inputStreamFactory.createInputStream(), encoding));
   }

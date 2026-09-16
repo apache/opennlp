@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,20 @@ public class POSDictionaryTest {
 
     Assertions.assertArrayEquals(new String[] {"NNP"}, dict.getTags("McKinsey"));
     Assertions.assertNull(dict.getTags("Mckinsey"));
+  }
+
+  /**
+   * The tags attribute of a dictionary entry is a space-separated list, so one
+   * entry carries every tag the word can take, in order.
+   */
+  @Test
+  void testLoadingDictionaryWithMultipleTags() throws IOException {
+    final String xml = "<dictionary><entry tags=\"NN NNS VBP\"><token>run</token></entry>"
+        + "</dictionary>";
+    final POSDictionary dict =
+        POSDictionary.create(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+
+    Assertions.assertArrayEquals(new String[] {"NN", "NNS", "VBP"}, dict.getTags("run"));
   }
 
   @Test

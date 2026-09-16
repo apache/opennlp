@@ -25,6 +25,7 @@ import java.util.List;
 
 import opennlp.tools.formats.brat.SegmenterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Reads a plain text file and return each line as a {@link String} object.
@@ -45,7 +46,7 @@ public class DocumentToLineStream extends SegmenterObjectStream<String, String> 
 
   @Override
   protected List<String> read(String sample) throws IOException {
-    List<String> lines = Arrays.asList(sample.split("\n"));
+    List<String> lines = Arrays.asList(StringUtil.split(sample, '\n'));
 
     // documents must be empty line terminated
     if (!lines.get(lines.size() - 1).trim().isEmpty()) {

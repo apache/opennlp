@@ -94,7 +94,7 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
         continue;
       }
 
-      String[] fields = line.split(" ");
+      String[] fields = StringUtil.split(line, ' ');
 
       // For English: WORD  POS-TAG SC-TAG NE-TAG
       if (LANGUAGE.EN.equals(lang) && fields.length == 4) {

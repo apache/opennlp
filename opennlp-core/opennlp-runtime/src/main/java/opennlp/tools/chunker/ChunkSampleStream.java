@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Parses the conll 2000 shared task shallow parser training data.
@@ -55,7 +56,7 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
     List<String> preds = new ArrayList<>();
 
     for (String line = samples.read(); line != null && !line.isEmpty(); line = samples.read()) {
-      String[] parts = line.split(" ");
+      String[] parts = StringUtil.split(line, ' ');
       if (parts.length != 3) {
         logger.warn("Skipping corrupt line: {}", line);
       }
