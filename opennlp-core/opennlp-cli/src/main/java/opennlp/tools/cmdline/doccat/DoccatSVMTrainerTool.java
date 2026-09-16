@@ -35,6 +35,7 @@ import opennlp.tools.doccat.FeatureGenerator;
 import opennlp.tools.ml.libsvm.doccat.DocumentCategorizerSVM;
 import opennlp.tools.ml.libsvm.doccat.SvmDoccatConfiguration;
 import opennlp.tools.ml.libsvm.doccat.SvmDoccatModel;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
@@ -98,7 +99,7 @@ public class DoccatSVMTrainerTool
     if (featureGeneratorsNames == null) {
       return new FeatureGenerator[]{new BagOfWordsFeatureGenerator()};
     }
-    String[] classes = featureGeneratorsNames.split(",");
+    String[] classes = StringUtil.split(featureGeneratorsNames, ',');
     FeatureGenerator[] featureGenerators = new FeatureGenerator[classes.length];
     for (int i = 0; i < featureGenerators.length; i++) {
       featureGenerators[i] = ExtensionLoader.instantiateExtension(

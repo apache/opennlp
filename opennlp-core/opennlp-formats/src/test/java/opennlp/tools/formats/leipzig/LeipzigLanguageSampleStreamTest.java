@@ -58,6 +58,22 @@ public class LeipzigLanguageSampleStreamTest {
   }
 
   @Test
+  void testReadSentenceFilesTwice() throws IOException {
+    Assertions.assertEquals(countSamples(), countSamples());
+  }
+
+  private int countSamples() throws IOException {
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
+            1, 2)) {
+      int count = 0;
+      while (stream.read() != null) {
+        count++;
+      }
+      return count;
+    }
+  }
+
+  @Test
   void testNotEnoughSentences() {
     Assertions.assertThrows(InvalidFormatException.class, () -> {
       int samplesPerLanguage = 2;

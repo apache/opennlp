@@ -32,6 +32,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Parses the data from the CONLL 06 shared task into POS Samples.
@@ -93,7 +94,7 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
 
         final int minNumberOfFields = 5;
 
-        String[] parts = line.split("\t");
+        String[] parts = StringUtil.split(line, '\t');
 
         if (parts.length >= minNumberOfFields) {
           tokens.add(parts[1]);

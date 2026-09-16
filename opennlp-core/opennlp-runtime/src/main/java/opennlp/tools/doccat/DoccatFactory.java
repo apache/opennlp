@@ -24,6 +24,7 @@ import java.util.Map;
 
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
@@ -114,7 +115,7 @@ public class DoccatFactory extends BaseToolFactory {
   }
 
   private FeatureGenerator[] loadFeatureGenerators(String classNames) {
-    String[] classes = classNames.split(",");
+    String[] classes = StringUtil.split(classNames, ',');
     FeatureGenerator[] fgs = new FeatureGenerator[classes.length];
 
     for (int i = 0; i < classes.length; i++) {

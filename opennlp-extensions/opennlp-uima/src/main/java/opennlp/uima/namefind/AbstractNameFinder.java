@@ -35,6 +35,7 @@ import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 import opennlp.uima.util.AnnotationComboIterator;
 import opennlp.uima.util.AnnotationIteratorPair;
 import opennlp.uima.util.AnnotatorUtil;
@@ -116,10 +117,10 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
     if (typeMapString != null) {
       Map<String, Type> nameTypeMap = new HashMap<>();
 
-      String[] mappings = typeMapString.split(",");
+      String[] mappings = StringUtil.split(typeMapString, ',');
 
       for (String mapping : mappings) {
-        String[] parts = mapping.split(":");
+        String[] parts = StringUtil.split(mapping, ':');
 
         if (parts.length == 2) {
           nameTypeMap.put(parts[0].trim(), typeSystem.getType(parts[1].trim()));
