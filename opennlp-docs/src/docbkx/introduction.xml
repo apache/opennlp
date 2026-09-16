@@ -435,6 +435,9 @@ try (TextEmbedder embedder = provider.create(spec)) {
 			A registration that cannot be loaded is skipped with a warning, so one broken jar does
 			not hide the others. The API names no implementation; a default is a packaging fact,
 			the one provider present in a distribution. Discovery uses the class path.
+			The runtime module registers one provider this way, <code>stemmer</code>, which
+			creates a <code>StemmerAnnotator</code> for a request without a location whose only
+			option is <code>algorithm</code> (<code>porter</code> or a Snowball algorithm name).
 		</para>
 	</section>
 </chapter>
