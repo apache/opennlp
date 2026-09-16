@@ -181,8 +181,12 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 				tokens; the entries of its <code>added_tokens</code> list are part of the vocabulary
 				only if <code>model.vocab</code> lists them as well. A <code>tokenizer.json</code>
 				file of a Unigram model, whose <code>model.vocab</code> is a list, is not supported.
-				Each ID must be a non-negative integer. A byte order mark at the start of a vocabulary
-				or configuration file is not content. A file that is not well-formed JSON, or whose
+				Each ID must be a non-negative integer. One leading U+FEFF byte order mark is
+				ignored before JSON detection and parsing, and before the first token of a
+				plain-text vocabulary. Thus a BOM-prefixed <code>vocab.json</code> remains JSON
+				and the first token of a BOM-prefixed <code>vocab.txt</code> has ID 0 without
+				the marker. The same leading-marker rule applies to configuration JSON;
+				U+FEFF inside a JSON string is content, not a marker to remove. A file that is not well-formed JSON, or whose
 				IDs are not non-negative integers, is rejected with an
 				<code>InvalidFormatException</code> that names the file and the position, so a damaged
 				vocabulary is reported instead of read in part.
