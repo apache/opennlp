@@ -17,8 +17,12 @@
 
 package opennlp.tools.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -68,5 +72,49 @@ public class PlainTextByLineStreamTest {
     Assertions.assertNull(stream.read());
 
     stream.close();
+  }
+
+  @Test
+  void testResetClosesThePreviousStream() throws IOException {
+    TrackingInputStreamFactory factory = new TrackingInputStreamFactory();
+    try (ObjectStream<String> stream = new PlainTextByLineStream(factory, StandardCharsets.UTF_8)) {
+      Assertions.assertEquals("line1", stream.read());
+      stream.reset();
+      Assertions.assertEquals(2, factory.opened.size());
+      Assertions.assertTrue(factory.opened.get(0).closed, "reset must close the previous stream");
+      Assertions.assertFalse(factory.opened.get(1).closed);
+      stream.reset();
+      Assertions.assertTrue(factory.opened.get(1).closed);
+      Assertions.assertEquals("line1", stream.read());
+    }
+    Assertions.assertTrue(factory.opened.get(2).closed, "close must close the current stream");
+  }
+
+  /** Hands out streams that remember whether they were closed. */
+  private static final class TrackingInputStreamFactory implements InputStreamFactory {
+
+    private final List<TrackingInputStream> opened = new ArrayList<>();
+
+    @Override
+    public InputStream createInputStream() {
+      TrackingInputStream in = new TrackingInputStream();
+      opened.add(in);
+      return in;
+    }
+  }
+
+  private static final class TrackingInputStream extends ByteArrayInputStream {
+
+    private boolean closed;
+
+    TrackingInputStream() {
+      super(testString.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public void close() throws IOException {
+      closed = true;
+      super.close();
+    }
   }
 }
