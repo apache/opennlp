@@ -19,6 +19,7 @@ package opennlp.tools.lemmatizer;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.jupiter.api.AfterEach;
@@ -80,6 +81,23 @@ public class DictionaryLemmatizerTest {
 
     Assertions.assertArrayEquals(new String[] {"Illinois", "index"},
         lemmatizer.lemmatize(new String[] {"Illinois", "INDICES"}, new String[] {"NNP", "NNS"}));
+  }
+
+  /**
+   * The lemma column separates alternatives with '#', so one word and postag pair
+   * carries every lemma a lookup must return, not just the first.
+   */
+  @Test
+  void testLoadsAllLemmasSeparatedByHash() throws Exception {
+    final String entries = "bear\tNN\tbear#bears\n" + "leave\tVBP\tleave#left\n";
+    final DictionaryLemmatizer lemmatizer = new DictionaryLemmatizer(
+        new ByteArrayInputStream(entries.getBytes(StandardCharsets.UTF_8)));
+
+    final List<List<String>> lemmas = lemmatizer.lemmatize(
+        List.of("bear", "leave"), List.of("NN", "VBP"));
+
+    Assertions.assertEquals(List.of("bear", "bears"), lemmas.get(0));
+    Assertions.assertEquals(List.of("leave", "left"), lemmas.get(1));
   }
 
 }

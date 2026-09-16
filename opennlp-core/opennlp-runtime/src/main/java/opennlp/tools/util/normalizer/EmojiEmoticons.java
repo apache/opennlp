@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * The bundled emoji/emoticon fold tables ({@code emoji-emoticons.txt}) and the sequence
  * substitution shared by {@link EmojiToEmoticonCharSequenceNormalizer} and
@@ -48,13 +50,13 @@ final class EmojiEmoticons {
    * Field separator in {@code emoji-emoticons.txt}
    * ({@code source ; target ; fold_type ; standard ; unicode_version ; notes}).
    */
-  private static final String FIELD_SEPARATOR = ";";
+  private static final char FIELD_SEPARATOR = ';';
 
   /**
    * Separates hex code points inside a source or target field. The bundled table format uses
    * ASCII space ({@code U+0020}), not a general whitespace class.
    */
-  private static final String MAPPING_CODE_POINT_SEPARATOR = " ";
+  private static final char MAPPING_CODE_POINT_SEPARATOR = ' ';
 
   private static final int ZERO_WIDTH_JOINER = 0x200D;
   private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
@@ -362,7 +364,7 @@ final class EmojiEmoticons {
         }
         // The notes column is free text that may itself contain ';', so only the first five
         // separators are structural.
-        final String[] fields = content.split(FIELD_SEPARATOR, 6);
+        final String[] fields = StringUtil.split(content, FIELD_SEPARATOR, 6);
         if (fields.length != 6) {
           throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
               + " at line " + lineNumber + ": expected 6 fields, got " + fields.length
@@ -430,7 +432,7 @@ final class EmojiEmoticons {
     }
     try {
       final StringBuilder decoded = new StringBuilder();
-      for (final String hex : stripped.split(MAPPING_CODE_POINT_SEPARATOR)) {
+      for (final String hex : StringUtil.split(stripped, MAPPING_CODE_POINT_SEPARATOR)) {
         decoded.appendCodePoint(Integer.parseInt(hex, 16));
       }
       return decoded.toString();

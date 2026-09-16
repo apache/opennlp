@@ -18,6 +18,7 @@
 package opennlp.tools.formats.conllu;
 
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.StringUtil;
 
 public class ConlluWordLine {
 
@@ -48,7 +49,7 @@ public class ConlluWordLine {
 
   ConlluWordLine(String line) throws InvalidFormatException {
 
-    String[] fields = line.split("\t");
+    String[] fields = StringUtil.split(line, '\t');
 
     if (fields.length != 10) {
       throw new InvalidFormatException("Line [" + line + "] must have exactly 10 fields");

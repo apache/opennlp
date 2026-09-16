@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import opennlp.tools.commons.Internal;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The {@link ExtensionLoader} is responsible to load extensions to the OpenNLP library.
@@ -70,7 +71,7 @@ public class ExtensionLoader {
     Set<String> prefixes = new CopyOnWriteArraySet<>(Collections.singleton("opennlp."));
     String prop = System.getProperty(ALLOWED_PACKAGES_PROPERTY, "");
     if (!prop.isBlank()) {
-      Arrays.stream(prop.split(","))
+      Arrays.stream(StringUtil.split(prop, ','))
           .map(String::trim)
           .filter(s -> !s.isBlank())
           .map(s -> s.endsWith(".") ? s : s + ".")

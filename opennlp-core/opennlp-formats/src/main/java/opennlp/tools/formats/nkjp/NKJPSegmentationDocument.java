@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.XmlUtil;
 
 public class NKJPSegmentationDocument {
@@ -231,7 +232,7 @@ public class NKJPSegmentationDocument {
     String document = ptr.substring(0, docend);
 
     int pointer_start = ptr.indexOf('(') + 1;
-    String[] pieces = ptr.substring(pointer_start, ptr.length() - 1).split(",");
+    String[] pieces = StringUtil.split(ptr.substring(pointer_start, ptr.length() - 1), ',');
 
     if (pieces.length < 3 || pieces.length > 4) {
       throw new IOException("String " + ptr + " does not appear to be a valid NKJP corresp attribute");
