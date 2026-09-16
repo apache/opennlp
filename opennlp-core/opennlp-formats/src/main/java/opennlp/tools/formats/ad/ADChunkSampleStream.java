@@ -188,6 +188,17 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
   }
 
 
+  /**
+   * Adds a leaf to the sample. The tag is the functional tag of the leaf; a leaf without one,
+   * such as punctuation, is tagged with its lexeme, as {@link ADPOSSampleStream} does.
+   *
+   * @param leaf The leaf.
+   * @param isIntermediate {@code true} if the leaf continues the chunk of the leaf before it.
+   * @param phraseTag The chunk tag of the phrase the leaf belongs to, or {@link #OTHER}.
+   * @param sentence The tokens read so far.
+   * @param tags The tags read so far.
+   * @param target The chunk tags read so far.
+   */
   protected void processLeaf(Leaf leaf, boolean isIntermediate, String phraseTag,
       List<String> sentence, List<String> tags, List<String> target) {
     String chunkTag;
@@ -208,7 +219,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     }
 
     sentence.add(leaf.getLexeme());
-    if (leaf.getSyntacticTag() == null) {
+    if (leaf.getSyntacticTag() == null || leaf.getFunctionalTag() == null) {
       tags.add(leaf.getLexeme());
     } else {
       tags.add(ADChunkSampleStream.convertFuncTag(leaf.getFunctionalTag(), false));
