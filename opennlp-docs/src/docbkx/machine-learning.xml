@@ -95,4 +95,45 @@ under the License.
 		</para>
 		</section>
 	</section>
+	<section xml:id="tools.ml.text-embeddings">
+		<title>Text embedding providers</title>
+		<para>
+			<code>TextEmbedder</code> in <code>opennlp-api</code> accepts text and returns vectors.
+			<code>TextEmbedderProvider</code> creates independently owned models. The API names no
+			backend: <code>opennlp-dl</code> registers the <code>onnx</code> provider, and it is the
+			default only because it is the one provider in the default distribution.
+		</para>
+		<programlisting language="java"><![CDATA[Path model = Path.of("model.onnx");
+Map<String, String> options = Map.of("vocabulary", "vocab.txt");
+TextEmbedderProvider provider = TextEmbedderProviders.select(model, options);
+try (TextEmbedder embedder = provider.load(model, options)) {
+  float[][] vectors = embedder.embedAll(List.of("first sentence", "second sentence"));
+}]]></programlisting>
+		<para>
+			<code>TextEmbedderProviders.select</code> considers the installed providers that report
+			themselves available (<code>isAvailable</code>, for example their runtime classes are
+			present) and that support the request (<code>supports</code>, for example a model file
+			named <code>*.onnx</code> with the provider's own options). The one with the highest
+			<code>priority</code> wins, so a module can replace another module's provider by
+			registering the same name with a larger priority. Two supporting providers with the same
+			priority are reported as ambiguous. The system property
+			<code>opennlp.embedder.provider</code> pins a provider by name and skips the capability
+			check; <code>TextEmbedderProviders.get("name")</code> does the same in code. A missing
+			provider fails with the names of the installed ones. Excluding <code>opennlp-dl</code>
+			leaves the API without a provider until another one is installed.
+		</para>
+		<para>
+			Providers register their public, no-argument factory in
+			<code>META-INF/services/opennlp.tools.embeddings.TextEmbedderProvider</code>.
+			Factory construction and the availability check must not load models or initialize a
+			native runtime. A registration that cannot be loaded is skipped with a warning, so one
+			broken provider jar does not hide the others. Discovery uses the class path; OpenNLP ships
+			no module descriptors, so a provider used from the module path needs its own
+			<code>provides</code> clause.
+			The ONNX provider requires <code>vocabulary</code>, resolved relative to the model's
+			parent directory, and accepts <code>lowerCase=true</code> (default) or
+			<code>lowerCase=false</code>. Unknown options are rejected.
+			Existing <code>SentenceVectorsDL</code> constructors remain available.
+		</para>
+	</section>
 </chapter>

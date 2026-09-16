@@ -205,6 +205,37 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>opennlp-embeddings-core</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-embeddings-onnx</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-embeddings-cli</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-embeddings-core</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-embeddings</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId>opennlp-morfologik</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
@@ -212,6 +243,12 @@
 
 			<dependency>
 				<artifactId>opennlp-spellcheck</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-subword</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>

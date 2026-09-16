@@ -1,0 +1,40 @@
+	0	
+ 	0	
+   	0	
+a	1	▁a	10	0	1	▁a
+Hello world	7	▁	5	0	0	H	241	0	1	e	8	1	2	ll	105	2	4	o	17	4	5	▁wor	160	5	9	ld	74	9	11	▁Hello▁world
+ Hello   world  	7	▁	5	1	1	H	241	1	2	e	8	2	3	ll	105	3	5	o	17	5	6	▁wor	160	6	12	ld	74	12	14	▁Hello▁world
+Hello world.\nSecond line\ttabbed	23	▁	5	0	0	H	241	0	1	e	8	1	2	ll	105	2	4	o	17	4	5	▁wor	160	5	9	ld	74	9	11	.	7	11	12	▁	5	12	13	S	297	13	14	e	8	14	15	c	38	15	16	o	17	16	17	nd	24	17	19	▁	5	19	20	l	30	20	21	ine	147	21	24	▁	5	24	25	t	11	25	26	a	13	26	27	b	45	27	28	b	45	28	29	ed	18	29	31	▁Hello▁world.▁Second▁line▁tabbed
+The quick brown fox jumps over the lazy dog.	28	▁Th	25	0	2	e	8	2	3	▁qu	69	3	6	i	15	6	7	ck	43	7	9	▁b	47	9	11	r	23	11	12	ow	60	12	14	n	9	14	15	▁fo	97	15	18	x	108	18	19	▁	5	19	20	j	115	20	21	u	14	21	22	m	26	22	23	p	27	23	24	s	6	24	25	▁	5	25	26	o	17	26	27	ve	102	27	29	r	23	29	30	▁the	12	30	34	▁la	88	34	37	z	54	37	38	y	19	38	39	▁do	159	39	42	g	48	42	43	.	7	43	44	▁The▁quick▁brown▁fox▁jumps▁over▁the▁lazy▁dog.
+tokenization and segmentation	4	▁tokenization	200	0	12	▁a	10	12	14	nd	24	14	16	▁segmentation	80	16	29	▁tokenization▁and▁segmentation
+Antidisestablishmentarianism	14	▁An	123	0	2	t	11	2	3	i	15	3	4	d	33	4	5	is	22	5	7	est	63	7	10	a	13	10	11	b	45	11	12	lish	193	12	16	ment	209	16	20	aria	221	20	24	n	9	24	25	is	22	25	27	m	26	27	28	▁Antidisestablishmentarianism
+water running walked faster apple book work play	15	▁water	70	0	5	▁runn	211	5	10	ing	20	10	13	▁walk	87	13	18	ed	18	18	20	▁fast	85	20	25	er	16	25	27	▁appl	214	27	32	e	8	32	33	▁b	47	33	35	o	17	35	36	o	17	36	37	k	66	37	38	▁work	57	38	43	▁play	71	43	48	▁water▁running▁walked▁faster▁apple▁book▁work▁play
+3.14159 x 42 = 1024?	21	▁	5	0	0	3	225	0	1	.	7	1	2	1	109	2	3	4	110	3	4	1	109	4	5	5	238	5	6	9	239	6	7	▁	5	7	8	x	108	8	9	▁	5	9	10	4	110	10	11	2	169	11	12	▁	5	12	13	=	0	13	14	▁	5	14	15	1	109	15	16	0	282	16	17	2	169	17	18	4	110	18	19	?	170	19	20	▁3.14159▁x▁42▁=▁1024?
+!!!???...	10	▁	5	0	0	!	113	0	1	!	113	1	2	!	113	2	3	?	170	3	4	?	170	4	5	?	170	5	6	.	7	6	7	.	7	7	8	.	7	8	9	▁!!!???...
+(parentheses) and [brackets] and {braces}	27	▁	5	0	0	(	236	0	1	p	27	1	2	are	34	2	5	n	9	5	6	th	36	6	8	e	8	8	9	ses	150	9	12	)	237	12	13	▁a	10	13	15	nd	24	15	17	▁	5	17	18	[	0	18	19	b	45	19	20	r	23	20	21	ack	89	21	24	e	8	24	25	ts	101	25	27	]	0	27	28	▁a	10	28	30	nd	24	30	32	▁	5	32	33	{	0	33	34	b	45	34	35	ra	152	35	37	ces	216	37	40	}	0	40	41	▁(parentheses)▁and▁[brackets]▁and▁{braces}
+café naïve fiancé résumé	21	▁	5	0	0	ca	104	0	2	f	41	2	3	é	247	3	4	▁	5	4	5	n	9	5	6	a	13	6	7	ï	0	7	8	ve	102	8	10	▁fi	210	10	13	a	13	13	14	n	9	14	15	c	38	15	16	é	247	16	17	▁	5	17	18	r	23	18	19	é	247	19	20	s	6	20	21	u	14	21	22	m	26	22	23	é	247	23	24	▁café▁naïve▁fiancé▁résumé
+ﬁnancial ﬂuid	13	▁fi	210	0	1	n	9	1	2	a	13	2	3	n	9	3	4	c	38	4	5	i	15	5	6	al	21	6	8	▁	5	8	9	f	41	9	9	l	30	9	10	u	14	10	11	i	15	11	12	d	33	12	13	▁financial▁fluid
+① ⑪ ㋿ ＫＡＴＡＫＡＮＡ	16	▁	5	0	0	1	109	0	1	▁	5	1	2	1	109	2	2	1	109	2	3	▁	5	3	4	令和	0	4	5	▁	5	5	6	K	0	6	7	A	296	7	8	T	299	8	9	A	296	9	10	K	0	10	11	A	296	11	12	N	224	12	13	A	296	13	14	▁1▁11▁令和▁KATAKANA
+ｶﾀｶﾅ half width	11	▁	5	0	0	カ	0	0	1	タ	227	1	2	カナ	0	2	4	▁	5	4	5	h	32	5	6	al	21	6	8	f	41	8	9	▁wi	73	9	12	d	33	12	13	th	36	13	15	▁カタカナ▁half▁width
+東京タワーへ行きました	10	▁	5	0	0	東	231	0	1	京	230	1	2	タ	227	2	3	ワ	228	3	4	ー	229	4	5	へ行き	0	5	8	ま	287	8	9	し	179	9	10	た	256	10	11	▁東京タワーへ行きました
+日本語とEnglish混在	9	▁	5	0	0	日	264	0	1	本	266	1	2	語	269	2	3	と	0	3	4	E	295	4	5	ng	86	5	7	lish	193	7	11	混在	0	11	13	▁日本語とEnglish混在
+Привет мир	11	▁	5	0	0	П	249	0	1	р	112	1	2	и	111	2	3	в	172	3	4	е	173	4	5	т	252	5	6	▁	5	6	7	м	174	7	8	и	111	8	9	р	112	9	10	▁Привет▁мир
+안녕하세요 세계	9	▁	5	0	0	안	234	0	1	녕	233	1	2	하	235	2	3	세	181	3	4	요	274	4	5	▁	5	5	6	세	181	6	7	계	271	7	8	▁안녕하세요▁세계
+你好，世界！	7	▁	5	0	0	你	261	0	1	好	262	1	2	,	31	2	3	世	259	3	4	界	267	4	5	!	113	5	6	▁你好,世界!
+I love 🍕 pizza	12	▁	5	0	0	I	294	0	1	▁lo	53	1	4	ve	102	4	6	▁	5	6	7	🍕	279	7	9	▁	5	9	10	p	27	10	11	i	15	11	12	z	54	12	13	z	54	13	14	a	13	14	15	▁I▁love▁🍕▁pizza
+flags 🇩🇪 🇺🇸 end	14	▁	5	0	0	f	41	0	1	l	30	1	2	a	13	2	3	g	48	3	4	s	6	4	5	▁	5	5	6	🇩	277	6	8	🇪	278	8	10	▁	5	10	11	🇺🇸	0	11	15	▁	5	15	16	e	8	16	17	nd	24	17	19	▁flags▁🇩🇪▁🇺🇸▁end
+family 👩‍👩‍👧‍👦 emoji	10	▁famil	185	0	5	y	19	5	6	▁	5	6	7	👩‍👩‍👧‍👦	0	7	18	▁	5	18	19	e	8	19	20	m	26	20	21	o	17	21	22	j	115	22	23	i	15	23	24	▁family▁👩‍👩‍👧‍👦▁emoji
+zero​width and non breaking	19	▁	5	0	0	z	54	0	1	er	16	1	3	o	17	3	4	▁wi	73	4	7	d	33	7	8	th	36	8	10	▁a	10	10	12	nd	24	12	14	▁	5	14	15	n	9	15	16	o	17	16	17	n	9	17	18	▁b	47	18	20	r	23	20	21	e	8	21	22	a	13	22	23	k	66	23	24	ing	20	24	27	▁zero▁width▁and▁non▁breaking
+quotes “fancy” and ‘single’ — dash	24	▁quote	198	0	5	s	6	5	6	▁	5	6	7	“	0	7	8	f	41	8	9	a	13	9	10	n	9	10	11	c	38	11	12	y	19	12	13	”	0	13	14	▁a	10	14	16	nd	24	16	18	▁	5	18	19	‘	0	19	20	s	6	20	21	ing	20	21	24	le	107	24	26	’	0	26	27	▁	5	27	28	—	0	28	29	▁d	100	29	31	a	13	31	32	s	6	32	33	h	32	33	34	▁quotes▁“fancy”▁and▁‘single’▁—▁dash
+<mask> the [URL] token	9	▁	5	0	0	<mask>	3	0	6	▁the	12	6	10	▁	5	10	11	[URL]	4	11	16	▁to	51	16	19	k	66	19	20	e	8	20	21	n	9	21	22	▁<mask>▁the▁[URL]▁token
+a <mask>b[URL]c	6	▁a	10	0	1	▁	5	1	2	<mask>	3	2	8	b	45	8	9	[URL]	4	9	14	c	38	14	15	▁a▁<mask>b[URL]c
+control <s> tokens </s> inline	20	▁co	99	0	2	n	9	2	3	tro	128	3	6	l	30	6	7	▁	5	7	8	<	0	8	9	s	6	9	10	>	0	10	11	▁to	51	11	14	k	66	14	15	e	8	15	16	n	9	16	17	s	6	17	18	▁	5	18	19	</	0	19	21	s	6	21	22	>	0	22	23	▁in	35	23	26	l	30	26	27	ine	147	27	30	▁control▁<s>▁tokens▁</s>▁inline
+https://example.com/path?q=1&x=2	29	▁	5	0	0	h	32	0	1	t	11	1	2	t	11	2	3	p	27	3	4	s	6	4	5	://	0	5	8	e	8	8	9	x	108	9	10	a	13	10	11	m	26	11	12	p	27	12	13	le	107	13	15	.	7	15	16	c	38	16	17	o	17	17	18	m	26	18	19	/	0	19	20	p	27	20	21	a	13	21	22	th	36	22	24	?	170	24	25	q	298	25	26	=	0	26	27	1	109	27	28	&	0	28	29	x	108	29	30	=	0	30	31	2	169	31	32	▁https://example.com/path?q=1&x=2
+UPPER lower MiXeD case	19	▁	5	0	0	U	293	0	1	P	156	1	2	P	156	2	3	E	295	3	4	R	242	4	5	▁lo	53	5	8	w	78	8	9	er	16	9	11	▁	5	11	12	M	288	12	13	i	15	13	14	X	0	14	15	e	8	15	16	D	289	16	17	▁	5	17	18	ca	104	18	20	s	6	20	21	e	8	21	22	▁UPPER▁lower▁MiXeD▁case
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa	40	▁a	10	0	1	a	13	1	2	a	13	2	3	a	13	3	4	a	13	4	5	a	13	5	6	a	13	6	7	a	13	7	8	a	13	8	9	a	13	9	10	a	13	10	11	a	13	11	12	a	13	12	13	a	13	13	14	a	13	14	15	a	13	15	16	a	13	16	17	a	13	17	18	a	13	18	19	a	13	19	20	a	13	20	21	a	13	21	22	a	13	22	23	a	13	23	24	a	13	24	25	a	13	25	26	a	13	26	27	a	13	27	28	a	13	28	29	a	13	29	30	a	13	30	31	a	13	31	32	a	13	32	33	a	13	33	34	a	13	34	35	a	13	35	36	a	13	36	37	a	13	37	38	a	13	38	39	a	13	39	40	▁aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Ω≈ç√∫˜µ≤	4	▁	5	0	0	Ω≈ç√∫	0	0	5	▁	5	5	5	̃μ≤	0	5	8	▁Ω≈ç√∫▁̃μ≤
+مرحبا بالعالم	4	▁	5	0	0	مرحبا	0	0	5	▁	5	5	6	بالعالم	0	6	13	▁مرحبا▁بالعالم
+  leading and trailing  	13	▁	5	2	2	le	107	2	4	a	13	4	5	d	33	5	6	ing	20	6	9	▁a	10	9	11	nd	24	11	13	▁	5	13	14	t	11	14	15	ra	152	15	17	i	15	17	18	l	30	18	19	ing	20	19	22	▁leading▁and▁trailing
+\ttab\tstart	5	▁	5	1	1	t	11	1	2	a	13	2	3	b	45	3	4	▁start	191	4	10	▁tab▁start
+newline\n\n\nruns	11	▁	5	0	0	n	9	0	1	e	8	1	2	w	78	2	3	l	30	3	4	ine	147	4	7	▁	5	7	10	r	23	10	11	u	14	11	12	n	9	12	13	s	6	13	14	▁newline▁runs
+mid   spaces   collapse	13	▁	5	0	0	m	26	0	1	i	15	1	2	d	33	2	3	▁	5	3	6	space	127	6	11	s	6	11	12	▁co	99	12	17	ll	105	17	19	a	13	19	20	p	27	20	21	s	6	21	22	e	8	22	23	▁mid▁spaces▁collapse
