@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package opennlp.tools.util.normalizer;
 
 /**
@@ -31,28 +32,29 @@ package opennlp.tools.util.normalizer;
  *       {@code [-.0-9A-Za-z]} that must not start with a dot and must span at least two
  *       chars, become one space.</li>
  * </ol>
+ *
+ * <p>The output is part of the features that language detector models are trained on, so
+ * the following limits are kept as they are (OPENNLP-1946):</p>
+ * <ul>
+ *   <li>A URL with a port, userinfo, a percent escape, a non-ASCII host or path, a bracketed
+ *       IPv6 host, or ASCII punctuation outside the body set is removed only up to that
+ *       character: {@code http://f:21/} becomes {@code " :21/"}, and {@code http://[::1]/} is
+ *       kept.</li>
+ *   <li>The scheme needs no left boundary, so {@code git+https://github.com/x} becomes
+ *       {@code "git+ "}.</li>
+ *   <li>The email pass also matches inside the userinfo of a URL with another scheme:
+ *       {@code telnet://user:pass@foobar.com:23/} becomes {@code "telnet://user: :23/"}.</li>
+ * </ul>
+ * {@link BoundedUrlCharSequenceNormalizer} removes whole URLs as they are bounded in running
+ * text and has none of these limits.
  */
 public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = 2023145028634552389L;
 
-  private static final CodePointSet ASCII_ALNUM = CodePointSet.ofRange('0', '9')
-      .union(CodePointSet.ofRange('A', 'Z'))
-      .union(CodePointSet.ofRange('a', 'z'));
-
   /** The URL body set: {@code [-_.?&~;+=/#0-9A-Za-z]}. */
-  private static final CodePointSet URL_BODY =
-      ASCII_ALNUM.union(CodePointSet.of('-', '_', '.', '?', '&', '~', ';', '+', '=', '/', '#'));
-
-  /** The mail local-part set, also the left-neighbor exclusion set: {@code [-+_.0-9A-Za-z]}. */
-  private static final CodePointSet MAIL_LOCAL =
-      ASCII_ALNUM.union(CodePointSet.of('-', '+', '_', '.'));
-
-  /** The set a domain may start with: {@code [-0-9A-Za-z]}. */
-  private static final CodePointSet MAIL_DOMAIN_START = ASCII_ALNUM.union(CodePointSet.of('-'));
-
-  /** The set a domain continues with: {@code [-.0-9A-Za-z]}. */
-  private static final CodePointSet MAIL_DOMAIN = MAIL_DOMAIN_START.union(CodePointSet.of('.'));
+  private static final CodePointSet URL_BODY = MailAddressScan.ASCII_ALNUM
+      .union(CodePointSet.of('-', '_', '.', '?', '&', '~', ';', '+', '=', '/', '#'));
 
   private static final UrlCharSequenceNormalizer INSTANCE = new UrlCharSequenceNormalizer();
 
@@ -69,7 +71,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     if (text == null) {
       throw new IllegalArgumentException("The text must not be null.");
     }
-    return removeMailAddresses(removeUrls(text));
+    return MailAddressScan.removeAll(removeUrls(text));
   }
 
   /**
@@ -148,69 +150,5 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
       }
     }
     return true;
-  }
-
-  /**
-   * Replaces each email address with one space.
-   *
-   * @param text The text to scan; never null.
-   * @return The input itself when nothing matched, otherwise the normalized copy.
-   */
-  private CharSequence removeMailAddresses(CharSequence text) {
-    final int length = text.length();
-    StringBuilder out = null;
-    int i = 0;
-    while (i < length) {
-      final int end = matchMailEnd(text, i);
-      if (end > i) {
-        if (out == null) {
-          out = new StringBuilder(length).append(text, 0, i);
-        }
-        out.append(' ');
-        i = end;
-      } else {
-        if (out != null) {
-          out.append(text.charAt(i));
-        }
-        i++;
-      }
-    }
-    return out == null ? text : out.toString();
-  }
-
-  /**
-   * {@return the exclusive end of an email match starting at {@code start}, or {@code -1} if
-   * there is none}
-   *
-   * @param text  The text to look into; never null.
-   * @param start The index the match must start at.
-   */
-  private int matchMailEnd(CharSequence text, int start) {
-    if (start > 0 && MAIL_LOCAL.contains(text.charAt(start - 1))) {
-      return -1; // a match never starts inside a local-part run
-    }
-    if (!MAIL_LOCAL.contains(text.charAt(start))) {
-      return -1;
-    }
-    final int length = text.length();
-    int at = start + 1;
-    while (at < length && MAIL_LOCAL.contains(text.charAt(at))) {
-      at++;
-    }
-    if (at >= length || text.charAt(at) != '@') {
-      return -1;
-    }
-    final int domainStart = at + 1;
-    if (domainStart >= length || !MAIL_DOMAIN_START.contains(text.charAt(domainStart))) {
-      return -1;
-    }
-    int end = domainStart + 1;
-    while (end < length && MAIL_DOMAIN.contains(text.charAt(end))) {
-      end++;
-    }
-    if (end - domainStart < 2) {
-      return -1;
-    }
-    return end;
   }
 }

@@ -64,7 +64,13 @@ under the License.
 						</row>
 						<row>
 							<entry>UrlCharSequenceNormalizer</entry>
-							<entry>Replaces URLs and E-Mails by a blank space.</entry>
+							<entry>Replaces URLs and E-Mails by a blank space. A URL is removed up to the
+								first character outside its ASCII body set, so a port, a percent escape,
+								or a non-ASCII host cuts the match short; existing models were trained
+								with this output. BoundedUrlCharSequenceNormalizer, not in the default
+								chain, removes each http or https URL as a whole up to the next
+								whitespace or delimiter and leaves URLs with other schemes untouched; a
+								model trained with it must be decoded with it.</entry>
 						</row>
 						<row>
 							<entry>TwitterCharSequenceNormalizer</entry>
@@ -128,6 +134,28 @@ Language[] languages = myCategorizer.predictLanguages(null);]]>
 		</para>
 	</section>
 
+	<section xml:id="tools.langdetect.bounded.urls">
+		<title>Selecting URL normalization</title>
+		<para>
+			For new training pipelines, <code>BoundedUrlCharSequenceNormalizer.getInstance()</code>
+			can be passed to <code>DefaultLanguageDetectorContextGenerator</code> in place of
+			<code>UrlCharSequenceNormalizer</code>. It removes HTTP and HTTPS URLs including
+			ports, user information, percent escapes, bracketed IPv6 hosts, and non-ASCII paths.
+			It keeps trailing sentence punctuation and unmatched closing brackets. A scheme
+			must start the text or follow a character other than a letter, digit, underscore,
+			plus, hyphen, period, or colon; for example, <code>see:http://example.org</code>
+			is not recognized as an HTTP URL. Other schemes, such as <code>git+https</code>,
+			are kept, without removing email-like text inside their URL bodies.
+		</para>
+		<para>
+			This normalizer identifies URL boundaries in running text; it does not validate
+			URLs against the full WHATWG standard. The default factory continues to use
+			<code>UrlCharSequenceNormalizer</code>. To opt in, supply a custom
+			<code>LanguageDetectorFactory</code> with a <code>getContextGenerator()</code>
+			that uses the new normalizer, and use that factory for both training and inference.
+			Changing the URL normalizer changes model features and requires evaluation.
+		</para>
+	</section>
 	<section xml:id="tools.langdetect.training">
 		<title>Training</title>
 		<para>
