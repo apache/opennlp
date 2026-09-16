@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.relation" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Relation Extraction</title>
+
+	<section xml:id="tools.relation.introduction">
+		<title>Introduction</title>
+		<para>
+			<code>RelationAnnotator</code> reads the token, entity, and dependency
+			layers and writes <code>RelationAnnotator.RELATIONS</code>. Each
+			<code>RelationPattern</code> names a relation type, a dependency path
+			between subject and object entities, and an optional trigger word on the
+			path. Extracted mentions carry subject and object entity indexes and a
+			span covering the arguments in original text coordinates.
+		</para>
+	</section>
+
+	<section xml:id="tools.relation.syntax">
+		<title>Pattern syntax</title>
+		<para>
+			A path is a whitespace-separated sequence of steps. A step
+			<code>&lt;label</code> walks up from the subject entity's head token over an
+			arc carrying that dependency relation, a step <code>&gt;label</code> walks
+			down toward the object entity's head token, and every up step must come
+			before the first down step. A path therefore always runs from the subject up
+			to a single pivot token, the lowest common ancestor of the two entity heads,
+			and down to the object. The head of a multi-token entity is the first token
+			overlapping the entity span whose own dependency head lies outside the
+			entity.
+		</para>
+		<para>
+			Entity heads are selected in token-layer order, which need not be text order.
+			Overlap requires at least one shared character. An empty entity has no head;
+			empty tokens cannot be entity heads. Adjacent spans without shared characters
+			do not overlap. Dependency indexes must refer to the supplied token-layer order.
+		</para>
+		<para>
+			The trigger is optional and constrains the pivot token: the pattern matches
+			only when the pivot's lowercased form equals it. A <code>null</code> trigger
+			accepts any pivot. The constructor does not rewrite triggers, so a trigger must be
+			lowercase and must not contain whitespace; anything else is rejected when the
+			pattern is constructed.
+		</para>
+	</section>
+
+	<section xml:id="tools.relation.patterns">
+		<title>Pattern-based extraction</title>
+		<para>
+			Given a document that already carries tokens, entities, and dependency
+			arcs for <code>Acme Corp acquired Bolt in 2024.</code>, two patterns produce
+			an acquisition between the two organizations and an
+			acquisition date linking the object organization to the date.
+			<code>RelationExtractionExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java">
+<![CDATA[RelationAnnotator annotator = new RelationAnnotator(List.of(
+    new RelationPattern("acquisition", "<nsubj >obj", "acquired"),
+    new RelationPattern("acquisition_date", "<obj >obl", null)));
+
+Document annotated = annotator.annotate(documentWithTokensEntitiesDeps);
+
+List<Annotation<RelationMention>> relations =
+    annotated.get(RelationAnnotator.RELATIONS);
+// acquisition: entities 0 -> 1 over "Acme Corp acquired Bolt"
+// acquisition_date: entities 1 -> 2 over "Bolt in 2024"]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.relation.dependency.model">
+		<title>Extracting relations from a dependency model</title>
+		<para>
+			<code>DependencyAnnotator</code> can supply the dependency layer from a saved
+			feedforward model. The input document must already have sentence, token,
+			POS-tag, and entity layers. Relation patterns must use the dependency labels
+			produced by the model.
+		</para>
+		<programlisting language="java">
+<![CDATA[FeedforwardDependencyModel model = FeedforwardDependencyModel.load(modelInput);
+DependencyAnnotator dependencies = new DependencyAnnotator(
+    new FeedforwardDependencyParser(model));
+RelationAnnotator relations = new RelationAnnotator(List.of(
+    new RelationPattern("agent_of", "<nsubj", "barks"),
+    new RelationPattern("eats", "<nsubj >obj", "eats")));
+
+Document parsed = dependencies.annotate(preparedDocument);
+Document annotated = relations.annotate(parsed);]]>
+		</programlisting>
+		<para>
+			<code>FeedforwardRelationPipelineTest</code> trains and reloads a small test
+			model, then checks this sequence on <code>the dog barks. she eats fish.</code>
+			with greedy and beam decoding. It verifies relation spans and entity indexes,
+			not model accuracy on unseen text.
+		</para>
+	</section>
+</chapter>
