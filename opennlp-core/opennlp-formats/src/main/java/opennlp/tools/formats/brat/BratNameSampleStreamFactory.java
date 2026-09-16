@@ -40,6 +40,7 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
@@ -159,7 +160,7 @@ public class BratNameSampleStreamFactory
 
     Set<String> nameTypes = null;
     if (params.getNameTypes() != null) {
-      String[] nameTypesArr = params.getNameTypes().split(",");
+      String[] nameTypesArr = StringUtil.split(params.getNameTypes(), ',');
       if (nameTypesArr.length > 0) {
         nameTypes = Arrays.stream(nameTypesArr).map(String::trim).collect(Collectors.toSet());
       }

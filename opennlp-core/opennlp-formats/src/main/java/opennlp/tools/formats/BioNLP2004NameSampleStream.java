@@ -107,7 +107,7 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
       if (line.contains("ABSTRACT TRUNCATED"))
         continue;
 
-      String[] fields = line.split("\t");
+      String[] fields = StringUtil.split(line, '\t');
 
       if (fields.length == 2) {
         sentence.add(fields[0]);
