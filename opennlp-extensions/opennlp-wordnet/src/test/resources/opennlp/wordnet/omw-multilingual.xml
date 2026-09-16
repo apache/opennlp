@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+
+   Project-authored interoperability fixture based on the public OMW 2.0 format.
+   The source identifiers and the factual dog lemmas match the omw-it, omw-es, and omw-sv
+   packages at https://github.com/omwn/omw-data/releases/tag/v2.0. No source definitions or
+   relation graph are copied. Each source package declares CC BY 3.0 metadata. The fixture
+   combines one reduced lexicon from each language to exercise the WN-LMF multi-lexicon form.
+-->
+<LexicalResource xmlns:dc="https://globalwordnet.github.io/schemas/dc/">
+  <Lexicon id="omw-it" label="MultiWordNet (Italian)" language="it"
+           version="2.0" license="https://creativecommons.org/licenses/by/3.0/"
+           dc:publisher="Open Multilingual Wordnet">
+    <Requires ref="omw-en" version="2.0"/>
+    <LexicalEntry id="omw-it-cane-n">
+      <Lemma writtenForm="cane" partOfSpeech="n"/>
+      <Sense id="omw-it-cane-02084071-n" synset="omw-it-02084071-n"/>
+    </LexicalEntry>
+    <Synset id="omw-it-02084071-n" partOfSpeech="n"
+            members="omw-it-cane-02084071-n"/>
+  </Lexicon>
+  <Lexicon id="omw-es" label="Multilingual Central Repository (Spanish)" language="es"
+           version="2.0" license="https://creativecommons.org/licenses/by/3.0/">
+    <Requires ref="omw-en" version="2.0"/>
+    <LexicalEntry id="omw-es-perro-n">
+      <Lemma writtenForm="perro" partOfSpeech="n"/>
+      <Sense id="omw-es-perro-02084071-n" synset="omw-es-02084071-n"/>
+    </LexicalEntry>
+    <Synset id="omw-es-02084071-n" partOfSpeech="n"
+            members="omw-es-perro-02084071-n"/>
+  </Lexicon>
+  <Lexicon id="omw-sv" label="WordNet-SALDO" language="sv"
+           version="2.0" license="https://creativecommons.org/licenses/by/3.0/">
+    <Requires ref="omw-en" version="2.0"/>
+    <LexicalEntry id="omw-sv-hund-n">
+      <Lemma writtenForm="hund" partOfSpeech="n"/>
+      <Sense id="omw-sv-hund-02084071-n" synset="omw-sv-02084071-n"/>
+    </LexicalEntry>
+    <Synset id="omw-sv-02084071-n" partOfSpeech="n"
+            members="omw-sv-hund-02084071-n"/>
+  </Lexicon>
+</LexicalResource>

@@ -1,0 +1,2 @@
+# WNDB data files contain byte offsets and must retain LF endings and trailing spaces.
+* -text whitespace=-trailing-space
