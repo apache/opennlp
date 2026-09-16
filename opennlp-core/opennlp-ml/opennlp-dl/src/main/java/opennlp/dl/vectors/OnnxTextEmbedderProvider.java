@@ -19,6 +19,7 @@ package opennlp.dl.vectors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Map;
 
 import ai.onnxruntime.OrtException;
@@ -27,15 +28,20 @@ import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProvider;
 
 /**
- * Loads {@link SentenceVectorsDL} through the {@code onnx} provider. The required
- * {@code vocabulary} option names a vocabulary file; {@code lowerCase} accepts {@code true}
- * (the default) or {@code false}. Relative vocabulary paths resolve against the model's parent.
- * Construction does not initialize ONNX Runtime; {@link #load(Path, Map)} opens the session.
+ * Loads {@link SentenceVectorsDL} for ONNX models. The provider name is {@code onnx}. It
+ * supports a model file whose name ends with {@code .onnx} when every option is one of its own:
+ * the required {@code vocabulary} names a vocabulary file, resolved against the model's parent
+ * directory when relative, and {@code lowerCase} accepts {@code true} (the default) or
+ * {@code false}. It is available when the ONNX Runtime classes can be loaded; the runtime
+ * itself is initialized by {@link #load(Path, Map)}, not by construction or by the checks.
  *
  * @since 3.0.0
  */
 public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
 
+  private static final String NAME = "onnx";
+  private static final String MODEL_SUFFIX = ".onnx";
+  private static final String RUNTIME_CLASS = "ai.onnxruntime.OrtEnvironment";
   private static final String VOCABULARY = "vocabulary";
   private static final String LOWER_CASE = "lowerCase";
 
@@ -46,7 +52,43 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
   /** {@inheritDoc} */
   @Override
   public String name() {
-    return "onnx";
+    return NAME;
+  }
+
+  /**
+   * {@inheritDoc}
+   * Checks that the ONNX Runtime classes are present without initializing the runtime.
+   */
+  @Override
+  public boolean isAvailable() {
+    try {
+      Class.forName(RUNTIME_CLASS, false, OnnxTextEmbedderProvider.class.getClassLoader());
+      return true;
+    } catch (ClassNotFoundException | LinkageError e) {
+      return false;
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   * A model file named {@code *.onnx}, in any letter case, with only {@code vocabulary} and
+   * {@code lowerCase} options is supported; the option values are checked by
+   * {@link #load(Path, Map)}.
+   */
+  @Override
+  public boolean supports(Path model, Map<String, String> options) {
+    if (model == null || options == null || model.getFileName() == null) {
+      return false;
+    }
+    if (!model.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(MODEL_SUFFIX)) {
+      return false;
+    }
+    for (String key : options.keySet()) {
+      if (!VOCABULARY.equals(key) && !LOWER_CASE.equals(key)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** {@inheritDoc} */

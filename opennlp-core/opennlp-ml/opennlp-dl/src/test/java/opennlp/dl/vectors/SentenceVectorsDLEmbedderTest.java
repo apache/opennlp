@@ -72,12 +72,12 @@ class SentenceVectorsDLEmbedderTest {
   }
 
   @Test
-  void testDefaultProviderPreservesInference(@TempDir Path dir) throws Exception {
-    TextEmbedderProvider provider = TextEmbedderProviders.getDefault();
-    assertEquals("onnx", provider.name());
+  void testSelectedProviderPreservesInference(@TempDir Path dir) throws Exception {
     Path graph = model(dir).toPath();
     vocab(dir);
     Map<String, String> options = Map.of("vocabulary", "vocab.txt");
+    TextEmbedderProvider provider = TextEmbedderProviders.select(graph, options);
+    assertEquals("onnx", provider.name());
     try (TextEmbedder first = provider.load(graph, options);
          TextEmbedder second = provider.load(graph, options)) {
       assertArrayEquals(CLS_VECTOR, first.embed("hello world"));
