@@ -105,10 +105,6 @@ List<Neighbor> neighbors = model.mostSimilar("coffee", 5);
 List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
 		</programlisting>
 		<para>
-			<code>StaticEmbeddingUsageExampleTest</code> asserts the load-and-query workflow
-			shown here.
-		</para>
-		<para>
 			For a model laid out differently, the explicit overloads take the data files and the
 			switches directly. The WordPiece overload takes whether the tokenizer lower-cases
 			(and strips accents) and whether embeddings are L2-normalized; both are properties of
@@ -129,10 +125,6 @@ StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
     StaticEmbeddingModel.Normalization.L2);
 ]]>
 		</programlisting>
-		<para>
-			The <code>testExplicitOverloads</code> case of
-			<code>StaticEmbeddingUsageExampleTest</code> asserts the two overloads shown here.
-		</para>
 		<para>
 			Matrix rows are resolved by piece string, never by tokenizer id, because the two
 			files of a separate-file SentencePiece model may order and offset their ids differently.
@@ -175,39 +167,6 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 			For a corpus too large to score per query, embed each document once with
 			<code>embed</code>, keep the vectors in any vector index, and embed only the query
 			at search time. Any index that accepts float vectors can store these embeddings.
-		</para>
-	</section>
-
-	<section xml:id="tools.embeddings.search">
-		<title>Semantic Search</title>
-		<para>
-			The headline use case is ranking documents against a query by meaning rather than by
-			shared words. <code>similarity</code> embeds both texts and returns the cosine
-			similarity of their vectors, so a small document list ranks with one call per
-			document:
-		</para>
-		<programlisting language="java">
-			<![CDATA[
-StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
-
-String query = "home espresso machine";
-List<String> documents = List.of(
-    "How do I brew espresso at home?",
-    "The history of tea in East Asia",
-    "Best grinders for pour-over coffee");
-
-record Scored(String document, double score) {}
-List<Scored> results = new ArrayList<>();
-for (String document : documents) {
-  results.add(new Scored(document, model.similarity(query, document)));
-}
-results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
-		</programlisting>
-		<para>
-			<code>StaticEmbeddingSearchExampleTest</code> asserts the ranking shown here. For a
-			corpus too large to score per query, embed each document once with
-			<code>embed</code>, keep the vectors in any vector index, and embed only the query
-			at search time; the index does not care how the vectors were produced.
 		</para>
 	</section>
 
@@ -269,22 +228,6 @@ List<Neighbor> related = model.mostSimilar("coffee espresso", 3);]]></programlis
 				against its terms greedily longest-first, case-insensitively, and pools a matched
 				term's single row instead of the subword pieces of its words; text between matches
 				is tokenized as usual. A model without a term file uses subword pieces throughout.
-				Terms should arrive sorted by descending corpus frequency, because the Zipf
-				weighting treats the subword rows and the term rows as one frequency ranking. A
-				term that equals a vocabulary token is dropped as a duplicate row, and terms are
-				also returned by the similarity search of <code>mostSimilar</code> like any
-				vocabulary token.
-			</para>
-			<para>
-				<code>-terms</code> names an optional term file: one term per line, with text after
-				a tab ignored, so a learned vocabulary TSV works unchanged. Each term, a whole word
-				or a multi-word phrase such as a domain vocabulary entry, is segmented by the
-				teacher's own tokenizer, encoded through the teacher as one sequence, and appended
-				to the table as an extra row, recorded in the model directory as
-				<code>terms.txt</code>. When such a model embeds text, it first matches the text
-				against its terms greedily longest-first, case-insensitively, and pools a matched
-				term's single row instead of the subword pieces of its words; text between matches
-				is tokenized as usual, and a model without a term file embeds exactly as before.
 				Terms should arrive sorted by descending corpus frequency, because the Zipf
 				weighting treats the subword rows and the term rows as one frequency ranking. A
 				term that equals a vocabulary token is dropped as a duplicate row, and terms are
