@@ -52,9 +52,13 @@ under the License.
 								Plane (U+10000 and above) with a single space, which removes most emoji
 								but also other supplementary characters such as CJK Extension B
 								ideographs. Since 3.0.0 hyphens and Basic Multilingual Plane characters
-								are kept; models trained with an earlier release were built with them
-								blanked and get that output again under
-								<code>-Dopennlp.compat.mode=LEGACY</code> until they are retrained.
+								are kept, as are unpaired surrogates. Under
+								<code>-Dopennlp.compat.mode=LEGACY</code>, each run of ASCII hyphens
+								and code points U+D83C through U+10FC00 becomes one space instead;
+								code points above U+10FC00 are kept. This reproduces the earlier
+								input transformation for models that depend on it. Neither mode
+								is an emoji-only filter. Keep the mode consistent between training
+								and inference; see <xref linkend="intro.compatibility.mode"/>.
 								Deprecated; use EmojiToEmoticonCharSequenceNormalizer to keep
 								emoji as signal.</entry>
 						</row>

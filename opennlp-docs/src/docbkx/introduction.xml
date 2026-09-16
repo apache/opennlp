@@ -415,12 +415,28 @@ Arguments description:
                 </screen>
             </para>
             <para>
-                Accepted values are <code>LEGACY</code> and <code>CURRENT</code> (the default),
-                case-insensitive; any other value throws an
-                <code>IllegalArgumentException</code>. The setting is independent of
-                <code>opennlp.whitespace.mode</code>, applies process-wide, so training and
-                decoding of a given model must use the same value, and is scheduled for
-                removal in 4.0.
+                Accepted values are <code>LEGACY</code> and <code>CURRENT</code>,
+                case-insensitive. An unset or blank property selects <code>CURRENT</code>;
+                invalid values fail mode initialization. Set the property before OpenNLP
+                initializes the mode, and use the same setting for training and inference.
+                Legacy support is scheduled for removal in 4.0; selecting it logs a warning
+                once per process.
+            </para>
+            <para>
+                This setting affects only classes that explicitly consult
+                <code>CompatibilityMode</code>. It does not restore every behavior of an
+                earlier release: parser bracket spacing, corpus validation, and stream
+                resource fixes are not switched back. It is independent of
+                <code>opennlp.whitespace.mode</code>, which selects the whitespace definition.
+                Selecting one does not select the other.
+            </para>
+            <para>
+                Embedders can override the process-wide setting with
+                <code>CompatibilityMode.setActive</code>; <code>reset()</code> reads the
+                system property again. These are not per-model settings. Configure them
+                before constructing or using model components, and do not switch them while
+                requests are running. Record both modes with the training configuration;
+                loading a model does not select them automatically.
             </para>
         </section>
     </section>
