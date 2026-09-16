@@ -404,4 +404,40 @@ Arguments description:
         </section>
     </section>
 
+	<section xml:id="intro.component.providers">
+		<title>Component providers</title>
+		<para>
+			Optional implementations, such as an annotator, a gazetteer or an embedder shipped in a
+			separate jar, register through <code>opennlp.tools.util.ext.ComponentProvider</code>. A
+			provider names the contract it creates (<code>type()</code>), its own name
+			(<code>name()</code>), a <code>priority()</code>, whether it is <code>isAvailable()</code>
+			in this process (for example whether its runtime classes are present), and whether it
+			<code>supports</code> a request. A request is a <code>ComponentSpec</code>: a model file or
+			directory, if any, plus options. Providers are listed in
+			<code>META-INF/services/opennlp.tools.util.ext.ComponentProvider</code>, one file per
+			jar for every provider it ships. Construction and the availability check must not load
+			models or initialize a native runtime.
+		</para>
+		<programlisting language="java"><![CDATA[ComponentSpec spec = ComponentSpec.of(Path.of("model.onnx"), Map.of("vocabulary", "vocab.txt"));
+ComponentProvider<TextEmbedder> provider = ComponentProviders.select(TextEmbedder.class, spec);
+try (TextEmbedder embedder = provider.create(spec)) {
+  float[] vector = embedder.embed("first sentence");
+}]]></programlisting>
+		<para>
+			<code>ComponentProviders.select</code> considers the installed providers of the contract
+			that are available and support the request and returns the one with the highest
+			priority; two with the same priority are reported as ambiguous.
+			<code>ComponentProviders.supporting</code> returns all of them, best first, for callers
+			that want every matching component, such as a pipeline collecting annotators.
+			<code>ComponentProviders.get</code> selects by name, and the system property
+			<code>opennlp.provider.&lt;Contract&gt;</code>, for example
+			<code>-Dopennlp.provider.DocumentAnnotator=pii</code>, pins a provider for one contract.
+			A registration that cannot be loaded is skipped with a warning, so one broken jar does
+			not hide the others. The API names no implementation; a default is a packaging fact,
+			the one provider present in a distribution. Discovery uses the class path.
+			The runtime module registers one provider this way, <code>stemmer</code>, which
+			creates a <code>StemmerAnnotator</code> for a request without a location whose only
+			option is <code>algorithm</code> (<code>porter</code> or a Snowball algorithm name).
+		</para>
+	</section>
 </chapter>
