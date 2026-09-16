@@ -20,17 +20,21 @@ package opennlp.tools.ml.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Class for using a file of real-valued {@link Event events} as an
  * {@link ObjectStream event stream}.
  * The format of the file is one event per line with
- * each line consisting of outcome followed by contexts (space delimited).
+ * each line consisting of outcome followed by contexts, separated by Unicode whitespace,
+ * see {@link #parseEvent(String)}.
  *
  * @see Event
  * @see FileEventStream
@@ -126,20 +130,42 @@ public class RealValueFileEventStream extends FileEventStream {
   }
 
   /**
+   * Parses one event line. The fields are separated by runs of whitespace under the Unicode
+   * {@code White_Space} property, see {@link StringUtil#isUnicodeWhitespace(int)}; this
+   * definition is fixed and does not depend on the {@code opennlp.whitespace.mode} property.
+   * Leading, trailing, and repeated whitespace is ignored; the first field is the outcome and
+   * each further field is a context with an optional real value, see
+   * {@link #parseContexts(String[])}.
+   *
+   * @param line The event line. Must not be {@code null}.
+   * @return The event; a line with only an outcome gives an event without contexts.
+   * @throws IllegalArgumentException Thrown if {@code line} is {@code null}.
+   * @throws InvalidFormatException Thrown if {@code line} has no field.
+   * @throws RuntimeException Thrown if negative real values are detected in the input data.
+   */
+  public static Event parseEvent(String line) throws InvalidFormatException {
+    if (line == null) {
+      throw new IllegalArgumentException("line must not be null");
+    }
+    String[] fields = StringUtil.splitOnUnicodeWhitespace(line);
+    if (fields.length == 0) {
+      throw new InvalidFormatException("An event line must start with an outcome: \"" + line + "\"");
+    }
+    String[] contexts = Arrays.copyOfRange(fields, 1, fields.length);
+    return new Event(fields[0], contexts, parseContexts(contexts));
+  }
+
+  /**
    * {@inheritDoc}
    *
-   * @throws IOException Thrown if there is an error during reading.
+   * @throws IOException Thrown if there is an error during reading, or if a line has no outcome.
    * @throws RuntimeException Thrown if negative real values are detected in the input data.
    */
   @Override
   public Event read() throws IOException {
     String line;
     if ((line = reader.readLine()) != null) {
-      int si = line.indexOf(' ');
-      String outcome = line.substring(0, si);
-      String[] contexts = line.substring(si + 1).split("\\s+");
-      float[] values = parseContexts(contexts);
-      return new Event(outcome, contexts, values);
+      return parseEvent(line);
     }
 
     return null;

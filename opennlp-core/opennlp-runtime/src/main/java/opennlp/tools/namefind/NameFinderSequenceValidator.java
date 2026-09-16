@@ -45,8 +45,8 @@ public class NameFinderSequenceValidator implements SequenceValidator<String> {
       } else if (outcomesSequence[li].endsWith(BioCodec.CONTINUE) ||
           outcomesSequence[li].endsWith(BioCodec.START)) {
         // if it is continue or start, we have to check if previous match was of the same type
-        String previousNameType = NameFinderME.extractNameType(outcomesSequence[li]);
-        String nameType = NameFinderME.extractNameType(outcome);
+        String previousNameType = BioCodec.extractNameType(outcomesSequence[li]);
+        String nameType = BioCodec.extractNameType(outcome);
         if (previousNameType != null || nameType != null ) {
           if (nameType != null ) {
             return nameType.equals(previousNameType);

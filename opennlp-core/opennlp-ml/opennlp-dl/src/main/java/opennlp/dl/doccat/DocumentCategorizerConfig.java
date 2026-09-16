@@ -18,41 +18,44 @@
 package opennlp.dl.doccat;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import opennlp.dl.JsonScan;
+
+/**
+ * The part of a model configuration that a {@link DocumentCategorizerDL} uses: the
+ * {@code id2label} map of output index to label.
+ *
+ * @param id2label The labels by output index.
+ */
 public record DocumentCategorizerConfig(Map<String, String> id2label) {
 
-  private static final Pattern ID_TO_LABEL_PATTERN =
-      Pattern.compile("\"id2label\"\\s*:\\s*\\{(.*?)\\}", Pattern.DOTALL);
-  private static final Pattern ENTRY_PATTERN =
-      Pattern.compile("\"([^\"]+)\"\\s*:\\s*\"(.*?)\"");
+  private static final String ID_TO_LABEL_KEY = "id2label";
 
   @Override
   public Map<String, String> id2label() {
     return Collections.unmodifiableMap(id2label);
   }
 
+  /**
+   * Reads the top-level {@code id2label} member of a model configuration, the object that
+   * maps each output index to its label in the {@code config.json} files that accompany
+   * classification models. Keys and labels are decoded from their escapes, and a later entry
+   * for the same key overwrites an earlier one. An {@code id2label} member nested in another
+   * member is not the configuration's map.
+   *
+   * @param json The JSON text of the configuration. Blank text, with or without a leading
+   *     byte order mark, is a configuration without labels. Must not be {@code null}.
+   * @return The configuration, with an empty map if the configuration has no top-level
+   *     {@code id2label} member.
+   * @throws IllegalArgumentException Thrown if {@code json} is {@code null}, if the text is
+   *     neither blank nor a single well-formed JSON object, if {@code id2label} is not an
+   *     object, or if a label is not a string. The message names the offset or the key.
+   */
   public static DocumentCategorizerConfig fromJson(String json) {
-    Objects.requireNonNull(json, "json must not be null");
-
-    final Map<String, String> id2label = new HashMap<>();
-    final Matcher matcher = ID_TO_LABEL_PATTERN.matcher(json);
-
-    if (matcher.find()) {
-      final String id2labelContent = matcher.group(1);
-      final Matcher entryMatcher = ENTRY_PATTERN.matcher(id2labelContent);
-
-      while (entryMatcher.find()) {
-        final String key = entryMatcher.group(1);
-        final String value = entryMatcher.group(2);
-        id2label.put(key, value);
-      }
+    if (json == null) {
+      throw new IllegalArgumentException("json must not be null");
     }
-
-    return new DocumentCategorizerConfig(id2label);
+    return new DocumentCategorizerConfig(JsonScan.stringObject(json, ID_TO_LABEL_KEY));
   }
 }

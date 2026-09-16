@@ -42,8 +42,14 @@ class MascWordParser extends DefaultHandler {
     try {
       // create a word and put it into the list of words
       if (qName.equalsIgnoreCase("region")) {
-        int id = Integer.parseInt(attributes.getValue("xml:id").replaceFirst("seg-r", ""));
-        String[] anchors = attributes.getValue("anchors").split(" ");
+        int id = MascIdentifiers.parseId(
+            attributes.getValue("xml:id"), MascIdentifiers.REGION_ID_PREFIX);
+        String[] anchors = MascIdentifiers.splitOnSpaces(attributes.getValue("anchors"));
+        if (anchors.length != 2) {
+          throw new IllegalArgumentException(
+              "MASC region anchors must be two space separated numbers: "
+                  + attributes.getValue("anchors"));
+        }
 
         int left = Integer.parseInt(anchors[0]);
         int right = Integer.parseInt(anchors[1]);
@@ -52,7 +58,8 @@ class MascWordParser extends DefaultHandler {
       }
 
     } catch (Exception e) {
-      throw new SAXException("Could not parse the word segmentation annotation file.");
+      throw new SAXException("Could not parse the word segmentation annotation file.\n"
+          + e.getMessage(), e);
     }
   }
 }

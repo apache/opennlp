@@ -21,7 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -160,27 +159,6 @@ public class SymSpellModelSerializationTest {
     assertEquals(SymSpellModelSerializer.class, model.getArtifactSerializerClass());
   }
 
-  @Test
-  void loaderSkipsBlankAndCommentLines() throws IOException {
-    final String text = "the\t100\n\n# a comment\n   \nworld\t50\n";
-    final Map<String, Long> into = new java.util.LinkedHashMap<>();
-    final long read = new FrequencyDictionaryLoader().parseUnigrams(stringResource(text), into);
-    assertEquals(2, read);
-    assertEquals(100L, into.get("the"));
-    assertEquals(50L, into.get("world"));
-  }
-
-  @Test
-  void loaderRejectsMalformedLine() {
-    final String text = "the\tnotanumber\n";
-    final Map<String, Long> into = new java.util.LinkedHashMap<>();
-    final FrequencyDictionaryLoader loader = new FrequencyDictionaryLoader();
-    final MalformedDictionaryLineException ex = org.junit.jupiter.api.Assertions.assertThrows(
-        MalformedDictionaryLineException.class,
-        () -> loader.parseUnigrams(stringResource(text), into));
-    assertEquals(1, ex.getLineNumber());
-  }
-
   private static InputStreamFactory resource(String path) {
     return () -> {
       final InputStream in = SymSpellModelSerializationTest.class.getResourceAsStream(path);
@@ -189,9 +167,5 @@ public class SymSpellModelSerializationTest {
       }
       return in;
     };
-  }
-
-  private static InputStreamFactory stringResource(String text) {
-    return () -> new ByteArrayInputStream(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
   }
 }

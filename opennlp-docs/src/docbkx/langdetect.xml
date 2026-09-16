@@ -48,7 +48,19 @@ under the License.
 					<tbody>
 						<row>
 							<entry>EmojiCharSequenceNormalizer</entry>
-							<entry>Replaces emojis by blank space</entry>
+							<entry>Replaces every run of code points outside the Basic Multilingual
+								Plane (U+10000 and above) with a single space, which removes most emoji
+								but also other supplementary characters such as CJK Extension B
+								ideographs. Since 3.0.0 hyphens and Basic Multilingual Plane characters
+								are kept, as are unpaired surrogates. Under
+								<code>-Dopennlp.compat.mode=LEGACY</code>, each run of ASCII hyphens
+								and code points U+D83C through U+10FC00 becomes one space instead;
+								code points above U+10FC00 are kept. This reproduces the earlier
+								input transformation for models that depend on it. Neither mode
+								is an emoji-only filter. Keep the mode consistent between training
+								and inference; see <xref linkend="intro.compatibility.mode"/>.
+								Deprecated; use EmojiToEmoticonCharSequenceNormalizer to keep
+								emoji as signal.</entry>
 						</row>
 						<row>
 							<entry>UrlCharSequenceNormalizer</entry>
@@ -171,9 +183,12 @@ lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaik
 			</para>
 			<para>
 				This corpora is specially good to train Language Detector and a converter is provided. First, you need to
-				download the files that compose the Leipzig Corpora collection to a folder. Apache OpenNLP Language
-				Detector supports training, evaluation and cross validation using the Leipzig Corpora. For example,
-				the following command shows how to train a model.
+				download the files that compose the Leipzig Corpora collection to a folder. The language of each file
+				is read from the first three characters of its name, which must be the ISO 639-3 code in ASCII lower
+				case, as in <code>eng_news_2005_10K-sentences.txt</code>. A file with a name that starts differently,
+				for example with <code>Eng</code>, a two-letter code followed by an underscore, or an accented letter,
+				is not read. Apache OpenNLP Language Detector supports training, evaluation and cross validation using
+				the Leipzig Corpora. For example, the following command shows how to train a model.
 
 				<screen>
 <![CDATA[$ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFile] [-factory factoryName] \

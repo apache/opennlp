@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import opennlp.tools.util.InputStreamFactory;
@@ -37,15 +34,31 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * The CoNNL-U Format is specified
  * <a href="http://universaldependencies.org/format.html">here</a>.
  */
 public class ConlluStream implements ObjectStream<ConlluSentence> {
-  private final ObjectStream<String> sentenceStream;
 
-  private static final Pattern regex = Pattern.compile("text_([a-z]{2,3})");
+  private static final String TEXT_LANG_PREFIX = "text_";
+  private static final int LANG_CODE_MIN_LENGTH = 2;
+  private static final int LANG_CODE_MAX_LENGTH = 3;
+  private static final char MULTIWORD_SEPARATOR = '-';
+  private static final String INVALID_MULTIWORD_ID = "Invalid multiword token id: ";
+  private static final String BACKWARDS_MULTIWORD_ID = "Multiword token id runs backwards: ";
+
+  /**
+   * The token range a multiword token line covers.
+   *
+   * @param start The id of the first word line.
+   * @param end The id of the last word line, not smaller than {@code start}.
+   */
+  record MultiwordRange(int start, int end) {
+  }
+
+  private final ObjectStream<String> sentenceStream;
 
   /**
    * Initializes a {@link ConlluStream}.
@@ -110,7 +123,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
               }
             }
 
-            if (firstPart.startsWith("text_")) {
+            if (firstPart.startsWith(TEXT_LANG_PREFIX)) {
               if (textLang == null) {
                 textLang = new HashMap<>();
               }
@@ -142,8 +155,15 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     return null;
   }
 
-  private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines) {
-
+  /**
+   * Replaces the word lines of each multiword token with one merged line.
+   *
+   * @param lines The word lines of a sentence.
+   * @return The lines with every multiword range merged into its multiword token line.
+   * @throws InvalidFormatException If a multiword token id is malformed.
+   */
+  private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines)
+      throws InvalidFormatException {
 
     // 1. Find contractions
     Map<String, Integer> index = new HashMap<>();
@@ -153,12 +173,10 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     for (int i = 0; i < lines.size(); i++) {
       ConlluWordLine line = lines.get(i);
       index.put(line.getId(), i);
-      if (line.getId().contains("-")) {
+      if (line.getId().indexOf(MULTIWORD_SEPARATOR) != -1) {
         List<String> expandedContractions = new ArrayList<>();
-        String[] ids = line.getId().split("-");
-        int start = Integer.parseInt(ids[0]);
-        int end = Integer.parseInt(ids[1]);
-        for (int j = start; j <= end; j++) {
+        MultiwordRange range = parseContractionRange(line.getId());
+        for (int j = range.start(); j <= range.end(); j++) {
           String js = Integer.toString(j);
           expandedContractions.add(js);
           linesToDelete.add(js);
@@ -230,22 +248,71 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
   private Map<Locale, String> addTextLang(String firstPart, String secondPart,
                                           Map<Locale, String> textLang) throws InvalidFormatException {
-    String lang = "";
-    try {
-      Matcher regexMatcher = regex.matcher(firstPart);
-      if (regexMatcher.find()) {
-        lang = regexMatcher.group(1);
-      }
-    } catch (PatternSyntaxException e) {
-      throw new InvalidFormatException(e);
-    }
+    String lang = extractTextLang(firstPart);
     if (!lang.isEmpty()) {
       textLang.put(Locale.of(lang), secondPart);
     }
     else {
-      throw new InvalidFormatException(String.format("Locale language code is invalid: %s", lang));
+      throw new InvalidFormatException(
+          String.format("Locale language code is invalid: %s", firstPart));
     }
     return textLang;
+  }
+
+  /**
+   * Parses a multiword token id of the form {@code start-end}, where both sides are ASCII
+   * digit runs without a leading zero and the range does not run backwards.
+   *
+   * @param id The token id, which holds a hyphen.
+   * @return The range.
+   * @throws InvalidFormatException If the id is not two such digit runs joined by one hyphen,
+   *         if a side does not fit an int, or if the end is less than the start.
+   */
+  MultiwordRange parseContractionRange(String id) throws InvalidFormatException {
+    int hyphen = id.indexOf(MULTIWORD_SEPARATOR);
+    int startEnd = StringUtil.endOfAsciiDigits(id, 0);
+    int endEnd = StringUtil.endOfAsciiDigits(id, hyphen + 1);
+    if (hyphen < 1 || startEnd != hyphen || endEnd == hyphen + 1 || endEnd != id.length()
+        || id.charAt(0) == '0' || id.charAt(hyphen + 1) == '0') {
+      throw new InvalidFormatException(INVALID_MULTIWORD_ID + id);
+    }
+    int start;
+    int end;
+    try {
+      start = Integer.parseInt(id, 0, hyphen, 10);
+      end = Integer.parseInt(id, hyphen + 1, id.length(), 10);
+    } catch (NumberFormatException e) {
+      throw new InvalidFormatException(INVALID_MULTIWORD_ID + id, e);
+    }
+    if (end < start) {
+      throw new InvalidFormatException(BACKWARDS_MULTIWORD_ID + id);
+    }
+    return new MultiwordRange(start, end);
+  }
+
+  /**
+   * Returns the two or three lowercase ASCII letters after {@code text_}, or an empty string.
+   * Three letters are taken when three follow; the first {@code text_} with at least two
+   * letters after it counts.
+   *
+   * @param firstPart The comment key.
+   * @return The language code, or an empty string if there is none.
+   */
+  private String extractTextLang(String firstPart) {
+    int from = 0;
+    while ((from = firstPart.indexOf(TEXT_LANG_PREFIX, from)) != -1) {
+      int i = from + TEXT_LANG_PREFIX.length();
+      int len = 0;
+      while (len < LANG_CODE_MAX_LENGTH && i + len < firstPart.length()
+          && StringUtil.isAsciiLowerCase(firstPart.charAt(i + len))) {
+        len++;
+      }
+      if (len >= LANG_CODE_MIN_LENGTH) {
+        return firstPart.substring(i, i + len);
+      }
+      from++;
+    }
+    return "";
   }
 
   @Override

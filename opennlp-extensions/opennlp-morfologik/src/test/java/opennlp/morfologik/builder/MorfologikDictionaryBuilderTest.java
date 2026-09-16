@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.morfologik.AbstractMorfologikTest;
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
@@ -67,9 +69,33 @@ public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
   @Test
   public void testBuildDictionary() throws Exception {
     Path output = createMorfologikDictionary();
+    output.toFile().deleteOnExit();
     MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
     Assertions.assertNotNull(ml);
+  }
+
+  /**
+   * The shared helper copies the input to a temporary file, so this test builds from the
+   * resource in place to see the name.
+   */
+  @Test
+  public void testBuildNamesTheDictionaryAfterTheMetadataFile() throws Exception {
+    final Path rawLemmaDictionary =
+        new File(getResource("/dictionaryWithLemma.txt").getFile()).toPath();
+    Path output = new MorfologikDictionaryBuilder().build(rawLemmaDictionary);
     output.toFile().deleteOnExit();
+    Assertions.assertEquals("dictionaryWithLemma.dict", output.getFileName().toString());
+    Assertions.assertEquals(rawLemmaDictionary.getParent(), output.getParent());
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "dictionaryWithLemma.info|dictionaryWithLemma.dict",
+      "a.info.info|a.info.dict",
+      ".info|.dict",
+      "info.info|info.dict"})
+  public void testToDictionaryFileNameExchangesTheTrailingSuffixOnly(String input, String expected) {
+    Assertions.assertEquals(expected, new MorfologikDictionaryBuilder().toDictionaryFileName(input));
   }
 
 }

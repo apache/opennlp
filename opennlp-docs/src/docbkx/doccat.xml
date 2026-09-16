@@ -173,6 +173,36 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 				For additional examples, refer to the <code>DocumentCategorizerDLEval</code> class.
 			</para>
 			<para>
+				The vocabulary file is read in one of two layouts. A plain text file has one token per
+				line, and the line number is the token ID, as in <code>vocab.txt</code>. A file whose
+				first non-whitespace character is an opening brace is read as JSON: either a single
+				object that maps each token to its ID, as in <code>vocab.json</code>, or a
+				<code>tokenizer.json</code> file, whose <code>model.vocab</code> object supplies the
+				tokens; the entries of its <code>added_tokens</code> list are part of the vocabulary
+				only if <code>model.vocab</code> lists them as well. A <code>tokenizer.json</code>
+				file of a Unigram model, whose <code>model.vocab</code> is a list, is not supported.
+				Each ID must be a non-negative integer. One leading U+FEFF byte order mark is
+				ignored before JSON detection and parsing, and before the first token of a
+				plain-text vocabulary. Thus a BOM-prefixed <code>vocab.json</code> remains JSON
+				and the first token of a BOM-prefixed <code>vocab.txt</code> has ID 0 without
+				the marker. The same leading-marker rule applies to configuration JSON;
+				U+FEFF inside a JSON string is content, not a marker to remove. A file that is not well-formed JSON, or whose
+				IDs are not non-negative integers, is rejected with an
+				<code>InvalidFormatException</code> that names the file and the position, so a damaged
+				vocabulary is reported instead of read in part.
+			</para>
+			<para>
+				When a configuration file is given in place of the categories map, its top-level
+				<code>id2label</code> object supplies the categories: each key is an output index and
+				each value a label, decoded from its escapes. A configuration without a top-level
+				<code>id2label</code> gives no categories; an <code>id2label</code> nested in another
+				member does not count. A configuration that is not well-formed JSON, whose
+				<code>id2label</code> is not an object of strings, or whose keys are not integers is
+				rejected with an <code>InvalidFormatException</code>. The non-finite values
+				<code>NaN</code> and <code>Infinity</code> that Python writes into other members are
+				accepted there.
+			</para>
+			<para>
 				Like <code>NameFinderDL</code>, long input is split into overlapping chunks on the full
 				Unicode <code>White_Space</code> set rather than Java's <code>\s</code>, so text copied
 				from PDFs, the web, or multilingual sources tokenizes consistently. Optional
