@@ -163,9 +163,10 @@ public class StringUtil {
    * input pass through untouched.
    *
    * @param input The text to split. Must not be {@code null}.
-   * @param separator The literal field separator.
+   * @param separator The literal field separator. Must not be a surrogate.
    * @return The fields in order.
-   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   * @throws IllegalArgumentException If {@code input} is {@code null} or
+   *     {@code separator} is a surrogate.
    */
   public static String[] split(CharSequence input, char separator) {
     return split(input, separator, 0);
@@ -186,15 +187,20 @@ public class StringUtil {
    * supplementary code points in the input pass through untouched.
    *
    * @param input The text to split. Must not be {@code null}.
-   * @param separator The literal field separator.
+   * @param separator The literal field separator. Must not be a surrogate, so
+   *     that a supplementary code point in {@code input} is never split in half.
    * @param limit The maximum number of fields, or {@code 0} for the default
    *     behavior, or negative for no limit.
    * @return The fields in order.
-   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   * @throws IllegalArgumentException If {@code input} is {@code null} or
+   *     {@code separator} is a surrogate.
    */
   public static String[] split(CharSequence input, char separator, int limit) {
     if (input == null) {
       throw new IllegalArgumentException("input must not be null");
+    }
+    if (Character.isSurrogate(separator)) {
+      throw new IllegalArgumentException("separator must not be a surrogate");
     }
     final int length = input.length();
     if (length == 0) {
