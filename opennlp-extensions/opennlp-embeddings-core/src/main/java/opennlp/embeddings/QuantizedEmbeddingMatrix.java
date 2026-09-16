@@ -41,19 +41,10 @@ import opennlp.tools.util.java.Experimental;
  * {@link GaussianQuantizer} grid for the selected bit width. A row decodes to a per-row scale
  * times its grid levels; the scale is fitted by least squares.
  *
-<<<<<<< HEAD
  * <p>The cited algorithm uses a dense random rotation and a dimension-specific coordinate
  * distribution in its MSE stage. This implementation substitutes the fast Hadamard transform and
  * a standard-normal grid. It also omits the paper's residual QJL stage, so it does not claim the
  * paper's unbiased inner-product estimator.</p>
-=======
- * <p>The storage is {@code bits} per <em>padded</em> dimension plus two floats per row (the
- * fitted scale and the decoded norm), against 32 bits per dimension for the float matrix. The
- * rotation pads each row to the next power of two, so a 500,000-row, 300-dimension table stores
- * 512 coded dimensions per row and shrinks from roughly 600 MB to about 132 MB at 4 bits, 4.5
- * times smaller. The workload this serves is memory-bound row gathering, so reading fewer bytes
- * is also the throughput lever.</p>
->>>>>>> ded6805a9 (OPENNLP-1895: Correct the quantized size numbers for power-of-two padding)
  *
  * <p>The storage is {@code bits} per <em>padded</em> dimension plus two doubles per row for the
  * fitted scale and decoded norm. The rotation pads each row to the next power of two.</p>
