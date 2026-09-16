@@ -35,6 +35,7 @@ import opennlp.tools.sentiment.SentimentModel;
 import opennlp.tools.sentiment.SentimentSample;
 import opennlp.tools.sentiment.SentimentSampleTypeFilter;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -90,7 +91,7 @@ public class SentimentEvaluatorTool
       listeners.add(new SentimentEvaluationErrorListener());
     }
     if (params.getNameTypes() != null) {
-      String[] nameTypes = params.getNameTypes().split(",");
+      String[] nameTypes = StringUtil.split(params.getNameTypes(), ',');
       sampleStream = new SentimentSampleTypeFilter(nameTypes, sampleStream);
     }
 
