@@ -35,18 +35,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The {@link VectorIndex} lifecycle and validation contract, run against both implementations:
- * build-phase validation, the freeze boundary, and the query result guarantees.
+ * The {@link VectorIndex} lifecycle and validation contract, run against {@link HnswFloatIndex}:
+ * build-phase validation, the freeze boundary, and the query result guarantees. {@code
+ * opennlp-embeddings-core}'s {@code VectorIndexContractTest} runs the same contract against the
+ * core-native implementations; {@link HnswFloatIndex} is test scope here because it depends on
+ * Lucene, so its contract coverage lives in this module instead.
  */
-class VectorIndexContractTest {
+class HnswVectorIndexContractTest {
 
   private static final int DIMENSION = 8;
 
   static Stream<Arguments> indexes() {
     return Stream.of(
-        Arguments.of(Named.<IntFunction<VectorIndex>>of("flat", FlatFloatIndex::new)),
-        Arguments.of(Named.<IntFunction<VectorIndex>>of("turboquant",
-            dimension -> new TurboQuantIndex(dimension, 4, 42))));
+        Arguments.of(Named.<IntFunction<VectorIndex>>of("hnsw", HnswFloatIndex::new)));
   }
 
   /** {@return a unit vector along the given axis} */
