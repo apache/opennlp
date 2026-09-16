@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * The bundled-facts layer of the emoji annotation record store: license-clean, provenance-tagged
  * attributes intrinsic to a pictograph (name, coarse sentiment, entity type, document category),
@@ -57,13 +59,13 @@ public final class EmojiAnnotations {
    * Field separator in {@code emoji-annotations.txt}
    * ({@code codepoints ; attribute ; value ; source ; notes}).
    */
-  private static final String FIELD_SEPARATOR = ";";
+  private static final char FIELD_SEPARATOR = ';';
 
   /**
    * Separates hex code points inside the code point field. The bundled table format uses ASCII
    * space ({@code U+0020}), not a general whitespace class.
    */
-  private static final String MAPPING_CODE_POINT_SEPARATOR = " ";
+  private static final char MAPPING_CODE_POINT_SEPARATOR = ' ';
 
   // The records keyed by code point sequence, loaded once when this class initializes.
   private static final Map<String, EmojiAnnotation> ANNOTATIONS = load();
@@ -154,7 +156,7 @@ public final class EmojiAnnotations {
           continue;
         }
         // Bounded split: only the first four separators are structural.
-        final String[] fields = content.split(FIELD_SEPARATOR, 5);
+        final String[] fields = StringUtil.split(content, FIELD_SEPARATOR, 5);
         if (fields.length != 5) {
           throw new IllegalArgumentException("Malformed emoji annotation data in " + RESOURCE
               + " at line " + lineNumber + ": expected 5 fields, got " + fields.length
@@ -244,7 +246,7 @@ public final class EmojiAnnotations {
     }
     try {
       final StringBuilder decoded = new StringBuilder();
-      for (final String hex : stripped.split(MAPPING_CODE_POINT_SEPARATOR)) {
+      for (final String hex : StringUtil.split(stripped, MAPPING_CODE_POINT_SEPARATOR)) {
         decoded.appendCodePoint(Integer.parseInt(hex, 16));
       }
       return decoded.toString();

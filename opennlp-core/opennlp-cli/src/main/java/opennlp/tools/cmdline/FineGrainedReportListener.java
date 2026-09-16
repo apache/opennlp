@@ -509,7 +509,7 @@ public abstract class FineGrainedReportListener {
         final ConfusionMatrixLine confusionMatrixLine = entry.getValue();
         final String category;
         if (key.contains("-")) {
-          category = key.split("-")[0];
+          category = key.substring(0, key.indexOf('-'));
         } else {
           category = key;
         }
@@ -527,10 +527,10 @@ public abstract class FineGrainedReportListener {
       String c2 = o2;
 
       if (o1.contains("-")) {
-        c1 = o1.split("-")[0];
+        c1 = o1.substring(0, o1.indexOf('-'));
       }
       if (o2.contains("-")) {
-        c2 = o2.split("-")[0];
+        c2 = o2.substring(0, o2.indexOf('-'));
       }
 
       if (c1.equals(c2)) { // same category - sort by confusion matrix
@@ -622,7 +622,7 @@ public abstract class FineGrainedReportListener {
         final Counter value = entry.getValue();
         final String category;
         if (key.contains("-")) {
-          category = key.split("-")[0];
+          category = key.substring(0, key.indexOf('-'));
         } else {
           category = key;
         }
@@ -640,10 +640,10 @@ public abstract class FineGrainedReportListener {
       String c2 = o2;
 
       if (o1.contains("-")) {
-        c1 = o1.split("-")[0];
+        c1 = o1.substring(0, o1.indexOf('-'));
       }
       if (o2.contains("-")) {
-        c2 = o2.split("-")[0];
+        c2 = o2.substring(0, o2.indexOf('-'));
       }
 
       if (c1.equals(c2)) { // same category - sort by confusion matrix

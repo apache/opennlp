@@ -204,6 +204,19 @@ double[] tokenProbs = tokenizer.getTokenProbabilities();]]>
 	</section>
 	</section>
 	
+	<section xml:id="tools.tokenizer.whitespace.instances">
+		<title>Independent whitespace tokenizers</title>
+		<para>
+			Use <code>WhitespaceTokenizer.newInstance(boolean keepNewLines)</code> when a
+			caller needs its own whitespace tokenizer configuration. Each call returns a
+			distinct instance. Changing it does not change
+			<code>WhitespaceTokenizer.INSTANCE</code>. Since 3.0.0,
+			<code>TokenizerME</code> uses private whitespace tokenizers and no longer changes
+			the shared instance when applying its <code>keepNewLines</code> setting.
+			The shared instance remains mutable; callers needing different settings should
+			use separate instances rather than reconfigure the singleton.
+		</para>
+	</section>
 	<section xml:id="tools.tokenizer.training">
 		<title>Tokenizer Training</title>
 			

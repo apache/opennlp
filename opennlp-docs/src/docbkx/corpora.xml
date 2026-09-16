@@ -421,6 +421,15 @@ Execution time: 1,955 seconds]]>
     			</screen>
 			</para>
 		</section>
+	<section xml:id="tools.corpora.arvores-deitadas.end-of-file">
+		<title>End of file in AD input</title>
+		<para>
+			An opening <code>&lt;s&gt;</code> tag with no following content at end of file
+			ends the stream without producing a sample. A sentence with content but without
+			its closing <code>&lt;/s&gt;</code> is returned from the lines read so far. Since
+			3.0.0, the empty open sentence no longer causes an endless read.
+		</para>
+	</section>
 		<section xml:id="tools.corpora.arvores-deitadas.evaluation">
 			<title>Training and Evaluation</title>
 			    <para>

@@ -31,6 +31,7 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Reads the annotations from the brat {@code .ann} annotation file.
@@ -79,7 +80,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
           int endOffset;
           int nextBeginOffset = -1;
           if (values[i].getCoveredText(line).toString().contains(";")) {
-            String[] parts = values[i].getCoveredText(line).toString().split(";");
+            String[] parts = StringUtil.split(values[i].getCoveredText(line).toString(), ';');
             endOffset = parseInt(parts[0]);
             fragments.add(new Span(beginIndex, endOffset, type));
             beginIndex = parseInt(parts[1]);
@@ -138,7 +139,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     @Override
     BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
 
-      String[] typeParts = tokens[TYPE_OFFSET].getCoveredText(line).toString().split(":");
+      String[] typeParts = StringUtil.split(tokens[TYPE_OFFSET].getCoveredText(line).toString(), ':');
 
       if (typeParts.length != 2) {
         throw new InvalidFormatException(String.format(
@@ -151,7 +152,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
       Map<String, String> arguments = new HashMap<>();
 
       for (int i = TYPE_OFFSET + 1; i < tokens.length; i++) {
-        String[] parts = tokens[i].getCoveredText(line).toString().split(":");
+        String[] parts = StringUtil.split(tokens[i].getCoveredText(line).toString(), ':');
 
         if (parts.length != 2) {
           throw new InvalidFormatException(String.format(

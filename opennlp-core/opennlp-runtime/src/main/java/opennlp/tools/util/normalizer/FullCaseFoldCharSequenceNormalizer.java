@@ -25,6 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * A {@link CharSequenceNormalizer} that applies Unicode full case folding for case-insensitive
  * matching, as defined by the Default Case Algorithms in
@@ -52,14 +54,14 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   private static final String RESOURCE = "CaseFolding.txt";
 
   /** Field separator in {@code CaseFolding.txt} ({@code <code>; <status>; <mapping>;}). */
-  private static final String FIELD_SEPARATOR = ";";
+  private static final char FIELD_SEPARATOR = ';';
 
   /**
    * Separates hex code points inside a multi-character mapping field. The Unicode
    * {@code CaseFolding.txt} format uses ASCII space ({@code U+0020}), not a general whitespace
    * class.
    */
-  private static final String MAPPING_CODE_POINT_SEPARATOR = " ";
+  private static final char MAPPING_CODE_POINT_SEPARATOR = ' ';
 
   /** {@code CaseFolding.txt} status {@code C}: common mapping shared by simple and full folding. */
   private static final String STATUS_COMMON = "C";
@@ -159,7 +161,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
         if (content.isEmpty()) {
           continue;
         }
-        final String[] fields = content.split(FIELD_SEPARATOR);
+        final String[] fields = StringUtil.split(content, FIELD_SEPARATOR);
         if (fields.length < 3) {
           throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
               + " at line " + lineNumber + ": " + content);
@@ -178,7 +180,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
         try {
           final int source = Integer.parseInt(fields[0].strip(), 16);
           final StringBuilder target = new StringBuilder();
-          for (final String hex : fields[2].strip().split(MAPPING_CODE_POINT_SEPARATOR)) {
+          for (final String hex : StringUtil.split(fields[2].strip(), MAPPING_CODE_POINT_SEPARATOR)) {
             target.appendCodePoint(Integer.parseInt(hex, 16));
           }
           map.put(source, target.toString());

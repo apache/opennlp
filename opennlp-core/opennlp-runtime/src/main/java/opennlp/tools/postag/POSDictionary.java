@@ -214,7 +214,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
     boolean isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> {
 
       String tagString = entry.attributes().getValue("tags");
-      String[] tags = tagString.split(" ");
+      String[] tags = StringUtil.split(tagString, ' ');
       StringList word = entry.tokens();
 
       if (word.size() != 1)

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.java.Experimental;
 
 /**
@@ -58,7 +59,7 @@ public class Glove {
     int dimension = -1;
     String line;
     while ((line = reader.readLine()) != null) {
-      String[] parts = line.split(" ");
+      String[] parts = StringUtil.split(line, ' ');
 
       if (dimension == -1) {
         dimension = parts.length - 1;

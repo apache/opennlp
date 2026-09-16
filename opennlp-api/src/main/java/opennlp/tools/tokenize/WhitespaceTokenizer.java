@@ -44,6 +44,20 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
   private WhitespaceTokenizer() {
   }
 
+  /**
+   * Creates a tokenizer that is not shared with {@link #INSTANCE}, for a caller
+   * that sets {@link #setKeepNewLines(boolean)} without touching other users of the shared
+   * instance.
+   *
+   * @param keepNewLines {@code true} if line separators are returned as tokens.
+   * @return A new {@link WhitespaceTokenizer} with that setting.
+   */
+  public static WhitespaceTokenizer newInstance(boolean keepNewLines) {
+    WhitespaceTokenizer tokenizer = new WhitespaceTokenizer();
+    tokenizer.setKeepNewLines(keepNewLines);
+    return tokenizer;
+  }
+
   @Override
   public Span[] tokenizePos(String d) {
     int tokStart = -1;

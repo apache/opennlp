@@ -32,6 +32,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.langdetect.Language;
@@ -67,7 +68,10 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
       // The file name contains the number of lines, but to make this more stable
       // the file is once scanned for the count even tough this is slower
-      int totalLineCount = (int) Files.lines(sentencesFile.toPath()).count();
+      int totalLineCount;
+      try (Stream<String> lines = Files.lines(sentencesFile.toPath())) {
+        totalLineCount = (int) lines.count();
+      }
       int requiredLines = sentencesPerSample * numberOfSamples;
 
       if (totalLineCount < requiredLines)

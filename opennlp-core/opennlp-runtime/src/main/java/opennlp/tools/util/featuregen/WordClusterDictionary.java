@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -60,7 +61,7 @@ public class WordClusterDictionary implements SerializableArtifact {
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
       while ((line = reader.readLine()) != null) {
-        String[] parts = line.split(" ");
+        String[] parts = StringUtil.split(line, ' ');
         if (parts.length == 3) {
           tokenToClusterMap.put(parts[0], parts[1].intern());
         } else if (parts.length == 2) {
