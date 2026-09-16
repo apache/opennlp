@@ -411,6 +411,19 @@ Execution time: 1,955 seconds]]>
 		</para>
 	</section>
 	</section>
+	<section xml:id="tools.corpora.conllu.range.lines">
+		<title>CoNLL-U multiword token lines</title>
+		<para>
+			Each id in a CoNLL-U multiword token range must have its corresponding word line
+			in the same sentence. For example, a range <code>1-3</code> requires lines
+			<code>1</code>, <code>2</code>, and <code>3</code>. Since 3.0.0, a missing word
+			line stops reading with <code>InvalidFormatException</code> naming the range
+			and missing id, rather than a <code>NullPointerException</code>. The reader checks
+			for missing words as it traverses the range, without first allocating all of its
+			ids. Ranges ending at the largest integer do not wrap around. Correct the
+			input before resuming conversion or training; missing words are not fabricated.
+		</para>
+	</section>
 	<section xml:id="tools.corpora.arvores-deitadas">
 		<title>Arvores Deitadas</title>
 		<para>
