@@ -1,0 +1,267 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.wordnet;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import opennlp.tools.wordnet.LexicalKnowledgeBase;
+import opennlp.tools.wordnet.WordNetRelation;
+
+/**
+ * Taxonomy-based similarity between synsets: measures over the hypernym graph of a
+ * {@link LexicalKnowledgeBase}, computed on demand with no precomputed tables.
+ *
+ * <p>Path similarity is {@code 1 / (1 + d)} for the shortest hypernym-graph distance
+ * {@code d} through a common ancestor. Wu-Palmer similarity relates the depth of the
+ * deepest common ancestor to the depths of both synsets. Leacock-Chodorow scales the
+ * shortest path against a caller-supplied taxonomy depth, since the knowledge base
+ * interface does not enumerate the taxonomy. Synsets with no shared known ancestor score zero
+ * for all measures. Information-content measures need corpus counts and
+ * are not provided here.</p>
+ *
+ * <p>Both plain and instance hypernyms count as taxonomy edges. The measures read only
+ * the knowledge base and hold no mutable state, so instances are as thread-safe as
+ * their knowledge base.</p>
+ *
+ * @since 3.0.0
+ */
+public final class SynsetSimilarity {
+
+  private final LexicalKnowledgeBase knowledgeBase;
+
+  /**
+   * Initializes the measures.
+   *
+   * @param knowledgeBase The knowledge base to walk. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code knowledgeBase} is {@code null}.
+   */
+  public SynsetSimilarity(LexicalKnowledgeBase knowledgeBase) {
+    if (knowledgeBase == null) {
+      throw new IllegalArgumentException("knowledgeBase must not be null");
+    }
+    this.knowledgeBase = knowledgeBase;
+  }
+
+  /**
+   * Computes path similarity: {@code 1 / (1 + d)} over the shortest hypernym-graph
+   * distance.
+   *
+   * @param synsetId The first synset identifier. Must not be {@code null}.
+   * @param otherSynsetId The second synset identifier. Must not be {@code null}.
+   * @return The similarity in {@code (0, 1]}, or {@code 0} when the synsets share no
+   *         ancestor.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
+   */
+  public double path(String synsetId, String otherSynsetId) {
+    final int distance = shortestDistance(synsetId, otherSynsetId);
+    return distance < 0 ? 0.0 : 1.0 / (1.0 + distance);
+  }
+
+  /**
+   * Computes Wu-Palmer similarity: {@code 2 * depth(lcs) / (depth(a) + depth(b))},
+   * with depths counted in nodes from the taxonomy root, the root itself at depth one,
+   * and the deepest common ancestor as the lcs. Node counting keeps the score positive
+   * whenever any ancestor is shared, the root included, so {@code 0} is reserved for
+   * synsets that share no ancestor at all.
+   *
+   * @param synsetId The first synset identifier. Must not be {@code null}.
+   * @param otherSynsetId The second synset identifier. Must not be {@code null}.
+   * @return The similarity in {@code (0, 1]}, or {@code 0} when the synsets share no
+   *         ancestor.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
+   */
+  public double wuPalmer(String synsetId, String otherSynsetId) {
+    validateIds(synsetId, otherSynsetId);
+    final Map<String, Integer> up = depthsAbove(synsetId);
+    final Map<String, Integer> otherUp = depthsAbove(otherSynsetId);
+    final int depthA = depthFromRoot(synsetId) + 1;
+    final int depthB = depthFromRoot(otherSynsetId) + 1;
+    double best = 0.0;
+    for (final Map.Entry<String, Integer> common : up.entrySet()) {
+      final Integer otherDistance = otherUp.get(common.getKey());
+      if (otherDistance == null) {
+        continue;
+      }
+      // Node counting gives the root depth one, so a shared ancestor has a positive
+      // numerator and the denominator is nonzero.
+      final int lcsDepth = depthFromRoot(common.getKey()) + 1;
+      final double score = 2.0 * lcsDepth / (depthA + depthB);
+      best = Math.max(best, score);
+    }
+    return best;
+  }
+
+  /**
+   * Computes Leacock-Chodorow similarity:
+   * {@code -log((d + 1) / (2 * taxonomyDepth))} over the shortest hypernym-graph
+   * distance {@code d}.
+   *
+   * @param synsetId The first synset identifier. Must not be {@code null}.
+   * @param otherSynsetId The second synset identifier. Must not be {@code null}.
+   * @param taxonomyDepth The maximum depth of the taxonomy the synsets live in. Must
+   *                      be positive.
+   * @return The similarity, higher for closer synsets, or {@code 0} when the synsets
+   *         share no ancestor. The value can be negative if {@code taxonomyDepth} is smaller
+   *         than required by the shortest path.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}, or {@code taxonomyDepth} is not
+   *         positive.
+   */
+  public double leacockChodorow(String synsetId, String otherSynsetId,
+      int taxonomyDepth) {
+    validateIds(synsetId, otherSynsetId);
+    if (taxonomyDepth <= 0) {
+      throw new IllegalArgumentException(
+          "taxonomyDepth must be positive: " + taxonomyDepth);
+    }
+    final int distance = shortestDistance(synsetId, otherSynsetId);
+    if (distance < 0) {
+      return 0.0;
+    }
+    return -Math.log((distance + 1.0) / (2.0 * taxonomyDepth));
+  }
+
+  /**
+   * Finds the shortest distance between two synsets through a common ancestor.
+   *
+   * @param synsetId The first synset identifier. Must not be {@code null}.
+   * @param otherSynsetId The second synset identifier. Must not be {@code null}.
+   * @return The edge count of the shortest connecting path, or {@code -1} when no
+   *         common ancestor exists.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
+   */
+  public int shortestDistance(String synsetId, String otherSynsetId) {
+    validateIds(synsetId, otherSynsetId);
+    final Map<String, Integer> up = depthsAbove(synsetId);
+    final Map<String, Integer> otherUp = depthsAbove(otherSynsetId);
+    int best = -1;
+    for (final Map.Entry<String, Integer> common : up.entrySet()) {
+      final Integer otherDistance = otherUp.get(common.getKey());
+      if (otherDistance != null) {
+        final int total = common.getValue() + otherDistance;
+        if (best < 0 || total < best) {
+          best = total;
+        }
+      }
+    }
+    return best;
+  }
+
+  /**
+   * Validates the identifier arguments of the public measures.
+   *
+   * @param synsetId The first synset identifier.
+   * @param otherSynsetId The second synset identifier.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
+   */
+  private void validateIds(String synsetId, String otherSynsetId) {
+    if (synsetId == null) {
+      throw new IllegalArgumentException("synsetId must not be null");
+    }
+    if (otherSynsetId == null) {
+      throw new IllegalArgumentException("otherSynsetId must not be null");
+    }
+  }
+
+  /**
+   * Collects every ancestor with its minimal upward distance, the synset itself included at
+   * distance zero.
+   *
+   * @param synsetId The synset to walk up from.
+   * @return The upward distance to each reachable ancestor, keyed by synset identifier.
+   */
+  private Map<String, Integer> depthsAbove(String synsetId) {
+    final Map<String, Integer> depths = new HashMap<>();
+    if (knowledgeBase.synset(synsetId).isEmpty()) {
+      return depths;
+    }
+    final Deque<String> queue = new ArrayDeque<>();
+    depths.put(synsetId, 0);
+    queue.add(synsetId);
+    while (!queue.isEmpty()) {
+      final String current = queue.remove();
+      final int depth = depths.get(current);
+      for (final String parent : hypernyms(current)) {
+        if (knowledgeBase.synset(parent).isEmpty()) {
+          continue;
+        }
+        if (!depths.containsKey(parent) || depths.get(parent) > depth + 1) {
+          depths.put(parent, depth + 1);
+          queue.add(parent);
+        }
+      }
+    }
+    return depths;
+  }
+
+  /**
+   * Measures a synset's depth as the maximum edge count on an acyclic route to a taxonomy root.
+   *
+   * @param synsetId The synset to measure.
+   * @return The edge count to the farthest ancestor, {@code 0} for a root.
+   */
+  private int depthFromRoot(String synsetId) {
+    return depthFromRoot(synsetId, new HashSet<>());
+  }
+
+  /**
+   * Finds the longest acyclic route from a synset to a taxonomy root.
+   *
+   * @param synsetId The synset to measure.
+   * @param path The synsets on the current route, used to stop cycles.
+   * @return The edge count to the farthest root, or {@code -1} for an unknown synset or a cycle.
+   */
+  private int depthFromRoot(String synsetId, Set<String> path) {
+    if (knowledgeBase.synset(synsetId).isEmpty() || !path.add(synsetId)) {
+      return -1;
+    }
+    int deepest = 0;
+    for (final String parent : hypernyms(synsetId)) {
+      final int parentDepth = depthFromRoot(parent, path);
+      if (parentDepth >= 0) {
+        deepest = Math.max(deepest, parentDepth + 1);
+      }
+    }
+    path.remove(synsetId);
+    return deepest;
+  }
+
+  /**
+   * Collects the synsets one taxonomy edge above a synset.
+   *
+   * @param synsetId The synset whose parents are collected.
+   * @return The plain hypernyms followed by the instance hypernyms.
+   */
+  private Iterable<String> hypernyms(String synsetId) {
+    final List<String> parents = new ArrayList<>(
+        knowledgeBase.related(synsetId, WordNetRelation.HYPERNYM));
+    parents.addAll(knowledgeBase.related(synsetId, WordNetRelation.INSTANCE_HYPERNYM));
+    return parents;
+  }
+}
