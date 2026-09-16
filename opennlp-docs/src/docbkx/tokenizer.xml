@@ -326,9 +326,14 @@ Path: en-custom-token.bin]]>
 				is the same, except that a token with an unpaired surrogate, which is not a
 				character, is never alphanumeric, where the engine accepts it inside a range that
 				spans the surrogate block; <code>-Dopennlp.compat.mode=LEGACY</code> restores the
-				engine's result for a model trained with such a pattern. Characters outside the Basic Multilingual Plane, such as emoji or
-				mathematical alphanumerics, are not in any built-in pattern; a custom pattern such
-				as <code>^[\p{L}\p{Nd}]+$</code> accepts them.
+				engine's result for a model trained with such a pattern. The check captures the mode
+				when it is constructed, so select the mode before constructing the tokenizer or
+				training event stream. The built-in language patterns do not span the surrogate
+				block and are unaffected by this choice. Custom patterns outside the supported
+				set form continue to use the regular expression engine in either mode.
+				Characters outside the Basic Multilingual Plane are not in any built-in pattern.
+				A custom pattern such as <code>^[\p{L}\p{Nd}]+$</code> accepts supplementary
+				letters and decimal digits, including mathematical alphanumerics, but not emoji.
 			</para>
 		</section>
 		<section xml:id="tools.tokenizer.training.api">
