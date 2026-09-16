@@ -411,10 +411,30 @@
 							<bundledSignature>jdk-deprecated-${java.version}</bundledSignature>
 							<bundledSignature>jdk-non-portable</bundledSignature>
 						</bundledSignatures>
+						<signatures><![CDATA[
+@defaultMessage Create JAXP factories through opennlp.tools.util.XmlUtil or Apache Commons Secure XML, which secure them against XXE (OPENNLP-1957).
+javax.xml.parsers.DocumentBuilderFactory#newDefaultInstance()
+javax.xml.parsers.DocumentBuilderFactory#newDefaultNSInstance()
+javax.xml.parsers.DocumentBuilderFactory#newInstance(**)
+javax.xml.parsers.DocumentBuilderFactory#newNSInstance(**)
+javax.xml.parsers.SAXParserFactory#newDefaultInstance()
+javax.xml.parsers.SAXParserFactory#newDefaultNSInstance()
+javax.xml.parsers.SAXParserFactory#newInstance(**)
+javax.xml.parsers.SAXParserFactory#newNSInstance(**)
+javax.xml.stream.XMLInputFactory#newDefaultFactory()
+javax.xml.stream.XMLInputFactory#newFactory(**)
+javax.xml.stream.XMLInputFactory#newInstance(**)
+javax.xml.transform.TransformerFactory#newDefaultInstance()
+javax.xml.transform.TransformerFactory#newInstance(**)
+javax.xml.validation.SchemaFactory#newDefaultInstance()
+javax.xml.validation.SchemaFactory#newInstance(**)
+javax.xml.xpath.XPathFactory#newDefaultInstance()
+javax.xml.xpath.XPathFactory#newInstance(**)
+org.xml.sax.helpers.XMLReaderFactory#createXMLReader(**)
+						]]></signatures>
 					</configuration>
 					<executions>
 						<execution>
-							<phase>validate</phase>
 							<goals>
 								<goal>check</goal>
 								<goal>testCheck</goal>

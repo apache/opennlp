@@ -27,6 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -143,7 +144,8 @@ public class XmlUtilTest {
   public static class ThrowingSecurityOptionsDocumentBuilderFactory
       extends DocumentBuilderFactory {
 
-    private final DocumentBuilderFactory delegate = DocumentBuilderFactory.newDefaultInstance();
+    private final DocumentBuilderFactory delegate =
+        SecureDocumentBuilderFactory.newDefaultInstance();
 
     @Override
     public DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {

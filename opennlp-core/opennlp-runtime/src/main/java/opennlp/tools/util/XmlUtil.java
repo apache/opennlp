@@ -20,9 +20,11 @@ package opennlp.tools.util;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
+import javax.xml.xpath.XPath;
 
 import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.apache.commons.xml.secure.SecureSAXParserFactory;
+import org.apache.commons.xml.secure.SecureXPathFactory;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
 
@@ -66,5 +68,15 @@ public class XmlUtil {
       // Not expected from any known JAXP implementation: the factory is fully configured.
       throw new IllegalStateException("Failed to create a secure SAXParser.", e);
     }
+  }
+
+  /**
+   * Create a new {@link XPath} which evaluates expressions securely,
+   * including those given an {@link org.xml.sax.InputSource} to parse.
+   *
+   * @return A valid {@link XPath} instance.
+   */
+  public static XPath createXPath() {
+    return SecureXPathFactory.newInstance().newXPath();
   }
 }

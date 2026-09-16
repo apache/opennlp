@@ -29,7 +29,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -292,7 +291,7 @@ public class GeneratorFactory {
 
     final List<Element> elements = new ArrayList<>();
     final org.w3c.dom.Document xmlDescriptorDOM = createDOM(xmlDescriptorIn);
-    final XPath xPath = XPathFactory.newInstance().newXPath();
+    final XPath xPath = XmlUtil.createXPath();
     NodeList allElements;
     try {
       final XPathExpression exp = xPath.compile("//*");
