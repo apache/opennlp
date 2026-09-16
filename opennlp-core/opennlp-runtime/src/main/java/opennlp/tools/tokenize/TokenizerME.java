@@ -83,6 +83,15 @@ import opennlp.tools.util.TrainingParameters;
 @ThreadSafe
 public class TokenizerME extends AbstractTokenizer implements Probabilistic {
 
+  /*
+   * Private whitespace tokenizers, one per keepNewLines setting, so the shared
+   * WhitespaceTokenizer.INSTANCE is never changed and two tokenizers with different settings
+   * do not race on one flag.
+   */
+  private static final WhitespaceTokenizer WHITESPACE = WhitespaceTokenizer.newInstance(false);
+  private static final WhitespaceTokenizer WHITESPACE_KEEPING_NEW_LINES =
+      WhitespaceTokenizer.newInstance(true);
+
   /**
    * Constant indicates a token split.
    */
@@ -192,9 +201,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    */
   @Override
   public Span[] tokenizePos(String d) {
-    WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
-    whitespaceTokenizer.setKeepNewLines(keepNewLines);
-    Span[] tokens = whitespaceTokenizer.tokenizePos(d);
+    Span[] tokens = (keepNewLines ? WHITESPACE_KEEPING_NEW_LINES : WHITESPACE).tokenizePos(d);
     List<Span> localTokens = new ArrayList<>();
     List<Double> localProbs = new ArrayList<>(50);
     for (Span s : tokens) {
