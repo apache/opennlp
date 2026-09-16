@@ -33,8 +33,6 @@ import opennlp.embeddings.spi.TeacherEncoder;
 import opennlp.embeddings.spi.TeacherEncoderProviders;
 import opennlp.tools.util.java.Experimental;
 
-import opennlp.tools.util.java.Experimental;
-
 /**
  * Distills a sentence-transformer teacher into a static embedding table in the layout
  * {@link StaticEmbeddingModel#load(Path)} opens, reproducing
