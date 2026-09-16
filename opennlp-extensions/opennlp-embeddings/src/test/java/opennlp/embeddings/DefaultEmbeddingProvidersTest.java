@@ -16,7 +16,12 @@
  */
 package opennlp.embeddings;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.embeddings.spi.TeacherEncoderProviders;
 import opennlp.tools.embeddings.TextEmbedderProviders;
@@ -28,10 +33,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class DefaultEmbeddingProvidersTest {
 
   @Test
-  void includesBothProvidersButNoCli() {
-    assertEquals("onnx", TextEmbedderProviders.getDefault().name());
+  void includesBothProvidersButNoCli(@TempDir Path dir) throws Exception {
+    assertEquals("onnx", TextEmbedderProviders.get("onnx").name());
     assertEquals("static", TextEmbedderProviders.get("static").name());
-    assertEquals("onnx", TeacherEncoderProviders.getDefault().name());
+    assertEquals("onnx", TeacherEncoderProviders.get("onnx").name());
+    assertEquals(2, TextEmbedderProviders.installed().size());
+    assertEquals(1, TeacherEncoderProviders.installed().size());
+    // routing by model shape: an ONNX file goes to onnx, a static model directory to static
+    assertEquals("onnx", TextEmbedderProviders.select(dir.resolve("model.onnx"),
+        Map.of("vocabulary", "vocab.txt")).name());
+    Files.createFile(dir.resolve("model.safetensors"));
+    Files.createFile(dir.resolve("config.json"));
+    assertEquals("static", TextEmbedderProviders.select(dir, Map.of()).name());
+    assertEquals("onnx", TeacherEncoderProviders.select(dir.resolve("model.onnx")).name());
     assertThrows(ClassNotFoundException.class,
         () -> Class.forName("opennlp.tools.cmdline.CmdLineTool", false, getClass().getClassLoader()));
   }

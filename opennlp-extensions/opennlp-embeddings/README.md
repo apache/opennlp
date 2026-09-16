@@ -44,16 +44,22 @@ exclude the provider from the default bundle:
 </dependency>
 ```
 
-Existing `StaticEmbeddingModel.load` calls are unchanged. The common SPI also exposes
-`TextEmbedderProviders.get("static")` and `TextEmbedderProviders.get("onnx")`.
-`getDefault()` selects `onnx`; excluding that provider requires explicit selection of
-an installed alternative. Factories can coexist and open multiple independently owned
-models. Close models through `TextEmbedder.close()` when finished.
+Existing `StaticEmbeddingModel.load` calls are unchanged. The common SPI selects a
+provider for a model: `TextEmbedderProviders.select(model, options)` asks the installed
+providers which of them supports the request (`static` claims a model directory with
+`model.safetensors` and `config.json` and no options, `onnx` claims a `*.onnx` file with
+its `vocabulary` and `lowerCase` options) and takes the one with the highest priority.
+`TextEmbedderProviders.get("static")` and `get("onnx")` pick by name, and the system
+property `opennlp.embedder.provider` pins a name for `select`. No provider is the default
+in the API; `onnx` is the default only because the bundle ships it. Factories can coexist
+and open multiple independently owned models. Close models through
+`TextEmbedder.close()` when finished.
 
 Distillation preserves its prepared-token and mean-pooling contract through the
-separate `TeacherEncoderProvider` SPI. The existing `ModelDistiller.distill` overloads
-select `onnx`. The local-directory overload with a final provider identifier selects
-an alternative. Register its factory in
+separate `TeacherEncoderProvider` SPI, selected the same way for the teacher's ONNX file
+(`TeacherEncoderProviders.select(model)`, pinned by `opennlp.embeddings.teacher.provider`).
+The local-directory `ModelDistiller.distill` overload with a final provider name selects
+one by name. Register a factory in
 `META-INF/services/opennlp.embeddings.spi.TeacherEncoderProvider`.
 
 ## Quickstart

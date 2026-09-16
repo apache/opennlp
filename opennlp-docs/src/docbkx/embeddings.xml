@@ -65,18 +65,27 @@
 			includes. The embedding library does not depend on CLI tooling.
 		</para>
 		<para>
-			<code>TextEmbedderProviders.get("static")</code> and
-			<code>TextEmbedderProviders.get("onnx")</code> select factories implementing the common
-			<code>TextEmbedderProvider</code> SPI. <code>getDefault()</code> selects ONNX and fails
-			if that provider is absent. Several factories and model instances may coexist;
-			close each returned <code>TextEmbedder</code> when finished.
+			<code>TextEmbedderProviders.select(model, options)</code> picks the provider for a
+			request among the installed factories implementing the common
+			<code>TextEmbedderProvider</code> SPI: <code>static</code> supports a model directory
+			with <code>model.safetensors</code> and <code>config.json</code> and no options,
+			<code>onnx</code> supports a <code>*.onnx</code> file with its <code>vocabulary</code>
+			and <code>lowerCase</code> options, and the highest priority wins.
+			<code>TextEmbedderProviders.get("static")</code> and <code>get("onnx")</code> select
+			by name, and the system property <code>opennlp.embedder.provider</code> pins a name.
+			The API names no default; ONNX is the default only because the bundle includes it.
+			Several factories and model instances may coexist; close each returned
+			<code>TextEmbedder</code> when finished.
 			Existing direct model constructors and static-model loading calls remain available.
 		</para>
 		<para>
 			Distillation uses <code>TeacherEncoderProvider</code>, whose encoders accept prepared
-			token ids and return mean-pooled vectors without L2 normalization. Its default is ONNX.
-			The local-directory <code>ModelDistiller.distill</code> overload with a final provider
-			identifier selects another implementation registered through
+			token ids and return mean-pooled vectors without L2 normalization.
+			<code>TeacherEncoderProviders.select(model)</code> picks the provider for the teacher's
+			ONNX file the same way, pinned by the system property
+			<code>opennlp.embeddings.teacher.provider</code>. The local-directory
+			<code>ModelDistiller.distill</code> overload with a final provider name selects
+			another implementation registered through
 			<code>META-INF/services/opennlp.embeddings.spi.TeacherEncoderProvider</code>.
 			Changing the backend does not change the required tokenization or pooling semantics.
 		</para>

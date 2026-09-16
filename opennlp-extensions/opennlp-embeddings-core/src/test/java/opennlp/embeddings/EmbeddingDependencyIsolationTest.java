@@ -27,7 +27,9 @@ import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProviders;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Verifies that inference and distillation contracts do not pull in a backend or CLI. */
 class EmbeddingDependencyIsolationTest {
@@ -39,8 +41,13 @@ class EmbeddingDependencyIsolationTest {
     try (TextEmbedder actual = TextEmbedderProviders.get("static").load(dir, Map.of())) {
       assertArrayEquals(expected.embed("king"), actual.embed("king"));
     }
-    assertThrows(IllegalArgumentException.class, TextEmbedderProviders::getDefault);
-    assertThrows(IllegalArgumentException.class, TeacherEncoderProviders::getDefault);
+    assertEquals("static", TextEmbedderProviders.select(dir, Map.of()).name());
+    assertThrows(IllegalArgumentException.class, () -> TextEmbedderProviders.get("onnx"));
+    assertThrows(IllegalArgumentException.class,
+        () -> TextEmbedderProviders.select(dir.resolve("model.onnx"), Map.of()));
+    assertTrue(TeacherEncoderProviders.installed().isEmpty());
+    assertThrows(IllegalArgumentException.class,
+        () -> TeacherEncoderProviders.select(dir.resolve("model.onnx")));
   }
 
   @Test

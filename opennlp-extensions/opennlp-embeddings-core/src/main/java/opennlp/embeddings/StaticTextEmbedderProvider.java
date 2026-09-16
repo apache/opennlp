@@ -17,6 +17,7 @@
 package opennlp.embeddings;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -24,12 +25,16 @@ import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProvider;
 
 /**
- * Loads a static model directory through the {@code static} provider. Configuration comes
- * from the model files; no options are accepted.
+ * Loads a static model directory as a {@link TextEmbedder}. The provider name is
+ * {@code static}. It supports a directory that holds {@code model.safetensors} and
+ * {@code config.json} when no options are given; configuration comes from the model files.
+ * It has no native runtime, so it is always available.
  *
  * @since 3.0.0
  */
 public final class StaticTextEmbedderProvider implements TextEmbedderProvider {
+
+  private static final String NAME = "static";
 
   /** Creates a factory without opening a model. */
   public StaticTextEmbedderProvider() {
@@ -38,7 +43,20 @@ public final class StaticTextEmbedderProvider implements TextEmbedderProvider {
   /** {@inheritDoc} */
   @Override
   public String name() {
-    return "static";
+    return NAME;
+  }
+
+  /**
+   * {@inheritDoc}
+   * A directory with {@code model.safetensors} and {@code config.json} and an empty option
+   * map is supported; the tokenizer layout is checked by {@link #load(Path, Map)}.
+   */
+  @Override
+  public boolean supports(Path model, Map<String, String> options) {
+    return model != null && options != null && options.isEmpty()
+        && Files.isDirectory(model)
+        && Files.isRegularFile(model.resolve(ModelFileNames.SAFETENSORS))
+        && Files.isRegularFile(model.resolve(ModelFileNames.CONFIG));
   }
 
   /** {@inheritDoc} */

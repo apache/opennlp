@@ -17,16 +17,24 @@
 package opennlp.embeddings.onnx;
 
 import java.nio.file.Path;
+import java.util.Locale;
 
 import opennlp.embeddings.spi.TeacherEncoder;
 import opennlp.embeddings.spi.TeacherEncoderProvider;
 
 /**
- * Opens ONNX teacher sessions on demand. Construction does not initialize ONNX Runtime.
+ * Opens ONNX teacher sessions on demand. The provider name is {@code onnx}. It supports a
+ * model file whose name ends with {@code .onnx} and is available when the ONNX Runtime classes
+ * can be loaded; the runtime itself is initialized by {@link #load(Path)}, not by construction
+ * or by the checks.
  *
  * @since 3.0.0
  */
 public final class OnnxTeacherEncoderProvider implements TeacherEncoderProvider {
+
+  private static final String NAME = "onnx";
+  private static final String MODEL_SUFFIX = ".onnx";
+  private static final String RUNTIME_CLASS = "ai.onnxruntime.OrtEnvironment";
 
   /** Creates a factory without opening a model. */
   public OnnxTeacherEncoderProvider() {
@@ -35,7 +43,32 @@ public final class OnnxTeacherEncoderProvider implements TeacherEncoderProvider 
   /** {@inheritDoc} */
   @Override
   public String name() {
-    return "onnx";
+    return NAME;
+  }
+
+  /**
+   * {@inheritDoc}
+   * Checks that the ONNX Runtime classes are present without initializing the runtime.
+   */
+  @Override
+  public boolean isAvailable() {
+    try {
+      Class.forName(RUNTIME_CLASS, false, OnnxTeacherEncoderProvider.class.getClassLoader());
+      return true;
+    } catch (ClassNotFoundException | LinkageError e) {
+      return false;
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   * A model file named {@code *.onnx}, in any letter case, is supported; the file itself is
+   * checked by {@link #load(Path)}.
+   */
+  @Override
+  public boolean supports(Path model) {
+    return model != null && model.getFileName() != null
+        && model.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(MODEL_SUFFIX);
   }
 
   /** {@inheritDoc} */

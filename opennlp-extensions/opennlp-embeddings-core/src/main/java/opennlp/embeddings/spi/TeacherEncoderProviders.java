@@ -16,79 +16,261 @@
  */
 package opennlp.embeddings.spi;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Discovers teacher encoder factories without opening models. Providers register through
- * {@link ServiceLoader}; their constructors must not load models or initialize native runtimes.
- * No provider or model instances are cached globally.
+ * Discovers and selects {@link TeacherEncoderProvider providers} without opening models.
+ * Providers register through {@link ServiceLoader}. This class names no backend: which one
+ * opens a teacher follows from the installed providers, their
+ * {@link TeacherEncoderProvider#supports capability},
+ * {@link TeacherEncoderProvider#isAvailable() availability} and
+ * {@link TeacherEncoderProvider#priority() priority}, or from the system property
+ * {@link #PROVIDER_PROPERTY}, which pins a provider by name.
+ * No provider or model instances are cached. This class is thread-safe.
  *
  * @since 3.0.0
  */
 public final class TeacherEncoderProviders {
 
-  /** The provider selected by {@link #getDefault()}. */
-  public static final String DEFAULT_PROVIDER = "onnx";
+  /**
+   * System property that pins the provider {@link #select(Path)} returns, by
+   * {@link TeacherEncoderProvider#name() name}. Unset or blank means selection by capability
+   * and priority.
+   */
+  public static final String PROVIDER_PROPERTY = "opennlp.embeddings.teacher.provider";
+
+  private static final Logger logger = LoggerFactory.getLogger(TeacherEncoderProviders.class);
+
+  /** Bounds the number of broken registrations skipped in one lookup. */
+  private static final int MAX_SKIPPED_REGISTRATIONS = 1000;
 
   private TeacherEncoderProviders() {
   }
 
   /**
-   * Selects the default ONNX provider using the thread context class loader.
+   * Lists the providers visible to the thread context class loader, or this class's loader
+   * when absent, in registration order. A registration that cannot be loaded or instantiated
+   * is skipped with a warning.
    *
-   * @return The provider. Never {@code null}.
-   * @throws IllegalArgumentException Thrown if the default provider is not installed.
-   * @throws IllegalStateException Thrown if multiple providers use the default identifier.
-   * @throws ServiceConfigurationError Thrown if a service registration is invalid.
+   * @return The installed providers; empty when none is registered. Never {@code null}.
    */
-  public static TeacherEncoderProvider getDefault() {
-    return get(DEFAULT_PROVIDER);
+  public static List<TeacherEncoderProvider> installed() {
+    return installed(contextLoader());
   }
 
   /**
-   * Selects a provider using the thread context class loader, or this class's loader when absent.
+   * Lists the providers visible to a class loader, in registration order. A registration
+   * that cannot be loaded or instantiated is skipped with a warning.
    *
-   * @param name The case-sensitive provider identifier. Must not be null or blank.
+   * @param loader The service class loader. Must not be {@code null}.
+   * @return The installed providers; empty when none is registered. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code loader} is {@code null}.
+   * @throws IllegalStateException Thrown if a provider declares a null or blank name.
+   */
+  public static List<TeacherEncoderProvider> installed(ClassLoader loader) {
+    if (loader == null) {
+      throw new IllegalArgumentException("loader must not be null");
+    }
+    List<TeacherEncoderProvider> providers = new ArrayList<>();
+    Iterator<ServiceLoader.Provider<TeacherEncoderProvider>> registrations =
+        ServiceLoader.load(TeacherEncoderProvider.class, loader).stream().iterator();
+    int skipped = 0;
+    while (skipped < MAX_SKIPPED_REGISTRATIONS) {
+      TeacherEncoderProvider provider;
+      try {
+        if (!registrations.hasNext()) {
+          break;
+        }
+        provider = registrations.next().get();
+      } catch (ServiceConfigurationError e) {
+        skipped++;
+        logger.warn("Skipping a teacher encoder provider registration: {}", e.getMessage());
+        continue;
+      }
+      if (provider.name() == null || provider.name().isBlank()) {
+        throw new IllegalStateException("Teacher encoder provider declares a blank name: "
+            + provider.getClass().getName());
+      }
+      providers.add(provider);
+    }
+    return Collections.unmodifiableList(providers);
+  }
+
+  /**
+   * Selects a provider by name using the thread context class loader, or this class's loader
+   * when absent.
+   *
+   * @param name The case-sensitive provider name. Must not be null or blank.
    * @return The provider. Never {@code null}.
    * @throws IllegalArgumentException Thrown if the name is null, blank, or not installed.
-   * @throws IllegalStateException Thrown if multiple providers use this identifier.
-   * @throws ServiceConfigurationError Thrown if a service registration is invalid.
+   * @throws IllegalStateException Thrown if no provider of that name is available, or if two
+   *                               available providers of that name share the highest priority.
    */
   public static TeacherEncoderProvider get(String name) {
-    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-    return get(name, loader == null ? TeacherEncoderProviders.class.getClassLoader() : loader);
+    return get(name, contextLoader());
   }
 
   /**
-   * Selects a provider visible to a class loader. Selection never depends on discovery order.
+   * Selects a provider by name among those visible to a class loader. When several providers
+   * declare the name, the available one with the highest priority wins. Selection never
+   * depends on registration order.
    *
-   * @param name The case-sensitive provider identifier. Must not be null or blank.
+   * @param name The case-sensitive provider name. Must not be null or blank.
    * @param loader The service class loader. Must not be {@code null}.
    * @return The provider. Never {@code null}.
    * @throws IllegalArgumentException Thrown if an argument is invalid or the name is not installed.
-   * @throws IllegalStateException Thrown if multiple providers use this identifier.
-   * @throws ServiceConfigurationError Thrown if a service registration is invalid.
+   * @throws IllegalStateException Thrown if no provider of that name is available, or if two
+   *                               available providers of that name share the highest priority.
    */
   public static TeacherEncoderProvider get(String name, ClassLoader loader) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("name must not be null or blank");
     }
-    if (loader == null) {
-      throw new IllegalArgumentException("loader must not be null");
-    }
-    TeacherEncoderProvider selected = null;
-    for (TeacherEncoderProvider provider : ServiceLoader.load(TeacherEncoderProvider.class, loader)) {
+    List<TeacherEncoderProvider> installed = installed(loader);
+    List<TeacherEncoderProvider> named = new ArrayList<>();
+    for (TeacherEncoderProvider provider : installed) {
       if (name.equals(provider.name())) {
-        if (selected != null) {
-          throw new IllegalStateException("Duplicate teacher encoder provider: " + name);
-        }
-        selected = provider;
+        named.add(provider);
       }
     }
-    if (selected == null) {
-      throw new IllegalArgumentException("Teacher encoder provider is not installed: " + name);
+    if (named.isEmpty()) {
+      throw new IllegalArgumentException("Teacher encoder provider is not installed: " + name
+          + " (installed: " + names(installed) + ")");
     }
-    return selected;
+    List<TeacherEncoderProvider> available = available(named);
+    if (available.isEmpty()) {
+      throw new IllegalStateException("Teacher encoder provider is installed but not available: "
+          + name + " (" + classes(named) + ")");
+    }
+    return highest(available, "Teacher encoder providers named " + name
+        + " share the highest priority: ");
+  }
+
+  /**
+   * Selects the provider for a model using the thread context class loader, or this class's
+   * loader when absent. See {@link #select(Path, ClassLoader)}.
+   *
+   * @param model The model file. Must not be {@code null}.
+   * @return The provider to open the model with. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null}, if no installed
+   *                                  and available provider supports it, or if the pinned
+   *                                  provider is not installed.
+   * @throws IllegalStateException Thrown if two supporting providers share the highest priority,
+   *                               or if the pinned provider is not available.
+   */
+  public static TeacherEncoderProvider select(Path model) {
+    return select(model, contextLoader());
+  }
+
+  /**
+   * Selects the provider for a model among those visible to a class loader. When the system
+   * property {@link #PROVIDER_PROPERTY} is set, the provider of that name is returned as by
+   * {@link #get(String, ClassLoader)}. Otherwise the candidates are the installed providers
+   * that are available and support the model, and the one with the highest priority wins.
+   *
+   * @param model The model file. Must not be {@code null}.
+   * @param loader The service class loader. Must not be {@code null}.
+   * @return The provider to open the model with. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}, if no installed and
+   *                                  available provider supports the model, or if the pinned
+   *                                  provider is not installed.
+   * @throws IllegalStateException Thrown if two supporting providers share the highest priority,
+   *                               or if the pinned provider is not available.
+   */
+  public static TeacherEncoderProvider select(Path model, ClassLoader loader) {
+    if (model == null) {
+      throw new IllegalArgumentException("model must not be null");
+    }
+    String pinned = System.getProperty(PROVIDER_PROPERTY);
+    if (pinned != null && !pinned.isBlank()) {
+      return get(pinned.strip(), loader);
+    }
+    List<TeacherEncoderProvider> installed = installed(loader);
+    List<TeacherEncoderProvider> candidates = new ArrayList<>();
+    for (TeacherEncoderProvider provider : available(installed)) {
+      if (provider.supports(model)) {
+        candidates.add(provider);
+      }
+    }
+    if (candidates.isEmpty()) {
+      throw new IllegalArgumentException("No installed teacher encoder provider supports " + model
+          + " (installed: " + names(installed) + ")");
+    }
+    return highest(candidates, "Teacher encoder providers for " + model
+        + " share the highest priority, set -D" + PROVIDER_PROPERTY + "=<name> to pin one: ");
+  }
+
+  private static ClassLoader contextLoader() {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    return loader == null ? TeacherEncoderProviders.class.getClassLoader() : loader;
+  }
+
+  /** Keeps the providers whose availability check passes; a failing check counts as absent. */
+  private static List<TeacherEncoderProvider> available(List<TeacherEncoderProvider> providers) {
+    List<TeacherEncoderProvider> available = new ArrayList<>();
+    for (TeacherEncoderProvider provider : providers) {
+      boolean usable;
+      try {
+        usable = provider.isAvailable();
+      } catch (RuntimeException | LinkageError e) {
+        logger.warn("Teacher encoder provider {} failed its availability check: {}",
+            provider.getClass().getName(), e.toString());
+        usable = false;
+      }
+      if (usable) {
+        available.add(provider);
+      }
+    }
+    return available;
+  }
+
+  /** Returns the single provider with the highest priority, or throws when two share it. */
+  private static TeacherEncoderProvider highest(List<TeacherEncoderProvider> candidates,
+                                                String ambiguous) {
+    TeacherEncoderProvider best = null;
+    boolean tie = false;
+    for (TeacherEncoderProvider candidate : candidates) {
+      if (best == null || candidate.priority() > best.priority()) {
+        best = candidate;
+        tie = false;
+      } else if (candidate.priority() == best.priority()) {
+        tie = true;
+      }
+    }
+    if (tie) {
+      List<TeacherEncoderProvider> tied = new ArrayList<>();
+      for (TeacherEncoderProvider candidate : candidates) {
+        if (candidate.priority() == best.priority()) {
+          tied.add(candidate);
+        }
+      }
+      throw new IllegalStateException(ambiguous + classes(tied));
+    }
+    return best;
+  }
+
+  private static String names(List<TeacherEncoderProvider> providers) {
+    List<String> names = new ArrayList<>();
+    for (TeacherEncoderProvider provider : providers) {
+      names.add(provider.name());
+    }
+    return names.toString();
+  }
+
+  private static String classes(List<TeacherEncoderProvider> providers) {
+    List<String> classes = new ArrayList<>();
+    for (TeacherEncoderProvider provider : providers) {
+      classes.add(provider.getClass().getName());
+    }
+    return classes.toString();
   }
 }
