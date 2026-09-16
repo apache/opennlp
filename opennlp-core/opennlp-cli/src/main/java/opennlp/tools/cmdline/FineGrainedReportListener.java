@@ -507,12 +507,8 @@ public abstract class FineGrainedReportListener {
       for (Entry<String, ConfusionMatrixLine> entry : confusionMatrix.entrySet()) {
         final String key = entry.getKey();
         final ConfusionMatrixLine confusionMatrixLine = entry.getValue();
-        final String category;
-        if (key.contains("-")) {
-          category = key.substring(0, key.indexOf('-'));
-        } else {
-          category = key;
-        }
+        final int dash = key.indexOf('-');
+        final String category = dash < 0 ? key : key.substring(0, dash);
         double currentAccuracy = categoryAccuracy.getOrDefault(category, 0.0d);
         categoryAccuracy.put(category, currentAccuracy + confusionMatrixLine.getAccuracy());
       }
@@ -523,15 +519,10 @@ public abstract class FineGrainedReportListener {
       if (o1.equals(o2)) {
         return 0;
       }
-      String c1 = o1;
-      String c2 = o2;
-
-      if (o1.contains("-")) {
-        c1 = o1.substring(0, o1.indexOf('-'));
-      }
-      if (o2.contains("-")) {
-        c2 = o2.substring(0, o2.indexOf('-'));
-      }
+      final int dash1 = o1.indexOf('-');
+      final int dash2 = o2.indexOf('-');
+      final String c1 = dash1 < 0 ? o1 : o1.substring(0, dash1);
+      final String c2 = dash2 < 0 ? o2 : o2.substring(0, dash2);
 
       if (c1.equals(c2)) { // same category - sort by confusion matrix
 
@@ -620,12 +611,8 @@ public abstract class FineGrainedReportListener {
       for (Entry<String, Counter> entry : labelCounter.entrySet()) {
         final String key = entry.getKey();
         final Counter value = entry.getValue();
-        final String category;
-        if (key.contains("-")) {
-          category = key.substring(0, key.indexOf('-'));
-        } else {
-          category = key;
-        }
+        final int dash = key.indexOf('-');
+        final String category = dash < 0 ? key : key.substring(0, dash);
         int currentCount = categoryCounter.getOrDefault(category, 0);
         categoryCounter.put(category, currentCount + value.value());
       }
@@ -636,15 +623,10 @@ public abstract class FineGrainedReportListener {
       if (o1.equals(o2)) {
         return 0;
       }
-      String c1 = o1;
-      String c2 = o2;
-
-      if (o1.contains("-")) {
-        c1 = o1.substring(0, o1.indexOf('-'));
-      }
-      if (o2.contains("-")) {
-        c2 = o2.substring(0, o2.indexOf('-'));
-      }
+      final int dash1 = o1.indexOf('-');
+      final int dash2 = o2.indexOf('-');
+      final String c1 = dash1 < 0 ? o1 : o1.substring(0, dash1);
+      final String c2 = dash2 < 0 ? o2 : o2.substring(0, dash2);
 
       if (c1.equals(c2)) { // same category - sort by confusion matrix
 
