@@ -282,6 +282,15 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      *          the AD line
      * @return the tree element
      */
+    /**
+     * Reads one tree line into a {@link Node} or a {@link Leaf}. A leaf line with an equals
+     * sign in its tag part, as in {@code =H==CJT:num("818-5817" ...)}, takes the functional
+     * tag after the last colon and the syntactic tag before it; without a colon it has no
+     * functional tag.
+     *
+     * @param line The tree line.
+     * @return The element, or {@code null} for a line that is no element.
+     */
     public TreeElement getElement(String line) {
       // Note: all levels are higher than 1, because 0 is reserved for the root.
 
@@ -340,7 +349,13 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
           String lexeme = bizarreLeafMatcher.group(5);
           Leaf leaf = new Leaf();
           leaf.setLevel(level);
-          leaf.setSyntacticTag(syntacticTag);
+          int colon = syntacticTag.lastIndexOf(':');
+          if (colon > 0 && colon < syntacticTag.length() - 1) {
+            leaf.setSyntacticTag(syntacticTag.substring(0, colon));
+            leaf.setFunctionalTag(syntacticTag.substring(colon + 1));
+          } else {
+            leaf.setSyntacticTag(syntacticTag);
+          }
           leaf.setMorphologicalTag(morphologicalTag);
           leaf.setLexeme(lexeme);
           if (lemma != null) {
