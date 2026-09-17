@@ -87,7 +87,9 @@ jobs:
             fi
           else
             FEATURE_NAME="${FEATURE_INPUT:-$GITHUB_REF_NAME}"
-            FEATURE=$(printf '%s' "$FEATURE_NAME" | LC_ALL=C tr -c 'A-Za-z0-9' '-' | sed -E 's/-+/-/g; s/^-//; s/-$//')
+            FEATURE=$(printf '%s' "$FEATURE_NAME" | LC_ALL=C tr -cs 'A-Za-z0-9' '-')
+            FEATURE="${FEATURE#-}"
+            FEATURE="${FEATURE%-}"
             if [[ -z "$FEATURE" ]]; then
               echo "No usable feature name in: $FEATURE_NAME" >&2
               exit 1
