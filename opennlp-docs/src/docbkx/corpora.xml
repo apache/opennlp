@@ -430,6 +430,18 @@ Execution time: 1,955 seconds]]>
 			3.0.0, the empty open sentence no longer causes an endless read.
 		</para>
 	</section>
+	<section xml:id="tools.corpora.arvores-deitadas.leaf-tags">
+		<title>AD leaf tags with embedded equals signs</title>
+		<para>
+			Leaf tags may contain equals signs after the indentation, as in
+			<code>=H==CJT:num</code>. The reader takes the functional tag after the last
+			colon, so this example has the tag <code>num</code>. A chunk leaf without a
+			functional tag uses its lexeme as the tag instead of a null value. This permits
+			FlorestaVirgem chunk conversion to continue and changes the POS labels of the
+			affected tagged leaves to their functional tags, such as <code>num</code> or
+			<code>prop</code>. Re-evaluate models trained from affected samples.
+		</para>
+	</section>
 	<section xml:id="tools.corpora.arvores-deitadas.text-boundaries">
 		<title>Text boundaries in AD name samples</title>
 		<para>
