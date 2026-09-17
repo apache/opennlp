@@ -404,4 +404,155 @@ Arguments description:
         </section>
     </section>
 
+    <section xml:id="intro.providers">
+        <title>Service providers</title>
+        <para>
+            OpenNLP has two ways to reach an implementation that core does not know.
+            <code>ExtensionLoader</code> instantiates a class whose name comes from a model
+            manifest, an XML descriptor or a training parameter, so the caller must already know
+            that name. The provider SPI in <code>opennlp.tools.util.ext</code> works the other way
+            around: a jar on the class path announces what it can do, and OpenNLP picks an
+            implementation for the request at hand. It is meant for optional implementations that
+            ship separately, such as an annotator, a stemmer or an embedder.
+        </para>
+        <para>
+            Each service interface has a provider interface of its own that extends
+            <code>Provider</code>, for example
+            <code>DocumentAnnotatorProvider extends Provider&lt;DocumentAnnotator&gt;</code>. An
+            implementation needs a public no-argument constructor and is listed in
+            <code>META-INF/services/</code> under the fully qualified name of that provider
+            interface, the usual <code>java.util.ServiceLoader</code> layout. A provider states
+            its <code>name()</code>, a <code>priority()</code>, whether it
+            <code>isAvailable()</code> in the running process, for example whether an optional
+            dependency is present, and whether it <code>supports</code> a request. The request is
+            a <code>ProviderSpec</code>: an optional location, such as a model file, and string
+            options. Neither the constructor nor the static initializer, the availability check or
+            <code>supports</code> may load a model or initialize a native library, because they
+            run while the candidates are collected, before one of them is chosen.
+        </para>
+        <programlisting language="java"><![CDATA[
+DocumentAnnotator createAnnotator() throws IOException {
+  ProviderSpec spec = ProviderSpec.of(Map.of("algorithm", "english"));
+  Providers<DocumentAnnotatorProvider> providers = Providers.of(DocumentAnnotatorProvider.class);
+  return providers.select(spec).create(spec);
+}]]></programlisting>
+        <para>
+            <code>Providers.of</code> scans the class path once, so an application creates its
+            instance at startup and keeps it, rather than resolving per request. The instance is
+            immutable and thread-safe. Keep it in a field owned by the application, for example a
+            servlet context attribute or an application scoped bean; a <code>static</code> field
+            is wrong when OpenNLP is deployed in a class loader shared by several applications,
+            because it would keep one application's providers and their class loader alive. The
+            lookup uses the thread context class loader when that loader sees the provider
+            interface, and the class loader of the provider interface otherwise. On a thread whose
+            context class loader is not the application's, such as a thread of a pool, only the
+            providers of the provider interface's own class loader are found, so a library or a
+            framework integration captures the class loader at startup and passes it to
+            <code>Providers.of(spi, loader)</code>. Resolving is not free either: keep what
+            <code>select</code> returned instead of resolving per request, and keep in mind that a
+            provider blocking in <code>isAvailable()</code> or <code>supports()</code> blocks every
+            resolution of that provider interface.
+        </para>
+        <para>
+            <code>select</code> returns the available provider with the highest priority that
+            supports the request. If several share the highest priority, an
+            <code>AmbiguousProviderException</code> names them; if none supports the request, an
+            <code>UnsatisfiedProviderException</code> names the installed providers.
+            <code>supporting</code> returns every matching provider, best first, and
+            <code>byName</code> resolves one by name. Providers may share a name, in which case
+            the higher priority wins, which is how a module replaces the provider of another
+            module. What <code>create</code> returns belongs to the caller, who also closes it if
+            it is closeable.
+        </para>
+        <para>
+            Three keys configure resolution, all named after the provider interface.
+            <code>opennlp.provider.&lt;interface&gt;</code> selects a provider by name, for example
+            <code>opennlp.provider.opennlp.tools.document.DocumentAnnotatorProvider=stemmer</code>.
+            It narrows the providers that support the request, so a selected provider that does
+            not support the request is reported as unsatisfied rather than used.
+            <code>opennlp.provider.&lt;interface&gt;.disabled</code> holds a comma separated list
+            of provider names and provider class names that are not resolved; a name stays listed
+            by <code>installed()</code>, while a class name is never instantiated, which keeps a
+            provider out of the process entirely and therefore has to be configured before the
+            providers are looked up. The third key,
+            <code>opennlp.provider.&lt;interface&gt;.allowed</code>, is described below. The first
+            two are read from
+            <code>META-INF/opennlp/providers.properties</code>, encoded in UTF-8, of the class
+            loader the providers were looked up with; where several files carry the same key, the
+            one with the highest <code>configuration.ordinal</code> wins, and a system property of
+            the same name wins over all files. In a native image the file is read only when it is
+            registered as a resource.
+        </para>
+        <para>
+            Adding a jar to the class path is a decision to trust its code: every provider of the
+            provider interface is instantiated when the providers are looked up, and any jar can
+            carry a <code>providers.properties</code> that selects or disables a provider, which
+            OpenNLP logs with the file it came from. Providers may also share a name, so a name is
+            a convenient handle and not a guarantee of which implementation answers. An
+            application that must not be reconfigured by a library on its class path passes its
+            own source, which is also how two deployments in one application server configure
+            themselves independently:
+            <code>Providers.of(spi, loader, key -&gt; myConfiguration.get(key))</code>.
+        </para>
+        <para>
+            An operator who wants to decide which implementations may run at all uses
+            <code>opennlp.provider.&lt;interface&gt;.allowed</code>, a comma separated list of
+            provider class names and of package prefixes, which have to end with a dot. Only those
+            classes are instantiated, every other provider of that interface is left out whatever
+            it is named, an unset or blank value allows all of them and a value that holds only
+            separators allows none. It is read from a system property or from the source an
+            application passes, never from a <code>providers.properties</code> that any jar could
+            carry, and it is checked before a provider class is instantiated, so it has to be
+            configured before the providers are looked up. A provider left out this way is counted
+            in the message of an <code>UnsatisfiedProviderException</code> together with the key.
+        </para>
+        <para>
+            What the allowed key decides is which class names may be instantiated, not where their
+            code comes from. Two jars can carry the same class name, and which one is loaded is the
+            class loader's decision, so a package prefix widens that further. A provider name is
+            weaker still: names may be shared between jars, so
+            <code>opennlp.provider.&lt;interface&gt;</code> is a convenience for choosing between
+            implementations, not a security control.
+        </para>
+        <para>
+            Where the origin of an implementation matters, decide by the class instead of by its
+            name:
+        </para>
+        <programlisting language="java"><![CDATA[
+Providers<DocumentAnnotatorProvider> providers = Providers.ofTrusted(
+    DocumentAnnotatorProvider.class, loader,
+    type -> expected.equals(type.getProtectionDomain().getCodeSource().getLocation()));]]></programlisting>
+        <para>
+            The predicate is asked for every provider class the configuration keys leave, before an
+            instance of it is created, and it can look at the code source, the module or the
+            signers of the class. The class is loaded and linked before it is asked, including
+            whatever a custom class loader does while loading it, but it is not initialized: a
+            rejected provider runs neither its static initializer nor its constructor, and is
+            counted among the skipped ones. The predicate must therefore not initialize the class
+            itself, for instance by reading a static field, and must be deterministic, thread-safe
+            and free of blocking calls. A predicate that throws ends the lookup, so a failure
+            never widens the policy. The strongest boundary remains the class path itself: look the
+            providers up with a class loader that sees only the jars you trust. The lookup also
+            logs at debug level which location each provider class was loaded from, for auditing.
+        </para>
+        <para>
+            A provider that cannot be loaded, whose name is unusable, or that throws from
+            <code>name()</code> or <code>priority()</code> is skipped while the providers are
+            looked up, so one broken jar does not hide the others, and the number of skipped
+            providers appears in the message of an <code>UnsatisfiedProviderException</code>. A
+            provider that throws from <code>isAvailable()</code> or <code>supports()</code> is
+            left out of that one resolution instead. Both are reported once per provider and
+            method as a warning and at debug level afterwards. A configuration file that cannot be
+            read, and a class loader that cannot list its files at all, fail the lookup with a
+            <code>ProviderResolutionException</code>. Discovery works on the class path; OpenNLP
+            declares no JPMS <code>provides</code> directives for the module path.
+        </para>
+        <para>
+            The runtime registers one provider, <code>stemmer</code>, which creates a
+            <code>StemmerAnnotator</code> for a request without location whose only option is
+            <code>algorithm</code>: <code>porter</code>, which is also the default when the
+            option is absent, for the Porter stemmer, or the name of a Snowball algorithm.
+        </para>
+    </section>
+
 </chapter>
