@@ -82,7 +82,11 @@ public class SnowballStemmerTest {
     Assertions.assertEquals("esiintyviätaiteilijaystäviä",
             stemmer.stem("esiintyviätaiteilijaystäviään"));
     Assertions.assertEquals("hellberg", stemmer.stem("hellbergiä"));
-
+    // endings whose acceptance depends on a routine of the stemmer (r_VI, r_LONG)
+    Assertions.assertEquals("kirj", stemmer.stem("kirjeeseen"));
+    Assertions.assertEquals("tunt", stemmer.stem("tunteiden"));
+    Assertions.assertEquals("ihmis", stemmer.stem("ihmisiin"));
+    Assertions.assertEquals("latio", stemmer.stem("lattioitten"));
   }
 
   @Test
@@ -144,7 +148,12 @@ public class SnowballStemmerTest {
     Assertions.assertEquals("ledak", stemmer.stem("peledakan"));
     Assertions.assertEquals("ajar", stemmer.stem("pelajaran"));
     Assertions.assertEquals("baik", stemmer.stem("perbaikan"));
-
+    // affixes whose acceptance depends on a routine of the stemmer (r_VOWEL, r_KER, r_SUFFIX_*_OK)
+    Assertions.assertEquals("sapu", stemmer.stem("menyapu"));
+    Assertions.assertEquals("sakit", stemmer.stem("penyakit"));
+    Assertions.assertEquals("kerja", stemmer.stem("bekerja"));
+    Assertions.assertEquals("beri", stemmer.stem("memberikan"));
+    Assertions.assertEquals("makan", stemmer.stem("makanan"));
   }
 
   @Test
