@@ -26,6 +26,10 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.junit.jupiter.api.Assertions;
@@ -82,6 +86,51 @@ public class XmlUtilTest {
     } catch (SAXParseException e) {
       // Rejecting the document outright is an acceptable outcome as well.
     }
+  }
+
+  @Test
+  void testXmlInputFactoryDoesNotResolveExternalEntities() throws Exception {
+    XMLStreamReader reader = XmlUtil.createXmlInputFactory()
+        .createXMLStreamReader(new StringReader(externalEntityPayload()));
+    StringBuilder text = new StringBuilder();
+    try {
+      while (reader.hasNext()) {
+        if (reader.next() == XMLStreamConstants.CHARACTERS) {
+          text.append(reader.getText());
+        }
+      }
+      Assertions.assertFalse(text.toString().contains(SECRET),
+          "external entity must not be resolved");
+    } catch (XMLStreamException e) {
+      // Rejecting the document outright is an acceptable outcome as well.
+    } finally {
+      reader.close();
+    }
+  }
+
+  @Test
+  void testXmlInputFactoryExpandsInternalEntities() throws Exception {
+    String payload = "<!DOCTYPE root [<!ENTITY greeting \"hello\">]><root>&greeting;</root>";
+    XMLStreamReader reader = XmlUtil.createXmlInputFactory()
+        .createXMLStreamReader(new StringReader(payload));
+    StringBuilder text = new StringBuilder();
+    try {
+      while (reader.hasNext()) {
+        if (reader.next() == XMLStreamConstants.CHARACTERS) {
+          text.append(reader.getText());
+        }
+      }
+    } finally {
+      reader.close();
+    }
+    Assertions.assertEquals("hello", text.toString());
+  }
+
+  @Test
+  void testXmlInputFactoryAcceptsCallerProperties() {
+    XMLInputFactory factory = XmlUtil.createXmlInputFactory();
+    factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+    Assertions.assertEquals(Boolean.TRUE, factory.getProperty(XMLInputFactory.IS_COALESCING));
   }
 
   @Test

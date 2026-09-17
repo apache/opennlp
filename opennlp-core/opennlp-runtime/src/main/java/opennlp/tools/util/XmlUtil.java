@@ -20,10 +20,12 @@ package opennlp.tools.util;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.xpath.XPath;
 
 import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.apache.commons.xml.secure.SecureSAXParserFactory;
+import org.apache.commons.xml.secure.SecureXMLInputFactory;
 import org.apache.commons.xml.secure.SecureXPathFactory;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
@@ -68,6 +70,18 @@ public class XmlUtil {
       // Not expected from any known JAXP implementation: the factory is fully configured.
       throw new IllegalStateException("Failed to create a secure SAXParser.", e);
     }
+  }
+
+  /**
+   * Create a new {@link XMLInputFactory} whose StAX readers process XML securely.
+   * <p>
+   * The factory keeps the StAX defaults, so a caller may still adjust properties such as
+   * {@link XMLInputFactory#IS_COALESCING} before creating a reader.
+   *
+   * @return A valid {@link XMLInputFactory} instance.
+   */
+  public static XMLInputFactory createXmlInputFactory() {
+    return SecureXMLInputFactory.newInstance();
   }
 
   /**
