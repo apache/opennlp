@@ -39,6 +39,8 @@ import org.xml.sax.SAXException;
  * explicitly allows it, and they bound entity expansion. Its
  * <a href="https://commons.apache.org/proper/commons-secure-xml/threat_model.html">threat model</a>
  * lists the settings a caller may still change without weakening these guarantees.
+ *
+ * @since 1.8.2
  */
 public class XmlUtil {
 
@@ -79,6 +81,7 @@ public class XmlUtil {
    * {@link XMLInputFactory#IS_COALESCING} before creating a reader.
    *
    * @return A valid {@link XMLInputFactory} instance.
+   * @since 3.0.0
    */
   public static XMLInputFactory createXmlInputFactory() {
     return SecureXMLInputFactory.newInstance();
@@ -89,6 +92,7 @@ public class XmlUtil {
    * including those given an {@link org.xml.sax.InputSource} to parse.
    *
    * @return A valid {@link XPath} instance.
+   * @since 3.0.0
    */
   public static XPath createXPath() {
     return SecureXPathFactory.newInstance().newXPath();
