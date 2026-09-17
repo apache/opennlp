@@ -48,6 +48,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
   private static final char MULTIWORD_SEPARATOR = '-';
   private static final String INVALID_MULTIWORD_ID = "Invalid multiword token id: ";
   private static final String BACKWARDS_MULTIWORD_ID = "Multiword token id runs backwards: ";
+  private static final String MISSING_MULTIWORD_LINE = "Multiword token %s has no word line for id %s";
 
   /**
    * The token range a multiword token line covers.
@@ -156,11 +157,14 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
   }
 
   /**
-   * Replaces the word lines of each multiword token with one merged line.
+   * Merges the word lines of each multiword token range into the range line and removes them.
+   * Stops at the first missing id before allocating further entries in a range. A long
+   * cursor permits an inclusive range ending at the largest integer without wrapping.
    *
-   * @param lines The word lines of a sentence.
-   * @return The lines with every multiword range merged into its multiword token line.
-   * @throws InvalidFormatException If a multiword token id is malformed.
+   * @param lines The word lines of one sentence.
+   * @return The lines with each range merged.
+   * @throws InvalidFormatException If a multiword token id is malformed, or a range names a
+   *                                 word id that has no line.
    */
   private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines)
       throws InvalidFormatException {
@@ -171,13 +175,18 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     List<String> linesToDelete = new ArrayList<>();
 
     for (int i = 0; i < lines.size(); i++) {
-      ConlluWordLine line = lines.get(i);
-      index.put(line.getId(), i);
+      index.put(lines.get(i).getId(), i);
+    }
+    for (ConlluWordLine line : lines) {
       if (line.getId().indexOf(MULTIWORD_SEPARATOR) != -1) {
         List<String> expandedContractions = new ArrayList<>();
         MultiwordRange range = parseContractionRange(line.getId());
-        for (int j = range.start(); j <= range.end(); j++) {
-          String js = Integer.toString(j);
+        for (long j = range.start(); j <= range.end(); j++) {
+          String js = Long.toString(j);
+          if (!index.containsKey(js)) {
+            throw new InvalidFormatException(
+                String.format(MISSING_MULTIWORD_LINE, line.getId(), js));
+          }
           expandedContractions.add(js);
           linesToDelete.add(js);
         }
