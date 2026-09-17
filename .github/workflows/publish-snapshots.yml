@@ -16,12 +16,33 @@
 # limitations under the License.
 #
 
+# Publishes SNAPSHOTs to repository.apache.org. Main keeps the pom version;
+# manual branch runs append a sanitized feature name before -SNAPSHOT unless
+# the version already ends in -<feature>-SNAPSHOT. The feature defaults to the
+# branch name. Non-alphanumeric characters become hyphens.
+# Branch snapshots can sort above releases in Maven (3.0.0 < 3.0.0-feature-SNAPSHOT).
+# Consumers using the ASF snapshot repository should pin exact versions and avoid
+# version ranges or automatic version upgrades to snapshots.
+
 name: Publish snapshot artifacts
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      feature:
+        description: >-
+          Feature name for a branch publish; the artifacts deploy as
+          <version>-<feature>-SNAPSHOT. Defaults to the branch name on any branch
+          other than main, and must be empty on main. Non-alphanumeric characters
+          become hyphens.
+        required: false
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
   publish:
@@ -45,19 +66,51 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - id: extract_version
-        name: Extract version
+      - id: version
+        name: Determine deploy version
         shell: bash
+        env:
+          FEATURE_INPUT: ${{ inputs.feature }}
         run: |
-          VERSION=$(mvn exec:exec -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive -q)
-          if [[ "$VERSION" == *"SNAPSHOT"* ]]; then
-             echo "snapshot=SNAPSHOT" >> $GITHUB_OUTPUT
+          POM_VERSION=$(mvn exec:exec -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive -q)
+          if [[ "$POM_VERSION" != *-SNAPSHOT ]]; then
+            # Skip release-plugin commits on main; reject manual release publishing.
+            if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+              echo "::notice::Not a SNAPSHOT version, nothing to publish: $POM_VERSION"
+              exit 0
+            fi
+            echo "Refusing to publish non-SNAPSHOT version $POM_VERSION" >&2
+            exit 1
           fi
+          DEPLOY_VERSION="$POM_VERSION"
+          if [[ "$GITHUB_REF_NAME" == "main" ]]; then
+            if [[ -n "$FEATURE_INPUT" ]]; then
+              echo "The feature input must be empty when publishing main" >&2
+              exit 1
+            fi
+          else
+            FEATURE_NAME="${FEATURE_INPUT:-$GITHUB_REF_NAME}"
+            FEATURE=$(printf '%s' "$FEATURE_NAME" | LC_ALL=C tr -cs 'A-Za-z0-9' '-')
+            FEATURE="${FEATURE#-}"
+            FEATURE="${FEATURE%-}"
+            if [[ -z "$FEATURE" ]]; then
+              echo "No usable feature name in: $FEATURE_NAME" >&2
+              exit 1
+            fi
+            if [[ "$POM_VERSION" != *"-${FEATURE}-SNAPSHOT" ]]; then
+              DEPLOY_VERSION="${POM_VERSION%-SNAPSHOT}-${FEATURE}-SNAPSHOT"
+            fi
+          fi
+          echo "Deploying version $DEPLOY_VERSION from branch $GITHUB_REF_NAME"
+          echo "version=$DEPLOY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Deploy Maven snapshots
-        if: steps.extract_version.outputs.snapshot == 'SNAPSHOT'
+        if: steps.version.outputs.version != ''
         env:
           ASF_USERNAME: ${{ secrets.NEXUS_USER }}
           ASF_PASSWORD: ${{ secrets.NEXUS_PW }}
+          DEPLOY_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          echo "<settings><servers><server><id>apache.snapshots.https</id><username>$ASF_USERNAME</username><password>$ASF_PASSWORD</password></server></servers></settings>" > settings.xml
-          mvn --settings settings.xml -U -B -e -fae -ntp -DskipTests deploy
+          mvn -B -q -ntp versions:set -DnewVersion="$DEPLOY_VERSION" -DgenerateBackupPoms=false
+          SETTINGS="$RUNNER_TEMP/settings.xml"
+          echo "<settings><servers><server><id>apache.snapshots.https</id><username>$ASF_USERNAME</username><password>$ASF_PASSWORD</password></server></servers></settings>" > "$SETTINGS"
+          mvn --settings "$SETTINGS" -U -B -e -fae -ntp -DskipTests deploy
