@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Holds the extensions the {@link ExtensionLoader} can create without reflection.
+ * The extensions the {@link ExtensionLoader} can create without reflection.
  * <p>
  * An extension is registered under the name of its implementation class, which is
  * the name model manifests, feature generator descriptors and training parameters
@@ -60,7 +60,7 @@ public final class ExtensionRegistry {
   private final Map<String, Map<Class<?>, Object>> factories = new ConcurrentHashMap<>();
 
   /**
-   * Creates an empty registry. Nothing is discovered; use {@link #getDefault()} for
+   * Creates an empty registry without service discovery; use {@link #getDefault()} for
    * the registry the {@link ExtensionLoader} consults.
    */
   public ExtensionRegistry() {
@@ -151,8 +151,8 @@ public final class ExtensionRegistry {
 
   /**
    * @param name The extension name, usually the implementation class name.
-   * @return The registered implementation class, or {@code null} if nothing is
-   *         registered under {@code name}.
+   * @return The registered implementation class, or {@code null} if there is no
+   *         registration under {@code name}.
    */
   public Class<?> implementation(String name) {
     return name == null ? null : implementations.get(name);

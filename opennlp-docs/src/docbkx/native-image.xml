@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter xml:id="tools.native-image" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>GraalVM Native Image</title>
+
+  <section xml:id="tools.native-image.overview">
+    <title>Overview</title>
+    <para>
+      Since 3.0.0, an application that uses the built-in OpenNLP components and loads its models
+      from files or streams can be compiled into a
+      <link xlink:href="https://www.graalvm.org/latest/reference-manual/native-image/">GraalVM native image</link>
+      without any OpenNLP specific configuration. The OpenNLP jars ship the metadata the image
+      builder needs, and the code paths a model takes at load time do not use reflection:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Tool factories, artifact serializers, feature generator factories, sequence codecs,
+          trainers and model readers are referenced by class name in model manifests, feature
+          descriptors and training parameters. Each OpenNLP module registers its implementations
+          through an <code>ExtensionRegistrar</code> service, and <code>ExtensionLoader</code>
+          creates a registered extension through its registered supplier. See
+          <xref linkend="tools.extension.registry"/>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Bundled resources that are read by a name computed at run time, for instance the
+          stopword list of a language, are listed in
+          <code>META-INF/native-image/org.apache.opennlp/&lt;artifactId&gt;/reachability-metadata.json</code>
+          of the jar that bundles them. The image builder picks these files up automatically.
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      This covers <code>opennlp-api</code>, <code>opennlp-runtime</code>, the
+      <code>opennlp-ml-*</code> modules without <code>opennlp-dl</code>, <code>opennlp-model-resolver</code>
+      and <code>opennlp-formats</code>. The image is verified in the project's CI with a smoke test
+      that runs sentence detection, tokenization, POS tagging and name finding on models loaded
+      from files; the source of that test, the <code>opennlp-native-tests</code> module, is a
+      minimal example of a native OpenNLP application.
+    </para>
+  </section>
+
+  <section xml:id="tools.native-image.usage">
+    <title>Building an image</title>
+    <para>
+      Add the OpenNLP modules the application needs as ordinary dependencies and build the image
+      with the <link xlink:href="https://graalvm.github.io/native-build-tools/latest/maven-plugin.html">GraalVM
+      Maven plugin</link> or with <code>native-image</code> directly. Load models from files or
+      streams:
+    </para>
+    <programlisting language="java">
+<![CDATA[try (InputStream in = Files.newInputStream(Path.of("opennlp-en-ud-ewt-tokens-1.3-2.5.4.bin"))) {
+  TokenizerModel model = new TokenizerModel(in);
+  Tokenizer tokenizer = new TokenizerME(model);
+  ...
+}]]>
+    </programlisting>
+    <para>
+      The GraalVM JDK must be version 25 or later. The <code>opennlp-native-tests</code> module
+      builds and runs its smoke test with the <code>native</code> profile:
+    </para>
+    <screen>
+<![CDATA[mvn -Pnative -pl opennlp-native-tests -am verify -Dopennlp.native.models=/path/to/models]]>
+    </screen>
+  </section>
+
+  <section xml:id="tools.native-image.custom">
+    <title>Custom extensions</title>
+    <para>
+      A custom factory, serializer, feature generator or trainer that a model or a descriptor
+      refers to by class name must be registered, because the image contains no reflection
+      metadata for it. Implement <code>ExtensionRegistrar</code> in the jar that ships the
+      extension and list it in
+      <code>META-INF/services/opennlp.tools.util.ext.ExtensionRegistrar</code>:
+    </para>
+    <programlisting language="java">
+<![CDATA[public class MyExtensions implements ExtensionRegistrar {
+  @Override
+  public void register(ExtensionRegistry registry) {
+    registry.register(MyTokenizerFactory.class, MyTokenizerFactory::new);
+    registry.register(MyModel.class, ModelLoader.class, (ModelLoader<MyModel>) MyModel::new);
+  }
+}]]>
+    </programlisting>
+    <para>
+      An application can also register its extensions at startup through
+      <code>ExtensionRegistry.getDefault()</code>. A registered extension needs no allowlist entry
+      and no reflection metadata, on the JVM as well as in the image.
+    </para>
+  </section>
+
+  <section xml:id="tools.native-image.limitations">
+    <title>Limitations</title>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Class path scanning for models (<code>SimpleClassPathModelFinder</code>,
+          <code>ClassgraphModelFinder</code>) is not available. The simple finder logs a warning
+          and returns an empty result in an image. Load models from files or streams, or bundle them as
+          resources and register the resource names in the application's own metadata.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Java serialization of models is not supported. <code>BaseModel.deserialize</code> and
+          the <code>SvmDoccatModel</code> persistence methods throw an
+          <code>UnsupportedOperationException</code> in an image. Use the model's own format, that
+          is <code>serialize(OutputStream)</code> and the <code>InputStream</code> constructor.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <code>opennlp-dl</code> and the ONNX Runtime are out of scope, as is the
+          <code>opennlp-cli</code> module, because its argument parser builds interface proxies.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Unregistered extension classes named in a model can still be loaded reflectively on the
+          JVM, behind the package allowlist described in <xref linkend="tools.extension.allowlist"/>.
+          In an image that path only works with reflection metadata provided by the application;
+          registering the extension is the supported way.
+        </para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</chapter>

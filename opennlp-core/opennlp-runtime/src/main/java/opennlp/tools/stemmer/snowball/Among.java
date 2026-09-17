@@ -39,8 +39,8 @@ package opennlp.tools.stemmer.snowball;
 public class Among {
 
   /**
-   * A routine of a {@link SnowballProgram} that decides whether a matched
-   * substring is accepted.
+   * A routine of a {@link SnowballProgram} that accepts or rejects a matched
+   * substring.
    *
    * @param <T> The stemmer type the routine belongs to.
    */

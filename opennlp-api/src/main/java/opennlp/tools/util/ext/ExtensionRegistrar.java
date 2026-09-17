@@ -38,7 +38,7 @@ public interface ExtensionRegistrar {
   /**
    * Registers the extensions of the providing jar.
    *
-   * @param registry The registry to add the extensions to. Never {@code null}.
+   * @param registry The registry to add the extensions to. Not {@code null}.
    */
   void register(ExtensionRegistry registry);
 }
