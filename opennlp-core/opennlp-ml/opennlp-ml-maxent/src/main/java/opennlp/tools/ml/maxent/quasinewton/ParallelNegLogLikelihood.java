@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -85,7 +84,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
           "x is invalid, its dimension is not equal to domain dimension.");
 
     // Compute partial value of negative log-likelihood in each thread
-    computeInParallel(x, NegLLComputeTask.class);
+    computeInParallel(x, NegLLComputeTask::new);
 
     double negLogLikelihood = 0;
     for (int t = 0; t < threads; t++) {
@@ -110,7 +109,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
           "x is invalid, its dimension is not equal to the function.");
 
     // Compute partial gradient in each thread
-    computeInParallel(x, GradientComputeTask.class);
+    computeInParallel(x, GradientComputeTask::new);
 
     // Accumulate gradient
     for (int i = 0; i < dimension; i++) {
@@ -126,7 +125,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   /**
    * Computes the specified tasks in parallel.
    */
-  private void computeInParallel(double[] x, Class<? extends ComputeTask> taskClass) {
+  private void computeInParallel(double[] x, ComputeTaskFactory taskFactory) {
 
     ExecutorService executor = Executors.newFixedThreadPool(threads, runnable -> {
       Thread thread = new Thread(runnable);
@@ -140,18 +139,14 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
     int leftOver = numContexts % threads;
 
     try {
-      Constructor<? extends ComputeTask> cons = taskClass.getConstructor(
-          ParallelNegLogLikelihood.class,
-          int.class, int.class, int.class, double[].class);
-
       List<Future<?>> futures = new ArrayList<>();
       for (int i = 0; i < threads; i++) {
         if (i != threads - 1)
           futures.add(executor.submit(
-              cons.newInstance(this, i, i * taskSize, taskSize, x)));
+              taskFactory.create(i, i * taskSize, taskSize, x)));
         else
           futures.add(executor.submit(
-              cons.newInstance(this, i, i * taskSize, taskSize + leftOver, x)));
+              taskFactory.create(i, i * taskSize, taskSize + leftOver, x)));
       }
 
       for (Future<?> future: futures)
@@ -162,6 +157,14 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
     }
 
     executor.shutdown();
+  }
+
+  /**
+   * Creates the {@link ComputeTask} of one thread.
+   */
+  @FunctionalInterface
+  interface ComputeTaskFactory {
+    ComputeTask create(int threadIndex, int startIndex, int length, double[] x);
   }
 
   /**

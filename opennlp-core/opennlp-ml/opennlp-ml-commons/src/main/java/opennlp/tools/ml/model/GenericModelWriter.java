@@ -22,10 +22,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.zip.GZIPOutputStream;
 
 import opennlp.tools.ml.AlgorithmType;
+import opennlp.tools.util.ext.ExtensionRegistry;
 
 /**
  * An generic {@link AbstractModelWriter} implementation.
@@ -75,20 +75,13 @@ public class GenericModelWriter extends AbstractModelWriter {
   }
 
   private AbstractModelWriter fromType(AlgorithmType type, AbstractModel model, DataOutputStream dos) {
-    try {
-      final Class<? extends AbstractModelWriter> readerClass
-          = (Class<? extends AbstractModelWriter>) Class.forName(type.getWriterClazz());
-
-      return readerClass
-          .getDeclaredConstructor(AbstractModel.class, DataOutputStream.class)
-          .newInstance(model, dos);
-
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Given writer is not available in the classpath!", e);
-    } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-             NoSuchMethodException e) {
-      throw new RuntimeException("Problem instantiating chosen writer class: " + type.getWriterClazz(), e);
+    final ModelWriterFactory factory =
+        ExtensionRegistry.getDefault().factory(type.getWriterClazz(), ModelWriterFactory.class);
+    if (factory == null) {
+      throw new RuntimeException("Given writer is not available in the classpath: " + type.getWriterClazz()
+          + ". Add the module that provides it, for instance opennlp-ml-maxent.");
     }
+    return factory.create(model, dos);
   }
 
   @Override

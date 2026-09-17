@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +27,7 @@ import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.ext.ExtensionNotLoadedException;
+import opennlp.tools.util.ext.ExtensionRegistry;
 
 /**
  * A factory to initialize {@link Trainer} instances depending on a trainer type
@@ -45,23 +45,19 @@ public class TrainerFactory {
   private static final Map<String, Class<? extends Trainer<TrainingParameters>>> BUILTIN_TRAINERS;
 
   /*
-   * Initialize the built-in trainers
+   * Initialize the built-in trainers: those whose machine learning module is on the
+   * class path have registered themselves through an ExtensionRegistrar.
    */
   static {
     BUILTIN_TRAINERS = new HashMap<>();
 
+    final ExtensionRegistry registry = ExtensionRegistry.getDefault();
     for (AlgorithmType tat : AlgorithmType.values()) {
-      final String clazz = tat.getTrainerClazz();
-      try {
-        final Class<? extends Trainer<TrainingParameters>> c
-            = (Class<? extends Trainer<TrainingParameters>>) Class.forName(clazz);
-        BUILTIN_TRAINERS.put(tat.getAlgorithmType(), c);
-      } catch (ClassNotFoundException ignored) {
-        // Try to load all available trainers.
-        // Ignore the ones that are not available on the classpath.
+      final Class<?> clazz = registry.implementation(tat.getTrainerClazz());
+      if (clazz != null && Trainer.class.isAssignableFrom(clazz)) {
+        BUILTIN_TRAINERS.put(tat.getAlgorithmType(), (Class<? extends Trainer<TrainingParameters>>) clazz);
       }
     }
-
   }
 
   /**
@@ -258,8 +254,7 @@ public class TrainerFactory {
     Trainer<P> theTrainer = null;
     if (trainerClass != null) {
       try {
-        Constructor<? extends Trainer<P>> c = trainerClass.getConstructor();
-        theTrainer = c.newInstance();
+        theTrainer = ExtensionLoader.instantiateExtension(trainerClass, trainerClass.getName());
       } catch (Exception e) {
         String msg = "Could not instantiate the " + trainerClass.getCanonicalName()
             + ". The initialization threw an exception.";
