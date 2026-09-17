@@ -17,7 +17,9 @@
 
 package opennlp.tools.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,7 +28,6 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -48,6 +49,24 @@ public class XmlUtilTest {
 
   @TempDir
   Path tempDir;
+
+  private static InputStream utf8(String xml) {
+    return new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+  }
+
+  private static String readCharacters(XMLStreamReader reader) throws XMLStreamException {
+    StringBuilder text = new StringBuilder();
+    try {
+      while (reader.hasNext()) {
+        if (reader.next() == XMLStreamConstants.CHARACTERS) {
+          text.append(reader.getText());
+        }
+      }
+    } finally {
+      reader.close();
+    }
+    return text.toString();
+  }
 
   private String externalEntityPayload() throws IOException {
     Path secret = tempDir.resolve("secret.txt");
@@ -89,48 +108,56 @@ public class XmlUtilTest {
   }
 
   @Test
-  void testXmlInputFactoryDoesNotResolveExternalEntities() throws Exception {
-    XMLStreamReader reader = XmlUtil.createXmlInputFactory()
-        .createXMLStreamReader(new StringReader(externalEntityPayload()));
-    StringBuilder text = new StringBuilder();
+  void testXmlStreamReaderDoesNotResolveExternalEntities() throws Exception {
     try {
-      while (reader.hasNext()) {
-        if (reader.next() == XMLStreamConstants.CHARACTERS) {
-          text.append(reader.getText());
-        }
-      }
-      Assertions.assertFalse(text.toString().contains(SECRET),
-          "external entity must not be resolved");
+      String text = readCharacters(XmlUtil.createXmlStreamReader(utf8(externalEntityPayload())));
+      Assertions.assertFalse(text.contains(SECRET), "external entity must not be resolved");
     } catch (XMLStreamException e) {
       // Rejecting the document outright is an acceptable outcome as well.
-    } finally {
-      reader.close();
     }
   }
 
   @Test
-  void testXmlInputFactoryExpandsInternalEntities() throws Exception {
+  void testXmlStreamReaderExpandsInternalEntities() throws Exception {
     String payload = "<!DOCTYPE root [<!ENTITY greeting \"hello\">]><root>&greeting;</root>";
-    XMLStreamReader reader = XmlUtil.createXmlInputFactory()
-        .createXMLStreamReader(new StringReader(payload));
-    StringBuilder text = new StringBuilder();
+    Assertions.assertEquals("hello",
+        readCharacters(XmlUtil.createXmlStreamReader(utf8(payload))));
+  }
+
+  @Test
+  void testXmlStreamReaderIsCoalescing() throws Exception {
+    XMLStreamReader reader = XmlUtil.createXmlStreamReader(utf8("<root>a<![CDATA[b]]>c</root>"));
+    int characterEvents = 0;
+    String text = null;
     try {
       while (reader.hasNext()) {
         if (reader.next() == XMLStreamConstants.CHARACTERS) {
-          text.append(reader.getText());
+          characterEvents++;
+          text = reader.getText();
         }
       }
     } finally {
       reader.close();
     }
-    Assertions.assertEquals("hello", text.toString());
+    Assertions.assertEquals(1, characterEvents);
+    Assertions.assertEquals("abc", text);
   }
 
   @Test
-  void testXmlInputFactoryAcceptsCallerProperties() {
-    XMLInputFactory factory = XmlUtil.createXmlInputFactory();
-    factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
-    Assertions.assertEquals(Boolean.TRUE, factory.getProperty(XMLInputFactory.IS_COALESCING));
+  void testXmlStreamReaderDoesNotCloseStream() throws Exception {
+    boolean[] closed = new boolean[1];
+    InputStream in = new ByteArrayInputStream("<root/>".getBytes(StandardCharsets.UTF_8)) {
+      @Override
+      public void close() {
+        closed[0] = true;
+      }
+    };
+    XMLStreamReader reader = XmlUtil.createXmlStreamReader(in);
+    while (reader.hasNext()) {
+      reader.next();
+    }
+    reader.close();
+    Assertions.assertFalse(closed[0], "closing the reader must not close the caller's stream");
   }
 
   @Test

@@ -17,10 +17,13 @@
 
 package opennlp.tools.util;
 
+import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPath;
 
 import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
@@ -29,6 +32,8 @@ import org.apache.commons.xml.secure.SecureXMLInputFactory;
 import org.apache.commons.xml.secure.SecureXPathFactory;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
+
+import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
  * Creates XML parsers that process untrusted input securely.
@@ -43,6 +48,24 @@ import org.xml.sax.SAXException;
  * @since 1.8.2
  */
 public class XmlUtil {
+
+  /**
+   * Holds the shared StAX factory.
+   * <p>
+   * {@link XMLInputFactory} is thread-safe once configured, and the lazy holder keeps StAX out
+   * of the static initialization of {@link XmlUtil}, so the DOM and SAX helpers keep working on
+   * a platform like Android without a StAX implementation.
+   */
+  private static final class StaxHolder {
+
+    private static final XMLInputFactory FACTORY = createFactory();
+
+    private static XMLInputFactory createFactory() {
+      final XMLInputFactory factory = SecureXMLInputFactory.newInstance();
+      factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+      return factory;
+    }
+  }
 
   /**
    * Create a new {@link DocumentBuilder} which processes XML securely.
@@ -75,16 +98,20 @@ public class XmlUtil {
   }
 
   /**
-   * Create a new {@link XMLInputFactory} whose StAX readers process XML securely.
+   * Create a new {@link XMLStreamReader} which processes XML securely.
    * <p>
-   * The factory keeps the StAX defaults, so a caller may still adjust properties such as
-   * {@link XMLInputFactory#IS_COALESCING} before creating a reader.
+   * The reader coalesces adjacent text sections.
+   * <p>
+   * The returned reader respects the StAX contract and does <strong>not</strong> close the
+   * underlying input stream, regardless of the implementation on the classpath.
    *
-   * @return A valid {@link XMLInputFactory} instance.
+   * @param in A valid, open {@link InputStream} of XML.
+   * @return A valid {@link XMLStreamReader} instance positioned before the first event.
+   * @throws XMLStreamException Thrown if the stream does not start a well-formed document.
    * @since 3.0.0
    */
-  public static XMLInputFactory createXmlInputFactory() {
-    return SecureXMLInputFactory.newInstance();
+  public static XMLStreamReader createXmlStreamReader(InputStream in) throws XMLStreamException {
+    return StaxHolder.FACTORY.createXMLStreamReader(new UncloseableInputStream(in));
   }
 
   /**
