@@ -183,6 +183,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private int textID = -1;
 
+  /** The number of distinct LIT or CIE texts read so far, minus one. */
+  private int textIdMeta2 = -1;
+
+  /** The LIT or CIE text name of the sentence read last. */
+  private String textMeta2 = "";
+
   @Override
   public NameSample read() throws IOException {
 
@@ -524,9 +530,16 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return null;
   }
 
+  /**
+   * {@inheritDoc}
+   * Starts a new pass with no preceding text, so its first sample clears adaptive data.
+   */
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     adSentenceStream.reset();
+    textID = -1;
+    textIdMeta2 = -1;
+    textMeta2 = "";
   }
 
   @Override
@@ -546,13 +559,21 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   //  private static final Pattern meta2 = Pattern
   //    .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
 
+  /**
+   * Reads the id of the text a sentence belongs to from its metadata. For Amazonia
+   * metadata it is the number in the sentence reference. For LIT and CIE metadata the
+   * text is named by its reference prefix or its source attribute, and the id counts
+   * the distinct names seen so far, so it changes when a new text starts.
+   *
+   * @param paragraph The sentence with its metadata.
+   * @return The id of the text; the same value for consecutive sentences of one text.
+   * @throws RuntimeException Thrown if the metadata has no known shape.
+   */
   private int getTextID(Sentence paragraph) {
-    
+
     final String meta = paragraph.metadata();
     Type corpusType;
     Pattern metaPattern;
-    int textIdMeta2 = -1;
-    String textMeta2 = "";
 
     if (meta.startsWith("LIT")) {
       corpusType = Type.lit;
