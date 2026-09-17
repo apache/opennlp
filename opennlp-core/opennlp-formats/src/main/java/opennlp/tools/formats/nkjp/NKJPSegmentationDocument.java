@@ -29,7 +29,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -98,8 +97,7 @@ public class NKJPSegmentationDocument {
       DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();
       Document doc = docBuilder.parse(is);
 
-      XPathFactory xPathfactory = XPathFactory.newInstance();
-      XPath xpath = xPathfactory.newXPath();
+      XPath xpath = XmlUtil.createXPath();
 
       final XPathExpression SENT_NODES = xpath.compile("/teiCorpus/TEI/text/body/p/s");
       final XPathExpression SEG_NODES = xpath.compile("./seg|./choice");

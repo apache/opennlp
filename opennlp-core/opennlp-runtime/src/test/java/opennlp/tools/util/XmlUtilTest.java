@@ -17,17 +17,186 @@
 
 package opennlp.tools.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class XmlUtilTest {
+
+  private static final String SECRET = "s3cr3t-content";
+
+  @TempDir
+  Path tempDir;
+
+  private static InputStream utf8(String xml) {
+    return new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+  }
+
+  private static String readCharacters(XMLStreamReader reader) throws XMLStreamException {
+    StringBuilder text = new StringBuilder();
+    try {
+      while (reader.hasNext()) {
+        if (reader.next() == XMLStreamConstants.CHARACTERS) {
+          text.append(reader.getText());
+        }
+      }
+    } finally {
+      reader.close();
+    }
+    return text.toString();
+  }
+
+  private String externalEntityPayload() throws IOException {
+    Path secret = tempDir.resolve("secret.txt");
+    Files.writeString(secret, SECRET, StandardCharsets.UTF_8);
+    return "<!DOCTYPE root [<!ENTITY xxe SYSTEM \"" + secret.toUri() + "\">]>"
+        + "<root>&xxe;</root>";
+  }
+
+  @Test
+  void testDocumentBuilderDoesNotResolveExternalEntities() throws Exception {
+    DocumentBuilder documentBuilder = XmlUtil.createDocumentBuilder();
+    try {
+      Document document = documentBuilder.parse(
+          new InputSource(new StringReader(externalEntityPayload())));
+      Assertions.assertFalse(document.getDocumentElement().getTextContent().contains(SECRET),
+          "external entity must not be resolved");
+    } catch (SAXParseException e) {
+      // Rejecting the document outright is an acceptable outcome as well.
+    }
+  }
+
+  @Test
+  void testSaxParserDoesNotResolveExternalEntities() throws Exception {
+    XMLReader reader = XmlUtil.createSaxParser().getXMLReader();
+    StringBuilder text = new StringBuilder();
+    reader.setContentHandler(new DefaultHandler() {
+      @Override
+      public void characters(char[] ch, int start, int length) {
+        text.append(ch, start, length);
+      }
+    });
+    try {
+      reader.parse(new InputSource(new StringReader(externalEntityPayload())));
+      Assertions.assertFalse(text.toString().contains(SECRET),
+          "external entity must not be resolved");
+    } catch (SAXParseException e) {
+      // Rejecting the document outright is an acceptable outcome as well.
+    }
+  }
+
+  @Test
+  void testXmlStreamReaderDoesNotResolveExternalEntities() throws Exception {
+    try {
+      String text = readCharacters(XmlUtil.createXmlStreamReader(utf8(externalEntityPayload())));
+      Assertions.assertFalse(text.contains(SECRET), "external entity must not be resolved");
+    } catch (XMLStreamException e) {
+      // Rejecting the document outright is an acceptable outcome as well.
+    }
+  }
+
+  @Test
+  void testXmlStreamReaderExpandsInternalEntities() throws Exception {
+    String payload = "<!DOCTYPE root [<!ENTITY greeting \"hello\">]><root>&greeting;</root>";
+    Assertions.assertEquals("hello",
+        readCharacters(XmlUtil.createXmlStreamReader(utf8(payload))));
+  }
+
+  @Test
+  void testXmlStreamReaderIsCoalescing() throws Exception {
+    XMLStreamReader reader = XmlUtil.createXmlStreamReader(utf8("<root>a<![CDATA[b]]>c</root>"));
+    int characterEvents = 0;
+    String text = null;
+    try {
+      while (reader.hasNext()) {
+        if (reader.next() == XMLStreamConstants.CHARACTERS) {
+          characterEvents++;
+          text = reader.getText();
+        }
+      }
+    } finally {
+      reader.close();
+    }
+    Assertions.assertEquals(1, characterEvents);
+    Assertions.assertEquals("abc", text);
+  }
+
+  @Test
+  void testXmlStreamReaderDoesNotCloseStream() throws Exception {
+    boolean[] closed = new boolean[1];
+    InputStream in = new ByteArrayInputStream("<root/>".getBytes(StandardCharsets.UTF_8)) {
+      @Override
+      public void close() {
+        closed[0] = true;
+      }
+    };
+    XMLStreamReader reader = XmlUtil.createXmlStreamReader(in);
+    while (reader.hasNext()) {
+      reader.next();
+    }
+    reader.close();
+    Assertions.assertFalse(closed[0], "closing the reader must not close the caller's stream");
+  }
+
+  @Test
+  void testSaxParserIsNamespaceAware() throws Exception {
+    XMLReader reader = XmlUtil.createSaxParser().getXMLReader();
+    String[] namespace = new String[1];
+    reader.setContentHandler(new DefaultHandler() {
+      @Override
+      public void startElement(String uri, String localName, String qName,
+                               org.xml.sax.Attributes attributes) {
+        namespace[0] = uri;
+      }
+    });
+    reader.parse(new InputSource(new StringReader("<root xmlns=\"urn:test\"/>")));
+    Assertions.assertEquals("urn:test", namespace[0]);
+  }
+
+  @Test
+  void testParsersAreNotXIncludeAware() {
+    Assertions.assertFalse(XmlUtil.createDocumentBuilder().isXIncludeAware());
+    Assertions.assertFalse(XmlUtil.createSaxParser().isXIncludeAware());
+  }
+
+  @Test
+  void testDocumentBuilderRejectsEntityExpansionBomb() {
+    StringBuilder dtd = new StringBuilder("<!DOCTYPE root [<!ENTITY e0 \"lol\">");
+    for (int i = 1; i < 10; i++) {
+      dtd.append("<!ENTITY e").append(i).append(" \"");
+      for (int j = 0; j < 10; j++) {
+        dtd.append("&e").append(i - 1).append(';');
+      }
+      dtd.append("\">");
+    }
+    dtd.append("]>");
+    String payload = dtd + "<root>&e9;</root>";
+    DocumentBuilder documentBuilder = XmlUtil.createDocumentBuilder();
+    Assertions.assertThrows(SAXException.class,
+        () -> documentBuilder.parse(new InputSource(new StringReader(payload))));
+  }
 
   @Test
   void testCreateDocumentBuilderWithUnsupportedSecurityOptions() throws Exception {
@@ -51,7 +220,8 @@ public class XmlUtilTest {
   public static class ThrowingSecurityOptionsDocumentBuilderFactory
       extends DocumentBuilderFactory {
 
-    private final DocumentBuilderFactory delegate = DocumentBuilderFactory.newDefaultInstance();
+    private final DocumentBuilderFactory delegate =
+        SecureDocumentBuilderFactory.newDefaultInstance();
 
     @Override
     public DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {

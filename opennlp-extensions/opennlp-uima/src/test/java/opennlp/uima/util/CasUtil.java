@@ -20,9 +20,7 @@ package opennlp.uima.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.uima.ResourceSpecifierFactory;
 import org.apache.uima.UIMAFramework;
@@ -40,6 +38,8 @@ import org.apache.uima.util.XMLParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+
+import opennlp.tools.util.XmlUtil;
 
 public final class CasUtil {
 
@@ -95,19 +95,7 @@ public final class CasUtil {
 
   public static void deserializeXmiCAS(CAS cas, InputStream xmiIn) throws IOException {
 
-    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-    saxParserFactory.setValidating(false);
-
-    SAXParser saxParser;
-
-    try {
-      saxParser = saxParserFactory.newSAXParser();
-    } catch (ParserConfigurationException e) {
-      throw new IllegalStateException(
-          "SAXParser should be configured correctly!", e);
-    } catch (SAXException e) {
-      throw new IllegalStateException("SAX error while creating parser!", e);
-    }
+    SAXParser saxParser = XmlUtil.createSaxParser();
 
     XmiCasDeserializer dezerializer = new XmiCasDeserializer(
         cas.getTypeSystem());

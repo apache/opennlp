@@ -47,6 +47,11 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-secure-xml</artifactId>
+    </dependency>
+
     <!-- TEST scoped -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
