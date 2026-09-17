@@ -17,6 +17,7 @@
 
 package opennlp.tools.util;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import opennlp.tools.commons.Internal;
 import opennlp.tools.models.ModelType;
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelLoader;
 
 /**
  * This class facilitates the downloading of pretrained OpenNLP models.
@@ -168,9 +170,9 @@ public class DownloadUtil {
       validateCachedModel(url + CHECKSUM_EXTENSION, localFile);
     }
 
-    try {
-      return type.getConstructor(Path.class).newInstance(localFile);
-    } catch (Exception e) {
+    try (InputStream in = new BufferedInputStream(Files.newInputStream(localFile))) {
+      return ModelLoader.forType(type).load(in);
+    } catch (IllegalArgumentException | IOException e) {
       throw new IOException("Could not initialize Model of type " + type.getTypeName(), e);
     }
   }
