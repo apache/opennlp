@@ -19,12 +19,15 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ADChunkSampleStreamTest extends AbstractADSampleStreamTest<ChunkSample> {
@@ -71,4 +74,48 @@ public class ADChunkSampleStreamTest extends AbstractADSampleStreamTest<ChunkSam
     Assertions.assertEquals("B-NP", samples.get(3).getPreds()[0]);
   }
 
+  private static ChunkSample readOne(String... treeLines) throws IOException {
+    String[] lines = new String[treeLines.length + 5];
+    lines[0] = "<s id=\"1\">";
+    lines[1] = "SOURCE: ref=\"CF2021-7\" source=\"CETENFolha\"";
+    lines[2] = "CF2021-7 (011) 212-2241 e 818-5817.";
+    lines[3] = "A1";
+    lines[4] = "STA:fcl";
+    System.arraycopy(treeLines, 0, lines, 5, treeLines.length);
+    try (ADChunkSampleStream stream =
+             new ADChunkSampleStream(ObjectStreamUtils.createObjectStream(lines))) {
+      ChunkSample sample = stream.read();
+      Assertions.assertNull(stream.read());
+      return sample;
+    }
+  }
+
+  /**
+   * A leaf with an equals sign and a colon in its tag, as in FlorestaVirgem, keeps the
+   * functional tag after the colon as its part of speech; no tag is null.
+   */
+  @Test
+  void testLeafWithEqualsSignInTagHasItsFunctionalTag() throws IOException {
+    ChunkSample sample = readOne(
+        "=CO:conj-c(\"e\" <co-subj>)\te",
+        "=H==CJT:num(\"818-5817\" <cjt-X> <card> <NER:virtual> M/F P)\t818-5817",
+        "=.",
+        "</s>");
+    Assertions.assertEquals(List.of("e", "818-5817", "."), Arrays.asList(sample.getSentence()));
+    Assertions.assertEquals(List.of("conj-c", "num", "."), Arrays.asList(sample.getTags()));
+    Assertions.assertEquals(List.of("O", "O", "O"), Arrays.asList(sample.getPreds()));
+  }
+
+  /** A leaf without a functional tag is tagged with its lexeme, as the POS stream does. */
+  @Test
+  void testLeafWithoutFunctionalTagIsTaggedWithItsLexeme() throws IOException {
+    ChunkSample sample = readOne(
+        "=CO:conj-c(\"e\" <co-subj>)\te",
+        "=a=b(\"x\" M S)\tx",
+        "=.",
+        "</s>");
+    Assertions.assertEquals(List.of("e", "x", "."), Arrays.asList(sample.getSentence()));
+    Assertions.assertEquals(List.of("conj-c", "x", "."), Arrays.asList(sample.getTags()));
+    Assertions.assertFalse(Arrays.asList(sample.getPreds()).contains(null));
+  }
 }
