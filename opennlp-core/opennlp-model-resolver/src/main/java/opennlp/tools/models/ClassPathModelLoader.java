@@ -20,12 +20,12 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
 import opennlp.tools.util.model.BaseModel;
+import opennlp.tools.util.model.ModelLoader;
 
 /**
  * Responsible for loading OpenNLP models from the classpath via {@link ClassPathModelEntry entries}.
@@ -131,19 +131,16 @@ public class ClassPathModelLoader {
     if (classPathEntries.isEmpty()) {
       return result;
     }
-    try {
-      for (ClassPathModelEntry entry : classPathEntries) {
-        final ClassPathModel cpm = load(entry);
-        if (cpm != null && cpm.getModelLanguage().equals(lang) && cpm.getModelName().contains(type)) {
-          try (InputStream is = new BufferedInputStream(new ByteArrayInputStream(cpm.model()))) {
-            result = modelType.getConstructor(InputStream.class).newInstance(is);
-            break; // found a match
-          }
+    for (ClassPathModelEntry entry : classPathEntries) {
+      final ClassPathModel cpm = load(entry);
+      if (cpm != null && cpm.getModelLanguage().equals(lang) && cpm.getModelName().contains(type)) {
+        try (InputStream is = new BufferedInputStream(new ByteArrayInputStream(cpm.model()))) {
+          result = ModelLoader.forType(modelType).load(is);
+          break; // found a match
+        } catch (IllegalArgumentException | IOException e) {
+          throw new ClassPathLoaderException(e);
         }
       }
-    } catch (InstantiationException | IllegalAccessException |
-             InvocationTargetException | NoSuchMethodException e) {
-      throw new ClassPathLoaderException(e);
     }
     return result;
   }

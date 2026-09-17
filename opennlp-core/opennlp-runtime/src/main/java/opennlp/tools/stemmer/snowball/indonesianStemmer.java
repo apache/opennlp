@@ -44,7 +44,6 @@ package opennlp.tools.stemmer.snowball;
 public class indonesianStemmer extends AbstractSnowballStemmer {
 
   private static final long serialVersionUID = 1L;
-  private static final java.lang.invoke.MethodHandles.Lookup methodObject = java.lang.invoke.MethodHandles.lookup();
 
   private final static Among[] a_0 = {
       new Among("kah", -1, 1),
@@ -59,9 +58,9 @@ public class indonesianStemmer extends AbstractSnowballStemmer {
   };
 
   private final static Among[] a_2 = {
-      new Among("i", -1, 1, "r_SUFFIX_I_OK", methodObject),
-      new Among("an", -1, 1, "r_SUFFIX_AN_OK", methodObject),
-      new Among("kan", 1, 1, "r_SUFFIX_KAN_OK", methodObject)
+      new Among("i", -1, 1, indonesianStemmer::r_SUFFIX_I_OK),
+      new Among("an", -1, 1, indonesianStemmer::r_SUFFIX_AN_OK),
+      new Among("kan", 1, 1, indonesianStemmer::r_SUFFIX_KAN_OK)
   };
 
   private final static Among[] a_3 = {
@@ -71,16 +70,16 @@ public class indonesianStemmer extends AbstractSnowballStemmer {
       new Among("mem", 2, 5),
       new Among("men", 2, 1),
       new Among("meng", 4, 1),
-      new Among("meny", 4, 3, "r_VOWEL", methodObject),
+      new Among("meny", 4, 3, indonesianStemmer::r_VOWEL),
       new Among("pem", -1, 6),
       new Among("pen", -1, 2),
       new Among("peng", 8, 2),
-      new Among("peny", 8, 4, "r_VOWEL", methodObject),
+      new Among("peny", 8, 4, indonesianStemmer::r_VOWEL),
       new Among("ter", -1, 1)
   };
 
   private final static Among[] a_4 = {
-      new Among("be", -1, 3, "r_KER", methodObject),
+      new Among("be", -1, 3, indonesianStemmer::r_KER),
       new Among("belajar", 0, 4),
       new Among("ber", 0, 3),
       new Among("pe", -1, 1),

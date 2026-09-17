@@ -44,7 +44,6 @@ package opennlp.tools.stemmer.snowball;
 public class finnishStemmer extends AbstractSnowballStemmer {
 
   private static final long serialVersionUID = 1L;
-  private static final java.lang.invoke.MethodHandles.Lookup methodObject = java.lang.invoke.MethodHandles.lookup();
 
   private final static Among[] a_0 = {
       new Among("pa", -1, 1),
@@ -118,12 +117,12 @@ public class finnishStemmer extends AbstractSnowballStemmer {
       new Among("ksi", -1, -1),
       new Among("n", -1, 7),
       new Among("han", 11, 1),
-      new Among("den", 11, -1, "r_VI", methodObject),
-      new Among("seen", 11, -1, "r_LONG", methodObject),
+      new Among("den", 11, -1, finnishStemmer::r_VI),
+      new Among("seen", 11, -1, finnishStemmer::r_LONG),
       new Among("hen", 11, 2),
-      new Among("tten", 11, -1, "r_VI", methodObject),
+      new Among("tten", 11, -1, finnishStemmer::r_VI),
       new Among("hin", 11, 3),
-      new Among("siin", 11, -1, "r_VI", methodObject),
+      new Among("siin", 11, -1, finnishStemmer::r_VI),
       new Among("hon", 11, 4),
       new Among("h\u00E4n", 11, 5),
       new Among("h\u00F6n", 11, 6),

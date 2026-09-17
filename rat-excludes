@@ -102,3 +102,4 @@ src/test/resources/opennlp/wordnet/mini-wndb/adv.exc
 
 <!-- UniNE light/minimal stemmer parity fixtures (generated word/stem pairs, see README) -->
 src/test/resources/opennlp/tools/stemmer/light/*.tsv
+src/main/resources/META-INF/native-image/**/reachability-metadata.json

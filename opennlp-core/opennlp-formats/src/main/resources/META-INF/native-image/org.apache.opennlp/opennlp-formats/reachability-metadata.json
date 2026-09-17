@@ -1,0 +1,6 @@
+{
+  "comment": "GraalVM native image metadata for opennlp-formats.",
+  "resources": [
+    {"glob": "opennlp/tools/util/opennlp.version"}
+  ]
+}
