@@ -16,14 +16,10 @@
 # limitations under the License.
 #
 
-# Publishes SNAPSHOT artifacts to repository.apache.org. Every push to main publishes
-# the pom version as is, which is what downstream repositories such as opennlp-addons
-# resolve 3.0.0-SNAPSHOT from. A branch is published on demand from the Actions view
-# by selecting the branch to run on: the feature name then becomes part of the version,
-# so publishing branch FEATURE-XYZ deploys 3.0.0-FEATURE-XYZ-SNAPSHOT and cannot shadow
-# the main snapshots; the name is the branch name unless the feature input supplies a
-# different one, and a pom version that already names the feature is kept unchanged.
-# Non-SNAPSHOT versions are never deployed by this workflow.
+# Publishes SNAPSHOTs to repository.apache.org. Main keeps the pom version;
+# manual branch runs append a sanitized feature name before -SNAPSHOT unless
+# the version already ends in -<feature>-SNAPSHOT. The feature defaults to the
+# branch name. Non-alphanumeric characters become hyphens.
 
 name: Publish snapshot artifacts
 
@@ -37,7 +33,8 @@ on:
         description: >-
           Feature name for a branch publish; the artifacts deploy as
           <version>-<feature>-SNAPSHOT. Defaults to the branch name on any branch
-          other than main, and must be empty on main.
+          other than main, and must be empty on main. Non-alphanumeric characters
+          become hyphens.
         required: false
         type: string
 
@@ -74,9 +71,7 @@ jobs:
         run: |
           POM_VERSION=$(mvn exec:exec -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive -q)
           if [[ "$POM_VERSION" != *-SNAPSHOT ]]; then
-            # The release plugin pushes a non-SNAPSHOT commit to main on every release,
-            # so skip that quietly rather than failing the run; an on demand publish of
-            # a non-SNAPSHOT version was asked for by a human and is an error.
+            # Skip release-plugin commits on main; reject manual release publishing.
             if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
               echo "::notice::Not a SNAPSHOT version, nothing to publish: $POM_VERSION"
               exit 0
@@ -92,12 +87,12 @@ jobs:
             fi
           else
             FEATURE_NAME="${FEATURE_INPUT:-$GITHUB_REF_NAME}"
-            FEATURE=$(printf '%s' "$FEATURE_NAME" | tr -c 'A-Za-z0-9.' '-' | sed -E 's/-+/-/g; s/^-//; s/-$//')
+            FEATURE=$(printf '%s' "$FEATURE_NAME" | LC_ALL=C tr -c 'A-Za-z0-9' '-' | sed -E 's/-+/-/g; s/^-//; s/-$//')
             if [[ -z "$FEATURE" ]]; then
               echo "No usable feature name in: $FEATURE_NAME" >&2
               exit 1
             fi
-            if [[ "$POM_VERSION" != *"$FEATURE"* ]]; then
+            if [[ "$POM_VERSION" != *"-${FEATURE}-SNAPSHOT" ]]; then
               DEPLOY_VERSION="${POM_VERSION%-SNAPSHOT}-${FEATURE}-SNAPSHOT"
             fi
           fi
