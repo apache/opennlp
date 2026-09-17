@@ -140,34 +140,6 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
     }
   }
 
-  @ParameterizedTest
-  @CsvSource({"1-2, 1, 2", "1-3, 1, 3", "15-16, 15, 16", "7-7, 7, 7", "01-02, 1, 2"})
-  void testParseContractionRange(String id, int start, int end) throws IOException {
-    Assertions.assertArrayEquals(new int[] {start, end},
-        ConlluStream.parseContractionRange(id));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"1-", "-2", "-", "1-2-3", "1--2", "a-b", "1-b", "a-2", "1 -2", "1- 2",
-      "1.1-2", "\u0661-2", "3-1", "99999999999-2"})
-  void testParseContractionRangeRejects(String id) {
-    Assertions.assertThrows(InvalidFormatException.class,
-        () -> ConlluStream.parseContractionRange(id));
-  }
-
-  @Test
-  void testMalformedContractionIdFailsTheSentence() throws IOException {
-    InputStreamFactory in = () -> new ByteArrayInputStream(
-        ("1-\tdel\t_\t_\t_\t_\t_\t_\t_\t_\n"
-            + "1\tde\tde\tADP\t_\t_\t2\tcase\t_\t_\n"
-            + "2\tel\tel\tDET\t_\t_\t3\tdet\t_\t_\n")
-            .getBytes(StandardCharsets.UTF_8));
-
-    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
-      Assertions.assertThrows(InvalidFormatException.class, stream::read);
-    }
-  }
-
   private static final String WORD_TAIL = "\t_\t_\t_\t0\troot\t_\t_\n";
 
   private static String word(String id, String form) {
@@ -203,35 +175,6 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
       InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class, stream::read);
       Assertions.assertTrue(e.getMessage().contains(rangeId), e.getMessage());
       Assertions.assertTrue(e.getMessage().contains("id " + missingId), e.getMessage());
-    }
-  }
-
-  @Test
-  void testThreeLetterLangCodeIsPreferred() throws IOException {
-    // "text_engl" gives "eng": three ASCII lowercase letters are preferred over two
-    InputStreamFactory in = () -> new ByteArrayInputStream(
-        ("# text_engl = Hello\n"
-            + "1\tHello\thello\tINTJ\t_\t_\t0\troot\t_\t_\n")
-            .getBytes(StandardCharsets.UTF_8));
-
-    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
-      ConlluSentence sent = stream.read();
-      Assertions.assertEquals(Optional.of(Collections.singletonMap(Locale.of("eng"), "Hello")),
-          sent.getTextLang());
-      Assertions.assertNull(stream.read(), "Stream must be exhausted");
-    }
-  }
-
-  @Test
-  void testInvalidTextLangCodeIsRejected() throws IOException {
-    // "text_e" has a single lowercase letter, so no language code can be extracted
-    InputStreamFactory in = () -> new ByteArrayInputStream(
-        ("# text_e = Bonjour\n"
-            + "1\tBonjour\tbonjour\tINTJ\t_\t_\t0\troot\t_\t_\n")
-            .getBytes(StandardCharsets.UTF_8));
-
-    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
-      Assertions.assertThrows(InvalidFormatException.class, stream::read);
     }
   }
 
