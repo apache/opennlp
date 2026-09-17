@@ -19,6 +19,8 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -203,4 +206,72 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
   void testTagContentRejects(String tag) {
     Assertions.assertNull(ADNameSampleStream.tagContent(tag));
   }
+
+  /**
+   * A sentence in Arvores Deitadas form with one leaf; the first token of the text line and the
+   * source attribute make up the metadata the stream reads the text id from.
+   */
+  private static String sentence(String firstToken, String source) {
+    return "<s id=\"1\" ref=\"" + firstToken + "\" source=\"" + source + "\">\n"
+        + "SOURCE: ref=\"" + firstToken + "\" source=\"" + source + "\"\n"
+        + firstToken + " Uma frase\n"
+        + "A1\n"
+        + "STA:fcl\n"
+        + "=H:n(\"frase\" F S)\tfrase\n"
+        + "</s>\n";
+  }
+
+  private static List<Boolean> clearAdaptiveDataFlags(String... sentences) throws IOException {
+    List<Boolean> flags = new ArrayList<>();
+    try (ADNameSampleStream stream = new ADNameSampleStream(
+        ObjectStreamUtils.createObjectStream(String.join("", sentences).split("\n")), false)) {
+      NameSample sample;
+      while ((sample = stream.read()) != null) {
+        flags.add(sample.isClearAdaptiveDataSet());
+      }
+    }
+    return flags;
+  }
+
+  @Test
+  void testLitMetadataClearsAdaptiveDataAtEachText() throws IOException {
+    Assertions.assertEquals(List.of(true, false, true, false), clearAdaptiveDataFlags(
+        sentence("LIT-A-1", "LIT A"), sentence("LIT-A-2", "LIT A"),
+        sentence("LIT-B-1", "LIT B"), sentence("LIT-B-2", "LIT B")));
+  }
+
+  @Test
+  void testCieMetadataClearsAdaptiveDataAtEachText() throws IOException {
+    Assertions.assertEquals(List.of(true, false, true), clearAdaptiveDataFlags(
+        sentence("CIE1-1", "CIE one"), sentence("CIE1-2", "CIE one"),
+        sentence("CIE2-1", "CIE two")));
+  }
+
+  @Test
+  void testAmazoniaMetadataClearsAdaptiveDataAtEachText() throws IOException {
+    Assertions.assertEquals(List.of(true, false, true), clearAdaptiveDataFlags(
+        sentence("CF1000-1", "CETENFolha id=1000"), sentence("CF1000-2", "CETENFolha id=1000"),
+        sentence("CF1001-1", "CETENFolha id=1001")));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"LIT-A-1,LIT A,1", "LIT-A-1,LIT A,2", "CIE1-1,CIE one,1",
+      "CIE1-1,CIE one,2", "CF1000-1,CETENFolha id=1000,1", "CF1000-1,CETENFolha id=1000,2"})
+  void testResetRestoresTextBoundary(String reference, String source, int reads) throws IOException {
+    String input = sentence(reference, source).repeat(2);
+    try (ADNameSampleStream stream = new ADNameSampleStream(
+        ObjectStreamUtils.createObjectStream(input.lines().toArray(String[]::new)), false)) {
+      for (int i = 0; i < reads; i++) {
+        Assertions.assertEquals(i == 0, stream.read().isClearAdaptiveDataSet());
+      }
+      if (reads == 2) {
+        Assertions.assertNull(stream.read());
+      }
+      stream.reset();
+      Assertions.assertTrue(stream.read().isClearAdaptiveDataSet());
+      Assertions.assertFalse(stream.read().isClearAdaptiveDataSet());
+      Assertions.assertNull(stream.read());
+    }
+  }
+
 }
