@@ -20,6 +20,9 @@
 # manual branch runs append a sanitized feature name before -SNAPSHOT unless
 # the version already ends in -<feature>-SNAPSHOT. The feature defaults to the
 # branch name. Non-alphanumeric characters become hyphens.
+# Branch snapshots can sort above releases in Maven (3.0.0 < 3.0.0-feature-SNAPSHOT).
+# Consumers using the ASF snapshot repository should pin exact versions and avoid
+# version ranges or automatic version upgrades to snapshots.
 
 name: Publish snapshot artifacts
 
