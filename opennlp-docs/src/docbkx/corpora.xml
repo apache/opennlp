@@ -484,6 +484,19 @@ Execution time: 1,955 seconds]]>
 			<code>prop</code>. Re-evaluate models trained from affected samples.
 		</para>
 	</section>
+	<section xml:id="tools.corpora.arvores-deitadas.text-boundaries">
+		<title>Text boundaries in AD name samples</title>
+		<para>
+			During a pass over LIT or CIE input, consecutive sentences with the same text
+			name share a text id. When the name changes, the first name sample of the next
+			text sets <code>clearAdaptiveData</code>, so name-finder context does not carry
+			across text boundaries. Resetting the stream clears this boundary state, so the
+			first sample of a new pass also clears adaptive data. Amazonia input continues
+			to use its numeric text id.
+			This changes training and evaluation samples for LIT and CIE corpora; evaluate
+			models with representative data from those corpora.
+		</para>
+	</section>
 		<section xml:id="tools.corpora.arvores-deitadas.evaluation">
 			<title>Training and Evaluation</title>
 			    <para>
