@@ -194,6 +194,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private int textID = -1;
 
+  /** The number of distinct LIT or CIE texts read so far, minus one. */
+  private int textIdMeta2 = -1;
+
+  /** The LIT or CIE text name of the sentence read last. */
+  private String textMeta2 = "";
+
   @Override
   public NameSample read() throws IOException {
 
@@ -518,9 +524,16 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return null;
   }
 
+  /**
+   * {@inheritDoc}
+   * Starts a new pass with no preceding text, so its first sample clears adaptive data.
+   */
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     adSentenceStream.reset();
+    textID = -1;
+    textIdMeta2 = -1;
+    textMeta2 = "";
   }
 
   @Override
@@ -531,7 +544,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   /**
    * Reads the id of the text a sentence belongs to; adaptive data is cleared when it changes. In
    * the Amazonia corpus it is the text id of the metadata. In the literary and scientific corpora
-   * the text name stands in for it, and the id is the same for all sentences (OPENNLP-1951).
+   * the text is named by its reference prefix or its source attribute instead, and the id counts
+   * the distinct names seen so far, so it changes when a new text starts (OPENNLP-1951).
    *
    * @param paragraph The sentence.
    * @return The id.
@@ -546,7 +560,14 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       if (textName == null) {
         throw new RuntimeException(INVALID_METADATA + meta);
       }
-      return textName.isEmpty() ? -1 : 0;
+      if (textName.isEmpty()) {
+        return -1;
+      }
+      if (!textName.equals(textMeta2)) {
+        textIdMeta2++;
+        textMeta2 = textName;
+      }
+      return textIdMeta2;
     }
     ADMetadata.TextAndParagraph ids = ADMetadata.parseTextAndParagraph(meta);
     if (ids == null) {
