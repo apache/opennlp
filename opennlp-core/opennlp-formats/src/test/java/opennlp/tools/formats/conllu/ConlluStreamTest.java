@@ -20,16 +20,23 @@ package opennlp.tools.formats.conllu;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.sentdetect.SentenceSample;
@@ -160,6 +167,44 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
     }
   }
 
+  private static final String WORD_TAIL = "\t_\t_\t_\t0\troot\t_\t_\n";
+
+  private static String word(String id, String form) {
+    return id + "\t" + form + "\t" + form + WORD_TAIL;
+  }
+
+  private static String range(String id, String form) {
+    return id + "\t" + form + "\t_\t_\t_\t_\t_\t_\t_\t_\n";
+  }
+
+  private static ConlluStream stream(String text) throws IOException {
+    return new ConlluStream(
+        () -> new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  private static Stream<Arguments> rangesWithoutWordLines() {
+    return Stream.of(
+        // the end of the range has no line
+        Arguments.of(range("1-2", "del") + word("1", "de"), "1-2", "2"),
+        // a line in the middle of the range has none
+        Arguments.of(range("1-3", "dello") + word("1", "de") + word("3", "lo"), "1-3", "2"),
+        // the start of the range has none
+        Arguments.of(word("1", "el") + range("2-3", "del") + word("3", "el"), "2-3", "2"),
+        // the range is the only line
+        Arguments.of(range("1-2", "del"), "1-2", "1"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("rangesWithoutWordLines")
+  void testRangeWithoutWordLineIsReported(String sentence, String rangeId, String missingId)
+      throws IOException {
+    try (ConlluStream stream = stream("# text = x\n" + sentence + "\n")) {
+      InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class, stream::read);
+      Assertions.assertTrue(e.getMessage().contains(rangeId), e.getMessage());
+      Assertions.assertTrue(e.getMessage().contains("id " + missingId), e.getMessage());
+    }
+  }
+
   @Test
   void testThreeLetterLangCodeIsPreferred() throws IOException {
     // "text_engl" gives "eng": three ASCII lowercase letters are preferred over two
@@ -188,4 +233,58 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
       Assertions.assertThrows(InvalidFormatException.class, stream::read);
     }
   }
+
+  @Test
+  void testRangeWithAllWordLinesIsMerged() throws IOException {
+    String sentence = range("1-2", "del") + word("1", "de") + word("2", "el") + word("3", "mar");
+    try (ConlluStream stream = stream("# text = del mar\n" + sentence + "\n")) {
+      ConlluSentence read = stream.read();
+      Assertions.assertEquals(2, read.getWordLines().size());
+      Assertions.assertEquals("1-2", read.getWordLines().get(0).getId());
+      Assertions.assertEquals("3", read.getWordLines().get(1).getId());
+      Assertions.assertNull(stream.read());
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"1-2147483647", "2147483646-2147483647", "complete"})
+  void testExtremeRangeHasBoundedResources(String scenario, @TempDir Path directory) throws Exception {
+    Path output = directory.resolve("range-probe.log");
+    Process child = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
+        "-Xmx48m", "-cp", System.getProperty("java.class.path"),
+        RangeProbe.class.getName(), scenario).redirectErrorStream(true)
+        .redirectOutput(output.toFile()).start();
+    try {
+      Assertions.assertTrue(child.waitFor(15, TimeUnit.SECONDS), "Range processing did not terminate");
+      Assertions.assertEquals(0, child.exitValue(), Files.readString(output));
+    } finally {
+      child.destroyForcibly();
+      child.waitFor();
+    }
+  }
+
+  /** Runs extreme inputs in a bounded heap so a regression cannot exhaust the test runner. */
+  public static final class RangeProbe {
+    /** Verifies a complete maximum-endpoint range or a missing-word diagnostic. */
+    public static void main(String[] args) throws Exception {
+      boolean complete = args[0].equals("complete");
+      String id = complete ? "2147483646-2147483647" : args[0];
+      String input = range(id, "joined");
+      if (complete) {
+        input += word("2147483646", "a") + word("2147483647", "b");
+      }
+      try (ConlluStream stream = stream(input + "\n")) {
+        if (complete) {
+          ConlluSentence result = stream.read();
+          Assertions.assertEquals(1, result.getWordLines().size());
+          Assertions.assertEquals(id, result.getWordLines().get(0).getId());
+        } else {
+          InvalidFormatException error = Assertions.assertThrows(InvalidFormatException.class, stream::read);
+          Assertions.assertTrue(error.getMessage().contains(id));
+          Assertions.assertTrue(error.getMessage().contains("id " + id.substring(0, id.indexOf('-'))));
+        }
+      }
+    }
+  }
+
 }
