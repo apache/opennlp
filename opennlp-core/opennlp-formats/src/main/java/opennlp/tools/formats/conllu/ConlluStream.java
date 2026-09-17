@@ -142,6 +142,15 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     return null;
   }
 
+  /**
+   * Merges the word lines of each multiword token range into the range line and removes them.
+   * Stops at the first missing id before allocating further entries in a range. A long
+   * cursor permits an inclusive range ending at the largest integer without wrapping.
+   *
+   * @param lines The word lines of one sentence.
+   * @return The lines with each range merged.
+   * @throws InvalidFormatException Thrown if a range names a word id that has no line.
+   */
   private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines)
       throws InvalidFormatException {
 
@@ -154,13 +163,19 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     for (int i = 0; i < lines.size(); i++) {
       ConlluWordLine line = lines.get(i);
       index.put(line.getId(), i);
+    }
+    for (ConlluWordLine line : lines) {
       if (line.getId().contains("-")) {
         List<String> expandedContractions = new ArrayList<>();
         int[] range = parseContractionRange(line.getId());
         int start = range[0];
         int end = range[1];
-        for (int j = start; j <= end; j++) {
-          String js = Integer.toString(j);
+        for (long j = start; j <= end; j++) {
+          String js = Long.toString(j);
+          if (!index.containsKey(js)) {
+            throw new InvalidFormatException("Multiword token " + line.getId()
+                + " has no word line for id " + js);
+          }
           expandedContractions.add(js);
           linesToDelete.add(js);
         }
