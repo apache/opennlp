@@ -169,6 +169,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
   private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines)
       throws InvalidFormatException {
 
+
     // 1. Find contractions
     Map<String, Integer> index = new HashMap<>();
     Map<String, List<String>> contractions = new HashMap<>();
