@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
@@ -134,33 +132,24 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     return false;
   }
 
-  // there are some different types of metadata depending on the corpus.
-  // TODO Merge these patterns
-  private static final Pattern META_1 = Pattern.compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-
   private void updateMeta() {
     if (this.sent != null) {
       String meta = this.sent.metadata();
-      Matcher m = META_1.matcher(meta);
-      int currentText;
-      int currentPara;
-      if (m.matches()) {
-        currentText = Integer.parseInt(m.group(1));
-        currentPara = Integer.parseInt(m.group(2));
-      } else {
+      ADMetadata.TextAndParagraph ids = ADMetadata.parseTextAndParagraph(meta);
+      if (ids == null) {
         throw new RuntimeException("Invalid metadata: " + meta);
       }
       isSamePara = isSameText = false;
-      if (currentText == text)
+      if (ids.text() == text)
         isSameText = true;
 
-      if (isSameText && currentPara == para)
+      if (isSameText && ids.paragraph() == para)
         isSamePara = true;
 
       isTitle = meta.contains("title");
 
-      text = currentText;
-      para = currentPara;
+      text = ids.text();
+      para = ids.paragraph();
 
     } else {
       this.isSamePara = this.isSameText = false;
