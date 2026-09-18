@@ -31,6 +31,8 @@ public class StringUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
+  private static final String MUST_NOT_BE_NULL = " must not be null";
+
   /**
    * The ten ASCII digit strings {@code "0"} to {@code "9"}, indexed by digit value. Precomputed so
    * code folding digits to ASCII does not allocate a new single-character string per digit; the
@@ -127,7 +129,7 @@ public class StringUtil {
    */
   public static String[] splitOnUnicodeWhitespace(CharSequence input) {
     if (input == null) {
-      throw new IllegalArgumentException("input must not be null");
+      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
     }
     final List<String> terms = new ArrayList<>();
     final int n = input.length();
@@ -232,6 +234,157 @@ public class StringUtil {
   }
 
   /**
+   * Tests whether {@code input} contains an ASCII capital letter, {@code A} to {@code Z}.
+   * Capital letters outside ASCII do not count.
+   *
+   * @param input The text to check. Must not be {@code null}.
+   * @return {@code true} if at least one character is an ASCII capital letter.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static boolean containsAsciiUpperCase(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
+    }
+    for (int i = 0; i < input.length(); i++) {
+      if (isAsciiUpperCase(input.charAt(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Tests whether {@code input} contains an ASCII digit, {@code 0} to {@code 9}. Digits outside
+   * ASCII do not count.
+   *
+   * @param input The text to check. Must not be {@code null}.
+   * @return {@code true} if at least one character is an ASCII digit.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static boolean containsAsciiDigit(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
+    }
+    for (int i = 0; i < input.length(); i++) {
+      if (isAsciiDigit(input.charAt(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Tests for an ASCII letter, {@code a} to {@code z} or {@code A} to {@code Z}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII letter.
+   */
+  public static boolean isAsciiLetter(int codePoint) {
+    return isAsciiLowerCase(codePoint) || isAsciiUpperCase(codePoint);
+  }
+
+  /**
+   * Tests for an ASCII lowercase letter, {@code a} to {@code z}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII lowercase letter.
+   */
+  public static boolean isAsciiLowerCase(int codePoint) {
+    return codePoint >= 'a' && codePoint <= 'z';
+  }
+
+  /**
+   * Tests for an ASCII capital letter, {@code A} to {@code Z}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII capital letter.
+   */
+  private static boolean isAsciiUpperCase(int codePoint) {
+    return codePoint >= 'A' && codePoint <= 'Z';
+  }
+
+  /**
+   * Tests for an ASCII digit, {@code 0} to {@code 9}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII digit.
+   */
+  public static boolean isAsciiDigit(int codePoint) {
+    return codePoint >= '0' && codePoint <= '9';
+  }
+
+  /**
+   * Finds the end of the run of ASCII digits that starts at {@code from}.
+   *
+   * @param text The text to scan. Must not be {@code null}.
+   * @param from The offset the run starts at, between {@code 0} and {@code text.length()}.
+   * @return The offset after the last digit of the run, or {@code from} if no digit is there.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  public static int endOfAsciiDigits(CharSequence text, int from) {
+    requireOffset(text, from);
+    int i = from;
+    while (i < text.length() && isAsciiDigit(text.charAt(i))) {
+      i++;
+    }
+    return i;
+  }
+
+  /**
+   * Tests for a line terminator: line feed {@code U+000A}, carriage return {@code U+000D},
+   * next line {@code U+0085}, line separator {@code U+2028}, or paragraph separator
+   * {@code U+2029}. This is the set {@link java.util.regex.Pattern} treats as line terminators
+   * outside {@code UNIX_LINES} mode. It is narrower than
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#lineBreakCodePointSet()}, which
+   * also holds vertical tab {@code U+000B} and form feed {@code U+000C}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} ends a line.
+   */
+  public static boolean isLineTerminator(int codePoint) {
+    return codePoint == '\n' || codePoint == '\r' || codePoint == '\u0085'
+        || codePoint == '\u2028' || codePoint == '\u2029';
+  }
+
+  /**
+   * Finds the first line terminator at or after {@code from}, as defined by
+   * {@link #isLineTerminator(int)}.
+   *
+   * @param text The text to scan. Must not be {@code null}.
+   * @param from The offset to start at, between {@code 0} and {@code text.length()}.
+   * @return The offset of the first line terminator, or {@code -1} if there is none.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  public static int indexOfLineTerminator(CharSequence text, int from) {
+    requireOffset(text, from);
+    for (int i = from; i < text.length(); i++) {
+      if (isLineTerminator(text.charAt(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Validates a text and an offset into it.
+   *
+   * @param text The text. Must not be {@code null}.
+   * @param from The offset, between {@code 0} and {@code text.length()}.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  private static void requireOffset(CharSequence text, int from) {
+    if (text == null) {
+      throw new IllegalArgumentException("text" + MUST_NOT_BE_NULL);
+    }
+    if (from < 0 || from > text.length()) {
+      throw new IllegalArgumentException("from must be between 0 and " + text.length());
+    }
+  }
+
+  /**
    * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
    * {@link #splitOnUnicodeWhitespace(CharSequence)} breaks terms on.
    *
@@ -241,7 +394,7 @@ public class StringUtil {
    */
   public static String trimUnicodeWhitespace(CharSequence input) {
     if (input == null) {
-      throw new IllegalArgumentException("input must not be null");
+      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
     }
     int start = 0;
     int end = input.length();
