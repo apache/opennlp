@@ -52,7 +52,8 @@ public enum CompatibilityMode {
    * System property that selects the active {@link CompatibilityMode} at startup. Accepts
    * {@code LEGACY} or {@code CURRENT}, case-insensitive; unset or blank resolves to
    * {@link #CURRENT}, any other value raises an {@link IllegalArgumentException} when the
-   * mode is resolved.
+   * mode is resolved. The property is first resolved during class initialization, so an
+   * invalid value at startup surfaces as an {@link ExceptionInInitializerError} on first use.
    */
   public static final String MODE_PROPERTY = "opennlp.compat.mode";
 
