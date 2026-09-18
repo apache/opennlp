@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,20 +30,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.tokenize.lang.Factory;
-import opennlp.tools.util.CompatibilityMode;
 
 public class AlphaNumericCheckTest {
 
   private static final List<String> LANGUAGES =
       List.of("en", "es", "it", "pt", "ca", "pl", "de", "fr", "nl", "xx");
-
-  /** Tokens for the custom-pattern comparison, including multi-character and mixed ones. */
-  private static final List<String> TOKENS = List.of(
-      "", "a", "Z", "0", "abc123", "Straße", "Café", "señor", "łódź", "ĳs", "Ÿ", "-", "a-b",
-      "a b", "a\nb", "\n", "abc\n", "ñ", "Ç", "ß", "é", " ", "١٢٣", "Ａ", "𐐒", "😀a",
-      "aé", "AB.", "x_y", "[", "]", "\\", "^", "&", "$", "!", "~", "#", "a.b", "A", "M",
-      "abc-", "-abc", "a-b-c", "\u00FF", "\uD7FF", "\uE000", "\uFFFF",
-      "\uD800", "\uDFFF", "\uD83D", "\uDE00", "\uD83D\uDE00", "a\uD83D\uDE00b");
 
   /** Patterns of the supported form: a class of plain characters and ranges. */
   private static final List<String> SET_LOOKUP_PATTERNS = List.of(
@@ -71,11 +61,6 @@ public class AlphaNumericCheckTest {
       "^[a-z]*$", "[a-z]+", "^(?i)[a-z]+$", "^[a-z]+\\d$", "^[ab\\]]+$", "^[😀]+$",
       "^[\\-a]+$", "^[a-z]++$", "^[a-z]+?$", "^[a-z]{1,}$", "^[a^b]+$", "^[a&b]+$");
 
-  @AfterEach
-  void resetCompatibilityMode() {
-    CompatibilityMode.reset();
-  }
-
   private static Stream<Arguments> languagesAndPatterns() {
     return LANGUAGES.stream().map(language ->
         Arguments.of(language, new Factory().getAlphanumeric(language)));
@@ -91,10 +76,6 @@ public class AlphaNumericCheckTest {
     AlphaNumericCheck check = new AlphaNumericCheck(pattern);
     Assertions.assertTrue(check.isCharacterSet(), language + " default runs as a set lookup");
     Assertions.assertEquals(List.of(), disagreements(pattern, check), language);
-  }
-
-  private static Stream<String> setLookupPatterns() {
-    return SET_LOOKUP_PATTERNS.stream();
   }
 
   private static Stream<Arguments> setLookupPatternsAndExpectedDisagreements() {
@@ -117,53 +98,34 @@ public class AlphaNumericCheckTest {
     Assertions.assertEquals(expected, disagreements(pattern, check), regex);
   }
 
-  /** Under the legacy mode the set gives the engine's result on all code points. */
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("setLookupPatterns")
-  void testSetLookupAgreesWithRegexOnEveryCodePointUnderLegacyMode(String regex) {
-    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
-    Pattern pattern = Pattern.compile(regex);
-    AlphaNumericCheck check = new AlphaNumericCheck(pattern);
-    Assertions.assertTrue(check.isCharacterSet(), regex + " runs as a set lookup");
-    Assertions.assertEquals(List.of(), disagreements(pattern, check), regex);
-  }
-
-  /** The mode is read when the check is built, so a check keeps its rule afterwards. */
-  @Test
-  void testModeIsReadAtConstruction() {
-    Pattern pattern = Pattern.compile("^[A-\uFFFF]+$");
-    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
-    AlphaNumericCheck legacy = new AlphaNumericCheck(pattern);
-    CompatibilityMode.setActive(CompatibilityMode.CURRENT);
-    AlphaNumericCheck current = new AlphaNumericCheck(pattern);
-    Assertions.assertTrue(legacy.test("\uD800"));
-    Assertions.assertFalse(current.test("\uD800"));
-    Assertions.assertTrue(legacy.test("A"));
-    Assertions.assertTrue(current.test("A"));
-  }
-
+  /** Whole-token cases that single-code-point coverage cannot establish. */
   private static Stream<Arguments> customPatternsAndTokens() {
-    return Stream.concat(SET_LOOKUP_PATTERNS.stream(), ENGINE_PATTERNS.stream())
-        .flatMap(regex -> {
-          Pattern pattern = Pattern.compile(regex);
-          return TOKENS.stream().map(token -> Arguments.of(regex, pattern, token));
-        });
+    return Stream.of(
+        Arguments.of("^[a-c1-3]+$", "abc123", true),
+        Arguments.of("^[a-c1-3]+$", "abc4", false),
+        Arguments.of("^[a-z-]+$", "x-cafe", true),
+        Arguments.of("^[a-z-]+$", "x_cafe", false),
+        Arguments.of("^[a-z]+$", "abc\n", false),
+        Arguments.of("^[a-z]+$", "abc\u0085", false),
+        Arguments.of("^[a-z]+$", "abc\u2028", false),
+        Arguments.of("^[a-z]+$", "abc\u00A0", false),
+        Arguments.of("^[a-z]+$|^[0-9]+$", "123", true),
+        Arguments.of("^[a-z]+$|^[0-9]+$", "abc123", false),
+        Arguments.of("^[a-z&&[^b]]+$", "ace", true),
+        Arguments.of("^[a-z&&[^b]]+$", "abc", false),
+        Arguments.of("^[ab\\]]+$", "ab]", true),
+        Arguments.of("^[ab\\]]+$", "ab[", false),
+        Arguments.of("^[\\p{L}\\p{Nd}]+$", "\uD801\uDC12\uD835\uDFCE", true),
+        Arguments.of("^[\\p{L}\\p{Nd}]+$", "a😀", false),
+        Arguments.of("^[\\p{L}][\\p{L}\\p{M}\\p{Nd}]*$", "cafe\u0301", true),
+        Arguments.of("^[\\p{L}][\\p{L}\\p{M}\\p{Nd}]*$", "\u0301cafe", false));
   }
 
-  /** A set lookup rejects a token with an unpaired surrogate; otherwise both agree. */
-  @ParameterizedTest(name = "{0}: \"{2}\"")
+  @ParameterizedTest(name = "{0}: {1}")
   @MethodSource("customPatternsAndTokens")
-  void testCustomPatternsAgreeWithRegex(String regex, Pattern pattern, String token) {
-    AlphaNumericCheck check = new AlphaNumericCheck(pattern);
-    boolean expected = pattern.matcher(token).matches()
-        && !(check.isCharacterSet() && hasUnpairedSurrogate(token));
+  void testCustomPatternWholeTokens(String regex, String token, boolean expected) {
+    AlphaNumericCheck check = new AlphaNumericCheck(Pattern.compile(regex));
     Assertions.assertEquals(expected, check.test(token));
-  }
-
-  @ParameterizedTest
-  @MethodSource("setLookupPatterns")
-  void testEligiblePatternsRunAsSetLookup(String regex) {
-    Assertions.assertTrue(new AlphaNumericCheck(Pattern.compile(regex)).isCharacterSet());
   }
 
   private static Stream<String> enginePatterns() {
@@ -202,14 +164,34 @@ public class AlphaNumericCheckTest {
     Assertions.assertEquals("pattern must not be null", e.getMessage());
   }
 
+  private static Stream<Arguments> malformedTokens() {
+    return Stream.of(
+        Arguments.of("literal range", Pattern.compile("^[A-\uFFFF]+$"), "a\uD800b"),
+        Arguments.of("escaped range", Pattern.compile("^[A-\\uFFFF]+$"), "a\uD800b"),
+        Arguments.of("flagged range", Pattern.compile("^[A-\uFFFF]+$",
+            Pattern.UNICODE_CHARACTER_CLASS), "a\uD800b"),
+        Arguments.of("negated class", Pattern.compile("^[^0-9]+$"), "a\uDFFFb"),
+        Arguments.of("leading high surrogate", Pattern.compile("(?s)^.+$"), "\uD800ab"),
+        Arguments.of("trailing high surrogate", Pattern.compile("(?s)^.+$"), "ab\uDBFF"),
+        Arguments.of("leading low surrogate", Pattern.compile("(?s)^.+$"), "\uDC00ab"),
+        Arguments.of("trailing low surrogate", Pattern.compile("(?s)^.+$"), "ab\uDFFF"),
+        Arguments.of("reversed pair", Pattern.compile("(?s)^.+$"), "\uDC00\uD800"),
+        Arguments.of("two high surrogates", Pattern.compile("(?s)^.+$"), "\uD800\uDBFF"),
+        Arguments.of("pair then lone surrogate", Pattern.compile("(?s)^.+$"), "😀\uD800"));
+  }
+
+  /** Invalid UTF-16 must not bypass model evaluation, whatever pattern syntax is used. */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("malformedTokens")
+  void testMalformedTokensAreNeverAlphanumeric(String label, Pattern pattern, String token) {
+    Assertions.assertFalse(new AlphaNumericCheck(pattern).test(token));
+  }
+
+  /** Valid pairs at both supplementary boundaries must survive UTF-16 validation. */
   @ParameterizedTest
-  @ValueSource(strings = {"\uD800", "\uDFFF", "\uD83D", "\uDE00", "a\uD800b"})
-  void testSurrogateSpanningRangeRejectsUnpairedSurrogates(String token) {
-    Pattern pattern = Pattern.compile("^[A-\uFFFF]+$");
-    AlphaNumericCheck check = new AlphaNumericCheck(pattern);
-    Assertions.assertTrue(check.isCharacterSet());
-    Assertions.assertTrue(pattern.matcher(token).matches());
-    Assertions.assertFalse(check.test(token));
+  @ValueSource(strings = {"\uD800\uDC00", "\uDBFF\uDFFF", "a😀b", "😀😀"})
+  void testFallbackAcceptsValidSurrogatePairs(String token) {
+    Assertions.assertTrue(new AlphaNumericCheck(Pattern.compile("(?s)^.+$")).test(token));
   }
 
   @ParameterizedTest
@@ -267,11 +249,6 @@ public class AlphaNumericCheckTest {
       }
     }
     return differing;
-  }
-
-  private static boolean hasUnpairedSurrogate(String token) {
-    return token.codePoints().anyMatch(
-        codePoint -> codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE);
   }
 
   private static List<String> surrogateBlock() {

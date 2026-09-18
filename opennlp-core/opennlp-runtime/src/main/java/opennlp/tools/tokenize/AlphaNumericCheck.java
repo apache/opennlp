@@ -19,7 +19,6 @@ package opennlp.tools.tokenize;
 
 import java.util.regex.Pattern;
 
-import opennlp.tools.util.CompatibilityMode;
 import opennlp.tools.util.normalizer.CodePointSet;
 
 /**
@@ -28,11 +27,9 @@ import opennlp.tools.util.normalizer.CodePointSet;
  * as a regular expression. A pattern of the form {@code ^[...]+$} with a class of plain
  * characters and simple ranges, the form of all built-in language defaults, is evaluated as a
  * {@link CodePointSet} lookup. Other patterns are evaluated by the regular expression engine.
- * Both give the result of {@code pattern.matcher(token).matches()}, with one exception: a set
- * lookup rejects a token with an unpaired surrogate, which is not a character, where the
- * engine accepts it as a code point inside a range that spans the surrogate block. Under
- * {@link CompatibilityMode#LEGACY} the set accepts it as well, so the check gives the
- * engine's result on every input, as the 1.x/2.x releases did.
+ * Tokens with unpaired surrogates are never eligible for the alphanumeric shortcut,
+ * regardless of the pattern's syntax or flags. Other tokens are checked against the
+ * configured character set or custom pattern.
  */
 final class AlphaNumericCheck {
 
@@ -41,7 +38,6 @@ final class AlphaNumericCheck {
 
   private final Pattern pattern;
   private final CodePointSet characters;
-  private final boolean legacy;
 
   /**
    * Creates the check for a pattern, using a set lookup when the pattern has the supported form.
@@ -54,7 +50,6 @@ final class AlphaNumericCheck {
       throw new IllegalArgumentException("pattern must not be null");
     }
     this.pattern = pattern;
-    this.legacy = CompatibilityMode.current() == CompatibilityMode.LEGACY;
     this.characters = pattern.flags() == 0 ? parseCharacterClass(pattern.pattern()) : null;
   }
 
@@ -62,28 +57,26 @@ final class AlphaNumericCheck {
    * Tests a token.
    *
    * @param token The token.
-   * @return {@code true} if the whole token matches the pattern.
+   * @return {@code true} if the token is well-formed UTF-16 and matches the pattern in full.
    */
   boolean test(CharSequence token) {
-    if (characters == null) {
-      return pattern.matcher(token).matches();
-    }
-    if (token.isEmpty()) {
+    if (characters != null && token.isEmpty()) {
       return false;
     }
     for (int i = 0; i < token.length();) {
       final int codePoint = Character.codePointAt(token, i);
-      if (!characters.contains(codePoint)) {
+      if (codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE
+          || characters != null && !characters.contains(codePoint)) {
         return false;
       }
       i += Character.charCount(codePoint);
     }
-    return true;
+    return characters != null || pattern.matcher(token).matches();
   }
 
   /**
-   * Tells whether the check runs as a set lookup. The result of {@link #test(CharSequence)} is
-   * the same either way; this method exists so tests can pin which patterns take the lookup.
+   * Tells whether the check runs as a set lookup. This method exists so tests can pin which
+   * patterns take the lookup. Both paths reject malformed UTF-16.
    *
    * @return {@code true} for a set lookup, {@code false} when the pattern is evaluated as
    *         a regular expression.
@@ -97,9 +90,8 @@ final class AlphaNumericCheck {
    * Inside the class only plain characters and ranges written as {@code x-y} are understood; a
    * hyphen in first or last position, or directly after a range, is a plain hyphen. A range
    * over the surrogate block skips that block, since an unpaired surrogate is not a
-   * character, except under {@link CompatibilityMode#LEGACY}. Escapes, negation, nested
-   * classes, intersections, and characters outside the Basic Multilingual Plane are left to
-   * the engine.
+   * character. Escapes, negation, nested classes, intersections, and characters outside
+   * the Basic Multilingual Plane are left to the engine.
    *
    * @param regex The pattern text.
    * @return The accepted code points, or {@code null} if the pattern is not of that form.
@@ -133,15 +125,15 @@ final class AlphaNumericCheck {
   }
 
   /**
-   * The code points of a range, without the surrogate block unless the legacy mode is
-   * active. Neither end is a surrogate, so a range that overlaps the block covers all of it.
+   * The code points of a range, without the surrogate block. Neither end is a surrogate, so
+   * a range that overlaps the block covers all of it.
    *
    * @param from The first character of the range.
    * @param to The last character of the range, not smaller than {@code from}.
    * @return The set of the range.
    */
   private CodePointSet rangeWithoutSurrogates(char from, char to) {
-    if (!legacy && from <= Character.MAX_SURROGATE && to >= Character.MIN_SURROGATE) {
+    if (from <= Character.MAX_SURROGATE && to >= Character.MIN_SURROGATE) {
       return CodePointSet.ofRange(from, Character.MIN_SURROGATE - 1)
           .union(CodePointSet.ofRange(Character.MAX_SURROGATE + 1, to));
     }

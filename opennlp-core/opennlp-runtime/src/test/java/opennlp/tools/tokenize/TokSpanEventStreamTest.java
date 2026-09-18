@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.tokenize.lang.Factory;
@@ -103,15 +106,28 @@ public class TokSpanEventStreamTest {
    * events under a class that covers the surrogate block as under the ASCII default, although
    * the regular expression accepts it.
    */
+  @ParameterizedTest
+  @MethodSource("surrogatePatterns")
+  void testUnpairedSurrogateIsNeverAlphanumeric(Pattern pattern) throws IOException {
+    List<String> expected = readEvents(SURROGATE_TOKEN, false, pattern);
+    Assertions.assertEquals(2, expected.size());
+    Assertions.assertEquals(expected, readEvents(SURROGATE_TOKEN, true, pattern));
+  }
+
+  private static Stream<Pattern> surrogatePatterns() {
+    return Stream.of(PLANE_ZERO, Pattern.compile("^[A-\\uFFFF]+$"),
+        Pattern.compile("^[A-\uFFFF]+$", Pattern.UNICODE_CHARACTER_CLASS));
+  }
+
+  /** Mark-aware patterns skip complete words, but preserve annotated leading-mark splits. */
   @Test
-  void testUnpairedSurrogateIsNeverAlphanumeric() throws IOException {
-    String sample = QUOTED_SAMPLE + " " + SURROGATE_TOKEN;
-    Assertions.assertTrue(PLANE_ZERO.matcher(SURROGATE_TOKEN).matches());
-    List<String> underDefault = readEvents(sample, true, Factory.DEFAULT_ALPHANUMERIC);
-    List<String> underPlaneZero = readEvents(sample, true, PLANE_ZERO);
-    Assertions.assertEquals(underDefault, underPlaneZero);
-    List<String> withoutToken = readEvents(QUOTED_SAMPLE, true, PLANE_ZERO);
-    Assertions.assertEquals(withoutToken.size() + eventsFor(SURROGATE_TOKEN), underPlaneZero.size());
+  void testCombiningMarkPatternPreservesTrainingBoundaries() throws IOException {
+    Pattern words = Pattern.compile("^[\\p{L}][\\p{L}\\p{M}]*$");
+    String marked = "\u0301<SPLIT>cafe";
+    List<String> expected = readEvents(marked, false, words);
+    Assertions.assertEquals(4, expected.size());
+    Assertions.assertTrue(expected.getFirst().startsWith(TokenizerME.SPLIT + " "));
+    Assertions.assertEquals(expected, readEvents("café cafe\u0301 " + marked, true, words));
   }
 
   /** A token longer than one character yields one event per split position. */

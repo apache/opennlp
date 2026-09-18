@@ -19,6 +19,7 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -206,4 +207,21 @@ public class TokenizerMETest {
     mlParams.put(Parameters.CUTOFF_PARAM, 0);
     return TokenizerME.train(samples, factory, mlParams);
   }
+
+  /** Valid words bypass the model; malformed text must still reach its context generator. */
+  @Test
+  void testUnicodeOptimizationDoesNotBypassModelForMalformedText() throws IOException {
+    CountingContextFactory factory = new CountingContextFactory();
+    TokenizerModel trained = TokenizerTestUtil.createSimpleMaxentTokenModel();
+    TokenizerModel model = new TokenizerModel(trained.getMaxentModel(), Map.of(), factory);
+    CountingContextFactory loadedFactory = (CountingContextFactory) model.getFactory();
+    TokenizerME tokenizer = new TokenizerME(model);
+    Assertions.assertArrayEquals(new String[] {"café", "cafe\u0301"},
+        tokenizer.tokenize("café cafe\u0301"));
+    Assertions.assertEquals(0, loadedFactory.contexts);
+    tokenizer.tokenize("ab\uD800");
+    Assertions.assertEquals(2, loadedFactory.contexts,
+        "Malformed text must not take the alphanumeric shortcut");
+  }
+
 }
