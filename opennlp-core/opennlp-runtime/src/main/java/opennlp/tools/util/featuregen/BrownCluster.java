@@ -28,8 +28,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -47,7 +47,7 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public class BrownCluster implements SerializableArtifact {
 
-  private static final Pattern tabPattern = Pattern.compile("\t");
+  private static final char TAB = '\t';
 
   public static class BrownClusterSerializer implements ArtifactSerializer<BrownCluster> {
 
@@ -82,7 +82,7 @@ public class BrownCluster implements SerializableArtifact {
 
       String line;
       while ((line = breader.readLine()) != null) {
-        String[] lineArray = tabPattern.split(line);
+        String[] lineArray = StringUtil.split(line, TAB);
         if (lineArray.length == 3) {
           int freq = Integer.parseInt(lineArray[2]);
           if (freq > 5 ) {

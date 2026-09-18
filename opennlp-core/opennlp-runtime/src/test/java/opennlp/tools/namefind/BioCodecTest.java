@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -260,6 +263,37 @@ public class BioCodecTest {
   void testCompatibilityRepeated() {
     Assertions.assertTrue(codec.areOutcomesCompatible(
         new String[] {A_START, A_START, A_CONTINUE, A_CONTINUE, B_START, B_START, OTHER, OTHER}));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"atype-start, atype", "a-b-start, a-b", "type_1-cont, type_1", "Type9-X_1, Type9",
+      // the type is everything before the last hyphen, line terminators aside
+      "type--start, type-", "a b-start, a b", "ätype-start, ätype", "\uD83D\uDE00-start, \uD83D\uDE00",
+      "type.-start, type.", "x-1, x",
+      // an unpaired surrogate is not a line terminator
+      "\uD83D-start, \uD83D", "a\uDE00-cont, a\uDE00"})
+  void testExtractNameType(String outcome, String type) {
+    Assertions.assertEquals(type, BioCodec.extractNameType(outcome));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"start", "other", "-start", "atype-", "atype-st.art", "atype-st art",
+      "atype-stärt", "", "-", "--", "a-b-", "type-start-", "type- start", "type-\u0661",
+      "type-\uD835\uDC00", "type-\uD83D", "type-a\uDE00"})
+  void testExtractNameTypeWithoutType(String outcome) {
+    // the suffix after the last hyphen must be a non-empty run of ASCII letters, digits,
+    // or underscores
+    Assertions.assertNull(BioCodec.extractNameType(outcome));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"person\u2028-start", "per\nson-start", "per\rson-start",
+      "per\u0085son-start", "per\u2029son-start", "atype\n-start", "atype-start\n", "atype-\nstart",
+      "\u2028atype-start", "\u0085atype-start", "atype-start\u0085", "atype-start\u2028",
+      "atype-\u2029", "\u0085", "\r\n"})
+  void testExtractNameTypeRejectsLineTerminators(String outcome) {
+    // any line terminator in the outcome means no type
+    Assertions.assertNull(BioCodec.extractNameType(outcome));
   }
 
 }
