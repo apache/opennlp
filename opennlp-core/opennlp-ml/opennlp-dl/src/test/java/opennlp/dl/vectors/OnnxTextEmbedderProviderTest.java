@@ -16,6 +16,7 @@
  */
 package opennlp.dl.vectors;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -24,55 +25,63 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.embeddings.TextEmbedderProvider;
-import opennlp.tools.embeddings.TextEmbedderProviders;
+import opennlp.tools.util.ext.ProviderSpec;
+import opennlp.tools.util.ext.Providers;
 
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.LOWER_CASE_OPTION;
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.NAME;
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.VOCABULARY_OPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The capability, availability and registration of the ONNX provider, without a model. */
+/** The support, availability and registration of the ONNX provider, without a model. */
 class OnnxTextEmbedderProviderTest {
 
-  private static final Map<String, String> OPTIONS = Map.of("vocabulary", "vocab.txt");
+  private static final Map<String, String> OPTIONS = Map.of(VOCABULARY_OPTION, "vocab.txt");
 
   private final OnnxTextEmbedderProvider provider = new OnnxTextEmbedderProvider();
 
   @Test
   void testIdentityAndAvailability() {
-    assertEquals("onnx", provider.name());
+    assertEquals(NAME, provider.name());
     assertEquals(0, provider.priority());
     assertTrue(provider.isAvailable(), "onnxruntime is on the test classpath");
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"model.onnx", "MODEL.ONNX", "dir/model.Onnx"})
-  void testSupportsOnnxFilesWithItsOwnOptions(String model) {
-    assertTrue(provider.supports(Path.of(model), OPTIONS));
-    assertTrue(provider.supports(Path.of(model), Map.of()));
-    assertTrue(provider.supports(Path.of(model),
-        Map.of("vocabulary", "vocab.txt", "lowerCase", "false")));
+  void testSupportsOnnxFilesWithItsOwnOptions(final String model) {
+    assertTrue(provider.supports(ProviderSpec.of(Path.of(model), OPTIONS)));
+    assertTrue(provider.supports(ProviderSpec.of(Path.of(model))));
+    assertTrue(provider.supports(ProviderSpec.of(Path.of(model),
+        Map.of(VOCABULARY_OPTION, "vocab.txt", LOWER_CASE_OPTION, "false"))));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"model.bin", "model.onnx.bak", "onnx", "model.pt"})
-  void testDoesNotSupportOtherModelFiles(String model) {
-    assertFalse(provider.supports(Path.of(model), OPTIONS));
+  void testDoesNotSupportOtherModelFiles(final String model) {
+    assertFalse(provider.supports(ProviderSpec.of(Path.of(model), OPTIONS)));
   }
 
   @Test
-  void testDoesNotSupportForeignOptionsOrNullArguments() {
-    assertFalse(provider.supports(Path.of("model.onnx"), Map.of("vocabulary", "v", "device", "gpu")));
-    assertFalse(provider.supports(null, OPTIONS));
-    assertFalse(provider.supports(Path.of("model.onnx"), null));
-    assertFalse(provider.supports(Path.of("/"), OPTIONS));
+  void testDoesNotSupportForeignOptionsOrLocations() {
+    assertFalse(provider.supports(ProviderSpec.of(Path.of("model.onnx"),
+        Map.of(VOCABULARY_OPTION, "v", "device", "gpu"))), "a foreign option");
+    assertFalse(provider.supports(ProviderSpec.of(OPTIONS)), "no location");
+    assertFalse(provider.supports(ProviderSpec.of(URI.create("https://example.org/model.onnx"),
+        OPTIONS)), "not a local file");
+    assertThrows(IllegalArgumentException.class, () -> provider.supports(null));
   }
 
   /** The provider is registered in this module and is the one selected for an ONNX model. */
   @Test
   void testRegisteredAndSelectedForOnnxModels() {
-    assertInstanceOf(OnnxTextEmbedderProvider.class, TextEmbedderProviders.get("onnx"));
-    TextEmbedderProvider selected = TextEmbedderProviders.select(Path.of("model.onnx"), OPTIONS);
-    assertInstanceOf(OnnxTextEmbedderProvider.class, selected);
+    final Providers<TextEmbedderProvider> providers = Providers.of(TextEmbedderProvider.class);
+    assertInstanceOf(OnnxTextEmbedderProvider.class, providers.byName(NAME).orElseThrow());
+    assertInstanceOf(OnnxTextEmbedderProvider.class,
+        providers.select(ProviderSpec.of(Path.of("model.onnx"), OPTIONS)));
   }
 }

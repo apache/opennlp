@@ -25,6 +25,9 @@ import java.util.List;
  * for one word, this interface accepts a sentence, paragraph, or document.</p>
  *
  * <p>Thread safety is implementation specific.</p>
+ *
+ * @see TextEmbedderProvider
+ * @since 3.0.0
  */
 public interface TextEmbedder extends AutoCloseable {
 

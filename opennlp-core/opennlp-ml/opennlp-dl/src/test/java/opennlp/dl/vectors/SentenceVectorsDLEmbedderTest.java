@@ -33,8 +33,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProvider;
-import opennlp.tools.embeddings.TextEmbedderProviders;
+import opennlp.tools.util.ext.ProviderSpec;
+import opennlp.tools.util.ext.Providers;
 
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.LOWER_CASE_OPTION;
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.VOCABULARY_OPTION;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -72,27 +75,32 @@ class SentenceVectorsDLEmbedderTest {
   }
 
   @Test
-  void testSelectedProviderPreservesInference(@TempDir Path dir) throws Exception {
-    Path graph = model(dir).toPath();
+  void testSelectedProviderPreservesInference(@TempDir final Path dir) throws Exception {
+    final Path graph = model(dir).toPath();
     vocab(dir);
-    Map<String, String> options = Map.of("vocabulary", "vocab.txt");
-    TextEmbedderProvider provider = TextEmbedderProviders.select(graph, options);
-    assertEquals("onnx", provider.name());
-    try (TextEmbedder first = provider.load(graph, options);
-         TextEmbedder second = provider.load(graph, options)) {
+    final Map<String, String> options = Map.of(VOCABULARY_OPTION, "vocab.txt");
+    final ProviderSpec spec = ProviderSpec.of(graph, options);
+    final TextEmbedderProvider provider = Providers.of(TextEmbedderProvider.class).select(spec);
+    assertEquals(OnnxTextEmbedderProvider.NAME, provider.name());
+    try (TextEmbedder first = provider.create(spec);
+         TextEmbedder second = provider.create(spec)) {
       assertArrayEquals(CLS_VECTOR, first.embed("hello world"));
       first.close();
       assertArrayEquals(CLS_VECTOR, second.embed("hello"));
       assertArrayEquals(CLS_VECTOR, second.embedAll(List.of("hello", "world"))[1]);
     }
-    assertThrows(IllegalArgumentException.class, () -> provider.load(null, options));
-    assertThrows(IllegalArgumentException.class, () -> provider.load(graph.getRoot(), options));
-    assertThrows(IllegalArgumentException.class, () -> provider.load(graph, null));
-    assertThrows(IllegalArgumentException.class, () -> provider.load(graph, Map.of()));
+    assertThrows(IllegalArgumentException.class, () -> provider.create(null));
     assertThrows(IllegalArgumentException.class,
-        () -> provider.load(graph, Map.of("vocabulary", "vocab.txt", "lowerCase", "invalid")));
+        () -> provider.create(ProviderSpec.of(dir, options)), "a directory");
     assertThrows(IllegalArgumentException.class,
-        () -> provider.load(graph, Map.of("vocabulary", "vocab.txt", "typo", "true")));
+        () -> provider.create(ProviderSpec.of(dir.resolve("missing.onnx"), options)),
+        "a missing model");
+    assertThrows(IllegalArgumentException.class, () -> provider.create(ProviderSpec.of(graph)),
+        "no vocabulary");
+    assertThrows(IllegalArgumentException.class, () -> provider.create(ProviderSpec.of(graph,
+        Map.of(VOCABULARY_OPTION, "vocab.txt", LOWER_CASE_OPTION, "invalid"))));
+    assertThrows(IllegalArgumentException.class, () -> provider.create(ProviderSpec.of(graph,
+        Map.of(VOCABULARY_OPTION, "vocab.txt", "typo", "true"))));
   }
 
   @Test

@@ -19,37 +19,40 @@ package opennlp.dl.vectors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Map;
 
+import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 
 import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProvider;
+import opennlp.tools.util.ext.ProviderSpec;
 
 /**
- * Loads {@link SentenceVectorsDL} for ONNX models. The provider name is {@code onnx}. It
- * supports a model file whose name ends with {@code .onnx} when every option is one of its own:
- * the required {@code vocabulary} names a vocabulary file, resolved against the model's parent
- * directory when relative, and {@code lowerCase} accepts {@code true} (the default) or
- * {@code false}. It is available when the ONNX Runtime classes can be loaded; the runtime
- * itself is initialized by {@link #load(Path, Map)}, not by construction or by the checks.
+ * Provides a {@link SentenceVectorsDL} under the name {@value #NAME}. It supports a spec whose
+ * location is a local file named {@code *.onnx}, in any letter case, and whose only options are
+ * {@value #VOCABULARY_OPTION} and {@value #LOWER_CASE_OPTION}. The option values are checked by
+ * {@link #create(ProviderSpec)}, which also initializes the ONNX Runtime.
  *
  * @since 3.0.0
  */
 public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
 
-  private static final String NAME = "onnx";
+  /** The name of this provider. */
+  public static final String NAME = "onnx";
+
+  /**
+   * The required option that names the vocabulary file, resolved against the directory of the
+   * model if it is relative.
+   */
+  public static final String VOCABULARY_OPTION = "vocabulary";
+
+  /** The option that lower-cases the text, {@code true} by default or {@code false}. */
+  public static final String LOWER_CASE_OPTION = "lowerCase";
+
   private static final String MODEL_SUFFIX = ".onnx";
-  private static final String RUNTIME_CLASS = "ai.onnxruntime.OrtEnvironment";
-  private static final String VOCABULARY = "vocabulary";
-  private static final String LOWER_CASE = "lowerCase";
+  private static final String TRUE = "true";
+  private static final String FALSE = "false";
 
-  /** Creates a factory without opening a model. */
-  public OnnxTextEmbedderProvider() {
-  }
-
-  /** {@inheritDoc} */
   @Override
   public String name() {
     return NAME;
@@ -62,70 +65,44 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
   @Override
   public boolean isAvailable() {
     try {
-      Class.forName(RUNTIME_CLASS, false, OnnxTextEmbedderProvider.class.getClassLoader());
-      return true;
-    } catch (ClassNotFoundException | LinkageError e) {
+      return OrtEnvironment.class.getName() != null;
+    } catch (final LinkageError e) {
       return false;
     }
   }
 
-  /**
-   * {@inheritDoc}
-   * A model file named {@code *.onnx}, in any letter case, with only {@code vocabulary} and
-   * {@code lowerCase} options is supported; the option values are checked by
-   * {@link #load(Path, Map)}.
-   */
   @Override
-  public boolean supports(Path model, Map<String, String> options) {
-    if (model == null || options == null || model.getFileName() == null) {
-      return false;
+  public boolean supports(final ProviderSpec spec) {
+    if (spec == null) {
+      throw new IllegalArgumentException("spec must not be null");
     }
-    if (!model.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(MODEL_SUFFIX)) {
-      return false;
-    }
-    for (String key : options.keySet()) {
-      if (!VOCABULARY.equals(key) && !LOWER_CASE.equals(key)) {
-        return false;
-      }
-    }
-    return true;
+    return spec.path().isPresent() && spec.locationEndsWith(MODEL_SUFFIX)
+        && spec.hasOnlyOptions(VOCABULARY_OPTION, LOWER_CASE_OPTION);
   }
 
-  /** {@inheritDoc} */
   @Override
-  public TextEmbedder load(Path model, Map<String, String> options) throws IOException {
-    if (model == null) {
-      throw new IllegalArgumentException("model must not be null");
+  public TextEmbedder create(final ProviderSpec spec) throws IOException {
+    if (spec == null || !supports(spec)) {
+      throw new IllegalArgumentException("spec is not supported: " + spec);
     }
-    if (options == null) {
-      throw new IllegalArgumentException("options must not be null");
-    }
-    for (Map.Entry<String, String> option : options.entrySet()) {
-      if ((!VOCABULARY.equals(option.getKey()) && !LOWER_CASE.equals(option.getKey()))
-          || option.getValue() == null) {
-        throw new IllegalArgumentException("Invalid or unsupported option: " + option.getKey());
-      }
-    }
+    final Path model = spec.path().orElseThrow();
     if (!Files.isRegularFile(model)) {
       throw new IllegalArgumentException("model must be a regular file: " + model);
     }
-    String vocabulary = options.get(VOCABULARY);
+    final String vocabulary = spec.option(VOCABULARY_OPTION, null);
     if (vocabulary == null || vocabulary.isBlank()) {
-      throw new IllegalArgumentException("vocabulary must not be null or blank");
+      throw new IllegalArgumentException(VOCABULARY_OPTION + " must not be null or blank");
     }
-    String lowerCase = options.getOrDefault(LOWER_CASE, "true");
-    if (!"true".equals(lowerCase) && !"false".equals(lowerCase)) {
-      throw new IllegalArgumentException("lowerCase must be true or false");
+    final String lowerCase = spec.option(LOWER_CASE_OPTION, TRUE);
+    if (!TRUE.equals(lowerCase) && !FALSE.equals(lowerCase)) {
+      throw new IllegalArgumentException(LOWER_CASE_OPTION + " must be true or false");
     }
-    Path vocabularyPath = Path.of(vocabulary);
-    if (!vocabularyPath.isAbsolute()) {
-      vocabularyPath = model.toAbsolutePath().getParent().resolve(vocabularyPath);
-    }
+    final Path vocabularyPath = model.toAbsolutePath().getParent().resolve(vocabulary);
     try {
       return new SentenceVectorsDL(model.toFile(), vocabularyPath.toFile(),
           Boolean.parseBoolean(lowerCase));
-    } catch (OrtException e) {
-      throw new IOException("Failed to load ONNX embedding model: " + model, e);
+    } catch (final OrtException e) {
+      throw new IOException("Cannot load the ONNX model " + model, e);
     }
   }
 }
