@@ -36,6 +36,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -63,6 +64,43 @@ public class DownloadUtilTest {
     assertNotNull(model);
     assertEquals(language, model.getLanguage());
     assertTrue(model.isLoadedFromSerialized());
+  }
+
+  @ParameterizedTest
+  @MethodSource("checksumFiles")
+  void testParseChecksum(String content, String expected) {
+    assertEquals(expected, DownloadUtil.parseChecksum(content));
+  }
+
+  private static Stream<Arguments> checksumFiles() {
+    return Stream.of(
+        Arguments.of("abc123  model.bin", "abc123"),
+        Arguments.of("abc123\tmodel.bin\n", "abc123"),
+        Arguments.of("  abc123 model.bin", "abc123"),
+        Arguments.of("abc123", "abc123"),
+        Arguments.of("abc123 *model.bin\r\n", "abc123"),
+        Arguments.of("abc123\r\nmodel.bin", "abc123"),
+        Arguments.of("abc123 model.bin\r", "abc123"),
+        Arguments.of("\r\nabc123 model.bin\r\n", "abc123"),
+        Arguments.of("ABC123  model.bin\r\n", "ABC123"),
+        Arguments.of("abc123 *./models/model.bin\r\n", "abc123"),
+        Arguments.of("abc123 model.bin\ndef456 other.bin\n", "abc123"),
+        Arguments.of("abc123\u000Bmodel.bin", "abc123"),
+        // a no-break space or an ideographic space ends the hash as a plain space does
+        Arguments.of("abc123\u00A0model.bin", "abc123"),
+        Arguments.of("abc123\u3000model.bin", "abc123"),
+        // and leading whitespace of any kind is skipped, JDK trim stops at U+0020
+        Arguments.of("\u00A0abc123 model.bin", "abc123"),
+        Arguments.of("\u3000\tabc123\u2003model.bin", "abc123"),
+        // a zero width space is not whitespace, so it stays part of the hash
+        Arguments.of("abc123\u200Bmodel.bin", "abc123\u200Bmodel.bin"));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = {" ", "\t\n", "\u00A0", "\u3000\u2003", " \u00A0\n"})
+  void testParseChecksumOfBlankContent(String content) {
+    assertNull(DownloadUtil.parseChecksum(content));
   }
 
   @Test

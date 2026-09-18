@@ -24,25 +24,30 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
- * Class which produces an Iterator&lt;TokenSample&gt; from a file of space delimited token.
- * This class uses a number of English-specific heuristics to un-separate tokens which
+ * Class which produces an Iterator&lt;TokenSample&gt; from a file of whitespace delimited
+ * tokens. This class uses a number of English-specific heuristics to un-separate tokens which
  * are typically found together in text.
+ * <p>
+ * Tokens are separated by runs of Unicode {@code White_Space}, see
+ * {@link StringUtil#splitOnUnicodeWhitespace(CharSequence)}, independent of the whitespace
+ * mode; leading and trailing whitespace adds no token. A line without a token resets the
+ * quote state, and a token holding a letter or digit of any script is a word rather than
+ * punctuation.
  */
 public class TokenSampleStream implements Iterator<TokenSample> {
 
   private static final Logger logger = LoggerFactory.getLogger(TokenSampleStream.class);
   private final BufferedReader in;
   private String line;
-  private final Pattern alphaNumeric = Pattern.compile("[A-Za-z0-9]");
   private boolean evenq = true;
 
   public TokenSampleStream(InputStream is) throws IOException {
@@ -55,7 +60,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   public TokenSample next() {
-    String[] tokens = line.split("\\s+");
+    String[] tokens = StringUtil.splitOnUnicodeWhitespace(line);
     if (tokens.length == 0) {
       evenq = true;
     }
@@ -73,7 +78,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
         default -> token;
       };
       if (sb.length() != 0) {
-        if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
+        if (!containsLetterOrDigit(token) || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
           if ((token.equals("``") || token.equals("--") || token.equals("$") ||
               token.equals("(")  || token.equals("&")  || token.equals("#") ||
               (token.equals("\"") && (evenq && ti != tokens.length - 1)))
@@ -111,6 +116,25 @@ public class TokenSampleStream implements Iterator<TokenSample> {
 
   public void remove() {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Tests whether a token contains a letter or a decimal digit, by code point. A token without
+   * one is treated as punctuation.
+   *
+   * @param token The token.
+   * @return {@code true} if one is present.
+   */
+  private boolean containsLetterOrDigit(String token) {
+    int i = 0;
+    while (i < token.length()) {
+      int cp = token.codePointAt(i);
+      if (Character.isLetterOrDigit(cp)) {
+        return true;
+      }
+      i += Character.charCount(cp);
+    }
+    return false;
   }
 
   private static void usage() {
