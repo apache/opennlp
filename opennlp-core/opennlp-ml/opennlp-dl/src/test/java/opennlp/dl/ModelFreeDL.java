@@ -20,9 +20,9 @@ package opennlp.dl;
 import java.util.Map;
 
 /**
- * An {@link AbstractDL} without an ONNX environment or session, so the shared encoder can be
- * exercised on a plain vocabulary. Only {@link #encode(CharSequence)} may be called; anything
- * reaching the absent session fails.
+ * An {@link AbstractDL} without an ONNX environment or session, so
+ * {@link AbstractDL#encodeTokens(CharSequence)} can be exercised on a plain vocabulary.
+ * Only {@link #encode(CharSequence)} may be called; anything reaching the absent session fails.
  */
 final class ModelFreeDL extends AbstractDL {
 

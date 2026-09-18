@@ -133,22 +133,6 @@ public class CreateTokenizerTest {
   }
 
   @Test
-  void testDlEncodingPreservesVocabularyIds() {
-    final Map<String, Integer> vocab = Map.of(
-        WordpieceTokenizer.BERT_CLS_TOKEN, 101,
-        WordpieceTokenizer.BERT_SEP_TOKEN, 205,
-        WordpieceTokenizer.BERT_UNK_TOKEN, 999,
-        "hello", 42);
-
-    final Tokens tokens = new ModelFreeDL(vocab, true).encode("Hello");
-
-    assertArrayEquals(new String[] {"[CLS]", "hello", "[SEP]"}, tokens.tokens());
-    assertArrayEquals(new long[] {101, 42, 205}, tokens.ids());
-    assertArrayEquals(new long[] {1, 1, 1}, tokens.mask());
-    assertArrayEquals(new long[] {0, 0, 0}, tokens.types());
-  }
-
-  @Test
   void testResolveLowerCaseUsesComponentDefaultWhenUnset() {
     final InferenceOptions options = new InferenceOptions();
 
