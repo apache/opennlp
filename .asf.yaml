@@ -5,6 +5,13 @@
 github:
   description: "Apache OpenNLP"
   homepage: https://opennlp.apache.org/
+  features:
+    # Issues and discussions are used for user-facing questions and proposals;
+    # design decisions and releases stay on the dev list and in JIRA.
+    issues: true
+    discussions: true
+    wiki: false
+    projects: false
   protected_branches:
     # Prevent force pushes to primary branches
     # `asf-allowlist-check` is the job in .github/workflows/allowlist-check.yml and
