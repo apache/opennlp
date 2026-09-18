@@ -70,7 +70,9 @@ public class ADMetadataTest {
         Arguments.of("12 p=1\n", 12, 1),
         Arguments.of("12 p=1\r\n", 12, 1),
         Arguments.of("12\u2028 p=1", 12, 1),
+        Arguments.of("12\u2029 p=1", 12, 1),
         Arguments.of("12 p=1\u0085", 12, 1),
+        Arguments.of("12 p=1\u2029", 12, 1),
         Arguments.of("12 p=\r p=3", 12, 3));
   }
 
@@ -83,12 +85,12 @@ public class ADMetadataTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"", "x p=1", "12", "12 p=", "12 P=1", "12 p=a", " 12 p=1", "p=1",
-      "1 p==2", "LIT p=1", "LIT-p=1", "12 p =2", "12 p= 2", "LIT_12 p=1",
+      "1 p==2", "LIT p=1", "LIT-p=1", "12 p =2", "12 p= 2", "LIT_12 p=1", "CF_1001 p=2", "CF 1001 p=2",
       // digits from other scripts are no ASCII digits
       "\u0661\u0662 p=1", "12 p=\u0661", "\uFF11\uFF12 p=1", "12 p=\uFF11", "12 p=\u00B2",
       "\u0661\u066212 p=1", "12 p=\r\n3", "LIT\u00C3\u00A71 p=1",
       // a line terminator before the text id is no letter or hyphen
-      "\r12 p=1", "\u202812 p=1"})
+      "\r12 p=1", "\u202812 p=1", "\u202912 p=1"})
   void testParseTextAndParagraphRejects(String meta) {
     Assertions.assertNull(ADMetadata.parseTextAndParagraph(meta));
     Assertions.assertNull(ADMetadata.textPrefix(meta));
