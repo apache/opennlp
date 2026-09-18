@@ -16,6 +16,8 @@
  */
 package opennlp.tools.embeddings;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -24,12 +26,19 @@ import java.util.List;
  * <p>Unlike {@link opennlp.tools.util.wordvector.WordVectorTable}, which looks up a stored vector
  * for one word, this interface accepts a sentence, paragraph, or document.</p>
  *
- * <p>Thread safety is implementation specific.</p>
+ * <p>Implementations must be safe for concurrent use of {@link #embed(CharSequence)},
+ * {@link #embedAll(List)} and {@link #dimension()} until {@link #close()} is called. They may
+ * serialize calls internally: the guarantee is correctness, not parallelism.</p>
+ *
+ * <p>Every returned array is new and owned by the caller. Vectors are not necessarily of unit
+ * length unless the implementation documents it. Text longer than the implementation accepts is
+ * either truncated or rejected with an {@link IllegalArgumentException}; each implementation
+ * documents which.</p>
  *
  * @see TextEmbedderProvider
  * @since 3.0.0
  */
-public interface TextEmbedder extends AutoCloseable {
+public interface TextEmbedder extends Closeable {
 
   /**
    * Embeds a piece of text.
@@ -42,11 +51,14 @@ public interface TextEmbedder extends AutoCloseable {
    * @param text The text to embed. Must not be {@code null}.
    * @return The embedding vector, of length {@link #dimension()}.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * @throws EmbeddingException Thrown if the text could not be embedded.
+   * @throws IllegalStateException Thrown if this embedder is closed.
    */
   float[] embed(CharSequence text);
 
   /**
-   * Embeds several texts.
+   * Embeds several texts. All texts are checked before any of them is embedded. The
+   * implementation forms its own batches, so callers may pass a list of any size.
    *
    * <p>The default implementation embeds one text at a time. Implementations backed by a
    * runtime that executes batches more efficiently than single inputs should override this
@@ -56,32 +68,41 @@ public interface TextEmbedder extends AutoCloseable {
    * @return One embedding vector per input, in input order.
    * @throws IllegalArgumentException Thrown if {@code texts} is {@code null} or contains
    *     {@code null}.
+   * @throws EmbeddingException Thrown if the texts could not be embedded.
+   * @throws IllegalStateException Thrown if this embedder is closed.
    */
   default float[][] embedAll(List<? extends CharSequence> texts) {
     if (texts == null) {
       throw new IllegalArgumentException("texts must not be null");
     }
-    final float[][] vectors = new float[texts.size()][];
-    for (int i = 0; i < vectors.length; i++) {
-      final CharSequence text = texts.get(i);
-      if (text == null) {
+    final CharSequence[] checked = new CharSequence[texts.size()];
+    for (int i = 0; i < checked.length; i++) {
+      checked[i] = texts.get(i);
+      if (checked[i] == null) {
         throw new IllegalArgumentException("texts[" + i + "] must not be null");
       }
-      vectors[i] = embed(text);
+    }
+    final float[][] vectors = new float[checked.length][];
+    for (int i = 0; i < checked.length; i++) {
+      vectors[i] = embed(checked[i]);
     }
     return vectors;
   }
 
   /**
-   * Releases resources owned by this embedder. The default implementation does nothing.
-   * Callers must not race this method with embedding calls.
+   * {@return the dimension of every vector this embedder produces} The value is constant and
+   * never requires an inference.
+   */
+  int dimension();
+
+  /**
+   * Releases resources owned by this embedder. Calling it more than once has no further effect.
+   * The default implementation does nothing. Callers must not race this method with embedding
+   * calls.
    *
-   * @throws Exception Thrown if releasing backend resources fails.
+   * @throws IOException Thrown if releasing backend resources fails.
    */
   @Override
-  default void close() throws Exception {
+  default void close() throws IOException {
   }
-
-  /** {@return the dimension of every vector this embedder produces} */
-  int dimension();
 }

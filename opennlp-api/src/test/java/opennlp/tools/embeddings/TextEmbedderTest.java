@@ -16,10 +16,13 @@
  */
 package opennlp.tools.embeddings;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -51,5 +54,29 @@ class TextEmbedderTest {
         () -> permissiveEmbedder.embedAll(Arrays.asList("first", null)));
 
     assertEquals("texts[1] must not be null", exception.getMessage());
+  }
+
+  @Test
+  void testEmbedAllChecksEveryTextBeforeEmbedding() {
+    final List<CharSequence> embedded = new ArrayList<>();
+    final TextEmbedder recordingEmbedder = new TextEmbedder() {
+      @Override
+      public float[] embed(CharSequence text) {
+        embedded.add(text);
+        return new float[] {text.length()};
+      }
+
+      @Override
+      public int dimension() {
+        return 1;
+      }
+    };
+
+    assertThrows(IllegalArgumentException.class,
+        () -> recordingEmbedder.embedAll(Arrays.asList("first", "second", null)));
+    assertEquals(List.of(), embedded);
+
+    final float[][] vectors = recordingEmbedder.embedAll(List.of("a", "abc", "ab"));
+    assertArrayEquals(new float[][] {{1f}, {3f}, {2f}}, vectors);
   }
 }

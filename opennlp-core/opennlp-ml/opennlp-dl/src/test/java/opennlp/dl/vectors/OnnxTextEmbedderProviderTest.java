@@ -29,7 +29,10 @@ import opennlp.tools.util.ext.ProviderSpec;
 import opennlp.tools.util.ext.Providers;
 
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.LOWER_CASE_OPTION;
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.MAX_LENGTH_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.NAME;
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.NORMALIZE_OPTION;
+import static opennlp.dl.vectors.OnnxTextEmbedderProvider.POOLING_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.VOCABULARY_OPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -58,6 +61,9 @@ class OnnxTextEmbedderProviderTest {
     assertTrue(provider.supports(ProviderSpec.of(Path.of(model))));
     assertTrue(provider.supports(ProviderSpec.of(Path.of(model),
         Map.of(VOCABULARY_OPTION, "vocab.txt", LOWER_CASE_OPTION, "false"))));
+    assertTrue(provider.supports(ProviderSpec.of(Path.of(model),
+        Map.of(VOCABULARY_OPTION, "vocab.txt", POOLING_OPTION, "cls", NORMALIZE_OPTION, "false",
+            MAX_LENGTH_OPTION, "256"))));
   }
 
   @ParameterizedTest

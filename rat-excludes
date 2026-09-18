@@ -71,5 +71,6 @@ src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
 src/main/resources/opennlp/tools/util/normalizer/confusables.txt
 src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
 
-<!-- opennlp-dl tiny ONNX test model (project-generated binary, see gen_tiny_vectors_model.py committed next to it) -->
+<!-- opennlp-dl tiny ONNX test models (project-generated binaries, see the gen_tiny_*_model.py scripts committed next to them) -->
 src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx
+src/test/resources/opennlp/dl/vectors/tiny-pooled.onnx

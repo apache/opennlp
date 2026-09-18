@@ -104,6 +104,11 @@ under the License.
 			backend: <code>opennlp-dl</code> registers the <code>onnx</code> provider, and it is the
 			default only because it is the one provider in the default distribution.
 		</para>
+		<para>
+			An embedder is safe for concurrent use until it is closed. <code>embedAll</code> checks
+			every text before embedding any of them and forms its own batches, so it accepts a list
+			of any size. Inference failures are reported as <code>EmbeddingException</code>.
+		</para>
 		<programlisting language="java"><![CDATA[ProviderSpec spec = ProviderSpec.of(Path.of("model.onnx"),
     Map.of("vocabulary", "vocab.txt"));
 Providers<TextEmbedderProvider> providers = Providers.of(TextEmbedderProvider.class);
@@ -114,7 +119,13 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			The <code>onnx</code> provider supports a local model file named <code>*.onnx</code>. It
 			requires the option <code>vocabulary</code>, resolved against the directory of the model if
 			it is relative, and accepts <code>lowerCase=true</code> (default) or
-			<code>lowerCase=false</code>. A spec with another option is not supported. The key
+			<code>lowerCase=false</code>, <code>pooling=mean</code> (default) or
+			<code>pooling=cls</code>, <code>normalize=true</code> (default) or
+			<code>normalize=false</code>, and <code>maxLength</code>, the maximum number of tokens
+			per input (512 by default); longer input is truncated. The defaults match
+			sentence-transformers models such as all-MiniLM-L6-v2. A model with a
+			<code>sentence_embedding</code> output is used as it is, without pooling. A spec with
+			another option is not supported. The key
 			<code>opennlp.provider.opennlp.tools.embeddings.TextEmbedderProvider</code> selects a
 			provider by name. Excluding <code>opennlp-dl</code> leaves the API without a provider
 			until another one is installed. Existing <code>SentenceVectorsDL</code> constructors remain
