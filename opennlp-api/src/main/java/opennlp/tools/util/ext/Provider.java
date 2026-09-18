@@ -33,6 +33,7 @@ import java.io.IOException;
  *
  * @param <T> The service interface created by this provider.
  * @see Providers
+ * @see ProviderSpec
  * @since 3.0.0
  */
 public interface Provider<T> {
@@ -40,9 +41,8 @@ public interface Provider<T> {
   /**
    * @return The case-sensitive name of this provider: at most 64 characters of ASCII letters,
    *         digits, {@code .}, {@code _} or {@code -}, since it is used as a configuration
-   *         value. A
-   *         provider with another name is skipped when providers are looked up. Providers of one
-   *         SPI may share a name; {@link #priority()} ranks them.
+   *         value. A provider with another name is skipped when providers are looked up.
+   *         Providers of one SPI may share a name; {@link #priority()} ranks them.
    */
   String name();
 

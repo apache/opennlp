@@ -452,6 +452,9 @@ class ProvidersTest {
       assertThrows(IllegalArgumentException.class,
           () -> Providers.of(SourceProvider.class, loader, key -> null, null), "null predicate");
     }
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> Providers.ofTrusted(SourceProvider.class, null, null), "null loader and predicate");
+    assertEquals("loader, trusted must not be null", e.getMessage(), "every missing argument");
   }
 
   @Test
@@ -629,6 +632,15 @@ class ProvidersTest {
     }) {
       assertEquals(1, Providers.of(SourceProvider.class, loader).installed().size(),
           "the provider of the readable service file");
+    }
+  }
+
+  @Test
+  void testFatalErrorOfAConstructorIsRethrown() throws IOException {
+    try (URLClassLoader loader = loader(Map.of(SourceProvider.class,
+        List.of(ConstructorRunsOutOfMemory.class, Alpha.class)))) {
+      assertThrows(OutOfMemoryError.class, () -> Providers.of(SourceProvider.class, loader),
+          "an error wrapped by the service loader is not skipped");
     }
   }
 
@@ -1114,6 +1126,12 @@ class ProvidersTest {
   public static class ConstructorThrows extends Alpha {
     public ConstructorThrows() {
       throw new IllegalStateException("cannot construct");
+    }
+  }
+
+  public static class ConstructorRunsOutOfMemory extends Alpha {
+    public ConstructorRunsOutOfMemory() {
+      throw new OutOfMemoryError("cannot construct");
     }
   }
 

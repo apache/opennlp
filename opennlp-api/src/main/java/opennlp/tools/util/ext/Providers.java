@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,6 +68,10 @@ import opennlp.tools.util.StringUtil;
  * {@link #ofTrusted(Class, ClassLoader, Predicate)}.
  *
  * @param <P> The SPI, a sub-interface of {@link Provider}.
+ * @see Provider
+ * @see ProviderSpec
+ * @see UnsatisfiedProviderException
+ * @see AmbiguousProviderException
  * @since 3.0.0
  */
 public final class Providers<P extends Provider<?>> {
@@ -184,11 +189,11 @@ public final class Providers<P extends Provider<?>> {
   }
 
   /**
-   * Looks the providers of an SPI up with the thread context class loader, or with the class
-   * loader of {@code spi} if the thread has none or if it cannot see {@code spi}. On a thread
-   * whose context class loader is not the application's, such as a thread of a pool or of a
-   * container, this finds the providers of the SPI's own class loader only, so a library or a
-   * framework integration captures the class loader at startup and calls
+   * Looks the {@link Provider providers} of an SPI up with the thread context class loader, or
+   * with the class loader of {@code spi} if the thread has none or if it cannot see {@code spi}.
+   * On a thread whose context class loader is not the application's, such as a thread of a pool
+   * or of a container, this finds the providers of the SPI's own class loader only, so a library
+   * or a framework integration captures the class loader at startup and calls
    * {@link #of(Class, ClassLoader)}.
    *
    * @param spi The SPI. Must be a sub-interface of {@link Provider}.
@@ -204,7 +209,7 @@ public final class Providers<P extends Provider<?>> {
   }
 
   /**
-   * Looks the providers of an SPI up with a class loader.
+   * Looks the {@link Provider providers} of an SPI up with a class loader.
    *
    * @param spi The SPI. Must be a sub-interface of {@link Provider}.
    * @param loader The class loader to look providers up with. Must not be {@code null}.
@@ -217,17 +222,15 @@ public final class Providers<P extends Provider<?>> {
    */
   public static <P extends Provider<?>> Providers<P> of(final Class<P> spi,
                                                         final ClassLoader loader) {
-    if (loader == null) {
-      throw new IllegalArgumentException("loader must not be null");
-    }
+    requireArguments(List.of("spi", "loader"), spi, loader);
     return new Providers<>(spi, loader, null, null);
   }
 
   /**
-   * Looks the providers of an SPI up with a class loader and reads the configuration keys from
-   * an application's own source instead of {@value #CONFIGURATION_FILE} and the system
-   * properties. Applications that share a class loader hierarchy, such as several deployments in
-   * one server, use this to configure resolution per application.
+   * Looks the {@link Provider providers} of an SPI up with a class loader and reads the
+   * configuration keys from an application's own source instead of {@value #CONFIGURATION_FILE}
+   * and the system properties. Applications that share a class loader hierarchy, such as several
+   * deployments in one server, use this to configure resolution per application.
    *
    * @param spi The SPI. Must be a sub-interface of {@link Provider}.
    * @param loader The class loader to look providers up with. Must not be {@code null}.
@@ -244,19 +247,14 @@ public final class Providers<P extends Provider<?>> {
   public static <P extends Provider<?>> Providers<P> of(final Class<P> spi,
                                                         final ClassLoader loader,
                                                         final UnaryOperator<String> configuration) {
-    if (loader == null) {
-      throw new IllegalArgumentException("loader must not be null");
-    }
-    if (configuration == null) {
-      throw new IllegalArgumentException("configuration must not be null");
-    }
+    requireArguments(List.of("spi", "loader", "configuration"), spi, loader, configuration);
     return new Providers<>(spi, loader, configuration, null);
   }
 
   /**
-   * Looks the providers of an SPI up with a class loader, using only the provider classes a
-   * predicate accepts, which lets an application decide by the code source, the module or the
-   * signers of a class instead of by its name.
+   * Looks the {@link Provider providers} of an SPI up with a class loader, using only the
+   * provider classes a predicate accepts, which lets an application decide by the code source,
+   * the module or the signers of a class instead of by its name.
    * <p>
    * The predicate is applied to each provider class the configuration permits, after the class
    * has been loaded and before it is initialized and instantiated, so a rejected provider runs
@@ -276,12 +274,7 @@ public final class Providers<P extends Provider<?>> {
   public static <P extends Provider<?>> Providers<P> ofTrusted(final Class<P> spi,
                                                                final ClassLoader loader,
                                                                final Predicate<Class<?>> trusted) {
-    if (loader == null) {
-      throw new IllegalArgumentException("loader must not be null");
-    }
-    if (trusted == null) {
-      throw new IllegalArgumentException("trusted must not be null");
-    }
+    requireArguments(List.of("spi", "loader", "trusted"), spi, loader, trusted);
     return new Providers<>(spi, loader, null, trusted);
   }
 
@@ -304,16 +297,28 @@ public final class Providers<P extends Provider<?>> {
                                                         final ClassLoader loader,
                                                         final UnaryOperator<String> configuration,
                                                         final Predicate<Class<?>> trusted) {
-    if (loader == null) {
-      throw new IllegalArgumentException("loader must not be null");
-    }
-    if (configuration == null) {
-      throw new IllegalArgumentException("configuration must not be null");
-    }
-    if (trusted == null) {
-      throw new IllegalArgumentException("trusted must not be null");
-    }
+    requireArguments(List.of("spi", "loader", "configuration", "trusted"), spi, loader,
+        configuration, trusted);
     return new Providers<>(spi, loader, configuration, trusted);
+  }
+
+  /**
+   * Checks the arguments of a factory method at once, so that a caller sees every missing one.
+   *
+   * @param names The names of the arguments, in the order of {@code arguments}.
+   * @param arguments The arguments to check.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}, naming all of them.
+   */
+  private static void requireArguments(final List<String> names, final Object... arguments) {
+    final List<String> missing = new ArrayList<>();
+    for (int argument = 0; argument < arguments.length; argument++) {
+      if (arguments[argument] == null) {
+        missing.add(names.get(argument));
+      }
+    }
+    if (!missing.isEmpty()) {
+      throw new IllegalArgumentException(String.join(", ", missing) + " must not be null");
+    }
   }
 
   /**
@@ -362,9 +367,9 @@ public final class Providers<P extends Provider<?>> {
   }
 
   /**
-   * Resolves an available provider by name, unless the name is disabled. If several available
-   * providers have the name, the one with the highest priority is returned. The key from
-   * {@link #configurationKey()} is not applied.
+   * Resolves an available {@link Provider provider} by name, unless the name is disabled. If
+   * several available providers have the name, the one with the highest priority is returned.
+   * The key from {@link #configurationKey()} is not applied.
    *
    * @param name The case-sensitive provider name. Must not be {@code null} or blank.
    * @return The provider, or {@link Optional#empty()} if the name is disabled or no available
@@ -398,7 +403,8 @@ public final class Providers<P extends Provider<?>> {
   }
 
   /**
-   * Lists the available providers that support a spec, without the disabled ones. The key from
+   * Lists the available {@link Provider providers} that support a {@link ProviderSpec spec},
+   * without the disabled ones. The key from
    * {@link #configurationKey()} is not applied.
    *
    * @param spec The spec. Must not be {@code null}.
@@ -419,10 +425,10 @@ public final class Providers<P extends Provider<?>> {
   }
 
   /**
-   * Resolves the provider for a spec. The candidates are the available providers that support
-   * {@code spec} and are not disabled. If the key from {@link #configurationKey()} holds a
-   * nonblank value, only candidates with that name, surrounding whitespace ignored, remain. The
-   * candidate with the highest priority is returned.
+   * Resolves the {@link Provider provider} for a {@link ProviderSpec spec}. The candidates are
+   * the available providers that support {@code spec} and are not disabled. If the key from
+   * {@link #configurationKey()} holds a nonblank value, only candidates with that name,
+   * surrounding whitespace ignored, remain. The candidate with the highest priority is returned.
    *
    * @param spec The spec. Must not be {@code null}.
    * @return The provider. Never {@code null}.
@@ -471,9 +477,8 @@ public final class Providers<P extends Provider<?>> {
   private boolean isAvailable(final Registration<P> registration) {
     try {
       return registration.provider().isAvailable();
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final RuntimeException | Error e) {
+      rethrowFatal(e);
       warn(registration.provider(), AVAILABLE_METHOD, e.toString());
       return false;
     }
@@ -482,9 +487,8 @@ public final class Providers<P extends Provider<?>> {
   private boolean supports(final Registration<P> registration, final ProviderSpec spec) {
     try {
       return registration.provider().supports(spec);
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final RuntimeException | Error e) {
+      rethrowFatal(e);
       warn(registration.provider(), SUPPORTS_METHOD, e.toString());
       return false;
     }
@@ -567,9 +571,8 @@ public final class Providers<P extends Provider<?>> {
   private String configured(final String key) {
     try {
       return configuration.apply(key);
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final RuntimeException | Error e) {
+      rethrowFatal(e);
       throw new ProviderResolutionException("Cannot read the configuration key " + key, e);
     }
   }
@@ -661,9 +664,8 @@ public final class Providers<P extends Provider<?>> {
     try {
       final String seen = String.valueOf(context.getResource(resource));
       return seen.equals(String.valueOf(declaring.getResource(resource))) ? context : declaring;
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final RuntimeException | Error e) {
+      rethrowFatal(e);
       return declaring;
     }
   }
@@ -698,9 +700,10 @@ public final class Providers<P extends Provider<?>> {
       while (resources.hasMoreElements()) {
         files.add(read(resources.nextElement()));
       }
-    } catch (final ProviderResolutionException | VirtualMachineError e) {
+    } catch (final ProviderResolutionException e) {
       throw e;
     } catch (final IOException | RuntimeException | Error e) {
+      rethrowFatal(e);
       throw lookupFailed(e);
     }
     files.sort(Comparator.comparingInt(ConfigurationFile::ordinal));
@@ -796,9 +799,8 @@ public final class Providers<P extends Provider<?>> {
       // A class loader that cannot list the service files leaves the iterator of the service
       // loader where it is, so ask it once instead of reading that from a repeated failure.
       loader.getResources(SERVICE_PREFIX + spi.getName());
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final IOException | RuntimeException | Error e) {
+      rethrowFatal(e);
       throw lookupFailed(e);
     }
     final Set<String> disabled = disabledNames();
@@ -816,10 +818,12 @@ public final class Providers<P extends Provider<?>> {
         }
         entry = iterator.next();
       } catch (final RuntimeException e) {
+        rethrowFatal(e);
         throw lookupFailed(e);
       } catch (final ServiceConfigurationError | LinkageError e) {
-        // Every registration that fails advances the iterator, so only a failure that repeats
-        // beyond the bound can be one that does not.
+        rethrowFatal(e);
+        // Every registration that fails advances the iterator and every entry it yields resets
+        // the count, so only a failure that repeats beyond the bound can be one that does not.
         failures++;
         if (failures > MAX_CONSECUTIVE_FAILURES) {
           throw lookupFailed(e);
@@ -847,9 +851,8 @@ public final class Providers<P extends Provider<?>> {
       final P provider;
       try {
         provider = entry.get();
-      } catch (final VirtualMachineError e) {
-        throw e;
       } catch (final RuntimeException | Error e) {
+        rethrowFatal(e);
         ignored++;
         logger.warn(SKIPPED_ENTRY, spi.getName(), loaderName, e.toString());
         continue;
@@ -900,9 +903,8 @@ public final class Providers<P extends Provider<?>> {
     }
     try {
       return trusted.test(provided);
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final RuntimeException | Error e) {
+      rethrowFatal(e);
       throw new ProviderResolutionException("The trust check of the " + spi.getName()
           + " provider " + provided.getName() + " failed", e);
     }
@@ -917,9 +919,8 @@ public final class Providers<P extends Provider<?>> {
         return "unknown";
       }
       return printable(domain.getCodeSource().getLocation());
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final RuntimeException | Error e) {
+      rethrowFatal(e);
       return "unknown";
     }
   }
@@ -927,6 +928,28 @@ public final class Providers<P extends Provider<?>> {
   private ProviderResolutionException lookupFailed(final Throwable cause) {
     return new ProviderResolutionException(String.format(LOOKUP_FAILED, spi.getName(), loaderName),
         cause);
+  }
+
+  /**
+   * Rethrows a {@link VirtualMachineError}, such as an {@link OutOfMemoryError} or a
+   * {@link StackOverflowError}, that a provider or a class loader ran into. It leaves the JVM in a
+   * state that skipping the provider does not recover from. {@link ServiceLoader} wraps what the
+   * constructor of a provider throws in a {@link ServiceConfigurationError}, so the causes of
+   * {@code failure} are checked as well.
+   *
+   * @param failure The failure to check. Must not be {@code null}.
+   */
+  private void rethrowFatal(final Throwable failure) {
+    if (failure instanceof VirtualMachineError fatal) {
+      throw fatal;
+    }
+    final Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+    for (Throwable cause = failure.getCause(); cause != null && seen.add(cause);
+         cause = cause.getCause()) {
+      if (cause instanceof VirtualMachineError fatal) {
+        throw fatal;
+      }
+    }
   }
 
   /**
@@ -945,9 +968,8 @@ public final class Providers<P extends Provider<?>> {
         warn(provider, method, "returned null");
       }
       return Optional.ofNullable(result);
-    } catch (final VirtualMachineError e) {
-      throw e;
     } catch (final RuntimeException | Error e) {
+      rethrowFatal(e);
       warn(provider, method, e.toString());
       return Optional.empty();
     }
@@ -971,6 +993,14 @@ public final class Providers<P extends Provider<?>> {
     }
   }
 
+  /**
+   * Accepts ASCII names only. A name is compared by {@link String#equals} with a configuration
+   * value, and a non-ASCII name, such as one with an umlaut, can be written precomposed or
+   * decomposed, or be changed by the platform encoding of a command line or an environment.
+   *
+   * @param name The name of a provider. Must not be {@code null}.
+   * @return {@code true} if {@code name} can be used as a configuration value.
+   */
   private boolean isValidName(final String name) {
     if (name.isEmpty() || name.length() > MAX_NAME_LENGTH) {
       return false;
@@ -1022,10 +1052,13 @@ public final class Providers<P extends Provider<?>> {
   }
 
   /**
-   * The result of a lookup.
+   * The providers one {@link ServiceLoader} pass of the constructor found, and how many it left
+   * out. The count is reported by an {@link UnsatisfiedProviderException}, since the reasons are
+   * only logged.
    *
    * @param registrations The usable registrations in lookup order.
-   * @param skipped The number of skipped registrations.
+   * @param skipped The number of registrations left out as broken, disabled by class name, not
+   *                allowed or not trusted.
    * @param <P> The SPI.
    */
   private record Lookup<P>(List<Registration<P>> registrations, int skipped) {

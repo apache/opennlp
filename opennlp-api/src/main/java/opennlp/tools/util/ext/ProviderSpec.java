@@ -33,6 +33,9 @@ import java.util.Optional;
  * Describes what a {@link Provider} should create: an optional location, such as a model file,
  * and string options. Instances are immutable.
  *
+ * @see Provider#supports(ProviderSpec)
+ * @see Provider#create(ProviderSpec)
+ * @see Providers#select(ProviderSpec)
  * @since 3.0.0
  */
 public final class ProviderSpec {
@@ -371,7 +374,9 @@ public final class ProviderSpec {
 
   /**
    * Decodes the percent escapes of a raw location, unlike {@link java.net.URLDecoder}, which
-   * would also read {@code +} as a space.
+   * would also read {@code +} as a space. A run of escapes is decoded as UTF-8, and the
+   * characters between them, which a raw location holds unescaped if they are not ASCII, are
+   * kept as they are.
    *
    * @return The decoded part.
    */
@@ -379,17 +384,27 @@ public final class ProviderSpec {
     if (part.indexOf(ESCAPE) < 0) {
       return part;
     }
-    final ByteArrayOutputStream decoded = new ByteArrayOutputStream(part.length());
+    final StringBuilder decoded = new StringBuilder(part.length());
+    final ByteArrayOutputStream escapes = new ByteArrayOutputStream();
     for (int character = 0; character < part.length(); character++) {
       final int escaped = escapedByte(part, character);
       if (escaped < 0) {
-        decoded.write(part.charAt(character));
+        appendEscapes(decoded, escapes);
+        decoded.append(part.charAt(character));
       } else {
-        decoded.write(escaped);
+        escapes.write(escaped);
         character += 2;
       }
     }
-    return decoded.toString(StandardCharsets.UTF_8);
+    appendEscapes(decoded, escapes);
+    return decoded.toString();
+  }
+
+  private void appendEscapes(final StringBuilder decoded, final ByteArrayOutputStream escapes) {
+    if (escapes.size() > 0) {
+      decoded.append(escapes.toString(StandardCharsets.UTF_8));
+      escapes.reset();
+    }
   }
 
   private int escapedByte(final String part, final int character) {

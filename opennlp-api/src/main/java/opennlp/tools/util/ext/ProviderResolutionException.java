@@ -16,16 +16,20 @@
  */
 package opennlp.tools.util.ext;
 
+import java.io.Serial;
+
 /**
- * Thrown if {@link Providers} cannot resolve exactly one provider.
+ * Thrown if {@link Providers} cannot resolve exactly one {@link Provider provider}.
  *
+ * @see Providers
  * @see UnsatisfiedProviderException
  * @see AmbiguousProviderException
  * @since 3.0.0
  */
 public class ProviderResolutionException extends RuntimeException {
 
-  private static final long serialVersionUID = 1L;
+  @Serial
+  private static final long serialVersionUID = 308569446544252894L;
 
   /**
    * Initializes the exception.

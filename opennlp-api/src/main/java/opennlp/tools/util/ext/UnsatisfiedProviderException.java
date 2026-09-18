@@ -16,14 +16,19 @@
  */
 package opennlp.tools.util.ext;
 
+import java.io.Serial;
+
 /**
- * Thrown if no available provider supports a spec, or none of them has the configured name.
+ * Thrown if no available {@link Provider provider} supports a {@link ProviderSpec spec}, or none
+ * of them has the configured name.
  *
+ * @see Providers#select(ProviderSpec)
  * @since 3.0.0
  */
 public class UnsatisfiedProviderException extends ProviderResolutionException {
 
-  private static final long serialVersionUID = 1L;
+  @Serial
+  private static final long serialVersionUID = -723155816183550334L;
 
   /**
    * Initializes the exception.

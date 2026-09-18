@@ -168,6 +168,16 @@ class ProviderSpecTest {
   }
 
   @Test
+  void testLocationEndsWithKeepsUnescapedCharacters() {
+    assertTrue(ProviderSpec.of(Path.of("/my models/modèle.onnx")).locationEndsWith("modèle.onnx"),
+        "a non-ASCII character next to an escaped space");
+    assertTrue(ProviderSpec.of(Path.of("/my models/中文.onnx")).locationEndsWith("中文.onnx"),
+        "a character beyond Latin-1 next to an escaped space");
+    assertTrue(ProviderSpec.of(URI.create("file:/my%20models/mod%C3%A8le.onnx"))
+        .locationEndsWith("modèle.onnx"), "escaped UTF-8");
+  }
+
+  @Test
   @EnabledOnOs(OS.WINDOWS)
   void testWindowsPaths() {
     final ProviderSpec drive = ProviderSpec.of(Path.of("C:\\models\\model.onnx"));

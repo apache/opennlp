@@ -16,14 +16,19 @@
  */
 package opennlp.tools.util.ext;
 
+import java.io.Serial;
+
 /**
- * Thrown if more than one provider has the highest priority.
+ * Thrown if more than one {@link Provider provider} has the highest priority.
  *
+ * @see Providers#select(ProviderSpec)
+ * @see Providers#byName(String)
  * @since 3.0.0
  */
 public class AmbiguousProviderException extends ProviderResolutionException {
 
-  private static final long serialVersionUID = 1L;
+  @Serial
+  private static final long serialVersionUID = 2354162969898962367L;
 
   /**
    * Initializes the exception.
