@@ -21,12 +21,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -34,6 +38,9 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSample> {
+
+  private final ADNameSampleStream parser =
+      new ADNameSampleStream(ObjectStreamUtils.createObjectStream(), false);
 
   @BeforeEach
   void setup() throws IOException {
@@ -122,6 +129,104 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
     Assertions.assertEquals(new Span(5, 6, "person"), samples.get(7).getNames()[2]);
   }
 
+  private static Stream<Arguments> underscoreLexemes() {
+    return Stream.of(
+        Arguments.of("Rio_de_Janeiro", new String[] {"Rio", "de", "Janeiro"}),
+        Arguments.of("a__b", new String[] {"a", "b"}),
+        // leading and trailing underscores add no part, in particular no empty one
+        Arguments.of("_a", new String[] {"a"}),
+        Arguments.of("a_", new String[] {"a"}),
+        Arguments.of("_a_b_", new String[] {"a", "b"}),
+        Arguments.of("__", new String[0]),
+        Arguments.of("_", new String[0]),
+        Arguments.of("", new String[0]),
+        Arguments.of("\uD801\uDC12_\uD83D\uDE00", new String[] {"\uD801\uDC12", "\uD83D\uDE00"}),
+        // only the underscore separates, a space does not
+        Arguments.of("a b_c", new String[] {"a b", "c"}),
+        Arguments.of("casa", new String[] {"casa"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("underscoreLexemes")
+  void testSplitOnUnderscores(String lexeme, String[] expected) {
+    Assertions.assertArrayEquals(expected, parser.splitOnUnderscores(lexeme));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"casa", "São", "1990", "R2D2", "\uD801\uDC12\u0661"})
+  void testIsAlphaNumericAccepts(String token) {
+    Assertions.assertTrue(parser.isAlphaNumeric(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "guarda-chuva", "R$", "a b", "\u00BD", "\uD83D\uDE00"})
+  void testIsAlphaNumericRejects(String token) {
+    Assertions.assertFalse(parser.isAlphaNumeric(token));
+  }
+
+  private static Stream<Arguments> hyphenatedTokens() {
+    return Stream.of(
+        Arguments.of("guarda-", new String[] {"guarda", null, null}),
+        Arguments.of("a-", new String[] {"a", null, null}),
+        Arguments.of("-chuva", new String[] {null, "chuva", ""}),
+        Arguments.of("-chuva2!", new String[] {null, "chuva", "2!"}),
+        Arguments.of("guarda-chuva", new String[] {"guarda", "chuva", ""}),
+        Arguments.of("guarda-chuva-sol", new String[] {"guarda", "chuva", "-sol"}),
+        Arguments.of("São-Paulo", new String[] {"São", "Paulo", ""}),
+        // supplementary-plane letters are letters, a combining mark ends the letter run
+        Arguments.of("\uD801\uDC12-\uD801\uDC3A", new String[] {"\uD801\uDC12", "\uD801\uDC3A", ""}),
+        // a next line character is not a letter, it goes into the rest
+        Arguments.of("a-b\u0085c", new String[] {"a", "b", "\u0085c"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("hyphenatedTokens")
+  void testMatchHyphenatedToken(String token, String[] expected) {
+    Assertions.assertArrayEquals(expected, parser.matchHyphenatedToken(token));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"-", "--", "-1", "1-", "a1-b", "a-1", "a--b", "ab", "a -",
+      // a combining mark ends the letter run
+      "e\u0301-a",
+      // only the ASCII hyphen-minus splits; other dashes never do
+      "guarda\u2011chuva", "guarda\u2013chuva", "guarda\u2014chuva"})
+  void testMatchHyphenatedTokenRejects(String token) {
+    Assertions.assertNull(parser.matchHyphenatedToken(token));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"<NER:PROP>, PROP", "<PROP>, PROP", "<>, ''", "<NER:>, ''", "<a<b>, a<b",
+      "<a\u0085b>, a\u0085b",
+      "<NER:NER:X>, NER:X", "<ner:PROP>, ner:PROP", "<\uD83D\uDE00>, \uD83D\uDE00"})
+  void testTagContent(String tag, String expected) {
+    Assertions.assertEquals(expected, parser.tagContent(tag));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "<", ">", "PROP", "<PROP", "PROP>"})
+  void testTagContentRejects(String tag) {
+    Assertions.assertNull(parser.tagContent(tag));
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "1001|SOURCE: ref=\"x\"",
+      "LIT-1|SOURCE: ref=\"x\"",
+      "CIE1|SOURCE: source=\"text\""
+  })
+  void testTextIdFromCorpusMetadata(String sentenceId, String source) throws IOException {
+    List<String> lines = List.of("<s>", source, sentenceId + " Olá .", "STA:fcl",
+        "=H:intj(\"olá\" <x>)\tOlá", ".", "</s>");
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"Olá", "."}, sample.getSentence());
+      Assertions.assertNull(stream.read());
+    }
+  }
+
   /**
    * A sentence in Arvores Deitadas form with one leaf; the first token of the text line and the
    * source attribute make up the metadata the stream reads the text id from.
@@ -189,4 +294,60 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
     }
   }
 
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      // no digits after the prefix
+      "LIT|SOURCE: ref=\"x\"",
+      // no source attribute
+      "CIE1|SOURCE: ref=\"x\"",
+      // no digits
+      "AX|SOURCE: ref=\"x\""
+  })
+  void testInvalidMetadataIsRejected(String sentenceId, String source) throws IOException {
+    List<String> lines = List.of("<s>", source, sentenceId + " Olá .", "</s>");
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
+      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      Assertions.assertTrue(e.getMessage().startsWith("Invalid metadata: " + sentenceId + " p="));
+    }
+  }
+
+  private static List<String> sentenceLines(String leafLine) {
+    return List.of("<s>", "SOURCE: ref=\"x\"", "1001 a casa .", "STA:fcl", leafLine,
+        "=H:n(\"casa\" M S)\tcasa", ".", "</s>");
+  }
+
+  @Test
+  void testContractionLexemeOfUnderscoresOnlyHasNoLeftPart() throws IOException {
+    List<String> lines = sentenceLines("==H:prp(\"em\" <sam-> <right>)\t_");
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"casa", "."}, sample.getSentence());
+    }
+  }
+
+  @Test
+  void testLeadingUnderscoreYieldsNoToken() throws IOException {
+    List<String> lines = sentenceLines("=H:n(\"a\" M S)\t_a");
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"a", "casa", "."}, sample.getSentence());
+    }
+  }
+
+  @Test
+  void testNoBreakSpaceSeparatesTheTagsOfALeaf() throws IOException {
+    List<String> lines = sentenceLines("=H:prop(\"Lisboa\"\u00A0<NER:civ>\u00A0F S)\tLisboa");
+    try (ADNameSampleStream stream =
+             new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
+      NameSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertArrayEquals(new String[] {"Lisboa", "casa", "."}, sample.getSentence());
+      Assertions.assertArrayEquals(new Span[] {new Span(0, 1, "place")}, sample.getNames());
+    }
+  }
 }

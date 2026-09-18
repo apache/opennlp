@@ -23,6 +23,8 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class TokenPatternFeatureGeneratorTest {
 
@@ -70,5 +72,21 @@ public class TokenPatternFeatureGeneratorTest {
     Assertions.assertEquals("st=example", features.get(11));
     Assertions.assertEquals("st=sentence", features.get(12));
     Assertions.assertEquals("pta=iclclclclc", features.get(13));
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "well-known|st=well;st=known|st=-",
+      "caf\u00E9-bar|st=bar|st=caf\u00E9;st=-",
+      "abc-123|st=abc|st=123;st=-"})
+  void testSubTokenFeaturesNeedAsciiLetters(String token, String present, String absent) {
+    AdaptiveFeatureGenerator generator = new TokenPatternFeatureGenerator();
+    generator.createFeatures(features, new String[] {token}, 0, null);
+    for (String feature : present.split(";")) {
+      Assertions.assertTrue(features.contains(feature), feature + " of " + token);
+    }
+    for (String feature : absent.split(";")) {
+      Assertions.assertFalse(features.contains(feature), feature + " of " + token);
+    }
   }
 }

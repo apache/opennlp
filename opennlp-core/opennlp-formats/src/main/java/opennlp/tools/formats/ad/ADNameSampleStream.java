@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
@@ -38,6 +36,7 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -60,6 +59,9 @@ import opennlp.tools.util.Span;
  * Detailed info about the
  * <a href="http://beta.visl.sdu.dk/visl/pt/info/portsymbol.html#semtags_names">NER tagset</a>.
  * <p>
+ * Whitespace inside the tags of a leaf and in a contraction is the Unicode White_Space property,
+ * see {@link StringUtil#isUnicodeWhitespace(char)}, independent of the whitespace mode.
+ * <p>
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
@@ -67,19 +69,19 @@ import opennlp.tools.util.Span;
 public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   /*
-   * Pattern of a NER tag in Arvores Deitadas
-   */
-  private static final Pattern TAG_PATTERN = Pattern.compile("<(NER:)?(.*?)>");
-  private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
-  private static final Pattern UNDERLINE_PATTERN = Pattern.compile("[_]+");
-  private static final Pattern HYPHEN_PATTERN =
-      Pattern.compile("((\\p{L}+)-$)|(^-(\\p{L}+)(.*))|((\\p{L}+)-(\\p{L}+)(.*))");
-  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[\\p{L}\\p{Nd}]+$");
-
-  /*
    * Map to the Arvores Deitadas types to our types. It is read-only.
    */
   private static final Map<String, String> HAREM;
+
+  private static final String NER_PREFIX = "NER:";
+  private static final String HYPHEN = "-";
+  private static final char HYPHEN_CHAR = '-';
+  private static final char UNDERSCORE = '_';
+  private static final char TAG_OPEN = '<';
+  private static final char TAG_CLOSE = '>';
+  private static final String LITERARY_PREFIX = "LIT";
+  private static final String SCIENTIFIC_PREFIX = "CIE";
+  private static final String INVALID_METADATA = "Invalid metadata: ";
 
   static {
     Map<String, String> harem = new HashMap<>();
@@ -260,7 +262,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       String c = PortugueseContractionUtility.toContraction(
           leftContractionPart, right);
       if (c != null) {
-        String[] parts = WHITESPACE_PATTERN.split(c);
+        String[] parts = StringUtil.splitOnUnicodeWhitespace(c);
         sentence.addAll(Arrays.asList(parts));
         alreadyAdded = true;
       } else {
@@ -279,11 +281,11 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     if (leafTag != null) {
       if (leafTag.contains("<sam->") && !alreadyAdded) {
-        String[] lexemes = UNDERLINE_PATTERN.split(leaf.getLexeme());
+        String[] lexemes = splitOnUnderscores(leaf.getLexeme());
         if (lexemes.length > 1) {
           sentence.addAll(Arrays.asList(lexemes).subList(0, lexemes.length - 1));
         }
-        leftContractionPart = lexemes[lexemes.length - 1];
+        leftContractionPart = lexemes.length == 0 ? null : lexemes[lexemes.length - 1];
         return;
       }
       if (leafTag.contains("<NER2>")) {
@@ -324,9 +326,9 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private List<String> processLexeme(String lexemeStr) {
     List<String> out = new ArrayList<>();
-    String[] parts = UNDERLINE_PATTERN.split(lexemeStr);
+    String[] parts = splitOnUnderscores(lexemeStr);
     for (String tok : parts) {
-      if (tok.length() > 1 && !ALPHANUMERIC_PATTERN.matcher(tok).matches()) {
+      if (tok.length() > 1 && !isAlphaNumeric(tok)) {
         out.addAll(processTok(tok));
       } else {
         out.add(tok);
@@ -352,36 +354,20 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
 
     // lets split all hyphens
-    if (this.splitHyphenatedTokens && tok.contains("-") && tok.length() > 1) {
-      Matcher matcher = HYPHEN_PATTERN.matcher(tok);
+    if (this.splitHyphenatedTokens && tok.contains(HYPHEN) && tok.length() > 1) {
+      String[] parts = matchHyphenatedToken(tok);
 
-      String firstTok = null;
-      String hyphen = "-";
-      String secondTok = null;
-      String rest = null;
-
-      if (matcher.matches()) {
-        if (matcher.group(1) != null) {
-          firstTok = matcher.group(2);
-        } else if (matcher.group(3) != null) {
-          secondTok = matcher.group(4);
-          rest = matcher.group(5);
-        } else if (matcher.group(6) != null) {
-          firstTok = matcher.group(7);
-          secondTok = matcher.group(8);
-          rest = matcher.group(9);
-        }
-
-        addIfNotEmpty(firstTok, out);
-        addIfNotEmpty(hyphen, out);
-        addIfNotEmpty(secondTok, out);
-        addIfNotEmpty(rest, out);
+      if (parts != null) {
+        addIfNotEmpty(parts[0], out);
+        addIfNotEmpty(HYPHEN, out);
+        addIfNotEmpty(parts[1], out);
+        addIfNotEmpty(parts[2], out);
         tokAdded = true;
       }
     }
     if (!tokAdded) {
       if (!original.equals(tok) && tok.length() > 1
-          && !ALPHANUMERIC_PATTERN.matcher(tok).matches()) {
+          && !isAlphaNumeric(tok)) {
         out.addAll(processTok(tok));
       } else {
         out.add(tok);
@@ -398,23 +384,141 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
+   * Splits a lexeme on underscores into its non-empty parts, so a lexeme such as
+   * {@code Rio_de_Janeiro} yields its three words. Runs of underscores count as one separator,
+   * and leading or trailing underscores add no part.
+   *
+   * @param s The lexeme.
+   * @return The parts in order; empty when the lexeme has no character other than underscores.
+   */
+  String[] splitOnUnderscores(String s) {
+    if (s.isEmpty()) {
+      return new String[0];
+    }
+    if (s.indexOf(UNDERSCORE) == -1) {
+      return new String[] {s};
+    }
+    List<String> tokens = new ArrayList<>();
+    int start = -1;
+    for (int i = 0; i < s.length(); i++) {
+      if (s.charAt(i) == UNDERSCORE) {
+        if (start >= 0) {
+          tokens.add(s.substring(start, i));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    if (start >= 0) {
+      tokens.add(s.substring(start));
+    }
+    return tokens.toArray(new String[0]);
+  }
+
+  /**
+   * Tests whether a token consists of letters and decimal digits only, by code point.
+   *
+   * @param tok The token.
+   * @return {@code true} if the token is non-empty and every code point is a letter or a
+   *         decimal digit.
+   */
+  boolean isAlphaNumeric(String tok) {
+    if (tok.isEmpty()) {
+      return false;
+    }
+    int i = 0;
+    while (i < tok.length()) {
+      int cp = tok.codePointAt(i);
+      if (!Character.isLetter(cp) && !Character.isDigit(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
+  }
+
+  /**
+   * Splits a hyphenated token into the letters before the hyphen, the letters after it, and
+   * the rest. Three shapes match: letters followed by a final hyphen, a leading hyphen followed
+   * by letters and anything, and letters, a hyphen, letters, and anything.
+   *
+   * @param tok The token, at least two characters long.
+   * @return The first token, second token, and rest, each {@code null} when absent, or
+   *         {@code null} if the token has none of the three shapes.
+   */
+  String[] matchHyphenatedToken(String tok) {
+    int len = tok.length();
+    if (len > 1 && tok.charAt(len - 1) == HYPHEN_CHAR && lettersEnd(tok, 0) == len - 1) {
+      return new String[] {tok.substring(0, len - 1), null, null};
+    }
+    if (tok.charAt(0) == HYPHEN_CHAR) {
+      int lettersEnd = lettersEnd(tok, 1);
+      if (lettersEnd > 1) {
+        return new String[] {null, tok.substring(1, lettersEnd), tok.substring(lettersEnd)};
+      }
+      return null;
+    }
+    int firstEnd = lettersEnd(tok, 0);
+    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == HYPHEN_CHAR) {
+      int secondEnd = lettersEnd(tok, firstEnd + 1);
+      if (secondEnd > firstEnd + 1) {
+        return new String[] {tok.substring(0, firstEnd),
+            tok.substring(firstEnd + 1, secondEnd), tok.substring(secondEnd)};
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Finds the end of the run of letters starting at an offset.
+   *
+   * @param s The text.
+   * @param from The start offset.
+   * @return The offset after the run, or {@code from} if no letter starts there.
+   */
+  private int lettersEnd(String s, int from) {
+    int i = from;
+    while (i < s.length()) {
+      int cp = s.codePointAt(i);
+      if (!Character.isLetter(cp)) {
+        break;
+      }
+      i += Character.charCount(cp);
+    }
+    return i;
+  }
+
+  /**
+   * Extracts the content of a NER tag in Arvores Deitadas format, between the optional
+   * {@code NER:} prefix and the closing angle bracket.
+   *
+   * @param t The tag.
+   * @return The content, or {@code null} if {@code t} is not enclosed in angle brackets.
+   */
+  String tagContent(String t) {
+    if (t.length() < 2 || t.charAt(0) != TAG_OPEN || t.charAt(t.length() - 1) != TAG_CLOSE) {
+      return null;
+    }
+    int start = t.startsWith(NER_PREFIX, 1) ? 1 + NER_PREFIX.length() : 1;
+    return t.substring(start, t.length() - 1);
+  }
+
+  /**
    * Parses a NER tag in Arvores Deitadas format.
    *
    * @param tags The NER tag in Arvores Deitadas format.
    * @return The NER tag, or {@code null} if not a NER tag in Arvores Deitadas format.
    */
-  private static String getNER(String tags) {
+  private String getNER(String tags) {
     if (tags.contains("<NER2>")) {
       return null;
     }
-    String[] tag = tags.split("\\s+");
+    String[] tag = StringUtil.splitOnUnicodeWhitespace(tags);
     for (String t : tag) {
-      Matcher matcher = TAG_PATTERN.matcher(t);
-      if (matcher.matches()) {
-        String ner = matcher.group(2);
-        if (HAREM.containsKey(ner)) {
-          return HAREM.get(ner);
-        }
+      String ner = tagContent(t);
+      if (ner != null && HAREM.containsKey(ner)) {
+        return HAREM.get(ner);
       }
     }
     return null;
@@ -437,80 +541,39 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     adSentenceStream.close();
   }
 
-  enum Type {
-    ama, cie, lit
-  }
-
-  // works for Amazonia
-  //  private static final Pattern meta1 = Pattern
-  //      .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-  //
-  //  // works for selva cie
-  //  private static final Pattern meta2 = Pattern
-  //    .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-
   /**
-   * Reads the id of the text a sentence belongs to from its metadata. For Amazonia
-   * metadata it is the number in the sentence reference. For LIT and CIE metadata the
-   * text is named by its reference prefix or its source attribute, and the id counts
-   * the distinct names seen so far, so it changes when a new text starts.
+   * Reads the id of the text a sentence belongs to; adaptive data is cleared when it changes. In
+   * the Amazonia corpus it is the text id of the metadata. In the literary and scientific corpora
+   * the text is named by its reference prefix or its source attribute instead, and the id counts
+   * the distinct names seen so far, so it changes when a new text starts (OPENNLP-1951).
    *
-   * @param paragraph The sentence with its metadata.
-   * @return The id of the text; the same value for consecutive sentences of one text.
-   * @throws RuntimeException Thrown if the metadata has no known shape.
+   * @param paragraph The sentence.
+   * @return The id.
+   * @throws RuntimeException If the metadata has no id or one that does not fit into an
+   *                          {@code int}.
    */
   private int getTextID(Sentence paragraph) {
-
     final String meta = paragraph.metadata();
-    Type corpusType;
-    Pattern metaPattern;
-
-    if (meta.startsWith("LIT")) {
-      corpusType = Type.lit;
-      metaPattern = Pattern.compile("^([a-zA-Z\\-]+)(\\d+).*?p=(\\d+).*");
-    } else if (meta.startsWith("CIE")) {
-      corpusType = Type.cie;
-      metaPattern = Pattern.compile("^.*?source=\"(.*?)\".*");
-    } else { // ama
-      corpusType = Type.ama;
-      metaPattern = Pattern.compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
+    boolean literary = meta.startsWith(LITERARY_PREFIX);
+    if (literary || meta.startsWith(SCIENTIFIC_PREFIX)) {
+      String textName = literary ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
+      if (textName == null) {
+        throw new RuntimeException(INVALID_METADATA + meta);
+      }
+      if (textName.isEmpty()) {
+        return -1;
+      }
+      if (!textName.equals(textMeta2)) {
+        textIdMeta2++;
+        textMeta2 = textName;
+      }
+      return textIdMeta2;
     }
-
-    if (corpusType.equals(Type.lit)) {
-      Matcher m2 = metaPattern.matcher(meta);
-      if (m2.matches()) {
-        String textId = m2.group(1);
-        if (!textId.equals(textMeta2)) {
-          textIdMeta2++;
-          textMeta2 = textId;
-        }
-        return textIdMeta2;
-      } else {
-        throw new RuntimeException("Invalid metadata: " + meta);
-      }
-    } else if (corpusType.equals(Type.cie)) {
-      Matcher m2 = metaPattern.matcher(meta);
-      if (m2.matches()) {
-        String textId = m2.group(1);
-        if (!textId.equals(textMeta2)) {
-          textIdMeta2++;
-          textMeta2 = textId;
-        }
-        return textIdMeta2;
-      } else {
-        throw new RuntimeException("Invalid metadata: " + meta);
-      }
-    } else if (corpusType.equals(Type.ama)) {
-      Matcher m2 = metaPattern.matcher(meta);
-      if (m2.matches()) {
-        return Integer.parseInt(m2.group(1));
-        // currentPara = Integer.parseInt(m.group(2));
-      } else {
-        throw new RuntimeException("Invalid metadata: " + meta);
-      }
+    ADMetadata.TextAndParagraph ids = ADMetadata.parseTextAndParagraph(meta);
+    if (ids == null) {
+      throw new RuntimeException(INVALID_METADATA + meta);
     }
-
-    return 0;
+    return ids.text();
   }
 
 }

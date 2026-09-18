@@ -28,6 +28,7 @@ import opennlp.tools.ml.AbstractEventStreamTest;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -104,4 +105,22 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
     }
   }
 
+  /**
+   * Every line goes through {@link RealValueFileEventStream#parseEvent(String)}: an outcome-only
+   * line is an event without contexts and does not end the stream, fields are separated by
+   * Unicode whitespace, and a blank line is reported.
+   */
+  @Test
+  void testReadParsesEveryLineWithParseEvent() throws IOException {
+    String input = "other\r\nother\twc=lc=1.0\u00A0n1wc=ic=2.0\n \nother wc=x=1.0\n";
+    try (ObjectStream<Event> eventStream = createEventStream(input)) {
+      Event e = eventStream.read();
+      Assertions.assertEquals("other", e.getOutcome());
+      Assertions.assertEquals(0, e.getContext().length);
+      e = eventStream.read();
+      Assertions.assertArrayEquals(new String[] {"wc=lc", "n1wc=ic"}, e.getContext());
+      Assertions.assertArrayEquals(new float[] {1.0f, 2.0f}, e.getValues());
+      Assertions.assertThrows(InvalidFormatException.class, eventStream::read);
+    }
+  }
 }

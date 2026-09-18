@@ -44,6 +44,9 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample> {
 
+  /** The number of leading file name characters that form the ISO 639-3 language code. */
+  private static final int LANG_CODE_LENGTH = 3;
+
   private class LeipzigSentencesStream implements ObjectStream<LanguageSample> {
 
     private final String lang;
@@ -158,8 +161,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     this.sentencesPerSample = sentencesPerSample;
 
     sentencesFiles = leipzigFolder.listFiles(pathname -> !pathname.isHidden() && pathname.isFile()
-            && pathname.getName().length() >= 3
-            && pathname.getName().substring(0,3).matches("[a-z]+"));
+            && hasLanguageCodePrefix(pathname.getName()));
 
     if (null == sentencesFiles) {
       throw new TerminateToolException(-1 , "Directory " + leipzigFolder + " empty , No files to read!");
@@ -168,7 +170,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     Arrays.sort(sentencesFiles);
 
     Map<String, Integer> langCounts = Arrays.stream(sentencesFiles)
-        .map(file -> file.getName().substring(0, 3))
+        .map(file -> file.getName().substring(0, LANG_CODE_LENGTH))
         .collect(Collectors.groupingBy(String::toString, Collectors.summingInt(v -> 1)));
 
     langSampleCounts = langCounts.entrySet().stream()
@@ -177,6 +179,27 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     random = new Random(23);
 
     reset();
+  }
+
+  /**
+   * Tests whether a file name starts with a language code, that is {@value #LANG_CODE_LENGTH}
+   * ASCII lower case letters, {@code a} to {@code z}.
+   *
+   * @param fileName The file name. Must not be {@code null}.
+   * @return {@code true} if the first {@value #LANG_CODE_LENGTH} characters are ASCII lower
+   *     case letters.
+   */
+  private boolean hasLanguageCodePrefix(String fileName) {
+    if (fileName.length() < LANG_CODE_LENGTH) {
+      return false;
+    }
+    for (int i = 0; i < LANG_CODE_LENGTH; i++) {
+      final char c = fileName.charAt(i);
+      if (c < 'a' || c > 'z') {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
@@ -189,7 +212,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
       if (sentencesFilesIt.hasNext()) {
         File sentencesFile = sentencesFilesIt.next();
 
-        String lang = sentencesFile.getName().substring(0, 3);
+        String lang = sentencesFile.getName().substring(0, LANG_CODE_LENGTH);
 
         sampleStream = new LeipzigSentencesStream(lang, sentencesFile,
             sentencesPerSample, langSampleCounts.get(lang));

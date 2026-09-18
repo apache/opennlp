@@ -40,8 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -255,17 +253,33 @@ public class DownloadUtil {
 
   /**
    * Extracts the hash from the content of a checksum file, which holds the hash followed by the
-   * name of the file it applies to.
+   * name of the file it applies to. The hash is the first run of characters that are not Unicode
+   * {@code White_Space}, see {@link StringUtil#splitOnUnicodeWhitespace(CharSequence)}, so the
+   * result does not depend on the whitespace mode.
+   *
+   * @param checksumFileContent The file content.
+   * @return The hash, or {@code null} if the content is {@code null} or blank.
    */
-  private static String parseChecksum(String checksumFileContent) {
+  static String parseChecksum(String checksumFileContent) {
     if (checksumFileContent == null) {
       return null;
     }
-    final String trimmed = checksumFileContent.trim();
-    return trimmed.isEmpty() ? null : trimmed.split("\\s")[0];
+    final String[] fields = StringUtil.splitOnUnicodeWhitespace(checksumFileContent);
+    return fields.length == 0 ? null : fields[0];
   }
 
+  /**
+   * Compares the SHA-512 hash of a model file with the expected one.
+   *
+   * @param model The model file.
+   * @param expectedChecksum The expected hash, or {@code null} if the checksum file is blank.
+   * @throws IOException If the checksum file is blank, the hash cannot be computed, or the
+   *         hashes differ.
+   */
   private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
+    if (expectedChecksum == null) {
+      throw new IOException("The checksum file for " + model.getFileName() + " is blank");
+    }
     final String actualChecksum = calculateSHA512(model);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
       throw new IOException("SHA512 checksum validation failed for " + model.getFileName() +
@@ -324,7 +338,10 @@ public class DownloadUtil {
   @Internal
   static class DownloadParser {
 
-    private static final Pattern LINK_PATTERN = Pattern.compile("<a href=\\\"(.*?)\\\">(.*?)</a>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final String ANCHOR_START = "<a href=\"";
+    private static final String ANCHOR_VALUE_END = "\">";
+    private static final String ANCHOR_END = "</a>";
+
     private final URL indexUrl;
 
     DownloadParser(URL indexUrl) {
@@ -334,14 +351,52 @@ public class DownloadUtil {
 
     Map<String, Map<ModelType, URL>> getAvailableModels()
         throws MalformedURLException, URISyntaxException {
-      final Matcher matcher = LINK_PATTERN.matcher(fetchPageIndex());
+      return toMap(extractLinks(fetchPageIndex()));
+    }
 
+    /**
+     * Collects the href values of the anchor elements in an index page. The tag name and
+     * attribute are matched ignoring case, a value ends at the first {@code ">}, a link ends at
+     * the first {@code </a>}, and both may span lines. Scanning stops at an anchor whose value
+     * or tag is not closed, since no later text can complete a link.
+     *
+     * @param page The page content.
+     * @return The href values in order.
+     */
+    static List<String> extractLinks(String page) {
       final List<String> links = new ArrayList<>();
-      while (matcher.find()) {
-        links.add(matcher.group(1));
+      int from = 0;
+      while ((from = indexOfIgnoreCase(page, ANCHOR_START, from)) != -1) {
+        final int valueStart = from + ANCHOR_START.length();
+        final int valueEnd = page.indexOf(ANCHOR_VALUE_END, valueStart);
+        if (valueEnd == -1) {
+          break;
+        }
+        final int close = indexOfIgnoreCase(page, ANCHOR_END, valueEnd + ANCHOR_VALUE_END.length());
+        if (close == -1) {
+          break;
+        }
+        links.add(page.substring(valueStart, valueEnd));
+        from = close + ANCHOR_END.length();
       }
+      return links;
+    }
 
-      return toMap(links);
+    /**
+     * Finds a literal in the text, ignoring case.
+     *
+     * @param text The text.
+     * @param literal The literal.
+     * @param from The start offset.
+     * @return The first match offset, or {@code -1}.
+     */
+    private static int indexOfIgnoreCase(String text, String literal, int from) {
+      for (int i = from; i + literal.length() <= text.length(); i++) {
+        if (text.regionMatches(true, i, literal, 0, literal.length())) {
+          return i;
+        }
+      }
+      return -1;
     }
 
     private Map<String, Map<ModelType, URL>> toMap(List<String> links)
