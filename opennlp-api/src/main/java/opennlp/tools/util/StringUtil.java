@@ -31,8 +31,6 @@ public class StringUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
-  private static final String MUST_NOT_BE_NULL = " must not be null";
-
   /**
    * The ten ASCII digit strings {@code "0"} to {@code "9"}, indexed by digit value. Precomputed so
    * code folding digits to ASCII does not allocate a new single-character string per digit; the
@@ -128,9 +126,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static String[] splitOnUnicodeWhitespace(CharSequence input) {
-    if (input == null) {
-      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
-    }
+    requireNonNullArg(input, "input");
     final List<String> terms = new ArrayList<>();
     final int n = input.length();
     int start = -1;
@@ -198,9 +194,7 @@ public class StringUtil {
    *     {@code separator} is a surrogate.
    */
   public static String[] split(CharSequence input, char separator, int limit) {
-    if (input == null) {
-      throw new IllegalArgumentException("input must not be null");
-    }
+    requireNonNullArg(input, "input");
     if (Character.isSurrogate(separator)) {
       throw new IllegalArgumentException("separator must not be a surrogate");
     }
@@ -242,9 +236,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static boolean containsAsciiUpperCase(CharSequence input) {
-    if (input == null) {
-      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
-    }
+    requireNonNullArg(input, "input");
     for (int i = 0; i < input.length(); i++) {
       if (isAsciiUpperCase(input.charAt(i))) {
         return true;
@@ -262,9 +254,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static boolean containsAsciiDigit(CharSequence input) {
-    if (input == null) {
-      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
-    }
+    requireNonNullArg(input, "input");
     for (int i = 0; i < input.length(); i++) {
       if (isAsciiDigit(input.charAt(i))) {
         return true;
@@ -376,9 +366,7 @@ public class StringUtil {
    *         range.
    */
   private static void requireOffset(CharSequence text, int from) {
-    if (text == null) {
-      throw new IllegalArgumentException("text" + MUST_NOT_BE_NULL);
-    }
+    requireNonNullArg(text, "text");
     if (from < 0 || from > text.length()) {
       throw new IllegalArgumentException("from must be between 0 and " + text.length());
     }
@@ -393,9 +381,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static String trimUnicodeWhitespace(CharSequence input) {
-    if (input == null) {
-      throw new IllegalArgumentException("input" + MUST_NOT_BE_NULL);
-    }
+    requireNonNullArg(input, "input");
     int start = 0;
     int end = input.length();
     while (start < end) {
@@ -757,4 +743,16 @@ public class StringUtil {
     return ses;
   }
 
+  /**
+   * Throws if an argument is {@code null}.
+   *
+   * @param value The argument to check.
+   * @param name The name of the argument, used in the message.
+   * @throws IllegalArgumentException If {@code value} is {@code null}.
+   */
+  private static void requireNonNullArg(Object value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " must not be null");
+    }
+  }
 }
