@@ -30,6 +30,11 @@ final class AsciiChars {
   static final CodePointSet WHITESPACE =
       CodePointSet.ofRange(0x0009, 0x000D).union(CodePointSet.of(0x0020));
 
+  /** The ASCII letters and digits. */
+  static final CodePointSet ALPHANUMERIC = CodePointSet.ofRange('0', '9')
+      .union(CodePointSet.ofRange('A', 'Z'))
+      .union(CodePointSet.ofRange('a', 'z'));
+
   private AsciiChars() {
   }
 
