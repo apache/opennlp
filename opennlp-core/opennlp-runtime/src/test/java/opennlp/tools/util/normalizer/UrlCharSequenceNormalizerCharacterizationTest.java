@@ -20,16 +20,21 @@ import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import opennlp.tools.util.CompatibilityMode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Characterization tests for {@link UrlCharSequenceNormalizer}.
+ * Characterization tests for the output of {@link UrlCharSequenceNormalizer} under
+ * {@link CompatibilityMode#LEGACY}.
  *
  * <p>The fixed expectations below were probed against the regex implementation
  * ({@code "https?://[-_.?&~;+=/#0-9A-Za-z]+"} to a space, then
@@ -59,6 +64,16 @@ public class UrlCharSequenceNormalizerCharacterizationTest {
   /** Former mail regex used for differential characterization. */
   private static final Pattern FORMER_MAIL_REGEX =
       Pattern.compile("(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+");
+
+  @BeforeEach
+  void selectLegacyMode() {
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+  }
+
+  @AfterEach
+  void resetMode() {
+    CompatibilityMode.reset();
+  }
 
   private static void check(String input, String expected) {
     assertEquals(expected, NORMALIZER.normalize(input).toString());

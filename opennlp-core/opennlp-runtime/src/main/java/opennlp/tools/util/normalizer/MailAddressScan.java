@@ -18,24 +18,19 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * Finds email addresses in text for the URL normalizers. An address is a maximal run of the
- * local-part set {@code [-+_.0-9A-Za-z]} with a left neighbor outside that set, an
+ * Finds email addresses in text for {@link UrlCharSequenceNormalizer}. An address is a maximal
+ * run of the local-part set {@code [-+_.0-9A-Za-z]} with a left neighbor outside that set, an
  * {@code @}, and a domain run out of {@code [-.0-9A-Za-z]} that does not start with a dot
  * and spans at least two chars.
  */
 final class MailAddressScan {
 
-  /** The ASCII letters and digits. */
-  static final CodePointSet ASCII_ALNUM = CodePointSet.ofRange('0', '9')
-      .union(CodePointSet.ofRange('A', 'Z'))
-      .union(CodePointSet.ofRange('a', 'z'));
-
   /** The mail local-part set, also the left-neighbor exclusion set: {@code [-+_.0-9A-Za-z]}. */
   private static final CodePointSet MAIL_LOCAL =
-      ASCII_ALNUM.union(CodePointSet.of('-', '+', '_', '.'));
+      AsciiChars.ALPHANUMERIC.union(CodePointSet.of('-', '+', '_', '.'));
 
   /** The set a domain may start with: {@code [-0-9A-Za-z]}. */
-  private static final CodePointSet MAIL_DOMAIN_START = ASCII_ALNUM.union(CodePointSet.of('-'));
+  private static final CodePointSet MAIL_DOMAIN_START = AsciiChars.ALPHANUMERIC.union(CodePointSet.of('-'));
 
   /** The set a domain continues with: {@code [-.0-9A-Za-z]}. */
   private static final CodePointSet MAIL_DOMAIN = MAIL_DOMAIN_START.union(CodePointSet.of('.'));
