@@ -459,6 +459,12 @@ Execution time: 1,955 seconds]]>
 				the token text.
 			</para>
 			<para>
+				A quoted lemma ends at a matching quote followed by a field boundary. Embedded
+				apostrophes and quotes within a word remain part of the lemma. Quotes in subsequent
+				annotation fields or in the surface text do not extend the lemma or remove part of
+				the token text.
+			</para>
+			<para>
 				The AD reader separates the parts of a line on whitespace as the Unicode White_Space
 				property defines it, independent of the toolkit whitespace mode: tabs, no-break spaces,
 				the next line character (U+0085), and the line and paragraph separators (U+2028 and

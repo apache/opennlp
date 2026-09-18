@@ -74,6 +74,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     private static final char GROUP_CLOSE = ')';
     private static final char BRACKET_OPEN = '<';
     private static final char BRACKET_CLOSE = '>';
+    private static final char SQUARE_BRACKET_CLOSE = ']';
     private static final char DOUBLE_QUOTE = '"';
     private static final char SINGLE_QUOTE = '\'';
     private static final char CLOSING_GUILLEMET = '\u00BB';
@@ -478,26 +479,47 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      */
     private Leaf parseLeafAfterTag(String line, Tag tag, LineScan scan) {
       int lemmaStart = tag.end() + 2;
-      // the longest lemma after which the rest of the line still parses is used
-      for (int lemmaEnd = line.length() - 1; lemmaEnd > lemmaStart; lemmaEnd--) {
-        if (!isQuote(line.charAt(lemmaEnd))) {
-          continue;
-        }
-        int tagsStart = skipWhitespace(line, lemmaEnd + 1);
-        LeafRest rest = scanSecondaryTags(line, tagsStart, scan);
-        if (rest != null) {
-          Leaf leaf = new Leaf();
-          leaf.setLevel(tag.start() + 1);
-          leaf.setSyntacticTag(line.substring(tag.start(), tag.separator()));
-          leaf.setFunctionalTag(line.substring(tag.separator() + 1, tag.end()));
-          leaf.setLemma(line.substring(lemmaStart, lemmaEnd));
-          leaf.setSecondaryTag(line.substring(tagsStart, rest.tagsEnd()));
-          leaf.setMorphologicalTag(morphology(line, rest.end()));
-          leaf.setLexeme(line.substring(rest.end().lexemeStart()));
-          return leaf;
+      int lemmaEnd = lemmaEnd(line, lemmaStart - 1);
+      if (lemmaEnd <= lemmaStart) {
+        return null;
+      }
+      int tagsStart = skipWhitespace(line, lemmaEnd + 1);
+      LeafRest rest = scanSecondaryTags(line, tagsStart, scan);
+      if (rest == null) {
+        return null;
+      }
+      Leaf leaf = new Leaf();
+      leaf.setLevel(tag.start() + 1);
+      leaf.setSyntacticTag(line.substring(tag.start(), tag.separator()));
+      leaf.setFunctionalTag(line.substring(tag.separator() + 1, tag.end()));
+      leaf.setLemma(line.substring(lemmaStart, lemmaEnd));
+      leaf.setSecondaryTag(line.substring(tagsStart, rest.tagsEnd()));
+      leaf.setMorphologicalTag(morphology(line, rest.end()));
+      leaf.setLexeme(line.substring(rest.end().lexemeStart()));
+      return leaf;
+    }
+
+    /**
+     * Finds the matching quote that ends a lemma field. A quote followed by whitespace, a
+     * secondary tag, or a closing parenthesis or square bracket ends the field; quotes
+     * embedded in a word remain literal. Later quotes in the morphology or lexeme cannot
+     * extend the lemma.
+     *
+     * @param line The tree line.
+     * @param open The index of the opening quote.
+     * @return The closing quote index, or -1 if the field has no closing quote.
+     */
+    private int lemmaEnd(String line, int open) {
+      char quote = line.charAt(open);
+      for (int i = open + 1; i < line.length(); i++) {
+        if (line.charAt(i) == quote && (i + 1 == line.length()
+            || StringUtil.isUnicodeWhitespace(line.charAt(i + 1))
+            || line.charAt(i + 1) == BRACKET_OPEN || line.charAt(i + 1) == GROUP_CLOSE
+            || line.charAt(i + 1) == SQUARE_BRACKET_CLOSE)) {
+          return i;
         }
       }
-      return null;
+      return -1;
     }
 
     /**
@@ -540,12 +562,11 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       String lemma = null;
       LeafEnd end = null;
       if (open < line.length() && isQuote(line.charAt(open))) {
-        for (int lemmaEnd = line.length() - 1; lemmaEnd > open + 1 && end == null; lemmaEnd--) {
-          if (isQuote(line.charAt(lemmaEnd))) {
-            end = scanLeafEnd(line, lemmaEnd + 1, scan);
-            if (end != null) {
-              lemma = line.substring(open + 1, lemmaEnd);
-            }
+        int lemmaEnd = lemmaEnd(line, open);
+        if (lemmaEnd > open + 1) {
+          end = scanLeafEnd(line, lemmaEnd + 1, scan);
+          if (end != null) {
+            lemma = line.substring(open + 1, lemmaEnd);
           }
         }
       }

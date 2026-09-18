@@ -202,9 +202,21 @@ public class ADSentenceStreamTest {
         // quotes inside lemma and lexeme
         Arguments.of("=H:n(\"d'água\" <x> M S)\td'água",
             2, "H", "n", "d'água", "<x>", "M S", "d'água"),
-        // the lemma extends to the last quote after which the rest of the line still parses
-        Arguments.of("=H:n(\"a\" <b> \"c\")\tw", 2, "H", "n", "a\" <b> \"c", "", null, "w"),
-        Arguments.of("=H:n(\"x\" M S)\ta') b", 2, "H", "n", "x\" M S)\ta", "", null, "b"),
+        // A closing lemma quote ends the field, even if later fields contain quotes.
+        Arguments.of("=H:n(\"a\" <b> \"c\")\tw", 2, "H", "n", "a", "<b>", "\"c\"", "w"),
+        Arguments.of("=H:n(\"x\" M S)\ta') b", 2, "H", "n", "x", "", "M S", "a') b"),
+        Arguments.of("=H:n(\"x\" M S)\ta\") b", 2, "H", "n", "x", "", "M S", "a\") b"),
+        Arguments.of("=H:n('x' M S)\ta') b", 2, "H", "n", "x", "", "M S", "a') b"),
+        // Embedded quotes without a field boundary remain part of the lemma.
+        Arguments.of("=H:n('d'água' M S)\td'água",
+            2, "H", "n", "d'água", "", "M S", "d'água"),
+        Arguments.of("=H:prop(\"Eduardo_2º_\"=,=de=Marlwe\" M S)\tEduardo",
+            2, "H", "prop", "Eduardo_2º_\"=,=de=Marlwe", "", "M S", "Eduardo"),
+        Arguments.of("=H:n(\"x\"\u00A0M S)\ta\") b",
+            2, "H", "n", "x", "", "M S", "a\") b"),
+        // Floresta has an extra square bracket after some time/measurement lemmas.
+        Arguments.of("=H:n(\"8h\"] <temp> F P)\t8h\"",
+            2, "H", "n", "8h", "", "] <temp> F P", "8h\""),
         // the secondary tags extend to the last closing angle bracket
         Arguments.of("=H:n(\"casa\" <a>b<c> M S)\tcasa",
             2, "H", "n", "casa", "<a>b<c>", "M S", "casa"),
@@ -246,6 +258,8 @@ public class ADSentenceStreamTest {
         Arguments.of("=x=y() b", 2, "x=y", null, null, "b"),
         // a quoted part without a closing quote is the morphological tag
         Arguments.of("=x=y(\"q) b", 2, "x=y", null, "\"q", "b"),
+        Arguments.of("=x=y(\"q\" M S)\ta') b", 2, "x=y", "q", "M S", "a') b"),
+        Arguments.of("=x=y('q' M S)\ta') b", 2, "x=y", "q", "M S", "a') b"),
         // the level prefix gives up hyphens so that the tag can start
         Arguments.of("==-=x(a) b", 3, "-=x", null, "a", "b"),
         Arguments.of("=-=x=y(a) b", 4, "x=y", null, "a", "b"),
