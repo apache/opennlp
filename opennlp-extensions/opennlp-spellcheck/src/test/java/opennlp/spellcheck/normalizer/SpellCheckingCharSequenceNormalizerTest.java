@@ -100,6 +100,16 @@ public class SpellCheckingCharSequenceNormalizerTest {
     assertEquals("world", norm(normalizer, "wrold"));
   }
 
+  /** Checks a capitalized Deseret initial using a dictionary lookup. */
+  @Test
+  void perTokenPreservesCasingOfSupplementaryPlaneInitial() {
+    final SymSpell engine = new SymSpell();
+    engine.add("𐐨word", 1000);
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(engine);
+    assertEquals("𐐨word", norm(normalizer, "𐐨wrod"));
+    assertEquals("𐐀word", norm(normalizer, "𐐀wrod"));
+  }
+
   @Test
   void minTokenLengthSkipsShortTokens() {
     final var lenient = SpellCheckingCharSequenceNormalizer.builder(symSpell)
