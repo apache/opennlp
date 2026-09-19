@@ -61,6 +61,10 @@ under the License.
       from files; the source of that test, the <code>opennlp-native-tests</code> module, is a
       minimal example of a native OpenNLP application.
     </para>
+    <para>
+      The runtime also registers <code>DependencyModel</code> with <code>ModelLoader</code>,
+      so dependency-parser models can be loaded from streams without reflective construction.
+    </para>
   </section>
 
   <section xml:id="tools.native-image.usage">
