@@ -22,6 +22,7 @@ import java.io.UncheckedIOException;
 import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.commons.Internal;
+import opennlp.tools.depparse.DependencyModel;
 import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
 import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.DoccatModel;
@@ -208,6 +209,8 @@ public class RuntimeExtensionRegistrar implements ExtensionRegistrar {
   private void registerModelLoaders(ExtensionRegistry registry) {
     registry.register(BPEModel.class, ModelLoader.class, (ModelLoader<BPEModel>) BPEModel::new);
     registry.register(ChunkerModel.class, ModelLoader.class, (ModelLoader<ChunkerModel>) ChunkerModel::new);
+    registry.register(DependencyModel.class, ModelLoader.class,
+        (ModelLoader<DependencyModel>) DependencyModel::new);
     registry.register(DoccatModel.class, ModelLoader.class, (ModelLoader<DoccatModel>) DoccatModel::new);
     registry.register(LanguageDetectorModel.class, ModelLoader.class,
         (ModelLoader<LanguageDetectorModel>) LanguageDetectorModel::new);
