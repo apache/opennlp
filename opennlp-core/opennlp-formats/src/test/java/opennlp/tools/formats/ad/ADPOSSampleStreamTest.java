@@ -19,12 +19,17 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample> {
@@ -106,6 +111,32 @@ public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample>
       Assertions.assertEquals("Porto_Poesia", sample.getSentence()[9]);
       Assertions.assertEquals("prop=M=S", sample.getTags()[9]);
     }
+  }
+
+  private static Stream<Arguments> tags() {
+    return Stream.of(
+        Arguments.of("v-fin", "v-fin"),
+        Arguments.of("PR 3S IND", "PR=3S=IND"),
+        Arguments.of("PR  \t3S", "PR=3S"),
+        Arguments.of(" PR 3S ", "=PR=3S="),
+        Arguments.of(" ", "="),
+        Arguments.of("", ""),
+        // no-break space, em space, and ideographic space are whitespace too
+        Arguments.of("PR\u00A03S", "PR=3S"),
+        Arguments.of("PR\u20033S\u3000IND", "PR=3S=IND"),
+        Arguments.of("\r\n\u000B\f", "="),
+        // zero width space and soft hyphen are not whitespace
+        Arguments.of("PR\u200B3S", "PR\u200B3S"),
+        Arguments.of("PR\u00AD3S", "PR\u00AD3S"),
+        Arguments.of("\uD83D\uDE00 x", "\uD83D\uDE00=x"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("tags")
+  void testReplaceWhitespaceWithEquals(String tag, String expected) {
+    ADPOSSampleStream stream =
+        new ADPOSSampleStream(ObjectStreamUtils.createObjectStream(), false, false);
+    Assertions.assertEquals(expected, stream.replaceWhitespaceWithEquals(tag));
   }
 
 }
