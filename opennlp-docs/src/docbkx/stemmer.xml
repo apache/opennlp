@@ -73,11 +73,12 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 	<section xml:id="tools.stemmer.hunspell">
 		<title>Hunspell dictionaries</title>
 		<para>
-			<code>opennlp.tools.stemmer.hunspell</code> implements the documented
-			Hunspell dictionary format: a user-supplied
+			<code>opennlp.tools.stemmer.hunspell</code> loads a user-supplied
 			<code>.aff</code> affix file and its <code>.dic</code> word list. OpenNLP
 			bundles no dictionary data; dictionaries are downloaded separately, and
-			each states its own license. The dictionary is immutable and safe to share;
+			each provides license information. Retain the dictionary's copyright notices and
+			license text with downloaded files. OpenNLP's Apache License does not
+			relicense those files. The dictionary is immutable and safe to share;
 			<code>HunspellStemmerFactory</code> creates a fresh stemmer per call.
 			<code>HunspellManualExampleTest</code> asserts the behavior shown here.
 			<programlisting language="java"><![CDATA[
@@ -99,18 +100,159 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			<code>-Dopennlp.download.remote=true</code>, and fetches through the
 			digest-verified <code>ResourceInstaller</code> path. A file that already exists
 			in the target is not replaced. Remove old files before refreshing a dictionary.
-			Directives outside the supported affix-stemming subset are skipped, so
-			published dictionaries can still use their supported rules. Conversion,
-			suggestion, and advanced compound behavior from skipped directives is not
-			applied to the returned stems.
-			This includes <code>ICONV</code>, <code>OCONV</code>,
-			<code>COMPLEXPREFIXES</code>, <code>COMPOUNDRULE</code>,
-			<code>IGNORE</code>, and <code>KEEPCASE</code>. Results can differ from
-			Hunspell for words that need these rules.
+			Loading uses <code>HunspellDictionary.LoadMode.STRICT</code> by default.
+			Unsupported affix directives cause an <code>IOException</code> with the
+			directive name and source line. File-based loading also includes the path.
+			Unknown directive names are rejected. Metadata and suggestion settings
+			that do not affect stemming or analysis are ignored.
+			Applications can select <code>ALLOW_PARTIAL</code> to use the supported
+			rules and inspect skipped directives:
+			<programlisting language="java"><![CDATA[
+HunspellDictionary partial = HunspellDictionary.load(
+    Path.of("dictionary.aff"), Path.of("dictionary.dic"),
+    HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupportedDirectives()) {
+  System.err.println(diagnostic.directive() + " at "
+      + diagnostic.source() + ":" + diagnostic.lineNumber());
+}]]>
+			</programlisting>
+			The diagnostic list is immutable and contains the first source location
+			for each unsupported directive, in file order. Partial loading does not
+			apply behavior from skipped directives. Strict affix loading does not
+			establish complete Hunspell compatibility.
+			<code>ICONV</code> and <code>OCONV</code> convert input and output;
+			<code>IGNORE</code> removes configured characters. <code>KEEPCASE</code>,
+			<code>CHECKSHARPS</code>, and language-specific lowercase mappings govern
+			case variants. <code>COMPLEXPREFIXES</code> permits 2 prefixes and 1
+			suffix instead of 1 prefix and 2 suffixes. Compound rules, boundary
+			checks, simplified junctions, and recursive <code>BREAK</code> separators
+			return recognized part stems in order, without duplicates.
+			Morphological <code>st:</code> fields supply explicit stems,
+			<code>ds:</code> suffixes make the derived form the stem, and <code>sp:</code>
+			fields prepend surface material. <code>AM</code> expands morphology aliases.
+			Rules that add and strip no material are undone like any other rule. The
+			first listed homonym decides whether a spelling is forbidden, and a
+			forbidden direct or affixed reading also blocks compound and
+			<code>BREAK</code> readings.
+			<code>SYLLABLENUM</code> applies Hungarian compound syllable adjustments.
+			The deprecated <code>LEMMA_PRESENT</code> directive is accepted without
+			changing results, consistent with the pinned native reference.
+		</para>
+		<para>
+			<code>HunspellStemmer.analyze</code> returns an immutable list of distinct
+			morphological analyses. Each analysis contains space-separated fields
+			from the dictionary entry and applied affixes, in the field order of the
+			native reference. A missing <code>st:</code> field defaults to the entry
+			text. A suffix without morphological fields contributes <code>fl:</code>
+			followed by the flag after the entry fields; a prefix without them
+			contributes its affix text before the stem, such as
+			<code>un st:done fl:U</code>. Compound components begin with
+			<code>pa:</code>. Analysis preserves field text without
+			<code>OCONV</code> output conversion. Unknown input returns an empty list:
+			<programlisting language="java"><![CDATA[
+HunspellStemmer analyzer = new HunspellStemmer(dictionary);
+analyzer.analyze("workers"); // ["st:work fl:E fl:S"]
+analyzer.analyze("table");   // []]]>
+			</programlisting>
+			These examples use the miniature dictionary above. OpenNLP does not
+			generate inflected forms or spelling suggestions.
+		</para>
+		<para>
+			Native Hunspell's spelling, stemming, and analysis operations can return
+			different results from one another. OpenNLP has one engine, so it follows
+			the spell checker for recognition and the analyzer for stems and fields
+			wherever the two agree, and resolves each disagreement the same way for
+			every caller. The results deviate from the native library in the
+			following cases. <code>HunspellCompatibilityEval</code> in
+			<code>opennlp-eval-tests</code> records each expected difference together
+			with the reference output.
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					Compound stems are the stems of the recognized parts, in order. The
+					native library concatenates the parts and stems the last one, so
+					<code>riverboats</code> gives <code>river</code> and
+					<code>boat</code> here and <code>riverboat</code> natively. To obtain
+					the native form, join the <code>pa:</code> surfaces of every part but
+					the last from <code>analyze</code> and append the last part's
+					<code>st:</code> value.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Purely numeric tokens such as <code>1.5</code> or <code>42-42</code>
+					are accepted by the native spell checker before any dictionary lookup.
+					Here they are unknown input and are returned unchanged. Recognize
+					numbers in the tokenizer or before stemming.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					A word starting with a dotted capital I is lowercased with Unicode
+					mapping outside the Turkic languages, so <code>İmply</code> is
+					recognized when <code>imply</code> is listed. The native checker
+					never tries the lowercase form of such a word without a Turkic
+					<code>LANG</code>. Declare <code>LANG tr</code>, <code>az</code>, or
+					<code>crh</code> for Turkic data, where both implementations keep the
+					dotted and dotless letters apart.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					A compound of three or more parts that is one edit away from a listed
+					word, such as <code>foobarbaz</code> next to <code>goobarbaz</code>, is
+					rejected natively by running the spelling suggester, which OpenNLP
+					does not provide. Such compounds are recognized here. An application
+					that needs the rejection can validate multi-part compounds with a
+					spelling checker, or limit <code>COMPOUNDWORDMAX</code> in the affix
+					file where the language allows.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Analyses keep the dictionary field text. The native analyzer applies
+					<code>OCONV</code> to the whole analysis string and, under
+					<code>COMPLEXPREFIXES</code>, returns field text reversed. Use
+					<code>stemAll</code> for converted stems.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Where the native spell checker and analyzer disagree, recognition
+					follows the spell checker and output follows the analyzer. This
+					affects all-uppercase Turkish words such as <code>İPEK</code>, which
+					the native checker rejects while its analyzer stems them; mixed-case
+					words with a capitalized initial such as <code>NoLinda</code> and
+					<code>BREAK</code> forms, which the native analyzer does not handle;
+					and forbidden affixed compounds, which the native analyzer stems. In
+					each case OpenNLP recognizes the word when the native checker does and
+					returns the analyzer's stems.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					An affix file without <code>SET</code> is read as UTF-8 and rejected
+					when it is not valid UTF-8; the native default is ISO-8859-1. Add
+					<code>SET ISO8859-1</code> to such a file.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					Malformed declarations are rejected where the native parser guesses:
+					a multi-character flag under the default flag mode, an <code>AF</code>
+					or <code>AM</code> table whose entry count does not match its header,
+					and a numeric flag outside 1 through 65535. Correct the declaration;
+					<code>ALLOW_PARTIAL</code> skips unsupported directives, not malformed
+					ones.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
 			rejects malformed text in parsed rules, invalid counts, numeric flags
-			outside the range 1 through 65000, and <code>COMPOUNDMIN</code> values
+			outside the range 1 through 65535, and <code>COMPOUNDMIN</code> values
 			that cannot be doubled safely. Comments and unused metadata may retain a
 			legacy encoding. Default and <code>long</code> flag modes preserve raw
 			one-byte flag values in UTF-8 files. Compound length and boundary checks
@@ -119,6 +261,14 @@ stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			declares <code>FULLSTRIP</code>, as in Hunspell itself.
 			Each affix or dictionary stream is rejected when it exceeds
 			<code>HunspellDictionary.MAX_STREAM_BYTES</code> (64&#160;MiB).
+			Search permits at most 64 compound components, 2048 compound candidate
+			checks per case variant, and 2048 word-break attempts per input. Sharp-s
+			expansion permits at most 64 case variants. Output is limited to 2048
+			distinct results. Compound-rule patterns permit 4096 flag elements.
+			Simplified triple letters can be restored at multiple junctions;
+			<code>CHECKCOMPOUNDPATTERN</code> replacement applies at one junction.
+			These limits can exclude valid analyses; candidates must pass validation
+			before inclusion in the result.
 		</para>
 	</section>
 </chapter>
