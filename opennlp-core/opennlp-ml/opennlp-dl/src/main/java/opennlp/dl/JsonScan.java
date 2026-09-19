@@ -26,6 +26,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -44,6 +45,7 @@ import opennlp.tools.util.StringUtil;
  * <p>{@link #stringObject(String, String)} is the only API of this class; its other members
  * serve the classes of this package.
  */
+@Internal(since = "3.0.0")
 public final class JsonScan {
 
   private static final String TRUE = "true";
@@ -345,7 +347,7 @@ public final class JsonScan {
    * @throws IllegalArgumentException Thrown if an escape is not one of RFC 8259.
    */
   private static String unescape(String text, int start, int end) {
-    final int firstBackslash = text.indexOf(BACKSLASH, start);
+    final int firstBackslash = text.indexOf(BACKSLASH, start, end);
     if (firstBackslash < 0 || firstBackslash >= end) {
       return text.substring(start, end);
     }
