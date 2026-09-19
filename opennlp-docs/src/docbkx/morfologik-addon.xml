@@ -46,6 +46,14 @@
 			</itemizedlist>
 		</para>
 		<para>
+			<code>MorfologikTagDictionary</code> supports concurrent lookups on a shared
+			instance. Entries without a POS tag are ignored; a word with no tagged entries
+			returns <code>null</code>. Case-insensitive lookups use locale-independent
+			code-point lowercasing through <code>StringUtil</code>. Dictionary keys must use
+			the same mapping: Greek sigma has no contextual final-sigma conversion, and
+			dotted uppercase I maps to a single lowercase i.
+		</para>
+		<para>
 		The first two implementations can be used directly from command line, as in the example bellow. Having an FSA Morfologik dictionary (see next section how to build one), you can train a POS Tagger
 		model with an embedded FSA dictionary. 
 		</para>
