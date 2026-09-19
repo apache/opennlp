@@ -21,12 +21,16 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
+import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.AbstractParserModelTest;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserTestUtil;
+import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
@@ -51,6 +55,27 @@ public class ParserTest extends AbstractParserModelTest {
     model = Parser.train("eng", parseSamples, headRules, TrainingParameters.defaultParams());
     Assertions.assertNotNull(model);
     Assertions.assertFalse(model.isLoadedFromSerialized());
+  }
+
+  /**
+   * Verifies the caller-supplied tagger seam: the public tagger-accepting constructor
+   * builds a working parser around any {@link POSTagger}, here the maxent implementation
+   * passed explicitly, and a {@code null} tagger is rejected loudly.
+   */
+  @Test
+  void testCallerSuppliedTaggerDrivesTheParser() {
+    final Parser parser = new Parser(model, new POSTaggerME(model.getParserTaggerModel()),
+        AbstractBottomUpParser.defaultBeamSize,
+        AbstractBottomUpParser.defaultAdvancePercentage);
+    final Parse sentence = Parse.parseParse(
+        "(TOP  (S (NP (NNS Sales) (NNS executives)) (VP (VBD were)) (. .) ))");
+    final Parse parsed = parser.parse(sentence);
+    Assertions.assertNotNull(parsed);
+    Assertions.assertTrue(parsed.complete());
+
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Parser(model, (POSTagger) null, AbstractBottomUpParser.defaultBeamSize,
+            AbstractBottomUpParser.defaultAdvancePercentage));
   }
 
 }
