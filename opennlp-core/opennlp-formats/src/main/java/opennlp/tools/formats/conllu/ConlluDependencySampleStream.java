@@ -1,0 +1,270 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.formats.conllu;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import opennlp.tools.depparse.DependencyGraph;
+import opennlp.tools.depparse.DependencySample;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
+
+/**
+ * Reads {@link DependencySample samples} directly from
+ * <a href="https://universaldependencies.org/format.html">CoNLL-U</a> content, mapping
+ * the {@code HEAD} and {@code DEPREL} columns of the basic dependency annotation.
+ *
+ * <p>This reader does not use {@link ConlluStream}, which merges multiword token ranges
+ * with their syntactic words for token and lemma samples. Dependency samples instead
+ * omit range lines and empty nodes while retaining the syntactic word rows. Sentences
+ * with incomplete or invalid basic dependencies are skipped and counted.</p>
+ *
+ * @since 3.0.0
+ */
+public class ConlluDependencySampleStream implements ObjectStream<DependencySample> {
+
+  private static final Logger logger =
+      LoggerFactory.getLogger(ConlluDependencySampleStream.class);
+
+  /** The number of tab-separated columns of a CoNLL-U word line. */
+  private static final int COLUMNS = 10;
+
+  /** The column holding the word index, a multiword token range, or an empty node id. */
+  private static final int ID = 0;
+
+  /** The column holding the word form. */
+  private static final int FORM = 1;
+
+  /** The column holding the universal part-of-speech tag. */
+  private static final int UPOS = 3;
+
+  /** The column holding the language-specific part-of-speech tag. */
+  private static final int XPOS = 4;
+
+  /** The column holding the one-based index of the head, {@code 0} for the root. */
+  private static final int HEAD = 6;
+
+  /** The column holding the relation label to the head. */
+  private static final int DEPREL = 7;
+
+  /** The CoNLL-U placeholder of a missing value. */
+  private static final String PLACEHOLDER = "_";
+
+  /** The byte order mark some editors prepend to UTF-8 content. */
+  private static final char BOM = '\ufeff';
+
+  /** The first character of a comment line. */
+  private static final char COMMENT = '#';
+
+  private final InputStreamFactory in;
+  private final int tagColumn;
+
+  private BufferedReader reader;
+  private boolean firstLine = true;
+  private int skipped;
+
+  /**
+   * Initializes the stream.
+   *
+   * @param in The CoNLL-U content. Must not be {@code null}.
+   * @param tagset The tagset whose part-of-speech column feeds the sample tags. Must
+   *               not be {@code null}.
+   * @throws IOException Thrown if opening the content fails.
+   * @throws IllegalArgumentException Thrown if any parameter is {@code null}.
+   */
+  public ConlluDependencySampleStream(InputStreamFactory in, ConlluTagset tagset)
+      throws IOException {
+    if (in == null) {
+      throw new IllegalArgumentException("in must not be null");
+    }
+    if (tagset == null) {
+      throw new IllegalArgumentException("tagset must not be null");
+    }
+    this.in = in;
+    this.tagColumn = tagset == ConlluTagset.U ? UPOS : XPOS;
+    this.reader = open();
+  }
+
+  /**
+   * {@inheritDoc}
+   * Sentences without a usable basic dependency annotation are skipped, and their count
+   * is logged once the content is exhausted.
+   */
+  @Override
+  public DependencySample read() throws IOException {
+    List<String[]> words;
+    while (!(words = nextSentence()).isEmpty()) {
+      final DependencySample sample = convert(words);
+      if (sample != null) {
+        return sample;
+      }
+      skipped++;
+    }
+    if (skipped > 0) {
+      logger.warn("Skipped {} sentence(s) without a complete basic dependency annotation.",
+          skipped);
+      skipped = 0;
+    }
+    return null;
+  }
+
+  /**
+   * Reads the syntactic word lines of the next sentence: comments, multiword token
+   * ranges, and empty nodes are dropped; an empty list means the end of the content.
+   *
+   * <p>Sentences are separated by any line {@link StringUtil#isBlank(CharSequence)}
+   * accepts, so a separator carrying a stray no-break space still separates rather than
+   * reaching the word line parser.</p>
+   *
+   * @return The word lines of the next sentence, or an empty list at the end of the
+   *         content. Never {@code null}.
+   * @throws IOException Thrown if reading fails.
+   * @throws InvalidFormatException Thrown if a word line does not have the expected column count.
+   */
+  private List<String[]> nextSentence() throws IOException {
+    final List<String[]> words = new ArrayList<>();
+    String line;
+    while ((line = reader.readLine()) != null) {
+      if (firstLine) {
+        firstLine = false;
+        if (!line.isEmpty() && line.charAt(0) == BOM) {
+          line = line.substring(1);
+        }
+      }
+      if (StringUtil.isBlank(line)) {
+        if (!words.isEmpty()) {
+          return words;
+        }
+        continue;
+      }
+      if (line.charAt(0) == COMMENT) {
+        continue;
+      }
+      final String[] fields = splitFields(line);
+      if (fields.length != COLUMNS) {
+        throw new InvalidFormatException("CoNLL-U word line has " + fields.length
+            + " columns, expected " + COLUMNS + ": " + line);
+      }
+      final String id = fields[ID];
+      if (id.indexOf('-') < 0 && id.indexOf('.') < 0) {
+        words.add(fields);
+      }
+    }
+    return words;
+  }
+
+  /**
+   * Splits a CoNLL-U word line into its tab-delimited fields, retaining empty fields.
+   *
+   * @param line The line to split.
+   * @return The fields in source order. Never {@code null}.
+   */
+  private String[] splitFields(String line) {
+    final List<String> fields = new ArrayList<>();
+    int fieldStart = 0;
+    for (int i = 0; i < line.length(); i++) {
+      if (line.charAt(i) == '\t') {
+        fields.add(line.substring(fieldStart, i));
+        fieldStart = i + 1;
+      }
+    }
+    fields.add(line.substring(fieldStart));
+    return fields.toArray(String[]::new);
+  }
+
+  /**
+   * Converts one sentence into a sample.
+   *
+   * @param words The word lines of the sentence.
+   * @return The converted sample, or {@code null} when the sentence's annotation is
+   *         unusable, for example an underscore head or relation or a graph that is not
+   *         a tree.
+   */
+  private DependencySample convert(List<String[]> words) {
+    final int n = words.size();
+    final String[] tokens = new String[n];
+    final String[] tags = new String[n];
+    final int[] heads = new int[n];
+    final String[] relations = new String[n];
+    for (int i = 0; i < n; i++) {
+      final String[] word = words.get(i);
+      if (!Integer.toString(i + 1).equals(word[ID])) {
+        return null;
+      }
+      tokens[i] = word[FORM];
+      tags[i] = word[tagColumn];
+      if (PLACEHOLDER.equals(word[DEPREL])) {
+        return null;
+      }
+      relations[i] = word[DEPREL];
+      try {
+        heads[i] = Integer.parseInt(word[HEAD]) - 1;
+      } catch (NumberFormatException e) {
+        return null;
+      }
+    }
+    try {
+      return new DependencySample(tokens, tags, DependencyGraph.of(heads, relations));
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   * Reopens the content through the {@link InputStreamFactory}, which must therefore
+   * produce a fresh stream on every call.
+   */
+  @Override
+  public void reset() throws IOException, UnsupportedOperationException {
+    reader.close();
+    reader = open();
+    firstLine = true;
+    skipped = 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void close() throws IOException {
+    reader.close();
+  }
+
+  /**
+   * Opens a fresh UTF-8 reader over the content.
+   *
+   * @return A reader positioned at the start of the content. Never {@code null}.
+   * @throws IOException Thrown if opening the content fails.
+   */
+  private BufferedReader open() throws IOException {
+    return new BufferedReader(
+        new InputStreamReader(in.createInputStream(), StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)));
+  }
+}
