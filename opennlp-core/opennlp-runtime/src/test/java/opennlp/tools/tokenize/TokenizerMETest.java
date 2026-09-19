@@ -197,6 +197,58 @@ public class TokenizerMETest {
         new TokenizerME(withoutPattern).tokenize(text));
   }
 
+  /** An override can enable or disable the shortcut independently of the model's stored setting. */
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testOptimizationOverrideControlsModelEvaluation(boolean modelOptimization) throws IOException {
+    TokenizerModel trained = TokenizerTestUtil.createSimpleMaxentTokenModel();
+    TokenizerModel model = new TokenizerModel(trained.getMaxentModel(), Map.of(),
+        new CountingContextFactory(modelOptimization));
+    CountingContextFactory factory = (CountingContextFactory) model.getFactory();
+    class SwitchableTokenizer extends TokenizerME {
+      private Boolean enabled;
+
+      SwitchableTokenizer() {
+        super(model);
+        enabled = true;
+      }
+
+      @Override
+      public boolean useAlphaNumericOptimization() {
+        Assertions.assertNotNull(enabled, "The constructor must not call the override");
+        return enabled;
+      }
+    }
+    SwitchableTokenizer tokenizer = new SwitchableTokenizer();
+    Assertions.assertArrayEquals(new String[] {"café", "cafe\u0301"},
+        tokenizer.tokenize("café cafe\u0301"));
+    Assertions.assertEquals(0, factory.contexts);
+    tokenizer.tokenize("ab\uD800");
+    Assertions.assertEquals(2, factory.contexts, "Malformed text must still reach the model");
+    tokenizer.enabled = false;
+    tokenizer.tokenize("café");
+    Assertions.assertEquals(5, factory.contexts, "Disabling the shortcut must evaluate all split positions");
+    tokenizer.enabled = true;
+    tokenizer.tokenize("café");
+    Assertions.assertEquals(5, factory.contexts, "Re-enabling the shortcut must skip the model again");
+  }
+
+  /** The ASCII default also applies when an override enables a factory with no pattern. */
+  @Test
+  void testOptimizationOverrideWithNullFactoryPattern() throws IOException {
+    TokenizerModel trained = TokenizerTestUtil.createSimpleMaxentTokenModel();
+    TokenizerModel model = new TokenizerModel(trained.getMaxentModel(), Map.of(),
+        new NullPatternTokenizerFactory(false));
+    TokenizerME tokenizer = new TokenizerME(model) {
+      @Override
+      public boolean useAlphaNumericOptimization() {
+        return true;
+      }
+    };
+    Assertions.assertArrayEquals(new String[] {"hello123"}, tokenizer.tokenize("hello123"));
+    Assertions.assertArrayEquals(new double[] {1d}, tokenizer.probs());
+  }
+
   private TokenizerModel train(TokenizerFactory factory) throws IOException {
     InputStreamFactory trainDataIn = new ResourceAsStreamFactory(
         TokenizerModel.class, "/opennlp/tools/tokenize/token.train");

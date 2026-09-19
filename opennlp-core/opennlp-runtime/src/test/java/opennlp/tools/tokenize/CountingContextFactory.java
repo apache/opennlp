@@ -24,7 +24,11 @@ public class CountingContextFactory extends TokenizerFactory {
   int contexts;
 
   public CountingContextFactory() {
-    super("eng", null, true, Pattern.compile("^[\\p{L}\\p{M}\\p{Cs}]+$"));
+    this(true);
+  }
+
+  CountingContextFactory(boolean optimization) {
+    super("eng", null, optimization, Pattern.compile("^[\\p{L}\\p{M}\\p{Cs}]+$"));
   }
 
   @Override

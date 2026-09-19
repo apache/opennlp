@@ -164,6 +164,15 @@ public class AlphaNumericCheckTest {
     Assertions.assertEquals("pattern must not be null", e.getMessage());
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"^[A-Za-z0-9]+$", "^[\\p{L}]+$"})
+  void testNullTokenIsRejected(String regex) {
+    AlphaNumericCheck check = new AlphaNumericCheck(Pattern.compile(regex));
+    IllegalArgumentException error = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> check.test(null));
+    Assertions.assertEquals("token must not be null", error.getMessage());
+  }
+
   private static Stream<Arguments> malformedTokens() {
     return Stream.of(
         Arguments.of("literal range", Pattern.compile("^[A-\uFFFF]+$"), "a\uD800b"),

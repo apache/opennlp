@@ -56,10 +56,14 @@ final class AlphaNumericCheck {
   /**
    * Tests a token.
    *
-   * @param token The token.
+   * @param token The token. Must not be {@code null}.
    * @return {@code true} if the token is well-formed UTF-16 and matches the pattern in full.
+   * @throws IllegalArgumentException Thrown if {@code token} is {@code null}.
    */
   boolean test(CharSequence token) {
+    if (token == null) {
+      throw new IllegalArgumentException("token must not be null");
+    }
     if (characters != null && token.isEmpty()) {
       return false;
     }

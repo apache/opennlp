@@ -170,10 +170,9 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
     this.cg = factory.getContextGenerator();
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
     Pattern alphaNumericPattern = factory.getAlphaNumericPattern();
-    this.alphanumeric = useAlphaNumericOptimization
-        ? new AlphaNumericCheck(
-            alphaNumericPattern == null ? Factory.DEFAULT_ALPHANUMERIC : alphaNumericPattern)
-        : null;
+    // A subclass may enable the shortcut through useAlphaNumericOptimization().
+    this.alphanumeric = new AlphaNumericCheck(
+        alphaNumericPattern == null ? Factory.DEFAULT_ALPHANUMERIC : alphaNumericPattern);
   }
 
   /**
@@ -298,6 +297,10 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
   }
 
   /**
+   * Determines whether matching alphanumeric candidates bypass model evaluation.
+   * Subclasses may override this method independently of the model's stored setting.
+   * This method is not called during construction.
+   *
    * @return {@code true} if the tokenizer uses alphanumeric optimization, {@code false} otherwise.
    */
   public boolean useAlphaNumericOptimization() {

@@ -333,6 +333,12 @@ Path: en-custom-token.bin]]>
 				A custom pattern such as <code>^[\p{L}\p{Nd}]+$</code> accepts supplementary
 				letters and decimal digits, including mathematical alphanumerics, but not emoji.
 			</para>
+			<para>
+				A <code>TokenizerME</code> subclass can override
+				<code>useAlphaNumericOptimization()</code> to control whether the shortcut is used,
+				independently of the model's stored setting. The character check is prepared during
+				construction without calling that override, so enabling the shortcut later is supported.
+			</para>
 		</section>
 		<section xml:id="tools.tokenizer.training.api">
 			<title>Training API</title>
