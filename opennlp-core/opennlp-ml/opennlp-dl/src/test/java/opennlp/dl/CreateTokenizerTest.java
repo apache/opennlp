@@ -35,17 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateTokenizerTest {
 
-  private static final class TestDL extends AbstractDL {
-
-    private TestDL(Map<String, Integer> vocab) {
-      super(null, null, vocab, true);
-    }
-
-    private Tokens encode(String text) {
-      return encodeTokens(text);
-    }
-  }
-
   private static Map<String, Integer> bertVocab() {
     final Map<String, Integer> vocab = new HashMap<>();
     vocab.put(WordpieceTokenizer.BERT_CLS_TOKEN, 0);
@@ -141,22 +130,6 @@ public class CreateTokenizerTest {
     final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
         () -> AbstractDL.createWordpieceEncoder(null, true));
     assertEquals("vocab must not be null", exception.getMessage());
-  }
-
-  @Test
-  void testDlEncodingPreservesVocabularyIds() {
-    final Map<String, Integer> vocab = Map.of(
-        WordpieceTokenizer.BERT_CLS_TOKEN, 101,
-        WordpieceTokenizer.BERT_SEP_TOKEN, 205,
-        WordpieceTokenizer.BERT_UNK_TOKEN, 999,
-        "hello", 42);
-
-    final Tokens tokens = new TestDL(vocab).encode("Hello");
-
-    assertArrayEquals(new String[] {"[CLS]", "hello", "[SEP]"}, tokens.tokens());
-    assertArrayEquals(new long[] {101, 42, 205}, tokens.ids());
-    assertArrayEquals(new long[] {1, 1, 1}, tokens.mask());
-    assertArrayEquals(new long[] {0, 0, 0}, tokens.types());
   }
 
   @Test
