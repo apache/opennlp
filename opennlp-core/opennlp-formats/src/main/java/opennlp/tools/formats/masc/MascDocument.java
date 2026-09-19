@@ -131,7 +131,7 @@ public class MascDocument {
       try {
         saxParser.parse(bStream, handler);
       } catch (SAXException e) {
-        throw new IOException("Could not parse the region annotation file");
+        throw new IOException("Could not parse the region annotation file", e);
       }
 
       return Collections.unmodifiableList(handler.getAnchors());
@@ -153,7 +153,7 @@ public class MascDocument {
       try {
         saxParser.parse(bStream, handler);
       } catch (SAXException e) {
-        throw new IOException("Could not parse the sentence annotation file");
+        throw new IOException("Could not parse the sentence annotation file", e);
       }
 
       List<Span> anchors = handler.getAnchors();
@@ -196,7 +196,7 @@ public class MascDocument {
       try {
         saxParser.parse(bStream, handler);
       } catch (SAXException e) {
-        throw new IOException("Could not parse the Penn tag annotation file");
+        throw new IOException("Could not parse the Penn tag annotation file", e);
       }
 
       tagsAndBases.put("tokenToTag", handler.getTags());

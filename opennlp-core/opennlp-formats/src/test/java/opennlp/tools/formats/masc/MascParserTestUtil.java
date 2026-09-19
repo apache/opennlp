@@ -17,38 +17,32 @@
 
 package opennlp.tools.formats.masc;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import opennlp.tools.util.Span;
+import opennlp.tools.util.XmlUtil;
 
 /**
- * A class to parse the sentence segmentation stand-off annotation.
+ * Runs a MASC annotation handler over an XML document given as text.
  */
-class MascSentenceParser extends DefaultHandler {
+final class MascParserTestUtil {
 
-  private final List<Span> sentenceAnchors = new ArrayList<>();
-
-  public List<Span> getAnchors() {
-    return sentenceAnchors;
+  private MascParserTestUtil() {
   }
 
-  @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes)
-      throws SAXException {
-
-    try {
-      // create a sentence and put it into the list of sentences
-      if (qName.equalsIgnoreCase("region")) {
-        sentenceAnchors.add(MascIdentifiers.parseAnchors(attributes.getValue("anchors")));
-      }
-
-    } catch (Exception e) {
-      throw new SAXException("Could not parse the sentence annotation file.\n" + e.getMessage(), e);
-    }
+  /**
+   * Parses {@code xml} with {@code handler}.
+   *
+   * @param xml The document text.
+   * @param handler The handler to feed.
+   * @return {@code handler}, after the parse.
+   * @throws Exception Thrown if the document is not well-formed or the handler rejects it.
+   */
+  static <T extends DefaultHandler> T parse(String xml, T handler) throws Exception {
+    XmlUtil.createSaxParser().parse(
+        new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), handler);
+    return handler;
   }
 }
