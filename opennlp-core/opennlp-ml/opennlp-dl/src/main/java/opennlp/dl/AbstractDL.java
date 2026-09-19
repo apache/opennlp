@@ -40,6 +40,7 @@ import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.CharClass;
@@ -54,6 +55,8 @@ public abstract class AbstractDL implements AutoCloseable {
   public static final String TOKEN_TYPE_IDS = "token_type_ids";
 
   private static final String BYTE_ORDER_MARK = "\uFEFF";
+  private static final String TOKENIZER_MODEL_KEY = "model";
+  private static final String TOKENIZER_VOCAB_KEY = "vocab";
 
   protected final OrtEnvironment env;
   protected final OrtSession session;
@@ -164,7 +167,7 @@ public abstract class AbstractDL implements AutoCloseable {
    * non-whitespace character is read as JSON: one object that maps each token to a non-negative
    * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
    * per line, the line number being the ID, as in {@code vocab.txt}. A byte order mark at the
-   * start of the file is not content in either format. The JSON layout is that of
+   * start of the file is not content in either format. The JSON layouts are those of
    * {@link #loadJsonVocab(String)}.
    *
    * @param vocabFile The vocabulary file.
@@ -532,30 +535,63 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Reads a JSON vocabulary as one object mapping tokens to non-negative integer IDs, as in
-   * {@code vocab.json}. Keys are decoded from their escapes, and a later entry for the same
-   * token overwrites an earlier one.
+   * Reads a JSON vocabulary in one of two layouts. A {@code vocab.json} file is one object that
+   * maps each token to its ID. A {@code tokenizer.json} file, recognized by a top-level object
+   * without integer members that has a {@code model} object with a {@code vocab} object, maps
+   * the tokens in {@code model.vocab}, the layout of WordPiece and BPE models. Its other
+   * members are not entries: in particular, a token of the {@code added_tokens} list is only in
+   * the vocabulary if {@code model.vocab} lists it as well. The Unigram layout, in which
+   * {@code model.vocab} is a list, is not supported. Keys are decoded from their escapes, and a
+   * later entry for the same token overwrites an earlier one.
    *
    * @param json The JSON text of the vocabulary.
    * @return A map of vocabulary tokens to IDs.
    * @throws IllegalArgumentException Thrown if the text is not a single well-formed JSON object,
-   *     or if a value of the vocabulary object is not a
+   *     if {@code model.vocab} is not an object, or if a value of the vocabulary object is not a
    *     non-negative integer that fits into an {@code int}. The message names the offset or the
    *     token.
    */
   static Map<String, Integer> loadJsonVocab(final String json) {
     final List<JsonScan.Member> document = JsonScan.document(json);
+    final List<JsonScan.Member> tokenizerVocab = tokenizerVocab(json, document);
     final Map<String, Integer> vocab = new HashMap<>();
-    for (JsonScan.Member member : document) {
-      try {
-        vocab.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException(
-            "Expected one object mapping tokens to integer ids, as in vocab.json: "
-                + e.getMessage(), e);
-      }
+    for (JsonScan.Member member : tokenizerVocab != null ? tokenizerVocab : document) {
+      vocab.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
     }
     return vocab;
+  }
+
+  /**
+   * Finds the {@code model.vocab} object of a {@code tokenizer.json} document.
+   *
+   * @param json The JSON text.
+   * @param document The members of the top-level object.
+   * @return The members of {@code model.vocab}, or {@code null} if a top-level member is an
+   *     integer or there is no {@code model} object with a {@code vocab} member.
+   * @throws IllegalArgumentException Thrown if the {@code model} object is malformed, or if
+   *     {@code model.vocab} is not an object.
+   */
+  private static List<JsonScan.Member> tokenizerVocab(String json, List<JsonScan.Member> document) {
+    for (JsonScan.Member member : document) {
+      if (StringUtil.endOfAsciiDigits(json, member.valueStart()) == member.valueEnd()) {
+        return null;
+      }
+    }
+    final JsonScan.Member model = JsonScan.member(document, TOKENIZER_MODEL_KEY);
+    if (model == null || !JsonScan.isObject(json, model)) {
+      return null;
+    }
+    final JsonScan.Member vocab =
+        JsonScan.member(JsonScan.members(json, model.valueStart()), TOKENIZER_VOCAB_KEY);
+    if (vocab == null) {
+      return null;
+    }
+    if (!JsonScan.isObject(json, vocab)) {
+      throw new IllegalArgumentException("Unsupported tokenizer.json layout: " + TOKENIZER_MODEL_KEY
+          + "." + TOKENIZER_VOCAB_KEY + " must be an object that maps tokens to ids, as in WordPiece"
+          + " and BPE models; the list of a Unigram model is not supported");
+    }
+    return JsonScan.members(json, vocab.valueStart());
   }
 
   /**

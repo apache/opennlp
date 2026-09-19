@@ -175,8 +175,12 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 			<para>
 				The vocabulary file is read in one of two layouts. A plain text file has one token per
 				line, and the line number is the token ID, as in <code>vocab.txt</code>. A file whose
-				first non-whitespace character is an opening brace is read as JSON: a single
-				object that maps each token to its ID, as in <code>vocab.json</code>.
+				first non-whitespace character is an opening brace is read as JSON: either a single
+				object that maps each token to its ID, as in <code>vocab.json</code>, or a
+				<code>tokenizer.json</code> file, whose <code>model.vocab</code> object supplies the
+				tokens; the entries of its <code>added_tokens</code> list are part of the vocabulary
+				only if <code>model.vocab</code> lists them as well. A <code>tokenizer.json</code>
+				file of a Unigram model, whose <code>model.vocab</code> is a list, is not supported.
 				Each ID must be a non-negative integer. One leading U+FEFF byte order mark is
 				ignored before JSON detection and parsing, and before the first token of a
 				plain-text vocabulary. Thus a BOM-prefixed <code>vocab.json</code> remains JSON
