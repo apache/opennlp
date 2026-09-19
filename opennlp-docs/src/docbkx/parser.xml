@@ -92,8 +92,7 @@ try {
     }
 }]]>
 			</programlisting>
-			Unlike the other components to instantiate the Parser a factory method
-			should be used instead of creating the Parser via the new operator.
+			Use the factory method to select the parser implementation from its model.
 			The parser model is either trained for the chunking parser or the tree
 			insert parser the parser implementation must be chosen correctly.
 			The factory method will read a type parameter from the model and create
@@ -101,6 +100,11 @@ try {
 			<programlisting language="java">
 <![CDATA[Parser parser = ParserFactory.create(model);]]>
 			</programlisting>
+			To supply a custom POS tagger, instantiate the matching parser implementation
+			with <code>Parser(model, tagger, beamSize, advancePercentage)</code>.
+			Both the chunking and tree-insert implementations accept this constructor.
+			The tagger must provide scored sequences through <code>topKSequences</code>;
+			the parser uses the model's chunker. A null tagger is rejected.
 			Right now the tree insert parser is still experimental and there is no pre-trained model for it.
 			The parser expect a whitespace tokenized sentence. A utility method from the command
 			line tool can parse the sentence String. The following code shows how the parser can be called.

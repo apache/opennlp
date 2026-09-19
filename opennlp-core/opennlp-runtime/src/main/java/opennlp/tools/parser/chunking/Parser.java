@@ -118,6 +118,29 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   /**
+   * Instantiates a {@link Parser} via a given {@code model} and a caller-supplied
+   * {@link POSTagger}, so any tagger implementation whose
+   * {@link POSTagger#topKSequences(String[])} returns scored sequences can drive the
+   * parse. The default {@link ChunkerME} is used for chunking.
+   *
+   * @param model             The {@link ParserModel} to use.
+   * @param tagger            The {@link POSTagger} used to tag. Must not be {@code null}.
+   * @param beamSize          The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Only outcomes which contribute to the top
+   *                          {@code advancePercentage} will be explored.
+   * @throws IllegalArgumentException Thrown if {@code tagger} is {@code null}.
+   * @see ParserModel
+   * @see POSTagger
+   * @see ChunkerME
+   */
+  public Parser(ParserModel model, POSTagger tagger, int beamSize, double advancePercentage) {
+    this(model.getBuildModel(), model.getCheckModel(), requireTagger(tagger),
+        new ChunkerME(model.getParserChunkerModel()),
+        model.getHeadRules(), beamSize, advancePercentage);
+  }
+
+  /**
    * Instantiates a {@link Parser} via a given {@code model} and other configuration parameters.
    *
    * @param buildModel        A valid {@link MaxentModel} used to build.
@@ -160,6 +183,20 @@ public class Parser extends AbstractBottomUpParser {
     topStartIndex = buildModel.getIndex(TOP_START);
     completeIndex = checkModel.getIndex(COMPLETE);
     incompleteIndex = checkModel.getIndex(INCOMPLETE);
+  }
+
+  /**
+   * Validates the caller-supplied tagger ahead of the constructor delegation.
+   *
+   * @param tagger The tagger to validate.
+   * @return {@code tagger}, never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code tagger} is {@code null}.
+   */
+  private static POSTagger requireTagger(POSTagger tagger) {
+    if (tagger == null) {
+      throw new IllegalArgumentException("tagger must not be null");
+    }
+    return tagger;
   }
 
   @Override
