@@ -24,9 +24,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -35,10 +37,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
@@ -116,6 +120,23 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
           , sent4.getTextLang());
 
       Assertions.assertNull(stream.read(), "Stream must be exhausted");
+    }
+  }
+
+  @Test
+  void testContractionIdsAreMerged() throws IOException {
+    try (ObjectStream<ConlluSentence> stream = getStream("es-ud-sample.conllu")) {
+      ConlluSentence sent1 = stream.read();
+
+      Assertions.assertEquals(55, sent1.getWordLines().size());
+      Assertions.assertEquals("1-3", sent1.getWordLines().get(0).getId());
+      Assertions.assertEquals("Digámoslo", sent1.getWordLines().get(0).getForm());
+      Assertions.assertEquals("15-16", sent1.getWordLines().get(12).getId());
+      Set<String> expandedParts = Set.of("1", "2", "3", "15", "16");
+      for (ConlluWordLine wordLine : sent1.getWordLines()) {
+        Assertions.assertFalse(expandedParts.contains(wordLine.getId()),
+            "Expanded contraction parts must be removed");
+      }
     }
   }
 
@@ -210,4 +231,78 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
     }
   }
 
+  @ParameterizedTest
+  @CsvSource({"1-2, 1, 2", "1-3, 1, 3", "15-16, 15, 16", "7-7, 7, 7", "10-12, 10, 12"})
+  void testParseContractionRange(String id, int start, int end) throws IOException {
+    Assertions.assertEquals(new ConlluStream.MultiwordRange(start, end),
+        new ConlluStream(factory("")).parseContractionRange(id));
+  }
+
+  // a leading zero is rejected because the word lines are looked up by their plain decimal id
+  @ParameterizedTest
+  @ValueSource(strings = {"1-", "-2", "-", "1-2-3", "1--2", "a-b", "1-b", "a-2", "1 -2", "1- 2",
+      "1.1-2", "\u0661-2", "1-\u0662", "1-2\u0662", "\uFF11-\uFF12", "1-2\n", "1-2 ", " 1-2",
+      "\u200B1-2", "1\u2011", "3-1", "99999999999-2", "1-99999999999", "01-02", "1-02", "0-1"})
+  void testParseContractionRangeRejects(String id) throws IOException {
+    ConlluStream stream = new ConlluStream(factory(""));
+    Assertions.assertThrows(InvalidFormatException.class, () -> stream.parseContractionRange(id));
+  }
+
+  @Test
+  void testMalformedContractionIdFailsTheSentence() throws IOException {
+    InputStreamFactory in = factory("1-\tdel\t_\t_\t_\t_\t_\t_\t_\t_\n"
+        + "1\tde\tde\tADP\t_\t_\t2\tcase\t_\t_\n"
+        + "2\tel\tel\tDET\t_\t_\t3\tdet\t_\t_\n");
+
+    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
+      Assertions.assertThrows(InvalidFormatException.class, stream::read);
+    }
+  }
+
+  @Test
+  void testEmptyNodeIdIsKeptNextToAMultiwordRange() throws IOException {
+    // the empty node 2.1 is no multiword token, so it stays as it is while 1 and 2 merge into 1-2
+    InputStreamFactory in = factory("1-2\tdel\t_\t_\t_\t_\t_\t_\t_\t_\n"
+        + "1\tde\tde\tADP\t_\t_\t3\tcase\t_\t_\n"
+        + "2\tel\tel\tDET\t_\t_\t3\tdet\t_\t_\n"
+        + "2.1\t_\t_\t_\t_\t_\t_\t_\t_\t_\n"
+        + "3\tperro\tperro\tNOUN\t_\t_\t0\troot\t_\t_\n");
+
+    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
+      ConlluSentence sentence = stream.read();
+      Assertions.assertEquals(List.of("1-2", "2.1", "3"),
+          sentence.getWordLines().stream().map(ConlluWordLine::getId).toList());
+      Assertions.assertEquals("de+el", sentence.getWordLines().get(0).getLemma());
+      Assertions.assertNull(stream.read(), "Stream must be exhausted");
+    }
+  }
+
+  private static InputStreamFactory factory(String text) {
+    return () -> new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  void testThreeLetterLangCodeIsPreferred() throws IOException {
+    // "text_engl" gives "eng": three ASCII lowercase letters are preferred over two
+    InputStreamFactory in = factory("# text_engl = Hello\n"
+            + "1\tHello\thello\tINTJ\t_\t_\t0\troot\t_\t_\n");
+
+    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
+      ConlluSentence sent = stream.read();
+      Assertions.assertEquals(Optional.of(Collections.singletonMap(Locale.of("eng"), "Hello")),
+          sent.getTextLang());
+      Assertions.assertNull(stream.read(), "Stream must be exhausted");
+    }
+  }
+
+  @Test
+  void testInvalidTextLangCodeIsRejected() throws IOException {
+    // "text_e" has a single lowercase letter, so no language code can be extracted
+    InputStreamFactory in = factory("# text_e = Bonjour\n"
+            + "1\tBonjour\tbonjour\tINTJ\t_\t_\t0\troot\t_\t_\n");
+
+    try (ObjectStream<ConlluSentence> stream = new ConlluStream(in)) {
+      Assertions.assertThrows(InvalidFormatException.class, stream::read);
+    }
+  }
 }

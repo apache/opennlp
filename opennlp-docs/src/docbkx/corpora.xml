@@ -399,11 +399,13 @@ Execution time: 1,955 seconds]]>
 		</para>
 		<para>
 		The reader interprets the format as follows. A multiword token line has a range id such
-		as <code>3-4</code>; the range must be two runs of digits joined by a single hyphen, and its end must
-		not be smaller than its start. An id that does not follow this form, such as <code>3-</code>,
-		<code>-4</code>, <code>3--4</code>, or <code>4-3</code>, stops the read with an
-		<code>InvalidFormatException</code> that names the id, so a damaged treebank is reported instead of
-		skipped. The language of a sentence is taken from <code>text_xx</code> and
+		as <code>3-4</code>; the range must be two runs of ASCII digits without a leading zero, joined by
+		a single hyphen, and its end must not be smaller than its start. Since 3.0.0 an id that does not
+		follow this form, such as <code>3-</code>, <code>-4</code>, <code>3--4</code>, <code>1-2-3</code>, or
+		<code>4-3</code>, stops the read with an <code>InvalidFormatException</code> that names the id.
+		Earlier releases failed with an <code>ArrayIndexOutOfBoundsException</code> or a
+		<code>NumberFormatException</code> on the first three shapes and read the last two without an error.
+		The language of a sentence is taken from <code>text_xx</code> and
 		<code>text_xxx</code> comment keys, where the code consists of two or three lowercase ASCII letters;
 		when three letters follow, all three form the code.
 		</para>
