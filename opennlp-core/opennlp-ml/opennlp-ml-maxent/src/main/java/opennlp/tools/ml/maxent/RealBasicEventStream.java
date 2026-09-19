@@ -40,8 +40,11 @@ public class RealBasicEventStream implements ObjectStream<Event> {
 
   /**
    * {@inheritDoc}
+   * <p>
+   * Each line is parsed by {@link RealValueFileEventStream#parseEvent(String)}.
    *
    * @throws IOException Thrown if there is an error during reading.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a line has no outcome.
    * @throws RuntimeException Thrown if negative real values are detected in the input data.
    */
   @Override
@@ -49,21 +52,9 @@ public class RealBasicEventStream implements ObjectStream<Event> {
 
     String eventString = ds.read();
     if (eventString != null) {
-      return createEvent(eventString);
+      return RealValueFileEventStream.parseEvent(eventString);
     }
     return null;
-  }
-
-  private Event createEvent(String obs) {
-    int si = obs.indexOf(' ');
-    if (si == -1)
-      return null;
-    else {
-      String outcome = obs.substring(0, si);
-      String[] contexts = obs.substring(si + 1).split("\\s+");
-      float[] values = RealValueFileEventStream.parseContexts(contexts);
-      return new Event(outcome,contexts,values);
-    }
   }
 
   @Override
