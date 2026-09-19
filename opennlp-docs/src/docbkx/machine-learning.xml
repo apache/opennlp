@@ -86,6 +86,32 @@ under the License.
 		component which uses this functionality.
 		</para>
 		<para>
+		Events with real-valued features can also be read from a text file, one event per line,
+		through <code>RealValueFileEventStream</code>, or from any line stream through
+		<code>RealBasicEventStream</code>. The fields of a line are separated by runs of space,
+		tab, carriage return, line feed, or form feed, matching <code>FileEventStream</code>.
+		Other characters, including no-break spaces and ideographic spaces, remain part of the
+		outcome or feature name. The delimiter set does not depend on tokenizer settings or the
+		<code>opennlp.whitespace.mode</code> property. Leading, trailing, and repeated delimiters are
+		ignored. The first field is the outcome and each further field is a context, optionally
+		followed by <code>=</code> and its real value. The value follows the last <code>=</code>, so a
+		context name may contain that character; a context whose text after the last <code>=</code>
+		is not a number is kept as written with the value 1, and an error is logged. A line with only
+		an outcome is an event without contexts, and a blank line is reported as an
+		<code>InvalidFormatException</code>. For example, <code>word=New&#xA0;York</code> remains a
+		single feature. <code>FileEventStream</code> reads events without real values. An example with real
+		values:
+		<screen>
+<![CDATA[other wc=ic=1.0 w&c=he,ic=2.0 n1wc=lc=3.0
+org-start wc=ic=1.0 w&c=apache,ic=2.0 p1wc=lc=3.0]]>
+		</screen>
+		<code>SimpleEventStreamBuilder</code> uses the same field delimiters for contexts after
+		the first <code>/</code>. Its syntax is <code>outcome/context1 context2</code>, or
+		<code>outcome/context1;value1 context2;value2</code> when the first context declares a value.
+		The outcome and contexts must be present, and each valued context must have a name and
+		one nonnegative value. A slash after the first one is part of a context name.
+		</para>
+		<para>
 		We have managed to use several techniques to reduce the size of the models when writing them to
 		disk, which also means that reading in a model for use is much quicker than with less compact
 		encodings of the model. This was especially important to us since we use many maxent models in
