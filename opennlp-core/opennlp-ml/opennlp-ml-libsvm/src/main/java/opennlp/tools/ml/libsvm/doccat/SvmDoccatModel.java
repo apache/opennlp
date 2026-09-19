@@ -33,6 +33,8 @@ import java.util.Set;
 
 import de.hhn.mi.domain.SvmModel;
 
+import opennlp.tools.util.jvm.NativeImage;
+
 /**
  * A model for SVM-based document categorization. This model wraps a zlibsvm
  * {@link SvmModel} together with the feature vocabulary, category label
@@ -194,11 +196,14 @@ public class SvmDoccatModel implements Serializable {
    * @param out The {@link OutputStream} to write to. Must not be {@code null}.
    * @throws IOException Thrown if IO errors occurred during serialization.
    * @throws IllegalArgumentException if {@code out} is {@code null}.
+   * @throws UnsupportedOperationException Thrown in a GraalVM native image, which has no
+   *                                       serialization metadata for this model.
    */
   public void serialize(OutputStream out) throws IOException {
     if (out == null) {
       throw new IllegalArgumentException("out must not be null");
     }
+    requireJvm();
     try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
       oos.writeObject(this);
     }
@@ -257,6 +262,8 @@ public class SvmDoccatModel implements Serializable {
    * @throws ClassNotFoundException Thrown if required classes are not found.
    * @throws IllegalArgumentException if {@code in} or {@code limits} is
    *                                  {@code null}.
+   * @throws UnsupportedOperationException Thrown in a GraalVM native image, which has no
+   *                                       serialization metadata for this model.
    */
   public static SvmDoccatModel deserialize(InputStream in, DeserializationLimits limits)
       throws IOException, ClassNotFoundException {
@@ -266,9 +273,17 @@ public class SvmDoccatModel implements Serializable {
     if (limits == null) {
       throw new IllegalArgumentException("limits must not be null");
     }
+    requireJvm();
     try (ObjectInputStream ois = new ObjectInputStream(in)) {
       ois.setObjectInputFilter(buildFilter(limits));
       return (SvmDoccatModel) ois.readObject();
+    }
+  }
+
+  private static void requireJvm() {
+    if (NativeImage.inImageRuntime()) {
+      throw new UnsupportedOperationException("SvmDoccatModel is persisted through Java serialization, "
+          + "which is not supported in a native image.");
     }
   }
 

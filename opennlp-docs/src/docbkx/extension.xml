@@ -29,16 +29,47 @@ class that can be implemented to control their creation. The implementation clas
 the required interface and have a public no-argument constructor.
 </para>
 
+<section xml:id="tools.extension.registry">
+    <title>Extension Registry</title>
+    <para>
+    Extensions are referenced by class name, for instance the <code>factory</code> entry of a
+    model manifest or the <code>class</code> attribute of a feature generator descriptor.
+    <code>ExtensionLoader</code> resolves such a name first through the
+    <code>ExtensionRegistry</code>, which every OpenNLP module fills with its own factories,
+    serializers, feature generator factories, codecs, trainers and model readers through an
+    <code>ExtensionRegistrar</code> service. A registered extension is created by the registered
+    supplier, without reflection, which also makes it usable in a GraalVM native image
+    (see <xref linkend="tools.native-image"/>).
+    </para>
+    <para>
+    A custom extension is registered the same way: implement <code>ExtensionRegistrar</code>,
+    list the class in <code>META-INF/services/opennlp.tools.util.ext.ExtensionRegistrar</code>
+    of the jar that ships it, and register each extension under its class:
+    </para>
+    <programlisting language="java">
+<![CDATA[public class MyExtensions implements ExtensionRegistrar {
+  @Override
+  public void register(ExtensionRegistry registry) {
+    registry.register(MyTokenizerFactory.class, MyTokenizerFactory::new);
+  }
+}]]>
+    </programlisting>
+    <para>
+    An application can also call <code>ExtensionRegistry.getDefault().register(...)</code> at
+    startup. A registered class needs no allowlist entry.
+    </para>
+</section>
+
 <section xml:id="tools.extension.allowlist">
     <title>Extension Class Allowlist</title>
     <para>
-    Extension classes are loaded by <code>ExtensionLoader</code> via reflection. Only classes
-    whose fully-qualified name starts with a registered package prefix are permitted.
-    The default prefix is <code>opennlp.</code>, covering all built-in factories and serializers.
+    A class name that is not registered is loaded by <code>ExtensionLoader</code> via reflection.
+    Only classes whose fully-qualified name starts with a registered package prefix are permitted
+    on that path. The default prefix is <code>opennlp.</code>.
     </para>
     <para>
-    To use a custom class outside <code>opennlp.</code>, register its package before loading
-    any model that references it:
+    To use an unregistered custom class outside <code>opennlp.</code>, register its package before
+    loading any model that references it:
     </para>
     <programlisting language="java">
 <![CDATA[ExtensionLoader.registerAllowedPackage("com.example.nlp");]]>

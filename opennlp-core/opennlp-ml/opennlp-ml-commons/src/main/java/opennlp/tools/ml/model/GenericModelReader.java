@@ -19,9 +19,9 @@ package opennlp.tools.ml.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import opennlp.tools.ml.AlgorithmType;
+import opennlp.tools.util.ext.ExtensionRegistry;
 
 /**
  * An generic {@link AbstractModelReader} implementation.
@@ -57,18 +57,13 @@ public class GenericModelReader extends AbstractModelReader {
   }
 
   private AbstractModelReader fromType(AlgorithmType type) {
-    try {
-      final Class<? extends AbstractModelReader> readerClass
-          = (Class<? extends AbstractModelReader>) Class.forName(type.getReaderClazz());
-
-      return readerClass.getDeclaredConstructor(DataReader.class).newInstance(this.dataReader);
-
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Given reader is not available in the classpath!", e);
-    } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-             NoSuchMethodException e) {
-      throw new RuntimeException("Problem instantiating chosen reader class: " + type.getReaderClazz(), e);
+    final ModelReaderFactory factory =
+        ExtensionRegistry.getDefault().factory(type.getReaderClazz(), ModelReaderFactory.class);
+    if (factory == null) {
+      throw new RuntimeException("Given reader is not available in the classpath: " + type.getReaderClazz()
+          + ". Add the module that provides it, for instance opennlp-ml-maxent.");
     }
+    return factory.create(this.dataReader);
   }
 
   @Override

@@ -126,22 +126,23 @@ public abstract class BaseToolFactory {
   }
 
   /**
-   * Instantiates a {@link BaseToolFactory} via a given {@code subclassName}.
+   * Instantiates a {@link BaseToolFactory} via a given {@code factoryClass}.
    *
-   * @param factoryClass The class used for instantiation. The no-arg constructor
-   *                     of that class will be used to create and init the resulting object.
+   * @param factoryClass The class used for instantiation. The {@link ExtensionLoader}
+   *                     mechanism is applied to the name of that class, so a registered
+   *                     factory is created without reflection.
    * @param artifactProvider The {@link ArtifactProvider} to be used.
    *
    * @return A valid {@link BaseToolFactory} instance.
    * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
-   *                                create the factory associated with {@code subclassName}.
+   *                                create the factory associated with {@code factoryClass}.
    */
   public static BaseToolFactory create(Class<? extends BaseToolFactory> factoryClass,
       ArtifactProvider artifactProvider) throws InvalidFormatException {
     BaseToolFactory theFactory = null;
     if (factoryClass != null) {
       try {
-        theFactory = factoryClass.getDeclaredConstructor().newInstance();
+        theFactory = ExtensionLoader.instantiateExtension(BaseToolFactory.class, factoryClass.getName());
         theFactory.init(artifactProvider);
       } catch (Exception e) {
         String msg = "Could not instantiate the " + factoryClass.getCanonicalName()

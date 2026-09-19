@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Supplier;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.util.StringUtil;
@@ -31,11 +32,18 @@ import opennlp.tools.util.StringUtil;
 /**
  * The {@link ExtensionLoader} is responsible to load extensions to the OpenNLP library.
  * <p>
- * Only classes whose fully-qualified name starts with a registered package prefix are
- * permitted. The default allowed prefix is {@code opennlp.}, which covers all built-in
- * factories and serializers.
+ * An extension name is first looked up in the {@link ExtensionRegistry#getDefault()
+ * default registry}, which every OpenNLP module fills through an
+ * {@link ExtensionRegistrar}. A registered extension is created by its registered
+ * supplier, without reflection, so it also works in a GraalVM native image.
  * <p>
- * To allow custom extension classes from other packages, either:
+ * A name that is not registered is loaded reflectively from the class path. Only classes
+ * whose fully-qualified name starts with a registered package prefix are permitted on
+ * that path. The default allowed prefix is {@code opennlp.}. In a native image the
+ * reflective path only works for classes with reachability metadata; registering the
+ * extension is the supported way.
+ * <p>
+ * To allow custom extension classes from other packages without registering them, either:
  * <ul>
  *   <li>Call {@link #registerAllowedPackage(String)} programmatically before loading
  *       any model that uses the custom class.</li>
@@ -124,14 +132,15 @@ public class ExtensionLoader {
   }
 
   /**
-   * Instantiates a user provided extension to OpenNLP.
+   * Instantiates an extension to OpenNLP.
    * <p>
-   * The extension is loaded from the class path.
+   * If {@code extensionClassName} is registered in the {@link ExtensionRegistry#getDefault()
+   * default registry}, the registered supplier creates the instance.
    * <p>
-   * Initially, the load is conducted using the public no-arg constructor.
-   * If no such constructor is not found, it is checked if the class follows the
-   * {@code Singleton} pattern: a static field named {@code INSTANCE} that
-   * returns an object of the type {@link T}.
+   * Otherwise the class is loaded from the class path. Initially, the load is conducted
+   * using the public no-arg constructor. If no such constructor is found, it is checked
+   * if the class follows the {@code Singleton} pattern: a static field named
+   * {@code INSTANCE} that returns an object of the type {@link T}.
    *
    * @param clazz A reference to {@link Class<T>}.
    * @param extensionClassName The (fully-qualified) name of the class
@@ -139,14 +148,25 @@ public class ExtensionLoader {
    *
    * @return the instance of the extension class
    *
-   * @throws ExtensionNotLoadedException Thrown if the load operation failed or
-   *         the class is not in an allowed package.
+   * @throws ExtensionNotLoadedException Thrown if the load operation failed, the
+   *         extension does not have the requested type, or an unregistered class is
+   *         not in an allowed package.
    */
   @SuppressWarnings("unchecked")
   public static <T> T instantiateExtension(Class<T> clazz, String extensionClassName) {
 
     if (extensionClassName == null) {
       throw new ExtensionNotLoadedException("extensionClassName must not be null");
+    }
+
+    final Supplier<?> supplier = ExtensionRegistry.getDefault().supplier(extensionClassName);
+    if (supplier != null) {
+      final Object extension = supplier.get();
+      if (clazz.isInstance(extension)) {
+        return clazz.cast(extension);
+      }
+      throw new ExtensionNotLoadedException("Extension '" + extensionClassName +
+          "' needs to have type: " + clazz.getName());
     }
 
     // Validate BEFORE Class.forName() — Class.forName() executes static initializers
@@ -199,6 +219,7 @@ public class ExtensionLoader {
 
     throw new ExtensionNotLoadedException("Unable to find implementation for " +
           clazz.getName() + ", the class or service " + extensionClassName +
-          " could not be located!");
+          " could not be located! Register it through an ExtensionRegistrar if it is " +
+          "not on the class path, for instance in a native image.");
   }
 }

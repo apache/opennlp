@@ -33,7 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package opennlp.tools.stemmer.snowball;
 
 import java.io.Serializable;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
 
 /**
@@ -290,14 +289,7 @@ public class SnowballProgram implements Serializable {
         if (w.method == null) {
           return w.result;
         }
-        boolean res = false;
-        try {
-          res = (boolean) w.method.invokeExact(this);
-        } catch (Error | RuntimeException e) {
-          throw e;
-        } catch (Throwable e) {
-          throw new UndeclaredThrowableException(e);
-        }
+        boolean res = w.method.test(this);
         cursor = c + w.s.length;
         if (res) {
           return w.result;
@@ -368,14 +360,7 @@ public class SnowballProgram implements Serializable {
           return w.result;
         }
 
-        boolean res = false;
-        try {
-          res = (boolean) w.method.invokeExact(this);
-        } catch (Error | RuntimeException e) {
-          throw e;
-        } catch (Throwable e) {
-          throw new UndeclaredThrowableException(e);
-        }
+        boolean res = w.method.test(this);
         cursor = c - w.s.length;
         if (res) {
           return w.result;

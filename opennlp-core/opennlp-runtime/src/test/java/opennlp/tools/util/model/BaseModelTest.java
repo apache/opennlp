@@ -38,6 +38,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.jvm.NativeImage;
 
 /**
  * Tests {@link BaseModel#deserialize(Class, java.io.InputStream)} and the
@@ -87,5 +88,20 @@ public class BaseModelTest {
 
     Assertions.assertThrows(InvalidClassException.class, () ->
         BaseModel.deserialize(ChunkerModel.class, new ByteArrayInputStream(bytesOut.toByteArray())));
+  }
+
+  @Test
+  void testDeserializeIsUnsupportedInNativeImage() throws Exception {
+    final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(bytesOut)) {
+      oos.writeObject(model);
+    }
+    System.setProperty(NativeImage.IMAGE_CODE_PROPERTY, "runtime");
+    try {
+      Assertions.assertThrows(UnsupportedOperationException.class, () ->
+          BaseModel.deserialize(ChunkerModel.class, new ByteArrayInputStream(bytesOut.toByteArray())));
+    } finally {
+      System.clearProperty(NativeImage.IMAGE_CODE_PROPERTY);
+    }
   }
 }
