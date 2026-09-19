@@ -304,6 +304,36 @@ Path: en-custom-token.bin]]>
 				</screen>
 			</para>
 		</section>
+		<section xml:id="tools.tokenizer.training.alphanumeric">
+			<title>Alphanumeric optimization</title>
+			<para>
+				With <code>-alphaNumOpt true</code>, or <code>useAlphaNumericOptimization</code> set on
+				the <code>TokenizerFactory</code>, a candidate token longer than one character that
+				matches the alphanumeric pattern in full is taken as one token: the tokenizer does
+				not look for a split inside it, and training generates no events for it. The pattern
+				for English and for any language without a built-in pattern is
+				<code>^[A-Za-z0-9]+$</code>. The built-in patterns for Catalan, Dutch, French, German,
+				Italian, Polish, Portuguese, and Spanish add letters of that language to the class;
+				see <code>opennlp.tools.tokenize.lang.Factory</code> for the exact classes. A custom
+				pattern can be passed to the factory. When no pattern is given, the factory and the
+				command line use the built-in pattern for the language of the model; only
+				<code>TokSpanEventStream</code> falls back to <code>^[A-Za-z0-9]+$</code>. The
+				pattern text is written to the model manifest as <code>alphaNumericPattern</code>,
+				so a model applies the pattern it was trained with; a flag such as
+				<code>CASE_INSENSITIVE</code> is not stored and does not apply after the model is
+				loaded. Since 3.0.0 a pattern of the form <code>^[...]+$</code> with a class of plain
+				characters and ranges is evaluated without the regular expression engine. The result
+				follows the configured pattern, except that a token with an unpaired surrogate is
+				never eligible for the alphanumeric shortcut. This applies to custom patterns too,
+				including escaped ranges and patterns compiled with flags. Such malformed tokens
+				still go through model evaluation, and training retains their events. Custom patterns
+				outside the supported set form continue to use the regular expression engine after
+				this validation.
+				Characters outside the Basic Multilingual Plane are not in any built-in pattern.
+				A custom pattern such as <code>^[\p{L}\p{Nd}]+$</code> accepts supplementary
+				letters and decimal digits, including mathematical alphanumerics, but not emoji.
+			</para>
+		</section>
 		<section xml:id="tools.tokenizer.training.api">
 			<title>Training API</title>
 				<para>
