@@ -328,8 +328,10 @@ F-Measure: 0.8985815184245214]]>
 					Currently the Parser Evaluation tool does not allow to make exceptions
 					in the constituents to be evaluated, in the way  Collins or Bikel usually do. Any
 					contributions are very welcome. If you want to contribute please contact us on
-					the mailing list or comment	on the jira issue
-					<link xlink:href="https://issues.apache.org/jira/browse/OPENNLP-688">OPENNLP-688</link>.
+					the mailing list or open an issue on
+					<link xlink:href="https://github.com/apache/opennlp/issues">GitHub</link>
+					(see also the historical issue
+					<link xlink:href="https://issues.apache.org/jira/browse/OPENNLP-688">OPENNLP-688</link>).
 				</para>
 			</note>
 		</section>
