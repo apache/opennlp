@@ -462,20 +462,20 @@ public class StringUtil {
 
   /**
    * Converts a {@link CharSequence} to upper case, independent of the current
-   * {@link java.util.Locale} via {@link Character#toUpperCase(char)} which uses
+   * {@link java.util.Locale} via {@link Character#toUpperCase(int)} which uses
    * mapping information from the UnicodeData file.
    *
    * @param string The {@link CharSequence} to transform.
    * @return The upper-cased String
    */
   public static String toUpperCase(CharSequence string) {
-    char[] upperCaseChars = new char[string.length()];
-
-    for (int i = 0; i < string.length(); i++) {
-      upperCaseChars[i] = Character.toUpperCase(string.charAt(i));
+    StringBuilder upperCase = new StringBuilder(string.length());
+    for (int i = 0; i < string.length();) {
+      int codePoint = Character.codePointAt(string, i);
+      upperCase.appendCodePoint(Character.toUpperCase(codePoint));
+      i += Character.charCount(codePoint);
     }
-
-    return new String(upperCaseChars);
+    return upperCase.toString();
   }
 
   /**

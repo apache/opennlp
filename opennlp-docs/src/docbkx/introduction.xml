@@ -404,6 +404,16 @@ Arguments description:
         </section>
     </section>
 
+    <section xml:id="intro.case-mapping">
+        <title>Code-point case mapping</title>
+        <para><code>StringUtil.toLowerCase</code> and <code>StringUtil.toUpperCase</code>
+            map individual Unicode code points independently of the default locale.
+            Uppercase conversion includes supplementary letters such as Deseret.
+            These helpers do not expand one character into several characters or apply
+            contextual final-sigma rules. Unpaired UTF-16 surrogates are preserved.
+        </para>
+    </section>
+
     <section xml:id="intro.providers">
         <title>Service providers</title>
         <para>
