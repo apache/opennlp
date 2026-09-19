@@ -18,26 +18,28 @@ package opennlp.tools.util.normalizer;
 
 import java.util.Optional;
 
+import opennlp.tools.util.StringUtil;
+
 /**
- * The derived-facts layer of the emoji annotation record store: decodes flag emoji to ISO 3166
- * codes purely from the code point sequence, with no data file. An emoji flag sequence is two
- * regional indicator symbols encoding an ISO 3166-1 alpha-2 code (U+1F1E9 U+1F1EA decodes to
- * {@code DE}), and an emoji tag sequence over U+1F3F4 WAVING BLACK FLAG encodes an ISO 3166-2
- * subdivision code in tag characters (the England flag decodes to {@code GB-ENG}); both mechanisms
- * are defined by <a href="https://www.unicode.org/reports/tr51/">UTS&#160;#51</a>.
+ * Decodes flag emoji to ISO 3166 codes from the code point sequence alone, with no data file. An
+ * emoji flag sequence is two regional indicator symbols encoding an ISO 3166-1 alpha-2 code
+ * (U+1F1E9 U+1F1EA decodes to {@code DE}), and an emoji tag sequence over U+1F3F4 WAVING BLACK
+ * FLAG encodes an ISO 3166-2 subdivision code in tag characters (the England flag decodes to
+ * {@code GB-ENG}); both mechanisms are defined by
+ * <a href="https://www.unicode.org/reports/tr51/">UTS&#160;#51</a>.
  *
  * <p>Decoding is mechanical and deliberately does not check <em>assignment</em>: U+1F1FD U+1F1FD
- * decodes to {@code XX} even though no such region is assigned, because validity against the
- * region registry is a join-time question for whatever gazetteer the user has installed (see the
- * joined-facts layer), not a bundled fact. This is also why no per-flag rows exist in
- * {@code emoji-annotations.txt}: the region code is fully determined by the sequence itself.</p>
+ * decodes to {@code XX} even though no such region is assigned. Whether a decoded code names a
+ * region a caller knows is the caller's question, answered against its own region registry or
+ * gazetteer.</p>
  *
  * <p>{@link #isoRegion(CharSequence)} is the strict decoder: it fails loud on a sequence that is
  * flag-shaped but malformed, such as a lone regional indicator or an unterminated tag sequence.
  * {@link #isFlag(CharSequence)} is the total predicate for bulk callers that must never throw on
  * degenerate real-world text. The expected input is one symbol, for example one
- * {@link Term#original()} token; the UAX&#160;#29 word tokenizer already segments a run of
- * adjacent flags into regional indicator pairs.</p>
+ * {@link Term#original()} token; the
+ * <a href="https://www.unicode.org/reports/tr29/">UAX&#160;#29</a> word tokenizer already segments
+ * a run of adjacent flags into regional indicator pairs.</p>
  */
 public final class EmojiFlags {
 
@@ -71,7 +73,7 @@ public final class EmojiFlags {
    */
   public static boolean isFlag(CharSequence symbol) {
     if (symbol == null) {
-      throw new IllegalArgumentException("Symbol must not be null");
+      throw new IllegalArgumentException("symbol must not be null");
     }
     return decode(symbol, true) != null;
   }
@@ -92,7 +94,7 @@ public final class EmojiFlags {
    */
   public static Optional<String> isoRegion(CharSequence symbol) {
     if (symbol == null) {
-      throw new IllegalArgumentException("Symbol must not be null");
+      throw new IllegalArgumentException("symbol must not be null");
     }
     return Optional.ofNullable(decode(symbol, false));
   }
@@ -168,8 +170,8 @@ public final class EmojiFlags {
       }
       if (!isTagCharacter(codePoint)) {
         return malformed(lenient, "Malformed emoji tag sequence: expected a tag character or"
-            + " CANCEL TAG, got U+" + Integer.toHexString(codePoint).toUpperCase() + " in: "
-            + symbol);
+            + " CANCEL TAG, got U+" + StringUtil.toUpperCase(Integer.toHexString(codePoint))
+            + " in: " + symbol);
       }
       decoded.append((char) (codePoint - TAG_OFFSET));
     }
