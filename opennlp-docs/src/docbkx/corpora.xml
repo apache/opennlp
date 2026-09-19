@@ -389,6 +389,25 @@ Execution time: 1,955 seconds]]>
 		</para>
 		</section>
 	</section>
+	<section xml:id="tools.corpora.conll.u">
+		<title>CoNLL-U</title>
+		<para>
+		The <link xlink:href="https://universaldependencies.org/format.html">CoNLL-U</link> format of the
+		Universal Dependencies treebanks can be used directly by the tokenizer, sentence detector, POS tagger,
+		and lemmatizer trainers through the <code>conllu</code> format name, for example
+		<code>opennlp TokenizerTrainer.conllu</code>, and converted with the matching converter tools.
+		</para>
+		<para>
+		The reader interprets the format as follows. A multiword token line has a range id such
+		as <code>3-4</code>; the range must be two runs of digits joined by a single hyphen, and its end must
+		not be smaller than its start. An id that does not follow this form, such as <code>3-</code>,
+		<code>-4</code>, <code>3--4</code>, or <code>4-3</code>, stops the read with an
+		<code>InvalidFormatException</code> that names the id, so a damaged treebank is reported instead of
+		skipped. The language of a sentence is taken from <code>text_xx</code> and
+		<code>text_xxx</code> comment keys, where the code consists of two or three lowercase ASCII letters;
+		when three letters follow, all three form the code.
+		</para>
+	</section>
 	</section>
 	<section xml:id="tools.corpora.conllu.range.lines">
 		<title>CoNLL-U multiword token lines</title>
@@ -432,6 +451,47 @@ Execution time: 1,955 seconds]]>
 			    <screen>
 <![CDATA[$ opennlp ChunkerConverter ad -lang pt -data Bosque_CF_8.0.ad.txt -encoding ISO-8859-1 > bosque-chunk]]>
     			</screen>
+			</para>
+			<para>
+				A quoted lemma ends at a matching quote followed by a field boundary. Embedded
+				apostrophes and quotes within a word remain part of the lemma. Quotes in subsequent
+				annotation fields or in the surface text do not extend the lemma or remove part of
+				the token text.
+			</para>
+			<para>
+				A quoted lemma ends at a matching quote followed by a field boundary. Embedded
+				apostrophes and quotes within a word remain part of the lemma. Quotes in subsequent
+				annotation fields or in the surface text do not extend the lemma or remove part of
+				the token text.
+			</para>
+			<para>
+				The AD reader separates the parts of a line on whitespace as the Unicode White_Space
+				property defines it, independent of the toolkit whitespace mode: tabs, no-break spaces,
+				the next line character (U+0085), and the line and paragraph separators (U+2028 and
+				U+2029) are handled like ordinary spaces, while the ASCII separator controls U+001C to
+				U+001F are ordinary characters. A multiword name joined with underscores, such as
+				<code>Rio_de_Janeiro</code>, is split into its words, and repeated or leading underscores
+				do not produce empty words. A POS tag that contains whitespace is joined with
+				<code>=</code> so that it remains a single token. The text id of a sentence is the run of
+				ASCII digits that directly follows the leading ASCII letters and hyphens of its metadata,
+				and the paragraph id is the digit run after the first <code>p=</code> that a digit follows;
+				an id that does not fit into a 32-bit integer is invalid metadata. A punctuation line has
+				a lexeme without any letter or digit of any script, so an accented or non-Latin word is not
+				treated as punctuation.
+			</para>
+			<para>
+				Markup lines are recognized by their exact tag name. The tags <code>&lt;s&gt;</code>,
+				<code>&lt;p&gt;</code>, <code>&lt;t&gt;</code>, <code>&lt;caixa&gt;</code>, and
+				<code>&lt;ext&gt;</code> may have attributes after whitespace. A tag with a name that only
+				starts with one of these names, such as <code>&lt;sx&gt;</code>, and a self-closing tag
+				such as <code>&lt;s/&gt;</code> are not sentence tags. A leaf line of a tree has its
+				lexeme after the closing parenthesis, separated by whitespace; a line with no text or
+				only whitespace after the parenthesis has no lexeme. Inside a quoted lemma, a secondary
+				tag, or the lexeme, a line separator or next line character is kept as part of the text.
+				A tree line that starts with equals signs but has no tag keeps all of the text after the
+				equals signs as its lexeme. Such a line is skipped when that text is empty, or when it is
+				a word of any script followed by a period or an angle bracket, and a line separator inside
+				the text does not end the word.
 			</para>
 		</section>
 	<section xml:id="tools.corpora.arvores-deitadas.end-of-file">

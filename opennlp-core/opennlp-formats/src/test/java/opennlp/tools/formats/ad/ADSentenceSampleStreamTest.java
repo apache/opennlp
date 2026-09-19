@@ -19,12 +19,14 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
@@ -59,4 +61,50 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
     Assertions.assertEquals(new Span(120, 180), samples.get(0).getSentences()[1]);
   }
 
+  @Test
+  void testInvalidMetadataIsRejected() throws IOException {
+    // the second sentence id "AX" has no digits, so its metadata cannot be parsed
+    List<String> lines = List.of(
+        "<s>",
+        "SOURCE: src",
+        "1001 Hello world .",
+        "</s>",
+        "<s>",
+        "SOURCE: src",
+        "AX Hi there .",
+        "</s>");
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+        ObjectStreamUtils.createObjectStream(lines), true)) {
+      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      Assertions.assertEquals("Invalid metadata: AX p=0 src", e.getMessage());
+    }
+  }
+
+  @Test
+  void testNextLineCharacterInTheSourceIsMetadata() throws IOException {
+    List<String> lines = List.of(
+        "<s>",
+        "SOURCE: ref=\"a\u0085b\"",
+        "1001 Hello world .",
+        "STA:fcl",
+        "=H:n(\"world\" M S)\tworld",
+        "</s>");
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+        ObjectStreamUtils.createObjectStream(lines), true)) {
+      SentenceSample sample = stream.read();
+      Assertions.assertNotNull(sample);
+      Assertions.assertEquals("Hello world .", sample.getDocument());
+      Assertions.assertNull(stream.read());
+    }
+  }
+
+  @Test
+  void testIdsThatDoNotFitAnIntAreInvalidMetadata() throws IOException {
+    List<String> lines = List.of("<s>", "SOURCE: src", "2147483648 Hello .", "</s>");
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+        ObjectStreamUtils.createObjectStream(lines), true)) {
+      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      Assertions.assertEquals("Invalid metadata: 2147483648 p=0 src", e.getMessage());
+    }
+  }
 }
