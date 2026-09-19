@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.doccat.FeatureGenerator;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.jvm.NativeImage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -105,6 +106,23 @@ class SvmDoccatModelTest {
 
     for (Map.Entry<String, Integer> entry : model.getCategoryToIndex().entrySet()) {
       assertEquals(entry.getKey(), model.getIndexToCategory().get(entry.getValue()));
+    }
+  }
+
+  @Test
+  void testSerializationIsUnsupportedInNativeImage() throws IOException, ClassNotFoundException {
+    SvmDoccatModel model = trainSimpleModel();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    model.serialize(baos);
+    byte[] bytes = baos.toByteArray();
+
+    System.setProperty(NativeImage.IMAGE_CODE_PROPERTY, "runtime");
+    try {
+      assertThrows(UnsupportedOperationException.class, () -> model.serialize(new ByteArrayOutputStream()));
+      assertThrows(UnsupportedOperationException.class,
+          () -> SvmDoccatModel.deserialize(new ByteArrayInputStream(bytes)));
+    } finally {
+      System.clearProperty(NativeImage.IMAGE_CODE_PROPERTY);
     }
   }
 

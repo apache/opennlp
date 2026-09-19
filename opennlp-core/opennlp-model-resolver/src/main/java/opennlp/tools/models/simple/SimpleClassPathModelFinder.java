@@ -17,8 +17,6 @@
 package opennlp.tools.models.simple;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -34,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.models.AbstractClassPathModelFinder;
 import opennlp.tools.models.ClassPathModelFinder;
+import opennlp.tools.util.jvm.NativeImage;
 
 /**
  * Enables the detection of OpenNLP models in the classpath via JDK classes
@@ -48,10 +47,10 @@ import opennlp.tools.models.ClassPathModelFinder;
  * It will:
  * <ol>
  *  <li>Try to see if we have a {@link URLClassLoader} available in the current thread.</li>
- *  <li>Try to obtain URLs via the build in classloader via reflections.
- *  <br/>(requires {@code --add-opens java.base/jdk.internal.loader=ALL-UNNAMED} as JVM argument)</li>
  *  <li>Try to use the bootstrap classpath via {@code java.class.path}.</li>
  * </ol>
+ * In a GraalVM native image there is no class path to scan; the finder then logs a warning
+ * and finds nothing. Load models from files or streams there instead.
  *
  * <p>
  * If you need a more sophisticated implementation,
@@ -128,26 +127,23 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
    * <p>
    * <ol>
    *  <li>Try to see if we have a {@link URLClassLoader} available in the current thread.</li>
-   *  <li>Try to obtain URLs via the build in classloader via reflections.
-   *  <br/>(requires {@code --add-opens java.base/jdk.internal.loader=ALL-UNNAMED} as JVM argument)</li>
    *  <li>Try to use the bootstrap classpath via {@code java.class.path}.</li>
    * </ol>
    *
-   * @return A list of {@link URL URLs} within the classpath.
+   * @return A list of {@link URL URLs} within the classpath, empty in a native image.
    */
   private List<URL> getClassPathElements() {
     final ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
     if (cl instanceof URLClassLoader ucl) {
       return Arrays.asList(ucl.getURLs());
-    } else {
-      final URL[] fromUcp = getURLs(cl);
-      if (fromUcp != null && fromUcp.length > 0) {
-        return Arrays.asList(fromUcp);
-      } else {
-        return getClassPathUrlsFromSystemProperty();
-      }
     }
+    if (NativeImage.inImageRuntime()) {
+      logger.warn("The class path cannot be scanned for models in a native image. "
+          + "Load models from files or streams instead.");
+      return Collections.emptyList();
+    }
+    return getClassPathUrlsFromSystemProperty();
   }
 
   private List<URL> getClassPathUrlsFromSystemProperty() {
@@ -192,30 +188,4 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     return elements.toArray(new String[0]);
   }
 
-  /*
-   * Java 9+ Bridge to obtain URLs from classpath.
-   * This requires "--add-opens java.base/jdk.internal.loader=ALL-UNNAMED" as JVM argument
-   */
-  private URL[] getURLs(ClassLoader classLoader) {
-    try {
-      final Class<?> builtinClazzLoader = Class.forName("jdk.internal.loader.BuiltinClassLoader");
-
-      final Field ucpField = builtinClazzLoader.getDeclaredField("ucp");
-      ucpField.setAccessible(true);
-
-      final Object ucpObject = ucpField.get(classLoader);
-      final Class<?> clazz = Class.forName("jdk.internal.loader.URLClassPath");
-
-      if (ucpObject != null) {
-        final Method getURLs = clazz.getMethod("getURLs");
-
-        return (URL[]) getURLs.invoke(ucpObject);
-      }
-
-    } catch (Exception ignored) {
-      //ok here because we still have a fallback and this is just one step in the chain of possible
-      //options to obtain URLs from the classpath
-    }
-    return new URL[0];
-  }
 }

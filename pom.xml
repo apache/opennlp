@@ -728,6 +728,7 @@ org.xml.sax.helpers.XMLReaderFactory#createXMLReader(**)
 		<module>opennlp-extensions</module>
 		<module>opennlp-tools</module>
 		<module>opennlp-eval-tests</module>
+		<module>opennlp-native-tests</module>
 	</modules>
 
 </project>

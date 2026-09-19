@@ -1,0 +1,11 @@
+{
+  "comment": "GraalVM native image metadata for opennlp-runtime. Bundled resources that are read by a name computed at run time; extensions are created through ExtensionRegistrar without reflection.",
+  "resources": [
+    {"glob": "opennlp/tools/namefind/ner-default-features.xml"},
+    {"glob": "opennlp/tools/postag/pos-default-features.xml"},
+    {"glob": "opennlp/tools/stopword/*.txt"},
+    {"glob": "opennlp/tools/tokenize/uax29/*.txt"},
+    {"glob": "opennlp/tools/util/normalizer/*.txt"},
+    {"glob": "opennlp/tools/util/opennlp.version"}
+  ]
+}
