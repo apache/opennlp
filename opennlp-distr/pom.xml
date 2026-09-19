@@ -148,34 +148,6 @@
 
   <profiles>
     <profile>
-      <id>apache-release</id>
-
-      <build>
-        <!-- Run jira report -->
-        <!-- depends on having -DjiraVersion set -->
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-changes-plugin</artifactId>
-            <version>2.12.1</version>
-            <executions>
-              <execution>
-                <id>default-cli</id>
-                <phase>generate-resources</phase>
-                <goals><goal>jira-report</goal></goals>
-                <configuration>
-                  <useJql>true</useJql>
-                  <onlyCurrentVersion>true</onlyCurrentVersion>
-                  <outputDirectory>${basedir}/target/issuesFixed/</outputDirectory>
-                  <maxEntries>1000</maxEntries> <!-- hopefully, bigger than ever needed -->
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>docker</id>
       <build>
         <plugins>
