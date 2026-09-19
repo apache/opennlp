@@ -33,6 +33,7 @@ import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.models.ModelType;
+import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.OwnerOrPerThreadState;
@@ -102,7 +103,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    */
   public static final String NO_SPLIT = "F";
 
-  private final Pattern alphanumeric;
+  private final AlphaNumericCheck alphanumeric;
 
   /*
    * The maximum entropy model to use to evaluate contexts.
@@ -159,14 +160,20 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    *
    * @param model The {@link TokenizerModel} to be used.
    * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
+   *                If the alphanumeric optimization is on and the factory of the model has no
+   *                alphanumeric pattern, {@link Factory#DEFAULT_ALPHANUMERIC} is used.
    */
   public TokenizerME(TokenizerModel model, Dictionary abbDict) {
     this.model = model.getMaxentModel();
     this.abbDict = abbDict;
     TokenizerFactory factory = model.getFactory();
     this.cg = factory.getContextGenerator();
-    this.alphanumeric = factory.getAlphaNumericPattern();
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
+    Pattern alphaNumericPattern = factory.getAlphaNumericPattern();
+    this.alphanumeric = useAlphaNumericOptimization
+        ? new AlphaNumericCheck(
+            alphaNumericPattern == null ? Factory.DEFAULT_ALPHANUMERIC : alphaNumericPattern)
+        : null;
   }
 
   /**
@@ -210,7 +217,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
       if (tok.length() < 2) {
         localTokens.add(s);
         localProbs.add(1d);
-      } else if (useAlphaNumericOptimization() && alphanumeric.matcher(tok).matches()) {
+      } else if (useAlphaNumericOptimization() && alphanumeric.test(tok)) {
         localTokens.add(s);
         localProbs.add(1d);
       } else {
