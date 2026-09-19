@@ -421,6 +421,20 @@ CharSequence clean = normalizer.normalize("the qick brwn fox"); // -> "the quick
 			</programlisting>
 		</para>
 		<para>
+			In per-token mode, letter and capitalization checks include supplementary Unicode code points.
+			A lowercase letter prevents all-uppercase correction. An uppercase token of one code point
+			uses initial-capital correction. Known dictionary words keep their original casing.
+			This example uses U+10428, a lowercase Deseret letter:
+			<programlisting language="java">
+<![CDATA[SymSpell engine = new SymSpell();
+engine.add("\uD801\uDC28word", 1000);
+CharSequenceNormalizer normalizer = new SpellCheckingCharSequenceNormalizer(engine);
+
+String corrected = normalizer.normalize("\uD801\uDC28WROLD").toString();
+// corrected is "\uD801\uDC28word"]]>
+			</programlisting>
+		</para>
+		<para>
 			For stream-based preprocessing two <code>FilterObjectStream&lt;String, String&gt;</code>
 			implementations wrap an existing <code>ObjectStream&lt;String&gt;</code> and correct each element as
 			it is read:
@@ -452,4 +466,14 @@ while ((line = corrected.read()) != null) {
 			</programlisting>
 		</para>
 	</section>
+  <section xml:id="tools.spellcheck.case-mapping">
+    <title>Case mapping</title>
+    <para>Spelling normalization uses locale-independent code-point case mapping
+      through <code>StringUtil</code> for dictionary lookup and uppercase corrections.
+      Prepare dictionary keys with the same mapping. Greek sigma does not receive
+      contextual final-sigma conversion, dotted uppercase I maps to one lowercase i,
+      and uppercase corrections do not expand sharp S into multiple characters.
+      Recognized words keep their original spelling and capitalization.
+    </para>
+  </section>
 </chapter>

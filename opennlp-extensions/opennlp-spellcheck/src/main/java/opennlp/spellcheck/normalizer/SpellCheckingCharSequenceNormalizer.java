@@ -18,7 +18,6 @@
 package opennlp.spellcheck.normalizer;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Pattern;
 
 import opennlp.spellcheck.SpellChecker;
@@ -272,7 +271,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
       return token;
     }
 
-    final String lower = core.toLowerCase(Locale.ROOT);
+    final String lower = StringUtil.toLowerCase(core);
     final List<SuggestItem> suggestions = spellChecker.lookup(lower, Verbosity.TOP, maxEditDistance);
     if (suggestions.isEmpty()) {
       return token;
@@ -289,7 +288,12 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return prefix + corrected + suffix;
   }
 
-  /** @return {@code true} if {@code core} passes the configured length/number/URL guards. */
+  /**
+   * Checks the configured token guards and requires at least one Unicode letter.
+   *
+   * @param core The token to check.
+   * @return Whether the token can be corrected.
+   */
   private boolean isCorrectable(String core) {
     if (core.length() < minTokenLength) {
       return false;
@@ -300,48 +304,61 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     if (skipNumbers && isNumberLike(core)) {
       return false;
     }
-    // A token with no letters at all (pure symbols) cannot be a spelling error.
-    boolean hasLetter = false;
-    for (int k = 0; k < core.length(); k++) {
-      if (Character.isLetter(core.charAt(k))) {
-        hasLetter = true;
-        break;
+    for (int k = 0; k < core.length();) {
+      final int codePoint = core.codePointAt(k);
+      if (Character.isLetter(codePoint)) {
+        return true;
       }
+      k += Character.charCount(codePoint);
     }
-    return hasLetter;
+    return false;
   }
 
   /**
-   * Re-applies the casing pattern of {@code original} to {@code corrected}: all-upper
-   * stays all-upper, leading-capital stays leading-capital, otherwise the suggestion's
-   * own casing (typically lower-case) is used.
+   * Applies uppercase or initial-capital casing to a correction. Letter checks and
+   * initial-capital conversion use Unicode code points. Other tokens use the
+   * suggestion's casing.
+   *
+   * @param original The source token.
+   * @param corrected The spelling suggestion.
+   * @return The correction with the source token's capitalization pattern.
    */
-  private static String applyCasing(String original, String corrected) {
+  private String applyCasing(String original, String corrected) {
     if (corrected.isEmpty()) {
       return corrected;
     }
     if (isAllUpper(original)) {
-      return corrected.toUpperCase(Locale.ROOT);
+      return StringUtil.toUpperCase(corrected);
     }
-    if (Character.isUpperCase(original.charAt(0))) {
-      return Character.toUpperCase(corrected.charAt(0)) + corrected.substring(1);
+    if (Character.isUpperCase(original.codePointAt(0))) {
+      final int initial = corrected.codePointAt(0);
+      return new StringBuilder(corrected.length())
+          .appendCodePoint(Character.toUpperCase(initial))
+          .append(corrected, Character.charCount(initial), corrected.length())
+          .toString();
     }
     return corrected;
   }
 
-  /** {@return whether {@code s} has more than one character and every letter in it is upper-case} */
-  private static boolean isAllUpper(String s) {
+  /**
+   * Checks for at least 2 code points, with all letters uppercase.
+   *
+   * @param s The token to check. Non-letter code points do not affect the case check.
+   * @return Whether the token contains a letter and has an all-uppercase pattern.
+   */
+  private boolean isAllUpper(String s) {
     boolean sawLetter = false;
-    for (int k = 0; k < s.length(); k++) {
-      final char c = s.charAt(k);
-      if (Character.isLetter(c)) {
+    for (int k = 0; k < s.length();) {
+      final int codePoint = s.codePointAt(k);
+      if (Character.isLetter(codePoint)) {
         sawLetter = true;
-        if (!Character.isUpperCase(c)) {
+        if (!Character.isUpperCase(codePoint)) {
           return false;
         }
       }
+      k += Character.charCount(codePoint);
     }
-    return sawLetter && s.length() > 1;
+    return sawLetter && s.codePointCount(0, s.length()) > 1;
   }
 
   /**
