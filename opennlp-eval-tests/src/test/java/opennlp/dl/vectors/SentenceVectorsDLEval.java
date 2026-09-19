@@ -40,7 +40,8 @@ public class SentenceVectorsDLEval extends AbstractEvalTest {
 
     final String sentence = "george washington was president";
 
-    try (final SentenceVectorsDL sv = new SentenceVectorsDL(MODEL_FILE_NAME, VOCAB_FILE_NAME)) {
+    try (final SentenceVectorsDL sv = new SentenceVectorsDL(MODEL_FILE_NAME, VOCAB_FILE_NAME,
+        true, Pooling.CLS, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH)) {
 
       final float[] vectors = sv.getVectors(sentence);
 
@@ -74,6 +75,19 @@ public class SentenceVectorsDLEval extends AbstractEvalTest {
       final float[] capitalized = sv.getVectors("George Washington was President");
 
       Assertions.assertArrayEquals(vectors, capitalized, 0.00001f);
+    }
+
+    // The default pools the token vectors by their mean and scales the result to unit length.
+    try (final SentenceVectorsDL sv = new SentenceVectorsDL(MODEL_FILE_NAME, VOCAB_FILE_NAME)) {
+      final float[] vectors = sv.getVectors(sentence);
+      double squares = 0;
+      for (final float value : vectors) {
+        squares += (double) value * value;
+      }
+      Assertions.assertEquals(384, vectors.length);
+      Assertions.assertEquals(1.0, Math.sqrt(squares), 0.00001);
+      Assertions.assertArrayEquals(vectors, sv.embed("George Washington was President"),
+          0.00001f);
     }
 
   }

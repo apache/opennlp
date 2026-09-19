@@ -31,6 +31,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.xml.secure.SecureTransformerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -255,8 +256,8 @@ public class DictionaryEntryPersistor {
   public static void serialize(OutputStream out, Iterator<Entry> entries,
       boolean casesensitive) throws IOException {
     StreamResult streamResult = new StreamResult(out);
-    SAXTransformerFactory tf = (SAXTransformerFactory)
-        SAXTransformerFactory.newInstance();
+    // Commons Secure XML always returns a SAXTransformerFactory subclass.
+    SAXTransformerFactory tf = (SAXTransformerFactory) SecureTransformerFactory.newInstance();
 
     TransformerHandler hd;
     try {

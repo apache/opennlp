@@ -30,7 +30,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -77,8 +76,7 @@ public class NKJPTextDocument {
       DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();
       Document doc = docBuilder.parse(is);
 
-      XPathFactory xPathfactory = XPathFactory.newInstance();
-      XPath xpath = xPathfactory.newXPath();
+      XPath xpath = XmlUtil.createXPath();
 
       final XPathExpression TEXT_NODES_EXAMPLE = xpath.compile("/teiCorpus/TEI/text/group/text");
       final XPathExpression TEXT_NODES_SAMPLE = xpath.compile("/teiCorpus/TEI/text");

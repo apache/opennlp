@@ -129,9 +129,11 @@ Existing hardening in this area includes:
   top-level object, so foreign payloads are rejected before they are
   materialized. `SvmDoccatModel` installs an allowlist as well, and additionally
   bounds graph depth, reference count, and array length.
-- **Hardened XML parsing.** `XmlUtil` enables secure processing and disables
-  DOCTYPE declarations and external DTD and schema access, so dictionary and
-  descriptor XML cannot pull in external entities.
+- **Hardened XML parsing.**
+  Every XML parser comes from [Apache Commons Secure XML](https://commons.apache.org/proper/commons-secure-xml/threat_model.html),
+  which fetches no external resource
+  and bounds entity expansion,
+  so dictionary and descriptor XML cannot reach the file system or the network.
 - **Fail-fast format checks.** Binary formats validate magic numbers and version
   fields before consuming the body.
 

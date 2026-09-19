@@ -17,6 +17,8 @@
 
 package opennlp.tools.util;
 
+import java.util.Random;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -27,14 +29,27 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pins the contract of {@link StringUtil#split(CharSequence, char)} and
- * {@link StringUtil#split(CharSequence, char, int)}: both are byte-identical to
- * {@link String#split(String)} with a literal single-character pattern, so the
- * corpus-format parsers can drop {@code String.split} without changing any
- * field extraction. The cases below are the ones the tab- and space-separated
- * formats rely on, in particular trailing empty fields being dropped at the
- * default limit and kept at every other limit.
+ * {@link StringUtil#split(CharSequence, char, int)}: both give the result of
+ * {@link String#split(String)} with a literal single-character pattern, in
+ * particular trailing empty fields are dropped at the default limit and kept
+ * at every other limit. A seeded differential test checks both overloads
+ * against {@code String.split} on random input.
  */
 public class StringUtilSplitTest {
+
+  /**
+   * Separators the differential test draws from, including the regular
+   * expression metacharacters {@code . $ | #}, which {@code String.split}
+   * only treats as literals once quoted.
+   */
+  private static final char[] SEPARATORS = {',', ' ', '\t', '\n', '-', '_', ';', ':', '#', '$', '.', '|'};
+
+  /** Limits the differential test draws from, covering positive, zero and negative. */
+  private static final int[] LIMITS = {0, 1, 2, 3, 5, 7, -1};
+
+  /** Pieces random input is assembled from: separators, ASCII and supplementary code points. */
+  private static final String[] PIECES = {",", " ", "\t", "\n", "-", "_", ";", ":", "#", "$", ".", "|",
+      "a", "b", "xy", "\uD83D\uDE00", "\uD834\uDD1E", "0"};
 
   /**
    * Pinned (input, separator, expected fields) cases for the two-argument
@@ -146,6 +161,57 @@ public class StringUtilSplitTest {
         StringUtil.split(new StringBuilder("a,b,c"), ','));
     Assertions.assertArrayEquals(new String[] {"a", "b,c"},
         StringUtil.split(new StringBuilder("a,b,c"), ',', 2));
+  }
+
+  /**
+   * Both overloads produce the {@code String.split} result for the quoted
+   * separator on random input over every separator and limit above, so any
+   * drift from the JDK contract is caught here rather than at a parser.
+   */
+  @Test
+  void testMatchesStringSplitOnRandomInput() {
+    final Random random = new Random(1955);
+    for (int n = 0; n < 20_000; n++) {
+      final StringBuilder sb = new StringBuilder();
+      final int pieces = random.nextInt(9);
+      for (int k = 0; k < pieces; k++) {
+        sb.append(PIECES[random.nextInt(PIECES.length)]);
+      }
+      final String input = sb.toString();
+      final char separator = SEPARATORS[random.nextInt(SEPARATORS.length)];
+      final int limit = LIMITS[random.nextInt(LIMITS.length)];
+      final String pattern = Pattern.quote(Character.toString(separator));
+      final String label = "input=" + input + " separator=" + separator + " limit=" + limit;
+      Assertions.assertArrayEquals(input.split(pattern, limit),
+          StringUtil.split(input, separator, limit), label);
+      Assertions.assertArrayEquals(input.split(pattern),
+          StringUtil.split(input, separator), label);
+    }
+  }
+
+  /**
+   * A surrogate separator would let the character scan cut a supplementary
+   * code point in half, where {@code String.split} matches code points, so
+   * both overloads reject it.
+   */
+  @ParameterizedTest
+  @MethodSource("surrogateSeparators")
+  void testSurrogateSeparatorThrows(char separator) {
+    final String input = "x\uD83D\uDE00y";
+    IllegalArgumentException twoArg = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.split(input, separator));
+    Assertions.assertEquals("separator must not be a surrogate", twoArg.getMessage());
+    IllegalArgumentException threeArg = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.split(input, separator, -1));
+    Assertions.assertEquals("separator must not be a surrogate", threeArg.getMessage());
+  }
+
+  private static Stream<Arguments> surrogateSeparators() {
+    return Stream.of(
+        Arguments.of(Character.MIN_HIGH_SURROGATE),
+        Arguments.of((char) 0xD83D),
+        Arguments.of((char) 0xDE00),
+        Arguments.of(Character.MAX_LOW_SURROGATE));
   }
 
   /**

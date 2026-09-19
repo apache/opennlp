@@ -52,7 +52,13 @@ under the License.
 						</row>
 						<row>
 							<entry>UrlCharSequenceNormalizer</entry>
-							<entry>Replaces URLs and E-Mails by a blank space.</entry>
+							<entry>Replaces each http or https URL and each email address with a
+								blank space. Since 3.0.0 a URL is removed as a whole, up to the next
+								whitespace or delimiter, including a port, user information, percent
+								escapes and non-ASCII hosts; URLs with other schemes are kept. Models
+								trained with an earlier release saw only the leading ASCII part of a
+								URL removed and get that output again under
+								<code>-Dopennlp.compat.mode=LEGACY</code> until they are retrained.</entry>
 						</row>
 						<row>
 							<entry>TwitterCharSequenceNormalizer</entry>

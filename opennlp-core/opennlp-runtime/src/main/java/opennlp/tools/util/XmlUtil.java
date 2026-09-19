@@ -17,22 +17,55 @@
 
 package opennlp.tools.util;
 
-import javax.xml.XMLConstants;
+import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.xpath.XPath;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.xml.secure.SecureDocumentBuilderFactory;
+import org.apache.commons.xml.secure.SecureSAXParserFactory;
+import org.apache.commons.xml.secure.SecureXMLInputFactory;
+import org.apache.commons.xml.secure.SecureXPathFactory;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
+import opennlp.tools.util.model.UncloseableInputStream;
+
+/**
+ * Creates XML parsers that process untrusted input securely.
+ * <p>
+ * Every factory comes from
+ * <a href="https://commons.apache.org/proper/commons-secure-xml/">Apache Commons Secure XML</a>.
+ * The parsers it creates fetch no external resource unless an {@link EntityResolver}
+ * explicitly allows it, and they bound entity expansion. Its
+ * <a href="https://commons.apache.org/proper/commons-secure-xml/threat_model.html">threat model</a>
+ * lists the settings a caller may still change without weakening these guarantees.
+ *
+ * @since 1.8.2
+ */
 public class XmlUtil {
 
-  private static final Logger logger = LoggerFactory.getLogger(XmlUtil.class);
+  /**
+   * Holds the shared StAX factory.
+   * <p>
+   * {@link XMLInputFactory} is thread-safe once configured, and the lazy holder keeps StAX out
+   * of the static initialization of {@link XmlUtil}, so the DOM and SAX helpers keep working on
+   * a platform like Android without a StAX implementation.
+   */
+  private static final class StaxHolder {
+
+    private static final XMLInputFactory FACTORY = createFactory();
+
+    private static XMLInputFactory createFactory() {
+      final XMLInputFactory factory = SecureXMLInputFactory.newInstance();
+      factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+      return factory;
+    }
+  }
 
   /**
    * Create a new {@link DocumentBuilder} which processes XML securely.
@@ -41,120 +74,54 @@ public class XmlUtil {
    * @throws IllegalStateException Thrown if errors occurred creating the builder.
    */
   public static DocumentBuilder createDocumentBuilder() {
-    final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     try {
-      documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      return SecureDocumentBuilderFactory.newInstance().newDocumentBuilder();
     } catch (ParserConfigurationException e) {
-      /// {@link XMLConstants.FEATURE_SECURE_PROCESSING} is not supported on Android.
-      /// See {@link DocumentBuilderFactory#setFeature}
-      logger.warn("Failed to enable XMLConstants.FEATURE_SECURE_PROCESSING, it's unsupported on" +
-          " this platform.", e);
-    }
-    setAttributeIfSupported(documentBuilderFactory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
-    setAttributeIfSupported(documentBuilderFactory, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-    setFeatureIfSupported(documentBuilderFactory,
-        "http://apache.org/xml/features/disallow-doctype-decl", true);
-    setFeatureIfSupported(documentBuilderFactory,
-        "http://xml.org/sax/features/external-general-entities", false);
-    setFeatureIfSupported(documentBuilderFactory,
-        "http://xml.org/sax/features/external-parameter-entities", false);
-    setFeatureIfSupported(documentBuilderFactory,
-        "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-    setXIncludeAwareIfSupported(documentBuilderFactory, false);
-    documentBuilderFactory.setExpandEntityReferences(false);
-    try {
-      return documentBuilderFactory.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
-      throw new IllegalStateException(e);
+      // Not expected from any known JAXP implementation: the factory is fully configured.
+      throw new IllegalStateException("Failed to create a secure DocumentBuilder.", e);
     }
   }
 
   /**
-   * Create a new {@link SAXParser} which processes XML securely.
+   * Create a new namespace-aware {@link SAXParser} which processes XML securely.
    *
    * @return A valid {@link SAXParser} instance.
    * @throws IllegalStateException Thrown if errors occurred creating the parser.
    */
   public static SAXParser createSaxParser() {
-    final SAXParserFactory spf = SAXParserFactory.newInstance();
-    spf.setNamespaceAware(true);
-    setXIncludeAwareIfSupported(spf, false);
     try {
-      spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      return SecureSAXParserFactory.newNSInstance().newSAXParser();
     } catch (ParserConfigurationException | SAXException e) {
-      /// {@link XMLConstants.FEATURE_SECURE_PROCESSING} is not supported on Android.
-      /// See {@link SAXParserFactory#setFeature}
-      logger.warn("Failed to enable XMLConstants.FEATURE_SECURE_PROCESSING, it's unsupported on" +
-          " this platform.", e);
-    }
-    setFeatureIfSupported(spf, "http://apache.org/xml/features/disallow-doctype-decl", true);
-    setFeatureIfSupported(spf, "http://xml.org/sax/features/external-general-entities", false);
-    setFeatureIfSupported(spf, "http://xml.org/sax/features/external-parameter-entities", false);
-    setFeatureIfSupported(spf, "http://apache.org/xml/features/nonvalidating/load-external-dtd",
-        false);
-    try {
-      final SAXParser parser = spf.newSAXParser();
-      setPropertyIfSupported(parser, XMLConstants.ACCESS_EXTERNAL_DTD, "");
-      setPropertyIfSupported(parser, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-      return parser;
-    } catch (ParserConfigurationException | SAXException e) {
-      throw new IllegalStateException(e);
+      // Not expected from any known JAXP implementation: the factory is fully configured.
+      throw new IllegalStateException("Failed to create a secure SAXParser.", e);
     }
   }
 
-  private static void setFeatureIfSupported(DocumentBuilderFactory factory, String name,
-                                            boolean value) {
-    try {
-      factory.setFeature(name, value);
-    } catch (ParserConfigurationException e) {
-      logger.warn("Failed to set XML parser feature {}, it's unsupported on this platform.",
-          name, e);
-    }
+  /**
+   * Create a new {@link XMLStreamReader} which processes XML securely.
+   * <p>
+   * The reader coalesces adjacent text sections.
+   * <p>
+   * The returned reader respects the StAX contract and does <strong>not</strong> close the
+   * underlying input stream, regardless of the implementation on the classpath.
+   *
+   * @param in A valid, open {@link InputStream} of XML.
+   * @return A valid {@link XMLStreamReader} instance positioned before the first event.
+   * @throws XMLStreamException Thrown if the stream does not start a well-formed document.
+   * @since 3.0.0
+   */
+  public static XMLStreamReader createXmlStreamReader(InputStream in) throws XMLStreamException {
+    return StaxHolder.FACTORY.createXMLStreamReader(new UncloseableInputStream(in));
   }
 
-  private static void setAttributeIfSupported(DocumentBuilderFactory factory, String name,
-                                             Object value) {
-    try {
-      factory.setAttribute(name, value);
-    } catch (IllegalArgumentException e) {
-      logger.warn("Failed to set XML parser attribute {}, it's unsupported on this platform.",
-          name, e);
-    }
-  }
-
-  private static void setXIncludeAwareIfSupported(DocumentBuilderFactory factory, boolean state) {
-    try {
-      factory.setXIncludeAware(state);
-    } catch (UnsupportedOperationException e) {
-      logger.warn("Failed to set XML parser XInclude awareness, it's unsupported on " +
-          "this platform.", e);
-    }
-  }
-
-  private static void setPropertyIfSupported(SAXParser parser, String name, Object value) {
-    try {
-      parser.setProperty(name, value);
-    } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
-      logger.warn("Failed to set XML parser property {}, it's unsupported on this platform.",
-          name, e);
-    }
-  }
-
-  private static void setFeatureIfSupported(SAXParserFactory factory, String name, boolean value) {
-    try {
-      factory.setFeature(name, value);
-    } catch (ParserConfigurationException | SAXException e) {
-      logger.warn("Failed to set XML parser feature {}, it's unsupported on this platform.",
-          name, e);
-    }
-  }
-
-  private static void setXIncludeAwareIfSupported(SAXParserFactory factory, boolean state) {
-    try {
-      factory.setXIncludeAware(state);
-    } catch (UnsupportedOperationException e) {
-      logger.warn("Failed to set XML parser XInclude awareness, it's unsupported on " +
-          "this platform.", e);
-    }
+  /**
+   * Create a new {@link XPath} which evaluates expressions securely,
+   * including those given an {@link org.xml.sax.InputSource} to parse.
+   *
+   * @return A valid {@link XPath} instance.
+   * @since 3.0.0
+   */
+  public static XPath createXPath() {
+    return SecureXPathFactory.newInstance().newXPath();
   }
 }

@@ -126,9 +126,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static String[] splitOnUnicodeWhitespace(CharSequence input) {
-    if (input == null) {
-      throw new IllegalArgumentException("input must not be null");
-    }
+    requireNonNullArg(input, "input");
     final List<String> terms = new ArrayList<>();
     final int n = input.length();
     int start = -1;
@@ -163,9 +161,10 @@ public class StringUtil {
    * input pass through untouched.
    *
    * @param input The text to split. Must not be {@code null}.
-   * @param separator The literal field separator.
+   * @param separator The literal field separator. Must not be a surrogate.
    * @return The fields in order.
-   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   * @throws IllegalArgumentException If {@code input} is {@code null} or
+   *     {@code separator} is a surrogate.
    */
   public static String[] split(CharSequence input, char separator) {
     return split(input, separator, 0);
@@ -186,15 +185,18 @@ public class StringUtil {
    * supplementary code points in the input pass through untouched.
    *
    * @param input The text to split. Must not be {@code null}.
-   * @param separator The literal field separator.
+   * @param separator The literal field separator. Must not be a surrogate, so
+   *     that a supplementary code point in {@code input} is never split in half.
    * @param limit The maximum number of fields, or {@code 0} for the default
    *     behavior, or negative for no limit.
    * @return The fields in order.
-   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   * @throws IllegalArgumentException If {@code input} is {@code null} or
+   *     {@code separator} is a surrogate.
    */
   public static String[] split(CharSequence input, char separator, int limit) {
-    if (input == null) {
-      throw new IllegalArgumentException("input must not be null");
+    requireNonNullArg(input, "input");
+    if (Character.isSurrogate(separator)) {
+      throw new IllegalArgumentException("separator must not be a surrogate");
     }
     final int length = input.length();
     if (length == 0) {
@@ -226,6 +228,151 @@ public class StringUtil {
   }
 
   /**
+   * Tests whether {@code input} contains an ASCII capital letter, {@code A} to {@code Z}.
+   * Capital letters outside ASCII do not count.
+   *
+   * @param input The text to check. Must not be {@code null}.
+   * @return {@code true} if at least one character is an ASCII capital letter.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static boolean containsAsciiUpperCase(CharSequence input) {
+    requireNonNullArg(input, "input");
+    for (int i = 0; i < input.length(); i++) {
+      if (isAsciiUpperCase(input.charAt(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Tests whether {@code input} contains an ASCII digit, {@code 0} to {@code 9}. Digits outside
+   * ASCII do not count.
+   *
+   * @param input The text to check. Must not be {@code null}.
+   * @return {@code true} if at least one character is an ASCII digit.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static boolean containsAsciiDigit(CharSequence input) {
+    requireNonNullArg(input, "input");
+    for (int i = 0; i < input.length(); i++) {
+      if (isAsciiDigit(input.charAt(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Tests for an ASCII letter, {@code a} to {@code z} or {@code A} to {@code Z}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII letter.
+   */
+  public static boolean isAsciiLetter(int codePoint) {
+    return isAsciiLowerCase(codePoint) || isAsciiUpperCase(codePoint);
+  }
+
+  /**
+   * Tests for an ASCII lowercase letter, {@code a} to {@code z}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII lowercase letter.
+   */
+  public static boolean isAsciiLowerCase(int codePoint) {
+    return codePoint >= 'a' && codePoint <= 'z';
+  }
+
+  /**
+   * Tests for an ASCII capital letter, {@code A} to {@code Z}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII capital letter.
+   */
+  private static boolean isAsciiUpperCase(int codePoint) {
+    return codePoint >= 'A' && codePoint <= 'Z';
+  }
+
+  /**
+   * Tests for an ASCII digit, {@code 0} to {@code 9}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII digit.
+   */
+  public static boolean isAsciiDigit(int codePoint) {
+    return codePoint >= '0' && codePoint <= '9';
+  }
+
+  /**
+   * Finds the end of the run of ASCII digits that starts at {@code from}.
+   *
+   * @param text The text to scan. Must not be {@code null}.
+   * @param from The offset the run starts at, between {@code 0} and {@code text.length()}.
+   * @return The offset after the last digit of the run, or {@code from} if no digit is there.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  public static int endOfAsciiDigits(CharSequence text, int from) {
+    requireOffset(text, from);
+    int i = from;
+    while (i < text.length() && isAsciiDigit(text.charAt(i))) {
+      i++;
+    }
+    return i;
+  }
+
+  /**
+   * Tests for a line terminator: line feed {@code U+000A}, carriage return {@code U+000D},
+   * next line {@code U+0085}, line separator {@code U+2028}, or paragraph separator
+   * {@code U+2029}. This is the set {@link java.util.regex.Pattern} treats as line terminators
+   * outside {@code UNIX_LINES} mode. It is narrower than
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#lineBreakCodePointSet()}, which
+   * also holds vertical tab {@code U+000B} and form feed {@code U+000C}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} ends a line.
+   */
+  public static boolean isLineTerminator(int codePoint) {
+    return codePoint == '\n' || codePoint == '\r' || codePoint == '\u0085'
+        || codePoint == '\u2028' || codePoint == '\u2029';
+  }
+
+  /**
+   * Finds the first line terminator at or after {@code from}, as defined by
+   * {@link #isLineTerminator(int)}.
+   *
+   * @param text The text to scan. Must not be {@code null}.
+   * @param from The offset to start at, between {@code 0} and {@code text.length()}.
+   * @return The offset of the first line terminator, or {@code -1} if there is none.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  public static int indexOfLineTerminator(CharSequence text, int from) {
+    requireOffset(text, from);
+    for (int i = from; i < text.length(); i++) {
+      if (isLineTerminator(text.charAt(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Validates a text and an offset into it.
+   *
+   * @param text The text. Must not be {@code null}.
+   * @param from The offset, between {@code 0} and {@code text.length()}.
+   * @throws IllegalArgumentException If {@code text} is {@code null} or {@code from} is out of
+   *         range.
+   */
+  private static void requireOffset(CharSequence text, int from) {
+    requireNonNullArg(text, "text");
+    if (from < 0 || from > text.length()) {
+      throw new IllegalArgumentException("from must be between 0 and " + text.length());
+    }
+  }
+
+  /**
    * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
    * {@link #splitOnUnicodeWhitespace(CharSequence)} breaks terms on.
    *
@@ -234,9 +381,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static String trimUnicodeWhitespace(CharSequence input) {
-    if (input == null) {
-      throw new IllegalArgumentException("input must not be null");
-    }
+    requireNonNullArg(input, "input");
     int start = 0;
     int end = input.length();
     while (start < end) {
@@ -598,4 +743,16 @@ public class StringUtil {
     return ses;
   }
 
+  /**
+   * Throws if an argument is {@code null}.
+   *
+   * @param value The argument to check.
+   * @param name The name of the argument, used in the message.
+   * @throws IllegalArgumentException If {@code value} is {@code null}.
+   */
+  private static void requireNonNullArg(Object value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " must not be null");
+    }
+  }
 }
