@@ -4,10 +4,8 @@ In order to streamline the review of the contribution we ask you
 to ensure the following steps have been taken:
 
 ### For all changes:
-- [ ] Is there a JIRA ticket associated with this PR? Is it referenced 
-     in the commit message?
-
-- [ ] Does your PR title start with OPENNLP-XXXX where XXXX is the JIRA number you are trying to resolve? Pay particular attention to the hyphen "-" character.
+- [ ] Is there a GitHub issue associated with this PR? Is it referenced
+     in the PR description (e.g. "Fixes #1234")?
 
 - [ ] Has your PR been rebased against the latest commit within the target branch (typically main)?
 
