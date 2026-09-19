@@ -79,6 +79,15 @@ under the License.
 		and example implementations can be found in the OpenNLP Tools preprocessing components.
 		</para>
 		<para>
+		<code>BasicContextGenerator</code> turns one string of contextual predicates into the
+		predicate array. Without arguments it separates on runs of whitespace under the Unicode
+		White_Space property (<code>StringUtil.isUnicodeWhitespace</code>), independent of the
+		<code>opennlp.whitespace.mode</code> setting. A separator given to the constructor is
+		taken as written, not as a regular expression, and must not be null, empty, or contain an
+		unpaired surrogate. A predicate is never empty: leading, repeated, or trailing separators
+		produce none, and an empty input gives no predicates.
+		</para>
+		<para>
 		We have also set in place some interfaces and code to make it easier to automate the training
 		and evaluation process (the Evaluable interface and the TrainEval class). It is not necessary
 		to use this functionality, but if you do you'll find it much easier to see how well your models
