@@ -162,6 +162,16 @@ for(ClassPathModelEntry entry : models) {
 }]]>
       </programlisting>
 
+      The search mask is a wildcard expression, not a regular expression. An asterisk stands for
+      any run of characters, including none, a question mark for exactly one character, and every
+      other character, including dots, brackets, and backslashes, stands for itself. There is no
+      escape character. The mask is compared with the file part of each classpath URL as a whole,
+      case-sensitively, and the finders put an asterisk in front of it themselves, so
+      <code>custom-opennlp-model.jar</code> matches that jar in any directory. A character outside
+      the Basic Multilingual Plane counts as one character for the question mark.
+      <code>SimpleClassPathModelFinder</code> reads the <code>java.class.path</code> system
+      property and splits it on <code>;</code> on Windows and <code>:</code> elsewhere; empty
+      entries are skipped.
     </para>
   </section>
 
