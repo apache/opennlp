@@ -30,6 +30,9 @@ import opennlp.tools.depparse.DependencyEvaluator;
 import opennlp.tools.depparse.DependencyModel;
 import opennlp.tools.depparse.DependencyParser;
 import opennlp.tools.depparse.DependencyParserME;
+import opennlp.tools.depparse.FeedforwardDependencyModel;
+import opennlp.tools.depparse.FeedforwardDependencyParser;
+import opennlp.tools.depparse.FeedforwardDependencyTrainer;
 import opennlp.tools.formats.conllu.ConlluDependencySampleStream;
 import opennlp.tools.formats.conllu.ConlluTagset;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
@@ -37,7 +40,7 @@ import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Measures the accuracy of the dependency parser on Universal Dependencies 2.0
+ * Measures the accuracy of the dependency parsers on Universal Dependencies 2.0
  * treebanks and pins the exact scores.
  *
  * <p>Every test trains from scratch on a treebank's training split and scores the parser
@@ -54,7 +57,8 @@ import opennlp.tools.util.TrainingParameters;
  * feature cutoff of {@value #TRANSITION_CUTOFF}, evaluated on English, German, Spanish,
  * and French. The English cross validation uses {@value #ENGLISH_FOLDS} folds of the training
  * split, the same fold count as the
- * constituency parser evaluation.</p>
+ * constituency parser evaluation. The feedforward parser is evaluated with its default
+ * settings on the English and Spanish AnCora development splits.</p>
  */
 public class UniversalDependencyParserEval extends AbstractEvalTest {
 
@@ -300,5 +304,48 @@ public class UniversalDependencyParserEval extends AbstractEvalTest {
   private static ConlluDependencySampleStream samples(File split) throws IOException {
     return new ConlluDependencySampleStream(new MarkableFileInputStreamFactory(split),
         ConlluTagset.U);
+  }
+
+  /**
+   * Trains the feedforward parser with its default settings on the English training
+   * split and scores it on the development split.
+   *
+   * @throws IOException Thrown if reading or training fails.
+   */
+  @Test
+  void trainAndEvalFeedforwardParserEnglish() throws IOException {
+    assertScores(new Scores(25148, 22065, 0.8412597423254334d, 0.8174009861619215d,
+            0.8539768864717879d, 0.8272830274189894d),
+        evaluate(feedforwardParser(english), english.dev()));
+  }
+
+  /**
+   * Trains the feedforward parser with its default settings on the Spanish AnCora
+   * training split and scores it on the development split.
+   *
+   * @throws IOException Thrown if reading or training fails.
+   */
+  @Test
+  void trainAndEvalFeedforwardParserSpanishAncora() throws IOException {
+    assertScores(new Scores(52336, 46058, 0.8617013145826964d, 0.8279195964536838d,
+            0.8780016500933605d, 0.839615267705936d),
+        evaluate(feedforwardParser(spanish), spanish.dev()));
+  }
+
+  /**
+   * Trains the feedforward parser with its default settings on a treebank's training
+   * split.
+   *
+   * @param treebank The treebank.
+   * @return The trained parser, decoding greedily. Never {@code null}.
+   * @throws IOException Thrown if reading or training fails.
+   */
+  private static DependencyParser feedforwardParser(Treebank treebank) throws IOException {
+    final FeedforwardDependencyModel model;
+    try (ConlluDependencySampleStream train = samples(treebank.train())) {
+      model = FeedforwardDependencyTrainer.train(train,
+          FeedforwardDependencyTrainer.Settings.defaults());
+    }
+    return new FeedforwardDependencyParser(model);
   }
 }
