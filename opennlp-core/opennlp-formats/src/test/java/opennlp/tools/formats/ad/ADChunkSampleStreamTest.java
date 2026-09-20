@@ -118,4 +118,27 @@ public class ADChunkSampleStreamTest extends AbstractADSampleStreamTest<ChunkSam
     Assertions.assertEquals(List.of("conj-c", "x", "."), Arrays.asList(sample.getTags()));
     Assertions.assertFalse(Arrays.asList(sample.getPreds()).contains(null));
   }
+
+  /**
+   * Bosque has 2 node lines with tags joined by a stray separator,
+   * {@code =====P.vp} and {@code ========N<ARGOpp}. They are nodes, not leaves, and add no
+   * token. The old reader dropped their first character and put {@code .vp} and
+   * {@code <ARGOpp} into the sentence as words of an NP chunk.
+   */
+  @Test
+  void testNodeLineWithStraySeparatorAddsNoToken() throws IOException {
+    ChunkSample sample = readOne(
+        "=SUBJ:np",
+        "==H:pron-indp(\"que\" <rel> M S)\tque",
+        "=P.vp",
+        "==AUX:v-fin(\"ter\" COND 3S)\tteria",
+        "=N<ARGOpp",
+        "==H:prp(\"de\")\tde",
+        "=.",
+        "</s>");
+    Assertions.assertEquals(List.of("que", "teria", "de", "."),
+        Arrays.asList(sample.getSentence()));
+    Assertions.assertEquals(List.of("pron-indp", "v-fin", "prp", "."),
+        Arrays.asList(sample.getTags()));
+  }
 }
