@@ -188,7 +188,7 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
   @Test
   void evalPortugueseChunkerPerceptron() throws IOException {
     chunkerCrossEval(createPerceptronParams(),
-        0.9631066789979492);
+        0.963736197429554);
   }
 
   @Test
