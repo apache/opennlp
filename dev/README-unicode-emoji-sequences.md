@@ -42,3 +42,5 @@ java -cp target/unicode-emoji-generator UnicodeEmojiSequenceGenerator \
 
 The generated inventory and its sources are covered by Unicode License V3, reproduced in the
 project `LICENSE`. Attribution is recorded in `NOTICE`. The generator is Apache License 2.0.
+The runtime module's `src/main/appended-resources/META-INF/LICENSE` and `NOTICE` also carry
+the data license and attribution into the standalone runtime JAR.
