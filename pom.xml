@@ -256,7 +256,7 @@
 		<commons-secure-xml.version>1.0.0</commons-secure-xml.version>
 		<junit.version>6.1.3</junit.version>
 		<junit5-system-exit.version>2.0.3</junit5-system-exit.version>
-		<onnxruntime.version>1.29.0</onnxruntime.version>
+		<onnxruntime.version>1.30.0</onnxruntime.version>
 		<slf4j.version>2.0.19</slf4j.version>
 		<log4j2.version>2.26.1</log4j2.version>
 		<logcaptor.version>2.12.7</logcaptor.version>
