@@ -45,4 +45,3 @@ notifications:
   issues:       dev@opennlp.apache.org
   pullrequests_status: dev@opennlp.apache.org
   pullrequests_comment: dev@opennlp.apache.org
-  jira_options: link worklog
