@@ -18,14 +18,10 @@
 
 package opennlp.tools.util.featuregen;
 
-import java.util.regex.Pattern;
-
 /**
  * This class provide common utilities for feature generation.
  */
 public class FeatureGeneratorUtil {
-
-  private static final Pattern capPeriod = Pattern.compile("^[A-ZÄÖÜ]\\.$");
 
   /**
    * Generates a class name for the specified token.
@@ -44,6 +40,7 @@ public class FeatureGeneratorUtil {
    * <li>num - digits </li>
    * <li>sc - single capital letter </li>
    * <li>ac - all capital letters </li>
+   * <li>cp - a single capital letter followed by a period </li>
    * <li>ic - initial capital letter </li>
    * <li>other - other </li>
    * </ul>
@@ -98,7 +95,7 @@ public class FeatureGeneratorUtil {
         feat = "ac";
       }
     }
-    else if (capPeriod.matcher(token).find()) {
+    else if (isCapPeriod(token)) {
       feat = "cp";
     }
     else if (pattern.isInitialCapitalLetter()) {
@@ -109,5 +106,22 @@ public class FeatureGeneratorUtil {
     }
 
     return (feat);
+  }
+
+  /**
+   * Tests for one uppercase code point followed by a period, and nothing else. Any script
+   * counts, including the supplementary planes.
+   *
+   * @param token The token.
+   * @return {@code true} for exactly that shape.
+   */
+  private static boolean isCapPeriod(String token) {
+    if (token.isEmpty()) {
+      return false;
+    }
+    final int first = token.codePointAt(0);
+    final int periodOffset = Character.charCount(first);
+    return Character.isUpperCase(first) && periodOffset + 1 == token.length()
+        && token.charAt(periodOffset) == '.';
   }
 }

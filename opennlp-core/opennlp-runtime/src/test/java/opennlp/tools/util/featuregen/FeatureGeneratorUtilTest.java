@@ -17,8 +17,14 @@
 
 package opennlp.tools.util.featuregen;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class FeatureGeneratorUtilTest {
 
@@ -68,6 +74,40 @@ public class FeatureGeneratorUtilTest {
     Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ö."));
     Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ü."));
     Assertions.assertEquals("sc", FeatureGeneratorUtil.tokenFeature("Ü"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"A., cp", "Z., cp", "Ä., cp", "Ö., cp", "Ü., cp",
+      // capitals of other scripts
+      "É., cp", "Ω., cp", "Я., cp",
+      // lower case initial, other second character, longer tokens
+      "a., other", "é., other", "'A,', ic", "Ab., ic", "AB., ic"})
+  void testCapPeriod(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
+  }
+
+  @Test
+  void testCapPeriodWithSupplementaryCapital() {
+    // U+10400 DESERET CAPITAL LETTER LONG I is one code point of two chars
+    final String deseretCapital = new String(Character.toChars(0x10400));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature(deseretCapital + "."));
+    final String deseretSmall = new String(Character.toChars(0x10428));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature(deseretSmall + "."));
+  }
+
+  private static Stream<Arguments> capPeriodLookalikes() {
+    return Stream.of(
+        Arguments.of("A.\n", "ic"), Arguments.of("A.\r", "ic"), Arguments.of("A.\r\n", "ic"),
+        Arguments.of("A.\u0085", "ic"), Arguments.of("A.\u2028", "ic"),
+        Arguments.of("A.\u2029", "ic"), Arguments.of("Ä.\n", "ic"), Arguments.of("A.\n\n", "ic"),
+        Arguments.of("A. ", "ic"), Arguments.of("A.\nX", "ic"), Arguments.of("\nA.", "other"),
+        Arguments.of(" A.", "other"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("capPeriodLookalikes")
+  void testCapPeriodIsExactlyTwoCharacters(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
   }
 
   @Test
