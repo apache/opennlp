@@ -48,7 +48,15 @@ under the License.
 					<tbody>
 						<row>
 							<entry>EmojiCharSequenceNormalizer</entry>
-							<entry>Replaces emojis by blank space</entry>
+							<entry>Replaces each adjacent run of fully-qualified Unicode Emoji 18.0
+								sequences with one space. This includes default-presentation emoji, explicit
+								BMP emoji presentations, valid flags, keycaps, modifiers, tag sequences,
+								and ZWJ sequences. For example, <code>go&#x1F600;&#x2764;&#xFE0F;now</code>
+								becomes <code>go now</code>. A text-default symbol such as
+								<code>&#x2764;</code> without U+FE0F remains text. Structurally connected
+								malformed candidates, such as an emoji followed by a trailing U+200D, are
+								preserved whole rather than leaving a fragment. Unrelated supplementary
+								letters, ideographs, private-use characters, and malformed UTF-16 are kept.</entry>
 						</row>
 						<row>
 							<entry>UrlCharSequenceNormalizer</entry>
