@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +40,12 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 public final class ParserTool extends BasicCmdLineTool {
+
+  private static final char SEPARATOR = ' ';
+  private static final int SPACING_HEADROOM = 8;
 
   private static final Logger logger = LoggerFactory.getLogger(ParserTool.class);
 
@@ -61,21 +64,76 @@ public final class ParserTool extends BasicCmdLineTool {
             + "Defaults to a WhitespaceTokenizer.";
   }
 
-  private static final Pattern UNTOKENIZED_PAREN_PATTERN_1 = Pattern.compile("([^ ])([({)}])");
-  private static final Pattern UNTOKENIZED_PAREN_PATTERN_2 = Pattern.compile("([({)}])([^ ])");
-
   public static Parse[] parseLine(String line, Parser parser, int numParses) {
     return parseLine( line, parser, WhitespaceTokenizer.INSTANCE, numParses );
   }
 
   public static Parse[] parseLine(String line, Parser parser, Tokenizer tokenizer, int numParses) {
     // fix some parens patterns
-    line = UNTOKENIZED_PAREN_PATTERN_1.matcher(line).replaceAll("$1 $2");
-    line = UNTOKENIZED_PAREN_PATTERN_2.matcher(line).replaceAll("$1 $2");
+    line = spaceUntokenizedParens(line);
 
     // tokenize
     String[] tokens = tokenizer.tokenize(line);
     return parseLine(tokens, parser, numParses);
+  }
+
+  /**
+   * Separates round and curly brackets from adjacent text so that a whitespace tokenizer
+   * yields each bracket as its own token. A space is inserted before a bracket that follows a
+   * non-whitespace character and after a bracket that precedes one; whitespace already there
+   * is left alone, so the result never carries a doubled separator.
+   *
+   * @param line The untokenized line.
+   * @return The spaced line.
+   */
+  static String spaceUntokenizedParens(String line) {
+    int first = indexOfParen(line);
+    if (first == -1) {
+      return line;
+    }
+    StringBuilder spaced = new StringBuilder(line.length() + SPACING_HEADROOM).append(line, 0, first);
+    for (int i = first; i < line.length(); i++) {
+      char c = line.charAt(i);
+      if (isParen(c)) {
+        // judge "already separated" on the output, so the space a bracket inserted after
+        // itself also serves the bracket that follows it
+        if (!spaced.isEmpty() && !StringUtil.isWhitespace(spaced.charAt(spaced.length() - 1))) {
+          spaced.append(SEPARATOR);
+        }
+        spaced.append(c);
+        if (i + 1 < line.length() && !StringUtil.isWhitespace(line.charAt(i + 1))) {
+          spaced.append(SEPARATOR);
+        }
+      } else {
+        spaced.append(c);
+      }
+    }
+    return spaced.toString();
+  }
+
+  /**
+   * Finds the first round or curly bracket.
+   *
+   * @param line The line.
+   * @return Its offset, or {@code -1} if the line has none.
+   */
+  private static int indexOfParen(String line) {
+    for (int i = 0; i < line.length(); i++) {
+      if (isParen(line.charAt(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Tests for a round or curly bracket.
+   *
+   * @param c The character.
+   * @return {@code true} for {@code (}, {@code )}, <code>{</code>, or <code>}</code>.
+   */
+  private static boolean isParen(char c) {
+    return c == '(' || c == ')' || c == '{' || c == '}';
   }
 
   /**

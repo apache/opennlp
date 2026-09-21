@@ -71,6 +71,17 @@ under the License.
 			tokenized with the English tokenizer model from our website.
 			See the Tokenizer documentation for further details.
 			</para>
+			<para>
+			Before a line is tokenized, the tool separates round and curly brackets from the
+			text around them, because the parser expects each bracket as a token of its own.
+			A bracket that is already surrounded by whitespace is left as it is, so no doubled
+			spaces are introduced. Since 3.0.0 brackets that directly follow each other are each
+			separated: <code>a))b</code> becomes <code>a ) ) b</code> and
+			<code>foo(bar){baz}</code> becomes <code>foo ( bar ) { baz }</code>. Whether a
+			character counts as whitespace follows the toolkit whitespace mode, see
+			<code>StringUtil.isWhitespace</code>; under the default mode any Unicode whitespace
+			counts, tabs and no-break spaces included.
+			</para>
 		</section>
 		<section xml:id="tools.parser.parsing.api">
 		<title>Parsing API</title>
