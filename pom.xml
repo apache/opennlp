@@ -440,6 +440,27 @@ org.xml.sax.helpers.XMLReaderFactory#createXMLReader(**)
 								<goal>testCheck</goal>
 							</goals>
 						</execution>
+						<execution>
+							<id>regex-free-production</id>
+							<phase>process-classes</phase>
+							<goals>
+								<goal>check</goal>
+							</goals>
+							<configuration>
+								<bundledSignatures combine.self="override" />
+								<signatures combine.self="override" />
+								<signaturesFiles>
+									<signaturesFile>${maven.multiModuleProjectDirectory}/src/main/forbiddenapis/regex.txt</signaturesFile>
+								</signaturesFiles>
+								<excludes>
+									<!-- The regex feature: the user supplies the patterns. -->
+									<exclude>opennlp/tools/namefind/RegexNameFinder.class</exclude>
+									<exclude>opennlp/tools/namefind/RegexNameFinder$*.class</exclude>
+									<exclude>opennlp/tools/namefind/RegexNameFinderFactory.class</exclude>
+									<exclude>opennlp/tools/namefind/RegexNameFinderFactory$*.class</exclude>
+								</excludes>
+							</configuration>
+						</execution>
 					</executions>
 				</plugin>
 			</plugins>
