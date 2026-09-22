@@ -614,6 +614,7 @@ POSSIBILITY OF SUCH DAMAGE.
 The following license applies to the Unicode data files bundled inside the
 opennlp-runtime jar (opennlp/tools/util/normalizer/confusables.txt,
 opennlp/tools/util/normalizer/CaseFolding.txt,
+opennlp/tools/util/normalizer/emoji/EmojiSequences-18.0.txt,
 opennlp/tools/tokenize/uax29/WordBreakProperty.txt, and
 opennlp/tools/tokenize/uax29/ExtendedPictographic.txt), and to the
 Unicode-derived values (the CLDR short names and the emoji-test.txt
@@ -624,7 +625,7 @@ opennlp/tools/util/normalizer/emoji-annotations.txt:
 
     COPYRIGHT AND PERMISSION NOTICE
 
-    Copyright (c) 1991-2025 Unicode, Inc.
+    Copyright (c) 1991-2026 Unicode, Inc.
 
     NOTICE TO USER: Carefully read the following legal agreement. BY
     DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR

@@ -16,14 +16,12 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.util.regex.Pattern;
-
 /**
- * A {@link EmojiCharSequenceNormalizer} implementation that normalizes text
- * in terms of emojis. Every encounter will be replaced by a whitespace.
+ * Replaces complete, fully-qualified Unicode Emoji 18.0 sequences with whitespace.
+ * Adjacent sequences form one run and become one space. Text-presentation characters and
+ * structurally connected malformed emoji candidates are preserved.
  *
- * @deprecated Replaces every supplementary-plane code point with a space, not only emoji. Use
- *     {@link EmojiToEmoticonCharSequenceNormalizer} instead.
+ * @deprecated Use {@link EmojiToEmoticonCharSequenceNormalizer} to retain emoji as text signal.
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
@@ -36,15 +34,36 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
-  private static final Pattern EMOJI_REGEX =
-      Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
-
   /** {@inheritDoc} */
-  @Override
-  public CharSequence normalize (CharSequence text) {
+  @Override public CharSequence normalize(CharSequence text) {
     if (text == null) {
       throw new IllegalArgumentException("The text must not be null.");
     }
-    return EMOJI_REGEX.matcher(text).replaceAll(" ");
+    UnicodeEmojiSequences sequences = UnicodeEmojiSequences.getInstance();
+    StringBuilder normalized = null;
+    int copiedThrough = 0;
+    for (int i = 0; i < text.length();) {
+      UnicodeEmojiSequences.Candidate candidate = sequences.candidateAt(text, i);
+      if (candidate != null && candidate.valid()) {
+        if (normalized == null) {
+          normalized = new StringBuilder(text.length());
+        }
+        normalized.append(text, copiedThrough, i).append(' ');
+        i = candidate.end();
+        copiedThrough = i;
+      }
+      else {
+        i = candidate == null ? i + Character.charCount(Character.codePointAt(text, i))
+            : candidate.end();
+      }
+    }
+    if (normalized == null) {
+      return text;
+    }
+    return normalized.append(text, copiedThrough, text.length()).toString();
+  }
+
+  private Object readResolve() {
+    return INSTANCE;
   }
 }
