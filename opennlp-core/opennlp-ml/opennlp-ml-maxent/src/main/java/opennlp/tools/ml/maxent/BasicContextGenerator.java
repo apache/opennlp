@@ -61,12 +61,18 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    * @param sep The separator, taken as written and not as a regular expression.
    *            Must not be {@code null} or empty, and must be well-formed text: an unpaired
    *            surrogate is not a character and could split a code point of the input.
-   * @throws IllegalArgumentException If {@code sep} is {@code null}, empty, or contains an
-   *                                  unpaired surrogate.
+   *            A backslash is rejected, so a separator escaped for the regular expression
+   *            engine, such as {@code "\\|"}, fails here instead of splitting nothing.
+   * @throws IllegalArgumentException If {@code sep} is {@code null}, empty, contains a
+   *                                  backslash, or contains an unpaired surrogate.
    */
   public BasicContextGenerator(String sep) {
     if (sep == null || sep.isEmpty()) {
       throw new IllegalArgumentException("sep must not be null or empty");
+    }
+    if (sep.indexOf('\\') >= 0) {
+      throw new IllegalArgumentException(
+          "sep is taken as written and must not contain a backslash: " + sep);
     }
     if (sep.codePoints().anyMatch(this::isUnpairedSurrogate)) {
       throw new IllegalArgumentException("sep must not contain an unpaired surrogate");

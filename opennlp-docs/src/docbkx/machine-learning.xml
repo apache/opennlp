@@ -84,7 +84,9 @@ under the License.
 		White_Space property (<code>StringUtil.isUnicodeWhitespace</code>), independent of the
 		<code>opennlp.whitespace.mode</code> setting. A separator given to the constructor is
 		taken as written, not as a regular expression, and must not be null, empty, or contain an
-		unpaired surrogate. A predicate is never empty: leading, repeated, or trailing separators
+		unpaired surrogate. A backslash is rejected as well, so a separator escaped for the
+		regular expression engine fails at construction instead of splitting nothing.
+		A predicate is never empty: leading, repeated, or trailing separators
 		produce none, and an empty input gives no predicates.
 		</para>
 		<para>

@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml.maxent;
 
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -65,8 +64,6 @@ public class BasicContextGeneratorTest {
         Arguments.of(".", "a.b", new String[] {"a", "b"}),
         Arguments.of("+", "a+b", new String[] {"a", "b"}),
         Arguments.of("(", "a(b", new String[] {"a", "b"}),
-        Arguments.of("\\s", "a\\sb", new String[] {"a", "b"}),
-        Arguments.of("\\s", "a b", new String[] {"a b"}),
         // a multi-character separator, and a prefix of it in the input
         Arguments.of("::", "a::b::c", new String[] {"a", "b", "c"}),
         Arguments.of("::", "a:b", new String[] {"a:b"}),
@@ -108,21 +105,28 @@ public class BasicContextGeneratorTest {
 
   private static Stream<Arguments> patternsTakenAsText() {
     return Stream.of(
-        // a regular expression passed as the separator matches its own text only, so input
+        // a character class passed as the separator matches its own text only, so input
         // that a pattern split before 3.0.0 is one predicate now
-        Arguments.of("\\|", "a|b", new String[] {"a|b"}),
-        Arguments.of("\\|", "a\\|b", new String[] {"a", "b"}),
-        Arguments.of("\\.", "a.b", new String[] {"a.b"}),
-        Arguments.of(Pattern.quote("|"), "a|b", new String[] {"a|b"}),
-        Arguments.of("\\s+", "a  b\tc", new String[] {"a  b\tc"}),
         Arguments.of("[ \t]", "a b\tc", new String[] {"a b\tc"}),
-        Arguments.of("[,;]", "a,b;c", new String[] {"a,b;c"}));
+        Arguments.of("[,;]", "a,b;c", new String[] {"a,b;c"}),
+        Arguments.of("[,;]", "a[,;]b", new String[] {"a", "b"}));
   }
 
   @ParameterizedTest
   @MethodSource("patternsTakenAsText")
   void testPatternSeparatorIsTakenAsText(String separator, String input, String[] expected) {
     Assertions.assertArrayEquals(expected, new BasicContextGenerator(separator).getContext(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\\|", "\\.", "\\s", "\\s+", "\\Q|\\E", "a\\b", "\\"})
+  void testEscapedSeparatorIsRejected(String separator) {
+    // the escape that a regex separator needed fails at construction, so a separator written
+    // for 2.x cannot silently stop splitting
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new BasicContextGenerator(separator));
+    Assertions.assertEquals("sep is taken as written and must not contain a backslash: "
+        + separator, e.getMessage());
   }
 
   private static Stream<Arguments> whitespaceSeparators() {
