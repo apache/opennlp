@@ -29,9 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
@@ -41,7 +38,9 @@ import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.CharClass;
@@ -54,6 +53,10 @@ public abstract class AbstractDL implements AutoCloseable {
   public static final String INPUT_IDS = "input_ids";
   public static final String ATTENTION_MASK = "attention_mask";
   public static final String TOKEN_TYPE_IDS = "token_type_ids";
+
+  private static final String BYTE_ORDER_MARK = "\uFEFF";
+  private static final String TOKENIZER_MODEL_KEY = "model";
+  private static final String TOKENIZER_VOCAB_KEY = "vocab";
 
   protected final OrtEnvironment env;
   protected final OrtSession session;
@@ -76,9 +79,6 @@ public abstract class AbstractDL implements AutoCloseable {
   protected record TextChunk(String text, int start, int end) {
   }
 
-  private static final Pattern JSON_ENTRY_PATTERN =
-      Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"\\s*:\\s*(\\d+)");
-
   /**
    * Initializes the shared, immutable inference state: the ONNX environment and session,
    * the loaded vocabulary and the configured tokenizer. These fields are {@code final}
@@ -94,6 +94,7 @@ public abstract class AbstractDL implements AutoCloseable {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if the {@code model} or {@code vocabulary} cannot be read.
+   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed.
    */
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
@@ -162,16 +163,19 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Loads a vocabulary {@link File} from disk.
-   * Supports both plain text files (one token per
-   * line) and simple JSON vocabulary files mapping tokens to integer
-   * IDs. JSON support is intentionally limited to the HuggingFace vocabulary
-   * shape; it is not a general-purpose JSON parser.
+   * Loads a vocabulary {@link File} from disk. A file with an opening brace as its first
+   * non-whitespace character is read as JSON: one object that maps each token to a non-negative
+   * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
+   * per line, the line number being the ID, as in {@code vocab.txt}. A byte order mark at the
+   * start of the file is not content in either format. The JSON layouts are those of
+   * {@link #loadJsonVocab(String)}.
    *
    * @param vocabFile The vocabulary file.
    * @return A map of vocabulary words to IDs.
-   * @throws IOException Thrown if the vocabulary
-   *     file cannot be opened or read.
+   * @throws IOException Thrown if the vocabulary file cannot be opened or read.
+   * @throws InvalidFormatException Thrown if a JSON vocabulary is malformed, has a layout that
+   *     is not supported, or contains a value that is not a non-negative integer. The message
+   *     names the file and the offset or the token.
    */
   public Map<String, Integer> loadVocab(
       final File vocabFile) throws IOException {
@@ -179,18 +183,30 @@ public abstract class AbstractDL implements AutoCloseable {
     return loadVocabFile(vocabFile);
   }
 
+  /**
+   * Loads a vocabulary file as {@link #loadVocab(File)} does.
+   *
+   * @param vocabFile The vocabulary file.
+   * @return A map of vocabulary words to IDs.
+   * @throws IOException Thrown if the vocabulary file cannot be opened or read.
+   * @throws InvalidFormatException Thrown if a JSON vocabulary is malformed, has a layout that
+   *     is not supported, or contains a value that is not a non-negative integer.
+   */
   static Map<String, Integer> loadVocabFile(
       final File vocabFile) throws IOException {
 
-    final Path vocabPath =
-        Path.of(vocabFile.getPath());
-    final String content = Files.readString(
-        vocabPath, StandardCharsets.UTF_8);
+    final String read = Files.readString(Path.of(vocabFile.getPath()), StandardCharsets.UTF_8);
+    final String content = read.startsWith(BYTE_ORDER_MARK) ? read.substring(1) : read;
     final String trimmed = content.trim();
 
     // Detect JSON format by leading brace
     if (trimmed.startsWith("{")) {
-      return loadJsonVocab(trimmed);
+      try {
+        return loadJsonVocab(trimmed);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidFormatException(
+            "Vocabulary file " + vocabFile.getName() + ": " + e.getMessage(), e);
+      }
     }
 
     final Map<String, Integer> vocab =
@@ -198,12 +214,9 @@ public abstract class AbstractDL implements AutoCloseable {
     final AtomicInteger counter =
         new AtomicInteger(0);
 
-    try (Stream<String> lines = Files.lines(
-        vocabPath, StandardCharsets.UTF_8)) {
-      lines.forEach(line ->
-          vocab.put(line, counter.getAndIncrement())
-      );
-    }
+    content.lines().forEach(line ->
+        vocab.put(line, counter.getAndIncrement())
+    );
 
     return vocab;
   }
@@ -521,58 +534,64 @@ public abstract class AbstractDL implements AutoCloseable {
     return List.copyOf(ranges);
   }
 
-  private static Map<String, Integer> loadJsonVocab(final String json) {
-
+  /**
+   * Reads a JSON vocabulary in one of two layouts. A {@code vocab.json} file is one object that
+   * maps each token to its ID. A {@code tokenizer.json} file, recognized by a top-level object
+   * without integer members that has a {@code model} object with a {@code vocab} object, maps
+   * the tokens in {@code model.vocab}, the layout of WordPiece and BPE models. Its other
+   * members are not entries: in particular, a token of the {@code added_tokens} list is only in
+   * the vocabulary if {@code model.vocab} lists it as well. The Unigram layout, in which
+   * {@code model.vocab} is a list, is not supported. Keys are decoded from their escapes, and a
+   * later entry for the same token overwrites an earlier one.
+   *
+   * @param json The JSON text of the vocabulary.
+   * @return A map of vocabulary tokens to IDs.
+   * @throws IllegalArgumentException Thrown if the text is not a single well-formed JSON object,
+   *     if {@code model.vocab} is not an object, or if a value of the vocabulary object is not a
+   *     non-negative integer that fits into an {@code int}. The message names the offset or the
+   *     token.
+   */
+  static Map<String, Integer> loadJsonVocab(final String json) {
+    final List<JsonScan.Member> document = JsonScan.document(json);
+    final List<JsonScan.Member> tokenizerVocab = tokenizerVocab(json, document);
     final Map<String, Integer> vocab = new HashMap<>();
-    final Matcher matcher = JSON_ENTRY_PATTERN.matcher(json);
-
-    while (matcher.find()) {
-      final String token = matcher.group(1)
-          .transform(AbstractDL::unescapeJsonString);
-      final int id = Integer.parseInt(matcher.group(2));
-      vocab.put(token, id);
+    for (JsonScan.Member member : tokenizerVocab != null ? tokenizerVocab : document) {
+      vocab.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
     }
-
     return vocab;
   }
 
-  private static String unescapeJsonString(final String value) {
-    final StringBuilder result = new StringBuilder(value.length());
-    for (int i = 0; i < value.length(); i++) {
-      final char ch = value.charAt(i);
-      if (ch != '\\') {
-        result.append(ch);
-        continue;
-      }
-      if (++i == value.length()) {
-        throw new IllegalArgumentException("Invalid JSON string escape.");
-      }
-      final char escaped = value.charAt(i);
-      switch (escaped) {
-        case '"' -> result.append('"');
-        case '\\' -> result.append('\\');
-        case '/' -> result.append('/');
-        case 'b' -> result.append('\b');
-        case 'f' -> result.append('\f');
-        case 'n' -> result.append('\n');
-        case 'r' -> result.append('\r');
-        case 't' -> result.append('\t');
-        case 'u' -> {
-          if (i + 4 >= value.length()) {
-            throw new IllegalArgumentException("Invalid JSON unicode escape.");
-          }
-          final String hex = value.substring(i + 1, i + 5);
-          try {
-            result.append((char) Integer.parseInt(hex, 16));
-          } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid JSON unicode escape.", e);
-          }
-          i += 4;
-        }
-        default -> throw new IllegalArgumentException("Invalid JSON string escape.");
+  /**
+   * Finds the {@code model.vocab} object of a {@code tokenizer.json} document.
+   *
+   * @param json The JSON text.
+   * @param document The members of the top-level object.
+   * @return The members of {@code model.vocab}, or {@code null} if a top-level member is an
+   *     integer or there is no {@code model} object with a {@code vocab} member.
+   * @throws IllegalArgumentException Thrown if the {@code model} object is malformed, or if
+   *     {@code model.vocab} is not an object.
+   */
+  private static List<JsonScan.Member> tokenizerVocab(String json, List<JsonScan.Member> document) {
+    for (JsonScan.Member member : document) {
+      if (StringUtil.endOfAsciiDigits(json, member.valueStart()) == member.valueEnd()) {
+        return null;
       }
     }
-    return result.toString();
+    final JsonScan.Member model = JsonScan.member(document, TOKENIZER_MODEL_KEY);
+    if (model == null || !JsonScan.isObject(json, model)) {
+      return null;
+    }
+    final JsonScan.Member vocab =
+        JsonScan.member(JsonScan.members(json, model.valueStart()), TOKENIZER_VOCAB_KEY);
+    if (vocab == null) {
+      return null;
+    }
+    if (!JsonScan.isObject(json, vocab)) {
+      throw new IllegalArgumentException("Unsupported tokenizer.json layout: " + TOKENIZER_MODEL_KEY
+          + "." + TOKENIZER_VOCAB_KEY + " must be an object that maps tokens to ids, as in WordPiece"
+          + " and BPE models; the list of a Unigram model is not supported");
+    }
+    return JsonScan.members(json, vocab.valueStart());
   }
 
   /**
