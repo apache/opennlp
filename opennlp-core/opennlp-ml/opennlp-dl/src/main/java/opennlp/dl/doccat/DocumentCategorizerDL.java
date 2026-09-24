@@ -43,6 +43,7 @@ import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.doccat.DocumentCategorizer;
+import opennlp.tools.util.InvalidFormatException;
 
 
 /**
@@ -117,6 +118,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed.
    */
   public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -151,7 +153,11 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    *                                      individual document part.
    * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
-   * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IOException  Thrown if errors occurred loading the {@code model}, the
+   *     {@code vocabulary}, or the {@code config}.
+   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, or if
+   *     {@code config} is not well-formed JSON, its {@code id2label} member does not map keys
+   *     to strings, or a key is not an integer.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -163,7 +169,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
             inferenceOptions, config, classificationScoringStrategy)),
         resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
 
-    this.categories = Map.copyOf(readCategoriesFromFile(config));
+    this.categories = Map.copyOf(readCategories(config));
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
@@ -432,17 +438,28 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
         .orElse(-1);
   }
 
-  private Map<Integer, String> readCategoriesFromFile(File config) throws IOException {
-    final DocumentCategorizerConfig documentCategorizerConfig =
-        DocumentCategorizerConfig.fromJson(Files.readString(config.toPath(), StandardCharsets.UTF_8));
-
+  /**
+   * Reads the categories of a model from the {@code id2label} member of its configuration file.
+   *
+   * @param config The {@code config.json} file.
+   * @return The categories by output index, empty if the configuration has no {@code id2label}.
+   * @throws IOException Thrown if the file cannot be read.
+   * @throws InvalidFormatException Thrown if the file is not well-formed JSON, its
+   *     {@code id2label} member does not map keys to strings, or a key is not an integer. The
+   *     message names the file.
+   */
+  static Map<Integer, String> readCategories(File config) throws IOException {
+    final String json = Files.readString(config.toPath(), StandardCharsets.UTF_8);
     final Map<Integer, String> categories = new HashMap<>();
-    for (final String key : documentCategorizerConfig.id2label().keySet()) {
-      categories.put(Integer.valueOf(key), documentCategorizerConfig.id2label().get(key));
+    try {
+      for (Map.Entry<String, String> label : DocumentCategorizerConfig.fromJson(json).id2label().entrySet()) {
+        categories.put(Integer.valueOf(label.getKey()), label.getValue());
+      }
+    } catch (IllegalArgumentException e) {
+      throw new InvalidFormatException(
+          "Configuration file " + config.getName() + ": " + e.getMessage(), e);
     }
-
     return categories;
-
   }
 
 }

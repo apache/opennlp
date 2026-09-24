@@ -128,6 +128,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
    *     the sentence detector is {@code null}.
    */
@@ -151,6 +153,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
    *     the sentence detector is {@code null}.
    */
