@@ -69,7 +69,7 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
   @ParameterizedTest
   @MethodSource("unixClassPaths")
   void testSplitClassPathUnix(String classPath, String[] expected) {
-    Assertions.assertArrayEquals(expected, SimpleClassPathModelFinder.splitClassPath(classPath, false));
+    Assertions.assertArrayEquals(expected, new SimpleClassPathModelFinder().splitClassPath(classPath, false));
   }
 
   private static Stream<Arguments> windowsClassPaths() {
@@ -101,12 +101,12 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
   @ParameterizedTest
   @MethodSource("windowsClassPaths")
   void testSplitClassPathWindows(String classPath, String[] expected) {
-    Assertions.assertArrayEquals(expected, SimpleClassPathModelFinder.splitClassPath(classPath, true));
+    Assertions.assertArrayEquals(expected, new SimpleClassPathModelFinder().splitClassPath(classPath, true));
   }
 
   @Test
   void testSplitClassPathRejectsNull() {
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> SimpleClassPathModelFinder.splitClassPath(null, false));
+        () -> new SimpleClassPathModelFinder().splitClassPath(null, false));
   }
 }

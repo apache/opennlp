@@ -175,10 +175,7 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
    * @return The non-empty class path entries in order.
    * @throws IllegalArgumentException Thrown if {@code classPath} is {@code null}.
    */
-  static String[] splitClassPath(String classPath, boolean isWindows) {
-    if (classPath == null) {
-      throw new IllegalArgumentException("classPath must not be null");
-    }
+  String[] splitClassPath(String classPath, boolean isWindows) {
     return StringUtil.splitNonEmpty(classPath,
         isWindows ? CLASSPATH_SEPARATOR_WINDOWS : CLASSPATH_SEPARATOR_UNIX);
   }

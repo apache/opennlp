@@ -120,7 +120,7 @@ For more details please check our [documentation](https://opennlp.apache.org/doc
 
 ## Migrating from 2.x to 3.x
 
-The 3.x release line of Apache OpenNLP introduces **no** known breaking changes but modularizes the project for better usage as a library and to support future extensibility.
+The 3.x release line of Apache OpenNLP introduces only a few breaking changes, listed below, but modularizes the project for better usage as a library and to support future extensibility.
 The core API remains stable and compatible with 2.x, but the project structure has been reorganized into multiple modules.
 
 That means, that you can continue to use the previous `opennlp-tools` artifact as a dependency. However, we strongly recommend to switch to the new modular structure 
@@ -128,6 +128,10 @@ and import only the components you need, which will result in a smaller dependen
 
 Only `opennlp-runtime` needs to be added as a dependency, and you can add additional modules (e.g. `opennlp-ml-maxent`, `opennlp-model-resolver`, etc.) as required by your project.
 For users of the traditional CLI toolkit, nothing changes with the 3.x release line. CLI usage remains stable as described in the [project's dev manual](https://opennlp.apache.org/docs/).
+
+### Breaking changes
+
+- `AbstractClassPathModelFinder`: the protected `asRegex` and `matchesPattern` methods were removed. Custom model finders call `matchesWildcard(url, "*.bin")` instead ([OPENNLP-1932](https://issues.apache.org/jira/browse/OPENNLP-1932)).
 
 ### Thread safety
 

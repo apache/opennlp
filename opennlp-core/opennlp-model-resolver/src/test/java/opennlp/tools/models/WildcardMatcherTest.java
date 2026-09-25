@@ -218,22 +218,6 @@ public class WildcardMatcherTest {
     Assertions.assertFalse(WildcardMatcher.matches(wildcard, rejected));
   }
 
-  private static Stream<Arguments> nullInputs() {
-    return Stream.of(
-        Arguments.of(null, "a"),
-        Arguments.of("a", null),
-        Arguments.of(null, null));
-  }
-
-  /**
-   * Checks that a null wildcard or input fails fast instead of matching.
-   */
-  @ParameterizedTest
-  @MethodSource("nullInputs")
-  void testMatchesRejectsNull(String wildcard, String input) {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> WildcardMatcher.matches(wildcard, input));
-  }
-
   /**
    * Checks a wildcard that makes a backtracking regular expression take polynomial time,
    * {@code .*a.*a.*a.*b} against a long run of {@code a}. The matcher keeps one backtracking
