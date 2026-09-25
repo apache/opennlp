@@ -29,6 +29,8 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 public class StringUtil {
 
+  private static final char BYTE_ORDER_MARK = '\uFEFF';
+
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
@@ -225,6 +227,32 @@ public class StringUtil {
       }
     }
     return fields.toArray(new String[0]);
+  }
+
+  /**
+   * Tests whether {@code input} starts with a byte order mark, U+FEFF, which a UTF-8 or
+   * UTF-16 text file may carry as its first character.
+   *
+   * @param input The text to test. Must not be {@code null}.
+   * @return {@code true} if the first character of {@code input} is U+FEFF.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static boolean startsWithByteOrderMark(CharSequence input) {
+    requireNonNullArg(input, "input");
+    return !input.isEmpty() && input.charAt(0) == BYTE_ORDER_MARK;
+  }
+
+  /**
+   * Removes one leading byte order mark, U+FEFF, from {@code input}. A U+FEFF anywhere else
+   * is left in place, since there it is a zero width no-break space and part of the text.
+   *
+   * @param input The text to strip. Must not be {@code null}.
+   * @return {@code input} without its leading byte order mark, or {@code input} itself if it
+   *     has none.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String stripByteOrderMark(String input) {
+    return startsWithByteOrderMark(input) ? input.substring(1) : input;
   }
 
   /**

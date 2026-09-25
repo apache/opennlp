@@ -173,6 +173,26 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 				For additional examples, refer to the <code>DocumentCategorizerDLEval</code> class.
 			</para>
 			<para>
+				The vocabulary file is either plain text, with one token per line and the line number as
+				the token ID, as in <code>vocab.txt</code>, or a JSON object that maps each token to a
+				non-negative integer ID, as in <code>vocab.json</code>. A file is read as JSON when its
+				first non-whitespace character is an opening brace, and a leading byte order mark is
+				ignored. A Hugging Face <code>tokenizer.json</code> is not a vocabulary file and is
+				rejected; support for it is tracked in OPENNLP-1988. A vocabulary that cannot be read is
+				rejected with an <code>InvalidFormatException</code> that names the file and the position
+				of the problem.
+			</para>
+			<para>
+				When a configuration file is given in place of the categories map, its top-level
+				<code>id2label</code> object supplies the categories, mapping each output index to a
+				label. A configuration without a top-level <code>id2label</code> gives no categories.
+				A configuration that is not well-formed JSON, or whose <code>id2label</code> is not an
+				object of strings keyed by integers, is rejected with an
+				<code>InvalidFormatException</code>. The values <code>NaN</code> and
+				<code>Infinity</code>, which Python writes into some configurations, are accepted
+				outside <code>id2label</code>.
+			</para>
+			<para>
 				Like <code>NameFinderDL</code>, long input is split into overlapping chunks on the full
 				Unicode <code>White_Space</code> set rather than Java's <code>\s</code>, so text copied
 				from PDFs, the web, or multilingual sources tokenizes consistently. Optional
