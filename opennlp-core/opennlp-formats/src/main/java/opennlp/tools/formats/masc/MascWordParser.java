@@ -24,6 +24,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import opennlp.tools.util.Span;
+
 /**
  * Class to parse the word ("quark") segmentation stand-off annotation.
  */
@@ -42,17 +44,15 @@ class MascWordParser extends DefaultHandler {
     try {
       // create a word and put it into the list of words
       if (qName.equalsIgnoreCase("region")) {
-        int id = Integer.parseInt(attributes.getValue("xml:id").replaceFirst("seg-r", ""));
-        String[] anchors = attributes.getValue("anchors").split(" ");
-
-        int left = Integer.parseInt(anchors[0]);
-        int right = Integer.parseInt(anchors[1]);
-
-        wordAnchors.add(new MascWord(left, right, id));
+        int id = MascIdentifiers.parseId(
+            attributes.getValue("xml:id"), MascIdentifiers.REGION_ID_PREFIX);
+        Span anchors = MascIdentifiers.parseAnchors(attributes.getValue("anchors"));
+        wordAnchors.add(new MascWord(anchors.getStart(), anchors.getEnd(), id));
       }
 
     } catch (Exception e) {
-      throw new SAXException("Could not parse the word segmentation annotation file.");
+      throw new SAXException("Could not parse the word segmentation annotation file.\n"
+          + e.getMessage(), e);
     }
   }
 }

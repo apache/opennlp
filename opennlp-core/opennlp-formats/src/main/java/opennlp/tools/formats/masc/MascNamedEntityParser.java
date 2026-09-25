@@ -53,8 +53,8 @@ public class MascNamedEntityParser extends DefaultHandler {
 
     try {
       if (qName.equals("a")) {
-        int entityID = Integer.parseInt(
-            attributes.getValue("ref").replaceFirst("ne-n", ""));
+        int entityID = MascIdentifiers.parseId(attributes.getValue("ref"),
+            MascIdentifiers.NAMED_ENTITY_ID_PREFIX);
         String label = attributes.getValue("label");
         if (entityIDtoEntityType.containsKey(entityID)) {
           throw new SAXException("Multiple labels for one named entity");
@@ -64,10 +64,10 @@ public class MascNamedEntityParser extends DefaultHandler {
       }
 
       if (qName.equals("edge")) {
-        int entityID = Integer.parseInt(
-            attributes.getValue("from").replaceFirst("ne-n", ""));
-        int tokenID = Integer.parseInt(
-            attributes.getValue("to").replaceFirst("penn-n", ""));
+        int entityID = MascIdentifiers.parseId(attributes.getValue("from"),
+            MascIdentifiers.NAMED_ENTITY_ID_PREFIX);
+        int tokenID = MascIdentifiers.parseId(attributes.getValue("to"),
+            MascIdentifiers.PENN_TOKEN_ID_PREFIX);
 
         if (!entityIDsToTokens.containsKey(entityID)) {
           List<Integer> tokens = new ArrayList<>();

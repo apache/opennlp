@@ -28,6 +28,27 @@ under the License.
 	OpenNLP has built-in support to convert into the native training format or directly use
 	various corpora	needed by the different	trainable components.
 	</para>
+	<section xml:id="tools.corpora.masc">
+		<title>MASC</title>
+		<para>
+		The <link xlink:href="https://anc.org/data/masc/masc-structure">MASC corpus</link>
+		stores source text separately from its GrAF annotations. The readers validate the
+		identifier conventions of the supported annotation layers: <code>seg-r</code> for
+		segmentation regions, <code>penn-n</code> for Penn token nodes, and <code>ne-n</code>
+		for named entity nodes, each followed by ASCII digits representing a nonnegative
+		Java integer. Target lists retain their declared order.
+		</para>
+		<para>
+		Lists of targets and anchors use XML whitespace: space, tab, carriage return, and
+		line feed. This includes whitespace supplied through character references, which
+		<link xlink:href="https://www.w3.org/TR/xml/#AVNormalize">XML attribute-value
+		normalization</link> preserves. Other Unicode whitespace, such as a no-break space,
+		is not a separator. Each supported word or sentence text region must have exactly
+		two integer anchors, with zero or more as the start and an end at or after the start.
+		Malformed identifiers and anchors are reported with the underlying parsing cause.
+		The readers do not normalize source text or rewrite annotation offsets.
+		</para>
+	</section>
 	<section xml:id="tools.corpora.conll">
 		<title>CONLL</title>
 		<para>
