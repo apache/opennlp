@@ -33,6 +33,10 @@ import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool;
 import opennlp.tools.cmdline.chunker.ChunkerMETool;
 import opennlp.tools.cmdline.chunker.ChunkerTrainerTool;
+import opennlp.tools.cmdline.depparse.DependencyParserCrossValidatorTool;
+import opennlp.tools.cmdline.depparse.DependencyParserEvaluatorTool;
+import opennlp.tools.cmdline.depparse.DependencyParserMETool;
+import opennlp.tools.cmdline.depparse.DependencyParserTrainerTool;
 import opennlp.tools.cmdline.dictionary.DictionaryBuilderTool;
 import opennlp.tools.cmdline.doccat.DoccatConverterTool;
 import opennlp.tools.cmdline.doccat.DoccatCrossValidatorTool;
@@ -161,6 +165,12 @@ public final class CLI {
     tools.add(new LemmatizerMETool());
     tools.add(new LemmatizerTrainerTool());
     tools.add(new LemmatizerEvaluatorTool());
+
+    // Dependency parser
+    tools.add(new DependencyParserTrainerTool());
+    tools.add(new DependencyParserEvaluatorTool());
+    tools.add(new DependencyParserCrossValidatorTool());
+    tools.add(new DependencyParserMETool());
 
     // Chunker
     tools.add(new ChunkerMETool());

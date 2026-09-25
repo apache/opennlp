@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.dependency" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Dependency Parsing</title>
+
+	<section xml:id="tools.dependency.introduction">
+		<title>Introduction</title>
+		<para>
+			Dependency parsing assigns each token a syntactic head and a relation label.
+			<code>DependencyParserME</code> accepts tokens with aligned part-of-speech tags
+			and returns a <code>DependencyGraph</code> using a maximum entropy model.
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.training-data">
+		<title>Training data</title>
+		<para>
+			<code>ConlluDependencySampleStream</code> reads the basic <code>HEAD</code> and
+			<code>DEPREL</code> columns of a CoNLL-U treebank. Select
+			<code>ConlluTagset.U</code> for universal tags or <code>ConlluTagset.X</code>
+			for language-specific tags. The reader retains syntactic words from multiword
+			tokens and skips sentences without a complete dependency tree or the selected POS tags.
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.maxent">
+		<title>Maximum entropy parser</title>
+		<para>
+			Train and save the standard OpenNLP model. Training accepts
+			<code>TrainingParameters</code> and an optional <code>DependencyParserFactory</code>
+			for additional model artifacts, serializers, and manifest entries:
+			<programlisting language="java">
+<![CDATA[InputStreamFactory trainingData =
+    () -> Files.newInputStream(Path.of("train.conllu"));
+
+TrainingParameters parameters = TrainingParameters.defaultParams();
+parameters.put(Parameters.CUTOFF_PARAM, 0);
+DependencyModel model;
+try (ObjectStream<DependencySample> samples =
+    new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+  model = DependencyParserME.train("eng", samples, parameters);
+}
+model.serialize(Path.of("en-depparse.bin"));
+
+DependencyParser parser =
+    new DependencyParserME(new DependencyModel(Path.of("en-depparse.bin")));]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.cli">
+		<title>Command-line tools</title>
+		<para>
+			Training, evaluation, and cross validation read UTF-8 CoNLL-U files. Use
+			<code>-tagset u</code> (the default) for UPOS or <code>-tagset x</code> for XPOS.
+			Use the same tagset for training and inference. An optional <code>-params</code>
+			file supplies the standard training parameters, and <code>-factory</code> names
+			a <code>DependencyParserFactory</code> extension. For example:
+		</para>
+		<programlisting>
+<![CDATA[opennlp DependencyParserTrainerME.conllu -lang eng -data train.conllu -model en-depparse.bin
+opennlp DependencyParserEvaluator.conllu -model en-depparse.bin -data dev.conllu
+opennlp DependencyParserCrossValidator.conllu -lang eng -data train.conllu -folds 5
+opennlp DependencyParserME en-depparse.bin < tagged-sentences.txt]]>
+		</programlisting>
+		<para>
+			Inference reads one sentence per line in the POS tagger's <code>token_TAG</code>
+			format, for example <code>dogs_NOUN run_VERB</code>. It writes ten-column
+			CoNLL-U output with one-based heads and <code>0</code> for the root. Input tags
+			are retained in XPOS; UPOS and other unavailable annotations are <code>_</code>.
+			The evaluation and cross-validation tools report UAS and LAS over all scored tokens.
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.parsing">
+
+		<title>Parsing and evaluation</title>
+		<para>
+			Graph indices refer to the input
+			token array:
+			<programlisting language="java">
+<![CDATA[String[] tokens = {"Alice", "sent", "Bob", "a", "message", "."};
+String[] tags = {"PROPN", "VERB", "PROPN", "DET", "NOUN", "PUNCT"};
+DependencyGraph graph = parser.parse(tokens, tags);
+
+for (DependencyArc arc : graph.arcs()) {
+  String dependent = tokens[arc.dependent()];
+  String head = arc.head() == DependencyArc.ROOT_HEAD
+      ? "ROOT" : tokens[arc.head()];
+  System.out.println(dependent + " -> " + head + " (" + arc.relation() + ")");
+}]]>
+			</programlisting>
+			<code>DependencyEvaluator</code> reports the unlabeled attachment score (the fraction
+			of tokens with the correct head) and the labeled attachment score (the fraction with
+			the correct head and relation label), both over all tokens and, through the
+			<code>ExcludingPunctuation</code> getters, over the tokens whose gold tag is not
+			<code>PUNCT</code>. <code>DependencyCrossValidator</code> splits a sample stream into
+			folds, trains a parser on the other folds through a trainer you supply, and scores
+			the held-out fold:
+			<programlisting language="java">
+<![CDATA[DependencyCrossValidator validator = new DependencyCrossValidator(
+    samples -> new DependencyParserME(
+        DependencyParserME.train("eng", samples, parameters)));
+validator.evaluate(trainingSamples, 4);
+double uas = validator.getUas();
+double lasExcludingPunctuation = validator.getLasExcludingPunctuation();]]>
+			</programlisting>
+			The provided treebank evaluation, <code>UniversalDependencyParserEval</code> in
+			<code>opennlp-eval-tests</code>, trains the parser from scratch on a Universal
+			Dependencies 2.0 training split and pins all four scores on data the parser has not
+			seen: the transition parser on the English, German, Spanish AnCora, and French
+			development splits and in a five-fold cross validation of the English training split.
+			It uses
+			gold sentence boundaries, tokens, and tags, so it measures the dependency parser
+			rather than a complete text pipeline. The arc-standard trainer skips non-projective
+			training samples. Evaluation uses
+			the existing <code>opennlp-data</code> treebanks.
+		</para>
+	</section>
+</chapter>
