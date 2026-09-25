@@ -79,6 +79,37 @@ under the License.
 		and example implementations can be found in the OpenNLP Tools preprocessing components.
 		</para>
 		<para>
+		<code>BasicContextGenerator</code> turns one string of contextual predicates into the
+		predicate array. Without arguments it separates on runs of whitespace under the Unicode
+		White_Space property (<code>StringUtil.isUnicodeWhitespace</code>), independent of the
+		<code>opennlp.whitespace.mode</code> setting. A separator given to the constructor is
+		taken as written, not as a regular expression, and must not be null, empty, or contain an
+		unpaired surrogate. A backslash is rejected as well, so a separator escaped for the
+		regular expression engine fails at construction instead of splitting nothing.
+		A predicate is never empty: leading, repeated, or trailing separators
+		produce none, and an empty input gives no predicates.
+		</para>
+		<para>
+		When migrating to 3.0, replace regex-escaped separators with their literal text. The
+		following examples use Java string literals:
+		</para>
+		<programlisting language="java">
+// Before 3.0                                  // Since 3.0
+new BasicContextGenerator("\\|");              new BasicContextGenerator("|");
+new BasicContextGenerator("\\.");              new BasicContextGenerator(".");
+new BasicContextGenerator("\\s+");             new BasicContextGenerator();
+		</programlisting>
+		<para>
+		The default constructor now splits on Unicode whitespace runs instead of individual
+		spaces. Replacing <code>"\\s+"</code> with the default constructor also broadens the
+		separator set from ASCII to Unicode whitespace. Both constructors now discard empty
+		predicates: for example, splitting <code>",a,,b,"</code> on <code>","</code> returns
+		<code>["a", "b"]</code> instead of <code>["", "a", "", "b"]</code>, and empty input
+		returns an empty array instead of an array containing an empty string. Other regex
+		patterns, such as <code>"[,;]"</code>, are literal text in 3.0; callers must perform
+		any required multi-delimiter splitting themselves.
+		</para>
+		<para>
 		We have also set in place some interfaces and code to make it easier to automate the training
 		and evaluation process (the Evaluable interface and the TrainEval class). It is not necessary
 		to use this functionality, but if you do you'll find it much easier to see how well your models
