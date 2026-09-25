@@ -228,6 +228,60 @@ public class StringUtil {
   }
 
   /**
+   * Splits {@code input} around literal occurrences of any of the {@code separators} and
+   * drops the empty fields that leading, trailing or adjacent separators would produce, so a
+   * run of separators acts as one and input made only of separators yields an empty array.
+   * The scan compares characters, so every separator is a literal, including a
+   * regular-expression metacharacter, and supplementary code points in the input pass
+   * through untouched.
+   *
+   * @param input The text to split. Must not be {@code null}.
+   * @param separators The literal field separators. Must not be {@code null} or empty, and
+   *     must not contain a surrogate.
+   * @return The non-empty fields in order.
+   * @throws IllegalArgumentException If {@code input} or {@code separators} is {@code null},
+   *     {@code separators} is empty, or a separator is a surrogate.
+   */
+  public static String[] splitNonEmpty(CharSequence input, char... separators) {
+    requireNonNullArg(input, "input");
+    requireNonNullArg(separators, "separators");
+    if (separators.length == 0) {
+      throw new IllegalArgumentException("separators must not be empty");
+    }
+    for (char separator : separators) {
+      if (Character.isSurrogate(separator)) {
+        throw new IllegalArgumentException("separators must not contain a surrogate");
+      }
+    }
+    final List<String> fields = new ArrayList<>();
+    final int length = input.length();
+    int start = -1;
+    for (int i = 0; i < length; i++) {
+      if (isAnyOf(input.charAt(i), separators)) {
+        if (start >= 0) {
+          fields.add(input.subSequence(start, i).toString());
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    if (start >= 0) {
+      fields.add(input.subSequence(start, length).toString());
+    }
+    return fields.toArray(new String[0]);
+  }
+
+  private static boolean isAnyOf(char c, char[] candidates) {
+    for (char candidate : candidates) {
+      if (c == candidate) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Tests whether {@code input} contains an ASCII capital letter, {@code A} to {@code Z}.
    * Capital letters outside ASCII do not count.
    *
