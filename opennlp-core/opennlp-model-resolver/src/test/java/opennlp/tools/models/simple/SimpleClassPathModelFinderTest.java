@@ -16,6 +16,14 @@
  */
 package opennlp.tools.models.simple;
 
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import opennlp.tools.models.AbstractClassPathFinderTest;
 import opennlp.tools.models.ClassPathModelFinder;
 
@@ -30,5 +38,75 @@ public class SimpleClassPathModelFinderTest extends AbstractClassPathFinderTest 
   @Override
   protected ClassPathModelFinder getModelFinder(String pattern) {
     return new SimpleClassPathModelFinder(pattern);
+  }
+
+  private static Stream<Arguments> unixClassPaths() {
+    return Stream.of(
+        Arguments.of("", new String[0]),
+        Arguments.of(":", new String[0]),
+        Arguments.of("::", new String[0]),
+        Arguments.of("a.jar", new String[] {"a.jar"}),
+        Arguments.of("a.jar:b.jar", new String[] {"a.jar", "b.jar"}),
+        // empty entries are skipped wherever they appear
+        Arguments.of(":a.jar", new String[] {"a.jar"}),
+        Arguments.of("a.jar:", new String[] {"a.jar"}),
+        Arguments.of("a.jar::", new String[] {"a.jar"}),
+        Arguments.of("a.jar::b.jar", new String[] {"a.jar", "b.jar"}),
+        Arguments.of("::a.jar:", new String[] {"a.jar"}),
+        Arguments.of(" :a.jar", new String[] {" ", "a.jar"}),
+        Arguments.of("/usr/lib/a.jar:/opt/b.jar", new String[] {"/usr/lib/a.jar", "/opt/b.jar"}),
+        Arguments.of("C:\\lib\\a.jar;C:\\lib\\b.jar", new String[] {"C", "\\lib\\a.jar;C", "\\lib\\b.jar"}),
+        Arguments.of("C:/lib/a.jar", new String[] {"C", "/lib/a.jar"}),
+        Arguments.of("\uD801\uDC12.jar:b.jar", new String[] {"\uD801\uDC12.jar", "b.jar"}),
+        Arguments.of("\t:a.jar", new String[] {"\t", "a.jar"}),
+        Arguments.of("my%20lib/a.jar:my lib/b.jar", new String[] {"my%20lib/a.jar", "my lib/b.jar"}),
+        Arguments.of("a.jar!/x:b.jar", new String[] {"a.jar!/x", "b.jar"}),
+        Arguments.of("/lib/*:/opt/*.jar", new String[] {"/lib/*", "/opt/*.jar"}),
+        Arguments.of("a.jar\nb.jar", new String[] {"a.jar\nb.jar"}),
+        Arguments.of("a.jar\n:b.jar", new String[] {"a.jar\n", "b.jar"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("unixClassPaths")
+  void testSplitClassPathUnix(String classPath, String[] expected) {
+    Assertions.assertArrayEquals(expected, SimpleClassPathModelFinder.splitClassPath(classPath, false));
+  }
+
+  private static Stream<Arguments> windowsClassPaths() {
+    return Stream.of(
+        Arguments.of("", new String[0]),
+        Arguments.of(";", new String[0]),
+        Arguments.of(";;", new String[0]),
+        Arguments.of("a.jar", new String[] {"a.jar"}),
+        Arguments.of("a.jar;b.jar", new String[] {"a.jar", "b.jar"}),
+        // empty entries are skipped wherever they appear
+        Arguments.of(";a.jar", new String[] {"a.jar"}),
+        Arguments.of("a.jar;", new String[] {"a.jar"}),
+        Arguments.of("a.jar;;", new String[] {"a.jar"}),
+        Arguments.of("a.jar;;b.jar", new String[] {"a.jar", "b.jar"}),
+        Arguments.of(";;a.jar;", new String[] {"a.jar"}),
+        Arguments.of("C:\\lib\\a.jar;C:\\lib\\b.jar", new String[] {"C:\\lib\\a.jar", "C:\\lib\\b.jar"}),
+        Arguments.of("/usr/lib/a.jar:/opt/b.jar", new String[] {"/usr/lib/a.jar:/opt/b.jar"}),
+        Arguments.of("C:\\a.jar;D:\\b.jar", new String[] {"C:\\a.jar", "D:\\b.jar"}),
+        Arguments.of("C:/a.jar;d:/b.jar", new String[] {"C:/a.jar", "d:/b.jar"}),
+        Arguments.of("\\\\server\\share\\a.jar;b.jar",
+            new String[] {"\\\\server\\share\\a.jar", "b.jar"}),
+        Arguments.of("C:\\my lib\\a.jar; ;b.jar", new String[] {"C:\\my lib\\a.jar", " ", "b.jar"}),
+        Arguments.of("C:\\my%20lib\\a.jar", new String[] {"C:\\my%20lib\\a.jar"}),
+        Arguments.of("a.jar!/x;b.jar", new String[] {"a.jar!/x", "b.jar"}),
+        Arguments.of("C:\\lib\\*;D:\\*.jar", new String[] {"C:\\lib\\*", "D:\\*.jar"}),
+        Arguments.of("\uD801\uDC12.jar;b.jar", new String[] {"\uD801\uDC12.jar", "b.jar"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("windowsClassPaths")
+  void testSplitClassPathWindows(String classPath, String[] expected) {
+    Assertions.assertArrayEquals(expected, SimpleClassPathModelFinder.splitClassPath(classPath, true));
+  }
+
+  @Test
+  void testSplitClassPathRejectsNull() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> SimpleClassPathModelFinder.splitClassPath(null, false));
   }
 }
