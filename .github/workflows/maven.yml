@@ -23,15 +23,29 @@ on:
   pull_request:
     branches:
       - opennlp-2.x
+    # ready_for_review starts the full build as soon as a draft is marked ready.
+    types: [ opened, synchronize, reopened, ready_for_review ]
+
+concurrency:
+  # A new commit on a pull request makes the run in flight obsolete, so cancel it
+  # instead of paying for a result nobody will read. Pushes to a branch group by ref
+  # and are never cancelled, so every commit on opennlp-2.x keeps a full build.
+  # Draft pull requests share one group without cancellation, so at most one draft
+  # build runs at a time and ready pull requests keep the runners. A group holds only
+  # one pending run: a newer pending draft run replaces an older pending one.
+  group: ${{ github.event.pull_request.draft && format('{0}-drafts', github.workflow) || format('{0}-{1}', github.workflow, github.event.pull_request.number || github.ref) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && !github.event.pull_request.draft }}
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
+      # Draft pull requests only run a single smoke build (Linux/JDK 17); the full
+      # matrix and the shell tests run once they are marked ready for review.
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        java: [ 17, 21, 25 ]
+        os: ${{ fromJSON(github.event.pull_request.draft && '["ubuntu-latest"]' || '["ubuntu-latest", "macos-latest", "windows-latest"]') }}
+        java: ${{ fromJSON(github.event.pull_request.draft && '[17]' || '[17, 21, 25]') }}
         experimental: [false]
 #        include:
 #          - java: 25-ea
@@ -76,6 +90,7 @@ jobs:
   test-unix-shell-ubuntu:
     name: Shell Tests on Ubuntu
     needs: build
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
 
     steps:
@@ -136,6 +151,7 @@ jobs:
   test-unix-shell-macos:
     name: Shell Tests on macOS
     needs: build
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: macos-latest
 
     steps:
@@ -186,6 +202,7 @@ jobs:
   test-windows-shell:
     name: Shell Tests on Windows
     needs: build
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: windows-latest
 
     steps:
