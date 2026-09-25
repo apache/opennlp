@@ -20,14 +20,16 @@ package opennlp.spellcheck.dictionary;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Loads plain-text frequency dictionaries into a {@link SymSpell} engine.
@@ -62,11 +64,17 @@ public final class FrequencyDictionaryLoader {
   /** The default character set used when none is supplied. */
   public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-  /** Splits a line into columns on a TAB or a run of spaces. */
-  private static final Pattern COLUMN_SEPARATOR = Pattern.compile("[\\t ]+");
-
   /** UTF-8 byte-order mark (U+FEFF); stripped if it leads a line. */
   private static final char BOM = (char) 0xFEFF;
+
+  /** The first character of a comment line. */
+  private static final char COMMENT_MARKER = '#';
+
+  private static final char COLUMN_TAB = '\t';
+  private static final char COLUMN_SPACE = ' ';
+
+  private static final String COUNT_NEGATIVE = "count must not be negative";
+  private static final String COUNT_NOT_INTEGER = "count is not an integer";
 
   private final Charset charset;
 
@@ -158,8 +166,8 @@ public final class FrequencyDictionaryLoader {
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = COLUMN_SEPARATOR.split(content.strip());
-        if (columns.length < 2 || columns[0].isEmpty()) {
+        final String[] columns = splitColumns(content.strip());
+        if (columns.length < 2) {
           throw new MalformedDictionaryLineException(lineNo, line, "expected 'word<sep>count'");
         }
         final long count = parseCount(columns[1], lineNo, line);
@@ -182,8 +190,8 @@ public final class FrequencyDictionaryLoader {
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = COLUMN_SEPARATOR.split(content.strip());
-        if (columns.length < 3 || columns[0].isEmpty() || columns[1].isEmpty()) {
+        final String[] columns = splitColumns(content.strip());
+        if (columns.length < 3) {
           throw new MalformedDictionaryLineException(lineNo, line, "expected 'w1<sep>w2<sep>count'");
         }
         final long count = parseCount(columns[2], lineNo, line);
@@ -194,6 +202,41 @@ public final class FrequencyDictionaryLoader {
     return read;
   }
 
+  /**
+   * Splits {@code line} into columns on runs of TAB and space characters. Leading, trailing,
+   * and repeated separators produce no empty column, so a line of only separators or an
+   * empty line has no columns. Other whitespace, such as a no-break space or a vertical tab,
+   * is part of a column.
+   *
+   * @param line The line to split. Must not be {@code null}.
+   * @return The non-empty columns in order.
+   */
+  private String[] splitColumns(String line) {
+    final List<String> columns = new ArrayList<>();
+    int start = -1;
+    for (int i = 0; i <= line.length(); i++) {
+      if (i == line.length() || isColumnSeparator(line.charAt(i))) {
+        if (start >= 0) {
+          columns.add(line.substring(start, i));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    return columns.toArray(new String[0]);
+  }
+
+  /**
+   * Tests whether {@code c} separates dictionary columns, which only a TAB or a space does.
+   *
+   * @param c The character to check.
+   * @return {@code true} if {@code c} is a TAB or a space.
+   */
+  private boolean isColumnSeparator(char c) {
+    return c == COLUMN_TAB || c == COLUMN_SPACE;
+  }
+
   private static String stripBom(String line) {
     if (!line.isEmpty() && line.charAt(0) == BOM) {
       return line.substring(1);
@@ -201,24 +244,44 @@ public final class FrequencyDictionaryLoader {
     return line;
   }
 
-  private static boolean isSkippable(String line) {
-    if (line.isBlank()) {
+  /**
+   * Tests whether a line holds no entry: it is empty, consists of Unicode whitespace only as
+   * {@link StringUtil#isUnicodeBlank(CharSequence)} defines it, or starts with {@code #}.
+   *
+   * @param line The line without its byte-order mark. Must not be {@code null}.
+   * @return {@code true} if the line is to be skipped.
+   */
+  private boolean isSkippable(String line) {
+    if (StringUtil.isUnicodeBlank(line)) {
       return true;
     }
-    return line.charAt(0) == '#';
+    return line.charAt(0) == COMMENT_MARKER;
   }
 
+  /**
+   * Parses the count column with {@link Long#parseLong(String)}, including the decimal
+   * digits supported by that method and an optional sign. A decimal point or exponent
+   * is malformed.
+   *
+   * @param raw The column text. Must not be {@code null}.
+   * @param lineNo The 1-based line number, for the error message.
+   * @param line The whole line, for the error message.
+   * @return The count, zero or more.
+   * @throws MalformedDictionaryLineException Thrown if the column is not such a number, is
+   *         negative, or does not fit in a {@code long}.
+   */
   private static long parseCount(String raw, long lineNo, String line) throws IOException {
     final String trimmed = raw.trim();
+    final long count;
     try {
-      final long count = Long.parseLong(trimmed);
-      if (count < 0) {
-        throw new MalformedDictionaryLineException(lineNo, line, "count must not be negative");
-      }
-      return count;
+      count = Long.parseLong(trimmed);
     } catch (NumberFormatException e) {
-      throw new MalformedDictionaryLineException(lineNo, line, "count is not an integer");
+      throw new MalformedDictionaryLineException(lineNo, line, COUNT_NOT_INTEGER);
     }
+    if (count < 0) {
+      throw new MalformedDictionaryLineException(lineNo, line, COUNT_NEGATIVE);
+    }
+    return count;
   }
 
   private static long saturatedAdd(long a, long b) {
