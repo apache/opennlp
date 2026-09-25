@@ -162,6 +162,23 @@ for(ClassPathModelEntry entry : models) {
 }]]>
       </programlisting>
 
+      For <code>SimpleClassPathModelFinder</code> and <code>DirectoryModelFinder</code>, the
+      search mask is a wildcard, not a regular expression. An asterisk matches any run of
+      characters, including none, a question mark matches exactly one character, and every other
+      character, including percent and plus signs, stands for itself. There is no escape character.
+      The mask is compared case-sensitively with the whole decoded file part of each classpath URL,
+      and the finders put an asterisk in front of it, so <code>custom-opennlp-model.jar</code>
+      matches that jar in any directory. Use the actual file name: <code>model-?.jar</code> matches
+      <code>model-😀.jar</code>, and a space is written as a space, not as <code>%20</code>.
+      A character outside the Basic Multilingual Plane counts as one character for the question mark.
+      The model and properties URIs returned by the finders remain escaped for opening the resources.
+      <code>ClassgraphModelFinder</code> uses ClassGraph's own wildcard rules.
+    </para>
+    <para>
+      Since 3.0, custom subclasses of <code>AbstractClassPathModelFinder</code> call
+      <code>matchesWildcard(url, "*.bin")</code>. The protected <code>asRegex</code> and
+      <code>matchesPattern</code> methods were removed, so subclasses that used them must be
+      updated and recompiled.
     </para>
   </section>
 

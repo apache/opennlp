@@ -26,12 +26,10 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 
 /**
  * A base implementation of a {@link ClassPathModelFinder} for the detection of
@@ -40,13 +38,17 @@ import java.util.regex.Pattern;
  * <p>
  * This search mask can be adjusted by using the one argument
  * {@link AbstractClassPathModelFinder#AbstractClassPathModelFinder(String) constructor}.
- * Wildcard search is supported by using asterisk symbol.
+ * Wildcard search supports {@code *} for any run of characters and {@code ?} for one
+ * Unicode code point. Masks use decoded names, including spaces and non-ASCII characters.
  *
  * @see ClassPathModelFinder
  */
 public abstract class AbstractClassPathModelFinder implements ClassPathModelFinder {
 
   protected static final String JAR = "jar";
+
+  private static final String WILDCARD_MUST_NOT_BE_NULL = "wildcard must not be null";
+  private static final String URL_MUST_NOT_BE_NULL = "url must not be null";
 
   private final String jarModelPrefix;
   private Set<ClassPathModelEntry> models;
@@ -61,9 +63,12 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   /**
    * @param jarModelPrefix The leafnames of the jars that should be canned (e.g. "opennlp.jar").
    *                       May contain a wildcard glob ("opennlp-*.jar"). It must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code jarModelPrefix} is {@code null}.
    */
   public AbstractClassPathModelFinder(String jarModelPrefix) {
-    Objects.requireNonNull(jarModelPrefix, "jarModelPrefix must not be null");
+    if (jarModelPrefix == null) {
+      throw new IllegalArgumentException("jarModelPrefix must not be null");
+    }
     this.jarModelPrefix = jarModelPrefix;
   }
 
@@ -137,20 +142,34 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   }
 
   /**
-   * Escapes a {@code wildcard} expressions for usage as a Java regular expression.
+   * Tests whether the decoded file part of {@code url} matches {@code wildcard} from start
+   * to end, where {@code *} stands for any run of characters, {@code ?} for exactly one
+   * Unicode code point, and every other character for itself. URI percent escapes are
+   * decoded once; literal plus signs remain plus signs. A {@code url} that is not a valid
+   * URI, such as one with an unescaped space, is matched on {@link URL#getFile()} as is.
    *
-   * @param wildcard A valid expression. It must not be {@code null}.
-   * @return The escaped regex.
+   * @param url The {@link URL} whose decoded file part is tested.
+   *            Must not be {@code null}.
+   * @param wildcard The wildcard expression. Must not be {@code null}.
+   * @return {@code true} if the file part matches, {@code false} otherwise.
+   * @throws IllegalArgumentException Thrown if {@code url} or {@code wildcard} is {@code null}.
    */
-  protected String asRegex(String wildcard) {
-    return wildcard
-        .replace(".", "\\.")
-        .replace("*", ".*")
-        .replace("?", ".");
-  }
-
-  protected boolean matchesPattern(URL url, Pattern pattern) {
-    return pattern.matcher(url.getFile()).matches();
+  protected boolean matchesWildcard(URL url, String wildcard) {
+    if (url == null) {
+      throw new IllegalArgumentException(URL_MUST_NOT_BE_NULL);
+    }
+    if (wildcard == null) {
+      throw new IllegalArgumentException(WILDCARD_MUST_NOT_BE_NULL);
+    }
+    String filePart;
+    try {
+      final URI uri = url.toURI();
+      filePart = uri.isOpaque() ? uri.getSchemeSpecificPart()
+          : uri.getPath() + (uri.getRawQuery() == null ? "" : "?" + uri.getQuery());
+    } catch (URISyntaxException e) {
+      filePart = url.getFile();
+    }
+    return WildcardMatcher.matches(wildcard, filePart);
   }
 
   /**
@@ -181,7 +200,8 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
         final JarEntry entry = entries.nextElement();
         if (!entry.isDirectory()) {
           try {
-            uris.add(new URI(jarUrl + entry.getName()));
+            final String entryPath = new URI(null, null, "/" + entry.getName(), null).getRawPath();
+            uris.add(new URI(jarUrl + entryPath.substring(1)));
           } catch (URISyntaxException ignored) {
             //if we cannot convert to URI here, we ignore that entry.
           }
