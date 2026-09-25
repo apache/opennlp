@@ -204,6 +204,40 @@ double[] tokenProbs = tokenizer.getTokenProbabilities();]]>
 	</section>
 	</section>
 	
+	<section xml:id="tools.tokenizer.character-policy">
+		<title>Explicit token character policies</title>
+		<para>
+			<code>TokenizerCharacterPolicy</code> tests token eligibility from caller-supplied
+			<code>CodePointSet</code> values for letters, digits, and marks. A mark may follow a
+			letter or another mark, but cannot start a token or follow a digit. The policy does
+			not infer Unicode character categories, so callers choose the exact script and model
+			coverage they intend to persist. The predicate checks a complete candidate without
+			finding token boundaries or changing its text.
+		</para>
+		<programlisting language="java">
+<![CDATA[TokenizerCharacterPolicy policy = TokenizerCharacterPolicy.of(
+    CodePointSet.ofRange('A', 'Z').union(CodePointSet.ofRange('a', 'z')),
+    CodePointSet.ofRange('0', '9'),
+    CodePointSet.of(0x0300, 0x0301));
+
+boolean word = policy.test("Cafe\u0301");]]>
+		</programlisting>
+		<para>
+			Use <code>TokenizerCharacterPolicy.ascii()</code> for the fixed ASCII letter and digit
+			preset. Policy sets must be pairwise disjoint Unicode scalar values and cannot contain
+			whitespace. The getters expose the immutable sets so an application can store them
+			and reconstruct the policy; existing tokenizer models do not store these sets.
+		</para>
+		<para>
+			This character-set approach follows the code point predicates used by
+			<link xlink:href="https://github.com/apache/lucene/blob/main/lucene/analysis/common/src/java/org/apache/lucene/analysis/util/CharTokenizer.java">Lucene's CharTokenizer</link>.
+			Eligibility is still a model-specific decision: accepting every Unicode letter
+			would incorrectly bypass segmentation for some writing systems. See
+			<link xlink:href="https://www.unicode.org/reports/tr29/#Word_Boundaries">Unicode word boundaries</link>
+			for the distinction between character classes and language-specific segmentation.
+			This policy API does not itself change existing tokenizer training or inference.
+		</para>
+	</section>
 	<section xml:id="tools.tokenizer.whitespace.instances">
 		<title>Independent whitespace tokenizers</title>
 		<para>
