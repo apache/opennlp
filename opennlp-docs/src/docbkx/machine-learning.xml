@@ -79,6 +79,15 @@ under the License.
 		and example implementations can be found in the OpenNLP Tools preprocessing components.
 		</para>
 		<para>
+		<code>BasicContextGenerator</code> turns one string of contextual predicates into the
+		predicate array. Without arguments, runs of Unicode whitespace (the White_Space property,
+		which includes no-break and ideographic spaces) separate predicates, independent of the
+		<code>opennlp.whitespace.mode</code> setting. A separator given to the constructor is
+		literal text. It must not contain a backslash or one of the characters
+		<code>[ ] ( ) { } | * + ? ^ $ .</code>; such a separator is rejected with an
+		<code>IllegalArgumentException</code>. Empty predicates are not returned.
+		</para>
+		<para>
 		We have also set in place some interfaces and code to make it easier to automate the training
 		and evaluation process (the Evaluable interface and the TrainEval class). It is not necessary
 		to use this functionality, but if you do you'll find it much easier to see how well your models
