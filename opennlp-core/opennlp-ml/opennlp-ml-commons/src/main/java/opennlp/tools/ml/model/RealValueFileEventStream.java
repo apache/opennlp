@@ -20,17 +20,20 @@ package opennlp.tools.ml.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * Class for using a file of real-valued {@link Event events} as an
  * {@link ObjectStream event stream}.
  * The format of the file is one event per line with
- * each line consisting of outcome followed by contexts (space delimited).
+ * each line consisting of outcome followed by contexts, separated by
+ * space, tab, carriage return, line feed or form feed, see {@link #parseEvent(String)}.
  *
  * @see Event
  * @see FileEventStream
@@ -92,7 +95,7 @@ public class RealValueFileEventStream extends FileEventStream {
    * @param contexts The contexts with real values specified.
    * @return The value for each context or {@code null} if all values are unspecified.
    *
-   * @throws RuntimeException Thrown if negative real values are detected in the input data.
+   * @throws IllegalArgumentException Thrown if a value is negative, NaN or infinite.
    */
   public static float[] parseContexts(String[] contexts) {
     boolean hasRealValue = false;
@@ -109,8 +112,11 @@ public class RealValueFileEventStream extends FileEventStream {
           values[ci] = 1;
         }
         if (gotReal) {
+          if (!Float.isFinite(values[ci])) {
+            throw new IllegalArgumentException(EventFields.NON_FINITE_VALUE + contexts[ci]);
+          }
           if (values[ci] < 0) {
-            throw new RuntimeException("Negative values are not allowed: " + contexts[ci]);
+            throw new IllegalArgumentException(EventFields.NEGATIVE_VALUE + contexts[ci]);
           }
           contexts[ci] = contexts[ci].substring(0, ei);
           hasRealValue = true;
@@ -126,20 +132,40 @@ public class RealValueFileEventStream extends FileEventStream {
   }
 
   /**
+   * Parses one event line. Fields are separated by runs of space, tab, carriage return,
+   * line feed and form feed, as in {@link FileEventStream}; the first field is the outcome,
+   * the rest are contexts parsed by {@link #parseContexts(String[])}.
+   *
+   * @param line The event line. Must not be {@code null}.
+   * @return The event; a line with only an outcome gives an event without contexts.
+   * @throws IllegalArgumentException Thrown if {@code line} is {@code null} or a value is negative,
+   *         NaN or infinite.
+   * @throws InvalidFormatException Thrown if {@code line} is blank.
+   */
+  public static Event parseEvent(String line) throws InvalidFormatException {
+    if (line == null) {
+      throw new IllegalArgumentException("line must not be null");
+    }
+    String[] fields = EventFields.split(line);
+    if (fields.length == 0) {
+      throw new InvalidFormatException(EventFields.MISSING_OUTCOME + line + "\"");
+    }
+    String[] contexts = Arrays.copyOfRange(fields, 1, fields.length);
+    return new Event(fields[0], contexts, parseContexts(contexts));
+  }
+
+  /**
    * {@inheritDoc}
    *
    * @throws IOException Thrown if there is an error during reading.
-   * @throws RuntimeException Thrown if negative real values are detected in the input data.
+   * @throws InvalidFormatException Thrown if a line is blank.
+   * @throws IllegalArgumentException Thrown if a value is negative, NaN or infinite.
    */
   @Override
   public Event read() throws IOException {
     String line;
     if ((line = reader.readLine()) != null) {
-      int si = line.indexOf(' ');
-      String outcome = line.substring(0, si);
-      String[] contexts = line.substring(si + 1).split("\\s+");
-      float[] values = parseContexts(contexts);
-      return new Event(outcome, contexts, values);
+      return parseEvent(line);
     }
 
     return null;

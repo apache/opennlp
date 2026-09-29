@@ -21,12 +21,13 @@ import java.io.IOException;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * Class for real-valued {@link Event events} as an
  * {@link ObjectStream event stream}.
- * .
+ *
  * @see Event
  * @see ObjectStream
  */
@@ -34,36 +35,34 @@ public class RealBasicEventStream implements ObjectStream<Event> {
 
   private final ObjectStream<String> ds;
 
+  /**
+   * Instantiates a {@link RealBasicEventStream} over a stream of event lines.
+   *
+   * @param ds The {@link ObjectStream} of lines, one event per line.
+   */
   public RealBasicEventStream(ObjectStream<String> ds) {
     this.ds = ds;
   }
 
   /**
    * {@inheritDoc}
+   * <p>
+   * Each line is parsed by {@link RealValueFileEventStream#parseEvent(String)}. Since 3.0, a line
+   * with only an outcome is an event without contexts; earlier versions ended the stream at
+   * such a line.
    *
    * @throws IOException Thrown if there is an error during reading.
-   * @throws RuntimeException Thrown if negative real values are detected in the input data.
+   * @throws InvalidFormatException Thrown if a line is blank.
+   * @throws IllegalArgumentException Thrown if a value is negative, NaN or infinite.
    */
   @Override
   public Event read() throws IOException {
 
     String eventString = ds.read();
     if (eventString != null) {
-      return createEvent(eventString);
+      return RealValueFileEventStream.parseEvent(eventString);
     }
     return null;
-  }
-
-  private Event createEvent(String obs) {
-    int si = obs.indexOf(' ');
-    if (si == -1)
-      return null;
-    else {
-      String outcome = obs.substring(0, si);
-      String[] contexts = obs.substring(si + 1).split("\\s+");
-      float[] values = RealValueFileEventStream.parseContexts(contexts);
-      return new Event(outcome,contexts,values);
-    }
   }
 
   @Override

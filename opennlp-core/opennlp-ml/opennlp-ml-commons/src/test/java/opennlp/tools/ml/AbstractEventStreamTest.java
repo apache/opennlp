@@ -60,6 +60,14 @@ public abstract class AbstractEventStreamTest {
   protected static final String EVENTS_INVALID_NEGATIVE =
           "other wc=ic=-1.0 w&c=he,ic=-2.0 n1wc=lc=-3.0 n1w&c=belongs,lc=-4.0 n2wc=lc=-5.0\n";
 
+  /**
+   * Characters that stay inside an event field: Unicode whitespace outside the delimiter set,
+   * the vertical tab, which {@code split("\\s+")} used to treat as a separator, a file separator,
+   * a zero width space, a supplementary character and a combining sequence.
+   */
+  protected static final String[] NON_DELIMITER_CHARS = {"\u00A0", "\u0085", "\u2028", "\u2029",
+      "\u3000", "\u2007", "\u202F", "\u200B", "\u000B", "\u001C", "\uD83D\uDE00", "e\u0301"};
+
   protected abstract ObjectStream<Event> createEventStream(String input) throws IOException;
 
   @Test

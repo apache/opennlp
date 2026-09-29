@@ -22,8 +22,11 @@ import java.io.StringReader;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.AbstractEventStreamTest;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 public class FileEventStreamTest extends AbstractEventStreamTest {
@@ -57,6 +60,32 @@ public class FileEventStreamTest extends AbstractEventStreamTest {
     }
   }
   
+  @Test
+  void testReadRejectsBlankLine() throws IOException {
+    try (ObjectStream<Event> eventStream = createEventStream("other wc=ic\n \t \nother wc=lc\n")) {
+      Assertions.assertEquals("other", eventStream.read().getOutcome());
+      InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class, eventStream::read);
+      Assertions.assertEquals("An event line must start with an outcome: \" \t \"", e.getMessage());
+    }
+  }
+
+  /**
+   * Both streams split a line into the same fields; only the value parsing differs.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"other wc=ic w&c=he,ic", "  other\twc=ic \f w&c=he,ic\r", "other",
+      "other\u00A0wc=ic", "other\u000Bwc=ic", "other wc\u3000=ic 中文"})
+  void testFieldsMatchRealValueFileEventStream(String line) throws IOException {
+    try (FileEventStream plain = createEventStream(line);
+         RealValueFileEventStream valued = new RealValueFileEventStream(new StringReader(line))) {
+      Event expected = plain.read();
+      Event actual = valued.read();
+      Assertions.assertEquals(expected.getOutcome(), actual.getOutcome());
+      Assertions.assertArrayEquals(expected.getContext(), actual.getContext());
+      Assertions.assertNull(actual.getValues());
+    }
+  }
+
   @Test
   void testReset() throws IOException {
     try (FileEventStream feStream = createEventStream(EVENTS_PLAIN)) {

@@ -25,14 +25,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.StringTokenizer;
+import java.util.Arrays;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * Class for using a file of {@link Event events} as an {@link ObjectStream event stream}.
  * The format of the file is one event per line with
- * each line consisting of outcome followed by contexts (space delimited).
+ * each line consisting of outcome followed by contexts, separated by
+ * space, tab, carriage return, line feed or form feed.
  *
  * @see Event
  * @see ObjectStream
@@ -97,20 +99,17 @@ public class FileEventStream implements ObjectStream<Event> {
    * @return The next object or {@code null} to signal that the stream is exhausted.
    *
    * @throws IOException Thrown if there is an error during reading.
+   * @throws InvalidFormatException Thrown if a line is blank.
    */
   @Override
   public Event read() throws IOException {
     String line;
     if ((line = reader.readLine()) != null) {
-      StringTokenizer st = new StringTokenizer(line);
-      String outcome = st.nextToken();
-      int count = st.countTokens();
-      String[] context = new String[count];
-      for (int ci = 0; ci < count; ci++) {
-        context[ci] = st.nextToken();
+      String[] fields = EventFields.split(line);
+      if (fields.length == 0) {
+        throw new InvalidFormatException(EventFields.MISSING_OUTCOME + line + "\"");
       }
-
-      return new Event(outcome, context);
+      return new Event(fields[0], Arrays.copyOfRange(fields, 1, fields.length));
     }
     else {
       return null;
