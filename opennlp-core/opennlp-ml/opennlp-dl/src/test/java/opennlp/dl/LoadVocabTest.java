@@ -21,26 +21,49 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LoadVocabTest {
+
+  @TempDir
+  private Path tempDir;
 
   private File getResource(String name) throws IOException {
     try (InputStream is = Objects.requireNonNull(
         getClass().getResourceAsStream("/opennlp/dl/" + name))) {
-      final File tempFile = File.createTempFile("vocab-test-", "-" + name);
-      tempFile.deleteOnExit();
-      Files.copy(is, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-      return tempFile;
+      final Path file = tempDir.resolve(name);
+      Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
+      return file.toFile();
     }
+  }
+
+  /**
+   * Writes a vocabulary file into the per-test temporary directory.
+   *
+   * @param name The file name.
+   * @param content The file content, written as UTF-8.
+   * @return The written file.
+   */
+  private File vocabFile(String name, String content) throws IOException {
+    return Files.writeString(tempDir.resolve(name), content).toFile();
   }
 
   @Test
@@ -73,11 +96,7 @@ public class LoadVocabTest {
 
   @Test
   void testJsonVocabWithEscapedCharacters() throws IOException {
-    final File tempFile = File.createTempFile("vocab-escaped", ".json");
-    tempFile.deleteOnExit();
-
-    Files.writeString(tempFile.toPath(),
-        "{\"hello\\\"world\": 0, \"back\\\\slash\": 1}");
+    final File tempFile = vocabFile("vocab-escaped.json", "{\"hello\\\"world\": 0, \"back\\\\slash\": 1}");
 
     final Map<String, Integer> vocab = AbstractDL.loadVocabFile(tempFile);
 
@@ -89,30 +108,18 @@ public class LoadVocabTest {
 
   @Test
   void testJsonVocabWithUnicodeEscapedCharacters() throws IOException {
-    final File tempFile = File.createTempFile("vocab-unicode", ".json");
-    tempFile.deleteOnExit();
-
-    Files.writeString(tempFile.toPath(),
+    final File tempFile = vocabFile("vocab-unicode.json",
         "{\"\\u0120token\": 0, \"line\\rbreak\": 1, \"form\\ffeed\": 2}");
 
     final Map<String, Integer> vocab = AbstractDL.loadVocabFile(tempFile);
 
     assertNotNull(vocab);
     assertEquals(3, vocab.size());
-    assertEquals(0, vocab.get("Ġtoken"));
+    assertEquals(0, vocab.get("\u0120token"));
     assertEquals(1, vocab.get("line\rbreak"));
     assertEquals(2, vocab.get("form\ffeed"));
   }
 
-  @Test
-  void testJsonVocabRejectsInvalidEscapedCharacters() throws IOException {
-    final File tempFile = File.createTempFile("vocab-invalid-escape", ".json");
-    tempFile.deleteOnExit();
-
-    Files.writeString(tempFile.toPath(), "{\"bad\\xescape\": 0}");
-
-    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadVocabFile(tempFile));
-  }
 
   @Test
   void testJsonAndPlainTextVocabProduceSameResult() throws IOException {
@@ -120,5 +127,179 @@ public class LoadVocabTest {
     final Map<String, Integer> jsonVocab = AbstractDL.loadVocabFile(getResource("vocab.json"));
 
     assertEquals(plainVocab, jsonVocab);
+  }
+
+  static Stream<Arguments> jsonVocabs() {
+    return Stream.of(
+        Arguments.of("{}", Map.of()),
+        Arguments.of("{\"a\": 1, \"b\": 2}", Map.of("a", 1, "b", 2)),
+        Arguments.of(" \t\r\n{\"a\"\n:\r\n  3\t}\n", Map.of("a", 3)),
+        Arguments.of("{\"a\":0}", Map.of("a", 0)),
+        Arguments.of("{\"model\":0,\"vocab\":1}", Map.of("model", 0, "vocab", 1)),
+        Arguments.of("{\"a\": 2147483647}", Map.of("a", Integer.MAX_VALUE)),
+        Arguments.of("{\"a\\\"b\": 1}", Map.of("a\"b", 1)),
+        Arguments.of("{\"a\\\\\": 1}", Map.of("a\\", 1)),
+        Arguments.of("{\"\\u0120x\": 7, \"\\u00e9\": 8}", Map.of("\u0120x", 7, "\u00E9", 8)),
+        Arguments.of("{\"\uD83D\uDE00\": 1}", Map.of("\uD83D\uDE00", 1)),
+        // a raw line break inside a token is content
+        Arguments.of("{\"a\nb\": 1}", Map.of("a\nb", 1)),
+        Arguments.of("{\"\": 1}", Map.of("", 1)),
+        // a later entry for the same token, written or escaped, overwrites the earlier one
+        Arguments.of("{\"a\": 1, \"a\": 2}", Map.of("a", 2)),
+        Arguments.of("{\"a\": 1, \"\\u0061\": 2}", Map.of("a", 2)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("jsonVocabs")
+  void testLoadJsonVocab(String json, Map<String, Integer> expected) {
+    assertEquals(expected, AbstractDL.loadJsonVocab(json));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      // not one object
+      "", " ", "[]", "\"a\"", "{\"a\": 1}{}", "{\"a\": 1} x",
+      // malformed structure
+      "{\"a\": 1", "{\"a\" 1}", "{\"a\": 1 \"b\": 2}", "{\"a\": 1,}", "{a: 1}", "\"a\":1\"b\":2",
+      // whitespace outside strings is only the four RFC 8259 characters
+      "{\"a\":\u00A05}", "{\"a\":\t4\u000B}",
+      // values that are not non-negative integers
+      "{\"a\": 1.5}", "{\"a\": -1}", "{\"a\": 12abc}", "{\"a\": \u0661}", "{\"a\": \"1\"}",
+      "{\"a\": 99999999999}", "{\"a\": {\"b\": 1}}", "{\"a\": [1]}", "{\"a\": null}",
+      // invalid escapes in a token
+      "{\"a\\q\": 1}", "{\"\\\uD83D\uDE00\": 2}", "{\"\\u12\": 3}", "{\"\\u+123\": 3}",
+      "{\"a\\\nb\": 1}"})
+  void testLoadJsonVocabRejectsMalformedText(String json) {
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(json));
+  }
+
+  @Test
+  void testLoadJsonVocabRejectsNull() {
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadJsonVocab(null));
+  }
+
+  @Test
+  void testLoadJsonVocabMessageNamesTheToken() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab("{\"ok\": 1, \"bad\": -1}"));
+    assertTrue(e.getMessage().contains("\"bad\""), e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "{\"version\":\"1.0\",\"model\":{\"type\":\"WordPiece\",\"vocab\":{\"a\":0}}}",
+      "{\"version\":\"1.0\",\"model\":{\"type\":\"BPE\",\"vocab\":{\"a\":0}}}",
+      "{\"version\":\"1.0\",\"model\":{\"type\":\"Unigram\",\"vocab\":[[\"a\",0.0]]}}",
+      "{\"model\":{\"vocab\":{\"a\":0}}}"})
+  void testTokenizerFileIsRejectedWithTheExpectedVocabularyLayout(String json) throws IOException {
+    final File tempFile = vocabFile("tokenizer-unsupported.json", json);
+
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
+        () -> AbstractDL.loadVocabFile(tempFile));
+    assertTrue(e.getMessage().contains(tempFile.getName()), e.getMessage());
+    assertTrue(e.getMessage().contains(
+        "Expected one object mapping tokens to integer ids, as in vocab.json"), e.getMessage());
+  }
+
+  @Test
+  void testLoadJsonVocabSkipsALeadingByteOrderMark() {
+    assertEquals(Map.of("a", 1), AbstractDL.loadJsonVocab("\uFEFF{\"a\": 1}"));
+  }
+
+  @Test
+  void testJsonVocabFileWithAByteOrderMarkIsReadAsJson() throws IOException {
+    final File tempFile = vocabFile("vocab-bom.json", "\uFEFF{\"a\": 0, \"b\": 1}\n");
+
+    assertEquals(Map.of("a", 0, "b", 1), AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testPlainTextVocabFileWithAByteOrderMarkKeepsTheFirstToken() throws IOException {
+    final File tempFile = vocabFile("vocab-bom.txt", "\uFEFF[CLS]\n[SEP]\n");
+
+    assertEquals(Map.of("[CLS]", 0, "[SEP]", 1), AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"2147483648", "4294967296", "9223372036854775808",
+      "12345678901234567890"})
+  void testLoadJsonVocabNamesTheTokenOfAnIdThatDoesNotFit(String id) {
+    final String json = "{\"big\": " + id + "}";
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(json), json);
+    assertTrue(e.getMessage().contains("\"big\""), e.getMessage());
+    assertTrue(e.getMessage().contains("does not fit into an int"), e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"a\": 00}", "{\"a\": 0123}"})
+  void testLoadJsonVocabRejectsLeadingZeros(String json) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(json));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  private static final String JSON_VOCAB = "{\"[PAD]\":0,\"hello\":1,\"\\u0120x\":2}";
+
+  static Stream<Arguments> jsonVocabPrefixes() {
+    final String text = JSON_VOCAB;
+    return Stream.iterate(0, n -> n + 1).limit(text.length())
+        .map(n -> Arguments.of(n, text.substring(0, n)));
+  }
+
+  @ParameterizedTest(name = "cut at {0}")
+  @MethodSource("jsonVocabPrefixes")
+  void testLoadJsonVocabRejectsATruncatedObject(int length, String prefix) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(prefix));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{}", "x", "\uFEFF", ",", "\"vocab\"", "{\"a\":1}"})
+  void testLoadJsonVocabRejectsContentAfterTheObject(String trailing) {
+    final String json = JSON_VOCAB + trailing;
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab(json));
+    assertTrue(e.getMessage().contains("offset " + JSON_VOCAB.length() + ","), e.getMessage());
+    assertTrue(e.getMessage().contains("content after the object"), e.getMessage());
+  }
+
+  @Test
+  void testJsonVocabFileWithWindowsLineEndings() throws IOException {
+    final File tempFile = vocabFile("vocab-crlf.json", "{\r\n  \"a\": 0,\r\n  \"b\": 1\r\n}\r\n");
+
+    assertEquals(Map.of("a", 0, "b", 1), AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testPlainTextVocabFileWithWindowsLineEndings() throws IOException {
+    final File tempFile = vocabFile("vocab-crlf.txt", "[CLS]\r\n[SEP]\r\nhello\r\n");
+
+    assertEquals(Map.of("[CLS]", 0, "[SEP]", 1, "hello", 2), AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testMalformedJsonVocabFileIsReportedAsAnInvalidFormat() throws IOException {
+    final File tempFile = vocabFile("vocab-malformed.json", "{\"a\": 1, \"b\": }");
+
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> AbstractDL.loadVocabFile(tempFile));
+    assertTrue(e.getMessage().contains(tempFile.getName()), e.getMessage());
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  @Test
+  void testJsonVocabFileWithAnInvalidEscapeIsReportedAsAnInvalidFormat() throws IOException {
+    final File tempFile = vocabFile("vocab-invalid-escape.json", "{\"bad\\xescape\": 0}");
+
+    assertThrows(InvalidFormatException.class, () -> AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testLoadJsonVocabRejectsANonFiniteId() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.loadJsonVocab("{\"ok\": 1, \"bad\": NaN}"));
+    assertTrue(e.getMessage().contains("\"bad\""), e.getMessage());
   }
 }

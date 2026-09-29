@@ -103,6 +103,8 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    */
   public SentenceVectorsDL(final File model, final File vocabulary)
       throws OrtException, IOException {
@@ -123,6 +125,8 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    */
   public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase)
       throws OrtException, IOException {
