@@ -1,0 +1,30 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# forbiddenapis signatures for the forbidden-regex-main execution in the root pom.xml.
+# Production code scans text with code-point loops and the opennlp.tools.util.StringUtil
+# helpers instead of java.util.regex (OPENNLP-1935). A member with a public contract that is
+# a user-supplied pattern (RegexNameFinder, the tokenizer factories) is marked with
+# @opennlp.tools.commons.SuppressForbidden and is exempt. Only production classes are
+# checked; tests may use regular expressions.
+
+@defaultMessage Use a code-point scan or a StringUtil helper (splitOnUnicodeWhitespace, split(CharSequence, char), splitNonEmpty once OPENNLP-1955 is merged) instead of java.util.regex; a member with a user-supplied pattern as its public contract is marked @opennlp.tools.commons.SuppressForbidden (OPENNLP-1935)
+java.util.regex.**
+java.lang.String#split(java.lang.String)
+java.lang.String#split(java.lang.String,int)
+java.lang.String#matches(java.lang.String)
+java.lang.String#replaceAll(java.lang.String,java.lang.String)
+java.lang.String#replaceFirst(java.lang.String,java.lang.String)
+java.util.Scanner#useDelimiter(java.lang.String)

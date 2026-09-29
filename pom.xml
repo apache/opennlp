@@ -440,6 +440,25 @@ org.xml.sax.helpers.XMLReaderFactory#createXMLReader(**)
 								<goal>testCheck</goal>
 							</goals>
 						</execution>
+						<execution>
+							<!-- Production classes only: no java.util.regex outside members marked
+							     @opennlp.tools.commons.SuppressForbidden (OPENNLP-1935). -->
+							<id>forbidden-regex-main</id>
+							<phase>process-classes</phase>
+							<goals>
+								<goal>check</goal>
+							</goals>
+							<configuration>
+								<bundledSignatures combine.self="override" />
+								<signatures combine.self="override" />
+								<signaturesFiles>
+									<signaturesFile>${maven.multiModuleProjectDirectory}/dev/forbidden-regex.txt</signaturesFile>
+								</signaturesFiles>
+								<suppressAnnotations>
+									<suppressAnnotation>opennlp.tools.commons.SuppressForbidden</suppressAnnotation>
+								</suppressAnnotations>
+							</configuration>
+						</execution>
 					</executions>
 				</plugin>
 			</plugins>
