@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -1182,8 +1183,9 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies CHECKCOMPOUNDDUP: a part must not repeat its left neighbor, while the
-   * same dictionary without the declaration accepts the repetition.
+   * Verifies CHECKCOMPOUNDDUP: the closing part must not repeat the part before it,
+   * while an earlier repetition passes, as in Hunspell, and the
+   * same dictionary without the declaration accepts both.
    *
    * @throws IOException Thrown if a fixture fails to load.
    */
@@ -1192,10 +1194,11 @@ public class HunspellStemmerTest {
     final String words = "2\ndog/Z\nhouse/Z\n";
     final HunspellStemmer checked = new HunspellStemmer(load(
         "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\nCHECKCOMPOUNDDUP\n", words));
-    Assertions.assertEquals(List.of("dogdoghouse"), checked.stemAll("dogdoghouse"));
+    Assertions.assertEquals(List.of("doghousehouse"), checked.stemAll("doghousehouse"));
+    Assertions.assertEquals(List.of("dog", "house"), checked.stemAll("dogdoghouse"));
     final HunspellStemmer unchecked = new HunspellStemmer(load(
         "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\n", words));
-    Assertions.assertEquals(List.of("dog", "house"), unchecked.stemAll("dogdoghouse"));
+    Assertions.assertEquals(List.of("dog", "house"), unchecked.stemAll("doghousehouse"));
   }
 
   /**
@@ -1249,38 +1252,27 @@ public class HunspellStemmerTest {
   }
 
   /**
-   * Verifies that directives outside the affix-stemming subset do not prevent use of
-   * the rules this implementation supports.
+   * Checks supported rules when partial loading skips unsupported directives.
    *
    * @param line The affix file line.
    */
   @ParameterizedTest
   @ValueSource(strings = {
-      "ICONV 1",
-      "OCONV 1",
-      "COMPLEXPREFIXES",
-      "COMPOUNDRULE 1",
-      "COMPOUNDMORESUFFIXES",
-      "COMPOUNDROOT R",
-      "CHECKCOMPOUNDREP",
-      "SIMPLIFIEDTRIPLE",
-      "CHECKCOMPOUNDPATTERN 1",
-      "FORCEUCASE U",
-      "COMPOUNDSYLLABLE 6 aeiou",
-      "SYLLABLENUM ABC",
-      "LANG tr",
-      "CHECKSHARPS",
-      "BREAK 1",
-      "FORBIDWARN",
-      "IGNORE x",
-      "KEEPCASE k"
+      "UNSUPPORTED_SYLLABLES ABC",
+      "UNSUPPORTED_LEMMA L",
+      "UNSUPPORTED value"
   })
   void testUnsupportedDirectiveDoesNotBlockSupportedRules(String line)
       throws IOException {
-    final HunspellStemmer stemmer = new HunspellStemmer(load(
-        line + "\nSFX A Y 1\nSFX A 0 s .\n", "1\ndog/A\n"));
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream((line + "\nSFX A Y 1\nSFX A 0 s .\n")
+            .getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream("1\ndog/A\n".getBytes(StandardCharsets.UTF_8)),
+        HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+    final HunspellStemmer stemmer = new HunspellStemmer(dictionary);
 
     Assertions.assertEquals("dog", stemmer.stem("dogs").toString());
+    Assertions.assertEquals(1, dictionary.getUnsupportedDirectives().size());
   }
 
   /**
@@ -1493,13 +1485,19 @@ public class HunspellStemmerTest {
     Assertions.assertEquals("foo", stemmer.stem("unfoosbar").toString());
   }
 
-  /** Verifies that an unrecognized directive does not block supported affix rules. */
+  /** Checks supported rules when partial loading skips an unknown directive. */
   @Test
   void testUnknownAffixDirectiveIsSkipped() throws IOException {
-    final HunspellStemmer stemmer = new HunspellStemmer(load(
-        "UNRECOGNIZED value\nSFX A Y 1\nSFX A 0 s .\n", "1\ndog/A\n"));
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream("UNRECOGNIZED value\nSFX A Y 1\nSFX A 0 s .\n"
+            .getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream("1\ndog/A\n".getBytes(StandardCharsets.UTF_8)),
+        HunspellDictionary.LoadMode.ALLOW_PARTIAL);
+    final HunspellStemmer stemmer = new HunspellStemmer(dictionary);
 
     Assertions.assertEquals("dog", stemmer.stem("dogs").toString());
+    Assertions.assertEquals("UNRECOGNIZED",
+        dictionary.getUnsupportedDirectives().get(0).directive());
   }
 
   /** Verifies validation of the {@code AF} count line. */
@@ -1535,12 +1533,12 @@ public class HunspellStemmerTest {
    * @param flag The invalid numeric flag.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"-1", "0", "65001"})
+  @ValueSource(strings = {"-1", "0", "65536"})
   void testNumericFlagOutsideRangeIsRejected(String flag) {
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> load("FLAG num\n", "1\nword/" + flag + "\n"));
 
-    Assertions.assertEquals("numeric flag outside 1..65000 at line 2: " + flag,
+    Assertions.assertEquals("numeric flag outside 1..65535 at line 2: " + flag,
         e.getMessage());
   }
 
@@ -1690,25 +1688,30 @@ public class HunspellStemmerTest {
   @Test
   void testForbiddenSurfaceOverridesAffixAnalysis() throws IOException {
     final HunspellStemmer stemmer = new HunspellStemmer(load(
-        "FORBIDDENWORD X\nSFX A Y 1\nSFX A 0 s .\n",
-        "2\nfoo/A\nfoos/X\n"));
+        "FORBIDDENWORD F\nSFX A Y 1\nSFX A 0 s .\n",
+        "2\nreed/A\nreeds/F\n"));
 
-    Assertions.assertEquals(List.of("foos"), stemmer.stemAll("foos"));
+    Assertions.assertEquals(List.of("reeds"), stemmer.stemAll("reeds"));
   }
 
   /**
-   * Verifies that a forbidden homonym blocks affix analysis even when another entry
-   * for the same surface is valid as a standalone entry.
+   * Verifies that the first listed homonym decides whether a surface form is
+   * forbidden, as in Hunspell: a forbidden first homonym blocks the
+   * standalone and affix analyses, while a valid first homonym keeps both.
    *
    * @throws IOException Thrown if the fixture fails to load.
    */
   @Test
-  void testForbiddenHomonymOverridesStandaloneEntry() throws IOException {
-    final HunspellStemmer stemmer = new HunspellStemmer(load(
-        "FORBIDDENWORD X\nSFX A Y 1\nSFX A 0 s .\n",
-        "3\nfoo/A\nfoos\nfoos/X\n"));
-
-    Assertions.assertEquals(List.of("foos"), stemmer.stemAll("foos"));
+  void testForbiddenFirstHomonymOverridesStandaloneEntry() throws IOException {
+    final HunspellStemmer forbiddenFirst = new HunspellStemmer(load(
+        "FORBIDDENWORD F\nSFX A Y 1\nSFX A 0 s .\n",
+        "3\nreed/A\nreeds/F\nreeds\n"));
+    Assertions.assertEquals(List.of("reeds"), forbiddenFirst.stemAll("reeds"));
+    Assertions.assertEquals(List.of(), forbiddenFirst.analyze("reeds"));
+    final HunspellStemmer validFirst = new HunspellStemmer(load(
+        "FORBIDDENWORD F\nSFX A Y 1\nSFX A 0 s .\n",
+        "3\nreed/A\nreeds\nreeds/F\n"));
+    Assertions.assertEquals(List.of("reeds", "reed"), validFirst.stemAll("reeds"));
   }
 
   /**
@@ -1790,16 +1793,16 @@ public class HunspellStemmerTest {
     final HunspellStemmer stemmer = new HunspellStemmer(load(
         String.join("\n",
             "AF 2",
-            "AF AB",
-            "AF A",
-            "SFX A Y 1",
-            "SFX A 0 x .",
-            "SFX B Y 1",
-            "SFX B 0 y/2 .",
+            "AF PQ",
+            "AF P",
+            "SFX P Y 1",
+            "SFX P 0 s .",
+            "SFX Q Y 1",
+            "SFX Q 0 en/2 .",
             ""),
-        "1\nfoo/1\n"));
+        "1\nquick/1\n"));
 
-    Assertions.assertEquals(List.of("foo"), stemmer.stemAll("fooyx"));
+    Assertions.assertEquals(List.of("quick"), stemmer.stemAll("quickens"));
   }
 
   /**
@@ -1913,4 +1916,75 @@ public class HunspellStemmerTest {
     Assertions.assertEquals(List.of(surface), stemmer.stemAll(surface));
   }
 
+  /**
+   * Verifies that a FORBIDDENWORD flag among an affix rule's continuation classes
+   * marks the generated form as forbidden, as in Hunspell: the
+   * derived surface has no analysis even without a listed forbidden entry, in suffix
+   * position, in prefix position, and through a cross product involving the marked
+   * rule. A derivation over rules without the flag still reaches the listed stem.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testForbiddenWordOnContinuationBlocksTheDerivedForm() throws IOException {
+    final HunspellStemmer markedSuffix = new HunspellStemmer(load(
+        "FORBIDDENWORD F\nPFX P Y 1\nPFX P 0 un .\n"
+            + "SFX S Y 1\nSFX S 0 s/F .\n",
+        "1\ndog/PS\n"));
+    Assertions.assertEquals(List.of("dogs"), markedSuffix.stemAll("dogs"));
+    Assertions.assertEquals(List.of("undogs"), markedSuffix.stemAll("undogs"));
+    Assertions.assertEquals(List.of("dog"), markedSuffix.stemAll("undog"));
+
+    final HunspellStemmer markedPrefix = new HunspellStemmer(load(
+        "FORBIDDENWORD F\nPFX P Y 1\nPFX P 0 un/F .\n",
+        "1\ndog/P\n"));
+    Assertions.assertEquals(List.of("undog"), markedPrefix.stemAll("undog"));
+  }
+
+  /**
+   * Verifies that a long word under a compound-declaring dictionary is answered
+   * promptly. The word-pair check inserts a space at every position of each text a
+   * compound level splits, so without a bound on the spaced forms a dictionary can
+   * read, the work grows with the cube of the word length.
+   *
+   * @param words The word list, with and without an entry containing a space.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"1\nlo/CA\n", "2\nlo/CA\nlo la/A\n"})
+  void testLongWordWithCompoundsIsBounded(String words) {
+    final String word = "lo".repeat(10_000) + "q";
+    final List<CharSequence> stems = Assertions.assertTimeoutPreemptively(
+        Duration.ofSeconds(10), () -> new HunspellStemmer(load(
+            "COMPOUNDFLAG C\nCOMPOUNDMIN 1\nSFX A Y 1\nSFX A 0 s .\n", words))
+            .stemAll(word));
+    Assertions.assertEquals(List.of(word), stems);
+  }
+
+  /**
+   * Verifies that an underscore inside an {@code ICONV} or {@code OCONV} pattern stands
+   * for a space, as Hunspell reads it, after the leading and trailing anchors are
+   * removed. The input conversion turns {@code b ok} into the listed {@code book}, also
+   * with a mathematical bold b in the pattern; the output conversion turns the listed
+   * {@code a b} into {@code ab}.
+   *
+   * @param affix The conversion table.
+   * @param words The word list.
+   * @param input The stemmed text.
+   * @param expected The stem after both conversions.
+   * @throws IOException Thrown if the fixture fails to load.
+   */
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "ICONV 1\\nICONV b_ok book|1\\nbook|b ok|book",
+      "ICONV 1\\nICONV _b_ok_ book|1\\nbook|b ok|book",
+      "OCONV 1\\nOCONV a_b ab|1\\na b|a b|ab",
+      // a supplementary code point before the underscore, so the scan stays on code points
+      "ICONV 1\\nICONV \uD835\uDC1B_ok book|1\\nbook|\uD835\uDC1B ok|book"
+  })
+  void testConversionPatternUnderscoreIsSpace(String affix, String words, String input,
+      String expected) throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        affix.replace("\\n", "\n") + "\n", words.replace("\\n", "\n") + "\n"));
+    Assertions.assertEquals(expected, stemmer.stem(input).toString());
+  }
 }
