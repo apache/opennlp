@@ -303,12 +303,14 @@ for (SuggestItem item : suggestions) {
 		<para>
 			A SpellChecker is driven by plain-text frequency dictionaries, loaded into an engine by the
 			<code>FrequencyDictionaryLoader</code>. Two UTF-8 (by default) line-based formats are supported.
-			In both, columns are separated by a single TAB; blank lines, whitespace-only lines and lines
-			starting with <code>#</code> (comments) are skipped.
+			In both, columns are separated by TABs or spaces, so the space-delimited
+			<ulink url="https://github.com/wolfgarbe/SymSpell#dictionary-file-format">SymSpell
+			reference dictionaries</ulink> load as they are. Blank lines and lines starting with
+			<code>#</code> (comments) are skipped.
 		</para>
 		<para>
 			The <emphasis>unigram</emphasis> dictionary lists one <code>word&lt;TAB&gt;count</code> per line,
-			where <code>count</code> is the term's corpus frequency:
+			where <code>count</code> is the term's corpus frequency, a nonnegative integer:
 			<screen>
 <![CDATA[the	23135851162
 of	13151942776

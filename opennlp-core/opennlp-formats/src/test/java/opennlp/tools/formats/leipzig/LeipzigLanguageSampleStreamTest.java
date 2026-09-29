@@ -19,11 +19,18 @@ package opennlp.tools.formats.leipzig;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.langdetect.LanguageSample;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
@@ -105,4 +112,39 @@ public class LeipzigLanguageSampleStreamTest {
     }
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"eng_news_2010_10K-sentences.txt", "deu_wikipedia_2016_10K-sentences.txt"})
+  void testFileWithLowerCaseAsciiLanguageCodeIsRead(String name) throws IOException {
+    writeSentences(name);
+    Assertions.assertEquals(List.of(name.substring(0, 3), name.substring(0, 3)), readLanguages());
+  }
+
+  @ParameterizedTest
+  // an upper case letter in each position, a digit, a hyphen, a two-letter code, an accented
+  // letter, a dotted capital I, a fullwidth letter, a mathematical letter, and a short name
+  @ValueSource(strings = {"Eng_news_2010_10K-sentences.txt", "eNg_news_2010_10K-sentences.txt",
+      "enG_news_2010_10K-sentences.txt", "en1_news_2010_10K-sentences.txt",
+      "e-g_news_2010_10K-sentences.txt", "en_news_2010_10K-sentences.txt",
+      "\u00E9ng_news_2010_10K-sentences.txt", "\u0130ng_news_2010_10K-sentences.txt",
+      "\uFF45ng_news_2010_10K-sentences.txt", "\uD835\uDC1Abc_news_2010_10K-sentences.txt", "en"})
+  void testFileWithoutLowerCaseAsciiLanguageCodeIsNotRead(String name) throws IOException {
+    writeSentences(name);
+    Assertions.assertEquals(List.of(), readLanguages());
+  }
+
+  private void writeSentences(String name) throws IOException {
+    Files.writeString(new File(emptyTempDir, name).toPath(),
+        "1\tThis is a sentence.\n2\tThis is another sentence.\n", StandardCharsets.UTF_8);
+  }
+
+  private List<String> readLanguages() throws IOException {
+    List<String> languages = new ArrayList<>();
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(emptyTempDir, 1, 2)) {
+      LanguageSample sample;
+      while ((sample = stream.read()) != null) {
+        languages.add(sample.language().getLang());
+      }
+    }
+    return languages;
+  }
 }

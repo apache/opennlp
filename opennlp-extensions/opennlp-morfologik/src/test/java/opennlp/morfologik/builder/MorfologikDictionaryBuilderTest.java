@@ -18,6 +18,7 @@
 package opennlp.morfologik.builder;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,6 +26,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.morfologik.AbstractMorfologikTest;
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
@@ -33,6 +37,9 @@ import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
  * Tests for the {@link MorfologikDictionaryBuilder} class.
  */
 public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
+
+  @TempDir
+  Path tempDir;
 
   @Test
   public void testMultithreading() throws Exception {
@@ -67,9 +74,24 @@ public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
   @Test
   public void testBuildDictionary() throws Exception {
     Path output = createMorfologikDictionary();
+    output.toFile().deleteOnExit();
     MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
     Assertions.assertNotNull(ml);
-    output.toFile().deleteOnExit();
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "dictionaryWithLemma|dictionaryWithLemma.dict",
+      "a.info|a.info.dict"})
+  public void testBuildNamesTheDictionaryAfterTheMetadataFile(String baseName, String expected)
+      throws Exception {
+    final Path tabFile = tempDir.resolve(baseName + ".txt");
+    Files.copy(getResource("/dictionaryWithLemma.txt").openStream(), tabFile);
+    Files.copy(getResource("/dictionaryWithLemma.info").openStream(), tempDir.resolve(baseName + ".info"));
+    final Path output = new MorfologikDictionaryBuilder().build(tabFile);
+    Assertions.assertEquals(expected, output.getFileName().toString());
+    Assertions.assertEquals(tempDir, output.getParent());
+    Assertions.assertTrue(Files.isRegularFile(output));
   }
 
 }
