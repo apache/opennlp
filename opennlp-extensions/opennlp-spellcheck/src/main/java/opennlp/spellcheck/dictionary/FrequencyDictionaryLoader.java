@@ -20,9 +20,10 @@ package opennlp.spellcheck.dictionary;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.tools.util.InputStreamFactory;
@@ -43,9 +44,9 @@ import opennlp.tools.util.PlainTextByLineStream;
  *       fed to {@link SymSpell#addBigram(String, String, long)}.</li>
  * </ul>
  *
- * <p>Columns are separated by whitespace &ndash; a TAB or one or more spaces &ndash; so
- * the canonical space-delimited SymSpell reference dictionaries (e.g.
- * {@code frequency_dictionary_en_82_765.txt}) load as-is, as do TAB-delimited files.</p>
+ * <p>Columns are separated by one or more TAB or space characters, so the space-delimited
+ * SymSpell reference dictionaries load as they are, as do TAB-delimited files. The count
+ * column holds ASCII digits only.</p>
  *
  * <p>The loader is encoding-aware (UTF-8 by default) and tolerant of input noise: a
  * leading UTF-8 byte-order mark is stripped; blank lines, lines that are entirely
@@ -62,11 +63,32 @@ public final class FrequencyDictionaryLoader {
   /** The default character set used when none is supplied. */
   public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-  /** Splits a line into columns on a TAB or a run of spaces. */
-  private static final Pattern COLUMN_SEPARATOR = Pattern.compile("[\\t ]+");
-
   /** UTF-8 byte-order mark (U+FEFF); stripped if it leads a line. */
   private static final char BOM = (char) 0xFEFF;
+
+  /** The first character of a comment line. */
+  private static final char COMMENT_MARKER = '#';
+
+  /** A TAB, one of the two column separators. */
+  private static final char COLUMN_TAB = '\t';
+
+  /** A space, one of the two column separators. */
+  private static final char COLUMN_SPACE = ' ';
+
+  /** The sign that leads a negative count. */
+  private static final char MINUS_SIGN = '-';
+
+  /** The reason reported for a unigram line with fewer than two columns. */
+  private static final String UNIGRAM_COLUMNS_MISSING = "expected 'word<sep>count'";
+
+  /** The reason reported for a bigram line with fewer than three columns. */
+  private static final String BIGRAM_COLUMNS_MISSING = "expected 'w1<sep>w2<sep>count'";
+
+  /** The reason reported for a count with a minus sign. */
+  private static final String COUNT_NEGATIVE = "count must not be negative";
+
+  /** The reason reported for a count that is not ASCII digits or does not fit in a long. */
+  private static final String COUNT_NOT_INTEGER = "count is not an integer";
 
   private final Charset charset;
 
@@ -126,7 +148,7 @@ public final class FrequencyDictionaryLoader {
   long parseUnigrams(InputStreamFactory factory, Map<String, Long> into) throws IOException {
     Objects.requireNonNull(into, "into must not be null");
     return readUnigrams(factory,
-        (word, count) -> into.merge(word, count, FrequencyDictionaryLoader::saturatedAdd));
+        (word, count) -> into.merge(word, count, this::saturatedAdd));
   }
 
   /**
@@ -142,8 +164,7 @@ public final class FrequencyDictionaryLoader {
   long parseBigrams(InputStreamFactory factory, Map<String, Long> into) throws IOException {
     Objects.requireNonNull(into, "into must not be null");
     return readBigrams(factory,
-        (w1, w2, count) -> into.merge(w1 + " " + w2, count,
-            FrequencyDictionaryLoader::saturatedAdd));
+        (w1, w2, count) -> into.merge(w1 + " " + w2, count, this::saturatedAdd));
   }
 
   private long readUnigrams(InputStreamFactory factory, UnigramSink sink) throws IOException {
@@ -158,9 +179,9 @@ public final class FrequencyDictionaryLoader {
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = COLUMN_SEPARATOR.split(content.strip());
-        if (columns.length < 2 || columns[0].isEmpty()) {
-          throw new MalformedDictionaryLineException(lineNo, line, "expected 'word<sep>count'");
+        final String[] columns = splitColumns(content.strip());
+        if (columns.length < 2) {
+          throw new MalformedDictionaryLineException(lineNo, line, UNIGRAM_COLUMNS_MISSING);
         }
         final long count = parseCount(columns[1], lineNo, line);
         sink.accept(columns[0], count);
@@ -182,9 +203,9 @@ public final class FrequencyDictionaryLoader {
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = COLUMN_SEPARATOR.split(content.strip());
-        if (columns.length < 3 || columns[0].isEmpty() || columns[1].isEmpty()) {
-          throw new MalformedDictionaryLineException(lineNo, line, "expected 'w1<sep>w2<sep>count'");
+        final String[] columns = splitColumns(content.strip());
+        if (columns.length < 3) {
+          throw new MalformedDictionaryLineException(lineNo, line, BIGRAM_COLUMNS_MISSING);
         }
         final long count = parseCount(columns[2], lineNo, line);
         sink.accept(columns[0], columns[1], count);
@@ -194,34 +215,114 @@ public final class FrequencyDictionaryLoader {
     return read;
   }
 
-  private static String stripBom(String line) {
+  /**
+   * Splits {@code line} into columns on runs of TAB and space characters. Leading, trailing,
+   * and repeated separators produce no empty column, so a line of only separators or an
+   * empty line has no columns. Other whitespace, such as a no-break space or a vertical tab,
+   * is part of a column.
+   *
+   * @param line The line to split. Must not be {@code null}.
+   * @return The non-empty columns in order.
+   */
+  private String[] splitColumns(String line) {
+    final List<String> columns = new ArrayList<>();
+    int start = -1;
+    for (int i = 0; i <= line.length(); i++) {
+      if (i == line.length() || isColumnSeparator(line.charAt(i))) {
+        if (start >= 0) {
+          columns.add(line.substring(start, i));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    return columns.toArray(new String[0]);
+  }
+
+  /**
+   * Tests whether {@code c} separates dictionary columns, which only a TAB or a space does.
+   *
+   * @param c The character to check.
+   * @return {@code true} if {@code c} is a TAB or a space.
+   */
+  private boolean isColumnSeparator(char c) {
+    return c == COLUMN_TAB || c == COLUMN_SPACE;
+  }
+
+  /**
+   * Removes the byte-order mark that leads {@code line}, if there is one.
+   *
+   * @param line The line as read. Must not be {@code null}.
+   * @return The line without a leading byte-order mark.
+   */
+  private String stripBom(String line) {
     if (!line.isEmpty() && line.charAt(0) == BOM) {
       return line.substring(1);
     }
     return line;
   }
 
-  private static boolean isSkippable(String line) {
+  /**
+   * Tests whether a line holds no entry: it is empty, consists of whitespace only as
+   * {@link String#isBlank()} defines it, or starts with {@code #}.
+   *
+   * @param line The line without its byte-order mark. Must not be {@code null}.
+   * @return {@code true} if the line is to be skipped.
+   */
+  private boolean isSkippable(String line) {
     if (line.isBlank()) {
       return true;
     }
-    return line.charAt(0) == '#';
+    return line.charAt(0) == COMMENT_MARKER;
   }
 
-  private static long parseCount(String raw, long lineNo, String line) throws IOException {
-    final String trimmed = raw.trim();
-    try {
-      final long count = Long.parseLong(trimmed);
-      if (count < 0) {
-        throw new MalformedDictionaryLineException(lineNo, line, "count must not be negative");
-      }
-      return count;
-    } catch (NumberFormatException e) {
-      throw new MalformedDictionaryLineException(lineNo, line, "count is not an integer");
+  /**
+   * Parses the count column: decimal digits in any script, as {@link Character#digit(int, int)}
+   * accepts them. A sign, a decimal point or an exponent is malformed.
+   *
+   * @param raw The column text. Must not be {@code null} or empty.
+   * @param lineNo The 1-based line number, for the error message.
+   * @param line The complete line, for the error message.
+   * @return The count, zero or more.
+   * @throws MalformedDictionaryLineException Thrown if the column is not digits only, is a
+   *         negative number, or does not fit in a {@code long}.
+   */
+  private long parseCount(String raw, long lineNo, String line) throws IOException {
+    final boolean negative = raw.charAt(0) == MINUS_SIGN;
+    int i = negative ? 1 : 0;
+    if (i == raw.length()) {
+      throw new MalformedDictionaryLineException(lineNo, line, COUNT_NOT_INTEGER);
     }
+    for (int at = i; at < raw.length(); at += Character.charCount(raw.codePointAt(at))) {
+      if (Character.digit(raw.codePointAt(at), 10) < 0) {
+        throw new MalformedDictionaryLineException(lineNo, line, COUNT_NOT_INTEGER);
+      }
+    }
+    if (negative) {
+      throw new MalformedDictionaryLineException(lineNo, line, COUNT_NEGATIVE);
+    }
+    long count = 0;
+    while (i < raw.length()) {
+      final int codePoint = raw.codePointAt(i);
+      final int digit = Character.digit(codePoint, 10);
+      if (count > (Long.MAX_VALUE - digit) / 10) {
+        throw new MalformedDictionaryLineException(lineNo, line, COUNT_NOT_INTEGER);
+      }
+      count = count * 10 + digit;
+      i += Character.charCount(codePoint);
+    }
+    return count;
   }
 
-  private static long saturatedAdd(long a, long b) {
+  /**
+   * Adds two counts and returns {@link Long#MAX_VALUE} instead of overflowing.
+   *
+   * @param a The first count.
+   * @param b The second count.
+   * @return The sum, or {@link Long#MAX_VALUE} if the sum does not fit in a {@code long}.
+   */
+  private long saturatedAdd(long a, long b) {
     final long sum = a + b;
     if (((a ^ sum) & (b ^ sum)) < 0) {
       return Long.MAX_VALUE;
