@@ -17,14 +17,22 @@
 
 package opennlp.dl.doccat;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -199,5 +207,30 @@ public class DocumentCategorizerDLTest {
     final IllegalStateException e = assertThrows(IllegalStateException.class,
         () -> DocumentCategorizerDL.requireMatchingCategoryCount(new double[] {1.0}, 2));
     assertTrue(e.getMessage().contains("do not match"), e.getMessage());
+  }
+
+
+  @TempDir
+  private Path tempDir;
+
+  private File configFile(String json) throws IOException {
+    return Files.writeString(tempDir.resolve("config.json"), json).toFile();
+  }
+
+  @Test
+  void testReadCategoriesReadsTheLabelsByIndex() throws IOException {
+    assertEquals(Map.of(0, "neg", 1, "pos"),
+        DocumentCategorizerDL.readCategories(configFile("{\"id2label\": {\"0\": \"neg\", \"1\": \"pos\"}}")));
+    assertEquals(Map.of(), DocumentCategorizerDL.readCategories(configFile("{\"hidden_size\": 768}")));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"{\"id2label\": {\"0\": \"neg\"", "{\"id2label\": [\"neg\"]}",
+      "{\"id2label\": {\"0\": 1}}", "{\"id2label\": {\"a0\": \"neg\"}}", "x"})
+  void testReadCategoriesReportsAMalformedFileAsAnInvalidFormat(String json) throws IOException {
+    final File file = configFile(json);
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> DocumentCategorizerDL.readCategories(file));
+    assertTrue(e.getMessage().contains(file.getName()), e.getMessage());
   }
 }

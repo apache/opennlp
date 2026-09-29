@@ -173,6 +173,19 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 				For additional examples, refer to the <code>DocumentCategorizerDLEval</code> class.
 			</para>
 			<para>
+				The vocabulary file is either plain text with one token per line, as in
+				<code>vocab.txt</code>, or a JSON object mapping each token to an integer ID, as in
+				<code>vocab.json</code>. A Hugging Face <code>tokenizer.json</code> is not supported yet
+				(<ulink url="https://issues.apache.org/jira/browse/OPENNLP-1988">OPENNLP-1988</ulink>).
+				An unreadable vocabulary is rejected with an <code>InvalidFormatException</code>.
+			</para>
+			<para>
+				When a configuration file is given in place of the categories map, its top-level
+				<code>id2label</code> object maps each output index to a category label. A configuration
+				that is not well-formed JSON, or whose <code>id2label</code> is not an object of strings
+				keyed by integers, is rejected with an <code>InvalidFormatException</code>.
+			</para>
+			<para>
 				Like <code>NameFinderDL</code>, long input is split into overlapping chunks on the full
 				Unicode <code>White_Space</code> set rather than Java's <code>\s</code>, so text copied
 				from PDFs, the web, or multilingual sources tokenizes consistently. Optional

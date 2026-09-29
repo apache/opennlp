@@ -17,14 +17,86 @@
 package opennlp.dl.doccat;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class DocumentCategorizerConfigTest {
+
+  static Stream<Arguments> id2labels() {
+    return Stream.of(
+        Arguments.of("{\"id2label\": {\"0\": \"x\"}}", Map.of("0", "x")),
+        Arguments.of("{\"id2label\":{}}", Map.of()),
+        Arguments.of("{\"id2label\" : {\n\"0\" : \"neg\" ,\n\"1\"\t:\r\n\"pos\"\n}}",
+            Map.of("0", "neg", "1", "pos")),
+        // no id2label member, regardless of the other members
+        Arguments.of("{\"vocab_size\": 5}", Map.of()),
+        Arguments.of("{\"label2id\": {\"x\": 0}, \"my_id2label\": {\"0\": \"x\"}}", Map.of()),
+        Arguments.of("{\"note\": \"the \\\"id2label\\\" map\"}", Map.of()),
+        // only the top-level member counts
+        Arguments.of("{\"other\": {\"id2label\": {\"0\": \"x\"}}}", Map.of()),
+        // a later member with the same key overwrites the earlier one
+        Arguments.of("{\"id2label\": {\"0\": \"x\"}, \"id2label\": {\"0\": \"y\"}}",
+            Map.of("0", "y")),
+        Arguments.of("{\"id2label\": {\"0\": \"x\", \"0\": \"y\"}}", Map.of("0", "y")),
+        // escapes in keys and labels are decoded
+        Arguments.of("{\"id2label\": {\"0\": \"say \\\"hi\\\"\", \"1\": \"ok\"}}",
+            Map.of("0", "say \"hi\"", "1", "ok")),
+        Arguments.of("{\"id2label\": {\"a\\\"b\": \"c\\\\d\"}}", Map.of("a\"b", "c\\d")),
+        Arguments.of("{\"id2label\": {\"0\": \"\\u00e9\\uD83D\\uDE00\"}}", Map.of("0", "\u00E9\uD83D\uDE00")),
+        // a raw line break or tab inside a label is content
+        Arguments.of("{\"id2label\": {\"0\": \"li\nne\", \"1\": \"tab\there\"}}",
+            Map.of("0", "li\nne", "1", "tab\there")),
+        Arguments.of("{\"id2label\": {\"k\ney\": \"v\"}}", Map.of("k\ney", "v")),
+        // a brace inside a label does not end the object
+        Arguments.of("{\"id2label\": {\"0\": \"x\", \"1\": \"y}\", \"2\": \"z\"}}",
+            Map.of("0", "x", "1", "y}", "2", "z")),
+        Arguments.of("{\"id2label\": {\"\": \"x\", \"0\":\"\"}}", Map.of("", "x", "0", "")),
+        Arguments.of("{\"id2label\": {\"\uD83D\uDE00\": \"\uD801\uDC12\", \"\u00E9\": \"\u3000x\"}}",
+            Map.of("\uD83D\uDE00", "\uD801\uDC12", "\u00E9", "\u3000x")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("id2labels")
+  public void testId2LabelsFromJson(String json, Map<String, String> expected) {
+    assertEquals(expected, DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      // id2label is not an object, or a label is not a string
+      "{\"id2label\": \"nope\"}", "{\"id2label\": [\"0\", \"x\"]}", "{\"id2label\": null}",
+      "{\"id2label\": {\"0\": 5}}", "{\"id2label\": {\"0\": {\"n\": \"y\"}}}",
+      "{\"id2label\": {\"0\": null}}",
+      // malformed text at any position of the configuration
+      "{\"id2label\": {\"0\": \"x\"", "{\"id2label\": {\"0\": \"x\" \"1\": \"y\"}}",
+      "{\"id2label\"id2label\": {\"0\": \"x\"}}", "{\"id2label\":\u00A0{\"0\": \"x\"}}",
+      "{\"id2label\": {\"0\": \"x\\q\"}}", "{\"hidden_size\": 768,}", "[]", "x"})
+  public void testId2LabelsFromJsonRejectsMalformedText(String json) {
+    assertThrows(IllegalArgumentException.class, () -> DocumentCategorizerConfig.fromJson(json));
+  }
+
+  @Test
+  public void testId2LabelsFromJsonNullThrows() {
+    assertThrows(IllegalArgumentException.class, () -> DocumentCategorizerConfig.fromJson(null));
+  }
+
+  @Test
+  public void testId2LabelsFromJsonMessageNamesTheKey() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentCategorizerConfig.fromJson("{\"id2label\": {\"0\": \"x\", \"1\": 2}}"));
+    assertTrue(e.getMessage().contains("\"1\""), e.getMessage());
+  }
 
   @Test
   public void testId2LabelsFromJsonPrettyValid() {
@@ -192,5 +264,108 @@ public class DocumentCategorizerConfigTest {
     assertEquals("3 stars", map.get("a2"));
     assertEquals("4 stars", map.get("a3"));
     assertEquals("5 stars", map.get("a4"));
+  }
+
+  @Test
+  public void testId2LabelsFromJsonSkipsALeadingByteOrderMark() {
+    assertEquals(Map.of("0", "x"),
+        DocumentCategorizerConfig.fromJson("\uFEFF{\"id2label\": {\"0\": \"x\"}}").id2label());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\uFEFF", "\uFEFF \r\n\t", "\uFEFF\n", "", " \n"})
+  public void testId2LabelsFromJsonBlankTextAfterAByteOrderMarkHasNoLabels(String json) {
+    assertEquals(Map.of(), DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\uFEFF\uFEFF", " \uFEFF", "\uFEFF \uFEFF", "\uFEFF{}\uFEFF",
+      "{\uFEFF}", "\uFEFF{\"id2label\":\uFEFF{}}"})
+  public void testId2LabelsFromJsonRejectsAByteOrderMarkElsewhere(String json) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentCategorizerConfig.fromJson(json));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  private static final String CONFIG_JSON =
+      "{\"hidden_size\": 768, \"id2label\": {\"0\": \"neg\", \"1\": \"pos\"}, \"pad_token_id\": 0}";
+
+  static Stream<Arguments> configLayouts() {
+    return Stream.of(
+        Arguments.of(CONFIG_JSON, Map.of("0", "neg", "1", "pos")),
+        Arguments.of("{\r\n  \"id2label\": {\r\n    \"0\": \"neg\",\r\n    \"1\": \"pos\"\r\n  }\r\n}"
+            + "\r\n", Map.of("0", "neg", "1", "pos")),
+        Arguments.of("{\r\"id2label\":\r{\"0\":\r\"neg\"}\r}", Map.of("0", "neg")),
+        // the member name may be written with escapes
+        Arguments.of("{\"id2l\\u0061bel\": {\"0\": \"x\"}}", Map.of("0", "x")),
+        // nested members of any depth before and after id2label are skipped
+        Arguments.of("{\"a\": {\"b\": [[{\"c\": {\"id2label\": {\"9\": \"no\"}}}]]},"
+            + " \"id2label\": {\"0\": \"x\"}, \"d\": [{}, [], \"}\"]}", Map.of("0", "x")),
+        // labels with line breaks written as escapes or as text
+        Arguments.of("{\"id2label\": {\"0\": \"a\\r\\nb\", \"1\": \"c\r\nd\"}}",
+            Map.of("0", "a\r\nb", "1", "c\r\nd")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("configLayouts")
+  public void testId2LabelsFromJsonLayouts(String json, Map<String, String> expected) {
+    assertEquals(expected, DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  static Stream<Arguments> configPrefixes() {
+    return Stream.iterate(1, n -> n + 1).limit(CONFIG_JSON.length() - 1)
+        .map(n -> Arguments.of(n, CONFIG_JSON.substring(0, n)));
+  }
+
+  @ParameterizedTest(name = "cut at {0}")
+  @MethodSource("configPrefixes")
+  public void testId2LabelsFromJsonRejectsATruncatedConfig(int length, String prefix) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentCategorizerConfig.fromJson(prefix));
+    assertTrue(e.getMessage().contains("offset "), e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {" {}", "x", "\uFEFF", ",", " {\"id2label\": {\"0\": \"y\"}}"})
+  public void testId2LabelsFromJsonRejectsContentAfterTheConfig(String trailing) {
+    final String json = CONFIG_JSON + trailing;
+    final int offset = CONFIG_JSON.length() + (trailing.startsWith(" ") ? 1 : 0);
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentCategorizerConfig.fromJson(json));
+    assertTrue(e.getMessage().contains("offset " + offset + ","), e.getMessage());
+    assertTrue(e.getMessage().contains("content after the object"), e.getMessage());
+  }
+
+  static Stream<Arguments> pythonWrittenConfigs() {
+    return Stream.of(
+        // NaN and the infinities in unrelated members are skipped
+        Arguments.of("{\"x\": NaN, \"id2label\": {\"0\": \"y\"}}", Map.of("0", "y")),
+        Arguments.of("{\"id2label\": {\"0\": \"y\"}, \"r\": [Infinity, -Infinity]}", Map.of("0", "y")),
+        // labels written with ensure_ascii escapes, lowercase hex and surrogate pairs included
+        Arguments.of("{\"id2label\": {\"0\": \"n\\u00e9gatif\", \"1\": \"\\ud83d\\ude00\"}}",
+            Map.of("0", "n\u00E9gatif", "1", "\uD83D\uDE00")),
+        Arguments.of("{\"id2label\": {\"0\": \"n\u00E9gatif\", \"1\": \"say \\\"hi\\\"\", \"2\": \"x}y\","
+            + " \"3\": \"z\"}}", Map.of("0", "n\u00E9gatif", "1", "say \"hi\"", "2", "x}y", "3", "z")),
+        // id2label nested in another member is not the configuration's map
+        Arguments.of("{\"text_config\": {\"id2label\": {\"0\": \"y\"}}}", Map.of()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("pythonWrittenConfigs")
+  public void testId2LabelsFromJsonPythonWrittenConfigs(String json, Map<String, String> expected) {
+    assertEquals(expected, DocumentCategorizerConfig.fromJson(json).id2label());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      // a trailing comma and a comment line are not JSON
+      "{\"id2label\": {\"0\": \"y\"},}", "{\"id2label\": {\"0\": \"y\",}}",
+      "// labels\n{\"id2label\": {\"0\": \"y\"}}",
+      // NaN is never a label
+      "{\"id2label\": {\"0\": NaN}}",
+      // a control character alone is not blank text under any whitespace mode
+      "\u001C", "\u0085", "\u00A0", "\u2028", "\uFEFF\u001C"})
+  public void testId2LabelsFromJsonRejectsTextThatIsNotAnObject(String json) {
+    assertThrows(IllegalArgumentException.class, () -> DocumentCategorizerConfig.fromJson(json));
   }
 }
