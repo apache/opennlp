@@ -844,4 +844,15 @@ Organization: precision:   85.11%;  recall:   79.38%; F1:   82.14%. [target: 130
 			</para>
 		</section>
 	</section>
+	<section xml:id="tools.corpora.masc">
+		<title>MASC</title>
+		<para>
+		The <link xlink:href="https://anc.org/data/masc/masc-structure">MASC</link> reader requires
+		the identifiers <code>seg-r</code>, <code>penn-n</code> and <code>ne-n</code> followed by
+		ASCII digits, at most 2147483647, and exactly two nonnegative, ordered offsets per region.
+		Lists of identifiers and offsets are separated by space, tab, carriage return or line feed.
+		Since 3.0.0, a malformed annotation stops reading with an <code>IOException</code> whose
+		cause names the value.
+		</para>
+	</section>
 </chapter>

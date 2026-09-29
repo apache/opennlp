@@ -33,7 +33,7 @@ public class MascWord extends Span {
    * @param s  The beginning of the word in the corpus file.
    *           Must be equal to or greater than {@code 0}.
    * @param e  The end of the word in the corpus file.
-   *           Must be equal to or greater than {@code 0} and be greater than {@code s}.
+   *           Must be equal to or greater than {@code s}.
    * @param id The id as assigned by the stand-off annotation.
    *           
    * @throws IllegalArgumentException Thrown if one of the parameters are invalid.
