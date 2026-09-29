@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
@@ -32,6 +33,7 @@ import opennlp.tools.util.Span;
  */
 public final class RegexNameFinder implements TokenNameFinder {
 
+  @SuppressForbidden("user-supplied name finder patterns")
   private Pattern[] mPatterns;
   private String sType;
   private Map<String, Pattern[]> regexMap;
@@ -56,6 +58,7 @@ public final class RegexNameFinder implements TokenNameFinder {
    *
    * @throws IllegalArgumentException Thrown if {@code patterns} were {@code null} or empty.
    */
+  @SuppressForbidden("user-supplied name finder patterns")
   public RegexNameFinder(Pattern[] patterns, String type) {
     if (patterns == null || patterns.length == 0) {
       throw new IllegalArgumentException("patterns must not be null or empty!");
@@ -65,6 +68,7 @@ public final class RegexNameFinder implements TokenNameFinder {
     sType = type;
   }
 
+  @SuppressForbidden("user-supplied name finder patterns")
   @Override
   public Span[] find(String[] tokens) {
     Map<Integer, Integer> sentencePosTokenMap = new HashMap<>();
@@ -131,10 +135,12 @@ public final class RegexNameFinder implements TokenNameFinder {
    * @param text The text to use.
    * @return An array of {@link Span} instances representing the annotations.
    */
+  @SuppressForbidden("user-supplied name finder patterns")
   public Span[] find(String text) {
     return getAnnotations(text);
   }
 
+  @SuppressForbidden("user-supplied name finder patterns")
   private Span[] getAnnotations(String text) {
     Collection<Span> annotations = new LinkedList<>();
     if (regexMap != null) {
@@ -168,6 +174,7 @@ public final class RegexNameFinder implements TokenNameFinder {
   /**
    * @return Retrieves the {@link Pattern matching patterns} used.
    */
+  @SuppressForbidden("user-supplied name finder patterns")
   public Pattern[] getMatchingPatterns() {
     return mPatterns;
   }
@@ -175,6 +182,7 @@ public final class RegexNameFinder implements TokenNameFinder {
   /**
    * @param mPatterns The {@link Pattern matching patterns} to be set.
    */
+  @SuppressForbidden("user-supplied name finder patterns")
   public void setMatchingPatterns(Pattern[] mPatterns) {
     this.mPatterns = mPatterns;
   }
