@@ -93,6 +93,7 @@ public class BaseModelTest {
   void testBaseModelDoesNotReferenceObjectInputFilter() throws Exception {
     // java.io.ObjectInputFilter is not available on Android, so BaseModel itself
     // must not reference it - otherwise every model fails to load there.
+    // See: https://github.com/GrapheneOS/SpeechServices/issues/32
     final String bytecode;
     try (InputStream in = BaseModel.class.getResourceAsStream("BaseModel.class")) {
       Assertions.assertNotNull(in);

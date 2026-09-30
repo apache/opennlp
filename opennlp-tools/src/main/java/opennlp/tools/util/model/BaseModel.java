@@ -706,7 +706,16 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
     private static ObjectInputStream open(InputStream in) throws IOException {
       final ObjectInputStream ois = new ObjectInputStream(in);
-      ois.setObjectInputFilter(DESERIALIZE_FILTER);
+      try {
+        ois.setObjectInputFilter(DESERIALIZE_FILTER);
+      } catch (RuntimeException e) {
+        try {
+          ois.close();
+        } catch (IOException suppressed) {
+          e.addSuppressed(suppressed);
+        }
+        throw e;
+      }
       return ois;
     }
   }
