@@ -111,27 +111,11 @@ public final class Confusables {
               + lineNumber + ": " + content);
         }
         try {
-          final int source = Integer.parseInt(content.substring(0, firstSemicolon).strip(), 16);
+          final int source =
+              HexCodePoints.parseCodePoint(content.substring(0, firstSemicolon).strip());
           final String target = content.substring(firstSemicolon + 1, secondSemicolon).strip();
-          final StringBuilder prototype = new StringBuilder();
-          // Scan the whitespace-delimited hex tokens by hand, with no regular expression.
-          final int targetLength = target.length();
-          int pos = 0;
-          while (pos < targetLength) {
-            while (pos < targetLength && target.charAt(pos) <= ' ') {
-              pos++;
-            }
-            int end = pos;
-            while (end < targetLength && target.charAt(end) > ' ') {
-              end++;
-            }
-            if (end > pos) {
-              prototype.appendCodePoint(Integer.parseInt(target.substring(pos, end), 16));
-            }
-            pos = end;
-          }
-          map.put(source, prototype.toString());
-        } catch (NumberFormatException e) {
+          map.put(source, HexCodePoints.decodeSequence(target));
+        } catch (IllegalArgumentException e) {
           throw new IllegalArgumentException("Malformed confusables data in " + RESOURCE + " at line "
               + lineNumber + ": " + content, e);
         }

@@ -20,7 +20,7 @@ package opennlp.tools.util.normalizer;
  * Reads the hex code point notation of the Unicode data files bundled in this package: one code
  * point as hex digits ({@code 1F600}), a sequence as hex digits separated by single spaces
  * ({@code 1F468 200D 1F469}), and an inclusive range as two code points joined by two dots
- * ({@code 1F3FB..1F3FF}).
+ * ({@code 1F3FB..1F3FF}). Used by all Unicode data loaders of this package.
  */
 final class HexCodePoints {
 

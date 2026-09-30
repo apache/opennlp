@@ -196,6 +196,7 @@ public class EmojiAnnotationsTest {
         "1F642 ; name ; slightly smiling face ; CLDR:annotation\n",
         "1F642 ; shortName ; slightly smiling face ; CLDR:annotation ; n\n",
         "1F64X ; name ; slightly smiling face ; CLDR:annotation ; n\n",
+        "110000 ; name ; slightly smiling face ; CLDR:annotation ; n\n",
         " ; name ; slightly smiling face ; CLDR:annotation ; n\n",
         "1F642 ; name ; ; CLDR:annotation ; n\n",
         "1F642 ; name ; slightly smiling face ; ; n\n",
