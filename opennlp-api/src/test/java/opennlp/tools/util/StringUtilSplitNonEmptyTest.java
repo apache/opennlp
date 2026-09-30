@@ -36,6 +36,8 @@ public class StringUtilSplitNonEmptyTest {
 
   private static final String SMILEY = "\uD83D\uDE00";
 
+  private static final String SUPPLEMENTARY_WITH_SPACE_LOW_BITS = "\uD800\uDC20";
+
   private static Stream<Arguments> cases() {
     return Stream.of(
         Arguments.of("", new char[] {':'}, new String[0]),
@@ -54,6 +56,8 @@ public class StringUtilSplitNonEmptyTest {
         Arguments.of("a\\sb", new char[] {' '}, new String[] {"a\\sb"}),
         // only the listed separators split, other whitespace stays in the field
         Arguments.of("a\u00A0b\u2003c", new char[] {' '}, new String[] {"a\u00A0b\u2003c"}),
+        Arguments.of(SUPPLEMENTARY_WITH_SPACE_LOW_BITS + " x", new char[] {' '},
+            new String[] {SUPPLEMENTARY_WITH_SPACE_LOW_BITS, "x"}),
         Arguments.of(SMILEY + ":" + SMILEY, new char[] {':'}, new String[] {SMILEY, SMILEY}));
   }
 
@@ -82,7 +86,8 @@ public class StringUtilSplitNonEmptyTest {
    */
   @Test
   void testMatchesRegexSplitWithoutEmptyFields() {
-    final String[] pieces = {":", ";", " ", "\t", ".", "|", "a", "b", "xy", SMILEY, "0"};
+    final String[] pieces = {":", ";", " ", "\t", ".", "|", "a", "b", "xy", SMILEY,
+        SUPPLEMENTARY_WITH_SPACE_LOW_BITS, "0"};
     final char[][] separatorSets = {{':'}, {';'}, {' ', '\t'}, {'.', '|'}, {':', ';', ' '}};
     final Pattern[] patterns = new Pattern[separatorSets.length];
     for (int s = 0; s < separatorSets.length; s++) {
