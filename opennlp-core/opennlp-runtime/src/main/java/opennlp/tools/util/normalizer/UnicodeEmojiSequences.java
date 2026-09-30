@@ -23,10 +23,9 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Finds complete emoji at a position of a text, from the bundled inventory of Unicode Emoji 17.0
@@ -73,11 +72,6 @@ final class UnicodeEmojiSequences {
   private static final CodePointSet KEYCAP_BASES =
       CodePointSet.of('#', '*').union(CodePointSet.ofRange('0', '9'));
 
-  // Volatile so the lazily loaded instance is safely published: the double-checked accessor
-  // reads the field once, and a fully built trie becomes visible to every thread that observes
-  // the non-null reference.
-  private static volatile UnicodeEmojiSequences instance;
-
   private final Node root;
   private final int[][] componentRanges;
   private final int sequenceCount;
@@ -94,8 +88,8 @@ final class UnicodeEmojiSequences {
     this.componentRanges = componentRanges;
     this.sequenceCount = sequenceCount;
     this.candidateStarts = new BitSet();
-    for (int codePoint : root.children.keySet()) {
-      candidateStarts.set(codePoint);
+    for (int i = 0; i < root.size; i++) {
+      candidateStarts.set(root.keys[i]);
     }
     for (int[] range : componentRanges) {
       candidateStarts.set(range[0], range[1] + 1);
@@ -111,17 +105,17 @@ final class UnicodeEmojiSequences {
    * @throws IllegalArgumentException Thrown if the bundled data is malformed.
    */
   static UnicodeEmojiSequences getInstance() {
-    UnicodeEmojiSequences sequences = instance;
-    if (sequences == null) {
-      synchronized (UnicodeEmojiSequences.class) {
-        sequences = instance;
-        if (sequences == null) {
-          sequences = load();
-          instance = sequences;
-        }
-      }
-    }
-    return sequences;
+    return Holder.INSTANCE;
+  }
+
+  /**
+   * {@return whether a code point can start a candidate} A cheap pre-check for callers that
+   * scan text, so the trie is only touched at positions that can hold an emoji.
+   *
+   * @param codePoint The code point to test.
+   */
+  boolean isCandidateStart(int codePoint) {
+    return candidateStarts.get(codePoint);
   }
 
   /** {@return the number of sequence records that were loaded} */
@@ -224,7 +218,7 @@ final class UnicodeEmojiSequences {
     int i = start;
     while (i < text.length()) {
       int codePoint = Character.codePointAt(text, i);
-      Node child = node.children.get(codePoint);
+      Node child = node.child(codePoint);
       if (child == null) {
         break;
       }
@@ -354,7 +348,7 @@ final class UnicodeEmojiSequences {
     for (int i = 0; i <= sequence.length(); i++) {
       if (i == sequence.length() || sequence.charAt(i) == HexCodePoints.SEQUENCE_SEPARATOR) {
         int codePoint = HexCodePoints.parseCodePoint(sequence, tokenStart, i);
-        node = node.children.computeIfAbsent(codePoint, ignored -> new Node());
+        node = node.childOrAdd(codePoint);
         tokenStart = i + 1;
       }
     }
@@ -381,9 +375,58 @@ final class UnicodeEmojiSequences {
   private record Walk(int matchEnd, int prefixEnd) {
   }
 
-  /** A trie node: the code points that may follow, and whether a sequence ends here. */
+  /**
+   * A trie node: the code points that may follow, and whether a sequence ends here. The
+   * children are kept as parallel arrays sorted by code point, so a lookup is a binary search
+   * over primitives without boxing.
+   */
   private static final class Node {
-    private final Map<Integer, Node> children = new HashMap<>();
+    private static final int[] NO_KEYS = new int[0];
+    private static final Node[] NO_CHILDREN = new Node[0];
+
+    private int[] keys = NO_KEYS;
+    private Node[] children = NO_CHILDREN;
+    private int size;
     private boolean terminal;
+
+    /**
+     * {@return the child for a code point, or {@code null} if none}
+     *
+     * @param codePoint The code point to look up.
+     */
+    private Node child(int codePoint) {
+      final int index = Arrays.binarySearch(keys, 0, size, codePoint);
+      return index < 0 ? null : children[index];
+    }
+
+    /**
+     * {@return the child for a code point, added if it did not exist}
+     *
+     * @param codePoint The code point to look up or add.
+     */
+    private Node childOrAdd(int codePoint) {
+      int index = Arrays.binarySearch(keys, 0, size, codePoint);
+      if (index >= 0) {
+        return children[index];
+      }
+      index = -index - 1;
+      if (size == keys.length) {
+        final int capacity = Math.max(4, size * 2);
+        keys = Arrays.copyOf(keys, capacity);
+        children = Arrays.copyOf(children, capacity);
+      }
+      System.arraycopy(keys, index, keys, index + 1, size - index);
+      System.arraycopy(children, index, children, index + 1, size - index);
+      final Node child = new Node();
+      keys[index] = codePoint;
+      children[index] = child;
+      size++;
+      return child;
+    }
+  }
+
+  /** Loads the bundled data on first use of {@link #getInstance()}. */
+  private static final class Holder {
+    private static final UnicodeEmojiSequences INSTANCE = load();
   }
 }

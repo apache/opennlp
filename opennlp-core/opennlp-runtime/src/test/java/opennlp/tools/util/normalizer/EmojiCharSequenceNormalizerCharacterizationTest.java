@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.CompatibilityMode;
@@ -75,67 +77,85 @@ public class EmojiCharSequenceNormalizerCharacterizationTest {
     return new String(codePoints, 0, codePoints.length);
   }
 
+  static Stream<Arguments> emojiRuns() {
+    return Stream.of(
+        Arguments.of("", ""),
+        Arguments.of("Any funny text goes here " + cp(0x1F606, 0x1F606, 0x1F606) + " "
+            + cp(0x1F61B), "Any funny text goes here    "),
+        Arguments.of("a" + cp(0x1F600) + "b", "a b"),
+        Arguments.of("a" + cp(0x1F600) + " " + cp(0x1F603) + "b", "a   b"),
+        Arguments.of(cp(0x1F468) + "\u200D" + cp(0x1F469), " \u200D "),
+        Arguments.of(cp(0x1F1E9, 0x1F1EA), " "));
+  }
+
+  @ParameterizedTest
+  @MethodSource("emojiRuns")
+  void emojiRunsBecomeASingleSpace(String input, String expected) {
+    check(input, expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource(quoteCharacter = '"', value = {
+      "well-known, well known",
+      "a-b, a b",
+      "\"--\", \" \"",
+      "-\uD83D\uDE00-, \" \""})
+  void hyphensAreRemoved(String input, String expected) {
+    check(input, expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource(quoteCharacter = '"', value = {
+      "x\uE000y, x y",
+      "x\uF8FFy, x y",
+      "x\uF900y, x y",
+      "x\uFB01y, x y",
+      "x\uFB50y, x y",
+      "x\uFE70y, x y",
+      "x\uFF01y, x y",
+      "x\uFF21\uFF22y, x y",
+      "x\uFF71y, x y",
+      "x\uFFFDy, x y",
+      "x\uFFFFy, x y",
+      "x\u2764\uFE0Fy, x\u2764 y"})
+  void everythingFromPrivateUseToTheEndOfTheBasicPlaneIsRemoved(String input, String expected) {
+    check(input, expected);
+  }
+
+  static Stream<Arguments> supplementaryCharacters() {
+    return Stream.of(
+        Arguments.of("a" + cp(0x10412) + "b", "a b"),
+        Arguments.of("a" + cp(0x20000) + "b", "a b"),
+        Arguments.of("a" + cp(0x10FC00) + "b", "a b"),
+        Arguments.of("a" + cp(0x10FC01) + "b", "a" + cp(0x10FC01) + "b"),
+        Arguments.of("a" + cp(0x10FFFF) + "b", "a" + cp(0x10FFFF) + "b"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("supplementaryCharacters")
+  void supplementaryCharactersAreRemovedUpToTheRegexBoundary(String input, String expected) {
+    check(input, expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource(quoteCharacter = '"', value = {
+      "a\u231Ab, a\u231Ab",
+      "a\u2764b, a\u2764b",
+      "x\uDFFEy, x y",
+      "x\uDFFFy, x y",
+      "x\uD83Bx, x\uD83Bx",
+      "x\uD83Cx, x x",
+      "x\uD800y, x\uD800y",
+      "x\uDC00y, x y",
+      "\"123 #*\", \"123 #*\""})
+  void charactersBelowTheRegexBoundaryAreKept(String input, String expected) {
+    check(input, expected);
+  }
+
   private static void check(String input, String expected) {
-    assertEquals(expected, NORMALIZER.normalize(input).toString());
+    assertEquals(expected, NORMALIZER.normalize(input).toString(),
+        () -> "Input: " + CharacterizationInputs.escape(input));
   }
-
-  @Test
-  void emojiRunsBecomeASingleSpace() {
-    check("", "");
-    check("Any funny text goes here " + cp(0x1F606, 0x1F606, 0x1F606) + " " + cp(0x1F61B),
-        "Any funny text goes here    ");
-    check("a" + cp(0x1F600) + "b", "a b");
-    check("a" + cp(0x1F600) + " " + cp(0x1F603) + "b", "a   b");
-    check(cp(0x1F468) + "‍" + cp(0x1F469), " ‍ ");
-    check(cp(0x1F1E9, 0x1F1EA), " ");
-  }
-
-  @Test
-  void hyphensAreRemoved() {
-    check("well-known", "well known");
-    check("a-b", "a b");
-    check("--", " ");
-    check("-" + cp(0x1F600) + "-", " ");
-  }
-
-  @Test
-  void everythingFromPrivateUseToTheEndOfTheBasicPlaneIsRemoved() {
-    check("xy", "x y");
-    check("xy", "x y");
-    check("x豈y", "x y");
-    check("xﬁy", "x y");
-    check("xﭐy", "x y");
-    check("xﹰy", "x y");
-    check("x！y", "x y");
-    check("xＡＢy", "x y");
-    check("xｱy", "x y");
-    check("x�y", "x y");
-    check("x￿y", "x y");
-    check("x❤️y", "x❤ y");
-  }
-
-  @Test
-  void supplementaryCharactersAreRemovedUpToTheRegexBoundary() {
-    check("a𐐒b", "a b");
-    check("a𠀀b", "a b");
-    check("a" + cp(0x10FC00) + "b", "a b");
-    check("a" + cp(0x10FC01) + "b", "a" + cp(0x10FC01) + "b");
-    check("a" + cp(0x10FFFF) + "b", "a" + cp(0x10FFFF) + "b");
-  }
-
-  @Test
-  void charactersBelowTheRegexBoundaryAreKept() {
-    check("a⌚b", "a⌚b");
-    check("a❤b", "a❤b");
-    check("x\uDFFEy", "x y");
-    check("x\uDFFFy", "x y");
-    check("x\uD83Bx", "x\uD83Bx");
-    check("x\uD83Cx", "x x");
-    check("x\uD800y", "x\uD800y");
-    check("x\uDC00y", "x y");
-    check("123 #*", "123 #*");
-  }
-
   @Test
   void nullTextIsRejected() {
     assertThrows(IllegalArgumentException.class, () -> NORMALIZER.normalize(null));

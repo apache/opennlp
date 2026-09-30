@@ -45,18 +45,18 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
   private static final long serialVersionUID = -723015318244958736L;
 
   /**
-   * The first code point of the legacy range: the high surrogate U+D83C, which the former
-   * pattern {@code [\uD83C-\uDBFF\uDC00-\uDFFF]+} named as the start of its range.
+   * The first code point of the range removed under {@link CompatibilityMode#LEGACY}: the high
+   * surrogate U+D83C. Before 3.0.0 this class used the regex
+   * {@code [\uD83C-\uDBFF\uDC00-\uDFFF]+}, whose character class Java reads as U+D83C to
+   * U+10FC00 (the adjacent escapes {@code \uDBFF\uDC00} form one supplementary code point),
+   * plus a literal hyphen and U+DFFF.
    */
   private static final int LEGACY_RANGE_FIRST = 0xD83C;
 
-  /**
-   * The last code point of the legacy range: U+10FC00, which Java read from the adjacent escapes
-   * {@code \uDBFF\uDC00} of the former pattern as one supplementary code point.
-   */
+  /** The last code point of the range removed under {@link CompatibilityMode#LEGACY}. */
   private static final int LEGACY_RANGE_LAST = 0x10FC00;
 
-  /** The hyphen the former pattern matched literally, between its two ranges. */
+  /** The hyphen removed under {@link CompatibilityMode#LEGACY}. */
   private static final int HYPHEN = '-';
 
   private static final EmojiCharSequenceNormalizer INSTANCE = new EmojiCharSequenceNormalizer();
@@ -79,8 +79,15 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
     StringBuilder normalized = null;
     int copiedThrough = 0;
     for (int i = 0; i < text.length();) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (!sequences.isCandidateStart(codePoint)) {
+        i += Character.charCount(codePoint);
+        continue;
+      }
       UnicodeEmojiSequences.Candidate candidate = sequences.candidateAt(text, i);
-      if (candidate != null && candidate.valid()) {
+      if (candidate == null) {
+        i += Character.charCount(codePoint);
+      } else if (candidate.valid()) {
         if (normalized == null) {
           normalized = new StringBuilder(text.length());
         }
@@ -88,8 +95,7 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
         i = candidate.end();
         copiedThrough = i;
       } else {
-        i = candidate == null ? i + Character.charCount(Character.codePointAt(text, i))
-            : candidate.end();
+        i = candidate.end();
       }
     }
     if (normalized == null) {
@@ -147,8 +153,9 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   /**
-   * {@return whether the former pattern matched {@code codePoint}} An unpaired surrogate is
-   * passed as its own value, the way {@link Character#codePointAt(CharSequence, int)} reads it.
+   * {@return whether {@code codePoint} is removed under {@link CompatibilityMode#LEGACY}} An
+   * unpaired surrogate is passed as its own value, the way
+   * {@link Character#codePointAt(CharSequence, int)} reads it.
    *
    * @param codePoint The code point to test.
    */

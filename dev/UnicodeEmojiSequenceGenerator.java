@@ -67,12 +67,8 @@ public final class UnicodeEmojiSequenceGenerator {
       throw new IllegalArgumentException(
           "usage: UnicodeEmojiSequenceGenerator emoji-test.txt emoji-data.txt output.txt");
     }
-    Path emojiTest = Path.of(args[0]);
-    Path emojiData = Path.of(args[1]);
-    verifySource(emojiTest, RELEASE.emojiTestSha256());
-    verifySource(emojiData, RELEASE.emojiDataSha256());
-    verifyVersion(emojiTest);
-    verifyVersion(emojiData);
+    List<String> emojiTest = readSource(Path.of(args[0]), RELEASE.emojiTestSha256());
+    List<String> emojiData = readSource(Path.of(args[1]), RELEASE.emojiDataSha256());
 
     List<String> sequences = readFullyQualifiedSequences(emojiTest);
     List<String> components = readComponentRanges(emojiData);
@@ -94,8 +90,11 @@ public final class UnicodeEmojiSequenceGenerator {
     for (String component : components) {
       output.add(COMPONENT_RECORD + component);
     }
-    Files.createDirectories(Path.of(args[2]).getParent());
-    Files.write(Path.of(args[2]), output, StandardCharsets.US_ASCII);
+    Path target = Path.of(args[2]);
+    if (target.getParent() != null) {
+      Files.createDirectories(target.getParent());
+    }
+    Files.write(target, output, StandardCharsets.US_ASCII);
     System.out.printf("wrote %d sequences and %d component ranges%n",
         sequences.size(), components.size());
   }
@@ -104,14 +103,14 @@ public final class UnicodeEmojiSequenceGenerator {
    * Reads the code point sequences that {@code emoji-test.txt} marks {@code fully-qualified},
    * in file order.
    *
-   * @param source The {@code emoji-test.txt} file.
+   * @param lines The lines of {@code emoji-test.txt}.
    * @return The sequences, each as upper case hex code points separated by one space.
-   * @throws IOException Thrown if the file cannot be read, holds a malformed code point, or does
-   *     not hold exactly the number of sequences pinned in {@link #RELEASE}.
+   * @throws IOException Thrown if a line holds a malformed code point, or the file does not
+   *     hold exactly the number of sequences pinned in {@link #RELEASE}.
    */
-  private static List<String> readFullyQualifiedSequences(Path source) throws IOException {
+  private static List<String> readFullyQualifiedSequences(List<String> lines) throws IOException {
     List<String> result = new ArrayList<>();
-    for (String line : Files.readAllLines(source, StandardCharsets.UTF_8)) {
+    for (String line : lines) {
       int semicolon = line.indexOf(FIELD_SEPARATOR);
       int comment = line.indexOf(COMMENT, semicolon + 1);
       if (semicolon < 0 || comment < 0) {
@@ -133,14 +132,14 @@ public final class UnicodeEmojiSequenceGenerator {
    * Reads the code point ranges that {@code emoji-data.txt} assigns the {@code Emoji_Component}
    * property, in file order.
    *
-   * @param source The {@code emoji-data.txt} file.
+   * @param lines The lines of {@code emoji-data.txt}.
    * @return The ranges, each as {@code XXXX..YYYY} or a single code point.
-   * @throws IOException Thrown if the file cannot be read, holds a malformed code point, or has
-   *     no {@code Emoji_Component} line.
+   * @throws IOException Thrown if a line holds a malformed code point, or the file has no
+   *     {@code Emoji_Component} line.
    */
-  private static List<String> readComponentRanges(Path source) throws IOException {
+  private static List<String> readComponentRanges(List<String> lines) throws IOException {
     List<String> result = new ArrayList<>();
-    for (String line : Files.readAllLines(source, StandardCharsets.UTF_8)) {
+    for (String line : lines) {
       int semicolon = line.indexOf(FIELD_SEPARATOR);
       int comment = line.indexOf(COMMENT, semicolon + 1);
       if (semicolon < 0 || comment < 0) {
@@ -235,38 +234,33 @@ public final class UnicodeEmojiSequenceGenerator {
   }
 
   /**
-   * Checks that a source file carries the {@code # Version:} header line of {@link #RELEASE}.
-   * Both emoji files use the two part form, for example {@code # Version: 17.0}.
+   * Reads a source file once and checks its SHA-256 and its {@code # Version:} header line
+   * against {@link #RELEASE}. Both emoji files use the two part form, for example
+   * {@code # Version: 17.0}.
    *
-   * @param source The file to check.
-   * @throws IOException Thrown if the file cannot be read or is of another version.
+   * @param source The file to read.
+   * @param expectedSha256 The expected SHA-256 as lower case hex.
+   * @return The lines of the file.
+   * @throws IOException Thrown if the file cannot be read, its checksum differs, or it is of
+   *     another version.
    */
-  private static void verifyVersion(Path source) throws IOException {
-    boolean found = Files.readAllLines(source, StandardCharsets.UTF_8).stream()
-        .anyMatch(line -> line.equals(VERSION_LINE + RELEASE.version()));
-    if (!found) {
-      throw new IOException(source + " is not Unicode Emoji version " + RELEASE.version());
-    }
-  }
-
-  /**
-   * Checks the SHA-256 of a source file.
-   *
-   * @param source The file to check.
-   * @param expected The expected SHA-256 as lower case hex.
-   * @throws IOException Thrown if the file cannot be read or its checksum differs.
-   */
-  private static void verifySource(Path source, String expected) throws IOException {
+  private static List<String> readSource(Path source, String expectedSha256) throws IOException {
+    byte[] bytes = Files.readAllBytes(source);
+    String actual;
     try {
-      String actual = HexFormat.of().formatHex(
-          MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(source)));
-      if (!actual.equals(expected)) {
-        throw new IOException(source + " SHA-256 mismatch: expected " + expected
-            + ", found " + actual);
-      }
+      actual = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("SHA-256 is unavailable", e);
     }
+    if (!actual.equals(expectedSha256)) {
+      throw new IOException(source + " SHA-256 mismatch: expected " + expectedSha256
+          + ", found " + actual);
+    }
+    List<String> lines = new String(bytes, StandardCharsets.UTF_8).lines().toList();
+    if (!lines.contains(VERSION_LINE + RELEASE.version())) {
+      throw new IOException(source + " is not Unicode Emoji version " + RELEASE.version());
+    }
+    return lines;
   }
 
   /**
