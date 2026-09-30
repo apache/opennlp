@@ -59,6 +59,15 @@ public class BasicContextGeneratorTest {
         Arguments.of(";", "a;b", new String[] {"a", "b"}),
         Arguments.of("-", "a-b", new String[] {"a", "b"}),
         Arguments.of("#", "a#b", new String[] {"a", "b"}),
+        // characters with a meaning in a regular expression are ordinary separators
+        Arguments.of("|", "a|b|c", new String[] {"a", "b", "c"}),
+        Arguments.of(".", "a.b", new String[] {"a", "b"}),
+        Arguments.of("+", "a+b", new String[] {"a", "b"}),
+        Arguments.of("*", "a*b", new String[] {"a", "b"}),
+        Arguments.of("$", "a$b", new String[] {"a", "b"}),
+        Arguments.of("[,;]", "a[,;]b", new String[] {"a", "b"}),
+        Arguments.of("[,;]", "a,b;c", new String[] {"a,b;c"}),
+        Arguments.of("[ \t]", "a b\tc", new String[] {"a b\tc"}),
         // a multi-character separator, and a prefix of it in the input
         Arguments.of("::", "a::b::c", new String[] {"a", "b", "c"}),
         Arguments.of("::", "a:b", new String[] {"a:b"}),
@@ -99,16 +108,12 @@ public class BasicContextGeneratorTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"\\|", "\\.", "\\s", "\\s+", "\\Q|\\E", "a\\b", "\\",
-      "|", "a|b", ".", "+", " +", "\t+", "*", "?", "(", ")", "[", "]", "[,;]", "[ \t]",
-      "{", "}", "^", "$", ",|;"})
-  void testRegexSyntaxInSeparatorIsRejected(String separator) {
-    // a backslash or a character with a meaning in a regular expression fails at
-    // construction, so a separator that was a pattern cannot silently stop splitting
+  @ValueSource(strings = {"\\|", "\\.", "\\s", "\\s+", "\\Q|\\E", "a\\b", "\\"})
+  void testEscapedSeparatorIsRejected(String separator) {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new BasicContextGenerator(separator));
-    Assertions.assertEquals("sep is taken as written and must not contain "
-        + "regular expression syntax: " + separator, e.getMessage());
+    Assertions.assertEquals("sep is taken as written and must not contain a backslash: "
+        + separator, e.getMessage());
   }
 
   private static Stream<Arguments> whitespaceSeparators() {

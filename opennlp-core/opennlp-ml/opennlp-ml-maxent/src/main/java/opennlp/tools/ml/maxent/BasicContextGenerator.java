@@ -35,10 +35,7 @@ public class BasicContextGenerator implements ContextGenerator<String> {
 
   private static final String[] NO_PREDICATES = new String[0];
 
-  /**
-   * The characters with a meaning in a regular expression. A separator must not contain one.
-   */
-  private static final String REGEX_SYNTAX = "\\[](){}|*+?^$.";
+  private static final char BACKSLASH = '\\';
 
   /**
    * The separator, or {@code null} to split on whitespace.
@@ -59,40 +56,24 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    * Initializes a {@link BasicContextGenerator} that splits on {@code sep} only. Other
    * whitespace is part of the predicates.
    *
-   * @param sep The literal separator. Must not be {@code null} or empty, and must not
-   *            contain a backslash, one of the characters {@code [ ] ( ) { } | * + ? ^ $ .}
-   *            or an unpaired surrogate.
-   * @throws IllegalArgumentException Thrown if {@code sep} is {@code null}, empty, contains
-   *                                  regular expression syntax, or contains an unpaired
-   *                                  surrogate.
+   * @param sep The separator, taken as written and not as a regular expression.
+   *            Must not be {@code null} or empty, and must not contain a backslash or
+   *            an unpaired surrogate.
+   * @throws IllegalArgumentException Thrown if {@code sep} is {@code null}, empty, contains a
+   *                                  backslash, or contains an unpaired surrogate.
    */
   public BasicContextGenerator(String sep) {
     if (sep == null || sep.isEmpty()) {
       throw new IllegalArgumentException("sep must not be null or empty");
     }
-    if (containsRegexSyntax(sep)) {
+    if (sep.indexOf(BACKSLASH) >= 0) {
       throw new IllegalArgumentException(
-          "sep is taken as written and must not contain regular expression syntax: " + sep);
+          "sep is taken as written and must not contain a backslash: " + sep);
     }
     if (sep.codePoints().anyMatch(this::isUnpairedSurrogate)) {
       throw new IllegalArgumentException("sep must not contain an unpaired surrogate");
     }
     separator = sep;
-  }
-
-  /**
-   * Tests whether a separator contains a character from {@link #REGEX_SYNTAX}.
-   *
-   * @param sep The separator to test.
-   * @return {@code true} if {@code sep} contains at least one such character.
-   */
-  private boolean containsRegexSyntax(String sep) {
-    for (int i = 0; i < sep.length(); i++) {
-      if (REGEX_SYNTAX.indexOf(sep.charAt(i)) >= 0) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
