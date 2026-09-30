@@ -17,9 +17,6 @@
 
 package opennlp.tools.formats.masc;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
@@ -99,7 +96,7 @@ final class MascIdentifiers {
     if (ids == null) {
       throw new IllegalArgumentException("MASC identifier list must not be null");
     }
-    String[] items = splitOnXmlWhitespace(ids);
+    String[] items = StringUtil.splitNonEmpty(ids, SPACE, TAB, CARRIAGE_RETURN, LINE_FEED);
     if (items.length == 0) {
       throw new IllegalArgumentException("MASC identifier list must name at least one identifier");
     }
@@ -108,29 +105,6 @@ final class MascIdentifiers {
       numbers[i] = parseId(items[i], prefix);
     }
     return numbers;
-  }
-
-  /**
-   * Splits an attribute value on runs of XML whitespace. Leading, trailing, and repeated separators
-   * produce no empty item.
-   *
-   * @param value The attribute value. Must not be {@code null}.
-   * @return The non-empty items in order; empty for a value without one.
-   */
-  private static String[] splitOnXmlWhitespace(String value) {
-    List<String> items = new ArrayList<>();
-    int start = -1;
-    for (int i = 0; i <= value.length(); i++) {
-      if (i == value.length() || isXmlWhitespace(value.charAt(i))) {
-        if (start >= 0) {
-          items.add(value.substring(start, i));
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-    }
-    return items.toArray(new String[0]);
   }
 
   /**
@@ -146,7 +120,7 @@ final class MascIdentifiers {
     if (anchors == null) {
       throw new IllegalArgumentException("MASC region anchors must not be null");
     }
-    String[] items = splitOnXmlWhitespace(anchors);
+    String[] items = StringUtil.splitNonEmpty(anchors, SPACE, TAB, CARRIAGE_RETURN, LINE_FEED);
     if (items.length != 2) {
       throw new IllegalArgumentException("MASC region anchors must contain exactly two offsets: " + anchors);
     }
@@ -176,14 +150,4 @@ final class MascIdentifiers {
     return Integer.parseInt(text, from, end, 10);
   }
 
-  /**
-   * Tests for <a href="https://www.w3.org/TR/xml/#NT-S">XML whitespace</a>: space, tab,
-   * carriage return or line feed.
-   *
-   * @param c The character to test.
-   * @return {@code true} if {@code c} is XML whitespace, {@code false} otherwise.
-   */
-  private static boolean isXmlWhitespace(char c) {
-    return c == SPACE || c == TAB || c == CARRIAGE_RETURN || c == LINE_FEED;
-  }
 }

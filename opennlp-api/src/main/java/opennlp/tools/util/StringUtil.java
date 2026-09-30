@@ -21,6 +21,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.IntPredicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,26 +130,22 @@ public class StringUtil {
    */
   public static String[] splitOnUnicodeWhitespace(CharSequence input) {
     requireNonNullArg(input, "input");
-    final List<String> terms = new ArrayList<>();
-    final int n = input.length();
-    int start = -1;
-    int i = 0;
-    while (i < n) {
-      final int cp = Character.codePointAt(input, i);
-      if (isUnicodeWhitespace(cp)) {
-        if (start >= 0) {
-          terms.add(input.subSequence(start, i).toString());
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-      i += Character.charCount(cp);
-    }
-    if (start >= 0) {
-      terms.add(input.subSequence(start, n).toString());
-    }
-    return terms.toArray(new String[0]);
+    return splitNonEmpty(input, StringUtil::isUnicodeWhitespace);
+  }
+
+  /**
+   * Splits {@code input} on runs of whitespace under the active {@link WhitespaceMode}, see
+   * {@link #isWhitespace(char)}. Leading and trailing runs are ignored, so whitespace-only
+   * input yields an empty array. Use {@link #splitOnUnicodeWhitespace(CharSequence)} where
+   * the Unicode definition should apply regardless of the mode.
+   *
+   * @param input The text to split. Must not be {@code null}.
+   * @return The non-whitespace fields in order.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String[] splitOnWhitespace(CharSequence input) {
+    requireNonNullArg(input, "input");
+    return splitNonEmpty(input, StringUtil::isWhitespace);
   }
 
   /**
@@ -281,11 +278,24 @@ public class StringUtil {
         throw new IllegalArgumentException("separators must not contain a surrogate");
       }
     }
+    return splitNonEmpty(input, c -> isAnyOf((char) c, separators));
+  }
+
+  /**
+   * Splits {@code input} on runs of the UTF-16 code units that {@code separator} accepts and
+   * drops the empty fields that leading, trailing or adjacent separators would produce. The
+   * one loop behind every non-empty split of this class.
+   *
+   * @param input The text to split, not {@code null}.
+   * @param separator Accepts a code unit that separates fields.
+   * @return The non-empty fields in order.
+   */
+  private static String[] splitNonEmpty(CharSequence input, IntPredicate separator) {
     final List<String> fields = new ArrayList<>();
     final int length = input.length();
     int start = -1;
     for (int i = 0; i < length; i++) {
-      if (isAnyOf(input.charAt(i), separators)) {
+      if (separator.test(input.charAt(i))) {
         if (start >= 0) {
           fields.add(input.subSequence(start, i).toString());
           start = -1;

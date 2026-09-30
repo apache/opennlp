@@ -531,6 +531,46 @@ public class StringUtilTest {
   }
 
   @Test
+  void testSplitOnWhitespaceNullThrows() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtil.splitOnWhitespace(null));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", " ", " \t\n ", "\u00A0\u3000"})
+  void testSplitOnWhitespaceBlankYieldsEmpty(String input) {
+    Assertions.assertArrayEquals(new String[0], StringUtil.splitOnWhitespace(input));
+  }
+
+  @Test
+  void testSplitOnWhitespaceCollapsesRunsAndIgnoresEnds() {
+    Assertions.assertArrayEquals(new String[] {"a", "b", "c"},
+        StringUtil.splitOnWhitespace("  a \t\u00A0b\u3000\r\nc  "));
+    Assertions.assertArrayEquals(new String[] {"a\u200Bb", "\uD83D\uDE00"},
+        StringUtil.splitOnWhitespace("a\u200Bb \uD83D\uDE00"));
+  }
+
+  @Test
+  void testSplitOnWhitespaceFollowsTheWhitespaceMode() {
+    // U+0085 has the White_Space property but is not Character.isWhitespace; U+001C is the
+    // reverse. The mode-aware split follows the active mode, the Unicode split does not.
+    final String withNel = "a\u0085b";
+    final String withInfo = "a\u001Cb";
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, StringUtil.splitOnWhitespace(withNel));
+    Assertions.assertArrayEquals(new String[] {"a\u001Cb"}, StringUtil.splitOnWhitespace(withInfo));
+
+    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
+    Assertions.assertArrayEquals(new String[] {"a\u0085b"}, StringUtil.splitOnWhitespace(withNel));
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, StringUtil.splitOnWhitespace(withInfo));
+  }
+
+  @Test
+  void testSplitOnWhitespaceAgreesWithTheUnicodeSplitInCurrentMode() {
+    final String input = " t0\u2003t1\u0085t2 \u3000 t3\uD801\uDC12 ";
+    Assertions.assertArrayEquals(StringUtil.splitOnUnicodeWhitespace(input),
+        StringUtil.splitOnWhitespace(input));
+  }
+
+  @Test
   void testSplitOnUnicodeWhitespaceAllTwentyFiveAsMixedSeparators() {
     // Build "t0 <ws0> t1 <ws1> ... t24 <ws24> t25" using every White_Space code point.
     final List<WhitespaceCharacter> all = UnicodeWhitespace.all();
