@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -89,25 +88,20 @@ public class MascIdentifiersTest {
   }
 
   @ParameterizedTest
-  @CsvSource({"'0 4', 0, 4", "'0 0', 0, 0", "'\t3\n5 ', 3, 5",
+  @CsvSource({"'0 4', 0, 4", "'0 0', 0, 0", "'00 04', 0, 4", "'\t3\n5 ', 3, 5",
       "'  12   2147483647  ', 12, 2147483647"})
   void testParseAnchorsReadsTwoOrderedOffsets(String anchors, int start, int end) {
     Assertions.assertEquals(new Span(start, end), MascIdentifiers.parseAnchors(anchors));
   }
 
   @ParameterizedTest
-  // reversed, negative, overflowing, wrong arity, other whitespace, text, and blank
+  // reversed, negative, signed, digits of another script, overflowing, wrong arity,
+  // other whitespace, text, and blank
   @NullAndEmptySource
-  @ValueSource(strings = {"4 0", "-1 4",
-      "0 2147483648", "0", "0 4 5", "0\u00A04", "0 x", " "})
+  @ValueSource(strings = {"4 0", "-1 4", "+0 4", "0 +4", "-0 +4", "0 \u0664", "0 \uFF14",
+      "\u0660 4", "0 2147483648", "0", "0 4 5", "0\u00A04", "0 x", " "})
   void testParseAnchorsRejectsAnythingElse(String anchors) {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> MascIdentifiers.parseAnchors(anchors));
-  }
-
-  @ParameterizedTest
-  @MethodSource("opennlp.tools.formats.masc.MascParserTestUtil#equivalentAnchors")
-  void testParseAnchorsAcceptsEquivalentIntegerForms(String anchors) {
-    Assertions.assertEquals(new Span(0, 4), MascIdentifiers.parseAnchors(anchors));
   }
 }

@@ -51,19 +51,15 @@ public class MascSentenceParserTest {
   }
 
   @ParameterizedTest
+  // wrong arity, non-XML whitespace, text, negative, signed, digits of another script,
+  // reversed, overflowing, or missing
   @ValueSource(strings = {"0", "0 4 5", "0&#xA0;4", "0&#x85;4", "0 x",
-      "-1 4", "4 0", "0 2147483648", "", " "})
+      "-1 4", "+0 4", "0 +4", "0 \u0664", "0 \uFF14", "4 0", "0 2147483648", "", " "})
   void testMalformedSentenceAnchorsPreserveTheCause(String anchors) {
     SAXException error = assertRejected(region(anchors), new MascSentenceParser());
     Assertions.assertTrue(error.getMessage().contains("anchors"), error.getMessage());
   }
 
-  @ParameterizedTest
-  @MethodSource("opennlp.tools.formats.masc.MascParserTestUtil#equivalentAnchors")
-  void testSentenceAnchorsAcceptEquivalentIntegerForms(String anchors) throws Exception {
-    Assertions.assertEquals(List.of(new Span(0, 4)), parse(region(anchors),
-        new MascSentenceParser()).getAnchors());
-  }
 
   @Test
   void testMissingAnchorsAreRejected() {

@@ -75,15 +75,6 @@ final class MascParserTestUtil {
   }
 
   /**
-   * Supplies signed and Unicode decimal forms of the offsets zero and four.
-   *
-   * @return Anchor pairs representing the span from zero to four.
-   */
-  static Stream<String> equivalentAnchors() {
-    return Stream.of("+0 4", "0 +4", "0 \u0664", "0 \uFF14", "\u0660 4", "-0 +4", "00 04");
-  }
-
-  /**
    * Wraps {@code text} as a UTF-8 input stream.
    *
    * @param text The document text.

@@ -75,21 +75,13 @@ public class MascWordParserTest {
   }
 
   @ParameterizedTest
-  // wrong arity, non-XML whitespace, text, negative, reversed,
-  // overflowing, or missing
-  @ValueSource(strings = {"0", "0 4 5", "0&#xA0;4", "0 x", "-1 4",
-      "4 0", "0 2147483648", "", " "})
+  // wrong arity, non-XML whitespace, text, negative, signed, digits of another script,
+  // reversed, overflowing, or missing
+  @ValueSource(strings = {"0", "0 4 5", "0&#xA0;4", "0 x", "-1 4", "+0 4", "0 +4",
+      "0 \u0664", "0 \uFF14", "4 0", "0 2147483648", "", " "})
   void testMalformedAnchorsAreRejectedWithTheReason(String anchors) {
     SAXException e = assertRejected(region("seg-r0", anchors), new MascWordParser());
     Assertions.assertTrue(e.getMessage().startsWith("Could not parse the word segmentation"), e.getMessage());
   }
 
-  @ParameterizedTest
-  @MethodSource("opennlp.tools.formats.masc.MascParserTestUtil#equivalentAnchors")
-  void testWordAnchorsAcceptEquivalentIntegerForms(String anchors) throws Exception {
-    List<MascWord> words = parse(region("seg-r0", anchors), new MascWordParser()).getAnchors();
-    Assertions.assertEquals(1, words.size());
-    Assertions.assertEquals(0, words.get(0).getStart());
-    Assertions.assertEquals(4, words.get(0).getEnd());
-  }
 }
