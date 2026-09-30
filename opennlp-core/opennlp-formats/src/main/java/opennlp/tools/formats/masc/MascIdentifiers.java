@@ -134,12 +134,13 @@ final class MascIdentifiers {
   }
 
   /**
-   * Parses the two ordered, nonnegative offsets of a contiguous text region.
+   * Parses the two ordered, nonnegative offsets of a contiguous text region, each written in
+   * ASCII digits only, as {@link #parseId(String, String)} reads an identifier number.
    *
    * @param anchors The XML whitespace separated offsets.
    * @return The region span.
-   * @throws IllegalArgumentException Thrown if the anchors are missing, malformed, out of range,
-   *         negative, or reversed.
+   * @throws IllegalArgumentException Thrown if the anchors are missing, not two, not ASCII digits,
+   *         too large for an {@code int}, or reversed.
    */
   static Span parseAnchors(String anchors) {
     if (anchors == null) {
@@ -150,7 +151,7 @@ final class MascIdentifiers {
       throw new IllegalArgumentException("MASC region anchors must contain exactly two offsets: " + anchors);
     }
     try {
-      return new Span(Integer.parseInt(items[0]), Integer.parseInt(items[1]));
+      return new Span(parseAsciiInt(items[0], 0), parseAsciiInt(items[1], 0));
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid MASC region anchors: " + anchors, e);
     }
