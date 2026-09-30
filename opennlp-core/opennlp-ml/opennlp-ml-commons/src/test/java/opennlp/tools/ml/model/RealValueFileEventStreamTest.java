@@ -241,7 +241,11 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
     }
   }
 
-  /** See {@link #NON_DELIMITER_CHARS}: only the vertical tab row pins a change from 2.x. */
+  /**
+   * Checks that each character of {@link #NON_DELIMITER_CHARS} stays inside the outcome and the
+   * feature name, with and without a value, and that the unvalued line reads the same as through
+   * {@link FileEventStream}.
+   */
   @ParameterizedTest
   @FieldSource("NON_DELIMITER_CHARS")
   void testFeatureIdentityMatchesUnvaluedFormat(String text) throws IOException {
