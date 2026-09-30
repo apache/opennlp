@@ -311,7 +311,7 @@ final class UnicodeEmojiSequences {
         }
         try {
           if (line.startsWith(SEQUENCE_RECORD)) {
-            addSequence(root, line.substring(SEQUENCE_RECORD.length()));
+            root.addSequence(line.substring(SEQUENCE_RECORD.length()));
             sequences++;
           } else if (line.startsWith(COMPONENT_RECORD)) {
             ranges.add(HexCodePoints.parseRange(line.substring(COMPONENT_RECORD.length())));
@@ -334,26 +334,6 @@ final class UnicodeEmojiSequences {
           + RESOURCE);
     }
     return new UnicodeEmojiSequences(root, ranges.toArray(int[][]::new), sequences);
-  }
-
-  /**
-   * Adds one sequence to the trie.
-   *
-   * @param root The root of the trie. Must not be {@code null}.
-   * @param sequence The hex code points of the sequence, separated by single spaces.
-   * @throws IllegalArgumentException Thrown if a code point is malformed.
-   */
-  private static void addSequence(Node root, String sequence) {
-    Node node = root;
-    int tokenStart = 0;
-    for (int i = 0; i <= sequence.length(); i++) {
-      if (i == sequence.length() || sequence.charAt(i) == HexCodePoints.SEQUENCE_SEPARATOR) {
-        int codePoint = HexCodePoints.parseCodePoint(sequence, tokenStart, i);
-        node = node.childOrAdd(codePoint);
-        tokenStart = i + 1;
-      }
-    }
-    node.terminal = true;
   }
 
   /**
@@ -398,6 +378,25 @@ final class UnicodeEmojiSequences {
     private Node child(int codePoint) {
       final int index = Arrays.binarySearch(keys, 0, size, codePoint);
       return index < 0 ? null : children[index];
+    }
+
+    /**
+     * Adds one sequence below this node, which is the root of the trie.
+     *
+     * @param sequence The hex code points of the sequence, separated by single spaces.
+     * @throws IllegalArgumentException Thrown if a code point is malformed.
+     */
+    private void addSequence(String sequence) {
+      Node node = this;
+      int tokenStart = 0;
+      for (int i = 0; i <= sequence.length(); i++) {
+        if (i == sequence.length() || sequence.charAt(i) == HexCodePoints.SEQUENCE_SEPARATOR) {
+          final int codePoint = HexCodePoints.parseCodePoint(sequence, tokenStart, i);
+          node = node.childOrAdd(codePoint);
+          tokenStart = i + 1;
+        }
+      }
+      node.terminal = true;
     }
 
     /**

@@ -39,11 +39,11 @@ class UnicodeEmojiSequencesParseTest {
       + "C;1F3FB..1F3FF\n"
       + "C;200D\n";
 
-  private static InputStream in(String data) {
+  private InputStream in(String data) {
     return new ByteArrayInputStream(data.getBytes(StandardCharsets.US_ASCII));
   }
 
-  private static String cp(int... codePoints) {
+  private String cp(int... codePoints) {
     return new String(codePoints, 0, codePoints.length);
   }
 

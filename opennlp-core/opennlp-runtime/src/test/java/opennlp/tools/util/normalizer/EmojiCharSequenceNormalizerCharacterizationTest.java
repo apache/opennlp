@@ -152,7 +152,7 @@ public class EmojiCharSequenceNormalizerCharacterizationTest {
     check(input, expected);
   }
 
-  private static void check(String input, String expected) {
+  private void check(String input, String expected) {
     assertEquals(expected, NORMALIZER.normalize(input).toString(),
         () -> "Input: " + CharacterizationInputs.escape(input));
   }

@@ -68,8 +68,22 @@ public final class UnicodeEmojiSequenceGenerator {
       throw new IllegalArgumentException(
           "usage: UnicodeEmojiSequenceGenerator emoji-test.txt emoji-data.txt output.txt");
     }
-    List<String> emojiTest = readSource(Path.of(args[0]), RELEASE.emojiTestSha256());
-    List<String> emojiData = readSource(Path.of(args[1]), RELEASE.emojiDataSha256());
+    new UnicodeEmojiSequenceGenerator().generate(Path.of(args[0]), Path.of(args[1]),
+        Path.of(args[2]));
+  }
+
+  /**
+   * Verifies the two source files against {@link #RELEASE} and writes the inventory.
+   *
+   * @param emojiTestFile The {@code emoji-test.txt} file.
+   * @param emojiDataFile The {@code emoji-data.txt} file.
+   * @param target The output file.
+   * @throws IOException Thrown if a source file cannot be read, has the wrong checksum or
+   *     version, or has unexpected content, or the output cannot be written.
+   */
+  private void generate(Path emojiTestFile, Path emojiDataFile, Path target) throws IOException {
+    List<String> emojiTest = readSource(emojiTestFile, RELEASE.emojiTestSha256());
+    List<String> emojiData = readSource(emojiDataFile, RELEASE.emojiDataSha256());
 
     List<String> sequences = readQualifiedSequences(emojiTest);
     List<String> components = readComponentRanges(emojiData);
@@ -91,7 +105,6 @@ public final class UnicodeEmojiSequenceGenerator {
     for (String component : components) {
       output.add(COMPONENT_RECORD + component);
     }
-    Path target = Path.of(args[2]);
     if (target.getParent() != null) {
       Files.createDirectories(target.getParent());
     }
@@ -110,7 +123,7 @@ public final class UnicodeEmojiSequenceGenerator {
    * @throws IOException Thrown if a line holds a malformed code point, or the file does not
    *     hold exactly the number of sequences pinned in {@link #RELEASE}.
    */
-  private static List<String> readQualifiedSequences(List<String> lines) throws IOException {
+  private List<String> readQualifiedSequences(List<String> lines) throws IOException {
     List<String> result = new ArrayList<>();
     for (String line : lines) {
       int semicolon = line.indexOf(FIELD_SEPARATOR);
@@ -139,7 +152,7 @@ public final class UnicodeEmojiSequenceGenerator {
    * @throws IOException Thrown if a line holds a malformed code point, or the file has no
    *     {@code Emoji_Component} line.
    */
-  private static List<String> readComponentRanges(List<String> lines) throws IOException {
+  private List<String> readComponentRanges(List<String> lines) throws IOException {
     List<String> result = new ArrayList<>();
     for (String line : lines) {
       int semicolon = line.indexOf(FIELD_SEPARATOR);
@@ -165,7 +178,7 @@ public final class UnicodeEmojiSequenceGenerator {
    * @return The normalized sequence.
    * @throws IOException Thrown if the column is empty or holds a malformed code point.
    */
-  private static String normalizeCodePoints(String value) throws IOException {
+  private String normalizeCodePoints(String value) throws IOException {
     StringBuilder normalized = new StringBuilder();
     int start = -1;
     for (int i = 0; i <= value.length(); i++) {
@@ -195,7 +208,7 @@ public final class UnicodeEmojiSequenceGenerator {
    * @return The normalized range.
    * @throws IOException Thrown if a code point is malformed.
    */
-  private static String normalizeRange(String value) throws IOException {
+  private String normalizeRange(String value) throws IOException {
     String trimmed = value.trim();
     int dots = trimmed.indexOf(RANGE_SEPARATOR);
     if (dots < 0) {
@@ -212,7 +225,7 @@ public final class UnicodeEmojiSequenceGenerator {
    * @return The code point.
    * @throws IOException Thrown if the digits are not hex or not a Unicode code point.
    */
-  private static int parseHex(String value) throws IOException {
+  private int parseHex(String value) throws IOException {
     try {
       int codePoint = Integer.parseInt(value, 16);
       if (!Character.isValidCodePoint(codePoint)) {
@@ -231,7 +244,7 @@ public final class UnicodeEmojiSequenceGenerator {
    * @param codePoint The code point.
    * @return The hex digits.
    */
-  private static String formatCodePoint(int codePoint) {
+  private String formatCodePoint(int codePoint) {
     return String.format("%04X", codePoint);
   }
 
@@ -246,7 +259,7 @@ public final class UnicodeEmojiSequenceGenerator {
    * @throws IOException Thrown if the file cannot be read, its checksum differs, or it is of
    *     another version.
    */
-  private static List<String> readSource(Path source, String expectedSha256) throws IOException {
+  private List<String> readSource(Path source, String expectedSha256) throws IOException {
     byte[] bytes = Files.readAllBytes(source);
     String actual;
     try {

@@ -37,7 +37,7 @@ public class DefaultLanguageDetectorContextGeneratorTest {
     CompatibilityMode.reset();
   }
 
-  private static Set<String> defaultChainFeatures(String doc) {
+  private Set<String> defaultChainFeatures(String doc) {
     LanguageDetectorContextGenerator cg = new LanguageDetectorFactory().getContextGenerator();
     Set<String> features = new HashSet<>();
     for (CharSequence feature : cg.getContext(doc)) {
