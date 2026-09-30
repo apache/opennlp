@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -131,7 +130,7 @@ public class MascDocument {
       try {
         saxParser.parse(bStream, handler);
       } catch (SAXException e) {
-        throw new IOException("Could not parse the region annotation file");
+        throw new IOException("Could not parse the region annotation file", e);
       }
 
       return Collections.unmodifiableList(handler.getAnchors());
@@ -153,7 +152,7 @@ public class MascDocument {
       try {
         saxParser.parse(bStream, handler);
       } catch (SAXException e) {
-        throw new IOException("Could not parse the sentence annotation file");
+        throw new IOException("Could not parse the sentence annotation file", e);
       }
 
       List<Span> anchors = handler.getAnchors();
@@ -196,7 +195,7 @@ public class MascDocument {
       try {
         saxParser.parse(bStream, handler);
       } catch (SAXException e) {
-        throw new IOException("Could not parse the Penn tag annotation file");
+        throw new IOException("Could not parse the Penn tag annotation file", e);
       }
 
       tagsAndBases.put("tokenToTag", handler.getTags());
@@ -389,8 +388,7 @@ public class MascDocument {
       hasPennTags = true;
 
     } catch (Exception e) {
-      throw new IOException("Could not attach POS tags to words. " +
-          e.getMessage() + Arrays.toString(e.getStackTrace()));
+      throw new IOException("Could not attach POS tags to words", e);
     }
   }
 
