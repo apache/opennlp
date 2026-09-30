@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import opennlp.tools.util.XmlUtil;
@@ -46,6 +48,20 @@ final class MascParserTestUtil {
     XmlUtil.createSaxParser().parse(
         new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), handler);
     return handler;
+  }
+
+  /**
+   * Checks that {@code handler} rejects {@code xml} with a {@link SAXException} whose cause is
+   * the {@link IllegalArgumentException} that names the malformed value.
+   *
+   * @param xml The malformed annotation XML.
+   * @param handler The parser expected to reject it.
+   * @return The parsing exception.
+   */
+  static SAXException assertRejected(String xml, DefaultHandler handler) {
+    SAXException e = Assertions.assertThrows(SAXException.class, () -> parse(xml, handler));
+    Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
+    return e;
   }
 
   /**

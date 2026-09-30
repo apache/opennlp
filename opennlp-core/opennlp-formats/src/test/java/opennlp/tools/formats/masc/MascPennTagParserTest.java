@@ -22,20 +22,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.xml.sax.SAXException;
+
+import static opennlp.tools.formats.masc.MascParserTestUtil.assertRejected;
+import static opennlp.tools.formats.masc.MascParserTestUtil.parse;
 
 public class MascPennTagParserTest {
-
-  /**
-   * Parses an annotation fixture.
-   *
-   * @param xml The annotation XML.
-   * @return The parser containing the annotations.
-   * @throws Exception Thrown if parsing fails.
-   */
-  private static MascPennTagParser parse(String xml) throws Exception {
-    return MascParserTestUtil.parse(xml, new MascPennTagParser());
-  }
 
   /**
    * Builds a token node linked to segmentation regions.
@@ -48,18 +39,6 @@ public class MascPennTagParserTest {
     return "<graph><node xml:id=\"" + id + "\"><link targets=\"" + targets + "\"/></node></graph>";
   }
 
-  /**
-   * Checks that malformed annotations retain their validation cause.
-   *
-   * @param xml The malformed annotation XML.
-   * @return The parsing exception.
-   */
-  private static SAXException assertRejected(String xml) {
-    SAXException e = Assertions.assertThrows(SAXException.class, () -> parse(xml));
-    Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
-    return e;
-  }
-
   @Test
   void testTokenIdsLoseTheirPrefix() throws Exception {
     MascPennTagParser parser = parse("<graph>"
@@ -67,7 +46,7 @@ public class MascPennTagParserTest {
         + "<a ref=\"penn-n10\"><fs>"
         + "<f name=\"msd\" value=\"NN\"/><f name=\"base\" value=\"test\"/>"
         + "</fs></a>"
-        + "</graph>");
+        + "</graph>", new MascPennTagParser());
     Assertions.assertArrayEquals(new int[] {0, 1}, parser.getTokenToQuarks().get(10));
     Assertions.assertEquals("NN", parser.getTags().get(10));
     Assertions.assertEquals("test", parser.getBases().get(10));
@@ -78,7 +57,8 @@ public class MascPennTagParserTest {
   // attribute-value normalization, a character reference keeps the character
   @MethodSource("opennlp.tools.formats.masc.MascParserTestUtil#xmlWhitespaceSeparators")
   void testLinkTargetsUseXmlWhitespace(String separator) throws Exception {
-    MascPennTagParser parser = parse(tokenWithTargets("penn-n10", " seg-r0" + separator + "seg-r1 "));
+    MascPennTagParser parser = parse(tokenWithTargets("penn-n10", " seg-r0" + separator + "seg-r1 "),
+        new MascPennTagParser());
     Assertions.assertArrayEquals(new int[] {0, 1}, parser.getTokenToQuarks().get(10));
   }
 
@@ -86,21 +66,27 @@ public class MascPennTagParserTest {
   // these characters are not XML whitespace, even when introduced through a reference
   @ValueSource(strings = {"seg-r0&#xA0;seg-r1", "seg-r0&#x3000;seg-r1", "seg-r0&#x85;seg-r1"})
   void testLinkTargetsSeparatedByOtherWhitespaceAreRejected(String targets) {
-    assertRejected(tokenWithTargets("penn-n10", targets));
+    assertRejected(tokenWithTargets("penn-n10", targets), new MascPennTagParser());
   }
 
   @ParameterizedTest
   // doubled prefix, missing prefix, other prefix, no digits, trailing text
   @ValueSource(strings = {"penn-npenn-n2", "2", "ne-n2", "penn-n", "penn-n2x"})
-  void testMalformedTokenIdsAreRejected(String id) {
-    assertRejected(tokenWithTargets(id, "seg-r0"));
-    assertRejected("<graph><a ref=\"" + id + "\"><fs><f name=\"msd\" value=\"NN\"/></fs></a></graph>");
+  void testMalformedTokenNodeIdsAreRejected(String id) {
+    assertRejected(tokenWithTargets(id, "seg-r0"), new MascPennTagParser());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"penn-npenn-n2", "2", "ne-n2", "penn-n", "penn-n2x"})
+  void testMalformedTokenRefsAreRejected(String ref) {
+    assertRejected("<graph><a ref=\"" + ref + "\"><fs><f name=\"msd\" value=\"NN\"/></fs></a></graph>",
+        new MascPennTagParser());
   }
 
   @ParameterizedTest
   // empty list, one malformed entry, other prefix, comma separated
   @ValueSource(strings = {"", " ", "seg-r0 seg-r", "seg-r0 penn-n1", "seg-r0,seg-r1"})
   void testMalformedLinkTargetsAreRejected(String targets) {
-    assertRejected(tokenWithTargets("penn-n2", targets));
+    assertRejected(tokenWithTargets("penn-n2", targets), new MascPennTagParser());
   }
 }

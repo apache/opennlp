@@ -847,12 +847,28 @@ Organization: precision:   85.11%;  recall:   79.38%; F1:   82.14%. [target: 130
 	<section xml:id="tools.corpora.masc">
 		<title>MASC</title>
 		<para>
-		The <link xlink:href="https://anc.org/data/masc/masc-structure">MASC</link> reader requires
-		the identifiers <code>seg-r</code>, <code>penn-n</code> and <code>ne-n</code> followed by
-		ASCII digits, at most 2147483647, and exactly two nonnegative, ordered offsets per region.
-		Lists of identifiers and offsets are separated by space, tab, carriage return or line feed.
-		Since 3.0.0, a malformed annotation stops reading with an <code>IOException</code> whose
-		cause names the value.
+		The <link xlink:href="https://anc.org/data/masc/">Manually Annotated Sub-Corpus</link>
+		(MASC) of the Open American National Corpus is about 500,000 words of American English
+		with hand-validated annotations. Each document is a text file and a header file
+		(<code>.hdr</code>) that names its standoff annotation files in the GrAF XML format:
+		sentences, word segmentation, Penn Treebank tokens with part-of-speech tags, and named
+		entities. OpenNLP reads them through the <code>masc</code> format of the sentence
+		detector, tokenizer, POS tagger and name finder tools. The reader looks for header
+		files in the given directory, recursively when requested, reads only the files with the
+		filter string in their name, and logs and skips a document it cannot read.
+		</para>
+		<para>
+		For example, to train a sentence detector on the written part of the corpus:
+		<screen>
+<![CDATA[$ opennlp SentenceDetectorTrainer.masc -lang en -model en-sent-masc.bin \
+-data masc/data/written -recurrentSearch true -fileFilter "" -sentencesPerSample 1]]>
+		</screen>
+		</para>
+		<para>
+		An identifier is the prefix <code>seg-r</code>, <code>penn-n</code> or <code>ne-n</code>
+		followed by ASCII digits, and a region has two nonnegative offsets in order. Lists of
+		identifiers and offsets are separated by space, tab, carriage return or line feed. A
+		document with another value in an annotation is skipped, and the log names the value.
 		</para>
 	</section>
 </chapter>

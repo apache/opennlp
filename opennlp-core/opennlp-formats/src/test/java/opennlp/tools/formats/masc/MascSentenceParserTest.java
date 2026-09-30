@@ -28,18 +28,10 @@ import org.xml.sax.SAXException;
 
 import opennlp.tools.util.Span;
 
-public class MascSentenceParserTest {
+import static opennlp.tools.formats.masc.MascParserTestUtil.assertRejected;
+import static opennlp.tools.formats.masc.MascParserTestUtil.parse;
 
-  /**
-   * Parses an annotation fixture.
-   *
-   * @param xml The annotation XML.
-   * @return The parser containing the annotations.
-   * @throws Exception Thrown if parsing fails.
-   */
-  private static MascSentenceParser parse(String xml) throws Exception {
-    return MascParserTestUtil.parse(xml, new MascSentenceParser());
-  }
+public class MascSentenceParserTest {
 
   /**
    * Builds a sentence region with the given offsets.
@@ -51,41 +43,30 @@ public class MascSentenceParserTest {
     return "<graph><region anchors=\"" + anchors + "\"/></graph>";
   }
 
-  /**
-   * Checks that malformed annotations retain their validation cause.
-   *
-   * @param xml The malformed annotation XML.
-   * @return The parsing exception.
-   */
-  private static SAXException assertRejected(String xml) {
-    SAXException e = Assertions.assertThrows(SAXException.class, () -> parse(xml));
-    Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
-    return e;
-  }
-
   @ParameterizedTest
   @MethodSource("opennlp.tools.formats.masc.MascParserTestUtil#xmlWhitespaceSeparators")
   void testSentenceAnchorsUseXmlWhitespace(String separator) throws Exception {
     Assertions.assertEquals(List.of(new Span(0, 4)),
-        parse(region(" 0" + separator + "4 ")).getAnchors());
+        parse(region(" 0" + separator + "4 "), new MascSentenceParser()).getAnchors());
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"0", "0 4 5", "0&#xA0;4", "0&#x85;4", "0 x",
       "-1 4", "4 0", "0 2147483648", "", " "})
   void testMalformedSentenceAnchorsPreserveTheCause(String anchors) {
-    SAXException error = assertRejected(region(anchors));
+    SAXException error = assertRejected(region(anchors), new MascSentenceParser());
     Assertions.assertTrue(error.getMessage().contains("anchors"), error.getMessage());
   }
 
   @ParameterizedTest
   @MethodSource("opennlp.tools.formats.masc.MascParserTestUtil#equivalentAnchors")
   void testSentenceAnchorsAcceptEquivalentIntegerForms(String anchors) throws Exception {
-    Assertions.assertEquals(List.of(new Span(0, 4)), parse(region(anchors)).getAnchors());
+    Assertions.assertEquals(List.of(new Span(0, 4)), parse(region(anchors),
+        new MascSentenceParser()).getAnchors());
   }
 
   @Test
   void testMissingAnchorsAreRejected() {
-    assertRejected("<graph><region/></graph>");
+    assertRejected("<graph><region/></graph>", new MascSentenceParser());
   }
 }

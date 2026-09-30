@@ -38,6 +38,12 @@ final class MascIdentifiers {
   /** The prefix of a segmentation region identifier, as in {@code seg-r7}. */
   static final String REGION_ID_PREFIX = "seg-r";
 
+  /** The characters of <a href="https://www.w3.org/TR/xml/#NT-S">XML whitespace</a>. */
+  private static final char SPACE = ' ';
+  private static final char TAB = '\t';
+  private static final char CARRIAGE_RETURN = '\r';
+  private static final char LINE_FEED = '\n';
+
   private MascIdentifiers() {
   }
 
@@ -177,6 +183,6 @@ final class MascIdentifiers {
    * @return {@code true} if {@code c} is XML whitespace, {@code false} otherwise.
    */
   private static boolean isXmlWhitespace(char c) {
-    return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+    return c == SPACE || c == TAB || c == CARRIAGE_RETURN || c == LINE_FEED;
   }
 }
