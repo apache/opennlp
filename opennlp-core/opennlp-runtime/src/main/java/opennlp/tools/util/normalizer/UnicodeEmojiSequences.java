@@ -33,10 +33,11 @@ import java.util.List;
  *
  * <p>A sequence is <em>fully-qualified</em> in the sense of
  * <a href="https://www.unicode.org/reports/tr51/">UTS #51</a> when every code point that needs
- * an emoji presentation selector has one: the {@code fully-qualified} lines of
- * {@code emoji-test.txt}, which cover single emoji, emoji with U+FE0F, flags, keycaps, skin tone
- * modifier sequences, ZWJ sequences and tag sequences. The inventory holds those sequences in a
- * trie, plus the {@code Emoji_Component} ranges of {@code emoji-data.txt}: the joiners,
+ * an emoji presentation selector has one, and <em>minimally-qualified</em> when only its first
+ * code point has it. The inventory holds the {@code fully-qualified} and
+ * {@code minimally-qualified} lines of {@code emoji-test.txt}, which cover single emoji, emoji
+ * with U+FE0F, flags, keycaps, skin tone modifier sequences, ZWJ sequences and tag sequences, in
+ * a trie, plus the {@code Emoji_Component} ranges of {@code emoji-data.txt}: the joiners,
  * modifiers, selectors, flag letters and tags that occur inside sequences. A component on its
  * own is never an emoji, but a stray one next to an emoji marks a malformed candidate that is
  * kept as it is.</p>
@@ -45,7 +46,7 @@ final class UnicodeEmojiSequences {
 
   private static final String RESOURCE = "EmojiSequences.txt";
 
-  /** Prefix of a record holding one fully-qualified sequence. */
+  /** Prefix of a record holding one qualified sequence. */
   private static final String SEQUENCE_RECORD = "S;";
 
   /** Prefix of a record holding one {@code Emoji_Component} code point range. */

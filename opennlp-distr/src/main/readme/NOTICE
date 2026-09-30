@@ -118,9 +118,9 @@ by Unicode, Inc. (https://www.unicode.org/Public/).
     Emoji_Presentation, Emoji_Modifier, Emoji_Modifier_Base, and
     Emoji_Component properties, which are not retained.
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/EmojiSequences.txt
-    is a generated inventory of fully-qualified emoji sequences from
-    emoji-test.txt and Emoji_Component ranges from emoji-data.txt, both
-    Unicode Emoji version 17.0.
+    is a generated inventory of fully-qualified and minimally-qualified emoji
+    sequences from emoji-test.txt and Emoji_Component ranges from
+    emoji-data.txt, both Unicode Emoji version 17.0.
 
 The original Unicode copyright and license header is preserved verbatim at the
 top of each copied or filtered data file. Generated inventories identify their

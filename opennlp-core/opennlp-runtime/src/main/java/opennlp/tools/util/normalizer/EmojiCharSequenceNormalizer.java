@@ -22,12 +22,15 @@ import opennlp.tools.util.CompatibilityMode;
  * A {@link CharSequenceNormalizer} implementation that replaces each run of complete emoji with
  * one space.
  *
- * <p>An emoji is a fully-qualified sequence of Unicode Emoji 17.0 in the sense of
- * <a href="https://www.unicode.org/reports/tr51/">UTS #51</a>: a single emoji, an emoji with
- * U+FE0F, a flag, a keycap, a skin tone modifier sequence, a ZWJ sequence or a tag sequence, as
- * listed in {@code emoji-test.txt}. Adjacent emoji form one run and become one space; one
- * redundant U+FE0F right after an emoji is removed with it. Everything else is kept: a symbol
- * with text presentation such as U+2764 without U+FE0F, letters and ideographs from other planes,
+ * <p>An emoji is a fully-qualified or minimally-qualified sequence of Unicode Emoji 17.0 in the
+ * sense of <a href="https://www.unicode.org/reports/tr51/">UTS #51</a>: a single emoji, an emoji
+ * with U+FE0F, a flag, a keycap, a skin tone modifier sequence, a ZWJ sequence or a tag
+ * sequence, as listed in {@code emoji-test.txt}. A minimally-qualified ZWJ sequence lacks U+FE0F
+ * after a later element only, such as a woman raising hand written without U+FE0F after
+ * U+2640. Adjacent emoji form one run and become one space; one redundant U+FE0F right after an
+ * emoji is removed with it. Everything else is kept: a symbol with text presentation such as
+ * U+2764 without U+FE0F, an unqualified sequence starting with such a symbol, letters and
+ * ideographs from other planes,
  * private use characters, unpaired surrogates, and an emoji with a stray joiner, modifier,
  * selector, flag letter or tag next to it, which is kept as a whole instead of leaving a
  * fragment behind.</p>

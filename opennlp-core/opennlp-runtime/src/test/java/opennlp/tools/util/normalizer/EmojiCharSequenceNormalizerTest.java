@@ -40,10 +40,10 @@ public class EmojiCharSequenceNormalizerTest {
       EmojiCharSequenceNormalizer.getInstance();
 
   /**
-   * The number of fully-qualified sequences in the Emoji 17.0 emoji-test.txt, the same number
-   * dev/UnicodeEmojiSequenceGenerator.java pins for that release.
+   * The number of fully-qualified and minimally-qualified sequences in the Emoji 17.0
+   * emoji-test.txt, the same number dev/UnicodeEmojiSequenceGenerator.java pins for that release.
    */
-  private static final int EMOJI_17_SEQUENCE_COUNT = 3944;
+  private static final int EMOJI_17_SEQUENCE_COUNT = 4973;
 
   private static String cp(int... codePoints) {
     return new String(codePoints, 0, codePoints.length);
@@ -119,8 +119,29 @@ public class EmojiCharSequenceNormalizerTest {
         NORMALIZER.normalize("a\u231A\uFE0Eb"));
   }
 
+  /**
+   * Minimally-qualified sequences, which lack U+FE0F after a later element only, are complete
+   * emoji. The fully-qualified forms add U+FE0F after U+1F32B, U+2640 and U+2764.
+   */
+  private static Stream<Arguments> minimallyQualifiedSequences() {
+    return Stream.of(
+        Arguments.of(cp(0x1F636, 0x200D, 0x1F32B), "face in clouds"),
+        Arguments.of(cp(0x1F64B, 0x1F3FF, 0x200D, 0x2640), "woman raising hand, dark skin tone"),
+        Arguments.of(cp(0x1F441, 0xFE0F, 0x200D, 0x1F5E8), "eye in speech bubble"),
+        Arguments.of(cp(0x1F468, 0x1F3FF, 0x200D, 0x2764, 0x200D, 0x1F468, 0x1F3FF),
+            "couple with heart, dark skin tone"));
+  }
+
+  @ParameterizedTest(name = "{1}")
+  @MethodSource("minimallyQualifiedSequences")
+  void normalizeRemovesMinimallyQualifiedSequences(String emoji, String description) {
+    Assertions.assertEquals("a b", NORMALIZER.normalize("a" + emoji + "b"));
+    Assertions.assertEquals("a b", NORMALIZER.normalize("a" + emoji + "\uFE0Fb"));
+  }
+
   @Test
-  void normalizePreservesConnectedNonFullyQualifiedZwjCandidate() {
+  void normalizePreservesConnectedUnqualifiedZwjCandidate() {
+    // Unqualified: the first code point U+2764 lacks the U+FE0F it needs.
     String heartOnFire = "\u2764\u200D" + cp(0x1F525);
     Assertions.assertEquals("a" + heartOnFire + "b",
         NORMALIZER.normalize("a" + heartOnFire + "b"));
@@ -273,7 +294,7 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   @Test
-  void normalizeRemovesEveryFullyQualifiedSequenceInBundledInventory() throws Exception {
+  void normalizeRemovesEverySequenceInBundledInventory() throws Exception {
     int count = 0;
     InputStream input = getClass().getResourceAsStream(
         "/opennlp/tools/util/normalizer/EmojiSequences.txt");

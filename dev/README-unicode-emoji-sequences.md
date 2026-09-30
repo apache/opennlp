@@ -28,8 +28,8 @@ from these official Unicode Emoji 17.0 files:
 
 The generator verifies both SHA-256 checksums and both `# Version:` headers against the release
 pinned in its `RELEASE` table, so a version bump changes that table, the data file and the NOTICE
-files. It keeps the exact `fully-qualified` sequences from `emoji-test.txt` (the `S;` records) and
-the `Emoji_Component` ranges from `emoji-data.txt` (the `C;` records). The component ranges only
+files. It keeps the exact `fully-qualified` and `minimally-qualified` sequences from
+`emoji-test.txt` (the `S;` records) and the `Emoji_Component` ranges from `emoji-data.txt` (the `C;` records). The component ranges only
 tell the normalizer which stray joiners, modifiers, selectors and tags belong to a neighboring
 emoji; a component on its own is never treated as an emoji.
 

@@ -12,8 +12,9 @@ Mechanisms and Unicode Emoji data, version 17.0, published by Unicode, Inc.
     Extended_Pictographic lines of the upstream emoji-data.txt (Emoji Data for
     UTS #51, version 17.0).
   * opennlp/tools/util/normalizer/EmojiSequences.txt is a generated inventory
-    of the fully-qualified emoji sequences from emoji-test.txt and the
-    Emoji_Component ranges from emoji-data.txt, both Unicode Emoji 17.0:
+    of the fully-qualified and minimally-qualified emoji sequences from
+    emoji-test.txt and the Emoji_Component ranges from emoji-data.txt, both
+    Unicode Emoji 17.0:
     https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt
     https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt
 

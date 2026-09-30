@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Generates the bundled {@code EmojiSequences.txt} from the Unicode Emoji {@code emoji-test.txt}
  * and {@code emoji-data.txt} of one release. The release, the SHA-256 of both source files and
- * the expected number of fully-qualified sequences are pinned in {@link #RELEASE}, so a version
+ * the expected number of qualified sequences are pinned in {@link #RELEASE}, so a version
  * bump is a change of that one table.
  *
  * <p>Usage: {@code UnicodeEmojiSequenceGenerator emoji-test.txt emoji-data.txt output.txt}.</p>
@@ -39,11 +39,12 @@ public final class UnicodeEmojiSequenceGenerator {
   private static final Release RELEASE = new Release("17.0", "2025",
       "1d8a944f88d7952f7ef7c5167fef3c67995bcae24543949710231b03a201acda",
       "2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b",
-      3944);
+      4973);
 
   private static final String OUTPUT_NAME = "EmojiSequences.txt";
   private static final String VERSION_LINE = "# Version: ";
   private static final String FULLY_QUALIFIED = "fully-qualified";
+  private static final String MINIMALLY_QUALIFIED = "minimally-qualified";
   private static final String EMOJI_COMPONENT = "Emoji_Component";
   private static final String SEQUENCE_RECORD = "S;";
   private static final String COMPONENT_RECORD = "C;";
@@ -70,15 +71,15 @@ public final class UnicodeEmojiSequenceGenerator {
     List<String> emojiTest = readSource(Path.of(args[0]), RELEASE.emojiTestSha256());
     List<String> emojiData = readSource(Path.of(args[1]), RELEASE.emojiDataSha256());
 
-    List<String> sequences = readFullyQualifiedSequences(emojiTest);
+    List<String> sequences = readQualifiedSequences(emojiTest);
     List<String> components = readComponentRanges(emojiData);
     List<String> output = new ArrayList<>(sequences.size() + components.size() + 11);
     output.add("# " + OUTPUT_NAME);
     output.add("# Copyright (c) 1991-" + RELEASE.copyrightYear() + " Unicode, Inc.");
     output.add("# For terms of use and license, see https://www.unicode.org/license.txt");
     output.add("#");
-    output.add("# Unicode Emoji fully-qualified sequences, derived from emoji-test.txt and");
-    output.add("# emoji-data.txt under Unicode License V3.");
+    output.add("# Unicode Emoji fully-qualified and minimally-qualified sequences, derived from");
+    output.add("# emoji-test.txt and emoji-data.txt under Unicode License V3.");
     output.add(VERSION_LINE + RELEASE.version());
     output.add("# emoji-test.txt SHA-256: " + RELEASE.emojiTestSha256());
     output.add("# emoji-data.txt SHA-256: " + RELEASE.emojiDataSha256());
@@ -100,15 +101,16 @@ public final class UnicodeEmojiSequenceGenerator {
   }
 
   /**
-   * Reads the code point sequences that {@code emoji-test.txt} marks {@code fully-qualified},
-   * in file order.
+   * Reads the code point sequences that {@code emoji-test.txt} marks {@code fully-qualified} or
+   * {@code minimally-qualified}, in file order. Unqualified sequences, whose first code point
+   * lacks a needed U+FE0F, are left out: they start with a symbol in text presentation.
    *
    * @param lines The lines of {@code emoji-test.txt}.
    * @return The sequences, each as upper case hex code points separated by one space.
    * @throws IOException Thrown if a line holds a malformed code point, or the file does not
    *     hold exactly the number of sequences pinned in {@link #RELEASE}.
    */
-  private static List<String> readFullyQualifiedSequences(List<String> lines) throws IOException {
+  private static List<String> readQualifiedSequences(List<String> lines) throws IOException {
     List<String> result = new ArrayList<>();
     for (String line : lines) {
       int semicolon = line.indexOf(FIELD_SEPARATOR);
@@ -117,13 +119,13 @@ public final class UnicodeEmojiSequenceGenerator {
         continue;
       }
       String status = line.substring(semicolon + 1, comment).trim();
-      if (status.equals(FULLY_QUALIFIED)) {
+      if (status.equals(FULLY_QUALIFIED) || status.equals(MINIMALLY_QUALIFIED)) {
         result.add(normalizeCodePoints(line.substring(0, semicolon)));
       }
     }
     if (result.size() != RELEASE.sequenceCount()) {
       throw new IOException("expected " + RELEASE.sequenceCount()
-          + " fully-qualified sequences, found " + result.size());
+          + " qualified sequences, found " + result.size());
     }
     return result;
   }
@@ -270,7 +272,8 @@ public final class UnicodeEmojiSequenceGenerator {
    * @param copyrightYear The last year of the Unicode copyright line of that release.
    * @param emojiTestSha256 The SHA-256 of {@code emoji-test.txt}.
    * @param emojiDataSha256 The SHA-256 of {@code emoji-data.txt}.
-   * @param sequenceCount The number of fully-qualified sequences in {@code emoji-test.txt}.
+   * @param sequenceCount The number of fully-qualified and minimally-qualified sequences in
+   *     {@code emoji-test.txt}.
    */
   private record Release(String version, String copyrightYear, String emojiTestSha256,
                          String emojiDataSha256, int sequenceCount) {
