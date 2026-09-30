@@ -20,7 +20,7 @@
 # @opennlp.tools.commons.SuppressForbidden and is exempt. Only production classes are
 # checked; tests may use regular expressions.
 
-@defaultMessage Use a code-point scan or a StringUtil helper (splitOnUnicodeWhitespace, split(CharSequence, char), splitNonEmpty once OPENNLP-1955 is merged) instead of java.util.regex; a member with a user-supplied pattern as its public contract is marked @opennlp.tools.commons.SuppressForbidden (OPENNLP-1935)
+@defaultMessage Use a code-point scan or a StringUtil helper (splitOnUnicodeWhitespace, splitOnWhitespace, split(CharSequence, char), splitNonEmpty) instead of java.util.regex; a member with a user-supplied pattern as its public contract is marked @opennlp.tools.commons.SuppressForbidden (OPENNLP-1935)
 java.util.regex.**
 java.lang.String#split(java.lang.String)
 java.lang.String#split(java.lang.String,int)
