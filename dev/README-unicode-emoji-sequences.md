@@ -15,20 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Unicode 18 emoji sequence data
+# Unicode emoji sequence data
 
-`UnicodeEmojiSequenceGenerator.java` derives the runtime emoji inventory from these official
-Unicode 18.0 files:
+`UnicodeEmojiSequenceGenerator.java` derives the bundled
+`opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/EmojiSequences.txt`
+from these official Unicode Emoji 17.0 files:
 
-* `https://www.unicode.org/Public/18.0.0/emoji/emoji-test.txt`
-  (`8f3735cda1f92a779d78af67cf86066bb1f07143dc22f2ac29394d9bc57ab21a`)
-* `https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt`
-  (`80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1`)
+* `https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt`
+  (`1d8a944f88d7952f7ef7c5167fef3c67995bcae24543949710231b03a201acda`)
+* `https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt`
+  (`2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b`)
 
-The generator verifies both SHA-256 checksums and both Unicode version headers. It retains exact
-`fully-qualified` sequences from `emoji-test.txt` and the `Emoji_Component` ranges used to identify
-structurally connected malformed candidates. Component membership alone never classifies text as
-emoji.
+The generator verifies both SHA-256 checksums and both `# Version:` headers against the release
+pinned in its `RELEASE` table, so a version bump changes that table, the data file and the NOTICE
+files. It keeps the exact `fully-qualified` sequences from `emoji-test.txt` (the `S;` records) and
+the `Emoji_Component` ranges from `emoji-data.txt` (the `C;` records). The component ranges only
+tell the normalizer which stray joiners, modifiers, selectors and tags belong to a neighboring
+emoji; a component on its own is never treated as an emoji.
 
 Run the generator from the repository root:
 
@@ -37,7 +40,7 @@ mkdir -p target/unicode-emoji-generator
 javac -d target/unicode-emoji-generator dev/UnicodeEmojiSequenceGenerator.java
 java -cp target/unicode-emoji-generator UnicodeEmojiSequenceGenerator \
   /path/to/emoji-test.txt /path/to/emoji-data.txt \
-  opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/emoji/EmojiSequences-18.0.txt
+  opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/EmojiSequences.txt
 ```
 
 The generated inventory and its sources are covered by Unicode License V3, reproduced in the

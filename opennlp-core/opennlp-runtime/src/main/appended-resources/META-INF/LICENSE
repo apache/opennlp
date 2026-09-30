@@ -1,14 +1,19 @@
 
-The generated Unicode Emoji 18.0 inventory in
-opennlp/tools/util/normalizer/emoji/EmojiSequences-18.0.txt
-is derived from Unicode emoji-test.txt and emoji-data.txt.
-The following license applies to this data:
+The following license applies to the Unicode data files bundled inside this
+jar (opennlp/tools/util/normalizer/confusables.txt,
+opennlp/tools/util/normalizer/CaseFolding.txt,
+opennlp/tools/util/normalizer/EmojiSequences.txt,
+opennlp/tools/tokenize/uax29/WordBreakProperty.txt, and
+opennlp/tools/tokenize/uax29/ExtendedPictographic.txt), and to the
+Unicode-derived values (the CLDR short names and the emoji-test.txt
+group/subgroup classifications) in the otherwise project-authored
+opennlp/tools/util/normalizer/emoji-annotations.txt (see NOTICE):
 
 UNICODE LICENSE V3
 
 COPYRIGHT AND PERMISSION NOTICE
 
-Copyright (c) 1991-2026 Unicode, Inc.
+Copyright (c) 1991-2025 Unicode, Inc.
 
 NOTICE TO USER: Carefully read the following legal agreement. BY
 DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR

@@ -40,11 +40,8 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 public class LanguageDetectorFactory extends BaseToolFactory {
 
   /**
-   * @return Retrieves a {@link LanguageDetectorContextGenerator}. The chain replaces exact,
-   *     fully-qualified Unicode Emoji 18.0 sequences before producing character n-grams.
-   *     Training and inference must use the same normalization behavior.
+   * @return Retrieves a {@link LanguageDetectorContextGenerator}.
    */
-  @SuppressWarnings("deprecation")
   public LanguageDetectorContextGenerator getContextGenerator() {
     return new DefaultLanguageDetectorContextGenerator(1, 3,
         EmojiCharSequenceNormalizer.getInstance(),

@@ -1,9 +1,27 @@
-This product bundles a generated Unicode Emoji 18.0 inventory in
-opennlp/tools/util/normalizer/emoji/EmojiSequences-18.0.txt.
-It contains fully-qualified sequences from emoji-test.txt and
-Emoji_Component ranges from emoji-data.txt, published by Unicode, Inc.:
-https://www.unicode.org/Public/18.0.0/emoji/emoji-test.txt
-https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
+This product bundles Unicode Character Database (UCD), Unicode Security
+Mechanisms and Unicode Emoji data, version 17.0, published by Unicode, Inc.
+(https://www.unicode.org/Public/):
 
-Copyright (c) 1991-2026 Unicode, Inc. All rights reserved.
+  * opennlp/tools/tokenize/uax29/WordBreakProperty.txt is the upstream
+    WordBreakProperty-17.0.0.txt, unmodified except for the file name.
+  * opennlp/tools/util/normalizer/confusables.txt is the upstream
+    confusables.txt from the Unicode Security Mechanisms (UTS #39), unmodified.
+  * opennlp/tools/util/normalizer/CaseFolding.txt is the upstream
+    CaseFolding.txt (version 17.0.0) from the UCD, unmodified.
+  * opennlp/tools/tokenize/uax29/ExtendedPictographic.txt keeps only the
+    Extended_Pictographic lines of the upstream emoji-data.txt (Emoji Data for
+    UTS #51, version 17.0).
+  * opennlp/tools/util/normalizer/EmojiSequences.txt is a generated inventory
+    of the fully-qualified emoji sequences from emoji-test.txt and the
+    Emoji_Component ranges from emoji-data.txt, both Unicode Emoji 17.0:
+    https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt
+    https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt
+
+The project-authored annotation table
+opennlp/tools/util/normalizer/emoji-annotations.txt is licensed under the
+Apache License 2.0, but its name values (the CLDR short names) and its
+entity-type/category derivations are transcribed from the upstream
+emoji-test.txt (version 17.0).
+
+Copyright (c) 1991-2025 Unicode, Inc. All rights reserved.
 Distributed under the Unicode License V3 reproduced in LICENSE.
