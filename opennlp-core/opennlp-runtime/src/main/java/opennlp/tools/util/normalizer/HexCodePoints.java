@@ -16,16 +16,15 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Reads the hex code point notation of the Unicode data files bundled in this package: one code
- * point as hex digits ({@code 1F600}), a sequence as hex digits separated by single spaces
+ * point as hex digits ({@code 1F600}), a sequence as hex digits separated by whitespace
  * ({@code 1F468 200D 1F469}), and an inclusive range as two code points joined by two dots
  * ({@code 1F3FB..1F3FF}). Used by all Unicode data loaders of this package.
  */
 final class HexCodePoints {
-
-  /** The separator between the code points of a sequence. */
-  static final char SEQUENCE_SEPARATOR = ' ';
 
   /** The separator between the first and the last code point of a range. */
   static final String RANGE_SEPARATOR = "..";
@@ -76,25 +75,35 @@ final class HexCodePoints {
   }
 
   /**
-   * Decodes a sequence of hex code points separated by single spaces into the characters they
-   * name.
+   * Decodes a sequence of hex code points separated by runs of Unicode whitespace into the
+   * characters they name. Leading and trailing whitespace is ignored.
    *
    * @param hex The sequence. Must not be {@code null}.
    * @return The decoded characters, in order.
-   * @throws IllegalArgumentException Thrown if the sequence is empty or one of its code points
-   *     is malformed.
+   * @throws IllegalArgumentException Thrown if the sequence holds no code point or one of its
+   *     code points is malformed.
    */
   static String decodeSequence(CharSequence hex) {
     final StringBuilder decoded = new StringBuilder();
-    final int length = hex.length();
-    int tokenStart = 0;
-    for (int i = 0; i <= length; i++) {
-      if (i == length || hex.charAt(i) == SEQUENCE_SEPARATOR) {
-        decoded.appendCodePoint(parseCodePoint(hex, tokenStart, i));
-        tokenStart = i + 1;
-      }
+    for (String token : codePointTokens(hex)) {
+      decoded.appendCodePoint(parseCodePoint(token));
     }
     return decoded.toString();
+  }
+
+  /**
+   * Splits a sequence into its hex code point tokens.
+   *
+   * @param hex The sequence. Must not be {@code null}.
+   * @return The tokens in order, at least one.
+   * @throws IllegalArgumentException Thrown if the sequence holds no token.
+   */
+  static String[] codePointTokens(CharSequence hex) {
+    final String[] tokens = StringUtil.splitOnUnicodeWhitespace(hex);
+    if (tokens.length == 0) {
+      throw new IllegalArgumentException("Empty code point sequence: \"" + hex + "\"");
+    }
+    return tokens;
   }
 
   /**

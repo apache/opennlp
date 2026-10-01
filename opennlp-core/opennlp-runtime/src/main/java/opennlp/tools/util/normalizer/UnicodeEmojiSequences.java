@@ -101,9 +101,9 @@ final class UnicodeEmojiSequences {
   /**
    * {@return the matcher built from the bundled data, loaded on first use}
    *
-   * @throws IllegalStateException Thrown if the bundled data resource is missing.
-   * @throws UncheckedIOException Thrown if the bundled data resource cannot be read.
-   * @throws IllegalArgumentException Thrown if the bundled data is malformed.
+   * @throws ExceptionInInitializerError Thrown on the first call if the bundled data resource
+   *     is missing, cannot be read, or is malformed; the cause names the problem. Later calls
+   *     throw {@link NoClassDefFoundError}.
    */
   static UnicodeEmojiSequences getInstance() {
     return Holder.INSTANCE;
@@ -383,18 +383,14 @@ final class UnicodeEmojiSequences {
     /**
      * Adds one sequence below this node, which is the root of the trie.
      *
-     * @param sequence The hex code points of the sequence, separated by single spaces.
-     * @throws IllegalArgumentException Thrown if a code point is malformed.
+     * @param sequence The hex code points of the sequence, separated by whitespace.
+     * @throws IllegalArgumentException Thrown if the sequence is empty or a code point is
+     *     malformed.
      */
     private void addSequence(String sequence) {
       Node node = this;
-      int tokenStart = 0;
-      for (int i = 0; i <= sequence.length(); i++) {
-        if (i == sequence.length() || sequence.charAt(i) == HexCodePoints.SEQUENCE_SEPARATOR) {
-          final int codePoint = HexCodePoints.parseCodePoint(sequence, tokenStart, i);
-          node = node.childOrAdd(codePoint);
-          tokenStart = i + 1;
-        }
+      for (String token : HexCodePoints.codePointTokens(sequence)) {
+        node = node.childOrAdd(HexCodePoints.parseCodePoint(token));
       }
       node.terminal = true;
     }
