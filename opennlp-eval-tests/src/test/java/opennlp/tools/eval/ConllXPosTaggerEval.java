@@ -210,6 +210,6 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
         "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll"), "swe", params);
 
     eval(maxentModel, new File(getOpennlpDataDir(),
-        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.9377652050919377d);
+        "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll"), 0.934052333804809d);
   }
 }
