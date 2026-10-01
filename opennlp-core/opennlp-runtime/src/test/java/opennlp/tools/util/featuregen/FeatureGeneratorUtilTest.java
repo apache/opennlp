@@ -19,12 +19,15 @@ package opennlp.tools.util.featuregen;
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import opennlp.tools.util.CompatibilityMode;
 
 public class FeatureGeneratorUtilTest {
 
@@ -83,6 +86,37 @@ public class FeatureGeneratorUtilTest {
       // lower case initial, other second character, longer tokens
       "a., other", "é., other", "'A,', ic", "Ab., ic", "AB., ic"})
   void testCapPeriod(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
+  }
+
+  @AfterEach
+  void resetCompatibilityMode() {
+    CompatibilityMode.reset();
+  }
+
+  /**
+   * Under the legacy mode the class is what the pre-3.0.0 pattern {@code ^[A-ZÄÖÜ]\\.$} gave:
+   * only an ASCII capital or a German umlaut capital counts, and the period may be followed by
+   * one line terminator, which {@code $} accepted before the end of the input.
+   */
+  private static Stream<Arguments> legacyCapPeriod() {
+    return Stream.of(
+        Arguments.of("A.", "cp"), Arguments.of("Z.", "cp"), Arguments.of("Ä.", "cp"),
+        Arguments.of("Ö.", "cp"), Arguments.of("Ü.", "cp"),
+        // capitals of other scripts and other accented capitals are not in the legacy set
+        Arguments.of("É.", "ic"), Arguments.of("Ω.", "ic"), Arguments.of("Я.", "ic"),
+        Arguments.of("Ñ.", "ic"),
+        // one trailing line terminator was accepted, anything more was not
+        Arguments.of("A.\n", "cp"), Arguments.of("A.\r\n", "cp"), Arguments.of("A.\r", "cp"),
+        Arguments.of("Ä.\u0085", "cp"), Arguments.of("A.\u2028", "cp"),
+        Arguments.of("A.\n\n", "ic"), Arguments.of("A. ", "ic"), Arguments.of("A.\nX", "ic"),
+        Arguments.of("a.", "other"), Arguments.of("Ab.", "ic"), Arguments.of("A", "sc"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyCapPeriod")
+  void testCapPeriodInLegacyMode(String token, String feature) {
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
     Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
   }
 
