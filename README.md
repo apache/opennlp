@@ -132,6 +132,7 @@ For users of the traditional CLI toolkit, nothing changes with the 3.x release l
 ### Breaking changes
 
 - `AbstractClassPathModelFinder`: the protected `asRegex` and `matchesPattern` methods were removed. Custom model finders call `matchesWildcard(url, "*.bin")` instead ([OPENNLP-1932](https://issues.apache.org/jira/browse/OPENNLP-1932)).
+- `BasicContextGenerator(String)`: the separator is taken literally instead of as a regular expression, and a separator containing a backslash throws `IllegalArgumentException`. Empty predicates are no longer returned, and the default constructor splits on runs of Unicode whitespace ([OPENNLP-1929](https://issues.apache.org/jira/browse/OPENNLP-1929)).
 
 ### Thread safety
 
