@@ -54,7 +54,15 @@ class HexCodePointsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", " ", "1F600 ", " 1F600", "1F600  200D", "1F600 ZZ"})
+  @ValueSource(strings = {"1F468 200D 1F469", "1F468\t200D\t1F469", "1F468  200D   1F469",
+      " 1F468 200D 1F469 ", "\t1F468\u00A0200D\n1F469\r\n"})
+  void decodeSequenceAcceptsWhitespaceRunsAroundCodePoints(String hex) {
+    assertEquals(new String(new int[] {0x1F468, 0x200D, 0x1F469}, 0, 3),
+        HexCodePoints.decodeSequence(hex));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", " ", "\t", " \n ", "1F600 ZZ", "1F600,200D"})
   void decodeSequenceRejectsMalformedSequences(String hex) {
     assertThrows(IllegalArgumentException.class, () -> HexCodePoints.decodeSequence(hex));
   }

@@ -41,6 +41,13 @@ class ConfusablesParseTest {
     assertEquals("B", map.get(0x41)); // A -> prototype B
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"0041 ;\t0042 0043 ;\tMA\n", "0041 ;\t0042\t0043 ;\tMA\n",
+      "0041 ;\t  0042   0043  ;\tMA\n"})
+  void parseAcceptsWhitespaceRunsBetweenTargetCodePoints(String data) throws Exception {
+    assertEquals("BC", Confusables.parse(in(data)).get(0x41));
+  }
+
   @Test
   void parseFailsLoudOnStructurallyMalformedLine() {
     // A non-comment data line with fewer than two ';' is structurally malformed. It must fail loud
