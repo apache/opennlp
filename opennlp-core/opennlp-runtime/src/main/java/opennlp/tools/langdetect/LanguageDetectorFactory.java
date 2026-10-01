@@ -40,10 +40,8 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 public class LanguageDetectorFactory extends BaseToolFactory {
 
   /**
-   * @return Retrieves a {@link LanguageDetectorContextGenerator}. The deprecated emoji
-   *     normalizer stays in this chain because existing models were trained with it.
+   * @return Retrieves a {@link LanguageDetectorContextGenerator}.
    */
-  @SuppressWarnings("deprecation")
   public LanguageDetectorContextGenerator getContextGenerator() {
     return new DefaultLanguageDetectorContextGenerator(1, 3,
         EmojiCharSequenceNormalizer.getInstance(),

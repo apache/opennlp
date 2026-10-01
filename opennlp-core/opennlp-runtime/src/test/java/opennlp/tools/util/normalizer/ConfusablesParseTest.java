@@ -22,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -39,6 +41,13 @@ class ConfusablesParseTest {
     assertEquals("B", map.get(0x41)); // A -> prototype B
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"0041 ;\t0042 0043 ;\tMA\n", "0041 ;\t0042\t0043 ;\tMA\n",
+      "0041 ;\t  0042   0043  ;\tMA\n"})
+  void parseAcceptsWhitespaceRunsBetweenTargetCodePoints(String data) throws Exception {
+    assertEquals("BC", Confusables.parse(in(data)).get(0x41));
+  }
+
   @Test
   void parseFailsLoudOnStructurallyMalformedLine() {
     // A non-comment data line with fewer than two ';' is structurally malformed. It must fail loud
@@ -46,6 +55,16 @@ class ConfusablesParseTest {
     // which would yield a quietly-incomplete confusable map and wrong confusable() results.
     final String data = "0041 ;\t0042 ;\tMA\n"     // line 1: valid
         + "0043 0044\n";                            // line 2: no ';' -> malformed
+    final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        () -> Confusables.parse(in(data)));
+    assertTrue(ex.getMessage().contains("line 2"), ex.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"0041 ;\t0042 ;\tMA\n0043 ;\t110000 ;\tMA\n",
+      "0041 ;\t0042 ;\tMA\n110000 ;\t0042 ;\tMA\n",
+      "0041 ;\t0042 ;\tMA\n0043 ;\t004G ;\tMA\n"})
+  void parseFailsLoudOnMalformedCodePoint(String data) {
     final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
         () -> Confusables.parse(in(data)));
     assertTrue(ex.getMessage().contains("line 2"), ex.getMessage());

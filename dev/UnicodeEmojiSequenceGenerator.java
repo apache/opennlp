@@ -1,0 +1,294 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HexFormat;
+import java.util.List;
+
+/**
+ * Generates the bundled {@code EmojiSequences.txt} from the Unicode Emoji {@code emoji-test.txt}
+ * and {@code emoji-data.txt} of one release. The release, the SHA-256 of both source files and
+ * the expected number of qualified sequences are pinned in {@link #RELEASE}, so a version
+ * bump is a change of that one table.
+ *
+ * <p>Usage: {@code UnicodeEmojiSequenceGenerator emoji-test.txt emoji-data.txt output.txt}.</p>
+ */
+public final class UnicodeEmojiSequenceGenerator {
+
+  /** Unicode Emoji 17.0, the version of the other bundled Unicode data files. */
+  private static final Release RELEASE = new Release("17.0", "2025",
+      "1d8a944f88d7952f7ef7c5167fef3c67995bcae24543949710231b03a201acda",
+      "2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b",
+      4973);
+
+  private static final String OUTPUT_NAME = "EmojiSequences.txt";
+  private static final String VERSION_LINE = "# Version: ";
+  private static final String FULLY_QUALIFIED = "fully-qualified";
+  private static final String MINIMALLY_QUALIFIED = "minimally-qualified";
+  private static final String EMOJI_COMPONENT = "Emoji_Component";
+  private static final String SEQUENCE_RECORD = "S;";
+  private static final String COMPONENT_RECORD = "C;";
+  private static final String RANGE_SEPARATOR = "..";
+  private static final char CODE_POINT_SEPARATOR = ' ';
+  private static final char FIELD_SEPARATOR = ';';
+  private static final char COMMENT = '#';
+
+  private UnicodeEmojiSequenceGenerator() {
+  }
+
+  /**
+   * Verifies the two source files against {@link #RELEASE} and writes the inventory.
+   *
+   * @param args The paths of {@code emoji-test.txt}, {@code emoji-data.txt} and the output file.
+   * @throws IOException Thrown if a source file cannot be read, has the wrong checksum or
+   *     version, or has unexpected content.
+   */
+  public static void main(String[] args) throws IOException {
+    if (args.length != 3) {
+      throw new IllegalArgumentException(
+          "usage: UnicodeEmojiSequenceGenerator emoji-test.txt emoji-data.txt output.txt");
+    }
+    new UnicodeEmojiSequenceGenerator().generate(Path.of(args[0]), Path.of(args[1]),
+        Path.of(args[2]));
+  }
+
+  /**
+   * Verifies the two source files against {@link #RELEASE} and writes the inventory.
+   *
+   * @param emojiTestFile The {@code emoji-test.txt} file.
+   * @param emojiDataFile The {@code emoji-data.txt} file.
+   * @param target The output file.
+   * @throws IOException Thrown if a source file cannot be read, has the wrong checksum or
+   *     version, or has unexpected content, or the output cannot be written.
+   */
+  private void generate(Path emojiTestFile, Path emojiDataFile, Path target) throws IOException {
+    List<String> emojiTest = readSource(emojiTestFile, RELEASE.emojiTestSha256());
+    List<String> emojiData = readSource(emojiDataFile, RELEASE.emojiDataSha256());
+
+    List<String> sequences = readQualifiedSequences(emojiTest);
+    List<String> components = readComponentRanges(emojiData);
+    List<String> output = new ArrayList<>(sequences.size() + components.size() + 11);
+    output.add("# " + OUTPUT_NAME);
+    output.add("# Copyright (c) 1991-" + RELEASE.copyrightYear() + " Unicode, Inc.");
+    output.add("# For terms of use and license, see https://www.unicode.org/license.txt");
+    output.add("#");
+    output.add("# Unicode Emoji fully-qualified and minimally-qualified sequences, derived from");
+    output.add("# emoji-test.txt and emoji-data.txt under Unicode License V3.");
+    output.add(VERSION_LINE + RELEASE.version());
+    output.add("# emoji-test.txt SHA-256: " + RELEASE.emojiTestSha256());
+    output.add("# emoji-data.txt SHA-256: " + RELEASE.emojiDataSha256());
+    output.add("# S records are exact sequences; C records are Emoji_Component ranges.");
+    output.add("# Generated by dev/UnicodeEmojiSequenceGenerator.java; do not edit.");
+    for (String sequence : sequences) {
+      output.add(SEQUENCE_RECORD + sequence);
+    }
+    for (String component : components) {
+      output.add(COMPONENT_RECORD + component);
+    }
+    if (target.getParent() != null) {
+      Files.createDirectories(target.getParent());
+    }
+    Files.write(target, output, StandardCharsets.US_ASCII);
+    System.out.printf("wrote %d sequences and %d component ranges%n",
+        sequences.size(), components.size());
+  }
+
+  /**
+   * Reads the code point sequences that {@code emoji-test.txt} marks {@code fully-qualified} or
+   * {@code minimally-qualified}, in file order. Unqualified sequences, whose first code point
+   * lacks a needed U+FE0F, are left out: they start with a symbol in text presentation.
+   *
+   * @param lines The lines of {@code emoji-test.txt}.
+   * @return The sequences, each as upper case hex code points separated by one space.
+   * @throws IOException Thrown if a line holds a malformed code point, or the file does not
+   *     hold exactly the number of sequences pinned in {@link #RELEASE}.
+   */
+  private List<String> readQualifiedSequences(List<String> lines) throws IOException {
+    List<String> result = new ArrayList<>();
+    for (String line : lines) {
+      int semicolon = line.indexOf(FIELD_SEPARATOR);
+      int comment = line.indexOf(COMMENT, semicolon + 1);
+      if (semicolon < 0 || comment < 0) {
+        continue;
+      }
+      String status = line.substring(semicolon + 1, comment).trim();
+      if (status.equals(FULLY_QUALIFIED) || status.equals(MINIMALLY_QUALIFIED)) {
+        result.add(normalizeCodePoints(line.substring(0, semicolon)));
+      }
+    }
+    if (result.size() != RELEASE.sequenceCount()) {
+      throw new IOException("expected " + RELEASE.sequenceCount()
+          + " qualified sequences, found " + result.size());
+    }
+    return result;
+  }
+
+  /**
+   * Reads the code point ranges that {@code emoji-data.txt} assigns the {@code Emoji_Component}
+   * property, in file order.
+   *
+   * @param lines The lines of {@code emoji-data.txt}.
+   * @return The ranges, each as {@code XXXX..YYYY} or a single code point.
+   * @throws IOException Thrown if a line holds a malformed code point, or the file has no
+   *     {@code Emoji_Component} line.
+   */
+  private List<String> readComponentRanges(List<String> lines) throws IOException {
+    List<String> result = new ArrayList<>();
+    for (String line : lines) {
+      int semicolon = line.indexOf(FIELD_SEPARATOR);
+      int comment = line.indexOf(COMMENT, semicolon + 1);
+      if (semicolon < 0 || comment < 0) {
+        continue;
+      }
+      if (line.substring(semicolon + 1, comment).trim().equals(EMOJI_COMPONENT)) {
+        result.add(normalizeRange(line.substring(0, semicolon)));
+      }
+    }
+    if (result.isEmpty()) {
+      throw new IOException("emoji-data.txt has no Emoji_Component ranges");
+    }
+    return result;
+  }
+
+  /**
+   * Rewrites a whitespace separated list of hex code points as four or more upper case hex
+   * digits each, separated by one space.
+   *
+   * @param value The code point column of an {@code emoji-test.txt} line.
+   * @return The normalized sequence.
+   * @throws IOException Thrown if the column is empty or holds a malformed code point.
+   */
+  private String normalizeCodePoints(String value) throws IOException {
+    StringBuilder normalized = new StringBuilder();
+    int start = -1;
+    for (int i = 0; i <= value.length(); i++) {
+      if (i == value.length() || Character.isWhitespace(value.charAt(i))) {
+        if (start >= 0) {
+          if (normalized.length() > 0) {
+            normalized.append(CODE_POINT_SEPARATOR);
+          }
+          normalized.append(formatCodePoint(parseHex(value.substring(start, i))));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    if (normalized.length() == 0) {
+      throw new IOException("empty code point sequence");
+    }
+    return normalized.toString();
+  }
+
+  /**
+   * Rewrites a code point or a {@code XXXX..YYYY} range with four or more upper case hex digits
+   * per code point.
+   *
+   * @param value The code point column of an {@code emoji-data.txt} line.
+   * @return The normalized range.
+   * @throws IOException Thrown if a code point is malformed.
+   */
+  private String normalizeRange(String value) throws IOException {
+    String trimmed = value.trim();
+    int dots = trimmed.indexOf(RANGE_SEPARATOR);
+    if (dots < 0) {
+      return formatCodePoint(parseHex(trimmed));
+    }
+    return formatCodePoint(parseHex(trimmed.substring(0, dots))) + RANGE_SEPARATOR
+        + formatCodePoint(parseHex(trimmed.substring(dots + RANGE_SEPARATOR.length())));
+  }
+
+  /**
+   * Parses one hex code point.
+   *
+   * @param value The hex digits.
+   * @return The code point.
+   * @throws IOException Thrown if the digits are not hex or not a Unicode code point.
+   */
+  private int parseHex(String value) throws IOException {
+    try {
+      int codePoint = Integer.parseInt(value, 16);
+      if (!Character.isValidCodePoint(codePoint)) {
+        throw new IOException("invalid code point: " + value);
+      }
+      return codePoint;
+    } catch (NumberFormatException e) {
+      throw new IOException("invalid hexadecimal code point: " + value, e);
+    }
+  }
+
+  /**
+   * Formats a code point as at least four upper case hex digits, the way the Unicode data files
+   * do.
+   *
+   * @param codePoint The code point.
+   * @return The hex digits.
+   */
+  private String formatCodePoint(int codePoint) {
+    return String.format("%04X", codePoint);
+  }
+
+  /**
+   * Reads a source file once and checks its SHA-256 and its {@code # Version:} header line
+   * against {@link #RELEASE}. Both emoji files use the two part form, for example
+   * {@code # Version: 17.0}.
+   *
+   * @param source The file to read.
+   * @param expectedSha256 The expected SHA-256 as lower case hex.
+   * @return The lines of the file.
+   * @throws IOException Thrown if the file cannot be read, its checksum differs, or it is of
+   *     another version.
+   */
+  private List<String> readSource(Path source, String expectedSha256) throws IOException {
+    byte[] bytes = Files.readAllBytes(source);
+    String actual;
+    try {
+      actual = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException("SHA-256 is unavailable", e);
+    }
+    if (!actual.equals(expectedSha256)) {
+      throw new IOException(source + " SHA-256 mismatch: expected " + expectedSha256
+          + ", found " + actual);
+    }
+    List<String> lines = new String(bytes, StandardCharsets.UTF_8).lines().toList();
+    if (!lines.contains(VERSION_LINE + RELEASE.version())) {
+      throw new IOException(source + " is not Unicode Emoji version " + RELEASE.version());
+    }
+    return lines;
+  }
+
+  /**
+   * The pinned Unicode Emoji release.
+   *
+   * @param version The version as it appears in the {@code # Version:} header of both files.
+   * @param copyrightYear The last year of the Unicode copyright line of that release.
+   * @param emojiTestSha256 The SHA-256 of {@code emoji-test.txt}.
+   * @param emojiDataSha256 The SHA-256 of {@code emoji-data.txt}.
+   * @param sequenceCount The number of fully-qualified and minimally-qualified sequences in
+   *     {@code emoji-test.txt}.
+   */
+  private record Release(String version, String copyrightYear, String emojiTestSha256,
+                         String emojiDataSha256, int sequenceCount) {
+  }
+}

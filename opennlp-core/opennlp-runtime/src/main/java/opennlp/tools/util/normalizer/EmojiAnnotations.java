@@ -61,12 +61,6 @@ public final class EmojiAnnotations {
    */
   private static final char FIELD_SEPARATOR = ';';
 
-  /**
-   * Separates hex code points inside the code point field. The bundled table format uses ASCII
-   * space ({@code U+0020}), not a general whitespace class.
-   */
-  private static final char MAPPING_CODE_POINT_SEPARATOR = ' ';
-
   // The records keyed by code point sequence, loaded once when this class initializes.
   private static final Map<String, EmojiAnnotation> ANNOTATIONS = load();
 
@@ -245,12 +239,8 @@ public final class EmojiAnnotations {
           + " at line " + lineNumber + ": empty code point sequence in: " + content);
     }
     try {
-      final StringBuilder decoded = new StringBuilder();
-      for (final String hex : StringUtil.split(stripped, MAPPING_CODE_POINT_SEPARATOR)) {
-        decoded.appendCodePoint(Integer.parseInt(hex, 16));
-      }
-      return decoded.toString();
-    } catch (NumberFormatException e) {
+      return HexCodePoints.decodeSequence(stripped);
+    } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Malformed emoji annotation data in " + RESOURCE
           + " at line " + lineNumber + ": " + content, e);
     }
