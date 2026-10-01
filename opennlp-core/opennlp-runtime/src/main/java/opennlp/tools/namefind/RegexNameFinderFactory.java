@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.SuppressForbidden;
+
 /**
  *
  * Returns a {@link RegexNameFinder} based on a selection of
@@ -89,6 +91,7 @@ public class RegexNameFinderFactory {
 
     USA_PHONE_NUM {
       @Override
+      @SuppressForbidden("default patterns of the regex name finder")
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
         // p[0] = Pattern.compile("([\\+(]?(\\d){2,}[)]?[- \\.]?(\\d){2,}[- \\.]?(\\d){2,}[- \\.]?
@@ -108,6 +111,7 @@ public class RegexNameFinderFactory {
     },
     EMAIL {
       @Override
+      @SuppressForbidden("default patterns of the regex name finder")
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
         // Every quantifier is bounded by a constant, which removes both the exponential
@@ -134,6 +138,7 @@ public class RegexNameFinderFactory {
     },
     URL {
       @Override
+      @SuppressForbidden("default patterns of the regex name finder")
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
         // Flattened to single-level groups and every quantifier bounded by a constant.
@@ -161,6 +166,7 @@ public class RegexNameFinderFactory {
     },
     MGRS {
       @Override
+      @SuppressForbidden("default patterns of the regex name finder")
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
         p[0] = Pattern.compile("\\d{1,2}[A-Za-z]\\s*[A-Za-z]{2}\\s*\\d{1,5}\\s*\\d{1,5}",
@@ -177,6 +183,7 @@ public class RegexNameFinderFactory {
     },
     DEGREES_MIN_SEC_LAT_LON {
       @Override
+      @SuppressForbidden("default patterns of the regex name finder")
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
         p[0] = Pattern.compile("([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*\\d{1,2}['|\\u2019|\\s])" +

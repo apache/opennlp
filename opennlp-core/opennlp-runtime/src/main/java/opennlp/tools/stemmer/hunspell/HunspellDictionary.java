@@ -2320,7 +2320,7 @@ public final class HunspellDictionary {
       final String trimmed = trim(line);
       if (trimmed.startsWith(SET_PREFIX) || trimmed.startsWith(SET_TAB_PREFIX)) {
         // the encoding is the first field after the directive; later fields are ignored
-        final String name = split(trimmed.substring(SET_PREFIX.length()))[0];
+        final String name = StringUtil.splitOnWhitespace(trimmed.substring(SET_PREFIX.length()))[0];
         try {
           return Charset.forName(name);
         } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
@@ -2407,7 +2407,7 @@ public final class HunspellDictionary {
     final String[] lines = splitLines(withoutByteOrderMark(content));
     final String[][] fieldsByLine = new String[lines.length][];
     for (int i = 0; i < lines.length; i++) {
-      fieldsByLine[i] = split(lines[i]);
+      fieldsByLine[i] = StringUtil.splitOnWhitespace(lines[i]);
     }
     result.flagMode = readFlagMode(fieldsByLine);
     result.flagAliases.addAll(readFlagAliases(fieldsByLine, result.flagMode));
@@ -2793,7 +2793,8 @@ public final class HunspellDictionary {
         flags = parseAliasedFlags(flagRun, affix.flagMode, affix.flagAliases, i + 1).clone();
       }
       if (morphology >= 0) {
-        affix.entryMorphology.put(flags, parseMorphology(split(line.substring(morphology)),
+        affix.entryMorphology.put(flags,
+            parseMorphology(StringUtil.splitOnWhitespace(line.substring(morphology)),
             affix.morphologyAliases, i + 1));
       }
       entries.computeIfAbsent(removeIgnored(word.replace("\\/", "/"), affix.ignoredCharacters),
@@ -3194,25 +3195,4 @@ public final class HunspellDictionary {
     return parts.toArray(new String[0]);
   }
 
-  /**
-   * Splits a line on whitespace with a single character scan.
-   *
-   * @param line The line to split.
-   * @return The whitespace-separated fields, without empty ones. Never {@code null}.
-   */
-  private static String[] split(String line) {
-    final List<String> parts = new ArrayList<>();
-    int start = -1;
-    for (int i = 0; i <= line.length(); i++) {
-      if (i == line.length() || StringUtil.isWhitespace(line.charAt(i))) {
-        if (start >= 0) {
-          parts.add(line.substring(start, i));
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-    }
-    return parts.toArray(new String[0]);
-  }
 }
