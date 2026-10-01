@@ -689,20 +689,44 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   }
 
   /**
-   * Allowlist for classes that may legitimately appear while deserializing a
-   * {@link BaseModel} via the standard {@link Serializable} mechanism. Mirrors the
-   * {@code ObjectInputFilter} convention already used by other serializable model
-   * types in this project (e.g. {@code SvmDoccatModel#deserialize(InputStream)}).
+   * Isolates all references to {@link ObjectInputFilter}, which is not available on
+   * every platform (e.g. Android), so that loading {@link BaseModel} does not depend on it.
+   * On such platforms, {@link #deserialize(Class, InputStream)} fails instead of
+   * reading objects without the allowlist.
    */
-  private static final ObjectInputFilter DESERIALIZE_FILTER = ObjectInputFilter.Config.createFilter(
-      "opennlp.tools.**;" +
-      "java.util.HashMap;" +
-      "java.lang.String;" +
-      "!*");
+  private static final class FilteredObjectInputStream {
+
+    /**
+     * Allowlist for classes that may legitimately appear while deserializing a
+     * {@link BaseModel} via the standard {@link Serializable} mechanism. Mirrors the
+     * {@code ObjectInputFilter} convention already used by other serializable model
+     * types in this project (e.g. {@code SvmDoccatModel#deserialize(InputStream)}).
+     */
+    private static final ObjectInputFilter DESERIALIZE_FILTER = ObjectInputFilter.Config.createFilter(
+        "opennlp.tools.**;" +
+        "java.util.HashMap;" +
+        "java.lang.String;" +
+        "!*");
+
+    private static ObjectInputStream open(InputStream in) throws IOException {
+      final ObjectInputStream ois = new ObjectInputStream(in);
+      try {
+        ois.setObjectInputFilter(DESERIALIZE_FILTER);
+      } catch (RuntimeException e) {
+        try {
+          ois.close();
+        } catch (IOException suppressed) {
+          e.addSuppressed(suppressed);
+        }
+        throw e;
+      }
+      return ois;
+    }
+  }
 
   /**
    * Deserializes a {@link BaseModel} from the given {@link InputStream} using the
-   * standard {@link Serializable} mechanism, with {@link #DESERIALIZE_FILTER} applied
+   * standard {@link Serializable} mechanism, with an allowlist filter applied
    * to reject any class outside the allowlist - including the top-level object itself.
    * <p>
    * Prefer this method (or the {@code BaseModel(String, InputStream|File|Path|URL)}
@@ -717,13 +741,12 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @return A valid {@link BaseModel} instance of type {@code T}.
    *
    * @throws IOException Thrown if IO errors occurred, including a rejection by
-   *                      {@link #DESERIALIZE_FILTER}.
+   *                      the allowlist filter.
    * @throws ClassNotFoundException Thrown if required classes are not found.
    */
   public static <T extends BaseModel> T deserialize(Class<T> modelClass, InputStream in)
       throws IOException, ClassNotFoundException {
-    try (ObjectInputStream ois = new ObjectInputStream(in)) {
-      ois.setObjectInputFilter(DESERIALIZE_FILTER);
+    try (ObjectInputStream ois = FilteredObjectInputStream.open(in)) {
       return modelClass.cast(ois.readObject());
     }
   }
