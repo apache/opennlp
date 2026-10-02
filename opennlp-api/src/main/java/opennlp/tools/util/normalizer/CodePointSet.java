@@ -166,28 +166,32 @@ public final class CodePointSet {
    *     is not a hex digit, or names a value outside {@code [0, U+10FFFF]}.
    */
   private static int parseCodePoint(String token, int lineNumber, String raw) {
-    String hex = token;
-    if (hex.length() >= 2) {
-      final String prefix = hex.substring(0, 2).toLowerCase(Locale.ROOT);
-      if (prefix.equals("u+") || prefix.equals("0x")) {
-        hex = hex.substring(2);
-      }
-    }
-    if (hex.isEmpty()) {
+    final int digits = hasCodePointPrefix(token) ? 2 : 0;
+    if (token.length() == digits) {
       throw malformed("code point", lineNumber, raw);
     }
-    final int codePoint;
     try {
-      codePoint = Integer.parseInt(hex, 16);
-    } catch (NumberFormatException e) {
+      return HexCodePoints.parseCodePoint(token, digits, token.length());
+    } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid hex code point '" + token + "' on line "
           + lineNumber + ": " + raw, e);
     }
-    if (codePoint < 0 || codePoint > Character.MAX_CODE_POINT) {
-      throw new IllegalArgumentException("Code point out of range on line "
-          + lineNumber + ": " + raw);
+  }
+
+  /**
+   * Tests for the optional {@code U+} or {@code 0x} prefix of a code point entry.
+   *
+   * @param token The entry text.
+   * @return {@code true} if {@code token} starts with {@code U+} or {@code 0x}, in either case.
+   */
+  private static boolean hasCodePointPrefix(String token) {
+    if (token.length() < 2) {
+      return false;
     }
-    return codePoint;
+    final char first = token.charAt(0);
+    final char second = token.charAt(1);
+    return ((first == 'U' || first == 'u') && second == '+')
+        || (first == '0' && (second == 'x' || second == 'X'));
   }
 
   private static IllegalArgumentException malformed(String what, int lineNumber, String raw) {

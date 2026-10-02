@@ -656,16 +656,11 @@ public final class MecabDictionary {
    */
   private static int parseCodePoint(String text, Path file, int lineNumber)
       throws IOException {
-    final int codePoint;
+    final String trimmed = StringUtil.trimUnicodeWhitespace(text);
     try {
-      codePoint = Integer.parseInt(
-          StringUtil.trimUnicodeWhitespace(text).substring(HEX_PREFIX.length()), 16);
-    } catch (RuntimeException e) {
+      return HexCodePoints.parseCodePoint(trimmed, HEX_PREFIX.length(), trimmed.length());
+    } catch (IllegalArgumentException e) {
       throw new IOException("malformed code point in " + file + " line " + lineNumber, e);
     }
-    if (!Character.isValidCodePoint(codePoint)) {
-      throw new IOException("code point out of range in " + file + " line " + lineNumber);
-    }
-    return codePoint;
   }
 }

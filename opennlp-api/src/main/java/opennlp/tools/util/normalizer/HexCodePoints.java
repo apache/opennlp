@@ -77,6 +77,10 @@ public final class HexCodePoints {
     }
     final int codePoint;
     try {
+      if (Character.digit(hex.charAt(start), RADIX) < 0) {
+        // Integer.parseInt accepts a leading sign, which is not a hex digit
+        throw new NumberFormatException();
+      }
       codePoint = Integer.parseInt(hex, start, end, RADIX);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException("Invalid hex code point '"
