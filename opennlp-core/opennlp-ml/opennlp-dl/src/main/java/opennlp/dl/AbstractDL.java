@@ -261,9 +261,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   static WordpieceEncoder createWordpieceEncoder(
       final Map<String, Integer> vocab, final boolean lowerCase) {
-    if (vocab == null) {
-      throw new IllegalArgumentException("vocab must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(vocab, "vocab");
     if (vocab.containsKey(
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
