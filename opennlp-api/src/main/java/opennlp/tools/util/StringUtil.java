@@ -561,12 +561,16 @@ public class StringUtil {
   }
 
   /**
-   * @return {@code true} if {@link CharSequence#length()} is {@code 0} or {@code null}, otherwise
-   *         {@code false}
+   * Determines whether a {@link CharSequence} is empty.
+   *
+   * @param theString The {@link CharSequence} to examine. Must not be {@code null}.
+   * @return {@code true} if {@link CharSequence#length()} is {@code 0}, otherwise {@code false}.
+   * @throws IllegalArgumentException Thrown if {@code theString} is {@code null}.
    *
    * @since 1.5.1
    */
   public static boolean isEmpty(CharSequence theString) {
+    requireNonNullArg(theString, "theString");
     return theString.length() == 0;
   }
 

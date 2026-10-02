@@ -36,7 +36,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.opennlp</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>opennlp-api</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
