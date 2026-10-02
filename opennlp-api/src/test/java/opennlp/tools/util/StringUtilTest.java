@@ -838,7 +838,9 @@ public class StringUtilTest {
 
   @Test
   void testIsEmptyWithNullString() {
-    Assertions.assertThrows(NullPointerException.class, () -> StringUtil.isEmpty(null));
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.isEmpty(null));
+    Assertions.assertEquals("theString must not be null", e.getMessage());
   }
 
   @Test
