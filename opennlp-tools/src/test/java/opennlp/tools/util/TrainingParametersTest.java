@@ -22,25 +22,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.RestoreDefaultLocale;
 import opennlp.tools.ml.EventTrainer;
 
+@RestoreDefaultLocale
 public class TrainingParametersTest {
-
-  /**
-   * Turkish folds {@code 'I'} to the dotless {@code 'ı'} (U+0131) instead of {@code 'i'}.
-   */
-  private static final Locale TURKISH = Locale.of("tr", "TR");
-
-  private final Locale defaultLocale = Locale.getDefault();
-
-  @AfterEach
-  void restoreDefaultLocale() {
-    Locale.setDefault(defaultLocale);
-  }
 
   @Test
   void testConstructors() throws Exception {
@@ -149,7 +138,7 @@ public class TrainingParametersTest {
         { "-model" , "en-token-test.bin" , "-lang" , "en" , "-data" ,
             "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" , "-iterations" , "50" };
 
-    Locale.setDefault(TURKISH);
+    Locale.setDefault(RestoreDefaultLocale.TURKISH);
     TrainingParameters tr = TrainingParameters.setParams(args);
 
     Assertions.assertEquals(50 ,

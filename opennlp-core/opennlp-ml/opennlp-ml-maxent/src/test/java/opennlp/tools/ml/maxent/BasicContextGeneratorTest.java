@@ -19,7 +19,6 @@ package opennlp.tools.ml.maxent;
 
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -27,8 +26,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.WhitespaceMode;
 
+@ResetWhitespaceMode
 public class BasicContextGeneratorTest {
 
   private static final String[] NONE = new String[0];
@@ -46,11 +47,6 @@ public class BasicContextGeneratorTest {
   private static final String DESERET_BEE = "\uD801\uDC12";
   private static final String HIGH_SURROGATE = "\uD83D";
   private static final String LOW_SURROGATE = "\uDE00";
-
-  @AfterEach
-  void resetWhitespaceMode() {
-    WhitespaceMode.reset();
-  }
 
   private static Stream<Arguments> literalSeparators() {
     return Stream.of(

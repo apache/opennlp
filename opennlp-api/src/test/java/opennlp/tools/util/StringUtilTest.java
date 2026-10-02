@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,6 +31,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.normalizer.UnicodeWhitespace;
 import opennlp.tools.util.normalizer.UnicodeWhitespace.RelatedCharacter;
 import opennlp.tools.util.normalizer.UnicodeWhitespace.WhitespaceCharacter;
@@ -39,6 +39,7 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace.WhitespaceCharacter;
 /**
  * Tests for the {@link StringUtil} class.
  */
+@ResetWhitespaceMode
 public class StringUtilTest {
 
   private static final int[] INFO_SEPARATORS = {0x001C, 0x001D, 0x001E, 0x001F};
@@ -46,15 +47,6 @@ public class StringUtilTest {
   private static final int DESERET_CAPITAL_BEE = 0x10412; // supplementary-plane letter
   private static final int DESERET_SMALL_BEE = 0x1043A;
   private static final int GRINNING_FACE = 0x1F600; // emoji, two chars
-
-  /**
-   * Restores {@link WhitespaceMode} property resolution after each test, so no mode
-   * state leaks.
-   */
-  @AfterEach
-  void resetWhitespaceMode() {
-    WhitespaceMode.reset();
-  }
 
   private static List<WhitespaceCharacter> whitespace() {
     return UnicodeWhitespace.all();
@@ -882,6 +874,8 @@ public class StringUtilTest {
 
   @Test
   void testIsBlankWithNullString() {
-    Assertions.assertThrows(NullPointerException.class, () -> StringUtil.isBlank(null));
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> StringUtil.isBlank(null));
+    Assertions.assertEquals("theString must not be null", e.getMessage());
   }
 }

@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.PinWhitespaceMode;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.WhitespaceMode;
@@ -35,7 +35,11 @@ import opennlp.tools.util.WhitespaceMode;
  * {@link SentenceDetectorME#sentPosDetect(CharSequence)} (OPENNLP-205). These pin the mapping
  * behavior, including edge cases, so the mapping can be refactored without silently changing
  * results; every expectation was captured from the behavior of the pre-refactoring implementation.
+ * <p>
+ * The features of {@link DefaultSDContextGenerator} depend on the active {@link WhitespaceMode},
+ * so training is pinned to {@link WhitespaceMode#LEGACY} to reproduce the expectations.
  */
+@PinWhitespaceMode(WhitespaceMode.LEGACY)
 public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorTest {
 
   private static final String SECOND = "There are many tests, this is the second.";
@@ -45,9 +49,6 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
 
   @BeforeAll
   static void prepareResources() throws IOException {
-    // DefaultSDContextGenerator's features depend on the active WhitespaceMode, so training
-    // must be pinned to WhitespaceMode.LEGACY to reproduce the expectations pinned below.
-    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
     Dictionary abb = loadAbbDictionary(Locale.ENGLISH);
     tokenEnd = new SentenceDetectorME(
         train(new SentenceDetectorFactory("eng", true, abb, null), Locale.ENGLISH));
@@ -309,14 +310,5 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     String input = "z.\u001Cb. x";
     assertSpans(tokenEnd, input, new Span(0, 5), new Span(6, 7));
     assertSpans(noTokenEnd, input, new Span(0, 5), new Span(6, 7));
-  }
-
-  /**
-   * Reverts the {@link WhitespaceMode} pin, so later test classes sharing this JVM fork
-   * resolve the mode from the system property again.
-   */
-  @AfterAll
-  static void resetWhitespaceMode() {
-    WhitespaceMode.reset();
   }
 }

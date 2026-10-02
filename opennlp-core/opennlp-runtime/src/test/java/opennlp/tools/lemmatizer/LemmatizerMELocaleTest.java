@@ -19,9 +19,10 @@ package opennlp.tools.lemmatizer;
 
 import java.util.Locale;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import opennlp.tools.RestoreDefaultLocale;
 
 /**
  * Tests that the lemma class encoding and decoding of {@link LemmatizerME} do not depend
@@ -30,12 +31,8 @@ import org.junit.jupiter.api.Test;
  * Encoding produces the outcome labels that are persisted in a trained model, decoding
  * consumes them at inference time. Both sides therefore have to agree across JVMs.
  */
+@RestoreDefaultLocale
 public class LemmatizerMELocaleTest {
-
-  /**
-   * Turkish folds {@code 'I'} to the dotless {@code 'ı'} (U+0131) instead of {@code 'i'}.
-   */
-  private static final Locale TURKISH = Locale.of("tr", "TR");
 
   private static final String[] TOKENS = {"MICE", "INDICES"};
   private static final String[] LEMMAS = {"mouse", "index"};
@@ -43,19 +40,12 @@ public class LemmatizerMELocaleTest {
   /** The lemma classes an existing, English trained model contains for {@link #TOKENS}. */
   private static final String[] LEMMA_CLASSES = {"R2ioR1cuI1s", "D3iD2cR0sx"};
 
-  private final Locale defaultLocale = Locale.getDefault();
-
-  @AfterEach
-  void restoreDefaultLocale() {
-    Locale.setDefault(defaultLocale);
-  }
-
   /**
    * Training on a Turkish JVM must not write different outcome labels into the model.
    */
   @Test
   void testEncodeLemmasIsIndependentOfDefaultLocale() {
-    Locale.setDefault(TURKISH);
+    Locale.setDefault(RestoreDefaultLocale.TURKISH);
 
     Assertions.assertArrayEquals(LEMMA_CLASSES, LemmatizerME.encodeLemmas(TOKENS, LEMMAS));
   }
@@ -65,7 +55,7 @@ public class LemmatizerMELocaleTest {
    */
   @Test
   void testDecodeLemmasIsIndependentOfDefaultLocale() {
-    Locale.setDefault(TURKISH);
+    Locale.setDefault(RestoreDefaultLocale.TURKISH);
 
     Assertions.assertArrayEquals(LEMMAS, LemmatizerME.decodeLemmas(TOKENS, LEMMA_CLASSES));
   }

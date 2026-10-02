@@ -88,6 +88,13 @@
 
     <!-- TEST scoped -->
     <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-api</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>

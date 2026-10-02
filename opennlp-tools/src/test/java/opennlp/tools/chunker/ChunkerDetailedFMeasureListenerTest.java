@@ -23,22 +23,16 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.RestoreDefaultLocale;
 import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
+@RestoreDefaultLocale
 public class ChunkerDetailedFMeasureListenerTest {
-
-  private final Locale defaultLocale = Locale.getDefault();
-
-  @AfterEach
-  void restoreDefaultLocale() {
-    Locale.setDefault(defaultLocale);
-  }
 
   @Test
   void testEvaluator() throws IOException {

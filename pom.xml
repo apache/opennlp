@@ -142,6 +142,13 @@
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-api</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
 			
 			<dependency>
 				<artifactId>opennlp-ml-commons</artifactId>
