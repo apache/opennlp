@@ -237,7 +237,7 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   @CsvSource({"1-2, 1, 2", "1-3, 1, 3", "15-16, 15, 16", "7-7, 7, 7", "10-12, 10, 12"})
   void testParseContractionRange(String id, int start, int end) throws IOException {
     Assertions.assertEquals(new ConlluStream.MultiwordRange(start, end),
-        ConlluStream.parseContractionRange(id));
+        new ConlluStream(factory("")).parseContractionRange(id));
   }
 
   // a leading zero is rejected because the word lines are looked up by their plain decimal id
@@ -245,8 +245,9 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   @ValueSource(strings = {"1-", "-2", "-", "1-2-3", "1--2", "a-b", "1-b", "a-2", "1 -2", "1- 2",
       "1.1-2", "\u0661-2", "1-\u0662", "1-2\u0662", "\uFF11-\uFF12", "1-2\n", "1-2 ", " 1-2",
       "\u200B1-2", "1\u2011", "3-1", "99999999999-2", "1-99999999999", "01-02", "1-02", "0-1"})
-  void testParseContractionRangeRejects(String id) {
-    Assertions.assertThrows(InvalidFormatException.class, () -> ConlluStream.parseContractionRange(id));
+  void testParseContractionRangeRejects(String id) throws IOException {
+    ConlluStream stream = new ConlluStream(factory(""));
+    Assertions.assertThrows(InvalidFormatException.class, () -> stream.parseContractionRange(id));
   }
 
   @Test
@@ -278,7 +279,7 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
     }
   }
 
-  private static InputStreamFactory factory(String text) {
+  private InputStreamFactory factory(String text) {
     return () -> new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
   }
 

@@ -136,7 +136,6 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     return new TokenSample(sb.toString(),spans.toArray(new Span[0]));
   }
 
-
   public void remove() {
     throw new UnsupportedOperationException();
   }
@@ -148,7 +147,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
    * @param token The token.
    * @return {@code true} if one is present.
    */
-  private static boolean containsLetterOrDigit(String token) {
+  private boolean containsLetterOrDigit(String token) {
     int i = 0;
     while (i < token.length()) {
       int cp = token.codePointAt(i);
@@ -158,10 +157,5 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       i += Character.charCount(cp);
     }
     return false;
-  }
-
-  private static void usage() {
-    logger.info("TokenSampleStream [-spans] < in");
-    logger.info("Where in is a space delimited list of tokens.");
   }
 }

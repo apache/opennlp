@@ -377,7 +377,7 @@ public class DownloadUtil {
      * @param page The page content.
      * @return The href values in order.
      */
-    static List<String> extractLinks(String page) {
+    List<String> extractLinks(String page) {
       final List<String> links = new ArrayList<>();
       int from = 0;
       while ((from = indexOfIgnoreCase(page, ANCHOR_START, from)) != -1) {
@@ -413,7 +413,7 @@ public class DownloadUtil {
      * @param from The first offset of the value.
      * @return The offset of the closing quote, or {@code -1}.
      */
-    private static int closingQuote(String page, char quote, int from) {
+    private int closingQuote(String page, char quote, int from) {
       for (int at = page.indexOf(quote, from); at != -1; at = page.indexOf(quote, at + 1)) {
         if (at + 1 < page.length() && page.charAt(at + 1) == TAG_END) {
           return at;
@@ -430,7 +430,7 @@ public class DownloadUtil {
      * @param from The start offset.
      * @return The first match offset, or {@code -1}.
      */
-    private static int indexOfIgnoreCase(String text, String literal, int from) {
+    private int indexOfIgnoreCase(String text, String literal, int from) {
       for (int i = from; i + literal.length() <= text.length(); i++) {
         if (text.regionMatches(true, i, literal, 0, literal.length())) {
           return i;

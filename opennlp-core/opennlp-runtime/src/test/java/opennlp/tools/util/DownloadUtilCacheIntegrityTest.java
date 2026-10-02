@@ -209,7 +209,7 @@ public class DownloadUtilCacheIntegrityTest {
     }
   }
 
-  private static String sha512(Path file) throws IOException {
+  private String sha512(Path file) throws IOException {
     try {
       final MessageDigest digest = MessageDigest.getInstance("SHA-512");
       return HexFormat.of().formatHex(digest.digest(Files.readAllBytes(file)));

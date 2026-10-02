@@ -118,7 +118,9 @@ public class DownloadParserTest {
   @ParameterizedTest
   @MethodSource("indexPages")
   void testExtractLinks(String page, List<String> expected) {
-    assertEquals(expected, DownloadUtil.DownloadParser.extractLinks(page));
+    final DownloadUtil.DownloadParser downloadParser =
+        new DownloadUtil.DownloadParser(fromClasspath("opennlp/tools/util/index.html"));
+    assertEquals(expected, downloadParser.extractLinks(page));
   }
 
   @Test
