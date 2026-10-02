@@ -220,6 +220,32 @@ public class LoadVocabTest {
     assertEquals(Map.of("[CLS]", 0, "[SEP]", 1), AbstractDL.loadVocabFile(tempFile));
   }
 
+  static Stream<Arguments> plainTextVocabWithEmptyLines() {
+    return Stream.of(
+        Arguments.of("[CLS]\n[SEP]\n\n", Map.of("[CLS]", 0, "[SEP]", 1)),
+        Arguments.of("[CLS]\n\n[SEP]\n", Map.of("[CLS]", 0, "[SEP]", 2)),
+        Arguments.of("\n[CLS]\r\n\r\n[SEP]\r\n", Map.of("[CLS]", 1, "[SEP]", 3)),
+        Arguments.of("[CLS]\n \n[SEP]\n", Map.of("[CLS]", 0, " ", 1, "[SEP]", 2)),
+        Arguments.of("\uD835\uDC00\n\n[SEP]\n", Map.of("\uD835\uDC00", 0, "[SEP]", 2)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("plainTextVocabWithEmptyLines")
+  void testPlainTextVocabFileSkipsEmptyLinesAndKeepsLineIds(String content,
+                                                           Map<String, Integer> expected)
+      throws IOException {
+    final File tempFile = vocabFile("vocab-empty-lines.txt", content);
+
+    assertEquals(expected, AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
+  void testPlainTextVocabFileWithATrailingEmptyLineBuildsAnEncoder() throws IOException {
+    final File tempFile = vocabFile("vocab-trailing.txt", "[PAD]\n[UNK]\n[CLS]\n[SEP]\nhello\n\n");
+
+    assertNotNull(AbstractDL.createWordpieceEncoder(AbstractDL.loadVocabFile(tempFile), true));
+  }
+
   @ParameterizedTest
   @ValueSource(strings = {"2147483648", "4294967296", "9223372036854775808",
       "12345678901234567890"})

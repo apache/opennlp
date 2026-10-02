@@ -71,12 +71,14 @@ import opennlp.tools.util.normalizer.Alignment;
 @ThreadSafe
 public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder {
 
-  public static final String SEPARATOR = "[SEP]";
-  public static final String CLS_TOKEN = "[CLS]";
+  /** The BERT separator token, equal to {@link WordpieceTokenizer#BERT_SEP_TOKEN}. */
+  public static final String SEPARATOR = WordpieceTokenizer.BERT_SEP_TOKEN;
+  /** The BERT classification token, equal to {@link WordpieceTokenizer#BERT_CLS_TOKEN}. */
+  public static final String CLS_TOKEN = WordpieceTokenizer.BERT_CLS_TOKEN;
 
   // Tokenizer-added markers (BERT and RoBERTa) that must never appear in a reconstructed span.
   private static final Set<String> SPECIAL_TOKENS = Set.of(
-      CLS_TOKEN, SEPARATOR,
+      WordpieceTokenizer.BERT_CLS_TOKEN, WordpieceTokenizer.BERT_SEP_TOKEN,
       WordpieceTokenizer.ROBERTA_CLS_TOKEN, WordpieceTokenizer.ROBERTA_SEP_TOKEN);
 
   /** Prefix used by BIO labels for the first token in an entity span. */
@@ -569,46 +571,16 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   }
 
   /**
-   * Normalizes model scores into a probability for one label index using a numerically stable
-   * softmax.
+   * Normalizes model scores into a probability for one label index with
+   * {@link AbstractDL#softmaxProbability(float[], int)}.
    *
    * @param scores The raw model scores for one token.
    * @param labelIndex The label index whose probability should be returned.
-   * @return The normalized probability in {@code [0, 1]}.
+   * @return The normalized probability, following the non-finite score rule of
+   *     {@link AbstractDL#softmaxProbabilities(float[])}.
    */
   static double labelProbability(float[] scores, int labelIndex) {
-
-    int positiveInfinityCount = 0;
-    double max = Float.NEGATIVE_INFINITY;
-
-    for (float score : scores) {
-      if (score == Float.POSITIVE_INFINITY) {
-        positiveInfinityCount++;
-      } else if (!Float.isNaN(score) && score > max) {
-        max = score;
-      }
-    }
-
-    if (positiveInfinityCount > 0) {
-      // From decodeSpans, labelIndex is always the argmax, so when any +Inf is present the chosen
-      // score is +Inf and this returns 1/(number of +Inf). The 0d arm covers a direct caller
-      // asking for a non-+Inf label's probability while a +Inf label exists (exercised by tests).
-      return scores[labelIndex] == Float.POSITIVE_INFINITY ? 1d / positiveInfinityCount : 0d;
-    }
-
-    if (max == Float.NEGATIVE_INFINITY) {
-      return 1d / scores.length;
-    }
-
-    double denominator = 0;
-    for (float score : scores) {
-      if (!Float.isNaN(score)) {
-        denominator += Math.exp(score - max);
-      }
-    }
-
-    return Math.exp(scores[labelIndex] - max) / denominator;
-
+    return softmaxProbability(scores, labelIndex);
   }
 
   /**

@@ -34,6 +34,7 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
@@ -163,8 +164,9 @@ public abstract class AbstractDL implements AutoCloseable {
    * Loads a vocabulary {@link File} from disk. A file with an opening brace as its first
    * non-whitespace character is read as JSON: one object that maps each token to a non-negative
    * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
-   * per line, the line number being the ID, as in {@code vocab.txt}. A byte order mark at the
-   * start of the file is not content in either format. The JSON layout is that of
+   * per line, the line number being the ID, as in {@code vocab.txt}. An empty line in a plain
+   * text file is skipped but still counts toward the IDs of the lines after it. A byte order
+   * mark at the start of the file is not content in either format. The JSON layout is that of
    * {@link #loadJsonVocab(String)}.
    *
    * @param vocabFile The vocabulary file.
@@ -211,9 +213,12 @@ public abstract class AbstractDL implements AutoCloseable {
     final AtomicInteger counter =
         new AtomicInteger(0);
 
-    content.lines().forEach(line ->
-        vocab.put(line, counter.getAndIncrement())
-    );
+    content.lines().forEach(line -> {
+      final int id = counter.getAndIncrement();
+      if (!line.isEmpty()) {
+        vocab.put(line, id);
+      }
+    });
 
     return vocab;
   }
@@ -575,6 +580,140 @@ public abstract class AbstractDL implements AutoCloseable {
     if (closed.compareAndSet(false, true) && session != null) {
       session.close();
     }
+  }
+
+  /**
+   * Converts model scores into a probability distribution with a softmax that subtracts the
+   * largest score before exponentiating, so large finite scores do not overflow.
+   *
+   * <p>Non-finite scores follow one rule: if any score is {@code +Infinity}, those entries share
+   * the probability mass equally and all others get {@code 0}. Otherwise {@code NaN} scores are
+   * left out of the normalization and get {@code NaN}, and {@code -Infinity} scores get
+   * {@code 0}. If no score is finite or {@code +Infinity}, every entry gets
+   * {@code 1 / scores.length}.</p>
+   *
+   * @param scores The raw model scores. Must not be {@code null}.
+   * @return The probabilities, in the order of {@code scores}.
+   * @throws IllegalArgumentException Thrown if {@code scores} is {@code null}.
+   */
+  @Internal(since = "3.0.0")
+  protected static double[] softmaxProbabilities(final float[] scores) {
+    requireNonNullArg(scores, "scores");
+
+    final int positiveInfinityCount = countPositiveInfinity(scores);
+    final double max = maxNonNaNScore(scores);
+    final double denominator = softmaxDenominator(scores, positiveInfinityCount, max);
+
+    final double[] probabilities = new double[scores.length];
+    for (int i = 0; i < scores.length; i++) {
+      probabilities[i] =
+          softmaxProbability(scores[i], scores.length, positiveInfinityCount, max, denominator);
+    }
+    return probabilities;
+  }
+
+  /**
+   * Computes the probability of one entry of
+   * {@link #softmaxProbabilities(float[])} without allocating the full distribution.
+   *
+   * @param scores The raw model scores. Must not be {@code null}.
+   * @param index The index of the score whose probability is returned. Must be a valid index
+   *     into {@code scores}.
+   * @return The probability at {@code index}, following the non-finite score rule of
+   *     {@link #softmaxProbabilities(float[])}.
+   * @throws IllegalArgumentException Thrown if {@code scores} is {@code null} or {@code index}
+   *     is out of range.
+   */
+  @Internal(since = "3.0.0")
+  protected static double softmaxProbability(final float[] scores, final int index) {
+    requireNonNullArg(scores, "scores");
+    if (index < 0 || index >= scores.length) {
+      throw new IllegalArgumentException("The index " + index
+          + " is out of range for " + scores.length + " scores.");
+    }
+
+    final int positiveInfinityCount = countPositiveInfinity(scores);
+    final double max = maxNonNaNScore(scores);
+    final double denominator = softmaxDenominator(scores, positiveInfinityCount, max);
+    return softmaxProbability(scores[index], scores.length, positiveInfinityCount, max,
+        denominator);
+  }
+
+  /**
+   * Counts the {@code +Infinity} entries of {@code scores}.
+   *
+   * @param scores The raw model scores.
+   * @return The number of {@code +Infinity} scores.
+   */
+  private static int countPositiveInfinity(final float[] scores) {
+    int count = 0;
+    for (final float score : scores) {
+      if (score == Float.POSITIVE_INFINITY) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Finds the largest score that is neither {@code NaN} nor {@code +Infinity}.
+   *
+   * @param scores The raw model scores.
+   * @return The largest such score, or {@code -Infinity} if there is none.
+   */
+  private static double maxNonNaNScore(final float[] scores) {
+    double max = Double.NEGATIVE_INFINITY;
+    for (final float score : scores) {
+      if (score != Float.POSITIVE_INFINITY && !Float.isNaN(score) && score > max) {
+        max = score;
+      }
+    }
+    return max;
+  }
+
+  /**
+   * Sums {@code exp(score - max)} over the non-{@code NaN} scores.
+   *
+   * @param scores The raw model scores.
+   * @param positiveInfinityCount The number of {@code +Infinity} scores.
+   * @param max The result of {@link #maxNonNaNScore(float[])}.
+   * @return The softmax denominator, or {@code 0} if the distribution does not need one because
+   *     a score is {@code +Infinity} or no score is finite.
+   */
+  private static double softmaxDenominator(final float[] scores, final int positiveInfinityCount,
+                                           final double max) {
+    if (positiveInfinityCount > 0 || max == Double.NEGATIVE_INFINITY) {
+      return 0d;
+    }
+    double denominator = 0d;
+    for (final float score : scores) {
+      if (!Float.isNaN(score)) {
+        denominator += Math.exp(score - max);
+      }
+    }
+    return denominator;
+  }
+
+  /**
+   * Applies the softmax rule of {@link #softmaxProbabilities(float[])} to one score.
+   *
+   * @param score The score to normalize.
+   * @param length The number of scores.
+   * @param positiveInfinityCount The number of {@code +Infinity} scores.
+   * @param max The result of {@link #maxNonNaNScore(float[])}.
+   * @param denominator The result of {@link #softmaxDenominator(float[], int, double)}.
+   * @return The probability of {@code score}.
+   */
+  private static double softmaxProbability(final float score, final int length,
+                                           final int positiveInfinityCount, final double max,
+                                           final double denominator) {
+    if (positiveInfinityCount > 0) {
+      return score == Float.POSITIVE_INFINITY ? 1d / positiveInfinityCount : 0d;
+    }
+    if (max == Double.NEGATIVE_INFINITY) {
+      return 1d / length;
+    }
+    return Math.exp(score - max) / denominator;
   }
 
   /**
