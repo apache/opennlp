@@ -17,8 +17,17 @@
 
 package opennlp.tools.util.featuregen;
 
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import opennlp.tools.util.CompatibilityMode;
 
 public class FeatureGeneratorUtilTest {
 
@@ -68,6 +77,71 @@ public class FeatureGeneratorUtilTest {
     Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ö."));
     Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ü."));
     Assertions.assertEquals("sc", FeatureGeneratorUtil.tokenFeature("Ü"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"A., cp", "Z., cp", "Ä., cp", "Ö., cp", "Ü., cp",
+      // capitals of other scripts
+      "É., cp", "Ω., cp", "Я., cp",
+      // lower case initial, other second character, longer tokens
+      "a., other", "é., other", "'A,', ic", "Ab., ic", "AB., ic"})
+  void testCapPeriod(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
+  }
+
+  @AfterEach
+  void resetCompatibilityMode() {
+    CompatibilityMode.reset();
+  }
+
+  /**
+   * Under the legacy mode the class is what the pre-3.0.0 pattern {@code ^[A-ZÄÖÜ]\\.$} gave:
+   * only an ASCII capital or a German umlaut capital counts, and the period may be followed by
+   * one line terminator, which {@code $} accepted before the end of the input.
+   */
+  private static Stream<Arguments> legacyCapPeriod() {
+    return Stream.of(
+        Arguments.of("A.", "cp"), Arguments.of("Z.", "cp"), Arguments.of("Ä.", "cp"),
+        Arguments.of("Ö.", "cp"), Arguments.of("Ü.", "cp"),
+        // capitals of other scripts and other accented capitals are not in the legacy set
+        Arguments.of("É.", "ic"), Arguments.of("Ω.", "ic"), Arguments.of("Я.", "ic"),
+        Arguments.of("Ñ.", "ic"),
+        // one trailing line terminator was accepted, anything more was not
+        Arguments.of("A.\n", "cp"), Arguments.of("A.\r\n", "cp"), Arguments.of("A.\r", "cp"),
+        Arguments.of("Ä.\u0085", "cp"), Arguments.of("A.\u2028", "cp"),
+        Arguments.of("A.\n\n", "ic"), Arguments.of("A. ", "ic"), Arguments.of("A.\nX", "ic"),
+        Arguments.of("a.", "other"), Arguments.of("Ab.", "ic"), Arguments.of("A", "sc"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyCapPeriod")
+  void testCapPeriodInLegacyMode(String token, String feature) {
+    CompatibilityMode.setActive(CompatibilityMode.LEGACY);
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
+  }
+
+  @Test
+  void testCapPeriodWithSupplementaryCapital() {
+    // U+10400 DESERET CAPITAL LETTER LONG I is one code point of two chars
+    final String deseretCapital = new String(Character.toChars(0x10400));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature(deseretCapital + "."));
+    final String deseretSmall = new String(Character.toChars(0x10428));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature(deseretSmall + "."));
+  }
+
+  private static Stream<Arguments> capPeriodLookalikes() {
+    return Stream.of(
+        Arguments.of("A.\n", "ic"), Arguments.of("A.\r", "ic"), Arguments.of("A.\r\n", "ic"),
+        Arguments.of("A.\u0085", "ic"), Arguments.of("A.\u2028", "ic"),
+        Arguments.of("A.\u2029", "ic"), Arguments.of("Ä.\n", "ic"), Arguments.of("A.\n\n", "ic"),
+        Arguments.of("A. ", "ic"), Arguments.of("A.\nX", "ic"), Arguments.of("\nA.", "other"),
+        Arguments.of(" A.", "other"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("capPeriodLookalikes")
+  void testCapPeriodIsExactlyTwoCharacters(String token, String feature) {
+    Assertions.assertEquals(feature, FeatureGeneratorUtil.tokenFeature(token));
   }
 
   @Test

@@ -18,14 +18,12 @@
 
 package opennlp.tools.util.featuregen;
 
-import java.util.regex.Pattern;
+import opennlp.tools.util.CompatibilityMode;
 
 /**
  * This class provide common utilities for feature generation.
  */
 public class FeatureGeneratorUtil {
-
-  private static final Pattern capPeriod = Pattern.compile("^[A-ZÄÖÜ]\\.$");
 
   /**
    * Generates a class name for the specified token.
@@ -44,6 +42,7 @@ public class FeatureGeneratorUtil {
    * <li>num - digits </li>
    * <li>sc - single capital letter </li>
    * <li>ac - all capital letters </li>
+   * <li>cp - a single capital letter followed by a period </li>
    * <li>ic - initial capital letter </li>
    * <li>other - other </li>
    * </ul>
@@ -98,7 +97,7 @@ public class FeatureGeneratorUtil {
         feat = "ac";
       }
     }
-    else if (capPeriod.matcher(token).find()) {
+    else if (isCapPeriod(token)) {
       feat = "cp";
     }
     else if (pattern.isInitialCapitalLetter()) {
@@ -109,5 +108,61 @@ public class FeatureGeneratorUtil {
     }
 
     return (feat);
+  }
+
+  private static final char A_UMLAUT = '\u00C4';
+  private static final char O_UMLAUT = '\u00D6';
+  private static final char U_UMLAUT = '\u00DC';
+  private static final char PERIOD = '.';
+
+  /**
+   * Tests for one uppercase code point followed by a period, and nothing else. Any script
+   * counts, including the supplementary planes. Under {@link CompatibilityMode#LEGACY} the
+   * pre-3.0.0 shape applies instead, see {@link #isLegacyCapPeriod(String)}.
+   *
+   * @param token The token.
+   * @return {@code true} for exactly that shape.
+   */
+  private static boolean isCapPeriod(String token) {
+    if (CompatibilityMode.current() == CompatibilityMode.LEGACY) {
+      return isLegacyCapPeriod(token);
+    }
+    if (token.isEmpty()) {
+      return false;
+    }
+    final int first = token.codePointAt(0);
+    final int periodOffset = Character.charCount(first);
+    return Character.isUpperCase(first) && periodOffset + 1 == token.length()
+        && token.charAt(periodOffset) == PERIOD;
+  }
+
+  /**
+   * The pre-3.0.0 shape, kept for {@link CompatibilityMode#LEGACY}: an ASCII capital or one of
+   * {@code Ä}, {@code Ö}, {@code Ü}, then a period, then the end of the token or one line
+   * terminator, which the {@code $} of the pattern {@code ^[A-ZÄÖÜ]\\.$} accepted.
+   *
+   * @param token The token.
+   * @return {@code true} for exactly that shape.
+   */
+  private static boolean isLegacyCapPeriod(String token) {
+    if (token.length() < 2 || token.charAt(1) != PERIOD) {
+      return false;
+    }
+    final char first = token.charAt(0);
+    final boolean capital = (first >= 'A' && first <= 'Z')
+        || first == A_UMLAUT || first == O_UMLAUT || first == U_UMLAUT;
+    if (!capital) {
+      return false;
+    }
+    final int rest = token.length() - 2;
+    if (rest == 0) {
+      return true;
+    }
+    final char third = token.charAt(2);
+    if (rest == 1) {
+      return third == '\n' || third == '\r' || third == '\u0085' || third == '\u2028'
+          || third == '\u2029';
+    }
+    return rest == 2 && third == '\r' && token.charAt(3) == '\n';
   }
 }
