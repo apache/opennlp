@@ -71,8 +71,12 @@ public final class ResourceLimits {
    * @param property The system property name. Must not be {@code null}.
    * @param defaultValue The value used when the property is absent or invalid.
    * @return The configured limit, or {@code defaultValue}.
+   * @throws IllegalArgumentException Thrown if {@code property} is {@code null}.
    */
   static int initLimit(String property, int defaultValue) {
+    if (property == null) {
+      throw new IllegalArgumentException("property must not be null");
+    }
     final String prop = System.getProperty(property, "").trim();
     if (!prop.isEmpty()) {
       try {

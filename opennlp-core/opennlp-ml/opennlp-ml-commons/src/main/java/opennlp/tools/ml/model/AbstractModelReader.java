@@ -41,6 +41,14 @@ public abstract class AbstractModelReader {
   public static final String MAX_ENTRIES_PROPERTY = ResourceLimits.MAX_ENTRIES_PROPERTY;
 
   /**
+   * Upper bound on count fields read from a model file.
+   *
+   * @deprecated Use {@link ResourceLimits#MAX_ENTRIES} instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
+  public static final int MAX_ENTRIES = ResourceLimits.MAX_ENTRIES;
+
+  /**
    * The number of predicates contained in a model.
    */
   protected int NUM_PREDS;
