@@ -54,6 +54,9 @@ public final class ChunkerAnnotator implements DocumentAnnotator {
    */
   public static final LayerKey<String> CHUNKS = Layers.key("chunks", String.class);
 
+  /** Introduces a rejected chunk in exception messages. */
+  private static final String CHUNK_SOURCE = "chunker returned chunk";
+
   private final Chunker chunker;
 
   /**
@@ -91,32 +94,20 @@ public final class ChunkerAnnotator implements DocumentAnnotator {
   public Document annotate(Document document) {
     DocumentAnnotators.requireLayers(document, Layers.SENTENCES, Layers.TOKENS,
         Layers.POS_TAGS);
+    DocumentAnnotators.requireAligned(document, Layers.TOKENS, Layers.POS_TAGS);
     final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> tags = document.get(Layers.POS_TAGS);
-    if (tags.size() != tokens.size()) {
-      throw new IllegalArgumentException("document needs aligned "
-          + Layers.TOKENS + " and " + Layers.POS_TAGS + " layers");
-    }
     final List<Annotation<String>> chunks = new ArrayList<>();
     DocumentAnnotators.forEachSentence(sentences, tokens, (first, words) -> {
-      final String[] sentenceTags = new String[words.length];
-      for (int i = 0; i < words.length; i++) {
-        sentenceTags[i] = tags.get(first + i).value();
-      }
+      final String[] sentenceTags = DocumentAnnotators.values(tags, first, words.length);
       for (final Span chunk : chunker.chunkAsSpans(words, sentenceTags)) {
-        if (chunk.getStart() < 0 || chunk.getEnd() > words.length
-            || chunk.getStart() >= chunk.getEnd()) {
-          throw new IllegalArgumentException("chunker returned chunk " + chunk
-              + " outside the sentence's " + words.length + " tokens");
-        }
+        final Span covered = DocumentAnnotators.toCharacterSpan(tokens, first,
+            words.length, chunk, CHUNK_SOURCE);
         if (chunk.getType() == null) {
-          throw new IllegalArgumentException(
-              "chunker returned chunk " + chunk + " without a type");
+          throw new IllegalArgumentException(CHUNK_SOURCE + " " + chunk + " without a type");
         }
-        chunks.add(new Annotation<>(new Span(
-            tokens.get(first + chunk.getStart()).span().getStart(),
-            tokens.get(first + chunk.getEnd() - 1).span().getEnd()), chunk.getType()));
+        chunks.add(new Annotation<>(covered, chunk.getType()));
       }
     });
     return document.with(CHUNKS, chunks);

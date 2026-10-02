@@ -26,6 +26,7 @@ import java.util.Set;
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnnotator;
+import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
@@ -211,13 +212,7 @@ public final class TermVectorAnnotator implements DocumentAnnotator {
    */
   @Override
   public Document annotate(Document document) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
-    if (!document.layers().contains(Layers.TOKENS)) {
-      throw new IllegalArgumentException("document lacks the required layer "
-          + Layers.TOKENS);
-    }
+    DocumentAnnotators.requireLayers(document, Layers.TOKENS);
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final AlignedText aligned =
         normalizer != null ? normalizer.normalizeAligned(document.text()) : null;

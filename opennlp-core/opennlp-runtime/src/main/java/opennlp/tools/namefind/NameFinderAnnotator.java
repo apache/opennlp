@@ -57,6 +57,9 @@ public final class NameFinderAnnotator implements DocumentAnnotator {
    */
   public static final String UNTYPED = NameSample.DEFAULT_TYPE;
 
+  /** Introduces a rejected mention in exception messages. */
+  private static final String MENTION_SOURCE = "finder returned mention";
+
   private final TokenNameFinder finder;
 
   /**
@@ -103,21 +106,11 @@ public final class NameFinderAnnotator implements DocumentAnnotator {
     // cannot leak finder state into the next one.
     try {
       DocumentAnnotators.forEachSentence(sentences, tokens, (first, words) -> {
-        // The finder indexes within the sentence; shifting by the sentence's first
-        // token position turns every mention boundary into a document-wide token
-        // index, whose token spans already refer to the original text. An empty
-        // mention is rejected with the out-of-bounds ones: it covers no token, so it
-        // has no character span.
         for (final Span mention : finder.find(words)) {
-          if (mention.getStart() < 0 || mention.getEnd() > words.length
-              || mention.getStart() >= mention.getEnd()) {
-            throw new IllegalArgumentException("finder returned mention " + mention
-                + " outside the sentence's " + words.length + " tokens");
-          }
-          final int start = tokens.get(first + mention.getStart()).span().getStart();
-          final int end = tokens.get(first + mention.getEnd() - 1).span().getEnd();
+          final Span covered = DocumentAnnotators.toCharacterSpan(tokens, first,
+              words.length, mention, MENTION_SOURCE);
           final String type = mention.getType() == null ? UNTYPED : mention.getType();
-          entities.add(new Annotation<>(new Span(start, end), type));
+          entities.add(new Annotation<>(covered, type));
         }
       });
     } finally {

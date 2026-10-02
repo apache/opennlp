@@ -89,19 +89,13 @@ public final class LemmatizerAnnotator implements DocumentAnnotator {
   public Document annotate(Document document) {
     DocumentAnnotators.requireLayers(document,
         Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS);
+    DocumentAnnotators.requireAligned(document, Layers.TOKENS, Layers.POS_TAGS);
     final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> tags = document.get(Layers.POS_TAGS);
-    if (tags.size() != tokens.size()) {
-      throw new IllegalArgumentException("document needs aligned "
-          + Layers.TOKENS + " and " + Layers.POS_TAGS + " layers");
-    }
     final List<Annotation<String>> layer = new ArrayList<>(tokens.size());
     DocumentAnnotators.forEachSentence(sentences, tokens, (first, words) -> {
-      final String[] posTags = new String[words.length];
-      for (int i = 0; i < words.length; i++) {
-        posTags[i] = tags.get(first + i).value();
-      }
+      final String[] posTags = DocumentAnnotators.values(tags, first, words.length);
       final String[] lemmas = lemmatizer.lemmatize(words, posTags);
       if (lemmas.length != words.length) {
         throw new IllegalArgumentException("lemmatizer returned " + lemmas.length
