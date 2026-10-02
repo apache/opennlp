@@ -48,6 +48,26 @@ public record AlignedText(CharSequence original, CharSequence normalized, Alignm
   }
 
   /**
+   * Composes this result with a stage that further normalizes this result's normalized text.
+   *
+   * <p>If this maps {@code original -> middle} and {@code next} maps {@code middle -> final}, the
+   * result keeps this {@link #original()}, takes the {@link #normalized()} text of {@code next}, and
+   * maps between them with {@link Alignment#andThen(Alignment)}.</p>
+   *
+   * @param next The next stage, produced from this result's normalized text. Must not be
+   *             {@code null}.
+   * @return The composed result.
+   * @throws IllegalArgumentException Thrown if {@code next} is {@code null}, or if its alignment's
+   *     original length does not equal this alignment's normalized length.
+   */
+  public AlignedText andThen(AlignedText next) {
+    if (next == null) {
+      throw new IllegalArgumentException("next must not be null");
+    }
+    return new AlignedText(original, next.normalized(), alignment.andThen(next.alignment()));
+  }
+
+  /**
    * Maps a span of the normalized text back to the tightest span of the original text.
    *
    * @param normalizedStart The inclusive start offset in the normalized text.

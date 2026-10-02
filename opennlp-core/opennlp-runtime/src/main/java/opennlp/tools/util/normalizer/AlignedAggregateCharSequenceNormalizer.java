@@ -57,14 +57,14 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
     }
     // Normalize the input to a String once so the stored original and the per-stage alignment
     // lengths agree even for a CharSequence whose length() differs from its toString().
+    // The first stage is re-wrapped so the stored original is exactly the input, whatever original
+    // a user-supplied stage reports.
     final String input = text.toString();
-    AlignedText stage = steps[0].normalizeAligned(input);
-    Alignment alignment = stage.alignment();
+    final AlignedText first = steps[0].normalizeAligned(input);
+    AlignedText result = new AlignedText(input, first.normalized(), first.alignment());
     for (int i = 1; i < steps.length; i++) {
-      final AlignedText next = steps[i].normalizeAligned(stage.normalized());
-      alignment = alignment.andThen(next.alignment());
-      stage = next;
+      result = result.andThen(steps[i].normalizeAligned(result.normalized()));
     }
-    return new AlignedText(input, stage.normalized(), alignment);
+    return result;
   }
 }

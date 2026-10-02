@@ -67,11 +67,10 @@ public class QuoteCharSequenceNormalizer implements OffsetAwareNormalizer {
     return DOUBLE.normalize(SINGLE.normalize(text));
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     final AlignedText single = SINGLE.normalizeAligned(text);
-    final AlignedText both = DOUBLE.normalizeAligned(single.normalized());
-    return new AlignedText(text, both.normalized(),
-        single.alignment().andThen(both.alignment()));
+    return single.andThen(DOUBLE.normalizeAligned(single.normalized()));
   }
 }

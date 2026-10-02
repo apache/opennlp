@@ -51,11 +51,10 @@ public class LineBreakPreservingWhitespaceCharSequenceNormalizer implements Offs
     return WHITESPACE.trim(WHITESPACE.collapsePreserving(text, LINE_BREAKS, NEWLINE));
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     final AlignedText collapsed = WHITESPACE.collapsePreservingAligned(text, LINE_BREAKS, NEWLINE);
-    final AlignedText trimmed = WHITESPACE.trimAligned(collapsed.normalized());
-    return new AlignedText(text, trimmed.normalized(),
-        collapsed.alignment().andThen(trimmed.alignment()));
+    return collapsed.andThen(WHITESPACE.trimAligned(collapsed.normalized()));
   }
 }

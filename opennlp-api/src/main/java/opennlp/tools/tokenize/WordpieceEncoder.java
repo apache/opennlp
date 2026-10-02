@@ -441,6 +441,9 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   /**
    * The normalized text with the original-text range for each character. Characters inserted by
    * the pipeline (isolation spaces) use an empty range at the insertion point.
+   *
+   * <p>Positions are appended one code point at a time, each with its own original range, and the
+   * vocabulary lookup reads the characters and ranges of single positions directly.</p>
    */
   private static final class MappedText {
     private char[] chars;
