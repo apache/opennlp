@@ -156,7 +156,7 @@ public class EnglishTokenSampleStreamEval extends AbstractEvalTest {
    * @return The samples, one per line.
    * @throws IOException If reading fails.
    */
-  private static List<TokenSample> samples(List<String> lines) throws IOException {
+  private List<TokenSample> samples(List<String> lines) throws IOException {
     final byte[] content = (String.join("\n", lines) + "\n").getBytes(StandardCharsets.UTF_8);
     final TokenSampleStream stream = new TokenSampleStream(new ByteArrayInputStream(content));
     final List<TokenSample> samples = new ArrayList<>(lines.size());
@@ -166,7 +166,7 @@ public class EnglishTokenSampleStreamEval extends AbstractEvalTest {
     return samples;
   }
 
-  private static int countSpans(List<TokenSample> samples) {
+  private int countSpans(List<TokenSample> samples) {
     int count = 0;
     for (TokenSample sample : samples) {
       count += sample.getTokenSpans().length;
@@ -181,7 +181,7 @@ public class EnglishTokenSampleStreamEval extends AbstractEvalTest {
    * @param samples The samples.
    * @param lines The token lines the samples were read from.
    */
-  private static void verifySpansCoverTokens(List<TokenSample> samples, List<String> lines) {
+  private void verifySpansCoverTokens(List<TokenSample> samples, List<String> lines) {
     for (int i = 0; i < samples.size(); i++) {
       final TokenSample sample = samples.get(i);
       final String[] tokens = lines.get(i).split(" ");
@@ -212,7 +212,7 @@ public class EnglishTokenSampleStreamEval extends AbstractEvalTest {
    * @return The MD5 digest as a positive integer.
    * @throws Exception If the algorithm is unavailable.
    */
-  private static BigInteger digest(List<TokenSample> samples) throws Exception {
+  private BigInteger digest(List<TokenSample> samples) throws Exception {
     final MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
     for (TokenSample sample : samples) {
       digest.update(sample.getText().getBytes(StandardCharsets.UTF_8));

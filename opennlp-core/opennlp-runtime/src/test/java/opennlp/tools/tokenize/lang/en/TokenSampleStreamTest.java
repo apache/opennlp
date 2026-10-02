@@ -29,7 +29,7 @@ import opennlp.tools.util.Span;
 
 public class TokenSampleStreamTest {
 
-  private static TokenSampleStream stream(String text) throws IOException {
+  private TokenSampleStream stream(String text) throws IOException {
     return new TokenSampleStream(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
   }
 

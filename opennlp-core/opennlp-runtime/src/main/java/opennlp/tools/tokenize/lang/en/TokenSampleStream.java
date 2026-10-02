@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,30 @@ import opennlp.tools.util.StringUtil;
 public class TokenSampleStream implements Iterator<TokenSample> {
 
   private static final Logger logger = LoggerFactory.getLogger(TokenSampleStream.class);
+
+  private static final String LEFT_PAREN = "(";
+  private static final String LEFT_CURLY = "{";
+  private static final String RIGHT_PAREN = ")";
+  private static final String RIGHT_CURLY = "}";
+  private static final String OPEN_QUOTE = "``";
+  private static final String DOUBLE_QUOTE = "\"";
+  private static final String DOLLAR = "$";
+  private static final String HASH = "#";
+  private static final String APOSTROPHE = "'";
+  private static final String NEGATION = "n't";
+
+  /**
+   * Punctuation tokens that are separated from the previous token by a space.
+   */
+  private static final Set<String> SPACED_PUNCTUATION =
+      Set.of(OPEN_QUOTE, "--", DOLLAR, LEFT_PAREN, "&", HASH);
+
+  /**
+   * Tokens that are not separated from the following word by a space.
+   */
+  private static final Set<String> ATTACHING_TO_NEXT =
+      Set.of(OPEN_QUOTE, LEFT_PAREN, LEFT_CURLY, DOLLAR, HASH);
+
   private final BufferedReader in;
   private String line;
   private boolean evenq = true;
@@ -71,29 +96,27 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       String token = tokens[ti];
       String lastToken = ti - 1 >= 0 ? tokens[ti - 1] : "";
       token = switch (token) {
-        case "-LRB-" -> "(";
-        case "-LCB-" -> "{";
-        case "-RRB-" -> ")";
-        case "-RCB-" -> "}";
+        case "-LRB-" -> LEFT_PAREN;
+        case "-LCB-" -> LEFT_CURLY;
+        case "-RRB-" -> RIGHT_PAREN;
+        case "-RCB-" -> RIGHT_CURLY;
         default -> token;
       };
       if (sb.length() != 0) {
-        if (!containsLetterOrDigit(token) || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
-          if ((token.equals("``") || token.equals("--") || token.equals("$") ||
-              token.equals("(")  || token.equals("&")  || token.equals("#") ||
-              (token.equals("\"") && (evenq && ti != tokens.length - 1)))
-              && (!lastToken.equals("(") || !lastToken.equals("{"))) {
+        if (!containsLetterOrDigit(token) || token.startsWith(APOSTROPHE)
+            || token.equalsIgnoreCase(NEGATION)) {
+          if (SPACED_PUNCTUATION.contains(token)
+              || (token.equals(DOUBLE_QUOTE) && evenq && ti != tokens.length - 1)) {
             length++;
           }
         }
         else {
-          if (!lastToken.equals("``") && (!lastToken.equals("\"") || evenq) && !lastToken.equals("(")
-              && !lastToken.equals("{") && !lastToken.equals("$") && !lastToken.equals("#")) {
+          if (!ATTACHING_TO_NEXT.contains(lastToken) && (!lastToken.equals(DOUBLE_QUOTE) || evenq)) {
             length++;
           }
         }
       }
-      if (token.equals("\"")) {
+      if (token.equals(DOUBLE_QUOTE)) {
         evenq = ti == tokens.length - 1 || !evenq;
       }
       if (sb.length() < length) {
@@ -113,13 +136,12 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     return new TokenSample(sb.toString(),spans.toArray(new Span[0]));
   }
 
-
   public void remove() {
     throw new UnsupportedOperationException();
   }
 
   /**
-   * Tests whether a token contains a letter or a decimal digit, by code point. A token without
+   * Checks whether a token contains a letter or a decimal digit, by code point. A token without
    * one is treated as punctuation.
    *
    * @param token The token.
@@ -135,10 +157,5 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       i += Character.charCount(cp);
     }
     return false;
-  }
-
-  private static void usage() {
-    logger.info("TokenSampleStream [-spans] < in");
-    logger.info("Where in is a space delimited list of tokens.");
   }
 }

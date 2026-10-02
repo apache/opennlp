@@ -127,13 +127,15 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   void testContractionIdsAreMerged() throws IOException {
     try (ObjectStream<ConlluSentence> stream = getStream("es-ud-sample.conllu")) {
       ConlluSentence sent1 = stream.read();
+      List<ConlluWordLine> wordLines = sent1.getWordLines();
 
-      Assertions.assertEquals(55, sent1.getWordLines().size());
-      Assertions.assertEquals("1-3", sent1.getWordLines().get(0).getId());
-      Assertions.assertEquals("Digámoslo", sent1.getWordLines().get(0).getForm());
-      Assertions.assertEquals("15-16", sent1.getWordLines().get(12).getId());
+      Assertions.assertNotNull(wordLines);
+      Assertions.assertEquals(55, wordLines.size());
+      Assertions.assertEquals("1-3", wordLines.get(0).getId());
+      Assertions.assertEquals("Digámoslo", wordLines.get(0).getForm());
+      Assertions.assertEquals("15-16", wordLines.get(12).getId());
       Set<String> expandedParts = Set.of("1", "2", "3", "15", "16");
-      for (ConlluWordLine wordLine : sent1.getWordLines()) {
+      for (ConlluWordLine wordLine : wordLines) {
         Assertions.assertFalse(expandedParts.contains(wordLine.getId()),
             "Expanded contraction parts must be removed");
       }
@@ -277,7 +279,7 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
     }
   }
 
-  private static InputStreamFactory factory(String text) {
+  private InputStreamFactory factory(String text) {
     return () -> new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
   }
 
