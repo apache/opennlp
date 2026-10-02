@@ -121,7 +121,7 @@ public final class LanguageCodeValidator {
    *     Must not be {@code null}.
    * @return {@code true} if the code is valid,
    *     {@code false} otherwise.
-   * @throws IllegalArgumentException if {@code languageCode}
+   * @throws IllegalArgumentException Thrown if {@code languageCode}
    *     is {@code null}.
    */
   public static boolean isValid(String languageCode) {
@@ -139,7 +139,7 @@ public final class LanguageCodeValidator {
    *
    * @param languageCode The language code to validate.
    *     Must not be {@code null}.
-   * @throws IllegalArgumentException if the code is not a valid
+   * @throws IllegalArgumentException Thrown if the code is not a valid
    *     ISO 639 language code or is {@code null}.
    */
   public static void validateLanguageCode(String languageCode) {
@@ -153,20 +153,21 @@ public final class LanguageCodeValidator {
   /**
    * Converts a three-letter ISO 639-2/3 code, terminologic ({@code "nld"}) or
    * bibliographic ({@code "dut"}), to its ISO 639-1 two-letter equivalent
-   * ({@code "nl"}). The code is lower-cased with {@link Locale#ROOT} first.
-   * Two-letter codes and codes without a two-letter equivalent are returned
-   * lower-cased and otherwise unchanged. The code is not validated; use
+   * ({@code "nl"}). The code is lower-cased with
+   * {@link StringUtil#toLowerCase(CharSequence)} first. Two-letter codes and
+   * codes without a two-letter equivalent are returned lower-cased and
+   * otherwise unchanged. The code is not validated; use
    * {@link #validateLanguageCode(String)} for that.
    *
    * @param languageCode The language code to convert. Must not be {@code null}.
    * @return The ISO 639-1 code, or the lower-cased input if there is none.
-   * @throws IllegalArgumentException if {@code languageCode} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code languageCode} is {@code null}.
    */
   public static String toIso6391(String languageCode) {
     if (languageCode == null) {
       throw new IllegalArgumentException("languageCode must not be null");
     }
-    final String lower = languageCode.toLowerCase(Locale.ROOT);
+    final String lower = StringUtil.toLowerCase(languageCode);
     if (lower.length() == ISO_639_1_LENGTH) {
       return lower;
     }
@@ -175,22 +176,22 @@ public final class LanguageCodeValidator {
 
   /**
    * Converts an ISO 639-1 two-letter code ({@code "de"}) or an ISO 639-2
-   * bibliographic code ({@code "ger"}) to its ISO 639-2/T three-letter
+   * bibliographic code ({@code "ger"}) to its ISO 639-2/3 three-letter
    * equivalent ({@code "deu"}). The code is lower-cased with
-   * {@link Locale#ROOT} first. Other codes, and two-letter codes without a
-   * three-letter equivalent, are returned lower-cased and otherwise unchanged.
-   * The code is not validated; use {@link #validateLanguageCode(String)} for
-   * that.
+   * {@link StringUtil#toLowerCase(CharSequence)} first. Other codes, and
+   * two-letter codes without a three-letter equivalent, are returned
+   * lower-cased and otherwise unchanged. The code is not validated; use
+   * {@link #validateLanguageCode(String)} for that.
    *
    * @param languageCode The language code to convert. Must not be {@code null}.
-   * @return The ISO 639-2/T code, or the lower-cased input if there is none.
-   * @throws IllegalArgumentException if {@code languageCode} is {@code null}.
+   * @return The ISO 639-2/3 code, or the lower-cased input if there is none.
+   * @throws IllegalArgumentException Thrown if {@code languageCode} is {@code null}.
    */
   public static String toIso6393(String languageCode) {
     if (languageCode == null) {
       throw new IllegalArgumentException("languageCode must not be null");
     }
-    final String lower = languageCode.toLowerCase(Locale.ROOT);
+    final String lower = StringUtil.toLowerCase(languageCode);
     if (lower.length() == ISO_639_1_LENGTH) {
       try {
         final String iso3 = Locale.of(lower).getISO3Language();
