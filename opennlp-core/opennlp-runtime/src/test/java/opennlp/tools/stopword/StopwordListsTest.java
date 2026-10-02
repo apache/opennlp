@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -117,6 +118,13 @@ public class StopwordListsTest {
     // Spot-check.
     Assertions.assertTrue(en3.isStopword("the"));
     Assertions.assertTrue(en3.isStopword("and"));
+  }
+
+  @ParameterizedTest(name = "forLanguage(\"{0}\") shares the filter of \"{1}\"")
+  @CsvSource({"ger, de", "fre, fr", "dut, nl", "deu, de", "fra, fr", "nld, nl"})
+  void testThreeLetterCodeSharesCachedTwoLetterFilter(final String iso3, final String iso1) {
+    Assertions.assertSame(StopwordLists.forLanguage(iso1), StopwordLists.forLanguage(iso3),
+        "'" + iso3 + "' should resolve to the cached '" + iso1 + "' filter");
   }
 
   /**

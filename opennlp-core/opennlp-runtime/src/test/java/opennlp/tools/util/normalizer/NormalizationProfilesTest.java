@@ -64,6 +64,16 @@ public class NormalizationProfilesTest {
   }
 
   @Test
+  void testBibliographicCodesResolveToProfile() {
+    assertEquals(SnowballStemmer.ALGORITHM.GERMAN,
+        NormalizationProfiles.forLanguage("ger").orElseThrow().stemmerAlgorithm());
+    assertEquals(SnowballStemmer.ALGORITHM.FRENCH,
+        NormalizationProfiles.forLanguage("fre").orElseThrow().stemmerAlgorithm());
+    assertEquals(SnowballStemmer.ALGORITHM.DUTCH,
+        NormalizationProfiles.forLanguage("DUT").orElseThrow().stemmerAlgorithm());
+  }
+
+  @Test
   void testNorwegianWrittenStandardsResolveToTheNorwegianProfile() {
     // "nb" (Bokmal) and "nn" (Nynorsk) are the standard modern written codes; both convert to the
     // ISO 639-3 codes "nob"/"nno", which must resolve to Norwegian even though the registry also
