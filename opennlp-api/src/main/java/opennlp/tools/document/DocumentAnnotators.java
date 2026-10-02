@@ -116,19 +116,17 @@ public final class DocumentAnnotators {
    * annotation at each position of one belongs to the annotation at the same position of
    * the other.
    *
-   * @param document The document to check. Must not be {@code null} and must carry both
-   *                 layers.
+   * @param document The document to check. Must not be {@code null}.
    * @param layer The first layer, for example {@link Layers#TOKENS}.
    * @param aligned The layer that must be aligned with {@code layer}, for example
    *                {@link Layers#POS_TAGS}.
-   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, or if the
-   *         two layers differ in size; the message names both layers.
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, if a
+   *         layer is absent, or if the two layers differ in size; the message names the
+   *         absent layer, or both layers.
    */
   public static void requireAligned(Document document, LayerKey<?> layer,
       LayerKey<?> aligned) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
+    requireLayers(document, layer, aligned);
     if (document.get(layer).size() != document.get(aligned).size()) {
       throw new IllegalArgumentException("document needs aligned "
           + layer + " and " + aligned + " layers");
