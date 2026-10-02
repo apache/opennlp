@@ -24,13 +24,16 @@ import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.WhitespaceMode;
 
 /**
  * Tests the frequency-driven segmenter against a project-authored miniature lexicon;
@@ -41,6 +44,15 @@ import opennlp.tools.util.Span;
  * example, and its Javadoc spells out each fixture word.</p>
  */
 public class UnigramSegmenterTest {
+
+  /**
+   * Restores {@link WhitespaceMode} property resolution after each test, so no mode
+   * state leaks.
+   */
+  @AfterEach
+  void resetWhitespaceMode() {
+    WhitespaceMode.reset();
+  }
 
   /** UTF-8 lead byte with the required continuation byte omitted. */
   private static final byte TRUNCATED_UTF8_LEAD_BYTE = (byte) 0xC3;
@@ -247,11 +259,13 @@ public class UnigramSegmenterTest {
 
   /**
    * Pins the field separator of lexicon lines to Unicode {@code White_Space},
-   * independent of {@link opennlp.tools.util.WhitespaceMode}: a next line (U+0085)
-   * separates the word from its count.
+   * independent of {@link WhitespaceMode}: a next line (U+0085) separates the word from
+   * its count under every mode.
    */
-  @Test
-  void testNextLineSeparatesLexiconFields() throws IOException {
+  @ParameterizedTest
+  @EnumSource(WhitespaceMode.class)
+  void testNextLineSeparatesLexiconFields(WhitespaceMode mode) throws IOException {
+    WhitespaceMode.setActive(mode);
     // fixture word U+6211, U+0085 next line, then its count
     final String lexicon = "我\u00855000\n";
     final UnigramSegmenter loaded = UnigramSegmenter.load(
@@ -262,10 +276,13 @@ public class UnigramSegmenterTest {
 
   /**
    * Pins that an information separator (U+001C), which is not Unicode
-   * {@code White_Space}, does not separate lexicon fields, so the line has no count.
+   * {@code White_Space}, does not separate lexicon fields under any {@link WhitespaceMode},
+   * so the line has no count.
    */
-  @Test
-  void testInformationSeparatorDoesNotSeparateLexiconFields() {
+  @ParameterizedTest
+  @EnumSource(WhitespaceMode.class)
+  void testInformationSeparatorDoesNotSeparateLexiconFields(WhitespaceMode mode) {
+    WhitespaceMode.setActive(mode);
     final String lexicon = "我\u001C5000\n";
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> UnigramSegmenter.load(

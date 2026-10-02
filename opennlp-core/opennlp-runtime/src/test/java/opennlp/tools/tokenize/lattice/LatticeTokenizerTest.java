@@ -25,15 +25,18 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.WhitespaceMode;
 
 /**
  * Tests the lattice segmenter against a project-authored miniature dictionary; no
@@ -44,6 +47,15 @@ import opennlp.tools.util.Span;
  * example, whose javadoc spells out each fixture word.</p>
  */
 public class LatticeTokenizerTest {
+
+  /**
+   * Restores {@link WhitespaceMode} property resolution after each test, so no mode
+   * state leaks.
+   */
+  @AfterEach
+  void resetWhitespaceMode() {
+    WhitespaceMode.reset();
+  }
 
   private static final String LEXICON_CSV = "lexicon.csv";
   private static final String MATRIX_DEF = "matrix.def";
@@ -310,11 +322,14 @@ public class LatticeTokenizerTest {
 
   /**
    * Pins the field separator of {@code matrix.def} and {@code char.def} to Unicode
-   * {@code White_Space}, independent of {@link opennlp.tools.util.WhitespaceMode}: a
-   * next line (U+0085) separates fields like a space.
+   * {@code White_Space}, independent of {@link WhitespaceMode}: a next line (U+0085)
+   * separates fields like a space under every mode.
    */
-  @Test
-  void testNextLineSeparatesDefinitionFields(@TempDir Path nel) throws IOException {
+  @ParameterizedTest
+  @EnumSource(WhitespaceMode.class)
+  void testNextLineSeparatesDefinitionFields(WhitespaceMode mode, @TempDir Path nel)
+      throws IOException {
+    WhitespaceMode.setActive(mode);
     write(nel, LEXICON_CSV, "東,0,0,3000,noun\n");
     write(nel, MATRIX_DEF, "1\u00851\n0\u00850\u00850\n");
     write(nel, CHAR_DEF, "DEFAULT\u00850\u00851\u00850\n");
@@ -328,11 +343,14 @@ public class LatticeTokenizerTest {
 
   /**
    * Pins that an information separator (U+001C), which is not Unicode
-   * {@code White_Space}, does not separate {@code matrix.def} header fields.
+   * {@code White_Space}, does not separate {@code matrix.def} header fields under any
+   * {@link WhitespaceMode}.
    */
-  @Test
-  void testInformationSeparatorDoesNotSeparateMatrixFields(@TempDir Path broken)
-      throws IOException {
+  @ParameterizedTest
+  @EnumSource(WhitespaceMode.class)
+  void testInformationSeparatorDoesNotSeparateMatrixFields(WhitespaceMode mode,
+      @TempDir Path broken) throws IOException {
+    WhitespaceMode.setActive(mode);
     write(broken, LEXICON_CSV, "東,0,0,3000,noun\n");
     write(broken, MATRIX_DEF, "1\u001C1\n0 0 0\n");
     final IOException e = Assertions.assertThrows(IOException.class,
