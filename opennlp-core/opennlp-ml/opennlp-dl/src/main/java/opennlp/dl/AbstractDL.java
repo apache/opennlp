@@ -38,6 +38,7 @@ import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
@@ -95,9 +96,9 @@ public abstract class AbstractDL implements AutoCloseable {
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
       throws IOException, OrtException {
-    requireNonNullArg(model, "model");
-    requireNonNullArg(vocabulary, "vocabulary");
-    requireNonNullArg(sessionOptions, "sessionOptions");
+    ArgumentChecks.requireNonNullArg(model, "model");
+    ArgumentChecks.requireNonNullArg(vocabulary, "vocabulary");
+    ArgumentChecks.requireNonNullArg(sessionOptions, "sessionOptions");
     this.env = OrtEnvironment.getEnvironment();
     // try-with-resources closes the session options once the session has consumed them.
     try (sessionOptions) {
@@ -149,7 +150,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static OrtSession.SessionOptions sessionOptions(final InferenceOptions inferenceOptions)
       throws OrtException {
-    requireNonNullArg(inferenceOptions, "inferenceOptions");
+    ArgumentChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
     validateSplitOptions(inferenceOptions);
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
     if (inferenceOptions.isGpu()) {
@@ -337,7 +338,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static boolean resolveLowerCase(
       final InferenceOptions options, final boolean componentDefault) {
-    requireNonNullArg(options, "options");
+    ArgumentChecks.requireNonNullArg(options, "options");
     return options.getLowerCase() != null ? options.getLowerCase() : componentDefault;
   }
 
@@ -348,7 +349,7 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws IllegalArgumentException Thrown if the split settings cannot make progress.
    */
   protected static void validateSplitOptions(final InferenceOptions options) {
-    requireNonNullArg(options, "options");
+    ArgumentChecks.requireNonNullArg(options, "options");
     validateSplitOptions(options.getDocumentSplitSize(), options.getSplitOverlapSize());
   }
 
@@ -578,11 +579,16 @@ public abstract class AbstractDL implements AutoCloseable {
     }
   }
 
-  // Null parameters report IllegalArgumentException rather than requireNonNull's
-  // NullPointerException, matching the parameter contract of the engine and tokenizer layers.
+  /**
+   * Validates that a parameter is not {@code null}.
+   *
+   * @param value The parameter value to validate.
+   * @param name The parameter name used in the exception message.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
+   * @deprecated Use {@link ArgumentChecks#requireNonNullArg(Object, String)} instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
   protected static void requireNonNullArg(Object value, String name) {
-    if (value == null) {
-      throw new IllegalArgumentException("The " + name + " must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(value, name);
   }
 }

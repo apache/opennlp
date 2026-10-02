@@ -25,6 +25,7 @@ import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.dictionary.SymSpellModel;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
@@ -142,9 +143,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @throws IllegalArgumentException if {@code spellChecker} is {@code null}
    */
   public static Builder builder(SpellChecker spellChecker) {
-    if (spellChecker == null) {
-      throw new IllegalArgumentException("spellChecker must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(spellChecker, "spellChecker");
     return new Builder(spellChecker);
   }
 
@@ -154,9 +153,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @throws IllegalArgumentException if {@code model} is {@code null}
    */
   public static Builder builder(SymSpellModel model) {
-    if (model == null) {
-      throw new IllegalArgumentException("model must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(model, "model");
     return new Builder(model.getSymSpell());
   }
 
@@ -191,9 +188,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
       throw new IllegalStateException("no SpellChecker attached; this instance was likely "
           + "restored by Java deserialization. Re-attach one via withSpellChecker(...).");
     }
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return text;
     }

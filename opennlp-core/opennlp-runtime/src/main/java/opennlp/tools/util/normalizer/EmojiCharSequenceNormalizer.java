@@ -16,6 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.CompatibilityMode;
 
 /**
@@ -72,9 +73,7 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     if (CompatibilityMode.current() == CompatibilityMode.LEGACY) {
       return removeLegacyRuns(text);
     }

@@ -38,7 +38,7 @@ class AggregateCharSequenceNormalizerTest {
   void testRejectsNullNormalizersLoudly() {
     IllegalArgumentException nullArray = assertThrows(IllegalArgumentException.class,
         () -> new AggregateCharSequenceNormalizer((CharSequenceNormalizer[]) null));
-    assertEquals("The normalizers must not be null.", nullArray.getMessage());
+    assertEquals("normalizers must not be null", nullArray.getMessage());
 
     IllegalArgumentException nullElement = assertThrows(IllegalArgumentException.class,
         () -> new AggregateCharSequenceNormalizer(
@@ -60,6 +60,6 @@ class AggregateCharSequenceNormalizerTest {
     AggregateCharSequenceNormalizer aggregate = new AggregateCharSequenceNormalizer();
     IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> aggregate.normalize(null));
-    assertEquals("The text must not be null.", e.getMessage());
+    assertEquals("text must not be null", e.getMessage());
   }
 }

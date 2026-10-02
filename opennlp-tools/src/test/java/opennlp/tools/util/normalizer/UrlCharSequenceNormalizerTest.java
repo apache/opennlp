@@ -234,7 +234,7 @@ public class UrlCharSequenceNormalizerTest {
   void normalizeNullThrows() {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> NORMALIZER.normalize(null));
-    Assertions.assertEquals("The text must not be null.", e.getMessage());
+    Assertions.assertEquals("text must not be null", e.getMessage());
   }
 
   @Test

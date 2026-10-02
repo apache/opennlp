@@ -18,6 +18,8 @@
 
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link CharSequenceNormalizer} implementation that aggregates the
  * functionality of other normalizers.
@@ -37,9 +39,7 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
    *         contains {@code null}.
    */
   public AggregateCharSequenceNormalizer(CharSequenceNormalizer... normalizers) {
-    if (normalizers == null) {
-      throw new IllegalArgumentException("The normalizers must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(normalizers, "normalizers");
     for (CharSequenceNormalizer normalizer : normalizers) {
       if (normalizer == null) {
         throw new IllegalArgumentException("The normalizers must not contain null.");
@@ -51,9 +51,7 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
 
     for (CharSequenceNormalizer normalizer : normalizers) {
       text = normalizer.normalize(text);

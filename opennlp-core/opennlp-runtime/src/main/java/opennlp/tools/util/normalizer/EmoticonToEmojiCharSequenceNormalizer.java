@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link CharSequenceNormalizer} that folds ASCII emoticons to emoji, using the bundled
  * {@code emoji-emoticons.txt} mapping (for example {@code :-)} to U+1F642 SLIGHTLY SMILING FACE).
@@ -47,18 +49,14 @@ public final class EmoticonToEmojiCharSequenceNormalizer implements OffsetAwareN
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("text must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     return EmojiEmoticons.getInstance().emoticonToEmoji(text);
   }
 
   /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("text must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     return EmojiEmoticons.getInstance().emoticonToEmojiAligned(text);
   }
 }

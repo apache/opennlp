@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link CharSequenceNormalizer} implementation that normalizes social media text: hashtags,
  * user handles, retweet markers, emoticons, and repeated laughter. Every encounter will be
@@ -45,9 +47,7 @@ public class SocialMediaCharSequenceNormalizer implements CharSequenceNormalizer
    */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     return shrinkLaughter(removeEmoticons(removeRetweetMarkers(removeTagsAndHandles(text))));
   }
 

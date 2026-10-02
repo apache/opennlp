@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link CharSequenceNormalizer} implementation that normalizes text in terms of numbers:
  * every maximal run of ASCII digits ({@code 0} to {@code 9}), that is the longest unbroken
@@ -42,9 +44,7 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
    */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     // The common digit-free text is returned without copying, like the sibling normalizers.
     final int length = text.length();
     for (int i = 0; i < length; i++) {

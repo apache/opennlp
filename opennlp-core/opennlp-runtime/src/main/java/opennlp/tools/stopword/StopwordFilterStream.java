@@ -19,6 +19,7 @@ package opennlp.tools.stopword;
 
 import java.io.IOException;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
@@ -50,8 +51,8 @@ public final class StopwordFilterStream extends FilterObjectStream<String[], Str
    */
   public StopwordFilterStream(final ObjectStream<String[]> samples,
                               final StopwordFilter filter) {
-    super(requireNonNullArg(samples, "samples"));
-    requireNonNullArg(filter, "filter");
+    super(ArgumentChecks.requireNonNullArg(samples, "samples"));
+    ArgumentChecks.requireNonNullArg(filter, "filter");
     this.filter = filter;
   }
 
@@ -67,12 +68,5 @@ public final class StopwordFilterStream extends FilterObjectStream<String[], Str
   public String[] read() throws IOException {
     final String[] in = samples.read();
     return in == null ? null : filter.filter(in);
-  }
-
-  private static <T> T requireNonNullArg(final T value, final String name) {
-    if (value == null) {
-      throw new IllegalArgumentException(name + " must not be null");
-    }
-    return value;
   }
 }
