@@ -117,7 +117,7 @@ public final class CodePointSet {
     for (int i = 0; i < lines.size(); i++) {
       final String raw = lines.get(i);
       final int lineNumber = i + 1;
-      final String line = stripComment(raw).strip();
+      final String line = HexCodePoints.stripComment(raw).strip();
       if (line.isEmpty()) {
         continue;
       }
@@ -155,6 +155,16 @@ public final class CodePointSet {
     members.set(low, high + 1);
   }
 
+  /**
+   * Parses one code point entry in hex, optionally prefixed with {@code U+} or {@code 0x}.
+   *
+   * @param token The entry text, already stripped of surrounding whitespace.
+   * @param lineNumber The one-based line number, for the error message.
+   * @param raw The complete line, for the error message.
+   * @return The code point.
+   * @throws IllegalArgumentException Thrown if the entry has no digits, holds a character that
+   *     is not a hex digit, or names a value outside {@code [0, U+10FFFF]}.
+   */
   private static int parseCodePoint(String token, int lineNumber, String raw) {
     String hex = token;
     if (hex.length() >= 2) {
@@ -178,11 +188,6 @@ public final class CodePointSet {
           + lineNumber + ": " + raw);
     }
     return codePoint;
-  }
-
-  private static String stripComment(String raw) {
-    final int hash = raw.indexOf('#');
-    return hash < 0 ? raw : raw.substring(0, hash);
   }
 
   private static IllegalArgumentException malformed(String what, int lineNumber, String raw) {

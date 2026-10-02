@@ -62,6 +62,24 @@ public class ExtendedPictographicTest {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = {"1F64F..1F600", "-1", "110000", "1F600..110000", "1F600..",
+      "..1F64F"})
+  void parseFailsLoudOnInvalidRange(String codePoints) {
+    final String data = codePoints + " ; Extended_Pictographic\n";
+    assertThrows(IllegalArgumentException.class, () -> ExtendedPictographic.parse(
+        new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)), new BitSet()));
+  }
+
+  @Test
+  void parseReadsSupplementaryRangeAndStripsComment() throws Exception {
+    final String data = "1F600..1F602 ; Extended_Pictographic # three faces\n";
+    final BitSet set = new BitSet();
+    ExtendedPictographic.parse(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)), set);
+    assertEquals(3, set.cardinality());
+    assertTrue(set.get(0x1F600) && set.get(0x1F602));
+  }
+
+  @ParameterizedTest
   @ValueSource(ints = {0x1F600, 'a', 0x1F1E6, -1, Character.MAX_CODE_POINT + 1})
   void resolvedMembersOverloadMatchesTheSingleArgumentForm(int codePoint) {
     // WordSegmenter and WordType resolve members() once per pass and call the two-argument is(...)

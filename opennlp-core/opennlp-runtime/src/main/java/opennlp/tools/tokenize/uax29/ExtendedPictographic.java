@@ -24,6 +24,8 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 
+import opennlp.tools.util.normalizer.HexCodePoints;
+
 /**
  * Checks the Unicode {@code Extended_Pictographic} property of a code point.
  *
@@ -94,8 +96,7 @@ public final class ExtendedPictographic {
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
       while ((line = reader.readLine()) != null) {
-        final int hash = line.indexOf('#');
-        final String content = (hash < 0 ? line : line.substring(0, hash)).strip();
+        final String content = HexCodePoints.stripComment(line).strip();
         if (content.isEmpty()) {
           continue;
         }
@@ -104,20 +105,15 @@ public final class ExtendedPictographic {
         // WordBreakProperty, whose value column is required.
         final int semicolon = content.indexOf(';');
         final String codePoints = (semicolon < 0 ? content : content.substring(0, semicolon)).strip();
+        final int[] range;
         try {
-          final int dots = codePoints.indexOf("..");
-          if (dots < 0) {
-            set.set(Integer.parseInt(codePoints, 16));
-          } else {
-            final int start = Integer.parseInt(codePoints.substring(0, dots), 16);
-            final int end = Integer.parseInt(codePoints.substring(dots + 2), 16);
-            set.set(start, end + 1);
-          }
-        } catch (NumberFormatException e) {
+          range = HexCodePoints.parseRange(codePoints);
+        } catch (IllegalArgumentException e) {
           // Fail loud naming the bad line, the same way the sibling loaders do.
           throw new IllegalArgumentException(
               "Malformed Extended_Pictographic data in " + RESOURCE + ": " + content, e);
         }
+        set.set(range[0], range[1] + 1);
       }
     }
   }

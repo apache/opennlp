@@ -153,8 +153,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
       int lineNumber = 0;
       while ((line = reader.readLine()) != null) {
         lineNumber++;
-        final int hash = line.indexOf('#');
-        final String content = (hash < 0 ? line : line.substring(0, hash)).strip();
+        final String content = HexCodePoints.stripComment(line).strip();
         if (content.isEmpty()) {
           continue;
         }
@@ -175,13 +174,10 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
               + " at line " + lineNumber + ": unrecognized status '" + status + "' in: " + content);
         }
         try {
-          final int source = Integer.parseInt(fields[0].strip(), 16);
-          final StringBuilder target = new StringBuilder();
-          for (final String hex : StringUtil.split(fields[2].strip(), MAPPING_CODE_POINT_SEPARATOR)) {
-            target.appendCodePoint(Integer.parseInt(hex, 16));
-          }
-          map.put(source, target.toString());
-        } catch (NumberFormatException e) {
+          final int source = HexCodePoints.parseCodePoint(fields[0].strip());
+          map.put(source, HexCodePoints.decodeSequence(fields[2].strip(),
+              MAPPING_CODE_POINT_SEPARATOR));
+        } catch (IllegalArgumentException e) {
           throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
               + " at line " + lineNumber + ": " + content, e);
         }

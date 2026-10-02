@@ -118,6 +118,15 @@ public class WordBreakPropertyTest {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = {"005A..0041", "-1", "110000", "0041..110000", "0041..", "..005A"})
+  void parseFailsLoudOnInvalidRange(String codePoints) {
+    final String data = codePoints + "; ALetter\n";
+    assertThrows(IllegalArgumentException.class, () -> WordBreakProperty.parse(
+        new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)),
+        new byte[0x10000], new ArrayList<>()));
+  }
+
+  @ParameterizedTest
   @ValueSource(ints = {'a', 0x0301, 0x1F1E6, 0x1D400, 0x1F600, -1, Character.MAX_CODE_POINT + 1})
   void resolvedDataOverloadsMatchTheSingleArgumentForms(int codePoint) {
     // WordSegmenter resolves data() once per pass and calls the two-argument ordinalOf/of overloads

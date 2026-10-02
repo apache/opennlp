@@ -97,8 +97,7 @@ public final class Confusables {
       int lineNumber = 0;
       while ((line = reader.readLine()) != null) {
         lineNumber++;
-        final int hash = line.indexOf('#');
-        final String content = (hash < 0 ? line : line.substring(0, hash)).strip();
+        final String content = HexCodePoints.stripComment(line).strip();
         if (content.isEmpty()) {
           continue;
         }
