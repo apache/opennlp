@@ -127,13 +127,15 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   void testContractionIdsAreMerged() throws IOException {
     try (ObjectStream<ConlluSentence> stream = getStream("es-ud-sample.conllu")) {
       ConlluSentence sent1 = stream.read();
+      List<ConlluWordLine> wordLines = sent1.getWordLines();
 
-      Assertions.assertEquals(55, sent1.getWordLines().size());
-      Assertions.assertEquals("1-3", sent1.getWordLines().get(0).getId());
-      Assertions.assertEquals("Digámoslo", sent1.getWordLines().get(0).getForm());
-      Assertions.assertEquals("15-16", sent1.getWordLines().get(12).getId());
+      Assertions.assertNotNull(wordLines);
+      Assertions.assertEquals(55, wordLines.size());
+      Assertions.assertEquals("1-3", wordLines.get(0).getId());
+      Assertions.assertEquals("Digámoslo", wordLines.get(0).getForm());
+      Assertions.assertEquals("15-16", wordLines.get(12).getId());
       Set<String> expandedParts = Set.of("1", "2", "3", "15", "16");
-      for (ConlluWordLine wordLine : sent1.getWordLines()) {
+      for (ConlluWordLine wordLine : wordLines) {
         Assertions.assertFalse(expandedParts.contains(wordLine.getId()),
             "Expanded contraction parts must be removed");
       }
@@ -235,7 +237,7 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   @CsvSource({"1-2, 1, 2", "1-3, 1, 3", "15-16, 15, 16", "7-7, 7, 7", "10-12, 10, 12"})
   void testParseContractionRange(String id, int start, int end) throws IOException {
     Assertions.assertEquals(new ConlluStream.MultiwordRange(start, end),
-        new ConlluStream(factory("")).parseContractionRange(id));
+        ConlluStream.parseContractionRange(id));
   }
 
   // a leading zero is rejected because the word lines are looked up by their plain decimal id
@@ -243,9 +245,8 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
   @ValueSource(strings = {"1-", "-2", "-", "1-2-3", "1--2", "a-b", "1-b", "a-2", "1 -2", "1- 2",
       "1.1-2", "\u0661-2", "1-\u0662", "1-2\u0662", "\uFF11-\uFF12", "1-2\n", "1-2 ", " 1-2",
       "\u200B1-2", "1\u2011", "3-1", "99999999999-2", "1-99999999999", "01-02", "1-02", "0-1"})
-  void testParseContractionRangeRejects(String id) throws IOException {
-    ConlluStream stream = new ConlluStream(factory(""));
-    Assertions.assertThrows(InvalidFormatException.class, () -> stream.parseContractionRange(id));
+  void testParseContractionRangeRejects(String id) {
+    Assertions.assertThrows(InvalidFormatException.class, () -> ConlluStream.parseContractionRange(id));
   }
 
   @Test

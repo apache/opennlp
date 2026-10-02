@@ -71,8 +71,10 @@ public class DownloadUtil {
    * @param language  The ISO language code of the requested model.
    * @param modelType The {@link ModelType type} of model.
    * @return {@code true} if a model exists locally, {@code false} otherwise.
-   * @throws IOException Thrown if IO errors occurred or the computed hash sum
-   *                     of an associated, local model file was incorrect.
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if the checksum file of the local model is blank.
+   * @throws IllegalStateException Thrown if the computed hash sum of the local model file
+   *                               does not match the expected one.
    */
   static boolean existsModel(String language, ModelType modelType) throws IOException {
     Map<ModelType, URL> modelsByLanguage = getAvailableModels().get(language);
@@ -109,6 +111,9 @@ public class DownloadUtil {
    * @param <T>       The generic type which is a subclass of {@link BaseModel}.
    * @return A model instance of type {@link T}.
    * @throws IOException Thrown if IO errors occurred or the model is invalid.
+   * @throws IllegalArgumentException Thrown if the checksum file of the model is blank.
+   * @throws IllegalStateException Thrown if the computed hash sum of the model file
+   *                               does not match the expected one.
    */
   public static <T extends BaseModel> T downloadModel(String language, ModelType modelType,
                                                       Class<T> type) throws IOException {
@@ -137,6 +142,9 @@ public class DownloadUtil {
    * @param <T>  The generic type which is a subclass of {@link BaseModel}.
    * @return A model instance of type {@link T}.
    * @throws IOException Thrown if the model cannot be downloaded.
+   * @throws IllegalArgumentException Thrown if the checksum file of the model is blank.
+   * @throws IllegalStateException Thrown if the computed hash sum of the model file
+   *                               does not match the expected one.
    */
   public static <T extends BaseModel> T downloadModel(URL url, Class<T> type) throws IOException {
 
@@ -192,7 +200,9 @@ public class DownloadUtil {
    *
    * @param sha512          the url to get the sha512 hash
    * @param downloadedModel the model file to check
-   * @throws IOException thrown if the checksum could not be computed or did not match
+   * @throws IOException thrown if the checksum could not be retrieved or computed
+   * @throws IllegalArgumentException thrown if the checksum file is blank
+   * @throws IllegalStateException thrown if the checksum did not match
    */
   private static void validateModel(String sha512, Path downloadedModel) throws IOException {
     final String checksumFile = downloadChecksumFile(sha512, downloadedModel);
@@ -211,7 +221,9 @@ public class DownloadUtil {
    *
    * @param sha512      the url to get the sha512 hash
    * @param cachedModel the cached model file to check
-   * @throws IOException thrown if the checksum could not be computed or did not match
+   * @throws IOException thrown if the checksum could not be retrieved or computed
+   * @throws IllegalArgumentException thrown if the checksum file is blank
+   * @throws IllegalStateException thrown if the checksum did not match
    */
   private static void validateCachedModel(String sha512, Path cachedModel) throws IOException {
     final Path checksumFile = checksumPathFor(cachedModel);
@@ -273,16 +285,17 @@ public class DownloadUtil {
    *
    * @param model The model file.
    * @param expectedChecksum The expected hash, or {@code null} if the checksum file is blank.
-   * @throws IOException If the checksum file is blank, the hash cannot be computed, or the
-   *         hashes differ.
+   * @throws IllegalArgumentException If the checksum file is blank.
+   * @throws IOException If the hash cannot be computed.
+   * @throws IllegalStateException If the hashes differ.
    */
   private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
     if (expectedChecksum == null) {
-      throw new IOException("The checksum file for " + model.getFileName() + " is blank");
+      throw new IllegalArgumentException("The checksum file for " + model.getFileName() + " is blank");
     }
     final String actualChecksum = calculateSHA512(model);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
-      throw new IOException("SHA512 checksum validation failed for " + model.getFileName() +
+      throw new IllegalStateException("SHA512 checksum validation failed for " + model.getFileName() +
           ". Expected: " + expectedChecksum + ", but got: " + actualChecksum);
     }
   }

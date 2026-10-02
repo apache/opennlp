@@ -128,7 +128,7 @@ public class DownloadUtilCacheIntegrityTest {
 
     copyResource(SUBSTITUTE_MODEL, downloadHome.resolve(MODEL_FILENAME));
 
-    final IOException e = assertThrows(IOException.class,
+    final IllegalStateException e = assertThrows(IllegalStateException.class,
         () -> DownloadUtil.downloadModel(modelUrl, ChunkerModel.class),
         "A cached model that no longer matches its published checksum must be rejected");
     assertTrue(e.getMessage().contains("SHA512"),
@@ -160,7 +160,7 @@ public class DownloadUtilCacheIntegrityTest {
     Files.writeString(downloadHome.resolve(MODEL_FILENAME + ".sha512"), " \n",
         StandardCharsets.UTF_8);
 
-    final IOException e = assertThrows(IOException.class,
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> DownloadUtil.downloadModel(modelUrl, ChunkerModel.class),
         "A cached model with a blank checksum file must be rejected");
     assertTrue(e.getMessage().contains("blank"),
@@ -176,7 +176,7 @@ public class DownloadUtilCacheIntegrityTest {
     Files.createDirectories(downloadHome);
     copyResource(SUBSTITUTE_MODEL, downloadHome.resolve(MODEL_FILENAME));
 
-    final IOException e = assertThrows(IOException.class,
+    final IllegalStateException e = assertThrows(IllegalStateException.class,
         () -> DownloadUtil.downloadModel(modelUrl, ChunkerModel.class),
         "A legacy cached model must be verified against the published checksum");
     assertTrue(e.getMessage().contains("SHA512"),

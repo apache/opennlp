@@ -277,7 +277,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
    * @throws InvalidFormatException If the id is not two such digit runs joined by one hyphen,
    *         if a side does not fit an int, or if the end is less than the start.
    */
-  MultiwordRange parseContractionRange(String id) throws InvalidFormatException {
+  static MultiwordRange parseContractionRange(String id) throws InvalidFormatException {
     int hyphen = id.indexOf(MULTIWORD_SEPARATOR);
     int startEnd = StringUtil.endOfAsciiDigits(id, 0);
     int endEnd = StringUtil.endOfAsciiDigits(id, hyphen + 1);
@@ -307,7 +307,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
    * @param firstPart The comment key.
    * @return The language code, or an empty string if there is none.
    */
-  private String extractTextLang(String firstPart) {
+  private static String extractTextLang(String firstPart) {
     int from = 0;
     while ((from = firstPart.indexOf(TEXT_LANG_PREFIX, from)) != -1) {
       int i = from + TEXT_LANG_PREFIX.length();
