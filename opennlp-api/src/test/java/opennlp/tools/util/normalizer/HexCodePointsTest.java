@@ -40,7 +40,7 @@ class HexCodePointsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "G", "1F60G", "110000", "-1", "U+1F600", " 41"})
+  @ValueSource(strings = {"", "G", "1F60G", "110000", "-1", "+0041", "-0", "U+1F600", " 41"})
   void parseCodePointRejectsMalformedDigits(String hex) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> HexCodePoints.parseCodePoint(hex));
@@ -132,7 +132,8 @@ class HexCodePointsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"0..110000", "-1..41", "41..-1", " 41..5A", "41 .. 5A"})
+  @ValueSource(strings = {"0..110000", "-1..41", "41..-1", "+41..5A", "41..+5A", " 41..5A",
+      "41 .. 5A"})
   void parseRangeRejectsOutOfRangeOrPaddedEnds(String hex) {
     assertThrows(IllegalArgumentException.class, () -> HexCodePoints.parseRange(hex));
   }
