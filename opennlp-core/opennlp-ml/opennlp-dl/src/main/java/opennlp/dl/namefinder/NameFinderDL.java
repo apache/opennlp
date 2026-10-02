@@ -71,9 +71,19 @@ import opennlp.tools.util.normalizer.Alignment;
 @ThreadSafe
 public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder {
 
-  /** The BERT separator token, equal to {@link WordpieceTokenizer#BERT_SEP_TOKEN}. */
+  /**
+   * The BERT separator token.
+   *
+   * @deprecated Use {@link WordpieceTokenizer#BERT_SEP_TOKEN} instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static final String SEPARATOR = WordpieceTokenizer.BERT_SEP_TOKEN;
-  /** The BERT classification token, equal to {@link WordpieceTokenizer#BERT_CLS_TOKEN}. */
+  /**
+   * The BERT classification token.
+   *
+   * @deprecated Use {@link WordpieceTokenizer#BERT_CLS_TOKEN} instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static final String CLS_TOKEN = WordpieceTokenizer.BERT_CLS_TOKEN;
 
   // Tokenizer-added markers (BERT and RoBERTa) that must never appear in a reconstructed span.
