@@ -79,9 +79,6 @@ public class ResourceInstallerTest {
   private static final String ZIP_MISMATCH_ERROR =
       "zip local headers and central directory list different files";
 
-  /** The property name used by the parser tests; never read by the installer. */
-  private static final String TEST_LIMIT_PROPERTY = "opennlp.test.limit";
-
   /**
    * Installs the given file under the default limits and asserts that it fails with the
    * expected message, leaving the target directory without a single installed file.
@@ -916,48 +913,6 @@ public class ResourceInstallerTest {
         ResourceInstaller.Limits.MAX_ENTRIES_PROPERTY);
     Assertions.assertEquals("opennlp.install.max.expansion.ratio",
         ResourceInstaller.Limits.MAX_EXPANSION_RATIO_PROPERTY);
-  }
-
-  @Test
-  void testLimitPropertyOverrideIsRead() {
-    System.setProperty(TEST_LIMIT_PROPERTY, " 123 ");
-    try {
-      Assertions.assertEquals(123L,
-          ResourceInstaller.Limits.longProperty(TEST_LIMIT_PROPERTY, 7L));
-    } finally {
-      System.clearProperty(TEST_LIMIT_PROPERTY);
-    }
-  }
-
-  /**
-   * Supplies property values that must fall back to the built-in default: absent,
-   * not a number, zero, negative, and empty.
-   *
-   * @return One case per unusable value. Never {@code null}.
-   */
-  static Stream<Arguments> unusableLimitProperties() {
-    return Stream.of(
-        Arguments.of("absent", null),
-        Arguments.of("not a number", "abc"),
-        Arguments.of("zero", "0"),
-        Arguments.of("negative", "-5"),
-        Arguments.of("empty", ""));
-  }
-
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("unusableLimitProperties")
-  void testLimitPropertyFallsBackOnUnusableValues(String label, String value) {
-    if (value == null) {
-      System.clearProperty(TEST_LIMIT_PROPERTY);
-    } else {
-      System.setProperty(TEST_LIMIT_PROPERTY, value);
-    }
-    try {
-      Assertions.assertEquals(7L,
-          ResourceInstaller.Limits.longProperty(TEST_LIMIT_PROPERTY, 7L));
-    } finally {
-      System.clearProperty(TEST_LIMIT_PROPERTY);
-    }
   }
 
   /**

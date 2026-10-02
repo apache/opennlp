@@ -187,32 +187,10 @@ public final class ResourceInstaller {
      */
     public static final Limits DEFAULT = new Limits(Duration.ofSeconds(20),
         Duration.ofSeconds(60), 5,
-        longProperty(MAX_DOWNLOAD_BYTES_PROPERTY, 1L << 30),
-        longProperty(MAX_EXPANDED_BYTES_PROPERTY, 4L << 30),
-        longProperty(MAX_ENTRIES_PROPERTY, 100_000L),
-        longProperty(MAX_EXPANSION_RATIO_PROPERTY, 100L));
-
-    /**
-     * Reads a limit override from a system property, trimmed before parsing.
-     *
-     * @param name The property name.
-     * @param fallback The built-in default.
-     * @return The property's value, or {@code fallback} when the property is absent,
-     *         not a number, or not positive.
-     */
-    static long longProperty(String name, long fallback) {
-      final String value = System.getProperty(name);
-      if (value == null) {
-        return fallback;
-      }
-      final long parsed;
-      try {
-        parsed = Long.parseLong(value.trim());
-      } catch (NumberFormatException e) {
-        return fallback;
-      }
-      return parsed > 0 ? parsed : fallback;
-    }
+        ResourceLimits.initLimit(MAX_DOWNLOAD_BYTES_PROPERTY, 1L << 30),
+        ResourceLimits.initLimit(MAX_EXPANDED_BYTES_PROPERTY, 4L << 30),
+        ResourceLimits.initLimit(MAX_ENTRIES_PROPERTY, 100_000L),
+        ResourceLimits.initLimit(MAX_EXPANSION_RATIO_PROPERTY, 100L));
 
     /**
      * Validates the limit values before constructing an instance.

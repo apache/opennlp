@@ -17,6 +17,10 @@
 
 package opennlp.tools.util;
 
+import java.util.function.Function;
+
+import opennlp.tools.commons.Internal;
+
 /**
  * Shared upper bounds for counts read from user-supplied resources, so a crafted
  * file cannot force an outsized allocation before validation completes.
@@ -84,13 +88,20 @@ public final class ResourceLimits {
   }
 
   /**
-   * Reads a positive long limit from a system property.
+   * Reads a positive long limit from a system property. The value is trimmed
+   * before parsing.
    *
    * @param property The system property name. Must not be {@code null}.
-   * @param defaultValue The value used when the property is absent or invalid.
+   * @param defaultValue The value used when the property is absent, not a number,
+   *     or not positive.
    * @return The configured limit, or {@code defaultValue}.
+   * @throws IllegalArgumentException Thrown if {@code property} is {@code null}.
    */
-  static long initLimit(String property, long defaultValue) {
+  @Internal
+  public static long initLimit(String property, long defaultValue) {
+    if (property == null) {
+      throw new IllegalArgumentException("property must not be null");
+    }
     final String prop = System.getProperty(property, "").trim();
     if (!prop.isEmpty()) {
       try {
@@ -103,5 +114,47 @@ public final class ResourceLimits {
       }
     }
     return defaultValue;
+  }
+
+  /**
+   * Checks a count read from a resource against {@link #MAX_ENTRIES}.
+   *
+   * @param count The count to check.
+   * @param label Describes the count in the error message, e.g. {@code "Outcome count"}.
+   *     Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code label} is {@code null}, or if
+   *     {@code count} is negative or exceeds {@link #MAX_ENTRIES}.
+   */
+  @Internal
+  public static void requireWithinMaxEntries(long count, String label) {
+    requireWithinMaxEntries(count, label, IllegalArgumentException::new);
+  }
+
+  /**
+   * Checks a count read from a resource against {@link #MAX_ENTRIES} and reports a
+   * violation through an exception of the caller's choice.
+   *
+   * @param <E> The type of exception thrown on a violation.
+   * @param count The count to check.
+   * @param label Describes the count in the error message, e.g. {@code "unigram count"}.
+   *     Must not be {@code null}.
+   * @param exceptionFactory Creates the exception from the error message.
+   *     Must not be {@code null}.
+   * @throws E Thrown if {@code count} is negative or exceeds {@link #MAX_ENTRIES}.
+   * @throws IllegalArgumentException Thrown if {@code label} or {@code exceptionFactory}
+   *     is {@code null}.
+   */
+  @Internal
+  public static <E extends Exception> void requireWithinMaxEntries(long count, String label,
+      Function<String, E> exceptionFactory) throws E {
+    if (label == null) {
+      throw new IllegalArgumentException("label must not be null");
+    }
+    if (exceptionFactory == null) {
+      throw new IllegalArgumentException("exceptionFactory must not be null");
+    }
+    if (count < 0 || count > MAX_ENTRIES) {
+      throw exceptionFactory.apply(label + " " + count + " exceeds safe limit of " + MAX_ENTRIES);
+    }
   }
 }

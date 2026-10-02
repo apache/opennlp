@@ -31,7 +31,7 @@ import opennlp.spellcheck.distance.DamerauOSADistance;
 import opennlp.spellcheck.distance.EditDistance;
 import opennlp.spellcheck.distance.LevenshteinDistance;
 import opennlp.spellcheck.symspell.SymSpellConfig;
-import opennlp.tools.ml.model.AbstractModelReader;
+import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
@@ -151,10 +151,7 @@ public final class SymSpellModelSerializer implements ArtifactSerializer<SymSpel
     }
 
     final int unigramCount = din.readInt();
-    if (unigramCount < 0 || unigramCount > AbstractModelReader.MAX_ENTRIES) {
-      throw new IOException("unigram count " + unigramCount
-          + " exceeds safe limit of " + AbstractModelReader.MAX_ENTRIES);
-    }
+    ResourceLimits.requireWithinMaxEntries(unigramCount, "unigram count", IOException::new);
     final Map<String, Long> unigrams = LinkedHashMap.newLinkedHashMap(unigramCount);
     for (int i = 0; i < unigramCount; i++) {
       final String word = din.readUTF();
@@ -163,10 +160,7 @@ public final class SymSpellModelSerializer implements ArtifactSerializer<SymSpel
     }
 
     final int bigramCount = din.readInt();
-    if (bigramCount < 0 || bigramCount > AbstractModelReader.MAX_ENTRIES) {
-      throw new IOException("bigram count " + bigramCount
-          + " exceeds safe limit of " + AbstractModelReader.MAX_ENTRIES);
-    }
+    ResourceLimits.requireWithinMaxEntries(bigramCount, "bigram count", IOException::new);
     final Map<String, Long> bigrams = LinkedHashMap.newLinkedHashMap(bigramCount);
     for (int i = 0; i < bigramCount; i++) {
       final String w1 = din.readUTF();

@@ -24,14 +24,14 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.ml.model.AbstractModelReader;
+import opennlp.tools.util.ResourceLimits;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies that the unigram and bigram count fields of a SymSpell model stream are
- * validated against {@link AbstractModelReader#MAX_ENTRIES} before the backing maps are
+ * validated against {@link ResourceLimits#MAX_ENTRIES} before the backing maps are
  * pre-sized, so that a corrupt or out-of-range count fails loud instead of triggering an
  * outsized allocation.
  */
@@ -79,7 +79,7 @@ class SymSpellModelSerializerLimitsTest {
 
   @Test
   void unigramCountAboveLimitIsRejected() throws IOException {
-    final IOException e = expectRejection(stream(AbstractModelReader.MAX_ENTRIES + 1, null));
+    final IOException e = expectRejection(stream(ResourceLimits.MAX_ENTRIES + 1, null));
     assertTrue(e.getMessage().contains("unigram count"), e.getMessage());
   }
 
@@ -97,7 +97,7 @@ class SymSpellModelSerializerLimitsTest {
 
   @Test
   void bigramCountAboveLimitIsRejected() throws IOException {
-    final IOException e = expectRejection(stream(0, AbstractModelReader.MAX_ENTRIES + 1));
+    final IOException e = expectRejection(stream(0, ResourceLimits.MAX_ENTRIES + 1));
     assertTrue(e.getMessage().contains("bigram count"), e.getMessage());
   }
 
