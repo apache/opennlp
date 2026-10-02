@@ -51,7 +51,7 @@ public final class MailAddressScan {
    * @param text The text to classify. Must not be {@code null}.
    * @return {@code true} if an address starts at index {@code 0} and ends at the end of
    *         {@code text}, {@code false} otherwise, also for the empty text.
-   * @throws IllegalArgumentException if {@code text} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public static boolean isAddress(CharSequence text) {
     if (text == null) {

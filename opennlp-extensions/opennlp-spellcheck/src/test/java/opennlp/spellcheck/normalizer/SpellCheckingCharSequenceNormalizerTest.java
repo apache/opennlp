@@ -43,10 +43,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class SpellCheckingCharSequenceNormalizerTest {
 
   private SymSpell symSpell;
+  private SpellCheckingCharSequenceNormalizer normalizer;
 
   @BeforeEach
   void setUp() throws Exception {
     symSpell = TinyDictionary.load();
+    normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
   }
 
   private static String norm(CharSequenceNormalizer n, String text) {
@@ -216,7 +218,7 @@ public class SpellCheckingCharSequenceNormalizerTest {
         () -> new SpellCheckingCharSequenceNormalizer((SymSpell) null));
   }
   private boolean numberLike(String core) {
-    return new SpellCheckingCharSequenceNormalizer(symSpell).isNumberLike(core);
+    return normalizer.isNumberLike(core);
   }
 
   @Test
@@ -237,8 +239,7 @@ public class SpellCheckingCharSequenceNormalizerTest {
   @Test
   void numberLikeMatchesTheFormerRegexOverGeneratedTokens() {
     // Differential over the token alphabet of the former "[+-]?[\\d.,]*\\d[\\d.,]*%?" guard.
-    final java.util.regex.Pattern former =
-        java.util.regex.Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
+    final Pattern former = Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
     final char[] alphabet = {'+', '-', '%', '.', ',', '0', '5', '9', 'a'};
     final Random random = new Random(42);
     for (int round = 0; round < 20_000; round++) {
@@ -255,13 +256,13 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   private boolean urlLike(String core) {
-    return new SpellCheckingCharSequenceNormalizer(symSpell).isUrlLike(core);
+    return normalizer.isUrlLike(core);
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"http://x", "https://example.org/a", "www.a", "www.example",
       "user@example.com", "a.b+c@d-e.f", "user@sub.example.co", "quikc.com", "a.io",
-      "a.com/path", "a.com-x", "a.com\u00E9", "a.edu" + "\uD83D\uDE00", "x.gov.uk", "a.net.",
+      "a.com/path", "a.com-x", "a.com\u00E9", "a.edu\uD83D\uDE00", "x.gov.uk", "a.net.",
       "a.comx.org"})
   void urlLikeAcceptsUrlAndEmailShapes(String core) {
     Assertions.assertTrue(urlLike(core));
