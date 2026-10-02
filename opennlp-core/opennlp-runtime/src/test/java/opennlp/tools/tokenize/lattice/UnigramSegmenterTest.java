@@ -245,6 +245,35 @@ public class UnigramSegmenterTest {
     Assertions.assertArrayEquals(new String[] {"\u6211"}, loaded.tokenize("\u6211"));
   }
 
+  /**
+   * Pins the field separator of lexicon lines to Unicode {@code White_Space},
+   * independent of {@link opennlp.tools.util.WhitespaceMode}: a next line (U+0085)
+   * separates the word from its count.
+   */
+  @Test
+  void testNextLineSeparatesLexiconFields() throws IOException {
+    // fixture word U+6211, U+0085 next line, then its count
+    final String lexicon = "我\u00855000\n";
+    final UnigramSegmenter loaded = UnigramSegmenter.load(
+        new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
+        StandardCharsets.UTF_8);
+    Assertions.assertArrayEquals(new String[] {"我"}, loaded.tokenize("我"));
+  }
+
+  /**
+   * Pins that an information separator (U+001C), which is not Unicode
+   * {@code White_Space}, does not separate lexicon fields, so the line has no count.
+   */
+  @Test
+  void testInformationSeparatorDoesNotSeparateLexiconFields() {
+    final String lexicon = "我\u001C5000\n";
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> UnigramSegmenter.load(
+            new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
+            StandardCharsets.UTF_8));
+    Assertions.assertEquals("lexicon line 1 has no count", e.getMessage());
+  }
+
   @Test
   void testRejectsMalformedLexiconEncoding() {
     final byte[] malformed = {'w', TRUNCATED_UTF8_LEAD_BYTE, ' ', '1', '\n'};

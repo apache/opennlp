@@ -2404,7 +2404,7 @@ public final class HunspellDictionary {
    */
   private static AffixFile parseAffix(String content) throws IOException {
     final AffixFile result = new AffixFile();
-    final String[] lines = splitLines(withoutByteOrderMark(content));
+    final String[] lines = splitLines(StringUtil.stripByteOrderMark(content));
     final String[][] fieldsByLine = new String[lines.length][];
     for (int i = 0; i < lines.length; i++) {
       fieldsByLine[i] = split(lines[i]);
@@ -2756,7 +2756,7 @@ public final class HunspellDictionary {
    */
   private static Map<String, List<int[]>> parseWordList(String content,
       AffixFile affix) throws IOException {
-    final String[] lines = splitLines(withoutByteOrderMark(content));
+    final String[] lines = splitLines(StringUtil.stripByteOrderMark(content));
     final Map<String, List<int[]>> entries = new HashMap<>();
     int start = 0;
     if (lines.length > 0 && isCount(trim(lines[0]))) {
@@ -2925,17 +2925,6 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Removes a Unicode byte-order mark decoded at the start of a file.
-   *
-   * @param content The decoded file content.
-   * @return The content without an initial byte-order mark.
-   */
-  private static String withoutByteOrderMark(String content) {
-    return !content.isEmpty() && content.charAt(0) == '\uFEFF'
-        ? content.substring(1) : content;
-  }
-
-  /**
    * Checks whether a line consists purely of decimal digits, which identifies the
    * optional entry-count header of a word list.
    *
@@ -2943,15 +2932,7 @@ public final class HunspellDictionary {
    * @return {@code true} if the line is a non-empty digit run.
    */
   private static boolean isCount(String line) {
-    if (line.isEmpty()) {
-      return false;
-    }
-    for (int i = 0; i < line.length(); i++) {
-      if (line.charAt(i) < '0' || line.charAt(i) > '9') {
-        return false;
-      }
-    }
-    return true;
+    return !line.isEmpty() && StringUtil.endOfAsciiDigits(line, 0) == line.length();
   }
 
   /**
@@ -3085,7 +3066,7 @@ public final class HunspellDictionary {
     }
     switch (mode) {
       case NUM: {
-        final String[] parts = splitOn(text, ',');
+        final String[] parts = StringUtil.split(text, ',', -1);
         final int[] flags = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {
           final String value = trim(parts[i]);
@@ -3173,25 +3154,6 @@ public final class HunspellDictionary {
       }
     }
     return lines.toArray(new String[0]);
-  }
-
-  /**
-   * Splits text on a separator character with a single character scan.
-   *
-   * @param text The text to split.
-   * @param separator The separator character.
-   * @return The parts between the separators, empty ones included. Never {@code null}.
-   */
-  private static String[] splitOn(String text, char separator) {
-    final List<String> parts = new ArrayList<>();
-    int start = 0;
-    for (int i = 0; i <= text.length(); i++) {
-      if (i == text.length() || text.charAt(i) == separator) {
-        parts.add(text.substring(start, i));
-        start = i + 1;
-      }
-    }
-    return parts.toArray(new String[0]);
   }
 
   /**

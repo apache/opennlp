@@ -309,6 +309,38 @@ public class LatticeTokenizerTest {
   }
 
   /**
+   * Pins the field separator of {@code matrix.def} and {@code char.def} to Unicode
+   * {@code White_Space}, independent of {@link opennlp.tools.util.WhitespaceMode}: a
+   * next line (U+0085) separates fields like a space.
+   */
+  @Test
+  void testNextLineSeparatesDefinitionFields(@TempDir Path nel) throws IOException {
+    write(nel, LEXICON_CSV, "東,0,0,3000,noun\n");
+    write(nel, MATRIX_DEF, "1\u00851\n0\u00850\u00850\n");
+    write(nel, CHAR_DEF, "DEFAULT\u00850\u00851\u00850\n");
+    write(nel, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+
+    final List<Morpheme> morphemes =
+        new LatticeTokenizer(MecabDictionary.load(nel)).analyze("東");
+    Assertions.assertEquals(1, morphemes.size());
+    Assertions.assertEquals("東", morphemes.get(0).surface());
+  }
+
+  /**
+   * Pins that an information separator (U+001C), which is not Unicode
+   * {@code White_Space}, does not separate {@code matrix.def} header fields.
+   */
+  @Test
+  void testInformationSeparatorDoesNotSeparateMatrixFields(@TempDir Path broken)
+      throws IOException {
+    write(broken, LEXICON_CSV, "東,0,0,3000,noun\n");
+    write(broken, MATRIX_DEF, "1\u001C1\n0 0 0\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("malformed matrix.def header: 1\u001C1", e.getMessage());
+  }
+
+  /**
    * Verifies that a {@code char.def} code point mapping without a category name is
    * rejected at load time.
    */

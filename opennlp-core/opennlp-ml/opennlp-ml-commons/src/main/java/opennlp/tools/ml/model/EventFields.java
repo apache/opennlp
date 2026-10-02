@@ -16,8 +16,7 @@
  */
 package opennlp.tools.ml.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Field delimiters and messages shared by {@link FileEventStream},
@@ -34,11 +33,8 @@ final class EventFields {
   /** Message prefix for a blank line; the quoted line follows. */
   static final String MISSING_OUTCOME = "An event line must start with an outcome: \"";
 
-  private static final char SPACE = ' ';
-  private static final char TAB = '\t';
-  private static final char CARRIAGE_RETURN = '\r';
-  private static final char LINE_FEED = '\n';
-  private static final char FORM_FEED = '\f';
+  /** Space, tab, carriage return, line feed and form feed. */
+  private static final char[] SEPARATORS = {' ', '\t', '\r', '\n', '\f'};
 
   private EventFields() {
   }
@@ -51,28 +47,6 @@ final class EventFields {
    * @return The fields in order.
    */
   static String[] split(String text) {
-    final List<String> fields = new ArrayList<>();
-    int start = -1;
-    for (int i = 0; i <= text.length(); i++) {
-      if (i == text.length() || isSeparator(text.charAt(i))) {
-        if (start >= 0) {
-          fields.add(text.substring(start, i));
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-    }
-    return fields.toArray(new String[0]);
-  }
-
-  /**
-   * Tests the delimiter set of the textual event formats.
-   *
-   * @param c The character to test.
-   * @return Whether the character separates event fields.
-   */
-  private static boolean isSeparator(char c) {
-    return c == SPACE || c == TAB || c == CARRIAGE_RETURN || c == LINE_FEED || c == FORM_FEED;
+    return StringUtil.splitNonEmpty(text, SEPARATORS);
   }
 }

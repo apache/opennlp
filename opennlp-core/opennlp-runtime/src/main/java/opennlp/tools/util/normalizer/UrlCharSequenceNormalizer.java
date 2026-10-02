@@ -198,7 +198,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
         || type == Character.CONTROL
         || type == Character.INITIAL_QUOTE_PUNCTUATION
         || type == Character.FINAL_QUOTE_PUNCTUATION
-        || (codePoint <= Character.MAX_VALUE && Character.isSurrogate((char) codePoint))
+        || StringUtil.isUnpairedSurrogate(codePoint)
         || BODY_DELIMITERS.contains(codePoint);
   }
 

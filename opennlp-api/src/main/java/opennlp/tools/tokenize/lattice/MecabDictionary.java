@@ -236,7 +236,7 @@ public final class MecabDictionary {
       if (headerLine.isEmpty()) {
         throw new IOException("empty " + MATRIX_DEF + " under " + directory);
       }
-      final String[] header = splitWhitespace(headerLine);
+      final String[] header = StringUtil.splitOnUnicodeWhitespace(headerLine);
       if (header.length != 2) {
         throw new IOException("malformed " + MATRIX_DEF + " header: " + headerLine);
       }
@@ -273,7 +273,7 @@ public final class MecabDictionary {
         if (line.isEmpty()) {
           continue;
         }
-        final String[] fields = splitWhitespace(line);
+        final String[] fields = StringUtil.splitOnUnicodeWhitespace(line);
         if (fields.length != 3) {
           throw new IOException("malformed " + MATRIX_DEF + " line " + lineNumber);
         }
@@ -437,7 +437,7 @@ public final class MecabDictionary {
         if (line.isEmpty()) {
           continue;
         }
-        final String[] fields = splitWhitespace(line);
+        final String[] fields = StringUtil.splitOnUnicodeWhitespace(line);
         if (fields[0].regionMatches(true, 0, HEX_PREFIX, 0, HEX_PREFIX.length())) {
           final int rangeSeparator = fields[0].indexOf(RANGE_SEPARATOR);
           final int from;
@@ -614,28 +614,6 @@ public final class MecabDictionary {
     }
     fields.add(field.toString());
     return fields;
-  }
-
-  /**
-   * Splits a line into its whitespace-separated fields.
-   *
-   * @param line The line to split.
-   * @return The non-empty fields in order. Never {@code null}.
-   */
-  private static String[] splitWhitespace(String line) {
-    final List<String> parts = new ArrayList<>();
-    int start = -1;
-    for (int i = 0; i <= line.length(); i++) {
-      if (i == line.length() || StringUtil.isWhitespace(line.charAt(i))) {
-        if (start >= 0) {
-          parts.add(line.substring(start, i));
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-    }
-    return parts.toArray(new String[0]);
   }
 
   /**

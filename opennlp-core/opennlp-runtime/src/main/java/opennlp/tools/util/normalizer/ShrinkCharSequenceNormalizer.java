@@ -17,6 +17,7 @@
 package opennlp.tools.util.normalizer;
 
 import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A {@link CharSequenceNormalizer} implementation that shrinks repeated whitespace and repeated
@@ -35,10 +36,6 @@ import opennlp.tools.util.ArgumentChecks;
 public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = -4511969661556543048L;
-
-  /** The line terminator code points; a repeat run never starts on one. */
-  private static final CodePointSet LINE_TERMINATORS =
-      CodePointSet.of(0x000A, 0x000D, 0x0085, 0x2028, 0x2029);
 
   private static final ShrinkCharSequenceNormalizer INSTANCE = new ShrinkCharSequenceNormalizer();
 
@@ -122,7 +119,7 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
     int i = 0;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
-      if (!LINE_TERMINATORS.contains(codePoint)) {
+      if (!StringUtil.isLineTerminator(codePoint)) {
         final int charCount = Character.charCount(codePoint);
         int repeats = 0;
         int end = i + charCount;

@@ -420,6 +420,19 @@ public class StringUtil {
   }
 
   /**
+   * Tests whether a code point taken from a {@link CharSequence} is a lone surrogate,
+   * {@code U+D800} to {@code U+DFFF}, rather than a character. {@link String#codePoints()}
+   * and {@link Character#codePointAt(CharSequence, int)} return a surrogate only when it
+   * is not part of a valid high and low surrogate pair.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is in the surrogate range.
+   */
+  public static boolean isUnpairedSurrogate(int codePoint) {
+    return codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE;
+  }
+
+  /**
    * Finds the first line terminator at or after {@code from}, as defined by
    * {@link #isLineTerminator(int)}.
    *
