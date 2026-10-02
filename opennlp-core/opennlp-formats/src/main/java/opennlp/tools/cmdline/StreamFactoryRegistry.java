@@ -45,6 +45,7 @@ import opennlp.tools.formats.ad.ADPOSSampleStreamFactory;
 import opennlp.tools.formats.ad.ADSentenceSampleStreamFactory;
 import opennlp.tools.formats.ad.ADTokenSampleStreamFactory;
 import opennlp.tools.formats.brat.BratNameSampleStreamFactory;
+import opennlp.tools.formats.conllu.ConlluDependencySampleStreamFactory;
 import opennlp.tools.formats.conllu.ConlluLemmaSampleStreamFactory;
 import opennlp.tools.formats.conllu.ConlluPOSSampleStreamFactory;
 import opennlp.tools.formats.conllu.ConlluSentenceSampleStreamFactory;
@@ -130,6 +131,7 @@ public final class StreamFactoryRegistry {
     LetsmtSentenceStreamFactory.registerFactory();
     MosesSentenceSampleStreamFactory.registerFactory();
 
+    ConlluDependencySampleStreamFactory.registerFactory();
     ConlluTokenSampleStreamFactory.registerFactory();
     ConlluSentenceSampleStreamFactory.registerFactory();
     ConlluPOSSampleStreamFactory.registerFactory();
