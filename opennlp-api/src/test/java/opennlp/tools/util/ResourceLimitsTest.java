@@ -66,6 +66,8 @@ public class ResourceLimitsTest {
   void testNullPropertyIsRejected() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> ResourceLimits.initLimit(null, 7L));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ResourceLimits.initLimit(null, 7));
   }
 
   /** Verifies that an absent property uses the supplied defaults. */
