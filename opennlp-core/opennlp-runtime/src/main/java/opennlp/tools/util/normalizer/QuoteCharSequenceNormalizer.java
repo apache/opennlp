@@ -62,6 +62,7 @@ public class QuoteCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return DOUBLE.normalize(SINGLE.normalize(text));

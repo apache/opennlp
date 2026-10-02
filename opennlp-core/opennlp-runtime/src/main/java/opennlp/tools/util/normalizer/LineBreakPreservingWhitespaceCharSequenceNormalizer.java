@@ -46,6 +46,7 @@ public class LineBreakPreservingWhitespaceCharSequenceNormalizer implements Offs
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return WHITESPACE.trim(WHITESPACE.collapsePreserving(text, LINE_BREAKS, NEWLINE));

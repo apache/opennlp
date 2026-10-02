@@ -118,13 +118,40 @@ public class AlignedTextTest {
     assertSpan(6, 7, composed.toOriginalSpan(3, 4)); // "y"
   }
 
+  /**
+   * Chains three stages, one of them expanding (U+2026 to "..."), and compares the result with
+   * the alignments composed by hand over the whole offset grid, end offsets included.
+   */
   @Test
-  void andThenWithIdentityStageKeepsAlignment() {
-    final AlignedText collapsed = CharClass.whitespace().collapseAligned("a  b");
-    final AlignedText composed =
-        collapsed.andThen(CharClass.whitespace().trimAligned(collapsed.normalized()));
-    assertEquals("a b", composed.normalizedString());
-    assertSpan(1, 3, composed.toOriginalSpan(1, 2));
+  void andThenOverThreeStagesMatchesHandComposedAlignments() {
+    final String original = "  a\u2026b  ";
+    final AlignedText collapsed = CharClass.whitespace().collapseAligned(original);
+    final AlignedText expanded = CharClass.substituteAligned(collapsed.normalized(),
+        cp -> cp == 0x2026 ? "..." : null);
+    final AlignedText trimmed = CharClass.whitespace().trimAligned(expanded.normalized());
+    final AlignedText composed = collapsed.andThen(expanded).andThen(trimmed);
+    final AlignedText byHand = new AlignedText(original, trimmed.normalized(),
+        collapsed.alignment().andThen(expanded.alignment()).andThen(trimmed.alignment()));
+
+    assertEquals("a...b", composed.normalizedString());
+    assertSame(original, composed.original());
+    assertSpan(2, 3, composed.toOriginalSpan(0, 1)); // "a"
+    assertSpan(3, 4, composed.toOriginalSpan(1, 4)); // the ellipsis, expanded to three dots
+    assertSpan(4, 5, composed.toOriginalSpan(4, 5)); // "b"
+    final int n = composed.normalized().length();
+    for (int start = 0; start <= n; start++) {
+      for (int end = start; end <= n; end++) {
+        assertEquals(byHand.toOriginalSpan(start, end), composed.toOriginalSpan(start, end),
+            "normalized [" + start + ", " + end + ")");
+      }
+    }
+    final int m = original.length();
+    for (int start = 0; start <= m; start++) {
+      for (int end = start; end <= m; end++) {
+        assertEquals(byHand.toNormalizedSpan(start, end), composed.toNormalizedSpan(start, end),
+            "original [" + start + ", " + end + ")");
+      }
+    }
   }
 
   @Test

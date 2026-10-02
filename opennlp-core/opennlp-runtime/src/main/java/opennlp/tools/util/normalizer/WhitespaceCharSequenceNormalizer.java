@@ -39,6 +39,7 @@ public class WhitespaceCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return WHITESPACE.trim(WHITESPACE.collapse(text));
