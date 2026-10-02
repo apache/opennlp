@@ -156,6 +156,25 @@ public class DocumentAnnotatorsTest {
         + " layers", e.getMessage());
   }
 
+  /**
+   * Verifies that an absent layer is reported as absent, not as misaligned, and that two
+   * absent layers do not pass as aligned.
+   */
+  @Test
+  void testRequireAlignedRejectsAbsentLayers() {
+    final Document oneLayer = Document.of("Ana runs")
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "Ana"),
+            new Annotation<>(new Span(4, 8), "runs")));
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> DocumentAnnotators.requireAligned(oneLayer, Layers.TOKENS, Layers.POS_TAGS));
+    assertEquals("document lacks the required layer " + Layers.POS_TAGS, e.getMessage());
+
+    final Document noLayers = Document.of("Ana runs");
+    assertThrows(IllegalArgumentException.class,
+        () -> DocumentAnnotators.requireAligned(noLayers, Layers.TOKENS, Layers.POS_TAGS));
+  }
+
   @Test
   void testRequireAlignedRejectsNullDocument() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
