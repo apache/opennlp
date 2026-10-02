@@ -21,10 +21,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Random;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.spellcheck.symspell.TinyDictionary;
@@ -236,7 +240,7 @@ public class SpellCheckingCharSequenceNormalizerTest {
     final java.util.regex.Pattern former =
         java.util.regex.Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
     final char[] alphabet = {'+', '-', '%', '.', ',', '0', '5', '9', 'a'};
-    final java.util.Random random = new java.util.Random(42);
+    final Random random = new Random(42);
     for (int round = 0; round < 20_000; round++) {
       final int length = random.nextInt(7);
       final StringBuilder token = new StringBuilder();
@@ -246,6 +250,50 @@ public class SpellCheckingCharSequenceNormalizerTest {
       final String core = token.toString();
       Assertions.assertEquals(former.matcher(core).matches(),
           numberLike(core),
+          () -> "core: " + core);
+    }
+  }
+
+  private boolean urlLike(String core) {
+    return new SpellCheckingCharSequenceNormalizer(symSpell).isUrlLike(core);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"http://x", "https://example.org/a", "www.a", "www.example",
+      "user@example.com", "a.b+c@d-e.f", "user@sub.example.co", "quikc.com", "a.io",
+      "a.com/path", "a.com-x", "a.com\u00E9", "a.edu" + "\uD83D\uDE00", "x.gov.uk", "a.net.",
+      "a.comx.org"})
+  void urlLikeAcceptsUrlAndEmailShapes(String core) {
+    Assertions.assertTrue(urlLike(core));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "http://", "https://", "www.", "HTTP://x", "WWW.a", "ftp://x",
+      "user@localhost", "user@example.", "@example.de", "user@.example.de",
+      "user@exa_mple.de", "user@example!", "user@@example.de", ".com", "a.co",
+      "a.comx", "a.com1", "a.com_", "a.com\u0301", "a.COM", "acom", "quick"})
+  void urlLikeRejectsOtherTokens(String core) {
+    Assertions.assertFalse(urlLike(core));
+  }
+
+  @Test
+  void urlLikeAgreesWithReferencePatternOverGeneratedTokens() {
+    // Reference specification of the URL and email guard, checked over generated tokens.
+    final Pattern reference = Pattern.compile(
+        "(?:https?://|www\\.)\\S+"
+            + "|[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+\\.[-.0-9A-Za-z]+"
+            + "|\\S+\\.(?:com|org|net|edu|gov|io)\\b\\S*");
+    final String[] alphabet = {"http://", "https://", "www.", "com", "io", "co", "m", "o",
+        "@", ".", "-", "+", "_", "1", "a", "\u00E9", "\u0301", "/", "\uD83D\uDE00"};
+    final Random random = new Random(42);
+    for (int round = 0; round < 50_000; round++) {
+      final int length = random.nextInt(7);
+      final StringBuilder token = new StringBuilder();
+      for (int i = 0; i < length; i++) {
+        token.append(alphabet[random.nextInt(alphabet.length)]);
+      }
+      final String core = token.toString();
+      Assertions.assertEquals(reference.matcher(core).matches(), urlLike(core),
           () -> "core: " + core);
     }
   }
