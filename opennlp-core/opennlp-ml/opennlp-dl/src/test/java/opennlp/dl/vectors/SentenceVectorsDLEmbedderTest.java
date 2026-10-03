@@ -33,6 +33,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProvider;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ProviderSpec;
 import opennlp.tools.util.ext.Providers;
 
@@ -45,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The {@link TextEmbedder} adapter driven through a real ONNX session. The bundled
@@ -97,6 +99,16 @@ class SentenceVectorsDLEmbedderTest {
     // Line number = id: [UNK]=2, [SEP]=3, hello=4, world=5, [CLS]=7.
     Files.write(file, List.of("[PAD]", "unused1", "[UNK]", "[SEP]", "hello", "world",
         "unused2", "[CLS]"));
+    return file.toFile();
+  }
+
+  // The vocabulary above as a tokenizer.json of an uncased WordPiece model.
+  private static File tokenizerJson(final Path dir, final boolean lowercase) throws IOException {
+    final Path file = dir.resolve("tokenizer.json");
+    Files.writeString(file, "{\"version\": \"1.0\", \"normalizer\": {\"type\": \"BertNormalizer\","
+        + " \"lowercase\": " + lowercase + "}, \"model\": {\"type\": \"WordPiece\","
+        + " \"vocab\": {\"[PAD]\": 0, \"[UNK]\": 2, \"[SEP]\": 3, \"hello\": 4, \"world\": 5,"
+        + " \"[CLS]\": 7}}}");
     return file.toFile();
   }
 
@@ -203,6 +215,19 @@ class SentenceVectorsDLEmbedderTest {
     assertThrows(IllegalArgumentException.class, () -> meanVectors(dir, 1));
     assertThrows(IllegalArgumentException.class, () -> new SentenceVectorsDL(model(dir),
         vocab(dir), true, null, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH));
+  }
+
+  @Test
+  void testTokenizerJsonVocabularyMustAgreeWithLowerCase(@TempDir final Path dir)
+      throws Exception {
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), tokenizerJson(dir, true),
+             true, Pooling.MEAN, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH)) {
+      assertArrayEquals(HELLO_WORLD_MEAN, vectors.embed("Hello World"), DELTA);
+    }
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
+        () -> new SentenceVectorsDL(model(dir), tokenizerJson(dir, false), true));
+    assertTrue(e.getMessage().contains("tokenizer.json"), e.getMessage());
+    assertTrue(e.getMessage().contains("normalizer.lowercase"), e.getMessage());
   }
 
   @Test

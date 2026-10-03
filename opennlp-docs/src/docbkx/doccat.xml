@@ -175,9 +175,16 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 			<para>
 				The vocabulary file is either plain text with one token per line, as in
 				<code>vocab.txt</code>, or a JSON object mapping each token to an integer ID, as in
-				<code>vocab.json</code>. A Hugging Face <code>tokenizer.json</code> is not supported yet
-				(<ulink url="https://issues.apache.org/jira/browse/OPENNLP-1988">OPENNLP-1988</ulink>).
+				<code>vocab.json</code>. A Hugging Face <code>tokenizer.json</code> of a WordPiece model
+				is also accepted: <code>model.vocab</code> supplies the tokens, and an entry of
+				<code>added_tokens</code> that <code>model.vocab</code> lacks is added with its ID. A
+				<code>tokenizer.json</code> of another model type, such as BPE or Unigram, is rejected,
+				and so is an added token whose ID or token conflicts with <code>model.vocab</code>. When
+				the file sets <code>normalizer.lowercase</code>, it must agree with the lower casing the
+				component is configured with; the other tokenizer settings of the file are not read.
 				An unreadable vocabulary is rejected with an <code>InvalidFormatException</code>.
+				The same vocabulary files are accepted by <code>NameFinderDL</code> and
+				<code>SentenceVectorsDL</code>.
 			</para>
 			<para>
 				When a configuration file is given in place of the categories map, its top-level
