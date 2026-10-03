@@ -238,8 +238,9 @@ public final class MecabDictionaryInstaller {
    * @return {@code true} when the name is dictionary payload.
    */
   private static boolean isDictionaryFile(String baseName) {
-    return baseName.endsWith(".csv") || baseName.endsWith(".def")
-        || "dicrc".equals(baseName);
+    return baseName.endsWith(MecabDictionary.LEXICON_EXTENSION)
+        || baseName.endsWith(MecabDictionary.DEFINITION_EXTENSION)
+        || MecabDictionary.CONFIGURATION_FILE.equals(baseName);
   }
 
   /**
