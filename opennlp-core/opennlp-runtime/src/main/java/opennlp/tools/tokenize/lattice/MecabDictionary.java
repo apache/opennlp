@@ -629,12 +629,17 @@ public final class MecabDictionary {
    * @param file The file being read, for the error message.
    * @param lineNumber The line being read, for the error message.
    * @return The parsed code point, which may be in a supplementary plane.
-   * @throws IOException Thrown if the field is shorter than the prefix, is not a valid
-   *         hexadecimal number, or names a value no Unicode code point has.
+   * @throws IOException Thrown if the field does not start with the {@code 0x} prefix in
+   *         either case, is not a valid hexadecimal number, or names a value no Unicode code
+   *         point has.
    */
   private static int parseCodePoint(String text, Path file, int lineNumber)
       throws IOException {
     final String trimmed = StringUtil.trimUnicodeWhitespace(text);
+    if (!trimmed.regionMatches(true, 0, HEX_PREFIX, 0, HEX_PREFIX.length())) {
+      throw new IOException("code point without " + HEX_PREFIX + " prefix in " + file
+          + " line " + lineNumber);
+    }
     try {
       return HexCodePoints.parseCodePoint(trimmed, HEX_PREFIX.length(), trimmed.length());
     } catch (IllegalArgumentException e) {
