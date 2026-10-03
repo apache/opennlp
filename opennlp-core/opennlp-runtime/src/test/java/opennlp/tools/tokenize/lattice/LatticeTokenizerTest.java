@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -667,7 +668,8 @@ public class LatticeTokenizerTest {
 
   /**
    * Verifies the {@link Morpheme} contract every segmentation result is built from: a
-   * {@code null} span, a {@code null} or empty surface, and {@code null} features are
+   * {@code null} span, a {@code null} or empty surface, a surface whose length differs
+   * from the span length, {@code null} features, and a {@code null} feature entry are
    * all rejected, and the feature list is copied so a later change to the caller's list
    * cannot be seen through the morpheme.
    */
@@ -681,7 +683,11 @@ public class LatticeTokenizerTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new Morpheme(span, "", List.of("noun"), false));
     Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Morpheme(span, "\u6771\u6771", List.of("noun"), false));
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> new Morpheme(span, "\u6771", null, false));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Morpheme(span, "\u6771", Arrays.asList("noun", null), false));
 
     final List<String> features = new ArrayList<>(List.of("noun"));
     final Morpheme morpheme = new Morpheme(span, "\u6771", features, false);
