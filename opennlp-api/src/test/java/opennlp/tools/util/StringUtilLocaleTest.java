@@ -19,28 +19,17 @@ package opennlp.tools.util;
 
 import java.util.Locale;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import opennlp.tools.RestoreDefaultLocale;
 
 /**
  * Tests that the {@link StringUtil} operations feeding the lemmatizer's shortest edit script
  * are independent of the JVM's default {@link Locale}.
  */
+@RestoreDefaultLocale
 public class StringUtilLocaleTest {
-
-  /**
-   * Turkish folds {@code 'I'} to the dotless {@code 'ı'} (U+0131) instead of {@code 'i'},
-   * which makes it the canonical probe for an unqualified {@code String#toLowerCase()}.
-   */
-  private static final Locale TURKISH = Locale.of("tr", "TR");
-
-  private final Locale defaultLocale = Locale.getDefault();
-
-  @AfterEach
-  void restoreDefaultLocale() {
-    Locale.setDefault(defaultLocale);
-  }
 
   /**
    * The shortest edit script becomes an outcome label inside a trained lemmatizer model.
@@ -49,7 +38,7 @@ public class StringUtilLocaleTest {
    */
   @Test
   void testGetShortestEditScriptIsIndependentOfDefaultLocale() {
-    Locale.setDefault(TURKISH);
+    Locale.setDefault(RestoreDefaultLocale.TURKISH);
 
     Assertions.assertEquals("D0s", StringUtil.getShortestEditScript("IMPORTS", "import"));
     Assertions.assertEquals("R2ioR1cuI1s", StringUtil.getShortestEditScript("MICE", "mouse"));

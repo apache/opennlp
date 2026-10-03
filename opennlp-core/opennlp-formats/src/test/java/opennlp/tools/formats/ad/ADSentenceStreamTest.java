@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -36,6 +35,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
@@ -47,6 +47,7 @@ import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.WhitespaceMode;
 
+@ResetWhitespaceMode
 public class ADSentenceStreamTest {
 
   private static final String SOURCE = "SOURCE: ref=\"1\" source=\"SELVA 1\"";
@@ -676,11 +677,6 @@ public class ADSentenceStreamTest {
     Assertions.assertEquals(2, sentences.size());
     Assertions.assertEquals(ola + " mundo .", sentences.get(0).text());
     Assertions.assertEquals(List.of(ola, "mundo", "."), lexemes(sentences.get(0)));
-  }
-
-  @AfterEach
-  void resetWhitespaceMode() {
-    WhitespaceMode.reset();
   }
 
   private static Stream<Arguments> whitespaceLinesInEveryMode() {

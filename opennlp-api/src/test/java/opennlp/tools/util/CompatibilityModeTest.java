@@ -20,8 +20,11 @@ package opennlp.tools.util;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import opennlp.tools.ResetWhitespaceMode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Tests for the {@link CompatibilityMode} class.
  */
+@ResourceLock(ResetWhitespaceMode.RESOURCE)
 public class CompatibilityModeTest {
 
   /**

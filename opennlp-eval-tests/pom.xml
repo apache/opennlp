@@ -53,6 +53,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-api</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-dl</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>

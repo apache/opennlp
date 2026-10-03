@@ -21,10 +21,10 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.RestoreDefaultLocale;
 import opennlp.tools.cmdline.postag.POSTaggerFineGrainedReportListener;
 import opennlp.tools.postag.POSSample;
 
@@ -32,14 +32,8 @@ import opennlp.tools.postag.POSSample;
  * Tests that the figures written by a {@link FineGrainedReportListener} do not change with
  * the JVM's default {@link Locale}.
  */
+@RestoreDefaultLocale
 public class FineGrainedReportListenerTest {
-
-  private final Locale defaultLocale = Locale.getDefault();
-
-  @AfterEach
-  void restoreDefaultLocale() {
-    Locale.setDefault(defaultLocale);
-  }
 
   @Test
   void testReportIsIndependentOfDefaultLocale() throws Exception {

@@ -17,28 +17,20 @@
 
 package opennlp.tools.tokenize;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.WhitespaceMode;
 
 /**
  * Tests for the {@link SimpleTokenizer} class.
  */
+@ResetWhitespaceMode
 public class SimpleTokenizerTest {
 
   // The SimpleTokenizer is thread safe
   private final SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
-
-  /**
-   * Restores {@link WhitespaceMode} property resolution after each test, so no mode
-   * state leaks.
-   */
-  @AfterEach
-  void resetWhitespaceMode() {
-    WhitespaceMode.reset();
-  }
 
   /**
    * Tests if it can tokenize whitespace separated tokens.

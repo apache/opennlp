@@ -27,11 +27,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.PinWhitespaceMode;
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -86,7 +86,11 @@ import opennlp.tools.util.WhitespaceMode;
  * - models-sf/en-pos-maxent.bin<br>
  * - models-sf/en-pos-perceptron.bin<br>
  * - models-sf/en-parser-chunking.bin.bin<br>
+ * <p>
+ * The SourceForge models were trained under the legacy whitespace definition, so decoding
+ * is pinned to {@link WhitespaceMode#LEGACY} before any corpus access.
  */
+@PinWhitespaceMode(WhitespaceMode.LEGACY)
 public class SourceForgeModelEval extends AbstractEvalTest {
 
   private static class LeipzigTestSample {
@@ -161,25 +165,8 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     }
   }
 
-  /**
-   * Reverts the {@link WhitespaceMode} override pinned in {@link #verifyTrainingData()}, so
-   * later test classes sharing this JVM fork resolve the mode from the system property again
-   * instead of inheriting this class's pin.
-   */
-  @AfterAll
-  static void resetWhitespaceMode() {
-    WhitespaceMode.reset();
-  }
-
-  /**
-   * Pins {@link WhitespaceMode#LEGACY} before any corpus access: the SourceForge models
-   * evaluated here were trained under the legacy whitespace definition, so decoding must use
-   * the same definition. The pin stays first in this method because JUnit does not order
-   * multiple {@code @BeforeAll} methods.
-   */
   @BeforeAll
   static void verifyTrainingData() throws Exception {
-    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
     verifyTrainingData(new LeipzigTestSampleStream(25, SimpleTokenizer.INSTANCE,
             new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
                 "leipzig/eng_news_2010_300K-sentences.txt"))),

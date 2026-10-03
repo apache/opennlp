@@ -21,12 +21,12 @@ import java.nio.file.Path;
 import java.util.Locale;
 
 import morfologik.stemming.Dictionary;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
 import opennlp.morfologik.tagdict.MorfologikTagDictionary;
+import opennlp.tools.RestoreDefaultLocale;
 
 /**
  * Tests that the case insensitive lookups into a prebuilt Morfologik FSA dictionary do not
@@ -35,25 +35,14 @@ import opennlp.morfologik.tagdict.MorfologikTagDictionary;
  * The FSA is built once and shipped; folding the query with the default locale makes the
  * same dictionary answer differently on different JVMs.
  */
+@RestoreDefaultLocale
 public class MorfologikLocaleTest extends AbstractMorfologikTest {
-
-  /**
-   * Turkish folds {@code 'I'} to the dotless {@code 'ı'} (U+0131) instead of {@code 'i'}.
-   */
-  private static final Locale TURKISH = Locale.of("tr", "TR");
-
-  private final Locale defaultLocale = Locale.getDefault();
-
-  @AfterEach
-  void restoreDefaultLocale() {
-    Locale.setDefault(defaultLocale);
-  }
 
   @Test
   public void testLemmatizeIsIndependentOfDefaultLocale() throws Exception {
     final MorfologikLemmatizer lemmatizer = new MorfologikLemmatizer(createLocaleDictionary());
 
-    Locale.setDefault(TURKISH);
+    Locale.setDefault(RestoreDefaultLocale.TURKISH);
 
     final String[] lemmas = lemmatizer.lemmatize(
         new String[] {"Illinois", "INDICES"}, new String[] {"PROP", "NOUN"});
@@ -66,7 +55,7 @@ public class MorfologikLocaleTest extends AbstractMorfologikTest {
     final MorfologikTagDictionary tagDictionary =
         new MorfologikTagDictionary(Dictionary.read(createLocaleDictionary()), false);
 
-    Locale.setDefault(TURKISH);
+    Locale.setDefault(RestoreDefaultLocale.TURKISH);
 
     Assertions.assertArrayEquals(new String[] {"PROP"}, tagDictionary.getTags("Illinois"));
     Assertions.assertArrayEquals(new String[] {"NOUN"}, tagDictionary.getTags("INDICES"));
