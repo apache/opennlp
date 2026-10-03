@@ -213,6 +213,29 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   @Test
+  void withModeKeepsTheGuardsAndSwitchesTheMode() {
+    final var compound = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .mode(SpellCheckingCharSequenceNormalizer.Mode.COMPOUND).minTokenLength(3).build();
+    final var perToken = compound.withMode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN);
+    assertEquals("helloworld", norm(perToken, "helloworld"));
+    assertEquals("the  fox", norm(perToken, "teh  fox"));
+    assertEquals("hello world", norm(compound, "helloworld"));
+  }
+
+  @Test
+  void withModeReturnsTheSameInstanceForItsOwnMode() {
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    Assertions.assertSame(normalizer,
+        normalizer.withMode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN));
+  }
+
+  @Test
+  void withModeRejectsNull() {
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    assertThrows(IllegalArgumentException.class, () -> normalizer.withMode(null));
+  }
+
+  @Test
   void nullCheckerIsRejected() {
     assertThrows(IllegalArgumentException.class,
         () -> new SpellCheckingCharSequenceNormalizer((SymSpell) null));

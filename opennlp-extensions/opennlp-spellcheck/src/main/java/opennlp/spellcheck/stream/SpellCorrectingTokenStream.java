@@ -35,7 +35,7 @@ import opennlp.tools.util.ObjectStream;
  * <p>This is the shape produced by OpenNLP tokenizers / token-sample formats and is
  * what the trainable components consume: a fixed sequence of tokens per element. Unlike
  * {@link SpellCorrectingObjectStream} in compound mode, this stream is
- * <em>token-count preserving</em> &ndash; it never splits or merges tokens, so the
+ * <em>token-count preserving</em>: it never splits or merges tokens, so the
  * corrected element stays aligned with any parallel annotation (tags, spans).</p>
  *
  * <p>Correction always runs in
@@ -85,8 +85,9 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
   /**
    * Wraps {@code samples} with an explicitly configured corrector and delimiter.
    *
-   * <p>The corrector is forced into per-token mode regardless of how it was built, so
-   * the token count is always preserved.</p>
+   * <p>A {@link SpellCheckingCharSequenceNormalizer.Mode#COMPOUND compound} corrector is
+   * replaced by its {@link SpellCheckingCharSequenceNormalizer#withMode per-token} copy with
+   * the same guards and checker, so the token count is always preserved.</p>
    *
    * @param samples    the source token-line stream; must not be {@code null}
    * @param normalizer the corrector whose guards/config are reused; must not be
@@ -106,7 +107,7 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
     if (delimiter.isEmpty()) {
       throw new IllegalArgumentException("delimiter must not be empty");
     }
-    this.normalizer = normalizer;
+    this.normalizer = normalizer.withMode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN);
     this.delimiter = delimiter;
   }
 

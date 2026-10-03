@@ -142,6 +142,16 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     this.skipUrls = b.skipUrls;
   }
 
+  private SpellCheckingCharSequenceNormalizer(SpellCheckingCharSequenceNormalizer source,
+                                              Mode mode) {
+    this.spellChecker = source.spellChecker;
+    this.mode = mode;
+    this.minTokenLength = source.minTokenLength;
+    this.maxEditDistance = source.maxEditDistance;
+    this.skipNumbers = source.skipNumbers;
+    this.skipUrls = source.skipUrls;
+  }
+
   /**
    * @param spellChecker the engine to wrap; must not be {@code null}
    * @return a new {@link Builder} seeded with sensible defaults
@@ -179,6 +189,20 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
         .skipNumbers(skipNumbers)
         .skipUrls(skipUrls)
         .build();
+  }
+
+  /**
+   * Returns a normalizer that runs in the given mode and otherwise keeps this instance's
+   * settings and {@link SpellChecker}. An instance restored by Java deserialization stays
+   * without a checker until one is attached with {@link #withSpellChecker(SpellChecker)}.
+   *
+   * @param mode the correction mode; must not be {@code null}
+   * @return this instance if it already runs in {@code mode}, otherwise a new normalizer
+   * @throws IllegalArgumentException if {@code mode} is {@code null}
+   */
+  public SpellCheckingCharSequenceNormalizer withMode(Mode mode) {
+    ArgumentChecks.requireNonNullArg(mode, "mode");
+    return mode == this.mode ? this : new SpellCheckingCharSequenceNormalizer(this, mode);
   }
 
   /**

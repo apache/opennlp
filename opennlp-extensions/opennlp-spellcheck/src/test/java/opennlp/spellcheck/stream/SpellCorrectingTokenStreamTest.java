@@ -24,6 +24,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
@@ -171,5 +174,36 @@ public class SpellCorrectingTokenStreamTest {
         () -> new SpellCorrectingTokenStream(new ListStream("a"), (SymSpellModel) null));
     assertThrows(IllegalArgumentException.class,
         () -> new SpellCorrectingTokenStream(null, normalizer, " "));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SpellCorrectingTokenStream(new ListStream("a"), null, " "));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  void invalidDelimiterIsRejected(String delimiter) {
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell).build();
+    assertThrows(IllegalArgumentException.class,
+        () -> new SpellCorrectingTokenStream(new ListStream("a"), normalizer, delimiter));
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      // A glued token is not split apart.
+      "helloworld|helloworld",
+      // A short token stays below the default minimum length guard.
+      "teh fox|teh fox",
+      // Number and URL guards still apply.
+      "quikc 12345|quick 12345",
+      "wrold www.example.com|world www.example.com"
+  })
+  void compoundNormalizerRunsPerToken(String input, String expected) throws IOException {
+    final var compound = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .mode(SpellCheckingCharSequenceNormalizer.Mode.COMPOUND).build();
+    try (ObjectStream<String> stream = new SpellCorrectingTokenStream(
+        new ListStream(input), compound, " ")) {
+      final String corrected = stream.read();
+      assertEquals(expected, corrected);
+      assertEquals(input.split(" ").length, corrected.split(" ").length);
+    }
   }
 }
