@@ -32,23 +32,6 @@ import opennlp.tools.util.ResourceLimits;
 public abstract class AbstractModelReader {
 
   /**
-   * System property for overriding the maximum number of entries (outcomes, predicates,
-   * outcome patterns, chunk counts) that may be read from a model file or training data.
-   *
-   * @deprecated Use {@link ResourceLimits#MAX_ENTRIES_PROPERTY} instead.
-   */
-  @Deprecated(since = "3.0.0", forRemoval = true)
-  public static final String MAX_ENTRIES_PROPERTY = ResourceLimits.MAX_ENTRIES_PROPERTY;
-
-  /**
-   * Upper bound on count fields read from a model file.
-   *
-   * @deprecated Use {@link ResourceLimits#MAX_ENTRIES} instead.
-   */
-  @Deprecated(since = "3.0.0", forRemoval = true)
-  public static final int MAX_ENTRIES = ResourceLimits.MAX_ENTRIES;
-
-  /**
    * The number of predicates contained in a model.
    */
   protected int NUM_PREDS;
