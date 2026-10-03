@@ -36,6 +36,7 @@ import java.util.Objects;
 import opennlp.tools.tokenize.lattice.CategoryTable.CategoryAssignment;
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.normalizer.HexCodePoints;
 
 /**
  * An immutable, in-memory dictionary in the
@@ -98,7 +99,6 @@ public final class MecabDictionary {
   static final String DEFINITION_EXTENSION = ".def";
   static final String CONFIGURATION_FILE = "dicrc";
   private static final String LEXICON_GLOB = "*" + LEXICON_EXTENSION;
-  private static final char COMMENT_MARKER = '#';
 
   /** The code point prefix used by {@code char.def}, in either letter case. */
   private static final String HEX_PREFIX = "0x";
@@ -433,7 +433,7 @@ public final class MecabDictionary {
       String raw;
       while ((raw = reader.readLine()) != null) {
         lineNumber++;
-        final String line = StringUtil.trimUnicodeWhitespace(stripComment(raw));
+        final String line = StringUtil.trimUnicodeWhitespace(HexCodePoints.stripComment(raw));
         if (line.isEmpty()) {
           continue;
         }
@@ -557,18 +557,6 @@ public final class MecabDictionary {
   }
 
   /**
-   * Removes a trailing {@code #} comment from a {@code char.def} line.
-   *
-   * @param line The raw line.
-   * @return The line up to but excluding the first {@code #}, or the complete line when
-   *         there is none.
-   */
-  private static String stripComment(String line) {
-    final int hash = line.indexOf(COMMENT_MARKER);
-    return hash < 0 ? line : line.substring(0, hash);
-  }
-
-  /**
    * Reports whether a {@code char.def} category flag field is exactly {@code 0} or
    * {@code 1}.
    *
@@ -646,16 +634,11 @@ public final class MecabDictionary {
    */
   private static int parseCodePoint(String text, Path file, int lineNumber)
       throws IOException {
-    final int codePoint;
+    final String trimmed = StringUtil.trimUnicodeWhitespace(text);
     try {
-      codePoint = Integer.parseInt(
-          StringUtil.trimUnicodeWhitespace(text).substring(HEX_PREFIX.length()), 16);
-    } catch (RuntimeException e) {
+      return HexCodePoints.parseCodePoint(trimmed, HEX_PREFIX.length(), trimmed.length());
+    } catch (IllegalArgumentException e) {
       throw new IOException("malformed code point in " + file + " line " + lineNumber, e);
     }
-    if (!Character.isValidCodePoint(codePoint)) {
-      throw new IOException("code point out of range in " + file + " line " + lineNumber);
-    }
-    return codePoint;
   }
 }

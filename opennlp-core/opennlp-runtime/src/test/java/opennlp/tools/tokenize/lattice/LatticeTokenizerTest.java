@@ -446,7 +446,8 @@ public class LatticeTokenizerTest {
   /**
    * Verifies the {@code char.def} fail-loud paths that a malformed line can take: a
    * descending code point range, a code point outside the Unicode range, a code point
-   * field that is not hexadecimal, and a category line missing its length column.
+   * field that is not hexadecimal, a range end with nothing after the {@code 0x} prefix,
+   * and a category line missing its length column.
    *
    * @param charDef The {@code char.def} content under test.
    * @param broken The directory the fixture dictionary is written into.
@@ -457,6 +458,7 @@ public class LatticeTokenizerTest {
       DEFAULT_CATEGORY_LINE + "\n0x0110..0x0100 LATIN\n",
       DEFAULT_CATEGORY_LINE + "\n0x110000 LATIN\n",
       DEFAULT_CATEGORY_LINE + "\n0xZZ LATIN\n",
+      DEFAULT_CATEGORY_LINE + "\n0x0020..0x LATIN\n",
       "DEFAULT 0 1\n",
       "DEFAULT 2 1 0\n",
       "DEFAULT 0 true 0\n",

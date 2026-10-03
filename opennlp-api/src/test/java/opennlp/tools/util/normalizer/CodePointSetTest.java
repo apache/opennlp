@@ -118,6 +118,13 @@ public class CodePointSetTest {
         () -> CodePointSet.parse(List.of("[s]", "U+"), "s"));
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"+0041", "0x+41", "U+0041-+005A"})
+  void testParseRejectsSignedCodePoints(String entry) {
+    assertThrows(IllegalArgumentException.class,
+        () -> CodePointSet.parse(List.of("[s]", entry), "s"));
+  }
+
   @Test
   void testParseRejectsTooShortSectionHeader() {
     assertThrows(IllegalArgumentException.class,

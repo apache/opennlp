@@ -117,7 +117,7 @@ public final class CodePointSet {
     for (int i = 0; i < lines.size(); i++) {
       final String raw = lines.get(i);
       final int lineNumber = i + 1;
-      final String line = stripComment(raw).strip();
+      final String line = HexCodePoints.stripComment(raw).strip();
       if (line.isEmpty()) {
         continue;
       }
@@ -155,34 +155,43 @@ public final class CodePointSet {
     members.set(low, high + 1);
   }
 
+  /**
+   * Parses one code point entry in hex, optionally prefixed with {@code U+} or {@code 0x}.
+   *
+   * @param token The entry text, already stripped of surrounding whitespace.
+   * @param lineNumber The one-based line number, for the error message.
+   * @param raw The complete line, for the error message.
+   * @return The code point.
+   * @throws IllegalArgumentException Thrown if the entry has no digits, holds a character that
+   *     is not a hex digit, or names a value outside {@code [0, U+10FFFF]}.
+   */
   private static int parseCodePoint(String token, int lineNumber, String raw) {
-    String hex = token;
-    if (hex.length() >= 2) {
-      final String prefix = hex.substring(0, 2).toLowerCase(Locale.ROOT);
-      if (prefix.equals("u+") || prefix.equals("0x")) {
-        hex = hex.substring(2);
-      }
-    }
-    if (hex.isEmpty()) {
+    final int digits = hasCodePointPrefix(token) ? 2 : 0;
+    if (token.length() == digits) {
       throw malformed("code point", lineNumber, raw);
     }
-    final int codePoint;
     try {
-      codePoint = Integer.parseInt(hex, 16);
-    } catch (NumberFormatException e) {
+      return HexCodePoints.parseCodePoint(token, digits, token.length());
+    } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid hex code point '" + token + "' on line "
           + lineNumber + ": " + raw, e);
     }
-    if (codePoint < 0 || codePoint > Character.MAX_CODE_POINT) {
-      throw new IllegalArgumentException("Code point out of range on line "
-          + lineNumber + ": " + raw);
-    }
-    return codePoint;
   }
 
-  private static String stripComment(String raw) {
-    final int hash = raw.indexOf('#');
-    return hash < 0 ? raw : raw.substring(0, hash);
+  /**
+   * Checks for the optional {@code U+} or {@code 0x} prefix of a code point entry.
+   *
+   * @param token The entry text.
+   * @return {@code true} if {@code token} starts with {@code U+} or {@code 0x}, in either case.
+   */
+  private static boolean hasCodePointPrefix(String token) {
+    if (token.length() < 2) {
+      return false;
+    }
+    final char first = token.charAt(0);
+    final char second = token.charAt(1);
+    return ((first == 'U' || first == 'u') && second == '+')
+        || (first == '0' && (second == 'x' || second == 'X'));
   }
 
   private static IllegalArgumentException malformed(String what, int lineNumber, String raw) {

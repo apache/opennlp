@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import opennlp.tools.util.normalizer.HexCodePoints;
+
 /**
  * Looks up the Unicode {@link WordBreak Word_Break} property of a code point.
  *
@@ -129,8 +131,7 @@ public final class WordBreakProperty {
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
       while ((line = reader.readLine()) != null) {
-        final int hash = line.indexOf('#');
-        final String content = (hash < 0 ? line : line.substring(0, hash)).strip();
+        final String content = HexCodePoints.stripComment(line).strip();
         if (content.isEmpty()) {
           continue;
         }
@@ -146,24 +147,14 @@ public final class WordBreakProperty {
         final String value = content.substring(semicolon + 1).strip();
         final byte ordinal = (byte) WordBreak.fromPropertyName(value).ordinal();
 
-        final int dots = codePoints.indexOf("..");
-        final int start;
-        final int end;
+        final int[] range;
         try {
-          if (dots < 0) {
-            start = Integer.parseInt(codePoints, 16);
-            end = start;
-          } else {
-            start = Integer.parseInt(codePoints.substring(0, dots), 16);
-            end = Integer.parseInt(codePoints.substring(dots + 2), 16);
-          }
-        } catch (NumberFormatException e) {
-          // Malformed hex fails loud naming the resource and line, not through a raw
-          // NumberFormatException, the same contract as the sibling loaders.
+          range = HexCodePoints.parseRange(codePoints);
+        } catch (IllegalArgumentException e) {
           throw new IllegalArgumentException(
               "Malformed Word_Break data in " + RESOURCE + ": " + content, e);
         }
-        assign(start, end, ordinal, bmp, supplementary);
+        assign(range[0], range[1], ordinal, bmp, supplementary);
       }
     }
   }
@@ -174,8 +165,8 @@ public final class WordBreakProperty {
    *
    * @param start   The first code point of the range; the parser guarantees
    *                {@code 0 <= start <= end}.
-   * @param end     The last code point of the range, at most {@code U+10FFFF} in well-formed data;
-   *                the portion above {@code U+FFFF} lands in {@code supplementary}.
+   * @param end     The last code point of the range, at most {@code U+10FFFF}; the portion above
+   *                {@code U+FFFF} lands in {@code supplementary}.
    * @param ordinal The {@link WordBreak} ordinal to record.
    * @param bmp     The per-code-point ordinal table for the BMP.
    * @param supplementary The receiving list of supplementary ranges.

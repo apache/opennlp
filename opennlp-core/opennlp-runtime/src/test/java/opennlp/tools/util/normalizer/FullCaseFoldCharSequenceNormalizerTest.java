@@ -22,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -139,6 +141,20 @@ public class FullCaseFoldCharSequenceNormalizerTest {
     // than surfacing a raw NumberFormatException, the same contract as the sibling loaders.
     final String data = "0041; C; 0061; # valid\n"
         + "004X; C; 0061; # malformed source\n";
+    assertThrows(IllegalArgumentException.class, () -> FullCaseFoldCharSequenceNormalizer.parse(
+        new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"00DF; F; 0073  0073;\n", "00DF; F; 0073\t0073;\n"})
+  void parseFailsLoudOnMappingNotSeparatedBySingleSpace(String data) {
+    assertThrows(IllegalArgumentException.class, () -> FullCaseFoldCharSequenceNormalizer.parse(
+        new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))));
+  }
+
+  @Test
+  void parseFailsLoudOnCodePointOutsideUnicode() {
+    final String data = "110000; C; 0061; # source beyond U+10FFFF\n";
     assertThrows(IllegalArgumentException.class, () -> FullCaseFoldCharSequenceNormalizer.parse(
         new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))));
   }

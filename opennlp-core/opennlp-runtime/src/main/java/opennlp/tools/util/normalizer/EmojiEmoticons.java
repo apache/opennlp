@@ -422,7 +422,8 @@ final class EmojiEmoticons {
    * @param lineNumber    the line number, for the error message.
    * @param content       the full line, for the error message.
    * @return the decoded sequence.
-   * @throws IllegalArgumentException if the field is empty or not valid hexadecimal.
+   * @throws IllegalArgumentException if the field is empty, not valid hexadecimal, or names a
+   *     value outside {@code [0, U+10FFFF]}.
    */
   private static String decode(String hexCodePoints, int lineNumber, String content) {
     final String stripped = hexCodePoints.strip();
@@ -431,12 +432,8 @@ final class EmojiEmoticons {
           + " at line " + lineNumber + ": empty code point sequence in: " + content);
     }
     try {
-      final StringBuilder decoded = new StringBuilder();
-      for (final String hex : StringUtil.split(stripped, MAPPING_CODE_POINT_SEPARATOR)) {
-        decoded.appendCodePoint(Integer.parseInt(hex, 16));
-      }
-      return decoded.toString();
-    } catch (NumberFormatException e) {
+      return HexCodePoints.decodeSequence(stripped, MAPPING_CODE_POINT_SEPARATOR);
+    } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
           + " at line " + lineNumber + ": " + content, e);
     }
