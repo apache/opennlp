@@ -192,7 +192,8 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 			</tgroup>
 		</table>
 		<para>
-			The keys of the first four layers in the table live in <code>Layers</code>;
+			The keys of the sentences, tokens, pos and entities layers live in <code>Layers</code>
+			(<code>SENTENCES</code>, <code>TOKENS</code>, <code>POS_TAGS</code> and <code>ENTITIES</code>);
 			the others live on the annotator that provides them, which is also where an
 			extension puts its key. Layers that refer to other layers do so by index into
 			them, which the invariants above keep valid: a coreference layer, for example,

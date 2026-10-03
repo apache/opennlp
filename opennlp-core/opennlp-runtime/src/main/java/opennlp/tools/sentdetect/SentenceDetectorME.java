@@ -400,16 +400,15 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    * irrelevant by construction, so the decision costs time proportional to the longest
    * dictionary entry rather than to the length of {@code s}.</p>
    *
-   * <p>A {@code candidateIndex} past the end of {@code s} cannot carry an abbreviation, so it
-   * is accepted rather than raising an {@link IndexOutOfBoundsException}. At
-   * {@code candidateIndex == s.length()}, the decision matches the previous implementation when
-   * the match is not at {@code fromIndex}; only the match-at-{@code fromIndex} case is an
-   * accept-instead-of-throw relaxation.</p>
+   * <p>A {@code candidateIndex} greater than {@code s.length()} cannot carry an abbreviation, so
+   * the break is accepted rather than raising an {@link IndexOutOfBoundsException}. A
+   * {@code candidateIndex} equal to {@code s.length()} is evaluated like any other index.</p>
    *
    * @param s the {@link CharSequence} in which the break occurred.
    * @param fromIndex the start of the segment currently being evaluated.
-   * @param candidateIndex the index of the candidate sentence ending. Must be greater than or
-   *     equal to {@code fromIndex} and a valid index into {@code s}.
+   * @param candidateIndex the index of the candidate sentence ending. A value below
+   *     {@code fromIndex}, negative or greater than {@code s.length()} is accepted as a
+   *     break.
    * @return {@code true} if the break is acceptable, {@code false} otherwise.
    */
   protected boolean isAcceptableBreak(CharSequence s, int fromIndex, int candidateIndex) {
