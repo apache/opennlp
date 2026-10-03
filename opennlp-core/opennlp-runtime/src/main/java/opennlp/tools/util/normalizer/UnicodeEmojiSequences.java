@@ -16,10 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,6 +43,9 @@ import java.util.List;
 final class UnicodeEmojiSequences {
 
   private static final String RESOURCE = "EmojiSequences.txt";
+
+  private static final BundledUnicodeData.Lazy<UnicodeEmojiSequences> INSTANCE =
+      new BundledUnicodeData.Lazy<>(UnicodeEmojiSequences::load);
 
   /** Prefix of a record holding one qualified sequence. */
   private static final String SEQUENCE_RECORD = "S;";
@@ -99,14 +100,15 @@ final class UnicodeEmojiSequences {
   }
 
   /**
-   * {@return the matcher built from the bundled data, loaded on first use}
+   * {@return the matcher built from the bundled data, loaded on first use} A failed load is not
+   * cached, so the next call loads again.
    *
-   * @throws ExceptionInInitializerError Thrown on the first call if the bundled data resource
-   *     is missing, cannot be read, or is malformed; the cause names the problem. Later calls
-   *     throw {@link NoClassDefFoundError}.
+   * @throws IllegalStateException Thrown if the bundled data resource is missing.
+   * @throws UncheckedIOException Thrown if the bundled data resource cannot be read.
+   * @throws IllegalArgumentException Thrown if the bundled data is malformed.
    */
   static UnicodeEmojiSequences getInstance() {
-    return Holder.INSTANCE;
+    return INSTANCE.get();
   }
 
   /**
@@ -276,14 +278,8 @@ final class UnicodeEmojiSequences {
    * @throws IllegalArgumentException Thrown if the bundled data is malformed.
    */
   private static UnicodeEmojiSequences load() {
-    try (InputStream in = UnicodeEmojiSequences.class.getResourceAsStream(RESOURCE)) {
-      if (in == null) {
-        throw new IllegalStateException("Missing emoji sequence data resource: " + RESOURCE);
-      }
-      return parse(in);
-    } catch (IOException e) {
-      throw new UncheckedIOException("Unable to read emoji sequence data resource " + RESOURCE, e);
-    }
+    return BundledUnicodeData.load(UnicodeEmojiSequences.class, RESOURCE, "emoji sequence",
+        UnicodeEmojiSequences::parse);
   }
 
   /**
@@ -297,34 +293,30 @@ final class UnicodeEmojiSequences {
    * @throws IllegalArgumentException Thrown if a record is malformed.
    */
   static UnicodeEmojiSequences parse(InputStream in) throws IOException {
-    Node root = new Node();
-    int sequences = 0;
-    List<int[]> ranges = new ArrayList<>();
-    try (BufferedReader reader = new BufferedReader(
-        new InputStreamReader(in, StandardCharsets.US_ASCII))) {
-      String line;
-      int lineNumber = 0;
-      while ((line = reader.readLine()) != null) {
-        lineNumber++;
-        if (line.isBlank() || line.charAt(0) == COMMENT) {
-          continue;
-        }
-        try {
-          if (line.startsWith(SEQUENCE_RECORD)) {
-            root.addSequence(line.substring(SEQUENCE_RECORD.length()));
-            sequences++;
-          } else if (line.startsWith(COMPONENT_RECORD)) {
-            ranges.add(HexCodePoints.parseRange(line.substring(COMPONENT_RECORD.length())));
-          } else {
-            throw new IllegalArgumentException("neither a comment nor a record");
-          }
-        } catch (IllegalArgumentException e) {
-          // Fail loud naming the bad line, the same way the sibling loaders do.
-          throw new IllegalArgumentException("Malformed emoji sequence data in " + RESOURCE
-              + " at line " + lineNumber + ": " + line, e);
-        }
+    final Node root = new Node();
+    // One-element counter so the line consumer can update it.
+    final int[] sequenceCount = new int[1];
+    final List<int[]> ranges = new ArrayList<>();
+    BundledUnicodeData.forEachLine(in, StandardCharsets.US_ASCII, (line, lineNumber) -> {
+      if (line.isBlank() || line.charAt(0) == COMMENT) {
+        return;
       }
-    }
+      try {
+        if (line.startsWith(SEQUENCE_RECORD)) {
+          root.addSequence(line.substring(SEQUENCE_RECORD.length()));
+          sequenceCount[0]++;
+        } else if (line.startsWith(COMPONENT_RECORD)) {
+          ranges.add(HexCodePoints.parseRange(line.substring(COMPONENT_RECORD.length())));
+        } else {
+          throw new IllegalArgumentException("neither a comment nor a record");
+        }
+      } catch (IllegalArgumentException e) {
+        // Fail loud naming the bad line, the same way the sibling loaders do.
+        throw new IllegalArgumentException("Malformed emoji sequence data in " + RESOURCE
+            + " at line " + lineNumber + ": " + line, e);
+      }
+    });
+    final int sequences = sequenceCount[0];
     if (sequences == 0) {
       throw new IllegalArgumentException("No " + SEQUENCE_RECORD + " sequence record in "
           + RESOURCE);
@@ -419,10 +411,5 @@ final class UnicodeEmojiSequences {
       size++;
       return child;
     }
-  }
-
-  /** Loads the bundled data on first use of {@link #getInstance()}. */
-  private static final class Holder {
-    private static final UnicodeEmojiSequences INSTANCE = load();
   }
 }

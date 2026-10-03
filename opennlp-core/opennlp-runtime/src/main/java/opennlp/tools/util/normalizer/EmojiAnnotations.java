@@ -16,10 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -31,10 +29,11 @@ import opennlp.tools.util.StringUtil;
 /**
  * The bundled-facts layer of the emoji annotation record store: license-clean, provenance-tagged
  * attributes intrinsic to a pictograph (name, coarse sentiment, entity type, document category),
- * loaded once from the project-authored {@code emoji-annotations.txt} resource. Each row of that
- * file is one attribute of one symbol ({@code codepoints ; attribute ; value ; source ; notes}),
- * so every value carries its own provenance and adding an attribute later is new rows plus loader
- * support instead of a file-format break. The loader fails loud on an unknown attribute or a
+ * loaded on first use from the project-authored {@code emoji-annotations.txt} resource. Each row
+ * of that file is one attribute of one symbol
+ * ({@code codepoints ; attribute ; value ; source ; notes}), so every value carries its own
+ * provenance and adding an attribute later is new rows plus loader support instead of a
+ * file-format break. The loader fails loud on an unknown attribute or a
  * malformed row: the data and the code move together, so an unrecognized attribute is corruption,
  * not extensibility.
  *
@@ -61,19 +60,22 @@ public final class EmojiAnnotations {
    */
   private static final char FIELD_SEPARATOR = ';';
 
-  // The records keyed by code point sequence, loaded once when this class initializes.
-  private static final Map<String, EmojiAnnotation> ANNOTATIONS = load();
+  // The records keyed by code point sequence, loaded on the first lookup.
+  private static final BundledUnicodeData.Lazy<Map<String, EmojiAnnotation>> ANNOTATIONS =
+      new BundledUnicodeData.Lazy<>(EmojiAnnotations::load);
 
   private EmojiAnnotations() {
   }
 
   /**
-   * Returns the bundled annotation record of one emoji.
+   * Returns the bundled annotation record of one emoji. The bundled data is loaded on the first
+   * call; a failed load is not cached, so the next call loads again.
    *
    * @param symbol The code point sequence of one symbol, for example one {@link Term#original()}
    *               token. U+FE0F presentation selectors are ignored. Must not be {@code null}.
    * @return The record, or empty when the bundled data does not annotate the symbol.
-   * @throws IllegalArgumentException if {@code symbol} is {@code null}.
+   * @throws IllegalArgumentException if {@code symbol} is {@code null}, or if the bundled data
+   *     is malformed.
    * @throws IllegalStateException if the bundled data resource is missing.
    * @throws UncheckedIOException if the bundled data resource cannot be read.
    */
@@ -85,12 +87,14 @@ public final class EmojiAnnotations {
     if (key.isEmpty()) {
       return Optional.empty();
     }
-    return Optional.ofNullable(ANNOTATIONS.get(key));
+    return Optional.ofNullable(ANNOTATIONS.get().get(key));
   }
 
   /**
-   * Removes every U+FE0F VARIATION SELECTOR-16 from {@code symbol}; allocation-free when none
-   * is present. Package-visible so {@link EmojiAnnotator} keys derived-only records the same way.
+   * Removes every U+FE0F VARIATION SELECTOR-16 from {@code symbol}. When none is present, a
+   * {@link String} argument is returned as is and any other {@link CharSequence} is copied once
+   * by {@link CharSequence#toString()}. Package-visible so {@link EmojiAnnotator} keys
+   * derived-only records the same way.
    *
    * @param symbol The code point sequence to strip.
    * @return The sequence without presentation selectors; {@code symbol}'s own text when it
@@ -116,15 +120,15 @@ public final class EmojiAnnotations {
     return stripped.toString();
   }
 
+  /**
+   * {@return the records parsed from the bundled {@code emoji-annotations.txt} resource}
+   *
+   * @throws IllegalStateException if the resource is missing.
+   * @throws UncheckedIOException if the resource cannot be read.
+   */
   private static Map<String, EmojiAnnotation> load() {
-    try (InputStream in = EmojiAnnotations.class.getResourceAsStream(RESOURCE)) {
-      if (in == null) {
-        throw new IllegalStateException("Missing emoji annotation data resource: " + RESOURCE);
-      }
-      return parse(in);
-    } catch (IOException e) {
-      throw new UncheckedIOException("Unable to read emoji annotation data resource " + RESOURCE, e);
-    }
+    return BundledUnicodeData.load(EmojiAnnotations.class, RESOURCE, "emoji annotation",
+        EmojiAnnotations::parse);
   }
 
   /**
@@ -135,42 +139,37 @@ public final class EmojiAnnotations {
    *
    * @param in The stream to read, in UTF-8; consumed and closed by this method.
    * @return One immutable record per annotated symbol, keyed by the selector-stripped symbol.
-   * @throws IOException Thrown if reading fails or a row is malformed.
+   * @throws IOException Thrown if reading {@code in} fails.
+   * @throws IllegalArgumentException Thrown if a row is malformed.
    */
   static Map<String, EmojiAnnotation> parse(InputStream in) throws IOException {
     final Map<String, Map<String, EmojiAnnotation.Value>> rows = new HashMap<>();
-    try (BufferedReader reader =
-             new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-      String line;
-      int lineNumber = 0;
-      while ((line = reader.readLine()) != null) {
-        lineNumber++;
-        final String content = line.strip();
-        if (content.isEmpty() || content.startsWith(COMMENT_PREFIX)) {
-          continue;
-        }
-        // Bounded split: only the first four separators are structural.
-        final String[] fields = StringUtil.split(content, FIELD_SEPARATOR, 5);
-        if (fields.length != 5) {
-          throw new IllegalArgumentException("Malformed emoji annotation data in " + RESOURCE
-              + " at line " + lineNumber + ": expected 5 fields, got " + fields.length
-              + " in: " + content);
-        }
-        final String symbol = decode(fields[0], lineNumber, content);
-        final String attribute = fields[1].strip();
-        final String value = fields[2].strip();
-        final String source = fields[3].strip();
-        final String notes = fields[4].strip();
-        validate(attribute, value, source, lineNumber, content);
-        final Map<String, EmojiAnnotation.Value> record =
-            rows.computeIfAbsent(symbol, k -> new HashMap<>());
-        if (record.putIfAbsent(attribute, new EmojiAnnotation.Value(value, source, notes)) != null) {
-          throw new IllegalArgumentException("Malformed emoji annotation data in " + RESOURCE
-              + " at line " + lineNumber + ": duplicate attribute '" + attribute
-              + "' in: " + content);
-        }
+    BundledUnicodeData.forEachLine(in, StandardCharsets.UTF_8, (line, lineNumber) -> {
+      final String content = line.strip();
+      if (content.isEmpty() || content.startsWith(COMMENT_PREFIX)) {
+        return;
       }
-    }
+      // Bounded split: only the first four separators are structural.
+      final String[] fields = StringUtil.split(content, FIELD_SEPARATOR, 5);
+      if (fields.length != 5) {
+        throw new IllegalArgumentException("Malformed emoji annotation data in " + RESOURCE
+            + " at line " + lineNumber + ": expected 5 fields, got " + fields.length
+            + " in: " + content);
+      }
+      final String symbol = decode(fields[0], lineNumber, content);
+      final String attribute = fields[1].strip();
+      final String value = fields[2].strip();
+      final String source = fields[3].strip();
+      final String notes = fields[4].strip();
+      validate(attribute, value, source, lineNumber, content);
+      final Map<String, EmojiAnnotation.Value> record =
+          rows.computeIfAbsent(symbol, k -> new HashMap<>());
+      if (record.putIfAbsent(attribute, new EmojiAnnotation.Value(value, source, notes)) != null) {
+        throw new IllegalArgumentException("Malformed emoji annotation data in " + RESOURCE
+            + " at line " + lineNumber + ": duplicate attribute '" + attribute
+            + "' in: " + content);
+      }
+    });
     final Map<String, EmojiAnnotation> records = new HashMap<>(rows.size());
     for (final Map.Entry<String, Map<String, EmojiAnnotation.Value>> entry : rows.entrySet()) {
       records.put(entry.getKey(), new EmojiAnnotation(entry.getKey(), entry.getValue()));
