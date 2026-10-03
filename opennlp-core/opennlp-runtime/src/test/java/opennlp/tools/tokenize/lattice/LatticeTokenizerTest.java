@@ -473,6 +473,82 @@ public class LatticeTokenizerTest {
   }
 
   /**
+   * Verifies that a {@code char.def} range end without the {@code 0x} prefix fails the load.
+   *
+   * @param range The code point range field under test.
+   * @param broken The directory the fixture dictionary is written into.
+   * @throws IOException Thrown if writing the fixture fails.
+   */
+  @ParameterizedTest(name = "[{index}] range {0}")
+  @ValueSource(strings = {"0x0020..10FF", "0x0020..0010FF", "0x0020..x10FF", "0x0020.."})
+  void testCharDefRangeEndWithoutPrefixFailsLoud(String range, @TempDir Path broken)
+      throws IOException {
+    write(broken, LEXICON_CSV, "東,0,0,3000,noun\n");
+    write(broken, MATRIX_DEF, UNIT_MATRIX);
+    write(broken, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\nLATIN 1 1 0\n" + range + " LATIN\n");
+    write(broken, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("code point without 0x prefix in " + broken.resolve(CHAR_DEF)
+        + " line 3", e.getMessage());
+  }
+
+  /**
+   * Verifies that the {@code 0x} prefix of both {@code char.def} range ends is accepted in
+   * either case and that the parsed end bounds the range.
+   *
+   * @param range The range field under test, covering {@code A} through {@code Z}.
+   * @param valid The directory the fixture dictionary is written into.
+   * @throws IOException Thrown if writing or loading the fixture fails.
+   */
+  @ParameterizedTest(name = "[{index}] range {0}")
+  @ValueSource(strings = {"0x0041..0x005A", "0X0041..0X005A", "0x0041..0X005A",
+      "0X0041..0x005A"})
+  void testCharDefRangeHexPrefixIsCaseInsensitive(String range, @TempDir Path valid)
+      throws IOException {
+    final MecabDictionary dictionary = loadLatinMapping(range, valid);
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf('@').name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf('A').name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf('Z').name());
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf('[').name());
+  }
+
+  /**
+   * Verifies that the {@code 0x} prefix of a single {@code char.def} code point is accepted
+   * in either case.
+   *
+   * @param codePoint The code point field under test, naming {@code A}.
+   * @param valid The directory the fixture dictionary is written into.
+   * @throws IOException Thrown if writing or loading the fixture fails.
+   */
+  @ParameterizedTest(name = "[{index}] code point {0}")
+  @ValueSource(strings = {"0x0041", "0X0041"})
+  void testCharDefCodePointHexPrefixIsCaseInsensitive(String codePoint, @TempDir Path valid)
+      throws IOException {
+    final MecabDictionary dictionary = loadLatinMapping(codePoint, valid);
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf('@').name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf('A').name());
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf('B').name());
+  }
+
+  /**
+   * Writes and loads a miniature dictionary whose {@code char.def} maps the given field to a
+   * {@code LATIN} category.
+   *
+   * @param mapping The code point or range field to map to {@code LATIN}.
+   * @param dir The directory the fixture dictionary is written into.
+   * @return The loaded dictionary.
+   * @throws IOException Thrown if writing or loading the fixture fails.
+   */
+  private MecabDictionary loadLatinMapping(String mapping, Path dir) throws IOException {
+    write(dir, LEXICON_CSV, "東,0,0,3000,noun\n");
+    write(dir, MATRIX_DEF, UNIT_MATRIX);
+    write(dir, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\nLATIN 1 1 0\n" + mapping + " LATIN\n");
+    write(dir, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\nLATIN,0,0,4000,noun,foreign\n");
+    return MecabDictionary.load(dir);
+  }
+
+  /**
    * Verifies that a MeCab-style quoted CSV field may contain a comma, with {@code ""}
    * escaping a literal quote, and that the loaded features keep both intact.
    */
