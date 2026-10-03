@@ -33,8 +33,7 @@ import opennlp.tools.ml.ArrayMath;
  */
 public abstract class AbstractModel implements MaxentModel {
 
-  private static final DecimalFormat DECIMAL_FORMAT =
-      new DecimalFormat("0.0000", DecimalFormatSymbols.getInstance(Locale.ROOT));
+  private static final String PROBABILITY_PATTERN = "0.0000";
 
   /** Mapping between predicates/contexts and an integer representing them. */
   protected Map<String, Context> pmap;
@@ -113,7 +112,9 @@ public abstract class AbstractModel implements MaxentModel {
    *            {@link #eval(String[])} method.
    * @return    String containing outcome names paired with the normalized
    *            probability (contained in the {@code double[] ocs})
-   *            for each one.
+   *            for each one. Each probability is rounded to four decimal
+   *            places using {@link Locale#ROOT} symbols. Safe to call
+   *            concurrently from several threads.
    */
   @Override
   public final String getAllOutcomes(double[] ocs) {
@@ -122,10 +123,13 @@ public abstract class AbstractModel implements MaxentModel {
           "must not have been produced by this model.";
     }
     else {
+      // DecimalFormat is not thread-safe, so each call uses its own instance.
+      final DecimalFormat format =
+          new DecimalFormat(PROBABILITY_PATTERN, DecimalFormatSymbols.getInstance(Locale.ROOT));
       StringBuilder sb = new StringBuilder(ocs.length * 2);
-      sb.append(outcomeNames[0]).append("[").append(DECIMAL_FORMAT.format(ocs[0])).append("]");
+      sb.append(outcomeNames[0]).append("[").append(format.format(ocs[0])).append("]");
       for (int i = 1; i < ocs.length; i++) {
-        sb.append("  ").append(outcomeNames[i]).append("[").append(DECIMAL_FORMAT.format(ocs[i])).append("]");
+        sb.append("  ").append(outcomeNames[i]).append("[").append(format.format(ocs[i])).append("]");
       }
       return sb.toString();
     }
