@@ -115,8 +115,9 @@ public final class DictionaryCatalog {
   /**
    * Installs a catalog entry into {@code targetDirectory} after checking that remote
    * catalog downloads are enabled. The entry is fetched, digest-verified, and unpacked
-   * by {@link ResourceInstaller#install(URI, Path, String)}: an archive expands into
-   * the directory, and a plain file is stored under its source name.
+   * by {@link ResourceInstaller}: an archive expands into the directory, and a plain
+   * file is stored under the entry's {@code <id>.filename} value when the catalog sets
+   * one, or under the file name of its source URI otherwise.
    *
    * @param id The entry id. Must not be {@code null}.
    * @param targetDirectory The directory to install into; created when absent. Must

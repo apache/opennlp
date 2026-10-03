@@ -51,10 +51,11 @@ import opennlp.tools.util.StringUtil;
  * vocabulary, because each emitted piece must have an id. Vocabulary entries starting with
  * {@code ##} are continuation pieces and can match only after the first piece of a word.</p>
  *
- * <p>Lower casing applies the <a href="https://www.unicode.org/Public/15.0.0/ucd/SpecialCasing.txt">
- * Unicode full case mapping</a>, including the {@code Final_Sigma}
- * context, so a word-final Greek capital sigma becomes U+03C2 as in the reference
- * implementation.</p>
+ * <p>Lower casing applies the Unicode simple case mapping of {@link Character#toLowerCase(int)},
+ * one code point to one code point, plus the {@code Final_Sigma} context, so a word-final Greek
+ * capital sigma becomes U+03C2 as in the reference implementation. Other
+ * <a href="https://www.unicode.org/Public/15.0.0/ucd/SpecialCasing.txt">SpecialCasing</a>
+ * mappings are not applied; for example U+0130 becomes {@code i} without a combining dot.</p>
  *
  * <p>A word exceeding the configured maximum number of normalized Unicode code points becomes
  * the unknown piece. The default is 100, the value used by the Hugging Face {@code transformers}

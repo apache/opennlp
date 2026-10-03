@@ -45,7 +45,7 @@ import opennlp.tools.util.StringUtil;
  *
  * <p>Columns are separated by one or more TAB or space characters, so the space-delimited
  * SymSpell reference dictionaries load as they are, as do TAB-delimited files. The count
- * column holds ASCII digits only.</p>
+ * column holds decimal digits in any script, such as ASCII or Devanagari digits.</p>
  *
  * <p>The loader is encoding-aware (UTF-8 by default) and tolerant of input noise: a
  * leading UTF-8 byte-order mark is stripped; blank lines, lines that are entirely
@@ -80,7 +80,7 @@ public final class FrequencyDictionaryLoader {
   /** The reason reported for a count with a minus sign. */
   private static final String COUNT_NEGATIVE = "count must not be negative";
 
-  /** The reason reported for a count that is not ASCII digits or does not fit in a long. */
+  /** The reason reported for a count that is not decimal digits in any script or does not fit in a long. */
   private static final String COUNT_NOT_INTEGER = "count is not an integer";
 
   private final Charset charset;

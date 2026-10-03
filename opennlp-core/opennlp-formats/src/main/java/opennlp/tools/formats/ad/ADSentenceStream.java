@@ -1041,10 +1041,11 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
   }
 
   /**
-   * Tests whether a line is an opening markup tag with the given name: the name right after the
+   * Checks whether a line is an opening markup tag with the given name: the name right after the
    * opening angle bracket, then either the closing angle bracket or whitespace and attributes,
    * which contain no closing angle bracket, then the closing angle bracket as the last character.
-   * A self-closing tag is not an opening tag.
+   * A slash directly after the name, as in {@code <s/>}, is rejected. A slash after whitespace
+   * counts as part of the attributes, so {@code <s />} and {@code <s id="1"/>} are accepted.
    *
    * @param line The line.
    * @param name The tag name.
