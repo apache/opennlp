@@ -31,6 +31,11 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A base implementation of a {@link ClassPathModelFinder} for the detection of
  * OpenNLP models in the classpath. By default, {@link AbstractClassPathModelFinder} will scan for
@@ -38,8 +43,15 @@ import java.util.jar.JarFile;
  * <p>
  * This search mask can be adjusted by using the one argument
  * {@link AbstractClassPathModelFinder#AbstractClassPathModelFinder(String) constructor}.
- * Wildcard search supports {@code *} for any run of characters and {@code ?} for one
- * Unicode code point. Masks use decoded names, including spaces and non-ASCII characters.
+ * <p>
+ * Finders that scan with {@link #getMatchingJarEntryURIs(List, String)} or
+ * {@link #matchesWildcard(URL, String)}, such as
+ * {@link opennlp.tools.models.simple.SimpleClassPathModelFinder} and
+ * {@link opennlp.tools.models.dir.DirectoryModelFinder}, accept {@code *} for any run of
+ * characters and {@code ?} for one Unicode code point, and match masks against decoded names,
+ * including spaces and non-ASCII characters. Other subclasses may apply their own mask rules:
+ * {@link opennlp.tools.models.classgraph.ClassgraphModelFinder} follows the wildcard rules of
+ * the ClassGraph library.
  *
  * @see ClassPathModelFinder
  */
@@ -47,10 +59,14 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
 
   protected static final String JAR = "jar";
 
+  private static final Logger logger = LoggerFactory.getLogger(AbstractClassPathModelFinder.class);
+
+  private static final String ANY_RUN = "*";
   private static final String WILDCARD_MUST_NOT_BE_NULL = "wildcard must not be null";
   private static final String URL_MUST_NOT_BE_NULL = "url must not be null";
 
   private final String jarModelPrefix;
+  private final String jarWildcard;
   private Set<ClassPathModelEntry> models;
 
   /**
@@ -61,7 +77,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   }
 
   /**
-   * @param jarModelPrefix The leafnames of the jars that should be canned (e.g. "opennlp.jar").
+   * @param jarModelPrefix The leafnames of the jars that should be scanned (e.g. "opennlp.jar").
    *                       May contain a wildcard glob ("opennlp-*.jar"). It must not be {@code null}.
    * @throws IllegalArgumentException Thrown if {@code jarModelPrefix} is {@code null}.
    */
@@ -70,6 +86,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
       throw new IllegalArgumentException("jarModelPrefix must not be null");
     }
     this.jarModelPrefix = jarModelPrefix;
+    this.jarWildcard = ANY_RUN + jarModelPrefix;
   }
 
   @Override
@@ -142,7 +159,45 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   }
 
   /**
-   * Tests whether the decoded file part of {@code url} matches {@code wildcard} from start
+   * Returns the entries of every jar in {@code candidates} whose decoded file part matches
+   * {@code *} followed by the {@link #getJarModelPrefix() jar model prefix}, keeping only the
+   * entries whose decoded file part matches {@code *} followed by {@code wildcardPattern}.
+   * Both masks follow the rules of {@link #matchesWildcard(URL, String)}. A jar that cannot
+   * be read is logged and skipped.
+   *
+   * @param candidates The {@link URL URLs} to check against the jar model prefix.
+   *                   Must not be {@code null}.
+   * @param wildcardPattern The mask for jar entries. If {@code null}, nothing matches.
+   * @return The matching jar entry {@link URI URIs} in scan order. It may be empty.
+   * @throws IllegalArgumentException Thrown if {@code candidates} is {@code null}.
+   */
+  protected final List<URI> getMatchingJarEntryURIs(List<URL> candidates, String wildcardPattern) {
+    ArgumentChecks.requireNonNullArg(candidates, "candidates");
+    final List<URI> matches = new ArrayList<>();
+    if (wildcardPattern == null) {
+      return matches;
+    }
+
+    final boolean isWindows = isWindows();
+    final String fileWildcard = ANY_RUN + wildcardPattern;
+    for (URL url : candidates) {
+      if (matchesWildcard(url, jarWildcard)) {
+        try {
+          for (URI u : getURIsFromJar(url, isWindows)) {
+            if (matchesWildcard(u.toURL(), fileWildcard)) {
+              matches.add(u);
+            }
+          }
+        } catch (IOException e) {
+          logger.warn("Cannot read content of {}.", url, e);
+        }
+      }
+    }
+    return matches;
+  }
+
+  /**
+   * Checks whether the decoded file part of {@code url} matches {@code wildcard} from start
    * to end, where {@code *} stands for any run of characters, {@code ?} for exactly one
    * Unicode code point, and every other character for itself. URI percent escapes are
    * decoded once; literal plus signs remain plus signs. A {@code url} that is not a valid
@@ -154,7 +209,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
    * @return {@code true} if the file part matches, {@code false} otherwise.
    * @throws IllegalArgumentException Thrown if {@code url} or {@code wildcard} is {@code null}.
    */
-  protected boolean matchesWildcard(URL url, String wildcard) {
+  protected final boolean matchesWildcard(URL url, String wildcard) {
     if (url == null) {
       throw new IllegalArgumentException(URL_MUST_NOT_BE_NULL);
     }
@@ -187,6 +242,16 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
     }
   }
 
+  /**
+   * Lists the {@code jar:} {@link URI URIs} of all non-directory entries in the jar file at
+   * {@code fileUrl}. Entry paths come back URI-escaped, so names with spaces or non-ASCII
+   * characters yield valid URIs. An entry whose name cannot be converted to a URI is skipped.
+   *
+   * @param fileUrl The {@link URL} of the jar file.
+   * @param isWindows {@code true} to turn back slashes in {@code fileUrl} into forward slashes.
+   * @return The entry {@link URI URIs} in jar order. It may be empty.
+   * @throws IOException Thrown if the jar file cannot be opened or read.
+   */
   protected List<URI> getURIsFromJar(URL fileUrl, boolean isWindows) throws IOException {
     final List<URI> uris = new ArrayList<>();
     final String location = JAR + ":" +

@@ -16,16 +16,22 @@
  */
 package opennlp.tools.models;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -208,6 +214,55 @@ public class AbstractClassPathModelFinderTest {
     Assertions.assertFalse(finder.matchesWildcard(url, "en-pos.bin"));
     Assertions.assertFalse(finder.matchesWildcard(url, "*.properties"));
     Assertions.assertFalse(finder.matchesWildcard(url, "jar:*"));
+  }
+
+  /**
+   * Writes an empty-bodied jar with the given entry names.
+   *
+   * @param jar The jar file to create.
+   * @param entries The entry names; a trailing slash makes a directory entry.
+   * @return The {@code file:} {@link URL} of the jar.
+   * @throws IOException Thrown if the jar cannot be written.
+   */
+  private static URL writeJar(Path jar, String... entries) throws IOException {
+    try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jar))) {
+      for (String entry : entries) {
+        out.putNextEntry(new JarEntry(entry));
+        out.closeEntry();
+      }
+    }
+    return jar.toUri().toURL();
+  }
+
+  /**
+   * Checks that only entries of jars matching the jar model prefix are returned, and that
+   * jars which cannot be read are skipped.
+   */
+  @Test
+  void testGetMatchingJarEntryURIsFiltersJarsAndEntries(@TempDir Path dir) throws Exception {
+    final URL models = writeJar(dir.resolve("opennlp-models-pos-en.jar"),
+        "opennlp/", "opennlp/en-pos.bin", "opennlp/model.properties");
+    final URL other = writeJar(dir.resolve("other.jar"), "opennlp/en-ner.bin");
+    final URL missing = dir.resolve("opennlp-models-missing.jar").toUri().toURL();
+    final List<URL> candidates = List.of(models, other, missing);
+    final AbstractClassPathModelFinder finder = newProbeFinder();
+
+    final List<URI> bins = finder.getMatchingJarEntryURIs(candidates, "*.bin");
+    Assertions.assertEquals(List.of(new URI("jar:" + models + "!/opennlp/en-pos.bin")), bins);
+    final List<URI> props = finder.getMatchingJarEntryURIs(candidates, "model.properties");
+    Assertions.assertEquals(List.of(new URI("jar:" + models + "!/opennlp/model.properties")), props);
+    Assertions.assertEquals(List.of(), finder.getMatchingJarEntryURIs(candidates, "*.txt"));
+    Assertions.assertEquals(List.of(), finder.getMatchingJarEntryURIs(candidates, null));
+    Assertions.assertEquals(List.of(), finder.getMatchingJarEntryURIs(List.of(), "*.bin"));
+  }
+
+  /**
+   * Checks that a null candidate list is rejected.
+   */
+  @Test
+  void testGetMatchingJarEntryURIsRejectsNullCandidates() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> newProbeFinder().getMatchingJarEntryURIs(null, "*.bin"));
   }
 
   /**
