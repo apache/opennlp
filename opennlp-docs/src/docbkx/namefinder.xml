@@ -150,6 +150,9 @@ Span[] nameSpans = nameFinder.find(sentence);]]>
 				<para>
 					Using an ONNX model is similar, except we will utilize the <code>NameFinderDL</code> class instead.
 					You must provide the path to the model file and the vocabulary file to the name finder.
+					The vocabulary file is a <code>vocab.txt</code>, a <code>vocab.json</code>, or the
+					<code>tokenizer.json</code> of a WordPiece model, as described for the document categorizer in
+					<xref linkend="tools.doccat.api.onnx"/>.
 					(There is no need to load the model as an InputStream as in the previous example.) The name finder
 					requires a tokenized list of strings as input. The output will be an array of spans.
 					<programlisting language="java">
