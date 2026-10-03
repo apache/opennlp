@@ -393,12 +393,18 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   /**
    * Applies {@link AbstractDL#softmaxProbabilities(float[])} to the logits of one document chunk.
    *
+   * <p>Any non-finite logit is rejected before the softmax: a {@code +Infinity} logit would make
+   * every probability {@code NaN}, so a classification distribution cannot be computed.</p>
+   *
    * @param input The logits produced by the model.
    * @return The classification distribution, in the order of {@code input}.
    * @throws IllegalStateException Thrown if any logit is {@code NaN} or infinite.
    */
   static double[] softmax(final float[] input) {
     for (final float value : input) {
+      // Reject any non-finite logit, not just NaN: a +Infinity logit makes max == +Inf, so
+      // value - max is Inf - Inf == NaN and the whole distribution silently goes NaN. Subtracting
+      // the maximum already handles merely-large finite logits, so only NaN/Infinity reach here.
       if (!Float.isFinite(value)) {
         throw new IllegalStateException(
             "The model produced a non-finite logit (NaN or Infinity); cannot compute a "
