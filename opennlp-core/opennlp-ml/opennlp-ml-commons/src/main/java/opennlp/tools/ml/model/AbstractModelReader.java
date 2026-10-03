@@ -32,21 +32,6 @@ import opennlp.tools.util.ResourceLimits;
 public abstract class AbstractModelReader {
 
   /**
-   * System property for overriding the maximum number of entries (outcomes, predicates,
-   * outcome patterns, chunk counts) that may be read from a model file or training data.
-   * Alias of {@link ResourceLimits#MAX_ENTRIES_PROPERTY}.
-   */
-  public static final String MAX_ENTRIES_PROPERTY = ResourceLimits.MAX_ENTRIES_PROPERTY;
-
-  /**
-   * Upper bound on count fields read from a model file.
-   * Alias of {@link ResourceLimits#MAX_ENTRIES}.
-   * Public so that deserializers outside this package which implement their own binary
-   * format can apply the same bound to their count fields.
-   */
-  public static final int MAX_ENTRIES = ResourceLimits.MAX_ENTRIES;
-
-  /**
    * The number of predicates contained in a model.
    */
   protected int NUM_PREDS;
@@ -146,14 +131,11 @@ public abstract class AbstractModelReader {
    * @return Reads and retrieves the {@code outcome labels} from the model.
    * @throws IOException Thrown if IO errors occurred.
    * @throws IllegalArgumentException Thrown if the outcome count is negative or
-   *     exceeds {@link #MAX_ENTRIES}.
+   *     exceeds {@link ResourceLimits#MAX_ENTRIES}.
    */
   protected String[] getOutcomes() throws IOException {
     int numOutcomes = readInt();
-    if (numOutcomes < 0 || numOutcomes > MAX_ENTRIES) {
-      throw new IllegalArgumentException(
-          "Outcome count " + numOutcomes + " exceeds safe limit of " + MAX_ENTRIES);
-    }
+    ResourceLimits.requireWithinMaxEntries(numOutcomes, "Outcome count");
     String[] outcomeLabels = new String[numOutcomes];
     for (int i = 0; i < numOutcomes; i++) outcomeLabels[i] = readUTF();
     return outcomeLabels;
@@ -163,14 +145,11 @@ public abstract class AbstractModelReader {
    * @return Reads and retrieves the {@code outcome patterns} from the model.
    * @throws IOException Thrown if IO errors occurred.
    * @throws IllegalArgumentException Thrown if the outcome pattern count is negative or
-   *     exceeds {@link #MAX_ENTRIES}.
+   *     exceeds {@link ResourceLimits#MAX_ENTRIES}.
    */
   protected int[][] getOutcomePatterns() throws IOException {
     int numOCTypes = readInt();
-    if (numOCTypes < 0 || numOCTypes > MAX_ENTRIES) {
-      throw new IllegalArgumentException(
-          "Outcome pattern count " + numOCTypes + " exceeds safe limit of " + MAX_ENTRIES);
-    }
+    ResourceLimits.requireWithinMaxEntries(numOCTypes, "Outcome pattern count");
     int[][] outcomePatterns = new int[numOCTypes][];
     for (int i = 0; i < numOCTypes; i++) {
       StringTokenizer tok = new StringTokenizer(readUTF(), " ");
@@ -187,14 +166,11 @@ public abstract class AbstractModelReader {
    * @return Reads and retrieves the {@code predicates} from the model.
    * @throws IOException Thrown if IO errors occurred.
    * @throws IllegalArgumentException Thrown if the predicate count is negative or
-   *     exceeds {@link #MAX_ENTRIES}.
+   *     exceeds {@link ResourceLimits#MAX_ENTRIES}.
    */
   protected String[] getPredicates() throws IOException {
     NUM_PREDS = readInt();
-    if (NUM_PREDS < 0 || NUM_PREDS > MAX_ENTRIES) {
-      throw new IllegalArgumentException(
-          "Predicate count " + NUM_PREDS + " exceeds safe limit of " + MAX_ENTRIES);
-    }
+    ResourceLimits.requireWithinMaxEntries(NUM_PREDS, "Predicate count");
     String[] predLabels = new String[NUM_PREDS];
     for (int i = 0; i < NUM_PREDS; i++)
         predLabels[i] = readUTF();
