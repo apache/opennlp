@@ -179,7 +179,7 @@ public final class CodePointSet {
   }
 
   /**
-   * Tests for the optional {@code U+} or {@code 0x} prefix of a code point entry.
+   * Checks for the optional {@code U+} or {@code 0x} prefix of a code point entry.
    *
    * @param token The entry text.
    * @return {@code true} if {@code token} starts with {@code U+} or {@code 0x}, in either case.
