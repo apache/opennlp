@@ -68,7 +68,7 @@ class AbstractDLSoftmaxTest {
   void testSoftmaxProbabilityRejectsNullScores() {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> AbstractDL.softmaxProbability(null, 0));
-    assertEquals("The scores must not be null.", e.getMessage());
+    assertEquals("scores must not be null", e.getMessage());
   }
 
   @ParameterizedTest
@@ -100,6 +100,6 @@ class AbstractDLSoftmaxTest {
   void testSoftmaxProbabilitiesRejectsNullScores() {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> AbstractDL.softmaxProbabilities(null));
-    assertEquals("The scores must not be null.", e.getMessage());
+    assertEquals("scores must not be null", e.getMessage());
   }
 }

@@ -599,7 +599,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   @Internal(since = "3.0.0")
   protected static double[] softmaxProbabilities(final float[] scores) {
-    requireNonNullArg(scores, "scores");
+    ArgumentChecks.requireNonNullArg(scores, "scores");
 
     final ScoreSummary summary = summarize(scores);
     final double[] probabilities = new double[scores.length];
@@ -638,7 +638,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   @Internal(since = "3.0.0")
   protected static double softmaxProbability(final float[] scores, final int index) {
-    requireNonNullArg(scores, "scores");
+    ArgumentChecks.requireNonNullArg(scores, "scores");
     if (index < 0 || index >= scores.length) {
       throw new IllegalArgumentException("The index " + index
           + " is out of range for " + scores.length + " scores.");
