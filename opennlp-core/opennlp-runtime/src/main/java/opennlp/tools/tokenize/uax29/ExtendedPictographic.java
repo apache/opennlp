@@ -16,32 +16,30 @@
  */
 package opennlp.tools.tokenize.uax29;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 
+import opennlp.tools.util.normalizer.BundledUnicodeData;
 import opennlp.tools.util.normalizer.HexCodePoints;
 
 /**
  * Checks the Unicode {@code Extended_Pictographic} property of a code point.
  *
  * <p>This is the one extra property the word boundary algorithm needs (rule WB3c), to keep emoji
- * zero-width-joiner sequences together. The data is loaded once from the {@code emoji-data.txt}
- * derived resource of the Unicode Character Database and stored in a {@link BitSet}, so membership
- * is an O(1) bit check.</p>
+ * zero-width-joiner sequences together. The data is loaded on first use from the bundled
+ * {@code ExtendedPictographic.txt} resource, the {@code Extended_Pictographic} lines extracted
+ * from the Unicode <a href="https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt">
+ * {@code emoji-data.txt}</a>, and stored in a {@link BitSet}, so membership is an O(1) bit
+ * check.</p>
  */
 public final class ExtendedPictographic {
 
   private static final String RESOURCE = "ExtendedPictographic.txt";
 
-  // Volatile so the lazily built set is safely published: the double-checked accessor reads the
-  // field once, and a fully populated BitSet becomes visible to every thread that observes the
-  // non-null reference.
-  private static volatile BitSet members;
+  private static final BundledUnicodeData.Lazy<BitSet> MEMBERS =
+      new BundledUnicodeData.Lazy<>(ExtendedPictographic::load);
 
   private ExtendedPictographic() {
   }
@@ -55,31 +53,23 @@ public final class ExtendedPictographic {
    * @throws IllegalArgumentException Thrown if the bundled data is malformed.
    */
   static BitSet members() {
-    BitSet set = members;
-    if (set == null) {
-      synchronized (ExtendedPictographic.class) {
-        set = members;
-        if (set == null) {
-          set = load();
-          members = set;
-        }
-      }
-    }
-    return set;
+    return MEMBERS.get();
   }
 
+  /**
+   * {@return the member set parsed from the bundled {@code ExtendedPictographic.txt} resource}
+   *
+   * @throws IllegalStateException Thrown if the resource is missing.
+   * @throws UncheckedIOException Thrown if the resource cannot be read.
+   * @throws IllegalArgumentException Thrown if the data is malformed.
+   */
   private static BitSet load() {
-    final BitSet set = new BitSet();
-    try (InputStream in = ExtendedPictographic.class.getResourceAsStream(RESOURCE)) {
-      if (in == null) {
-        throw new IllegalStateException("Missing Extended_Pictographic data resource: " + RESOURCE);
-      }
-      parse(in, set);
-    } catch (IOException e) {
-      throw new UncheckedIOException(
-          "Unable to read Extended_Pictographic data resource " + RESOURCE, e);
-    }
-    return set;
+    return BundledUnicodeData.load(ExtendedPictographic.class, RESOURCE, "Extended_Pictographic",
+        in -> {
+          final BitSet set = new BitSet();
+          parse(in, set);
+          return set;
+        });
   }
 
   /**
@@ -92,30 +82,22 @@ public final class ExtendedPictographic {
    * @throws IllegalArgumentException Thrown if a definition line is malformed.
    */
   static void parse(InputStream in, BitSet set) throws IOException {
-    try (BufferedReader reader =
-             new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        final String content = HexCodePoints.stripComment(line).strip();
-        if (content.isEmpty()) {
-          continue;
-        }
-        // Only the code-point column is needed; the property value after ';' is implicit (this is a
-        // filtered single-property file), so a line with no ';' is taken whole -- unlike
-        // WordBreakProperty, whose value column is required.
-        final int semicolon = content.indexOf(';');
-        final String codePoints = (semicolon < 0 ? content : content.substring(0, semicolon)).strip();
-        final int[] range;
-        try {
-          range = HexCodePoints.parseRange(codePoints);
-        } catch (IllegalArgumentException e) {
-          // Fail loud naming the bad line, the same way the sibling loaders do.
-          throw new IllegalArgumentException(
-              "Malformed Extended_Pictographic data in " + RESOURCE + ": " + content, e);
-        }
-        set.set(range[0], range[1] + 1);
+    BundledUnicodeData.forEachContentLine(in, (content, lineNumber) -> {
+      // Only the code-point column is needed; the property value after ';' is implicit (this is a
+      // filtered single-property file), so a line with no ';' is taken whole -- unlike
+      // WordBreakProperty, whose value column is required.
+      final int semicolon = content.indexOf(';');
+      final String codePoints = (semicolon < 0 ? content : content.substring(0, semicolon)).strip();
+      final int[] range;
+      try {
+        range = HexCodePoints.parseRange(codePoints);
+      } catch (IllegalArgumentException e) {
+        // Fail loud naming the bad line, the same way the sibling loaders do.
+        throw new IllegalArgumentException(
+            "Malformed Extended_Pictographic data in " + RESOURCE + ": " + content, e);
       }
-    }
+      set.set(range[0], range[1] + 1);
+    });
   }
 
   /**

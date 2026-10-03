@@ -16,10 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -62,7 +60,8 @@ final class EmojiEmoticons {
   private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
   private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
 
-  private static final EmojiEmoticons INSTANCE = new EmojiEmoticons(loadBundled());
+  private static final BundledUnicodeData.Lazy<EmojiEmoticons> INSTANCE =
+      new BundledUnicodeData.Lazy<>(() -> new EmojiEmoticons(loadBundled()));
 
   private final Direction emojiToEmoticon;
   private final Direction emoticonToEmoji;
@@ -74,10 +73,14 @@ final class EmojiEmoticons {
 
   /**
    * {@return the shared instance over the bundled {@code emoji-emoticons.txt} data} The tables are
-   * loaded once when this class initializes.
+   * loaded on the first call; a failed load is not cached, so the next call loads again.
+   *
+   * @throws IllegalArgumentException if the bundled data is malformed.
+   * @throws IllegalStateException if the resource is missing.
+   * @throws UncheckedIOException if the resource cannot be read.
    */
   static EmojiEmoticons getInstance() {
-    return INSTANCE;
+    return INSTANCE.get();
   }
 
   /**
@@ -323,15 +326,8 @@ final class EmojiEmoticons {
    * @throws UncheckedIOException if the resource cannot be read.
    */
   private static Tables loadBundled() {
-    try (InputStream in = EmojiEmoticons.class.getResourceAsStream(RESOURCE)) {
-      if (in == null) {
-        throw new IllegalStateException("Missing emoji/emoticon fold data resource: " + RESOURCE);
-      }
-      return parse(in);
-    } catch (IOException e) {
-      throw new UncheckedIOException("Unable to read emoji/emoticon fold data resource "
-          + RESOURCE, e);
-    }
+    return BundledUnicodeData.load(EmojiEmoticons.class, RESOURCE, "emoji/emoticon fold",
+        EmojiEmoticons::parse);
   }
 
   /**
@@ -352,46 +348,40 @@ final class EmojiEmoticons {
     }
     final Map<Integer, List<Mapping>> emojiToEmoticon = new HashMap<>();
     final Map<Integer, List<Mapping>> emoticonToEmoji = new HashMap<>();
-    try (BufferedReader reader =
-             new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-      String line;
-      int lineNumber = 0;
-      while ((line = reader.readLine()) != null) {
-        lineNumber++;
-        final String content = line.strip();
-        if (content.isEmpty() || content.startsWith(COMMENT_PREFIX)) {
-          continue;
-        }
-        // The notes column is free text that may itself contain ';', so only the first five
-        // separators are structural.
-        final String[] fields = StringUtil.split(content, FIELD_SEPARATOR, 6);
-        if (fields.length != 6) {
-          throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
-              + " at line " + lineNumber + ": expected 6 fields, got " + fields.length
-              + " in: " + content);
-        }
-        final String source = decode(fields[0], lineNumber, content);
-        final String target = decode(fields[1], lineNumber, content);
-        final String foldType = fields[2].strip();
-        final Map<Integer, List<Mapping>> table = switch (foldType) {
-          case "EMOJI" -> emojiToEmoticon;
-          case "EMOTICON" -> emoticonToEmoji;
-          default -> throw new IllegalArgumentException("Malformed emoji/emoticon fold data in "
-              + RESOURCE + " at line " + lineNumber + ": unrecognized fold_type '" + foldType
-              + "' in: " + content);
-        };
-        final int firstCodePoint = source.codePointAt(0);
-        final List<Mapping> candidates =
-            table.computeIfAbsent(firstCodePoint, k -> new ArrayList<>());
-        for (final Mapping existing : candidates) {
-          if (existing.source().equals(source)) {
-            throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
-                + " at line " + lineNumber + ": duplicate " + foldType + " source in: " + content);
-          }
-        }
-        candidates.add(new Mapping(source, target));
+    BundledUnicodeData.forEachLine(in, StandardCharsets.UTF_8, (line, lineNumber) -> {
+      final String content = line.strip();
+      if (content.isEmpty() || content.startsWith(COMMENT_PREFIX)) {
+        return;
       }
-    }
+      // The notes column is free text that may itself contain ';', so only the first five
+      // separators are structural.
+      final String[] fields = StringUtil.split(content, FIELD_SEPARATOR, 6);
+      if (fields.length != 6) {
+        throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
+            + " at line " + lineNumber + ": expected 6 fields, got " + fields.length
+            + " in: " + content);
+      }
+      final String source = decode(fields[0], lineNumber, content);
+      final String target = decode(fields[1], lineNumber, content);
+      final String foldType = fields[2].strip();
+      final Map<Integer, List<Mapping>> table = switch (foldType) {
+        case "EMOJI" -> emojiToEmoticon;
+        case "EMOTICON" -> emoticonToEmoji;
+        default -> throw new IllegalArgumentException("Malformed emoji/emoticon fold data in "
+            + RESOURCE + " at line " + lineNumber + ": unrecognized fold_type '" + foldType
+            + "' in: " + content);
+      };
+      final int firstCodePoint = source.codePointAt(0);
+      final List<Mapping> candidates =
+          table.computeIfAbsent(firstCodePoint, k -> new ArrayList<>());
+      for (final Mapping existing : candidates) {
+        if (existing.source().equals(source)) {
+          throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
+              + " at line " + lineNumber + ": duplicate " + foldType + " source in: " + content);
+        }
+      }
+      candidates.add(new Mapping(source, target));
+    });
     return new Tables(direction(emojiToEmoticon), direction(emoticonToEmoji));
   }
 

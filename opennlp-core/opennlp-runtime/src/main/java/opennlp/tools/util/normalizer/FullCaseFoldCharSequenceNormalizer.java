@@ -16,12 +16,9 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +44,10 @@ import opennlp.tools.util.StringUtil;
  * <p>The {@code S} simple and {@code T} Turkic status mappings are excluded, so the Turkish and
  * Azerbaijani dotless-i rule is not applied here. Input is expected in NFC: the fold matches
  * precomposed code points, so decomposed sequences pass through unchanged.</p>
+ *
+ * <p>The folding table is loaded on first use. If the bundled {@code CaseFolding.txt} is missing
+ * or cannot be read, every normalize call throws {@link IllegalStateException} or
+ * {@link UncheckedIOException}.</p>
  */
 public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNormalizer {
 
@@ -78,10 +79,10 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
 
   /**
    * Maps a source code point to its full case folding (one or more code points), for the C and F
-   * status rows of {@code CaseFolding.txt}. Loaded once when this class initializes, which
-   * happens on first use.
+   * status rows of {@code CaseFolding.txt}. Loaded on first use.
    */
-  private static final Map<Integer, String> FOLDINGS = Map.copyOf(initFoldings());
+  private static final BundledUnicodeData.Lazy<Map<Integer, String>> FOLDINGS =
+      new BundledUnicodeData.Lazy<>(FullCaseFoldCharSequenceNormalizer::initFoldings);
 
   private static final FullCaseFoldCharSequenceNormalizer INSTANCE =
       new FullCaseFoldCharSequenceNormalizer();
@@ -99,22 +100,26 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
    * {@inheritDoc}
    *
    * @throws IllegalArgumentException if {@code text} is {@code null}.
+   * @throws IllegalStateException if the bundled {@code CaseFolding.txt} resource is missing.
+   * @throws UncheckedIOException if the bundled {@code CaseFolding.txt} resource cannot be read.
    */
   @Override
   public CharSequence normalize(CharSequence text) {
     ArgumentChecks.requireNonNullArg(text, "text");
-    return CharClass.substitute(text, FOLDINGS::get);
+    return CharClass.substitute(text, FOLDINGS.get()::get);
   }
 
   /**
    * {@inheritDoc}
    *
    * @throws IllegalArgumentException if {@code text} is {@code null}.
+   * @throws IllegalStateException if the bundled {@code CaseFolding.txt} resource is missing.
+   * @throws UncheckedIOException if the bundled {@code CaseFolding.txt} resource cannot be read.
    */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     ArgumentChecks.requireNonNullArg(text, "text");
-    return CharClass.substituteAligned(text, FOLDINGS::get);
+    return CharClass.substituteAligned(text, FOLDINGS.get()::get);
   }
 
   /**
@@ -124,14 +129,8 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
    * @throws UncheckedIOException if the resource cannot be read.
    */
   private static Map<Integer, String> initFoldings() {
-    try (InputStream in = FullCaseFoldCharSequenceNormalizer.class.getResourceAsStream(RESOURCE)) {
-      if (in == null) {
-        throw new IllegalStateException("Missing case folding data resource: " + RESOURCE);
-      }
-      return parse(in);
-    } catch (IOException e) {
-      throw new UncheckedIOException("Unable to read case folding data resource " + RESOURCE, e);
-    }
+    return Map.copyOf(BundledUnicodeData.load(FullCaseFoldCharSequenceNormalizer.class, RESOURCE,
+        "case folding", FullCaseFoldCharSequenceNormalizer::parse));
   }
 
   /**
@@ -147,42 +146,32 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
    */
   static Map<Integer, String> parse(InputStream in) throws IOException {
     final Map<Integer, String> map = new HashMap<>();
-    try (BufferedReader reader =
-             new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-      String line;
-      int lineNumber = 0;
-      while ((line = reader.readLine()) != null) {
-        lineNumber++;
-        final String content = HexCodePoints.stripComment(line).strip();
-        if (content.isEmpty()) {
-          continue;
-        }
-        final String[] fields = StringUtil.split(content, FIELD_SEPARATOR);
-        if (fields.length < 3) {
-          throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
-              + " at line " + lineNumber + ": " + content);
-        }
-        final String status = fields[1].strip();
-        if (STATUS_SIMPLE.equals(status) || STATUS_TURKIC.equals(status)) {
-          // Simple and Turkic mappings are recognized but deliberately not part of the full fold.
-          continue;
-        }
-        if (!STATUS_COMMON.equals(status) && !STATUS_FULL.equals(status)) {
-          // An unrecognized status is not a known-and-skipped case (S/T above); treat it as
-          // corruption rather than silently dropping data.
-          throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
-              + " at line " + lineNumber + ": unrecognized status '" + status + "' in: " + content);
-        }
-        try {
-          final int source = HexCodePoints.parseCodePoint(fields[0].strip());
-          map.put(source, HexCodePoints.decodeSequence(fields[2].strip(),
-              MAPPING_CODE_POINT_SEPARATOR));
-        } catch (IllegalArgumentException e) {
-          throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
-              + " at line " + lineNumber + ": " + content, e);
-        }
+    BundledUnicodeData.forEachContentLine(in, (content, lineNumber) -> {
+      final String[] fields = StringUtil.split(content, FIELD_SEPARATOR);
+      if (fields.length < 3) {
+        throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
+            + " at line " + lineNumber + ": " + content);
       }
-    }
+      final String status = fields[1].strip();
+      if (STATUS_SIMPLE.equals(status) || STATUS_TURKIC.equals(status)) {
+        // Simple and Turkic mappings are recognized but deliberately not part of the full fold.
+        return;
+      }
+      if (!STATUS_COMMON.equals(status) && !STATUS_FULL.equals(status)) {
+        // An unrecognized status is not a known-and-skipped case (S/T above); treat it as
+        // corruption rather than silently dropping data.
+        throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
+            + " at line " + lineNumber + ": unrecognized status '" + status + "' in: " + content);
+      }
+      try {
+        final int source = HexCodePoints.parseCodePoint(fields[0].strip());
+        map.put(source, HexCodePoints.decodeSequence(fields[2].strip(),
+            MAPPING_CODE_POINT_SEPARATOR));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
+            + " at line " + lineNumber + ": " + content, e);
+      }
+    });
     return map;
   }
 }

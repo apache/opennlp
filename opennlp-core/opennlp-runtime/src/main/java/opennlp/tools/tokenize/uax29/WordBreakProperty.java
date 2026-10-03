@@ -16,25 +16,23 @@
  */
 package opennlp.tools.tokenize.uax29;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import opennlp.tools.util.normalizer.BundledUnicodeData;
 import opennlp.tools.util.normalizer.HexCodePoints;
 
 /**
  * Looks up the Unicode {@link WordBreak Word_Break} property of a code point.
  *
- * <p>The data is loaded once from the {@code WordBreakProperty.txt} resource of the Unicode
- * Character Database (parsed with simple cursor scanning, no regular expression). Lookup is O(1)
- * for the Basic Multilingual Plane (a direct array index) and O(log n) for supplementary code
- * points (a binary search over a small sorted range table), so it imposes no per-character
+ * <p>The data is loaded on first use from the {@code WordBreakProperty.txt} resource of the
+ * Unicode Character Database (parsed with simple cursor scanning, no regular expression). Lookup
+ * is O(1) for the Basic Multilingual Plane (a direct array index) and O(log n) for supplementary
+ * code points (a binary search over a small sorted range table), so it imposes no per-character
  * allocation on the word boundary algorithm.</p>
  */
 public final class WordBreakProperty {
@@ -43,10 +41,8 @@ public final class WordBreakProperty {
 
   private static final WordBreak[] VALUES = WordBreak.values();
 
-  // Volatile so the lazily built table is safely published: the double-checked accessor reads the
-  // field once, and a fully constructed, immutable Data instance becomes visible to every thread
-  // that observes the non-null reference.
-  private static volatile Data data;
+  private static final BundledUnicodeData.Lazy<Data> DATA =
+      new BundledUnicodeData.Lazy<>(WordBreakProperty::load);
 
   private WordBreakProperty() {
   }
@@ -79,30 +75,33 @@ public final class WordBreakProperty {
    * @throws IllegalArgumentException Thrown if the bundled data is malformed.
    */
   static Data data() {
-    Data d = data;
-    if (d == null) {
-      synchronized (WordBreakProperty.class) {
-        d = data;
-        if (d == null) {
-          d = load();
-          data = d;
-        }
-      }
-    }
-    return d;
+    return DATA.get();
   }
 
+  /**
+   * {@return the lookup table built from the bundled {@code WordBreakProperty.txt} resource}
+   *
+   * @throws IllegalStateException Thrown if the resource is missing.
+   * @throws UncheckedIOException Thrown if the resource cannot be read.
+   * @throws IllegalArgumentException Thrown if the data is malformed.
+   */
   private static Data load() {
+    return BundledUnicodeData.load(WordBreakProperty.class, RESOURCE, "Word_Break",
+        WordBreakProperty::build);
+  }
+
+  /**
+   * Builds the lookup table from {@code Word_Break} definition lines.
+   *
+   * @param in The definition lines to read.
+   * @return The lookup table.
+   * @throws IOException Thrown if reading {@code in} fails.
+   * @throws IllegalArgumentException Thrown if a definition line is malformed.
+   */
+  private static Data build(InputStream in) throws IOException {
     final byte[] bmp = new byte[0x10000];
     final List<int[]> supplementary = new ArrayList<>();
-    try (InputStream in = WordBreakProperty.class.getResourceAsStream(RESOURCE)) {
-      if (in == null) {
-        throw new IllegalStateException("Missing Word_Break data resource: " + RESOURCE);
-      }
-      parse(in, bmp, supplementary);
-    } catch (IOException e) {
-      throw new UncheckedIOException("Unable to read Word_Break data resource " + RESOURCE, e);
-    }
+    parse(in, bmp, supplementary);
     supplementary.sort((a, b) -> Integer.compare(a[0], b[0]));
     final int[] start = new int[supplementary.size()];
     final int[] end = new int[supplementary.size()];
@@ -127,36 +126,28 @@ public final class WordBreakProperty {
    * @throws IllegalArgumentException Thrown if a definition line is malformed.
    */
   static void parse(InputStream in, byte[] bmp, List<int[]> supplementary) throws IOException {
-    try (BufferedReader reader =
-             new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        final String content = HexCodePoints.stripComment(line).strip();
-        if (content.isEmpty()) {
-          continue;
-        }
-        final int semicolon = content.indexOf(';');
-        if (semicolon < 0) {
-          // A present-but-structurally-wrong line (no ';' to split code points from the value) is a
-          // hard error naming the line, matching the sibling loaders' IllegalArgumentException
-          // contract, not an opaque substring throw.
-          throw new IllegalArgumentException(
-              "Malformed Word_Break data in " + RESOURCE + " (no ';'): " + content);
-        }
-        final String codePoints = content.substring(0, semicolon).strip();
-        final String value = content.substring(semicolon + 1).strip();
-        final byte ordinal = (byte) WordBreak.fromPropertyName(value).ordinal();
-
-        final int[] range;
-        try {
-          range = HexCodePoints.parseRange(codePoints);
-        } catch (IllegalArgumentException e) {
-          throw new IllegalArgumentException(
-              "Malformed Word_Break data in " + RESOURCE + ": " + content, e);
-        }
-        assign(range[0], range[1], ordinal, bmp, supplementary);
+    BundledUnicodeData.forEachContentLine(in, (content, lineNumber) -> {
+      final int semicolon = content.indexOf(';');
+      if (semicolon < 0) {
+        // A present-but-structurally-wrong line (no ';' to split code points from the value) is a
+        // hard error naming the line, matching the sibling loaders' IllegalArgumentException
+        // contract, not an opaque substring throw.
+        throw new IllegalArgumentException(
+            "Malformed Word_Break data in " + RESOURCE + " (no ';'): " + content);
       }
-    }
+      final String codePoints = content.substring(0, semicolon).strip();
+      final String value = content.substring(semicolon + 1).strip();
+      final byte ordinal = (byte) WordBreak.fromPropertyName(value).ordinal();
+
+      final int[] range;
+      try {
+        range = HexCodePoints.parseRange(codePoints);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(
+            "Malformed Word_Break data in " + RESOURCE + ": " + content, e);
+      }
+      assign(range[0], range[1], ordinal, bmp, supplementary);
+    });
   }
 
   /**
