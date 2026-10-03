@@ -420,7 +420,7 @@ public class StringUtil {
   }
 
   /**
-   * Tests whether a code point taken from a {@link CharSequence} is a lone surrogate,
+   * Checks whether a code point taken from a {@link CharSequence} is a lone surrogate,
    * {@code U+D800} to {@code U+DFFF}, rather than a character. {@link String#codePoints()}
    * and {@link Character#codePointAt(CharSequence, int)} return a surrogate only when it
    * is not part of a valid high and low surrogate pair.
