@@ -154,8 +154,9 @@ public final class ParserAnnotator implements DocumentAnnotator {
       throw new IllegalArgumentException("parser returned node " + node.getType()
           + " with head " + head + " outside the sentence's " + starts.length + " tokens");
     }
-    phrases.add(new Annotation<>(new Span(tokens.get(first + from).span().getStart(),
-        tokens.get(first + to).span().getEnd()),
+    final Span covered = DocumentAnnotators.toCharacterSpan(tokens, first, starts.length,
+        new Span(from, to + 1), "parser returned node " + node.getType() + " at");
+    phrases.add(new Annotation<>(covered,
         new Phrase(node.getType(), tokens.get(first + head).span())));
     for (final Parse child : node.getChildren()) {
       collect(child, first, starts, length, tokens, phrases);
