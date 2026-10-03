@@ -514,8 +514,15 @@ Term term = analyzer.analyze("Running").get(0);
 			unrequested dimension costs one transform. The character-level dimensions have built-in
 			defaults; <code>STEM</code> and <code>LEMMA</code> require a
 			<code>Stemmer</code> or <code>Lemmatizer</code> (and <code>LEMMA</code> a part-of-speech
-			tag), and fail loudly if requested without them. An analyzer configured with a stemmer is
-			not thread-safe, because the Snowball stemmers are stateful.
+			tag), and fail loudly if requested without them. An analyzer is immutable and safe to share
+			across threads when its configured transforms are. The built-in character normalizers are
+			stateless and <code>SnowballStemmer</code> is thread-safe, so they can be shared as is. A
+			<code>Stemmer</code> passed to <code>stem(Stemmer)</code> is used directly, so a stateful one
+			such as <code>PorterStemmer</code> confines the analyzer to one thread. Passing a
+			<code>StemmerFactory</code> to <code>stem(StemmerFactory)</code> instead wraps it in a
+			<code>CachingStemmer</code> (see <xref linkend="tools.stemmer.sharing"/>), which gives each
+			thread its own stemmer and cache, so the analyzer is shareable even when the factory mints
+			stateful stemmers.
 		</para>
 		<para>
 			Each dimension's transform is configurable on the builder. Beyond the no-argument methods
