@@ -39,6 +39,13 @@ public abstract class AbstractTrainerTool<T, P> extends AbstractEvaluatorTool<T,
     super(sampleType, params);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Reports training-data errors, with a specific message for
+   * {@link InsufficientTrainingDataException}.</p>
+   */
+  @Override
   protected TerminateToolException createTerminationIOException(IOException e) {
 
     if (e instanceof InsufficientTrainingDataException) {
