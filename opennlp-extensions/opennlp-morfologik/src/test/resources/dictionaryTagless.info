@@ -1,0 +1,15 @@
+#
+# REQUIRED PROPERTIES
+#
+
+# Column (lemma, inflected, tag) separator. This must be a single byte in the target encoding.
+fsa.dict.separator=,
+
+# The charset in which the input is encoded. UTF-8 is strongly recommended.
+fsa.dict.encoding=UTF-8
+
+# The type of lemma-inflected form encoding compression that precedes automaton
+# construction. Allowed values: [suffix, infix, prefix, none].
+# Details are in Daciuk's paper and in the code. 
+# Leave at 'prefix' if not sure.
+fsa.dict.encoder=prefix

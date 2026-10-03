@@ -78,6 +78,21 @@ public class MorfologikTagDictionaryTest extends AbstractMorfologikTest {
 
   }
 
+  /**
+   * Verifies that a two-column Morfologik dictionary (lemma, inflected form, no tag)
+   * reports {@code null} for {@link TagDictionary#getTags(String)} rather than throwing
+   * when {@code WordData#getTag()} is null.
+   */
+  @Test
+  public void testTaglessDictionaryReturnsNull() throws Exception {
+    final Path output = createMorfologikDictionary("dictionaryTagless");
+    output.toFile().deleteOnExit();
+    final TagDictionary dict = new MorfologikTagDictionary(Dictionary.read(output), true);
+
+    final String[] tags = Assertions.assertDoesNotThrow(() -> dict.getTags("carro"));
+    Assertions.assertNull(tags);
+  }
+
   private MorfologikTagDictionary createDictionary(boolean caseSensitive)
       throws Exception {
     return this.createDictionary(caseSensitive, null);

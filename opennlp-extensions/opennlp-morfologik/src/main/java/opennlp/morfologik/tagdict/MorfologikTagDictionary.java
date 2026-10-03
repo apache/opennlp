@@ -23,18 +23,21 @@ import java.util.Locale;
 
 import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
-import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
 
 import opennlp.tools.postag.TagDictionary;
 
 /**
  * A {@link TagDictionary} implementation based on Morfologik binary
- * dictionaries
+ * dictionaries.
+ * <p>
+ * This implementation is thread-safe: the immutable {@link Dictionary} is shared
+ * and a {@link DictionaryLookup} is created per {@link #getTags(String)} call, as
+ * {@link DictionaryLookup} instances are stateful and must not be used concurrently.
  */
 public class MorfologikTagDictionary implements TagDictionary {
 
-  private final IStemmer dictLookup;
+  private final Dictionary dictionary;
   private final boolean isCaseSensitive;
 
   /**
@@ -58,7 +61,9 @@ public class MorfologikTagDictionary implements TagDictionary {
    */
   public MorfologikTagDictionary(Dictionary dict, boolean caseSensitive)
       throws IllegalArgumentException {
-    this.dictLookup = new DictionaryLookup(dict);
+    // Validates eagerly that a lookup can be constructed from the dictionary.
+    new DictionaryLookup(dict);
+    this.dictionary = dict;
     this.isCaseSensitive = caseSensitive;
   }
 
@@ -68,15 +73,18 @@ public class MorfologikTagDictionary implements TagDictionary {
       word = word.toLowerCase(Locale.ROOT);
     }
 
-    List<WordData> data = dictLookup.lookup(word);
-    if (data != null && data.size() > 0) {
+    List<WordData> data = new DictionaryLookup(dictionary).lookup(word);
+    if (data != null && !data.isEmpty()) {
       List<String> tags = new ArrayList<>(data.size());
       for (WordData aData : data) {
-        tags.add(aData.getTag().toString());
+        CharSequence tag = aData.getTag();
+        if (tag != null) {
+          tags.add(tag.toString());
+        }
       }
-      if (tags.size() > 0)
+      if (!tags.isEmpty()) {
         return tags.toArray(new String[0]);
-      return null;
+      }
     }
     return null;
   }

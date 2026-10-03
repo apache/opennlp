@@ -46,6 +46,11 @@
 			</itemizedlist>
 		</para>
 		<para>
+			<code>MorfologikTagDictionary</code> supports concurrent lookups on a shared
+			instance. Entries without a POS tag are ignored; a word with no tagged entries
+			returns <code>null</code>.
+		</para>
+		<para>
 		The first two implementations can be used directly from command line, as in the example bellow. Having an FSA Morfologik dictionary (see next section how to build one), you can train a POS Tagger
 		model with an embedded FSA dictionary. 
 		</para>
