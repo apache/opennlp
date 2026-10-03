@@ -25,6 +25,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
@@ -132,20 +133,21 @@ public class RealValueFileEventStream extends FileEventStream {
   }
 
   /**
-   * Parses one event line. Fields are separated by runs of space, tab, carriage return,
-   * line feed and form feed, as in {@link FileEventStream}; the first field is the outcome,
-   * the rest are contexts parsed by {@link #parseContexts(String[])}.
+   * Parses one real-valued event line. Fields are separated by runs of space, tab,
+   * carriage return, line feed and form feed, as in {@link FileEventStream}. The first
+   * field is the outcome and the remaining fields are contexts, whose values are parsed
+   * by {@link #parseContexts(String[])}.
    *
    * @param line The event line. Must not be {@code null}.
-   * @return The event; a line with only an outcome gives an event without contexts.
-   * @throws IllegalArgumentException Thrown if {@code line} is {@code null} or a value is negative,
-   *         NaN or infinite.
-   * @throws InvalidFormatException Thrown if {@code line} is blank.
+   * @return The parsed {@link Event}. A line with only an outcome yields an event without
+   *         contexts. If no context carries a real value, the event has no values.
+   * @throws IllegalArgumentException Thrown if {@code line} is {@code null} or a context
+   *         value is negative, NaN or infinite.
+   * @throws InvalidFormatException Thrown if {@code line} is empty or contains only separators.
+   * @since 3.0.0
    */
   public static Event parseEvent(String line) throws InvalidFormatException {
-    if (line == null) {
-      throw new IllegalArgumentException("line must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(line, "line");
     String[] fields = EventFields.split(line);
     if (fields.length == 0) {
       throw new InvalidFormatException(EventFields.MISSING_OUTCOME + line + "\"");
@@ -158,7 +160,7 @@ public class RealValueFileEventStream extends FileEventStream {
    * {@inheritDoc}
    *
    * @throws IOException Thrown if there is an error during reading.
-   * @throws InvalidFormatException Thrown if a line is blank.
+   * @throws InvalidFormatException Thrown if a line is empty or contains only separators.
    * @throws IllegalArgumentException Thrown if a value is negative, NaN or infinite.
    */
   @Override
