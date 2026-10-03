@@ -370,25 +370,24 @@ public final class MecabDictionary {
         if (line.isEmpty()) {
           continue;
         }
-        final List<String> fields = splitCsv(line);
+        final List<String> fields = splitCsv(line, file, lineNumber);
         if (fields.size() < 4) {
-          throw new IOException("malformed entry at " + file + " line " + lineNumber);
+          throw malformedEntry(file, lineNumber, null);
         }
         final String surface = fields.get(0);
         if (surface.isEmpty()) {
-          throw new IOException("malformed entry at " + file + " line " + lineNumber
-              + ": surface must not be empty");
+          throw malformedEntry(file, lineNumber, "surface must not be empty");
         }
         final int leftId = parseInt(fields.get(1), file.toString(), lineNumber);
         final int rightId = parseInt(fields.get(2), file.toString(), lineNumber);
         if (leftId < 0 || leftId >= rightSize) {
-          throw new IOException("malformed entry at " + file + " line " + lineNumber
-              + ": left context id " + leftId + " is outside the " + MATRIX_DEF
+          throw malformedEntry(file, lineNumber,
+              "left context id " + leftId + " is outside the " + MATRIX_DEF
               + " dimensions " + leftSize + " " + rightSize);
         }
         if (rightId < 0 || rightId >= leftSize) {
-          throw new IOException("malformed entry at " + file + " line " + lineNumber
-              + ": right context id " + rightId + " is outside the " + MATRIX_DEF
+          throw malformedEntry(file, lineNumber,
+              "right context id " + rightId + " is outside the " + MATRIX_DEF
               + " dimensions " + leftSize + " " + rightSize);
         }
         if (entryCount[0] >= ResourceLimits.MAX_ENTRIES) {
@@ -398,8 +397,7 @@ public final class MecabDictionary {
         entryCount[0]++;
         final int cost = parseInt(fields.get(3), file.toString(), lineNumber);
         if (cost < Short.MIN_VALUE || cost > Short.MAX_VALUE) {
-          throw new IOException("malformed entry at " + file + " line " + lineNumber
-              + ": word cost " + cost
+          throw malformedEntry(file, lineNumber, "word cost " + cost
               + " is outside the 16-bit range the format defines");
         }
         final WordEntry entry = new WordEntry(leftId, rightId, cost,
@@ -568,13 +566,32 @@ public final class MecabDictionary {
   }
 
   /**
+   * Creates the exception for a lexicon line that cannot be read.
+   *
+   * @param file The file the line came from.
+   * @param lineNumber The line's position in the file.
+   * @param detail What is wrong with the line, or {@code null} for no detail.
+   * @return The exception to throw. Never {@code null}.
+   */
+  private static IOException malformedEntry(Path file, int lineNumber, String detail) {
+    final String message = "malformed entry at " + file + " line " + lineNumber;
+    return new IOException(detail == null ? message : message + ": " + detail);
+  }
+
+  /**
    * Splits a lexicon line on commas, honoring MeCab-style {@code "..."} quoting with
-   * {@code ""} escapes inside a quoted field.
+   * {@code ""} escapes inside a quoted field. A quoted field must close on its line;
+   * MeCab reads an unclosed field silently to the line's end, but here it is rejected
+   * so a lost closing quote cannot corrupt the entry without a trace.
    *
    * @param line The line to split.
+   * @param file The file the line came from, for error messages.
+   * @param lineNumber The line's position in the file, for error messages.
    * @return The fields in order, empty fields included. Never {@code null}.
+   * @throws IOException Thrown if a quoted field is unterminated.
    */
-  private static List<String> splitCsv(String line) {
+  private static List<String> splitCsv(String line, Path file, int lineNumber)
+      throws IOException {
     final List<String> fields = new ArrayList<>();
     final StringBuilder field = new StringBuilder();
     boolean inQuotes = false;
@@ -599,6 +616,9 @@ public final class MecabDictionary {
       } else {
         field.append(c);
       }
+    }
+    if (inQuotes) {
+      throw malformedEntry(file, lineNumber, "unterminated quoted field");
     }
     fields.add(field.toString());
     return fields;

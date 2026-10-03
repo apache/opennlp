@@ -581,7 +581,12 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 					<code>matrix.def</code> entries, duplicate <code>char.def</code>
 					categories, costs outside the signed 16-bit range, malformed text in the
 					selected encoding, and <code>unk.def</code> templates for undefined
-					categories. MeCab-quoted CSV fields are accepted.
+					categories. MeCab-quoted CSV fields are accepted, with three documented
+					deviations from MeCab's reader: quotes open and close a quoted stretch
+					wherever they appear in a field, text after a closing quote joins the
+					field instead of being dropped, and an unterminated quoted field is
+					rejected with its file and line instead of being read silently to the
+					end of the line.
 					A <code>char.def</code> may define up to 17 categories, and category
 					lengths range from 0 through 15, matching the MeCab character-property
 					compiler.
