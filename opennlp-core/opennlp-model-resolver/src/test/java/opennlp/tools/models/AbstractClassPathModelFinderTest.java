@@ -257,6 +257,34 @@ public class AbstractClassPathModelFinderTest {
   }
 
   /**
+   * Checks that the jar scan uses the prefix returned by an overridden
+   * {@link AbstractClassPathModelFinder#getJarModelPrefix()}.
+   */
+  @Test
+  void testGetMatchingJarEntryURIsUsesOverriddenJarModelPrefix(@TempDir Path dir) throws Exception {
+    final URL custom = writeJar(dir.resolve("custom-models.jar"), "opennlp/en-pos.bin");
+    final AbstractClassPathModelFinder finder = new AbstractClassPathModelFinder() {
+      @Override
+      protected String getJarModelPrefix() {
+        return "custom-*.jar";
+      }
+
+      @Override
+      protected Object getContext() {
+        return null;
+      }
+
+      @Override
+      protected List<URI> getMatchingURIs(String wildcardPattern, Object context) {
+        return List.of();
+      }
+    };
+
+    Assertions.assertEquals(List.of(new URI("jar:" + custom + "!/opennlp/en-pos.bin")),
+        finder.getMatchingJarEntryURIs(List.of(custom), "*.bin"));
+  }
+
+  /**
    * Checks that a null candidate list is rejected.
    */
   @Test
