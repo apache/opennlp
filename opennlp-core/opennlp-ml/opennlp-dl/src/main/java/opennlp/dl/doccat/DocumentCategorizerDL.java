@@ -391,17 +391,16 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   }
 
   /**
-   * Applies softmax to an array of values.
+   * Applies {@link AbstractDL#softmaxProbabilities(float[])} to the logits of one document chunk.
    *
-   * @param input An array of values.
-   * @return The output array.
+   * <p>Any non-finite logit is rejected before the softmax: a {@code +Infinity} logit would make
+   * every probability {@code NaN}, so a classification distribution cannot be computed.</p>
+   *
+   * @param input The logits produced by the model.
+   * @return The classification distribution, in the order of {@code input}.
+   * @throws IllegalStateException Thrown if any logit is {@code NaN} or infinite.
    */
   static double[] softmax(final float[] input) {
-
-    // Subtract the maximum before exponentiating (numerically stable softmax): exp() of a
-    // large logit otherwise overflows to +Infinity, yielding NaN scores. Mathematically
-    // identical to the naive form. Results are kept in double precision throughout.
-    double max = Double.NEGATIVE_INFINITY;
     for (final float value : input) {
       // Reject any non-finite logit, not just NaN: a +Infinity logit makes max == +Inf, so
       // value - max is Inf - Inf == NaN and the whole distribution silently goes NaN. Subtracting
@@ -411,26 +410,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
             "The model produced a non-finite logit (NaN or Infinity); cannot compute a "
                 + "classification distribution");
       }
-      max = Math.max(max, value);
     }
-
-    final double[] t = new double[input.length];
-    double sum = 0.0;
-
-    for (int x = 0; x < input.length; x++) {
-      final double val = Math.exp(input[x] - max);
-      sum += val;
-      t[x] = val;
-    }
-
-    final double[] output = new double[input.length];
-
-    for (int x = 0; x < output.length; x++) {
-      output[x] = t[x] / sum;
-    }
-
-    return output;
-
+    return softmaxProbabilities(input);
   }
 
   private int maxIndex(double[] arr) {

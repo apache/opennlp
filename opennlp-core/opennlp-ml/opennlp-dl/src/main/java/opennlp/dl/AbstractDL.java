@@ -172,8 +172,10 @@ public abstract class AbstractDL implements AutoCloseable {
    * Loads a vocabulary {@link File} from disk. A file with an opening brace as its first
    * non-whitespace character is read as JSON: one object that maps each token to a non-negative
    * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
-   * per line, the line number being the ID, as in {@code vocab.txt}. A byte order mark at the
-   * start of the file is not content in either format. The JSON layout is that of
+   * per line, the line number being the ID, as in {@code vocab.txt}. An empty line in a plain
+   * text file is skipped but still counts toward the IDs of the lines after it; a line that
+   * holds only whitespace is a token. A byte order mark at the start of the file is not
+   * content in either format. The JSON layout is that of
    * {@link #loadJsonVocab(String)}.
    *
    * @param vocabFile The vocabulary file.
@@ -220,9 +222,12 @@ public abstract class AbstractDL implements AutoCloseable {
     final AtomicInteger counter =
         new AtomicInteger(0);
 
-    content.lines().forEach(line ->
-        vocab.put(line, counter.getAndIncrement())
-    );
+    content.lines().forEach(line -> {
+      final int id = counter.getAndIncrement();
+      if (!line.isEmpty()) {
+        vocab.put(line, id);
+      }
+    });
 
     return vocab;
   }
@@ -583,6 +588,134 @@ public abstract class AbstractDL implements AutoCloseable {
     if (closed.compareAndSet(false, true) && session != null) {
       session.close();
     }
+  }
+
+  /**
+   * Converts model scores into a probability distribution with a softmax that subtracts the
+   * largest score before exponentiating, so large finite scores do not overflow.
+   *
+   * <p>Non-finite scores follow one rule: if any score is {@code +Infinity}, those entries share
+   * the probability mass equally and all others get {@code 0}. Otherwise {@code NaN} scores are
+   * left out of the normalization and get {@code NaN}, and {@code -Infinity} scores get
+   * {@code 0}. If no score is finite or {@code +Infinity}, every entry gets
+   * {@code 1 / scores.length}.</p>
+   *
+   * @param scores The raw model scores. Must not be {@code null}.
+   * @return The probabilities, in the order of {@code scores}.
+   * @throws IllegalArgumentException Thrown if {@code scores} is {@code null}.
+   */
+  @Internal(since = "3.0.0")
+  protected static double[] softmaxProbabilities(final float[] scores) {
+    ArgumentChecks.requireNonNullArg(scores, "scores");
+
+    final ScoreSummary summary = summarize(scores);
+    final double[] probabilities = new double[scores.length];
+    if (summary.isDegenerate()) {
+      for (int i = 0; i < scores.length; i++) {
+        probabilities[i] = degenerateProbability(scores[i], scores.length, summary);
+      }
+      return probabilities;
+    }
+    // Keep each exp(score - max) in the output and divide in place, so exp runs once per score.
+    double denominator = 0d;
+    for (int i = 0; i < scores.length; i++) {
+      final double scaled = Math.exp(scores[i] - summary.max());
+      probabilities[i] = scaled;
+      if (!Float.isNaN(scores[i])) {
+        denominator += scaled;
+      }
+    }
+    for (int i = 0; i < scores.length; i++) {
+      probabilities[i] /= denominator;
+    }
+    return probabilities;
+  }
+
+  /**
+   * Computes the probability of one entry of
+   * {@link #softmaxProbabilities(float[])} without allocating the full distribution.
+   *
+   * @param scores The raw model scores. Must not be {@code null}.
+   * @param index The index of the score whose probability is returned. Must be a valid index
+   *     into {@code scores}.
+   * @return The probability at {@code index}, following the non-finite score rule of
+   *     {@link #softmaxProbabilities(float[])}.
+   * @throws IllegalArgumentException Thrown if {@code scores} is {@code null} or {@code index}
+   *     is out of range.
+   */
+  @Internal(since = "3.0.0")
+  protected static double softmaxProbability(final float[] scores, final int index) {
+    ArgumentChecks.requireNonNullArg(scores, "scores");
+    if (index < 0 || index >= scores.length) {
+      throw new IllegalArgumentException("The index " + index
+          + " is out of range for " + scores.length + " scores.");
+    }
+
+    final ScoreSummary summary = summarize(scores);
+    if (summary.isDegenerate()) {
+      return degenerateProbability(scores[index], scores.length, summary);
+    }
+    double denominator = 0d;
+    for (final float score : scores) {
+      if (!Float.isNaN(score)) {
+        denominator += Math.exp(score - summary.max());
+      }
+    }
+    return Math.exp(scores[index] - summary.max()) / denominator;
+  }
+
+  /**
+   * The two facts about a score array that decide the softmax rule: how many scores are
+   * {@code +Infinity}, and the largest score that is neither {@code NaN} nor {@code +Infinity}.
+   *
+   * @param positiveInfinityCount The number of {@code +Infinity} scores.
+   * @param max The largest other score, or {@code -Infinity} if there is none.
+   */
+  private record ScoreSummary(int positiveInfinityCount, double max) {
+
+    /**
+     * @return {@code true} if the distribution is decided without exponentials, because a
+     *     score is {@code +Infinity} or no score is finite.
+     */
+    boolean isDegenerate() {
+      return positiveInfinityCount > 0 || max == Double.NEGATIVE_INFINITY;
+    }
+  }
+
+  /**
+   * Gathers the {@link ScoreSummary} of {@code scores} in one pass.
+   *
+   * @param scores The raw model scores.
+   * @return The summary.
+   */
+  private static ScoreSummary summarize(final float[] scores) {
+    int positiveInfinityCount = 0;
+    double max = Double.NEGATIVE_INFINITY;
+    for (final float score : scores) {
+      if (score == Float.POSITIVE_INFINITY) {
+        positiveInfinityCount++;
+      } else if (!Float.isNaN(score) && score > max) {
+        max = score;
+      }
+    }
+    return new ScoreSummary(positiveInfinityCount, max);
+  }
+
+  /**
+   * Applies the softmax rule of {@link #softmaxProbabilities(float[])} to one score of a
+   * degenerate distribution, see {@link ScoreSummary#isDegenerate()}.
+   *
+   * @param score The score to normalize.
+   * @param length The number of scores.
+   * @param summary The summary of all scores.
+   * @return The probability of {@code score}.
+   */
+  private static double degenerateProbability(final float score, final int length,
+                                              final ScoreSummary summary) {
+    if (summary.positiveInfinityCount() > 0) {
+      return score == Float.POSITIVE_INFINITY ? 1d / summary.positiveInfinityCount() : 0d;
+    }
+    return 1d / length;
   }
 
   /**
