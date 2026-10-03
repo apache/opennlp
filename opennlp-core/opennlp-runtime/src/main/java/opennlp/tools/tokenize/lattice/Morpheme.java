@@ -19,6 +19,7 @@ package opennlp.tools.tokenize.lattice;
 
 import java.util.List;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -33,8 +34,10 @@ import opennlp.tools.util.Span;
  *
  * @param span The location of the morpheme in the original text. Must not be
  *             {@code null}.
- * @param surface The covered text. Must not be {@code null} or empty.
- * @param features The dictionary feature columns. Must not be {@code null}.
+ * @param surface The covered text. Must not be {@code null} or empty, and its length
+ *                must equal the span length.
+ * @param features The dictionary feature columns. Must not be {@code null} and must
+ *                 not contain {@code null}.
  * @param unknown Whether the morpheme came from unknown-word handling rather than a
  *                lexicon entry.
  *
@@ -46,18 +49,24 @@ public record Morpheme(Span span, String surface, List<String> features,
   /**
    * Validates the morpheme.
    *
-   * @throws IllegalArgumentException Thrown if {@code span}, {@code surface}, or
-   *         {@code features} is {@code null}, or {@code surface} is empty.
+   * @throws IllegalArgumentException Thrown if {@code span}, {@code surface},
+   *         {@code features}, or a feature is {@code null}; {@code surface} is empty;
+   *         or the surface and span lengths differ.
    */
   public Morpheme {
-    if (span == null) {
-      throw new IllegalArgumentException("span must not be null");
+    ArgumentChecks.requireNonNullArg(span, "span");
+    ArgumentChecks.requireNonNullArg(surface, "surface");
+    if (surface.isEmpty()) {
+      throw new IllegalArgumentException("surface must not be empty");
     }
-    if (surface == null || surface.isEmpty()) {
-      throw new IllegalArgumentException("surface must not be null or empty");
+    if (surface.length() != span.length()) {
+      throw new IllegalArgumentException("surface length must match span length");
     }
-    if (features == null) {
-      throw new IllegalArgumentException("features must not be null");
+    ArgumentChecks.requireNonNullArg(features, "features");
+    for (final String feature : features) {
+      if (feature == null) {
+        throw new IllegalArgumentException("features must not contain null");
+      }
     }
     features = List.copyOf(features);
   }
