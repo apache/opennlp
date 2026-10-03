@@ -70,21 +70,10 @@ public class BasicContextGenerator implements ContextGenerator<String> {
       throw new IllegalArgumentException(
           "sep is taken as written and must not contain a backslash: " + sep);
     }
-    if (sep.codePoints().anyMatch(this::isUnpairedSurrogate)) {
+    if (sep.codePoints().anyMatch(StringUtil::isUnpairedSurrogate)) {
       throw new IllegalArgumentException("sep must not contain an unpaired surrogate");
     }
     separator = sep;
-  }
-
-  /**
-   * Tests whether a code point read from a string is a surrogate on its own rather than
-   * the start of a supplementary character.
-   *
-   * @param codePoint A code point as returned by {@link String#codePoints()}.
-   * @return {@code true} if it is a lone surrogate code unit.
-   */
-  private boolean isUnpairedSurrogate(int codePoint) {
-    return codePoint <= Character.MAX_VALUE && Character.isSurrogate((char) codePoint);
   }
 
   /**

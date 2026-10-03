@@ -244,22 +244,14 @@ public final class UnigramSegmenter implements Tokenizer {
       if (line.isEmpty()) {
         continue;
       }
-      final int wordEnd = whitespaceIndex(line);
-      if (wordEnd < 0) {
+      final String[] fields = StringUtil.splitOnUnicodeWhitespace(line);
+      if (fields.length < 2) {
         throw new IOException("lexicon line " + lineNumber + " has no count");
       }
-      final String word = line.substring(0, wordEnd);
-      int countStart = wordEnd;
-      while (countStart < line.length() && StringUtil.isWhitespace(line.charAt(countStart))) {
-        countStart++;
-      }
-      int countEnd = countStart;
-      while (countEnd < line.length() && !StringUtil.isWhitespace(line.charAt(countEnd))) {
-        countEnd++;
-      }
+      final String word = fields[0];
       final long count;
       try {
-        count = Long.parseLong(line.substring(countStart, countEnd));
+        count = Long.parseLong(fields[1]);
       } catch (NumberFormatException e) {
         throw new IOException("malformed count at lexicon line " + lineNumber, e);
       }
@@ -406,21 +398,5 @@ public final class UnigramSegmenter implements Tokenizer {
     for (int i = reversed.size() - 1; i >= 0; i--) {
       spans.add(reversed.get(i));
     }
-  }
-
-  /**
-   * Finds the first whitespace character in a lexicon line.
-   *
-   * @param text The line to scan.
-   * @return The index of the first whitespace character, or {@code -1} when the line
-   *         contains none.
-   */
-  private static int whitespaceIndex(String text) {
-    for (int i = 0; i < text.length(); i++) {
-      if (StringUtil.isWhitespace(text.charAt(i))) {
-        return i;
-      }
-    }
-    return -1;
   }
 }

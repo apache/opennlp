@@ -76,7 +76,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private static final String NER_PREFIX = "NER:";
   private static final String HYPHEN = "-";
   private static final char HYPHEN_CHAR = '-';
-  private static final char UNDERSCORE = '_';
+  private static final char[] UNDERSCORE_SEPARATOR = {'_'};
   private static final char TAG_OPEN = '<';
   private static final char TAG_CLOSE = '>';
   private static final String LITERARY_PREFIX = "LIT";
@@ -396,28 +396,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @return The parts in order; empty when the lexeme has no character other than underscores.
    */
   String[] splitOnUnderscores(String s) {
-    if (s.isEmpty()) {
-      return new String[0];
-    }
-    if (s.indexOf(UNDERSCORE) == -1) {
-      return new String[] {s};
-    }
-    List<String> tokens = new ArrayList<>();
-    int start = -1;
-    for (int i = 0; i < s.length(); i++) {
-      if (s.charAt(i) == UNDERSCORE) {
-        if (start >= 0) {
-          tokens.add(s.substring(start, i));
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-    }
-    if (start >= 0) {
-      tokens.add(s.substring(start));
-    }
-    return tokens.toArray(new String[0]);
+    return StringUtil.splitNonEmpty(s, UNDERSCORE_SEPARATOR);
   }
 
   /**

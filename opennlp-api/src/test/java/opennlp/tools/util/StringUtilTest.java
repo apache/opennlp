@@ -302,6 +302,35 @@ public class StringUtilTest {
   }
 
   // -------------------------------------------------------------------------
+  // isUnpairedSurrogate
+  // -------------------------------------------------------------------------
+
+  @ParameterizedTest
+  @ValueSource(ints = {0xD800, 0xDBFF, 0xDC00, 0xDFFF, 0xD83D, 0xDE00})
+  void testIsUnpairedSurrogateAccepts(int codePoint) {
+    Assertions.assertTrue(StringUtil.isUnpairedSurrogate(codePoint));
+  }
+
+  @ParameterizedTest
+  // the neighbors of the surrogate range, a letter, NUL, U+FFFF, the first and last
+  // supplementary code points, an emoji, and a value past U+10FFFF
+  @ValueSource(ints = {0xD7FF, 0xE000, 'a', 0, 0xFFFF, 0x10000, 0x10FFFF, 0x1F600, 0x110000, -1})
+  void testIsUnpairedSurrogateRejects(int codePoint) {
+    Assertions.assertFalse(StringUtil.isUnpairedSurrogate(codePoint));
+  }
+
+  @Test
+  void testIsUnpairedSurrogateOverCodePointsOfString() {
+    // a valid pair yields one supplementary code point, lone halves yield themselves
+    final int[] codePoints = "\uD83D\uDE00\uD83Da\uDE00".codePoints().toArray();
+    final boolean[] expected = {false, true, false, true};
+    Assertions.assertEquals(expected.length, codePoints.length);
+    for (int i = 0; i < codePoints.length; i++) {
+      Assertions.assertEquals(expected[i], StringUtil.isUnpairedSurrogate(codePoints[i]));
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // isLineTerminator, indexOfLineTerminator
   // -------------------------------------------------------------------------
 

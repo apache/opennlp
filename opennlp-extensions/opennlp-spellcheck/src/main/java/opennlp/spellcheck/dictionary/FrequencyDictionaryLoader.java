@@ -20,8 +20,6 @@ package opennlp.spellcheck.dictionary;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,6 +27,7 @@ import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Loads plain-text frequency dictionaries into a {@link SymSpell} engine.
@@ -63,17 +62,11 @@ public final class FrequencyDictionaryLoader {
   /** The default character set used when none is supplied. */
   public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-  /** UTF-8 byte-order mark (U+FEFF); stripped if it leads a line. */
-  private static final char BOM = (char) 0xFEFF;
-
   /** The first character of a comment line. */
   private static final char COMMENT_MARKER = '#';
 
-  /** A TAB, one of the two column separators. */
-  private static final char COLUMN_TAB = '\t';
-
-  /** A space, one of the two column separators. */
-  private static final char COLUMN_SPACE = ' ';
+  /** The column separators, TAB and space. Other whitespace is part of a column. */
+  private static final char[] COLUMN_SEPARATORS = {'\t', ' '};
 
   /** The sign that leads a negative count. */
   private static final char MINUS_SIGN = '-';
@@ -175,11 +168,11 @@ public final class FrequencyDictionaryLoader {
       long lineNo = 0;
       while ((line = lines.read()) != null) {
         lineNo++;
-        final String content = stripBom(line);
+        final String content = StringUtil.stripByteOrderMark(line);
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = splitColumns(content.strip());
+        final String[] columns = StringUtil.splitNonEmpty(content.strip(), COLUMN_SEPARATORS);
         if (columns.length < 2) {
           throw new MalformedDictionaryLineException(lineNo, line, UNIGRAM_COLUMNS_MISSING);
         }
@@ -199,11 +192,11 @@ public final class FrequencyDictionaryLoader {
       long lineNo = 0;
       while ((line = lines.read()) != null) {
         lineNo++;
-        final String content = stripBom(line);
+        final String content = StringUtil.stripByteOrderMark(line);
         if (isSkippable(content)) {
           continue;
         }
-        final String[] columns = splitColumns(content.strip());
+        final String[] columns = StringUtil.splitNonEmpty(content.strip(), COLUMN_SEPARATORS);
         if (columns.length < 3) {
           throw new MalformedDictionaryLineException(lineNo, line, BIGRAM_COLUMNS_MISSING);
         }
@@ -213,54 +206,6 @@ public final class FrequencyDictionaryLoader {
       }
     }
     return read;
-  }
-
-  /**
-   * Splits {@code line} into columns on runs of TAB and space characters. Leading, trailing,
-   * and repeated separators produce no empty column, so a line of only separators or an
-   * empty line has no columns. Other whitespace, such as a no-break space or a vertical tab,
-   * is part of a column.
-   *
-   * @param line The line to split. Must not be {@code null}.
-   * @return The non-empty columns in order.
-   */
-  private String[] splitColumns(String line) {
-    final List<String> columns = new ArrayList<>();
-    int start = -1;
-    for (int i = 0; i <= line.length(); i++) {
-      if (i == line.length() || isColumnSeparator(line.charAt(i))) {
-        if (start >= 0) {
-          columns.add(line.substring(start, i));
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-    }
-    return columns.toArray(new String[0]);
-  }
-
-  /**
-   * Tests whether {@code c} separates dictionary columns, which only a TAB or a space does.
-   *
-   * @param c The character to check.
-   * @return {@code true} if {@code c} is a TAB or a space.
-   */
-  private boolean isColumnSeparator(char c) {
-    return c == COLUMN_TAB || c == COLUMN_SPACE;
-  }
-
-  /**
-   * Removes the byte-order mark that leads {@code line}, if there is one.
-   *
-   * @param line The line as read. Must not be {@code null}.
-   * @return The line without a leading byte-order mark.
-   */
-  private String stripBom(String line) {
-    if (!line.isEmpty() && line.charAt(0) == BOM) {
-      return line.substring(1);
-    }
-    return line;
   }
 
   /**
