@@ -16,6 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -61,9 +62,7 @@ public record AlignedText(CharSequence original, CharSequence normalized, Alignm
    *     original length does not equal this alignment's normalized length.
    */
   public AlignedText andThen(AlignedText next) {
-    if (next == null) {
-      throw new IllegalArgumentException("next must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(next, "next");
     return new AlignedText(original, next.normalized(), alignment.andThen(next.alignment()));
   }
 
