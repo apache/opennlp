@@ -1,21 +1,19 @@
-<!--
-   Licensed to the Apache Software Foundation (ASF) under one
-   or more contributor license agreements.  See the NOTICE file
-   distributed with this work for additional information
-   regarding copyright ownership.  The ASF licenses this file
-   to you under the Apache License, Version 2.0 (the
-   "License"); you may not use this file except in compliance
-   with the License.  You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing,
-   software distributed under the License is distributed on an
-   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-   KIND, either express or implied.  See the License for the
-   specific language governing permissions and limitations
-   under the License.
--->
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 src/license/NOTICE.template
 src/test/resources/opennlp/tools/*/*.txt
@@ -40,38 +38,57 @@ src/test/resources/data/ppa/test
 src/test/resources/data/ppa/training
 src/test/resources/data/ppa/NOTICE
 src/test/resources/opennlp/tools/doccat/DoccatSample.txt
-src/test/resources/opennlp/tools/formats/brat/voa-with-entities.ann
-src/test/resources/opennlp/tools/formats/brat/voa-with-entities.txt
-src/test/resources/opennlp/tools/formats/brat/voa-with-relations.ann
-src/test/resources/opennlp/tools/formats/brat/voa-with-relations.txt
 src/test/resources/opennlp/tools/languagemodel/sentences.txt
 src/test/resources/opennlp/tools/lemmatizer/trial.old.tsv
 src/test/resources/opennlp/tools/lemmatizer/output.txt
 src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_1.txt
 src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_2.txt
 
-<!-- OPENNLP-1832 spellcheck tiny test fixtures (data files, no AL header possible) -->
+# spellcheck tiny test fixtures (data files, no Apache header possible)
 src/test/resources/opennlp/spellcheck/frequency_dictionary_tiny.txt
 src/test/resources/opennlp/spellcheck/frequency_bigramdictionary_tiny.txt
 src/test/resources/opennlp/spellcheck/misspellings_tiny.txt
 
-<!-- head rule files, format does not allow AL header -->
+# head rule files, format does not allow an Apache header
 lang/en/parser/en-head_rules
 lang/es/parser/es-head-rules
 src/test/resources/*.txt
 src/test/resources/*.info
 
-<!-- other licence -->
+# other licence
 src/main/java/opennlp/tools/stemmer/snowball/*.java
 src/main/resources/opennlp/tools/stopword/*.txt
 
-<!-- OPENNLP-1850 bundled Unicode data files (Unicode License V3, no Apache header possible) -->
+# bundled Unicode data files (Unicode License V3, no Apache header possible)
 src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
 src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
 src/main/resources/opennlp/tools/util/normalizer/confusables.txt
+src/main/resources/opennlp/tools/util/normalizer/CaseFolding.txt
 src/main/resources/opennlp/tools/util/normalizer/EmojiSequences.txt
 src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
 
-<!-- opennlp-dl tiny ONNX test models (project-generated binaries, see the gen_tiny_*_model.py scripts committed next to them) -->
+# opennlp-dl tiny ONNX test models (project-generated binaries, see the gen_tiny_*_model.py scripts next to them)
 src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx
 src/test/resources/opennlp/dl/vectors/tiny-pooled.onnx
+
+# test fixtures and expected outputs (data files, no Apache header possible)
+src/test/resources/opennlp/tools/util/wordvector/glove-example-*.txt
+src/test/resources/opennlp/tools/cmdline/chunker/*.txt
+src/test/resources/opennlp/tools/cmdline/languagemodel/origin_of_text_samples.txt
+src/test/resources/opennlp/tools/ml/maxent/football.dat
+src/test/resources/opennlp/tools/lemmatizer/*.dict
+src/test/resources/opennlp/tools/lemmatizer/trial.old-insufficient.tsv
+src/test/resources/opennlp/dl/vocab-plain.txt
+
+# corpus format samples read by the opennlp-formats tests (data files, no Apache header possible)
+src/test/resources/opennlp/tools/formats/ad/ad.sample
+src/test/resources/opennlp/tools/formats/brat/brat-ann.conf
+src/test/resources/opennlp/tools/formats/brat/*.ann
+src/test/resources/opennlp/tools/formats/brat/*.txt
+src/test/resources/opennlp/tools/formats/conllu/*.conllu
+src/test/resources/opennlp/tools/formats/irishsentencebank/*.xml
+src/test/resources/opennlp/tools/formats/leipzig/samples/**
+src/test/resources/opennlp/tools/formats/masc/fakeMASC*
+src/test/resources/opennlp/tools/formats/moses/*.sample
+src/test/resources/opennlp/tools/formats/nkjp/*.xml
+src/test/resources/opennlp/tools/formats/ontonotes/ontonotes-sample-*
