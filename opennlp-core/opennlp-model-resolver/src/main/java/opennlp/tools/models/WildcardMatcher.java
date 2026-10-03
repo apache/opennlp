@@ -17,11 +17,11 @@
 package opennlp.tools.models;
 
 /**
- * Matches file names against the wildcards accepted by {@link ClassPathModelFinder}
- * implementations. A {@code *} matches any run of code points, including none, a {@code ?}
- * matches exactly one code point, and every other code point stands for itself; there is no
- * escape character. The wildcard must cover the whole input and the comparison is
- * case-sensitive.
+ * Matches file names against the wildcards accepted by
+ * {@link AbstractClassPathModelFinder#matchesWildcard(java.net.URL, String)}. A {@code *}
+ * matches any run of code points, including none, a {@code ?} matches exactly one code point,
+ * and every other code point stands for itself; there is no escape character. The wildcard
+ * must cover the whole input and the comparison is case-sensitive.
  */
 final class WildcardMatcher {
 

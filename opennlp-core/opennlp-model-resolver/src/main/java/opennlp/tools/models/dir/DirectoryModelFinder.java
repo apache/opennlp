@@ -56,7 +56,6 @@ public class DirectoryModelFinder extends AbstractClassPathModelFinder implement
 
   private final Path directory;
   private final boolean recursive;
-  private final String jarWildcard;
 
   /**
    * Instantiates a new {@link DirectoryModelFinder} with the specified parameters.
@@ -75,7 +74,6 @@ public class DirectoryModelFinder extends AbstractClassPathModelFinder implement
     }
     this.directory = directory;
     this.recursive = recursive;
-    this.jarWildcard = "*" + getJarModelPrefix();
   }
 
   /**
@@ -94,27 +92,7 @@ public class DirectoryModelFinder extends AbstractClassPathModelFinder implement
     if (wildcardPattern == null) {
       return Collections.emptyList();
     }
-
-    final boolean isWindows = isWindows();
-    final List<URL> cp = getDirectoryContent();
-    final List<URI> cpu = new ArrayList<>();
-    final String fileWildcard = "*" + wildcardPattern;
-
-    for (URL url : cp) {
-      if (matchesWildcard(url, jarWildcard)) {
-        try {
-          for (URI u : getURIsFromJar(url, isWindows)) {
-            if (matchesWildcard(u.toURL(), fileWildcard)) {
-              cpu.add(u);
-            }
-          }
-        } catch (IOException e) {
-          logger.warn("Cannot read content of {}.", url, e);
-        }
-      }
-    }
-
-    return cpu;
+    return getMatchingJarEntryURIs(getDirectoryContent(), wildcardPattern);
   }
 
   private List<URL> getDirectoryContent() {

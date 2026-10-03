@@ -16,7 +16,6 @@
  */
 package opennlp.tools.models.simple;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -28,9 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import opennlp.tools.models.AbstractClassPathModelFinder;
 import opennlp.tools.models.ClassPathModelFinder;
@@ -62,7 +58,6 @@ import opennlp.tools.util.StringUtil;
  */
 public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder implements ClassPathModelFinder {
 
-  private static final Logger logger = LoggerFactory.getLogger(SimpleClassPathModelFinder.class);
   private static final char CLASSPATH_SEPARATOR_WINDOWS = ';';
   private static final char CLASSPATH_SEPARATOR_UNIX = ':';
 
@@ -74,8 +69,9 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   }
 
   /**
-   * @param modelJarPrefix The leafnames of the jars that should be canned (e.g. "opennlp.jar").
+   * @param modelJarPrefix The leafnames of the jars that should be scanned (e.g. "opennlp.jar").
    *                       May contain a wildcard glob ("opennlp-*.jar"). It must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code modelJarPrefix} is {@code null}.
    */
   public SimpleClassPathModelFinder(String modelJarPrefix) {
     super(modelJarPrefix);
@@ -100,28 +96,7 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     if (wildcardPattern == null) {
       return Collections.emptyList();
     }
-
-    final boolean isWindows = isWindows();
-    final List<URL> cp = getClassPathElements();
-    final List<URI> cpu = new ArrayList<>();
-    final String jarWildcard = "*" + getJarModelPrefix();
-    final String fileWildcard = "*" + wildcardPattern;
-
-    for (URL url : cp) {
-      if (matchesWildcard(url, jarWildcard)) {
-        try {
-          for (URI u : getURIsFromJar(url, isWindows)) {
-            if (matchesWildcard(u.toURL(), fileWildcard)) {
-              cpu.add(u);
-            }
-          }
-        } catch (IOException e) {
-          logger.warn("Cannot read content of {}.", url, e);
-        }
-      }
-    }
-
-    return cpu;
+    return getMatchingJarEntryURIs(getClassPathElements(), wildcardPattern);
   }
 
   /**

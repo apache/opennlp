@@ -35,7 +35,8 @@ import opennlp.tools.models.ClassPathModelFinder;
  * By default, this implementation will search for JAR files starting with "opennlp-models-*".
  * This search mask can be adjusted by using the one argument
  * {@link ClassgraphModelFinder#ClassgraphModelFinder(String) constructor}. Wildcard search is supported
- * by using asterisk symbol.
+ * by using asterisk symbol. Masks follow the wildcard rules of ClassGraph, not the rules of
+ * {@link AbstractClassPathModelFinder#matchesWildcard(java.net.URL, String)}.
  *
  * @implNote {@link ClassgraphModelFinder} relies on the <a href="https://github.com/classgraph/classgraph">
  *   Classgraph</a> library. For this reason, you have to take care of <i>Classgraph</i> being present
@@ -56,6 +57,7 @@ public class ClassgraphModelFinder extends AbstractClassPathModelFinder implemen
   /**
    * @param modelJarPrefix The leafnames of the jars that should be scanned (e.g. "opennlp.jar").
    *                       May contain a wildcard glob ("opennlp-*.jar"). It must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code modelJarPrefix} is {@code null}.
    */
   public ClassgraphModelFinder(String modelJarPrefix) {
     super(modelJarPrefix);
