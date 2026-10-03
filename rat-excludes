@@ -44,7 +44,7 @@ src/test/resources/opennlp/tools/lemmatizer/output.txt
 src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_1.txt
 src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_2.txt
 
-# spellcheck tiny test fixtures (data files, no Apache header possible)
+# OPENNLP-1832 spellcheck tiny test fixtures (data files, no Apache header possible)
 src/test/resources/opennlp/spellcheck/frequency_dictionary_tiny.txt
 src/test/resources/opennlp/spellcheck/frequency_bigramdictionary_tiny.txt
 src/test/resources/opennlp/spellcheck/misspellings_tiny.txt
@@ -59,7 +59,7 @@ src/test/resources/*.info
 src/main/java/opennlp/tools/stemmer/snowball/*.java
 src/main/resources/opennlp/tools/stopword/*.txt
 
-# bundled Unicode data files (Unicode License V3, no Apache header possible)
+# OPENNLP-1850 bundled Unicode data files (Unicode License V3, no Apache header possible)
 src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
 src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
 src/main/resources/opennlp/tools/util/normalizer/confusables.txt
