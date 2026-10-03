@@ -18,6 +18,7 @@
 package opennlp.tools.util.normalizer;
 
 import opennlp.tools.commons.Internal;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * Finds email addresses in text for {@link UrlCharSequenceNormalizer} and classifies whole
@@ -46,7 +47,7 @@ public final class MailAddressScan {
   }
 
   /**
-   * Tests whether a whole text is one email address.
+   * Checks whether a whole text is one email address.
    *
    * @param text The text to classify. Must not be {@code null}.
    * @return {@code true} if an address starts at index {@code 0} and ends at the end of
@@ -54,9 +55,7 @@ public final class MailAddressScan {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public static boolean isAddress(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     return !text.isEmpty() && matchEnd(text, 0) == text.length();
   }
 
