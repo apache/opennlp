@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.chunker;
+package opennlp.tools.cmdline.chunker;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +27,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.RestoreDefaultLocale;
-import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
+import opennlp.tools.chunker.Chunker;
+import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
@@ -38,11 +39,11 @@ public class ChunkerDetailedFMeasureListenerTest {
   void testEvaluator() throws IOException {
 
     ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
-        getClass(), "/opennlp/tools/chunker/output.txt");
+        getClass(), "/opennlp/tools/cmdline/chunker/output.txt");
     ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
-        "/opennlp/tools/chunker/output.txt");
+        "/opennlp/tools/cmdline/chunker/output.txt");
     ResourceAsStreamFactory detailedOutputStream = new ResourceAsStreamFactory(
-        getClass(), "/opennlp/tools/chunker/detailedOutput.txt");
+        getClass(), "/opennlp/tools/cmdline/chunker/detailedOutput.txt");
 
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
         new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
@@ -88,9 +89,9 @@ public class ChunkerDetailedFMeasureListenerTest {
 
   private static void evaluate(ChunkerDetailedFMeasureListener listener) throws IOException {
     ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
-        ChunkerDetailedFMeasureListenerTest.class, "/opennlp/tools/chunker/output.txt");
+        ChunkerDetailedFMeasureListenerTest.class, "/opennlp/tools/cmdline/chunker/output.txt");
     ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(
-        ChunkerDetailedFMeasureListenerTest.class, "/opennlp/tools/chunker/output.txt");
+        ChunkerDetailedFMeasureListenerTest.class, "/opennlp/tools/cmdline/chunker/output.txt");
 
     DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
         new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
