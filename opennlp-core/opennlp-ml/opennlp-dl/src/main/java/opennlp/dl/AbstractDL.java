@@ -427,19 +427,12 @@ public abstract class AbstractDL implements AutoCloseable {
     // if that ever changes.
     AlignedText result = identityAligned(text, text);
     if (normalizeWhitespace) {
-      result = compose(result, WHITESPACE.normalizeAligned(result.normalized()));
+      result = result.andThen(WHITESPACE.normalizeAligned(result.normalized()));
     }
     if (normalizeDashes) {
-      result = compose(result, DASHES.normalizeAligned(result.normalized()));
+      result = result.andThen(DASHES.normalizeAligned(result.normalized()));
     }
     return result;
-  }
-
-  // Threads a fold stage onto the running alignment: accumulated maps original -> current and next
-  // maps current -> next.normalized(), so the composition maps original -> next.normalized().
-  private static AlignedText compose(final AlignedText accumulated, final AlignedText next) {
-    return new AlignedText(accumulated.original(), next.normalized(),
-        accumulated.alignment().andThen(next.alignment()));
   }
 
   // An AlignedText whose alignment is the identity, for the case where no length-changing fold was

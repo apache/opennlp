@@ -22,6 +22,7 @@ import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AlignedTextTest {
 
@@ -88,6 +89,82 @@ public class AlignedTextTest {
     assertEquals("a b", aligned.normalizedString());
     assertEquals("a b", aligned.normalized().toString());
     assertSpan(1, 3, aligned.toOriginalSpan(1, 2));
+  }
+
+  @Test
+  void andThenKeepsFirstOriginalAndLastNormalized() {
+    final StringBuilder original = new StringBuilder("  a   b  ");
+    final AlignedText collapsed = CharClass.whitespace().collapseAligned(original);
+    final AlignedText composed =
+        collapsed.andThen(CharClass.whitespace().trimAligned(collapsed.normalized()));
+    assertSame(original, composed.original());
+    assertEquals("a b", composed.normalizedString());
+    assertSpan(2, 3, composed.toOriginalSpan(0, 1)); // "a"
+    assertSpan(3, 6, composed.toOriginalSpan(1, 2)); // collapsed run between the letters
+    assertSpan(6, 7, composed.toOriginalSpan(2, 3)); // "b"
+    assertSpan(2, 3, composed.toNormalizedSpan(6, 7));
+  }
+
+  @Test
+  void andThenMapsSupplementaryCharactersThroughBothStages() {
+    // U+1D400 MATHEMATICAL BOLD CAPITAL A is two UTF-16 units and is removed by the second stage.
+    final String original = "x  𝐀 y";
+    final AlignedText collapsed = CharClass.whitespace().collapseAligned(original);
+    final AlignedText removed = CharClass.of(CodePointSet.of(0x1D400), ' ')
+        .removeAllAligned(collapsed.normalized());
+    final AlignedText composed = collapsed.andThen(removed);
+    assertEquals("x  y", composed.normalizedString());
+    assertSpan(5, 6, composed.toOriginalSpan(2, 3)); // second space follows the removed pair
+    assertSpan(6, 7, composed.toOriginalSpan(3, 4)); // "y"
+  }
+
+  /**
+   * Chains three stages, one of them expanding (U+2026 to "..."), and compares the result with
+   * the alignments composed by hand over the whole offset grid, end offsets included.
+   */
+  @Test
+  void andThenOverThreeStagesMatchesHandComposedAlignments() {
+    final String original = "  a\u2026b  ";
+    final AlignedText collapsed = CharClass.whitespace().collapseAligned(original);
+    final AlignedText expanded = CharClass.substituteAligned(collapsed.normalized(),
+        cp -> cp == 0x2026 ? "..." : null);
+    final AlignedText trimmed = CharClass.whitespace().trimAligned(expanded.normalized());
+    final AlignedText composed = collapsed.andThen(expanded).andThen(trimmed);
+    final AlignedText byHand = new AlignedText(original, trimmed.normalized(),
+        collapsed.alignment().andThen(expanded.alignment()).andThen(trimmed.alignment()));
+
+    assertEquals("a...b", composed.normalizedString());
+    assertSame(original, composed.original());
+    assertSpan(2, 3, composed.toOriginalSpan(0, 1)); // "a"
+    assertSpan(3, 4, composed.toOriginalSpan(1, 4)); // the ellipsis, expanded to three dots
+    assertSpan(4, 5, composed.toOriginalSpan(4, 5)); // "b"
+    final int n = composed.normalized().length();
+    for (int start = 0; start <= n; start++) {
+      for (int end = start; end <= n; end++) {
+        assertEquals(byHand.toOriginalSpan(start, end), composed.toOriginalSpan(start, end),
+            "normalized [" + start + ", " + end + ")");
+      }
+    }
+    final int m = original.length();
+    for (int start = 0; start <= m; start++) {
+      for (int end = start; end <= m; end++) {
+        assertEquals(byHand.toNormalizedSpan(start, end), composed.toNormalizedSpan(start, end),
+            "original [" + start + ", " + end + ")");
+      }
+    }
+  }
+
+  @Test
+  void andThenRejectsNull() {
+    final AlignedText collapsed = CharClass.whitespace().collapseAligned("a  b");
+    assertThrows(IllegalArgumentException.class, () -> collapsed.andThen(null));
+  }
+
+  @Test
+  void andThenRejectsStageThatDoesNotLineUp() {
+    final AlignedText collapsed = CharClass.whitespace().collapseAligned("a  b");
+    final AlignedText unrelated = CharClass.whitespace().collapseAligned("a    b");
+    assertThrows(IllegalArgumentException.class, () -> collapsed.andThen(unrelated));
   }
 
 }

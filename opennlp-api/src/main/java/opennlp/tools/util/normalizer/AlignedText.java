@@ -16,6 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -45,6 +46,24 @@ public record AlignedText(CharSequence original, CharSequence normalized, Alignm
    */
   public String normalizedString() {
     return normalized.toString();
+  }
+
+  /**
+   * Composes this result with a stage that further normalizes this result's normalized text.
+   *
+   * <p>If this maps {@code original -> middle} and {@code next} maps {@code middle -> final}, the
+   * result keeps this {@link #original()}, takes the {@link #normalized()} text of {@code next}, and
+   * maps between them with {@link Alignment#andThen(Alignment)}.</p>
+   *
+   * @param next The next stage, produced from this result's normalized text. Must not be
+   *             {@code null}.
+   * @return The composed result.
+   * @throws IllegalArgumentException Thrown if {@code next} is {@code null}, or if its alignment's
+   *     original length does not equal this alignment's normalized length.
+   */
+  public AlignedText andThen(AlignedText next) {
+    ArgumentChecks.requireNonNullArg(next, "next");
+    return new AlignedText(original, next.normalized(), alignment.andThen(next.alignment()));
   }
 
   /**

@@ -39,16 +39,16 @@ public class WhitespaceCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return WHITESPACE.trim(WHITESPACE.collapse(text));
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     final AlignedText collapsed = WHITESPACE.collapseAligned(text);
-    final AlignedText trimmed = WHITESPACE.trimAligned(collapsed.normalized());
-    return new AlignedText(text, trimmed.normalized(),
-        collapsed.alignment().andThen(trimmed.alignment()));
+    return collapsed.andThen(WHITESPACE.trimAligned(collapsed.normalized()));
   }
 }
