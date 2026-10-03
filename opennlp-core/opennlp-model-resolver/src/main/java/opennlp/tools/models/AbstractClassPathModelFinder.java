@@ -66,7 +66,6 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   private static final String URL_MUST_NOT_BE_NULL = "url must not be null";
 
   private final String jarModelPrefix;
-  private final String jarWildcard;
   private Set<ClassPathModelEntry> models;
 
   /**
@@ -86,7 +85,6 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
       throw new IllegalArgumentException("jarModelPrefix must not be null");
     }
     this.jarModelPrefix = jarModelPrefix;
-    this.jarWildcard = ANY_RUN + jarModelPrefix;
   }
 
   @Override
@@ -179,6 +177,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
     }
 
     final boolean isWindows = isWindows();
+    final String jarWildcard = ANY_RUN + getJarModelPrefix();
     final String fileWildcard = ANY_RUN + wildcardPattern;
     for (URL url : candidates) {
       if (matchesWildcard(url, jarWildcard)) {
