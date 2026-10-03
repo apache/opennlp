@@ -34,9 +34,8 @@ public class StringUtil {
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
-   * The ten ASCII digit strings {@code "0"} to {@code "9"}, indexed by digit value. Precomputed so
-   * code folding digits to ASCII does not allocate a new single-character string per digit; the
-   * list is immutable and safe to share.
+   * The immutable list of the ten ASCII digit strings {@code "0"} to {@code "9"}, indexed by
+   * digit value.
    */
   public static final List<String> ASCII_DIGIT_STRINGS =
       List.of("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");

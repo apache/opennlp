@@ -25,15 +25,11 @@ package opennlp.tools.util.normalizer;
  * dash to one ASCII hyphen, or stripping invisible controls all shift every later character. A normalizer
  * that performs such a fold over the cursor-based {@link CharClass} engine can record those edits
  * and expose them through {@link #normalizeAligned(CharSequence)}. A normalizer that delegates to
- * {@link java.text.Normalizer} (NFC/NFKC) or to a stemmer cannot report its edits, so it does not
- * implement this interface; that is a deliberate capability split rather than an oversight.</p>
+ * {@link java.text.Normalizer} (NFC/NFKC) or to a stemmer cannot report its edits and does not
+ * implement this interface.</p>
  *
- * <p>{@code TextNormalizer.Builder.buildAligned()} composes a chain of these into a single
- * offset-aware pipeline whose {@link AlignedText} maps a match all the way back to the original
- * input. An interface-typed caller tests for the capability
- * ({@code normalizer instanceof OffsetAwareNormalizer}) instead of depending on a concrete normalizer,
- * the same plain {@code instanceof} pattern used by
- * {@code OffsetMappingNameFinder} (in the DL layer) rather than reflection.</p>
+ * <p>Callers check for the capability with {@code normalizer instanceof OffsetAwareNormalizer},
+ * the same way {@link opennlp.tools.namefind.OffsetMappingNameFinder} is detected on a name finder.</p>
  */
 public interface OffsetAwareNormalizer extends CharSequenceNormalizer {
 
