@@ -19,7 +19,6 @@ package opennlp.spellcheck.normalizer;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
@@ -29,6 +28,7 @@ import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
+import opennlp.tools.util.normalizer.MailAddressScan;
 
 /**
  * A {@link CharSequenceNormalizer} that corrects spelling in text using a
@@ -79,11 +79,16 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   /** The default minimum token length below which tokens are left untouched. */
   public static final int DEFAULT_MIN_TOKEN_LENGTH = 4;
 
-  /** Matches URL- and email-like tokens that should never be spell-corrected. */
-  private static final Pattern URL_LIKE = Pattern.compile(
-      "(?:https?://|www\\.)\\S+"
-          + "|[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+\\.[-.0-9A-Za-z]+"
-          + "|\\S+\\.(?:com|org|net|edu|gov|io)\\b\\S*");
+  /** The prefixes that make a token URL-like when at least one char follows them. */
+  private static final String[] URL_PREFIXES = {"http://", "https://", "www."};
+
+  /** The top-level domains that make a token URL-like when they follow an inner dot. */
+  private static final String[] URL_TOP_LEVEL_DOMAINS = {"com", "org", "net", "edu", "gov", "io"};
+
+  private static final char AT = '@';
+  private static final char DOT = '.';
+  private static final char COMMA = ',';
+  private static final char UNDERSCORE = '_';
 
   /** The correction mode. */
   public enum Mode {
@@ -289,7 +294,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     if (core.length() < minTokenLength) {
       return false;
     }
-    if (skipUrls && URL_LIKE.matcher(core).matches()) {
+    if (skipUrls && isUrlLike(core)) {
       return false;
     }
     if (skipNumbers && isNumberLike(core)) {
@@ -393,6 +398,84 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   }
 
   /**
+   * {@return whether {@code core} is URL- or email-like} That is the case when it starts with
+   * {@code http://}, {@code https://} or {@code www.} followed by at least one char, when it is
+   * an email address whose domain has a dot followed by at least one char, or when a dot after
+   * its first char is followed by a known top-level domain that ends a word.
+   *
+   * @param core The token to classify; never null and free of whitespace.
+   * @see MailAddressScan#isAddress(CharSequence)
+   */
+  boolean isUrlLike(String core) {
+    return hasUrlPrefix(core) || isDottedMailAddress(core) || hasTopLevelDomain(core);
+  }
+
+  /**
+   * {@return whether {@code core} starts with one of {@link #URL_PREFIXES} followed by at least
+   * one char}
+   *
+   * @param core The token to classify; never null.
+   */
+  private boolean hasUrlPrefix(String core) {
+    for (String prefix : URL_PREFIXES) {
+      if (core.length() > prefix.length() && core.startsWith(prefix)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * {@return whether {@code core} is one email address whose domain has a dot followed by at
+   * least one char}
+   *
+   * @param core The token to classify; never null.
+   */
+  private boolean isDottedMailAddress(String core) {
+    if (!MailAddressScan.isAddress(core)) {
+      return false;
+    }
+    final int dot = core.indexOf(DOT, core.indexOf(AT) + 1);
+    return dot != -1 && dot < core.length() - 1;
+  }
+
+  /**
+   * {@return whether a dot after the first char of {@code core} is followed by one of
+   * {@link #URL_TOP_LEVEL_DOMAINS} that ends a word}
+   *
+   * @param core The token to classify; never null.
+   */
+  private boolean hasTopLevelDomain(String core) {
+    for (int dot = core.indexOf(DOT, 1); dot != -1; dot = core.indexOf(DOT, dot + 1)) {
+      for (String domain : URL_TOP_LEVEL_DOMAINS) {
+        if (core.startsWith(domain, dot + 1) && endsWord(core, dot + 1 + domain.length())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * {@return whether a word that ends in an ASCII letter right before {@code end} ends there}
+   * The word goes on through an ASCII letter, an ASCII digit, an underscore, or a non-spacing
+   * mark.
+   *
+   * @param core The token; never null.
+   * @param end  The index right after the word, at most the length of {@code core}.
+   */
+  private boolean endsWord(String core, int end) {
+    if (end == core.length()) {
+      return true;
+    }
+    final int codePoint = core.codePointAt(end);
+    return !StringUtil.isAsciiLetter(codePoint)
+        && !StringUtil.isAsciiDigit(codePoint)
+        && codePoint != UNDERSCORE
+        && Character.getType(codePoint) != Character.NON_SPACING_MARK;
+  }
+
+  /**
    * {@return whether {@code core} looks like a number: an optional sign, then digits with
    * optional grouping or decimal marks containing at least one ASCII digit, then an optional
    * trailing percent sign} Package private so the differential test can drive the
@@ -417,7 +500,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
       final char c = core.charAt(i);
       if (c >= '0' && c <= '9') {
         sawDigit = true;
-      } else if (c != '.' && c != ',') {
+      } else if (c != DOT && c != COMMA) {
         return false;
       }
     }

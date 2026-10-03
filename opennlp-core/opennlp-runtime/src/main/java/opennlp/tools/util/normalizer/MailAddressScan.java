@@ -17,13 +17,18 @@
 
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.commons.Internal;
+import opennlp.tools.util.ArgumentChecks;
+
 /**
- * Finds email addresses in text for {@link UrlCharSequenceNormalizer}. An address is a maximal
- * run of the local-part set {@code [-+_.0-9A-Za-z]} with a left neighbor outside that set, an
- * {@code @}, and a domain run out of {@code [-.0-9A-Za-z]} that does not start with a dot
- * and spans at least two chars.
+ * Finds email addresses in text for {@link UrlCharSequenceNormalizer} and classifies whole
+ * tokens as email addresses. An address is a maximal run of the local-part set
+ * {@code [-+_.0-9A-Za-z]} with a left neighbor outside that set, an {@code @}, and a domain
+ * run out of {@code [-.0-9A-Za-z]} that does not start with a dot and spans at least two
+ * chars.
  */
-final class MailAddressScan {
+@Internal
+public final class MailAddressScan {
 
   /** The mail local-part set, also the left-neighbor exclusion set: {@code [-+_.0-9A-Za-z]}. */
   private static final CodePointSet MAIL_LOCAL =
@@ -39,6 +44,19 @@ final class MailAddressScan {
   private static final int MIN_DOMAIN_LENGTH = 2;
 
   private MailAddressScan() {
+  }
+
+  /**
+   * Checks whether a whole text is one email address.
+   *
+   * @param text The text to classify. Must not be {@code null}.
+   * @return {@code true} if an address starts at index {@code 0} and ends at the end of
+   *         {@code text}, {@code false} otherwise, also for the empty text.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  public static boolean isAddress(CharSequence text) {
+    ArgumentChecks.requireNonNullArg(text, "text");
+    return !text.isEmpty() && matchEnd(text, 0) == text.length();
   }
 
   /**
