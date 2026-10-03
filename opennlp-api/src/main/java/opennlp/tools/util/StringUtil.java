@@ -570,7 +570,7 @@ public class StringUtil {
    * @since 1.5.1
    */
   public static boolean isEmpty(CharSequence theString) {
-    requireNonNullArg(theString, "theString");
+    ArgumentChecks.requireNonNullArg(theString, "theString");
     return theString.length() == 0;
   }
 
@@ -588,7 +588,7 @@ public class StringUtil {
    * @throws IllegalArgumentException Thrown if {@code theString} is {@code null}.
    */
   public static boolean isBlank(CharSequence theString) {
-    requireNonNullArg(theString, "theString");
+    ArgumentChecks.requireNonNullArg(theString, "theString");
     for (int i = 0; i < theString.length(); ) {
       final int codePoint = Character.codePointAt(theString, i);
       if (!isWhitespace(codePoint)) {
