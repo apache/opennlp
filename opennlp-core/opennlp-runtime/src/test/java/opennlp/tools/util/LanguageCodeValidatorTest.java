@@ -19,6 +19,8 @@ package opennlp.tools.util;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class LanguageCodeValidatorTest {
 
@@ -118,5 +120,67 @@ class LanguageCodeValidatorTest {
         () -> LanguageCodeValidator.validateLanguageCode("und"));
     Assertions.assertDoesNotThrow(
         () -> LanguageCodeValidator.validateLanguageCode("x-unspecified"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "nld, nl",
+      "dut, nl",
+      "fra, fr",
+      "fre, fr",
+      "deu, de",
+      "ger, de",
+      "eng, en",
+      "ENG, en",
+      "GER, de",
+      "en, en",
+      "EN, en",
+      "xx, xx",
+      "und, und",
+      "zzz, zzz",
+      "abcd, abcd",
+      "x-unspecified, x-unspecified",
+  })
+  void testToIso6391(String input, String expected) {
+    Assertions.assertEquals(expected, LanguageCodeValidator.toIso6391(input));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "de, deu",
+      "DE, deu",
+      "fr, fra",
+      "nl, nld",
+      "nb, nob",
+      "nn, nno",
+      "no, nor",
+      "en, eng",
+      "ger, deu",
+      "fre, fra",
+      "DUT, nld",
+      "deu, deu",
+      "eng, eng",
+      "xx, xx",
+      "und, und",
+      "zzz, zzz",
+      "abcd, abcd",
+      "x-unspecified, x-unspecified",
+  })
+  void testToIso6393(String input, String expected) {
+    Assertions.assertEquals(expected, LanguageCodeValidator.toIso6393(input));
+  }
+
+  @Test
+  void testToIso6391And6393EmptyCode() {
+    Assertions.assertEquals("", LanguageCodeValidator.toIso6391(""));
+    Assertions.assertEquals("", LanguageCodeValidator.toIso6393(""));
+  }
+
+  @Test
+  void testToIso6391And6393NullCode() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> LanguageCodeValidator.toIso6391(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> LanguageCodeValidator.toIso6393(null));
   }
 }

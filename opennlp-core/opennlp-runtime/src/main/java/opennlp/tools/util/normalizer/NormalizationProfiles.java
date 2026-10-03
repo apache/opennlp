@@ -17,14 +17,13 @@
 package opennlp.tools.util.normalizer;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.Set;
 
 import opennlp.tools.langdetect.LanguageDetector;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
+import opennlp.tools.util.LanguageCodeValidator;
 
 /**
  * A registry of {@link NormalizationProfile}s by language, with detection-based fallback. This is
@@ -36,7 +35,8 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * Norwegian written standards all use {@code NORWEGIAN}).
  *
  * <p>Profiles are keyed by ISO 639-3 code (what {@link LanguageDetector} produces);
- * {@link #forLanguage(String)} also accepts ISO 639-1 two-letter codes.</p>
+ * {@link #forLanguage(String)} also accepts ISO 639-1 two-letter codes and the ISO 639-2
+ * bibliographic codes {@code dut}, {@code fre} and {@code ger}.</p>
  */
 public final class NormalizationProfiles {
 
@@ -88,8 +88,8 @@ public final class NormalizationProfiles {
   /**
    * Returns the {@link NormalizationProfile profile} for a language.
    *
-   * @param language An ISO 639-3 or ISO 639-1 language code; case-insensitive. Must not be
-   *                 {@code null}.
+   * @param language An ISO 639-3, ISO 639-2 bibliographic or ISO 639-1 language code;
+   *                 case-insensitive. Must not be {@code null}.
    * @return The profile, or empty if the language has no Snowball stemmer.
    * @throws IllegalArgumentException if {@code language} is {@code null}.
    */
@@ -97,17 +97,7 @@ public final class NormalizationProfiles {
     if (language == null) {
       throw new IllegalArgumentException("language must not be null");
     }
-    String code = language.strip().toLowerCase(Locale.ROOT);
-    if (code.length() == 2) {
-      try {
-        final String iso3 = Locale.of(code).getISO3Language();
-        if (!iso3.isEmpty()) {
-          code = iso3;
-        }
-      } catch (MissingResourceException ignored) {
-        // No ISO 639-3 code for this two-letter code; fall through and look up as given.
-      }
-    }
+    final String code = LanguageCodeValidator.toIso6393(language.strip());
     return Optional.ofNullable(BY_LANGUAGE.get(code));
   }
 
