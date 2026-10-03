@@ -19,6 +19,8 @@ package opennlp.tools.util.normalizer;
 import java.text.Normalizer;
 import java.util.Set;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link CharSequenceNormalizer} that folds diacritics for matching, the
  * multilingual-safe counterpart to a Latin-only ASCII folding filter.
@@ -77,9 +79,7 @@ public class AccentFoldCharSequenceNormalizer implements CharSequenceNormalizer 
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder out = new StringBuilder(decomposed.length());
 

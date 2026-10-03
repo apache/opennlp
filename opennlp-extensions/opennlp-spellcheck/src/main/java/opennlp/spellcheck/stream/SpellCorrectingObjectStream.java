@@ -22,6 +22,7 @@ import java.io.IOException;
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
 import opennlp.spellcheck.normalizer.SpellCheckingCharSequenceNormalizer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -61,7 +62,7 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples, SpellChecker spellChecker) {
     this(samples, new SpellCheckingCharSequenceNormalizer(
-        requireNonNullArg(spellChecker, "spellChecker")));
+        ArgumentChecks.requireNonNullArg(spellChecker, "spellChecker")));
   }
 
   /**
@@ -74,7 +75,7 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples, SymSpellModel model) {
     this(samples, new SpellCheckingCharSequenceNormalizer(
-        requireNonNullArg(model, "model")));
+        ArgumentChecks.requireNonNullArg(model, "model")));
   }
 
   /**
@@ -87,26 +88,8 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples,
                                      SpellCheckingCharSequenceNormalizer normalizer) {
-    super(requireNonNullArg(samples, "samples"));
-    if (normalizer == null) {
-      throw new IllegalArgumentException("normalizer must not be null");
-    }
-    this.normalizer = normalizer;
-  }
-
-  /**
-   * Validates that a constructor argument is not {@code null}.
-   *
-   * @param value the argument to check
-   * @param name  the parameter name used in the error message
-   * @return {@code value}, never {@code null}
-   * @throws IllegalArgumentException if {@code value} is {@code null}
-   */
-  private static <T> T requireNonNullArg(T value, String name) {
-    if (value == null) {
-      throw new IllegalArgumentException(name + " must not be null");
-    }
-    return value;
+    super(ArgumentChecks.requireNonNullArg(samples, "samples"));
+    this.normalizer = ArgumentChecks.requireNonNullArg(normalizer, "normalizer");
   }
 
   /** {@inheritDoc} */

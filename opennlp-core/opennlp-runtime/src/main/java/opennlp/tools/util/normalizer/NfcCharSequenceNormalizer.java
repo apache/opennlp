@@ -18,6 +18,8 @@ package opennlp.tools.util.normalizer;
 
 import java.text.Normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link CharSequenceNormalizer} that applies Unicode Normalization Form C (canonical
  * composition, UAX #15).
@@ -41,9 +43,7 @@ public class NfcCharSequenceNormalizer implements CharSequenceNormalizer {
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     return Normalizer.normalize(text, Normalizer.Form.NFC);
   }
 }

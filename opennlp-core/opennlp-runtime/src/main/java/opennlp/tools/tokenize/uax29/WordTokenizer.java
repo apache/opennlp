@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -93,8 +94,8 @@ public final class WordTokenizer implements Tokenizer {
    * @throws IllegalArgumentException Thrown if {@code text} or {@code handler} is {@code null}.
    */
   public void tokenize(CharSequence text, TokenHandler handler) {
-    requireNonNullArg(text, "text");
-    requireNonNullArg(handler, "handler");
+    ArgumentChecks.requireNonNullArg(text, "text");
+    ArgumentChecks.requireNonNullArg(handler, "handler");
     WordSegmenter.forEachSegment(text, (start, end) -> {
       final WordType type = WordType.of(text, start, end);
       if (type != null) {
@@ -112,7 +113,7 @@ public final class WordTokenizer implements Tokenizer {
    */
   @Override
   public String[] tokenize(String text) {
-    requireNonNullArg(text, "text");
+    ArgumentChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return new String[0];
     }
@@ -130,7 +131,7 @@ public final class WordTokenizer implements Tokenizer {
    */
   @Override
   public Span[] tokenizePos(String text) {
-    requireNonNullArg(text, "text");
+    ArgumentChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return new Span[0];
     }
@@ -146,7 +147,7 @@ public final class WordTokenizer implements Tokenizer {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<Span> tokenizeSpans(CharSequence text) {
-    requireNonNullArg(text, "text");
+    ArgumentChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return new ArrayList<>();
     }
@@ -163,7 +164,7 @@ public final class WordTokenizer implements Tokenizer {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<WordToken> tokenizeTyped(CharSequence text) {
-    requireNonNullArg(text, "text");
+    ArgumentChecks.requireNonNullArg(text, "text");
     if (text.length() == 0) {
       return new ArrayList<>();
     }
@@ -190,14 +191,6 @@ public final class WordTokenizer implements Tokenizer {
     }
     if (from < end) {
       handler.token(from, end, type);
-    }
-  }
-
-  // Null parameters report IllegalArgumentException rather than requireNonNull's
-  // NullPointerException, matching the parameter contract of the CharClass engine.
-  private static void requireNonNullArg(Object value, String name) {
-    if (value == null) {
-      throw new IllegalArgumentException("The " + name + " must not be null.");
     }
   }
 }

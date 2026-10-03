@@ -41,6 +41,7 @@ import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.namefind.OffsetMappingNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
@@ -181,9 +182,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Map<Integer, String> ids2Labels,
       final SentenceDetector sentenceDetector) {
-    requireNonNullArg(inferenceOptions, "inferenceOptions");
-    requireNonNullArg(ids2Labels, "ids2Labels");
-    requireNonNullArg(sentenceDetector, "sentenceDetector");
+    ArgumentChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
+    ArgumentChecks.requireNonNullArg(ids2Labels, "ids2Labels");
+    ArgumentChecks.requireNonNullArg(sentenceDetector, "sentenceDetector");
     return inferenceOptions;
   }
 
@@ -256,7 +257,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    */
   private DecodedSpans locate(String[] input) {
 
-    requireNonNullArg(input, "input");
+    ArgumentChecks.requireNonNullArg(input, "input");
     for (int i = 0; i < input.length; i++) {
       if (input[i] == null) {
         throw new IllegalArgumentException(

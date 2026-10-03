@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link CharSequenceNormalizer} that reduces text to its Unicode confusable
  * {@linkplain Confusables#skeleton(CharSequence) skeleton} (UTS #39).
@@ -43,9 +45,7 @@ public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNor
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     return Confusables.skeleton(text);
   }
 }

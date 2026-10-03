@@ -22,6 +22,7 @@ import java.io.IOException;
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
 import opennlp.spellcheck.normalizer.SpellCheckingCharSequenceNormalizer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
@@ -64,7 +65,7 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SpellChecker spellChecker) {
     this(samples,
         SpellCheckingCharSequenceNormalizer.builder(
-            requireNonNullArg(spellChecker, "spellChecker"))
+            ArgumentChecks.requireNonNullArg(spellChecker, "spellChecker"))
             .mode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN).build(),
         DEFAULT_DELIMITER);
   }
@@ -78,7 +79,7 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    * @throws IllegalArgumentException if {@code samples} or {@code model} is {@code null}
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SymSpellModel model) {
-    this(samples, requireNonNullArg(model, "model").getSymSpell());
+    this(samples, ArgumentChecks.requireNonNullArg(model, "model").getSymSpell());
   }
 
   /**
@@ -99,33 +100,14 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
   public SpellCorrectingTokenStream(ObjectStream<String> samples,
                                     SpellCheckingCharSequenceNormalizer normalizer,
                                     String delimiter) {
-    super(requireNonNullArg(samples, "samples"));
-    if (normalizer == null) {
-      throw new IllegalArgumentException("normalizer must not be null");
-    }
-    if (delimiter == null) {
-      throw new IllegalArgumentException("delimiter must not be null");
-    }
+    super(ArgumentChecks.requireNonNullArg(samples, "samples"));
+    ArgumentChecks.requireNonNullArg(normalizer, "normalizer");
+    ArgumentChecks.requireNonNullArg(delimiter, "delimiter");
     if (delimiter.isEmpty()) {
       throw new IllegalArgumentException("delimiter must not be empty");
     }
     this.normalizer = normalizer;
     this.delimiter = delimiter;
-  }
-
-  /**
-   * Validates that a constructor argument is not {@code null}.
-   *
-   * @param value the argument to check
-   * @param name  the parameter name used in the error message
-   * @return {@code value}, never {@code null}
-   * @throws IllegalArgumentException if {@code value} is {@code null}
-   */
-  private static <T> T requireNonNullArg(T value, String name) {
-    if (value == null) {
-      throw new IllegalArgumentException(name + " must not be null");
-    }
-    return value;
   }
 
   /** {@inheritDoc} */
