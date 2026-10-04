@@ -20,6 +20,7 @@ package opennlp.tools.stemmer;
 import java.util.List;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.OwnerOrPerThreadState;
 
 /**
@@ -48,9 +49,7 @@ public final class SharingStemmer extends DelegatingStemmer<Stemmer> {
    */
   @Override
   public CharSequence stem(CharSequence word) {
-    if (word == null) {
-      throw new IllegalArgumentException("word must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(word, "word");
     return state.get().stem(word);
   }
 
@@ -59,9 +58,7 @@ public final class SharingStemmer extends DelegatingStemmer<Stemmer> {
    */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
-    if (word == null) {
-      throw new IllegalArgumentException("word must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(word, "word");
     return state.get().stemAll(word);
   }
 }

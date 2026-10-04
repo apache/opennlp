@@ -43,6 +43,8 @@
 
 package opennlp.tools.stemmer;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A {@link Stemmer}, implementing the <a href="https://tartarus.org/martin/PorterStemmer/">
  * Porter Stemming Algorithm</a>
@@ -603,9 +605,7 @@ public class PorterStemmer implements Stemmer {
    * @throws IllegalArgumentException if {@code word} is {@code null}.
    */
   public CharSequence stem(CharSequence word) {
-    if (word == null) {
-      throw new IllegalArgumentException("word must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(word, "word");
     return stem(word.toString());
   }
 

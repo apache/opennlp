@@ -29,6 +29,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
@@ -106,9 +107,7 @@ public final class TermVectorAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code mode} is {@code null}.
    */
   public TermVectorAnnotator(Mode mode) {
-    if (mode == null) {
-      throw new IllegalArgumentException("mode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(mode, "mode");
     this.normalizer = null;
     this.tokenNormalizer = null;
     this.mode = mode;
@@ -144,12 +143,8 @@ public final class TermVectorAnnotator implements DocumentAnnotator {
    *         {@code null}.
    */
   public TermVectorAnnotator(CharSequenceNormalizer normalizer, Mode mode) {
-    if (normalizer == null) {
-      throw new IllegalArgumentException("normalizer must not be null");
-    }
-    if (mode == null) {
-      throw new IllegalArgumentException("mode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(normalizer, "normalizer");
+    ArgumentChecks.requireNonNullArg(mode, "mode");
     this.normalizer = null;
     this.tokenNormalizer = normalizer;
     this.mode = mode;
@@ -187,12 +182,8 @@ public final class TermVectorAnnotator implements DocumentAnnotator {
    *         {@code null}.
    */
   public TermVectorAnnotator(OffsetAwareNormalizer normalizer, Mode mode) {
-    if (normalizer == null) {
-      throw new IllegalArgumentException("normalizer must not be null");
-    }
-    if (mode == null) {
-      throw new IllegalArgumentException("mode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(normalizer, "normalizer");
+    ArgumentChecks.requireNonNullArg(mode, "mode");
     this.normalizer = normalizer;
     this.tokenNormalizer = null;
     this.mode = mode;

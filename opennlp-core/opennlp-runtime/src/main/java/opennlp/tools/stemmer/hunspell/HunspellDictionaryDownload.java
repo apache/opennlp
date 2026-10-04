@@ -20,6 +20,7 @@ package opennlp.tools.stemmer.hunspell;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.DictionaryCatalog;
 
 /**
@@ -54,15 +55,9 @@ public final class HunspellDictionaryDownload {
    */
   public static void downloadFromCatalog(DictionaryCatalog catalog, String dictionaryId,
       Path targetDirectory) throws IOException {
-    if (catalog == null) {
-      throw new IllegalArgumentException("catalog must not be null");
-    }
-    if (dictionaryId == null) {
-      throw new IllegalArgumentException("dictionaryId must not be null");
-    }
-    if (targetDirectory == null) {
-      throw new IllegalArgumentException("targetDirectory must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(catalog, "catalog");
+    ArgumentChecks.requireNonNullArg(dictionaryId, "dictionaryId");
+    ArgumentChecks.requireNonNullArg(targetDirectory, "targetDirectory");
     final String prefix = "hunspell." + dictionaryId;
     catalog.install(prefix + HunspellDictionary.AFFIX_FILE_SUFFIX, targetDirectory);
     catalog.install(prefix + HunspellDictionary.DICTIONARY_FILE_SUFFIX, targetDirectory);

@@ -21,6 +21,7 @@ import java.util.List;
 import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotatorProvider;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ext.ProviderSpec;
 
 /**
@@ -53,9 +54,7 @@ public final class StemmerAnnotatorProvider implements DocumentAnnotatorProvider
 
   @Override
   public boolean supports(final ProviderSpec spec) {
-    if (spec == null) {
-      throw new IllegalArgumentException("spec must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(spec, "spec");
     return spec.location().isEmpty() && spec.hasOnlyOptions(ALGORITHM_OPTION)
         && isKnown(spec.option(ALGORITHM_OPTION, PORTER));
   }
@@ -66,9 +65,7 @@ public final class StemmerAnnotatorProvider implements DocumentAnnotatorProvider
 
   @Override
   public DocumentAnnotator create(final ProviderSpec spec) {
-    if (spec == null) {
-      throw new IllegalArgumentException("spec must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(spec, "spec");
     if (!supports(spec)) {
       throw new IllegalArgumentException("Unsupported spec: " + spec);
     }

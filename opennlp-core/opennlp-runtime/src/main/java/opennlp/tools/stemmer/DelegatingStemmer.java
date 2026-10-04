@@ -20,6 +20,7 @@ package opennlp.tools.stemmer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.OwnerOrPerThreadState;
 
 /**
@@ -53,9 +54,7 @@ abstract class DelegatingStemmer<P> implements Stemmer {
    * @throws IllegalArgumentException if {@code factory} is {@code null}.
    */
   static StemmerFactory requireFactory(StemmerFactory factory) {
-    if (factory == null) {
-      throw new IllegalArgumentException("factory must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(factory, "factory");
     return factory;
   }
 

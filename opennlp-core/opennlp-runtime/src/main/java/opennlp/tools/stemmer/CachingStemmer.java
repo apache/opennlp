@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * A {@link Stemmer} that memoizes word-to-stem mappings in a bounded per-thread LRU cache.
@@ -91,9 +92,7 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
    */
   @Override
   public CharSequence stem(CharSequence word) {
-    if (word == null) {
-      throw new IllegalArgumentException("word must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(word, "word");
     final ThreadState ts = state.get();
     final String key = word.toString();
     final String cached = ts.cache.get(key);
@@ -110,9 +109,7 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
    */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
-    if (word == null) {
-      throw new IllegalArgumentException("word must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(word, "word");
     return state.get().delegate.stemAll(word);
   }
 
