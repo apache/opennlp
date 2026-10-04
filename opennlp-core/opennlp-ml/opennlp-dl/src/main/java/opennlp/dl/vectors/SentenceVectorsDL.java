@@ -35,6 +35,7 @@ import ai.onnxruntime.OrtSession;
 import ai.onnxruntime.TensorInfo;
 
 import opennlp.dl.AbstractDL;
+import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.EmbeddingException;
@@ -158,7 +159,45 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       final Pooling pooling, final boolean normalize, final int maxLength)
       throws OrtException, IOException {
 
-    super(model, vocabulary, new OrtSession.SessionOptions(), lowerCase);
+    this(model, vocabulary, lowerCase, pooling, normalize, maxLength, new InferenceOptions());
+
+  }
+
+  /**
+   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models and the
+   * given {@link InferenceOptions}, so the session can run on a GPU through
+   * {@code opennlp-dl-gpu}.
+   *
+   * @param model The file name of a sentence vectors ONNX model.
+   * @param vocabulary The file name of the vocabulary file for the model.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent
+   *     stripping during tokenization), {@code false} for cased models. A lower case setting in
+   *     {@code inferenceOptions} takes precedence.
+   * @param pooling How token vectors are pooled. Not used for a model with a
+   *     {@code sentence_embedding} output. Must not be {@code null}.
+   * @param normalize {@code true} to scale every vector to unit length.
+   * @param maxLength The maximum number of tokens per input, {@code [CLS]} and {@code [SEP]}
+   *     included; longer input is truncated. Must be at least {@code 2}.
+   * @param inferenceOptions The {@link InferenceOptions}, of which the GPU settings and the lower
+   *     case setting are used. Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if {@code pooling} or {@code inferenceOptions} is
+   *     {@code null}, if {@code inferenceOptions} holds invalid split options, if
+   *     {@code maxLength} is less than {@code 2}, or if the model has no output of shape
+   *     {@code [batch, hidden]} or {@code [batch, tokens, hidden]}.
+   * @throws OrtException Thrown if the {@code model} cannot be loaded, or if a GPU was requested
+   *     and ONNX Runtime cannot provide it. ONNX Runtime does not fall back to the CPU.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   *
+   * @since 3.0.0
+   */
+  public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase,
+      final Pooling pooling, final boolean normalize, final int maxLength,
+      final InferenceOptions inferenceOptions)
+      throws OrtException, IOException {
+
+    super(model, vocabulary, sessionOptions(inferenceOptions),
+        resolveLowerCase(inferenceOptions, lowerCase));
     try {
       if (pooling == null) {
         throw new IllegalArgumentException("pooling must not be null");
