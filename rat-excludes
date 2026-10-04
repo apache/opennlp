@@ -70,6 +70,7 @@ src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
 # opennlp-dl tiny ONNX test models (project-generated binaries, see the gen_tiny_*_model.py scripts next to them)
 src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx
 src/test/resources/opennlp/dl/vectors/tiny-pooled.onnx
+src/test/resources/opennlp/dl/vectors/tiny-masked.onnx
 
 # test fixtures and expected outputs (data files, no Apache header possible)
 src/test/resources/opennlp/tools/util/wordvector/glove-example-*.txt

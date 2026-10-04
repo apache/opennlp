@@ -19,11 +19,14 @@ package opennlp.dl.vectors;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 
+import opennlp.dl.InferenceOptions;
 import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProvider;
 import opennlp.tools.util.ext.ProviderSpec;
@@ -32,8 +35,8 @@ import opennlp.tools.util.ext.ProviderSpec;
  * Provides a {@link SentenceVectorsDL} under the name {@value #NAME}. It supports a spec whose
  * location is a local file named {@code *.onnx}, in any letter case, and whose only options are
  * {@value #VOCABULARY_OPTION}, {@value #LOWER_CASE_OPTION}, {@value #POOLING_OPTION},
- * {@value #NORMALIZE_OPTION} and {@value #MAX_LENGTH_OPTION}. The option values are checked by
- * {@link #create(ProviderSpec)}, which also initializes the ONNX Runtime.
+ * {@value #NORMALIZE_OPTION}, {@value #MAX_LENGTH_OPTION} and {@value #PADDING_OPTION}. The option
+ * values are checked by {@link #create(ProviderSpec)}, which also initializes the ONNX Runtime.
  *
  * @since 3.0.0
  */
@@ -62,6 +65,12 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
    * {@value SentenceVectorsDL#DEFAULT_MAX_LENGTH} by default.
    */
   public static final String MAX_LENGTH_OPTION = "maxLength";
+
+  /**
+   * The option that selects the {@link PaddingStrategy}: {@code exact_length} by default,
+   * {@code longest} or {@code max_length}.
+   */
+  public static final String PADDING_OPTION = "padding";
 
   private static final String MODEL_SUFFIX = ".onnx";
   private static final String TRUE = "true";
@@ -95,7 +104,7 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
     }
     return spec.path().isPresent() && spec.locationEndsWith(MODEL_SUFFIX)
         && spec.hasOnlyOptions(VOCABULARY_OPTION, LOWER_CASE_OPTION, POOLING_OPTION,
-            NORMALIZE_OPTION, MAX_LENGTH_OPTION);
+            NORMALIZE_OPTION, MAX_LENGTH_OPTION, PADDING_OPTION);
   }
 
   @Override
@@ -115,10 +124,11 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
     final boolean normalize = booleanOption(spec, NORMALIZE_OPTION);
     final Pooling pooling = poolingOption(spec);
     final int maxLength = maxLengthOption(spec);
+    final PaddingStrategy padding = paddingOption(spec);
     final Path vocabularyPath = model.toAbsolutePath().getParent().resolve(vocabulary);
     try {
       return new SentenceVectorsDL(model.toFile(), vocabularyPath.toFile(), lowerCase, pooling,
-          normalize, maxLength);
+          normalize, maxLength, padding, new InferenceOptions());
     } catch (final OrtException e) {
       throw new IOException("Cannot load the ONNX model " + model, e);
     } catch (final LinkageError e) {
@@ -160,6 +170,30 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
       return Pooling.CLS;
     }
     throw new IllegalArgumentException(POOLING_OPTION + " must be " + MEAN + " or " + CLS);
+  }
+
+  /**
+   * Reads the {@value #PADDING_OPTION} option.
+   *
+   * @param spec The spec to read.
+   * @return The padding strategy, {@link PaddingStrategy#EXACT_LENGTH} if the option is not set.
+   * @throws IllegalArgumentException Thrown if the value is not the lower case name of a
+   *     {@link PaddingStrategy}.
+   */
+  private PaddingStrategy paddingOption(final ProviderSpec spec) {
+    final String value = spec.option(PADDING_OPTION, null);
+    if (value == null) {
+      return SentenceVectorsDL.DEFAULT_PADDING;
+    }
+    final List<String> names = new ArrayList<>();
+    for (final PaddingStrategy padding : PaddingStrategy.values()) {
+      final String name = padding.name().toLowerCase(Locale.ROOT);
+      if (name.equals(value)) {
+        return padding;
+      }
+      names.add(name);
+    }
+    throw new IllegalArgumentException(PADDING_OPTION + " must be one of " + names);
   }
 
   /**

@@ -171,10 +171,17 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			<code>lowerCase=false</code>, <code>pooling=mean</code> (default) or
 			<code>pooling=cls</code>, <code>normalize=true</code> (default) or
 			<code>normalize=false</code>, and <code>maxLength</code>, the maximum number of tokens
-			per input (512 by default); longer input is truncated. The defaults match
-			sentence-transformers models such as all-MiniLM-L6-v2. A model with a
-			<code>sentence_embedding</code> output is used as it is, without pooling. A spec with
-			another option is not supported. The key
+			per input (512 by default); longer input is truncated. The option <code>padding</code>
+			sets how <code>embedAll</code> batches texts of different lengths:
+			<code>exact_length</code> (default) pads nothing and runs one inference per tokenized
+			length, <code>longest</code> pads each batch to its longest text, and
+			<code>max_length</code> pads every text to <code>maxLength</code>. The vectors match up
+			to floating-point rounding either way, provided the model honors the attention mask; a
+			<code>sentence_embedding</code> output that ignores the mask changes with padding.
+			Padding needs a <code>[PAD]</code> token in the vocabulary, or <code>&lt;pad&gt;</code>
+			for a RoBERTa vocabulary. The defaults match sentence-transformers models such as
+			all-MiniLM-L6-v2. A model with a <code>sentence_embedding</code> output is used as it
+			is, without pooling. A spec with another option is not supported. The key
 			<code>opennlp.provider.opennlp.tools.embeddings.TextEmbedderProvider</code> selects a
 			provider by name. Excluding <code>opennlp-dl</code> leaves the API without a provider
 			until another one is installed. Existing <code>SentenceVectorsDL</code> constructors remain
