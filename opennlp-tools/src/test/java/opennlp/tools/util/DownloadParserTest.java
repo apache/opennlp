@@ -17,33 +17,44 @@
 
 package opennlp.tools.util;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.models.ModelType;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class DownloadParserTest {
+
+  private static final String INDEX = "opennlp/tools/util/index.html";
+  private static final int LANGUAGES = 36;
 
   @ParameterizedTest(name = "Verify \"{0}\" available models")
   @MethodSource(value = "expectedModels")
   void testAvailableModels(String language, Map<ModelType, String> expectedModels) {
 
-    final URL baseUrl = fromClasspath("opennlp/tools/util/index.html");
+    final URL baseUrl = fromClasspath(INDEX);
     assertNotNull(baseUrl);
 
     final DownloadUtil.DownloadParser downloadParser = new DownloadUtil.DownloadParser(baseUrl);
@@ -51,7 +62,7 @@ public class DownloadParserTest {
     try {
       Map<String, Map<ModelType, URL>> result = downloadParser.getAvailableModels();
       assertNotNull(result);
-      assertEquals(36, result.size());
+      assertEquals(LANGUAGES, result.size());
 
       final Map<ModelType, URL> availableModels = result.get(language);
       assertNotNull(availableModels);
@@ -119,7 +130,7 @@ public class DownloadParserTest {
   @MethodSource("indexPages")
   void testExtractLinks(String page, List<String> expected) {
     final DownloadUtil.DownloadParser downloadParser =
-        new DownloadUtil.DownloadParser(fromClasspath("opennlp/tools/util/index.html"));
+        new DownloadUtil.DownloadParser(fromClasspath(INDEX));
     assertEquals(expected, downloadParser.extractLinks(page));
   }
 
@@ -134,6 +145,76 @@ public class DownloadParserTest {
     } catch (URISyntaxException | MalformedURLException e) {
       fail(e);
     }
+  }
+
+  @Test
+  void testLocalIndexIsUsedIfTheUrlCannotBeRead(@TempDir Path home) throws Exception {
+    final Path localIndex = home.resolve("index.html");
+    Files.writeString(localIndex, indexPage(), StandardCharsets.UTF_8);
+    final URL unreachable = new URI("file:/this/does/not/exist/").toURL();
+
+    final Map<String, Map<ModelType, URL>> result =
+        new DownloadUtil.DownloadParser(unreachable, localIndex).getAvailableModels();
+
+    assertEquals(LANGUAGES, result.size());
+    assertEquals(unreachable + OPENNLP + "en-ud-ewt-" + MODEL_SENT + VER + BIN,
+        result.get("en").get(ModelType.SENTENCE_DETECTOR).toExternalForm());
+  }
+
+  @Test
+  void testIndexReadFromTheUrlIsStored(@TempDir Path home) throws Exception {
+    final Path localIndex = home.resolve("not/created/yet/index.html");
+
+    final Map<String, Map<ModelType, URL>> result = new DownloadUtil.DownloadParser(
+        fromClasspath(INDEX), localIndex).getAvailableModels();
+
+    assertEquals(LANGUAGES, result.size());
+    assertEquals(indexPage(), Files.readString(localIndex, StandardCharsets.UTF_8));
+    try (Stream<Path> files = Files.list(localIndex.getParent())) {
+      assertEquals(List.of(localIndex), files.toList());
+    }
+  }
+
+  @Test
+  void testIndexReadFromTheUrlReplacesTheLocalIndex(@TempDir Path home) throws Exception {
+    final Path localIndex = home.resolve("index.html");
+    Files.writeString(localIndex, "<html><body>Old</body></html>", StandardCharsets.UTF_8);
+
+    final Map<String, Map<ModelType, URL>> result = new DownloadUtil.DownloadParser(
+        fromClasspath(INDEX), localIndex).getAvailableModels();
+
+    assertEquals(LANGUAGES, result.size());
+    assertEquals(indexPage(), Files.readString(localIndex, StandardCharsets.UTF_8));
+  }
+
+  @Test
+  void testFailedReadStoresNothing(@TempDir Path home) throws Exception {
+    final Path localIndex = home.resolve("index.html");
+
+    final Map<String, Map<ModelType, URL>> result = new DownloadUtil.DownloadParser(
+        new URI("file:/this/does/not/exist").toURL(), localIndex).getAvailableModels();
+
+    assertTrue(result.isEmpty());
+    assertFalse(Files.exists(localIndex));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"models/ud-models-1.3/", "models/ud-models-1.3", "models/ud-models-1.3//",
+      "ud-models-1.3", "/ud-models-1.3/"})
+  void testIndexFileName(String modelPath) {
+    assertEquals("ud-models-1.3.index.html", DownloadUtil.indexFileName(modelPath));
+  }
+
+  /**
+   * Reads the test index page as the parser keeps it: its lines joined without separators.
+   *
+   * @return The page content.
+   * @throws IOException Thrown if the resource cannot be read.
+   * @throws URISyntaxException Thrown if the resource URL is not a valid URI.
+   */
+  private String indexPage() throws IOException, URISyntaxException {
+    return String.join("", Files.readAllLines(
+        Path.of(fromClasspath(INDEX).toURI()), StandardCharsets.UTF_8));
   }
 
   private URL fromClasspath(String file) {
