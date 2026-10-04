@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.DictionaryCatalog;
 import opennlp.tools.util.ResourceInstaller;
 
@@ -111,12 +112,8 @@ public final class MecabDictionaryInstaller {
    */
   public static int install(URI archive, Path targetDirectory, String expectedChecksum)
       throws IOException {
-    if (archive == null) {
-      throw new IllegalArgumentException("archive must not be null");
-    }
-    if (targetDirectory == null) {
-      throw new IllegalArgumentException("targetDirectory must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(archive, "archive");
+    ArgumentChecks.requireNonNullArg(targetDirectory, "targetDirectory");
     final Path unpacked = createScratch(targetDirectory);
     try {
       ResourceInstaller.install(archive, unpacked, expectedChecksum);
@@ -143,15 +140,9 @@ public final class MecabDictionaryInstaller {
    */
   public static int installFromCatalog(DictionaryCatalog catalog, String dictionaryId,
       Path targetDirectory) throws IOException {
-    if (catalog == null) {
-      throw new IllegalArgumentException("catalog must not be null");
-    }
-    if (dictionaryId == null) {
-      throw new IllegalArgumentException("dictionaryId must not be null");
-    }
-    if (targetDirectory == null) {
-      throw new IllegalArgumentException("targetDirectory must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(catalog, "catalog");
+    ArgumentChecks.requireNonNullArg(dictionaryId, "dictionaryId");
+    ArgumentChecks.requireNonNullArg(targetDirectory, "targetDirectory");
     final Path unpacked = createScratch(targetDirectory);
     try {
       catalog.install(dictionaryId, unpacked);

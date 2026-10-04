@@ -20,6 +20,7 @@ import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 import opennlp.tools.stemmer.snowball.SnowballStemmerFactory;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * Per-language normalization settings, mirroring how OpenNLP already selects a Snowball stemmer by
@@ -51,12 +52,8 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
    *     {@code null}, or if {@code language} is blank.
    */
   public NormalizationProfile {
-    if (language == null) {
-      throw new IllegalArgumentException("language must not be null");
-    }
-    if (stemmerAlgorithm == null) {
-      throw new IllegalArgumentException("stemmerAlgorithm must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(language, "language");
+    ArgumentChecks.requireNonNullArg(stemmerAlgorithm, "stemmerAlgorithm");
     if (language.isBlank()) {
       throw new IllegalArgumentException("language must not be blank");
     }

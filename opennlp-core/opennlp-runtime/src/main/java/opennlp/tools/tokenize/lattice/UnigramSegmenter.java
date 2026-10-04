@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
@@ -184,12 +185,8 @@ public final class UnigramSegmenter implements Tokenizer {
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static UnigramSegmenter load(Path lexicon, Charset charset) throws IOException {
-    if (lexicon == null) {
-      throw new IllegalArgumentException("lexicon must not be null");
-    }
-    if (charset == null) {
-      throw new IllegalArgumentException("charset must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(lexicon, "lexicon");
+    ArgumentChecks.requireNonNullArg(charset, "charset");
     try (InputStream in = Files.newInputStream(lexicon)) {
       return load(in, charset);
     }
@@ -221,12 +218,8 @@ public final class UnigramSegmenter implements Tokenizer {
    */
   private static UnigramSegmenter loadInternal(InputStream lexiconStream, Charset charset,
       int maxEntries) throws IOException {
-    if (lexiconStream == null) {
-      throw new IllegalArgumentException("lexiconStream must not be null");
-    }
-    if (charset == null) {
-      throw new IllegalArgumentException("charset must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(lexiconStream, "lexiconStream");
+    ArgumentChecks.requireNonNullArg(charset, "charset");
     if (maxEntries < 1) {
       throw new IllegalArgumentException("maxEntries must be positive");
     }
@@ -325,9 +318,7 @@ public final class UnigramSegmenter implements Tokenizer {
    */
   @Override
   public Span[] tokenizePos(String text) {
-    if (text == null) {
-      throw new IllegalArgumentException("text must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     final List<Span> spans = new ArrayList<>();
     int start = 0;
     while (start < text.length()) {

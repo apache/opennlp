@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -89,9 +90,7 @@ public class BPETokenizer implements Tokenizer {
    * @throws IllegalArgumentException if {@code model} is {@code null}.
    */
   public BPETokenizer(final BPEModel model) {
-    if (model == null) {
-      throw new IllegalArgumentException("model must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(model, "model");
     final List<SymbolPair> merges = model.getMerges();
     this.mergeRanks = new LinkedHashMap<>();
     for (int i = 0; i < merges.size(); i++) {
@@ -274,12 +273,8 @@ public class BPETokenizer implements Tokenizer {
      * @throws IllegalArgumentException if {@code left} or {@code right} is {@code null}.
      */
     public SymbolPair {
-      if (left == null) {
-        throw new IllegalArgumentException("left must not be null");
-      }
-      if (right == null) {
-        throw new IllegalArgumentException("right must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(left, "left");
+      ArgumentChecks.requireNonNullArg(right, "right");
     }
 
     @Override
