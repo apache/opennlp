@@ -1008,6 +1008,48 @@ public class LatticeTokenizerTest {
         + " is outside the 16-bit range the format defines", e.getMessage());
   }
 
+  /**
+   * Verifies that a lexicon line whose quoted field never closes is rejected with the
+   * file and line. MeCab reads such a line silently to its end; failing loud on the
+   * truncated field is a documented deviation, since a lost closing quote otherwise
+   * corrupts the entry without a trace.
+   */
+  @Test
+  void testRejectsUnterminatedQuotedCsvField(@TempDir Path dictionary)
+      throws IOException {
+    writeUnitMatrixDictionary(dictionary);
+    write(dictionary, LEXICON_CSV, "東,0,0,3000,\"unterminated\n");
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(dictionary));
+
+    Assertions.assertEquals("malformed entry at " + dictionary.resolve(LEXICON_CSV)
+        + " line 1: unterminated quoted field", e.getMessage());
+  }
+
+  /**
+   * Verifies the documented quoting deviations from MeCab's CSV reading: quotes
+   * anywhere in a field open and close a quoted stretch instead of staying literal
+   * once the field has begun, and text after a closing quote joins the field instead
+   * of being dropped. Both keep every remaining character of the field visible in the
+   * entry; the quotes themselves are the only characters removed.
+   */
+  @Test
+  void testQuotingDeviationsKeepFieldContent(@TempDir Path inner, @TempDir Path trailing)
+      throws IOException {
+    writeUnitMatrixDictionary(inner);
+    write(inner, LEXICON_CSV, "東,0,0,3000,noun\"lit\"eral\n");
+    Assertions.assertEquals(List.of("nounliteral"),
+        new LatticeTokenizer(MecabDictionary.load(inner)).analyze("東")
+            .get(0).features());
+
+    writeUnitMatrixDictionary(trailing);
+    write(trailing, LEXICON_CSV, "東,0,0,3000,\"noun\"ignored,reading\n");
+    Assertions.assertEquals(List.of("nounignored", "reading"),
+        new LatticeTokenizer(MecabDictionary.load(trailing)).analyze("東")
+            .get(0).features());
+  }
+
   @Test
   void testRejectsDuplicateCharacterCategory(@TempDir Path dictionary)
       throws IOException {
