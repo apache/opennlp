@@ -112,6 +112,19 @@ try {
 			<programlisting language="java">
 <![CDATA[Parser parser = ParserFactory.create(model);]]>
 			</programlisting>
+			Since 3.0.0 the parser can tag and chunk with components the application supplies
+			instead of the ones stored in the model, for example a POS tagger trained on
+			domain text. The builder takes the build and check models and the head rules
+			from the parser model and only constructs the model's own tagger or chunker
+			when none is set. The beam size and the advance percentage are optional and
+			default to the values the factory method uses.
+			<programlisting language="java">
+<![CDATA[POSTagger tagger = new POSTaggerME(customPosModel);
+Parser parser = ParserFactory.builder(model)
+    .tagger(tagger)
+    .beamSize(20)
+    .build();]]>
+			</programlisting>
 			Right now the tree insert parser is still experimental and there is no pre-trained model for it.
 			The parser expect a whitespace tokenized sentence. A utility method from the command
 			line tool can parse the sentence String. The following code shows how the parser can be called.

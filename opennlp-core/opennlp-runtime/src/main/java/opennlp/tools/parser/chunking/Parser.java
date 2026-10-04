@@ -49,6 +49,7 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
@@ -90,16 +91,42 @@ public class Parser extends AbstractBottomUpParser {
    * @param advancePercentage The minimal amount of probability mass which advanced outcomes
    *                          must represent. Only outcomes which contribute to the top
    *                          {@code advancePercentage} will be explored.
-   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or
+   *                                  a parameter is out of range.
    * @see ParserModel
    * @see POSTaggerME
    * @see ChunkerME
    */
   public Parser(ParserModel model, int beamSize, double advancePercentage) {
-    this(model.getBuildModel(), model.getCheckModel(),
+    this(ArgumentChecks.requireNonNullArg(model, "model"),
         new POSTaggerME(model.getParserTaggerModel()),
-        new ChunkerME(model.getParserChunkerModel()),
-        model.getHeadRules(), beamSize, advancePercentage);
+        new ChunkerME(model.getParserChunkerModel()), beamSize, advancePercentage);
+  }
+
+  /**
+   * Instantiates a {@link Parser} via a given {@code model} and a caller-supplied
+   * {@link POSTagger} and {@link Chunker}. The build and check models and the head rules
+   * are taken from {@code model}; its tagger and chunker models are not used.
+   *
+   * @param model             The {@link ParserModel} to use. Must not be {@code null}.
+   * @param tagger            The {@link POSTagger} used to tag. Must not be {@code null}.
+   * @param chunker           The {@link Chunker} used to chunk. Must not be {@code null}.
+   * @param beamSize          The number of different parses kept during parsing.
+   *                          Must be at least {@code 1}.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Only outcomes which contribute to the top
+   *                          {@code advancePercentage} will be explored.
+   *                          Must be greater than {@code 0} and at most {@code 1}.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null} or out of range.
+   * @see ParserModel
+   * @see POSTagger
+   * @see Chunker
+   * @since 3.0.0
+   */
+  public Parser(ParserModel model, POSTagger tagger, Chunker chunker,
+                int beamSize, double advancePercentage) {
+    this(ArgumentChecks.requireNonNullArg(model, "model").getBuildModel(), model.getCheckModel(),
+        tagger, chunker, model.getHeadRules(), beamSize, advancePercentage);
   }
 
   /**
@@ -107,8 +134,8 @@ public class Parser extends AbstractBottomUpParser {
    * Uses the default implementations of {@link POSTaggerME} and {@link ChunkerME}
    * and default values for {@code beamSize} and {@code advancePercentage}.
    *
-   * @param model The {@link ParserModel} to use.
-   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   * @param model The {@link ParserModel} to use. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
    * @see ParserModel
    * @see POSTaggerME
    * @see ChunkerME

@@ -33,23 +33,15 @@ public class ParserFactory {
    *                          {@code advancePercentage} will be explored.
    *
    * @return A valid {@link Parser} instance.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or
+   *                                  a parameter is out of range.
    * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
    *
    * @see Parser
    * @see ParserModel
    */
   public static Parser create(ParserModel model, int beamSize, double advancePercentage) {
-
-    if (ParserType.CHUNKING.equals(model.getParserType())) {
-      return new opennlp.tools.parser.chunking.Parser(model, beamSize, advancePercentage);
-    }
-    else if (ParserType.TREEINSERT.equals(model.getParserType())) {
-      return new opennlp.tools.parser.treeinsert.Parser(model, beamSize, advancePercentage);
-    }
-    else {
-      throw new IllegalStateException("Unexpected ParserType: " +
-          model.getParserType().name());
-    }
+    return builder(model).beamSize(beamSize).advancePercentage(advancePercentage).build();
   }
 
   /**
@@ -59,6 +51,7 @@ public class ParserFactory {
    * @param model The {@link ParserModel} to use.
    *
    * @return A valid {@link Parser} instance.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
    * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
    *
    * @see Parser
@@ -67,5 +60,21 @@ public class ParserFactory {
   public static Parser create(ParserModel model) {
     return create(model, AbstractBottomUpParser.defaultBeamSize,
         AbstractBottomUpParser.defaultAdvancePercentage);
+  }
+
+  /**
+   * Starts a {@link ParserBuilder} for a given {@code model}, for a {@link Parser} that
+   * tags or chunks with caller-supplied components instead of the ones in the model.
+   *
+   * @param model The {@link ParserModel} to use. Must not be {@code null}.
+   *
+   * @return A {@link ParserBuilder} with default configuration parameters.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
+   *
+   * @see ParserBuilder
+   * @since 3.0.0
+   */
+  public static ParserBuilder builder(ParserModel model) {
+    return new ParserBuilder(model);
   }
 }

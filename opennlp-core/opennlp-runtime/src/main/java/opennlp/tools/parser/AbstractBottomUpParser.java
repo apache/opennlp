@@ -33,6 +33,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.postag.POSTagger;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.Sequence;
@@ -153,19 +154,61 @@ public abstract class AbstractBottomUpParser implements Parser {
    */
   protected boolean createDerivationString = false;
 
+  /**
+   * Initializes a bottom-up parser with the components every subclass needs.
+   *
+   * @param tagger The {@link POSTagger} used to tag. Must not be {@code null}.
+   * @param chunker The {@link Chunker} used to chunk. Must not be {@code null}.
+   * @param headRules The {@link HeadRules} for head word percolation. Must not be {@code null}.
+   * @param beamSize The number of different parses kept during parsing. Must be at least {@code 1}.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Must be greater than {@code 0} and at most {@code 1}.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null} or out of range.
+   */
   public AbstractBottomUpParser(POSTagger tagger, Chunker chunker, HeadRules headRules,
       int beamSize, double advancePercentage) {
-    this.tagger = tagger;
-    this.chunker = chunker;
-    this.M = beamSize;
+    this.tagger = ArgumentChecks.requireNonNullArg(tagger, "tagger");
+    this.chunker = ArgumentChecks.requireNonNullArg(chunker, "chunker");
+    ArgumentChecks.requireNonNullArg(headRules, "headRules");
+    this.M = checkBeamSize(beamSize);
     this.K = beamSize;
-    this.Q = advancePercentage;
+    this.Q = checkAdvancePercentage(advancePercentage);
     reportFailedParse = true;
     this.headRules = headRules;
     this.punctSet = headRules.getPunctuationTags();
     odh = new TreeSet<>();
     ndh = new TreeSet<>();
     completeParses = new TreeSet<>();
+  }
+
+  /**
+   * Returns {@code beamSize} if it is at least {@code 1}.
+   *
+   * @param beamSize The number of different parses kept during parsing.
+   * @return {@code beamSize}.
+   * @throws IllegalArgumentException Thrown if {@code beamSize} is less than {@code 1}.
+   */
+  static int checkBeamSize(int beamSize) {
+    if (beamSize < 1) {
+      throw new IllegalArgumentException("beamSize must be at least 1, but was " + beamSize);
+    }
+    return beamSize;
+  }
+
+  /**
+   * Returns {@code advancePercentage} if it is greater than {@code 0} and at most {@code 1}.
+   *
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent.
+   * @return {@code advancePercentage}.
+   * @throws IllegalArgumentException Thrown if {@code advancePercentage} is not in {@code (0, 1]}.
+   */
+  static double checkAdvancePercentage(double advancePercentage) {
+    if (!(advancePercentage > 0 && advancePercentage <= 1)) {
+      throw new IllegalArgumentException(
+          "advancePercentage must be in (0, 1], but was " + advancePercentage);
+    }
+    return advancePercentage;
   }
 
   /**

@@ -22,11 +22,13 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 
+import opennlp.tools.chunker.Chunker;
 import opennlp.tools.parser.AbstractParserModelTest;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.ParserTestUtil;
+import opennlp.tools.postag.POSTagger;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
@@ -41,6 +43,12 @@ public class ParserTest extends AbstractParserModelTest {
   @Override
   protected ParserModel getModel() {
     return model;
+  }
+
+  @Override
+  protected Parser createParser(ParserModel model, POSTagger tagger, Chunker chunker,
+                                int beamSize, double advancePercentage) {
+    return new Parser(model, tagger, chunker, beamSize, advancePercentage);
   }
   
   @BeforeAll

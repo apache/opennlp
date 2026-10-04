@@ -29,6 +29,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.chunker.Chunker;
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.parser.ParserTestUtil.CountingChunker;
+import opennlp.tools.parser.ParserTestUtil.CountingTagger;
+import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
 
@@ -41,6 +47,94 @@ public abstract class AbstractParserModelTest {
    * @return Retrieves a valid {@link ParserModel}, either trained or loaded.
    */
   protected abstract ParserModel getModel();
+
+  /**
+   * Creates the parser under test through its constructor that takes a caller-supplied
+   * tagger and chunker.
+   *
+   * @param model The {@link ParserModel} to take the build, check and head rule artifacts from.
+   * @param tagger The {@link POSTagger} the parser shall use.
+   * @param chunker The {@link Chunker} the parser shall use.
+   * @param beamSize The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass advanced outcomes must represent.
+   * @return A parser that tags with {@code tagger} and chunks with {@code chunker}.
+   */
+  protected abstract Parser createParser(ParserModel model, POSTagger tagger, Chunker chunker,
+                                         int beamSize, double advancePercentage);
+
+  /**
+   * Verifies that a caller-supplied tagger and chunker drive the parse and that the
+   * model's own tagger and chunker are never constructed.
+   */
+  @Test
+  void testSuppliedTaggerAndChunkerAreUsed() {
+    CountingTagger tagger = new CountingTagger(new POSTaggerME(getModel().getParserTaggerModel()));
+    CountingChunker chunker = new CountingChunker(new ChunkerME(getModel().getParserChunkerModel()));
+    ParserModel guarded = ParserTestUtil.withInaccessibleComponentModels(getModel());
+
+    Parser parser = createParser(guarded, tagger, chunker,
+        AbstractBottomUpParser.defaultBeamSize, AbstractBottomUpParser.defaultAdvancePercentage);
+    Parse parsed = parser.parse(ParserTestUtil.createTestSentence());
+
+    Assertions.assertTrue(tagger.calls() > 0, "the supplied tagger was not used");
+    Assertions.assertTrue(chunker.calls() > 0, "the supplied chunker was not used");
+    Parse reference = ParserFactory.create(getModel()).parse(ParserTestUtil.createTestSentence());
+    Assertions.assertEquals(reference.toStringPennTreebank(), parsed.toStringPennTreebank());
+  }
+
+  /**
+   * Verifies that the model's own tagger and chunker, passed explicitly with the default
+   * beam size and advance percentage, give the same parse as the model-only constructor.
+   */
+  @Test
+  void testSuppliedComponentsMatchModelConstructor() {
+    Parser parser = createParser(getModel(), new POSTaggerME(getModel().getParserTaggerModel()),
+        new ChunkerME(getModel().getParserChunkerModel()),
+        AbstractBottomUpParser.defaultBeamSize, AbstractBottomUpParser.defaultAdvancePercentage);
+    Parse[] parses = parser.parse(ParserTestUtil.createTestSentence(), 2);
+    Parse[] reference = ParserFactory.create(getModel()).parse(ParserTestUtil.createTestSentence(), 2);
+    ParserTestUtil.assertSameParses(reference, parses);
+  }
+
+  @Test
+  void testConstructorRejectsNullModel() {
+    POSTagger tagger = new POSTaggerME(getModel().getParserTaggerModel());
+    Chunker chunker = new ChunkerME(getModel().getParserChunkerModel());
+    Assertions.assertThrows(IllegalArgumentException.class, () -> createParser(null, tagger, chunker,
+        AbstractBottomUpParser.defaultBeamSize, AbstractBottomUpParser.defaultAdvancePercentage));
+  }
+
+  @Test
+  void testConstructorRejectsNullTagger() {
+    Chunker chunker = new ChunkerME(getModel().getParserChunkerModel());
+    Assertions.assertThrows(IllegalArgumentException.class, () -> createParser(getModel(), null,
+        chunker, AbstractBottomUpParser.defaultBeamSize, AbstractBottomUpParser.defaultAdvancePercentage));
+  }
+
+  @Test
+  void testConstructorRejectsNullChunker() {
+    POSTagger tagger = new POSTaggerME(getModel().getParserTaggerModel());
+    Assertions.assertThrows(IllegalArgumentException.class, () -> createParser(getModel(), tagger,
+        null, AbstractBottomUpParser.defaultBeamSize, AbstractBottomUpParser.defaultAdvancePercentage));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, -1})
+  void testConstructorRejectsBeamSize(int beamSize) {
+    POSTagger tagger = new POSTaggerME(getModel().getParserTaggerModel());
+    Chunker chunker = new ChunkerME(getModel().getParserChunkerModel());
+    Assertions.assertThrows(IllegalArgumentException.class, () -> createParser(getModel(), tagger,
+        chunker, beamSize, AbstractBottomUpParser.defaultAdvancePercentage));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {0.0, -0.1, 1.01, Double.NaN})
+  void testConstructorRejectsAdvancePercentage(double advancePercentage) {
+    POSTagger tagger = new POSTaggerME(getModel().getParserTaggerModel());
+    Chunker chunker = new ChunkerME(getModel().getParserChunkerModel());
+    Assertions.assertThrows(IllegalArgumentException.class, () -> createParser(getModel(), tagger,
+        chunker, AbstractBottomUpParser.defaultBeamSize, advancePercentage));
+  }
 
   /**
    * Verifies that serialization of {@link ParserModel} equals trained state.
