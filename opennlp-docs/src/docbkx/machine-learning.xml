@@ -150,8 +150,10 @@ org-start wc=ic=1.0 w&c=apache,ic=2.0 p1wc=lc=3.0]]>
 			<code>TextEmbedder</code> in <code>opennlp-api</code> accepts text and returns vectors.
 			<code>TextEmbedderProvider</code> is its provider interface, resolved through
 			<code>Providers</code> as described in <xref linkend="intro.providers"/>. The API names no
-			backend: <code>opennlp-dl</code> registers the <code>onnx</code> provider, and it is the
-			default only because it is the one provider in the default distribution.
+			backend: <code>opennlp-dl</code> registers the <code>onnx</code> provider. The binary
+			distribution does not include the <code>opennlp-dl</code> or <code>opennlp-dl-gpu</code>
+			jars, and <code>opennlp-tools</code> does not depend on them, so add one of them to the
+			application to use it.
 		</para>
 		<para>
 			An embedder is safe for concurrent use until it is closed. <code>embedAll</code> checks
@@ -183,9 +185,9 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			all-MiniLM-L6-v2. A model with a <code>sentence_embedding</code> output is used as it
 			is, without pooling. A spec with another option is not supported. The key
 			<code>opennlp.provider.opennlp.tools.embeddings.TextEmbedderProvider</code> selects a
-			provider by name. Excluding <code>opennlp-dl</code> leaves the API without a provider
-			until another one is installed. Existing <code>SentenceVectorsDL</code> constructors remain
-			available.
+			provider by name. Without <code>opennlp-dl</code> or <code>opennlp-dl-gpu</code> the API
+			has no provider until another one is installed. Existing <code>SentenceVectorsDL</code>
+			constructors remain available.
 		</para>
 	</section>
 </chapter>
