@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.commons.Internal;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -191,9 +192,7 @@ public final class JsonScan {
    * @throws IllegalArgumentException Thrown if {@code members} or {@code key} is {@code null}.
    */
   static Member member(List<Member> members, String key) {
-    if (members == null) {
-      throw new IllegalArgumentException("members must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(members, "members");
     if (key == null) {
       throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
     }
@@ -641,9 +640,7 @@ public final class JsonScan {
    */
   private static void requireMember(String text, Member member) {
     requireText(text);
-    if (member == null) {
-      throw new IllegalArgumentException("member must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(member, "member");
     if (member.valueEnd() > text.length() || member.valueStart() >= text.length()) {
       throw new IllegalArgumentException("member must lie inside the text: " + member);
     }

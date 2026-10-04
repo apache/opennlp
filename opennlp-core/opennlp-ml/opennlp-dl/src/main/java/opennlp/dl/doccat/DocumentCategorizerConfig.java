@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import opennlp.dl.JsonScan;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * The part of a model configuration that a {@link DocumentCategorizerDL} uses: the
@@ -53,9 +54,7 @@ public record DocumentCategorizerConfig(Map<String, String> id2label) {
    *     object, or if a label is not a string. The message names the offset or the key.
    */
   public static DocumentCategorizerConfig fromJson(String json) {
-    if (json == null) {
-      throw new IllegalArgumentException("json must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(json, "json");
     return new DocumentCategorizerConfig(JsonScan.stringObject(json, ID_TO_LABEL_KEY));
   }
 }

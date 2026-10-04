@@ -130,10 +130,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   }
 
   private SpellCheckingCharSequenceNormalizer(Builder b) {
-    if (b.spellChecker == null) {
-      throw new IllegalArgumentException("spellChecker must not be null");
-    }
-    this.spellChecker = b.spellChecker;
+    this.spellChecker = ArgumentChecks.requireNonNullArg(b.spellChecker, "spellChecker");
     this.mode = b.mode;
     this.minTokenLength = b.minTokenLength;
     // Clamp to the engine's configured maximum; a smaller requested distance is still honored.
@@ -551,10 +548,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
      * @throws IllegalArgumentException if {@code value} is {@code null}
      */
     public Builder mode(Mode value) {
-      if (value == null) {
-        throw new IllegalArgumentException("mode must not be null");
-      }
-      this.mode = value;
+      this.mode = ArgumentChecks.requireNonNullArg(value, "mode");
       return this;
     }
 

@@ -20,6 +20,7 @@ package opennlp.tools.ml.maxent;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -82,9 +83,7 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    */
   @Override
   public String[] getContext(String o) {
-    if (o == null) {
-      throw new IllegalArgumentException("o must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(o, "o");
     if (separator == null) {
       return StringUtil.splitOnUnicodeWhitespace(o);
     }

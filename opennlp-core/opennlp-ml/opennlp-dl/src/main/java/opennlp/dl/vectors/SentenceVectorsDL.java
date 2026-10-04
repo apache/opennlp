@@ -39,6 +39,7 @@ import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.EmbeddingException;
 import opennlp.tools.embeddings.TextEmbedder;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * Facilitates the generation of sentence vectors using
@@ -160,9 +161,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
 
     super(model, vocabulary, new OrtSession.SessionOptions(), lowerCase);
     try {
-      if (pooling == null) {
-        throw new IllegalArgumentException("pooling must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(pooling, "pooling");
       if (maxLength < MIN_LENGTH) {
         throw new IllegalArgumentException("maxLength must be at least " + MIN_LENGTH);
       }
@@ -198,9 +197,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    */
   public float[] getVectors(final String sentence) throws OrtException {
 
-    if (sentence == null) {
-      throw new IllegalArgumentException("sentence must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(sentence, "sentence");
     return run(new Tokens[] {encode(sentence)})[0];
 
   }
@@ -213,9 +210,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    */
   @Override
   public float[] embed(final CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("text must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     try {
       return run(new Tokens[] {encode(text)})[0];
     } catch (final OrtException e) {
@@ -232,9 +227,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    */
   @Override
   public float[][] embedAll(final List<? extends CharSequence> texts) {
-    if (texts == null) {
-      throw new IllegalArgumentException("texts must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(texts, "texts");
     final CharSequence[] checked = new CharSequence[texts.size()];
     for (int i = 0; i < checked.length; i++) {
       checked[i] = texts.get(i);

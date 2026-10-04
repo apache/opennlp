@@ -20,6 +20,7 @@ package opennlp.tools.ml.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -55,9 +56,7 @@ public class SimpleEventStreamBuilder {
    *         if a value is not a number, is negative, NaN or infinite.
    */
   public SimpleEventStreamBuilder add(String event) {
-    if (event == null) {
-      throw new IllegalArgumentException("event must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(event, "event");
     int slash = event.indexOf(OUTCOME_SEPARATOR);
     if (slash < 1) {
       throw new IllegalArgumentException(String.format(FORMAT_ERROR, event));
