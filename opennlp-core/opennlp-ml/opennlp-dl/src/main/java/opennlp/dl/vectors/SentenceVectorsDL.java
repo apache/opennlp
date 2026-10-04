@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,13 +74,22 @@ import opennlp.tools.embeddings.TextEmbedder;
  * {@code close()} with inference methods.</p>
  *
  * <p>{@link #embedAll(List)} runs one batched session per distinct tokenized length, so a batch
- * of same-length inputs costs one inference instead of one per input.</p>
+ * of same-length inputs costs one inference instead of one per input. A group larger than
+ * 16384 token positions is split into several inferences.</p>
  */
 @ThreadSafe
 public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
 
   /** The maximum number of tokens per input if none is given, the BERT position limit. */
   public static final int DEFAULT_MAX_LENGTH = 512;
+
+  /**
+   * The upper bound on the token positions of one inference, its row count times its row length.
+   * {@link #embedAll(List)} splits a larger group into consecutive inferences, so the tensors of
+   * one inference stay bounded however many texts a call has. A single input longer than the
+   * bound still runs on its own.
+   */
+  static final int MAX_BATCH_TOKEN_POSITIONS = 16384;
 
   private static final String SENTENCE_EMBEDDING = "sentence_embedding";
   private static final int POOLED_RANK = 2;
@@ -266,8 +276,9 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    * {@inheritDoc}
    *
    * <p>The inputs are tokenized up front, grouped by tokenized length, and each group runs
-   * through the session once with shape {@code [group size, length]}. A batch never pads, so
-   * every row is computed from the tensors its single-input call would have used.</p>
+   * through the session with shape {@code [rows, length]}, split so that no inference exceeds
+   * 16384 token positions. A batch never pads, so every row is computed from the tensors its
+   * single-input call would have used.</p>
    */
   @Override
   public float[][] embedAll(final List<? extends CharSequence> texts) {
@@ -281,15 +292,13 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
         throw new IllegalArgumentException("texts[" + i + "] must not be null");
       }
     }
-    final Map<Integer, List<Integer>> byLength = new HashMap<>();
     final Tokens[] encoded = new Tokens[checked.length];
     for (int i = 0; i < checked.length; i++) {
       encoded[i] = encode(checked[i]);
-      byLength.computeIfAbsent(encoded[i].ids().length, length -> new ArrayList<>()).add(i);
     }
     final float[][] vectors = new float[checked.length][];
     try {
-      for (final List<Integer> group : byLength.values()) {
+      for (final List<Integer> group : batches(encoded)) {
         final Tokens[] batch = new Tokens[group.size()];
         for (int b = 0; b < batch.length; b++) {
           batch[b] = encoded[group.get(b)];
@@ -303,6 +312,50 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       throw new EmbeddingException("Sentence vector inference failed.", e);
     }
     return vectors;
+  }
+
+  /**
+   * Splits the indices of a call into the batches that run as single inferences. A batch holds
+   * indices of one tokenized length, in call order, and no more rows than fit in
+   * {@value #MAX_BATCH_TOKEN_POSITIONS} token positions, but always at least one.
+   *
+   * @param encoded The encodings of the call, in call order.
+   * @return The batches, each a list of indices into {@code encoded}.
+   */
+  private static List<List<Integer>> batches(final Tokens[] encoded) {
+    final Map<Integer, List<Integer>> byLength = new LinkedHashMap<>();
+    for (int i = 0; i < encoded.length; i++) {
+      byLength.computeIfAbsent(encoded[i].ids().length, length -> new ArrayList<>()).add(i);
+    }
+    final List<List<Integer>> batches = new ArrayList<>();
+    for (final Map.Entry<Integer, List<Integer>> group : byLength.entrySet()) {
+      final int rows = Math.max(1, MAX_BATCH_TOKEN_POSITIONS / group.getKey());
+      final List<Integer> indices = group.getValue();
+      for (int from = 0; from < indices.size(); from += rows) {
+        batches.add(indices.subList(from, Math.min(from + rows, indices.size())));
+      }
+    }
+    return batches;
+  }
+
+  /**
+   * {@return the shapes of the inferences {@link #embedAll(List)} runs for these texts, each as
+   * {@code {rows, length}}, in the order they run} For tests.
+   *
+   * @param texts The texts of the call. Must not be {@code null} or contain {@code null}.
+   */
+  final int[][] batchShapes(final List<? extends CharSequence> texts) {
+    final Tokens[] encoded = new Tokens[texts.size()];
+    for (int i = 0; i < encoded.length; i++) {
+      encoded[i] = encode(texts.get(i));
+    }
+    final List<List<Integer>> batches = batches(encoded);
+    final int[][] shapes = new int[batches.size()][];
+    for (int b = 0; b < shapes.length; b++) {
+      final List<Integer> batch = batches.get(b);
+      shapes[b] = new int[] {batch.size(), encoded[batch.get(0)].ids().length};
+    }
+    return shapes;
   }
 
   /**

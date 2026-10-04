@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -246,6 +247,50 @@ class SentenceVectorsDLEmbedderTest {
       for (int i = 0; i < texts.size(); i++) {
         assertArrayEquals(vectors.embed(texts.get(i)), batch[i]);
       }
+    }
+  }
+
+  /**
+   * Asserts that {@code embedAll} splits a large group of same-length inputs into inferences of
+   * at most {@value SentenceVectorsDL#MAX_BATCH_TOKEN_POSITIONS} token positions, and that every
+   * row still equals its single-input vector. "hello world" encodes to 4 tokens, so one
+   * inference holds at most 4096 rows.
+   */
+  @Test
+  void testEmbedAllCapsTokenPositionsPerInference(@TempDir final Path dir) throws Exception {
+    try (SentenceVectorsDL vectors = meanVectors(dir, SentenceVectorsDL.DEFAULT_MAX_LENGTH)) {
+      final List<String> texts = Collections.nCopies(5000, "hello world");
+      assertArrayEquals(new int[][] {{4096, 4}, {904, 4}}, vectors.batchShapes(texts));
+      final float[][] batch = vectors.embedAll(texts);
+      assertEquals(texts.size(), batch.length);
+      for (final float[] row : batch) {
+        assertArrayEquals(HELLO_WORLD_MEAN, row, DELTA);
+      }
+    }
+  }
+
+  /**
+   * Asserts that inputs of different lengths still run one inference per length, in the order
+   * each length first appears in the call.
+   */
+  @Test
+  void testEmbedAllGroupsByLengthInCallOrder(@TempDir final Path dir) throws Exception {
+    try (SentenceVectorsDL vectors = meanVectors(dir, SentenceVectorsDL.DEFAULT_MAX_LENGTH)) {
+      assertArrayEquals(new int[][] {{2, 4}, {3, 3}}, vectors.batchShapes(
+          List.of("hello world", "hello", "world", "hello world", "hello")));
+    }
+  }
+
+  /**
+   * Asserts that an input wider than the cap on its own still runs, as a batch of one.
+   */
+  @Test
+  void testEmbedAllRunsAnInputWiderThanTheCapAlone(@TempDir final Path dir) throws Exception {
+    final int width = SentenceVectorsDL.MAX_BATCH_TOKEN_POSITIONS + 1;
+    try (SentenceVectorsDL vectors = meanVectors(dir, width)) {
+      final String text = String.join(" ", Collections.nCopies(width, "hello"));
+      assertArrayEquals(new int[][] {{1, width}, {1, width}},
+          vectors.batchShapes(List.of(text, text)));
     }
   }
 
