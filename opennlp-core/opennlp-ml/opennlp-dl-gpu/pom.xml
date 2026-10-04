@@ -79,12 +79,19 @@
       <artifactId>slf4j-simple</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Keep the CPU onnxruntime off the test classpath; this module uses onnxruntime_gpu. -->
     <dependency>
       <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-dl</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.microsoft.onnxruntime</groupId>
+          <artifactId>onnxruntime</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
