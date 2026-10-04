@@ -125,10 +125,7 @@ public final class LanguageCodeValidator {
    *     is {@code null}.
    */
   public static boolean isValid(String languageCode) {
-    if (languageCode == null) {
-      throw new IllegalArgumentException(
-          "languageCode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(languageCode, "languageCode");
     return VALID_CODES.contains(languageCode);
   }
 
@@ -164,9 +161,7 @@ public final class LanguageCodeValidator {
    * @throws IllegalArgumentException Thrown if {@code languageCode} is {@code null}.
    */
   public static String toIso6391(String languageCode) {
-    if (languageCode == null) {
-      throw new IllegalArgumentException("languageCode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(languageCode, "languageCode");
     final String lower = StringUtil.toLowerCase(languageCode);
     if (lower.length() == ISO_639_1_LENGTH) {
       return lower;
@@ -188,9 +183,7 @@ public final class LanguageCodeValidator {
    * @throws IllegalArgumentException Thrown if {@code languageCode} is {@code null}.
    */
   public static String toIso6393(String languageCode) {
-    if (languageCode == null) {
-      throw new IllegalArgumentException("languageCode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(languageCode, "languageCode");
     final String lower = StringUtil.toLowerCase(languageCode);
     if (lower.length() == ISO_639_1_LENGTH) {
       try {

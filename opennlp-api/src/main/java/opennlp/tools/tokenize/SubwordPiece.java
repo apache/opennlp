@@ -16,6 +16,8 @@
  */
 package opennlp.tools.tokenize;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * One subword unit produced by a {@link SubwordTokenizer}, including the model representation
  * and source range.
@@ -53,9 +55,7 @@ public record SubwordPiece(String piece, int id, int start, int end) {
    *     {@code id} is negative, or the span is negative or inverted.
    */
   public SubwordPiece {
-    if (piece == null) {
-      throw new IllegalArgumentException("piece must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(piece, "piece");
     if (piece.isEmpty()) {
       throw new IllegalArgumentException("piece must not be empty");
     }

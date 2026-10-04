@@ -20,6 +20,7 @@ package opennlp.tools.document;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -63,9 +64,7 @@ public final class DocumentAnnotators {
    *         a layer is absent; the message names the first absent layer.
    */
   public static void requireLayers(Document document, LayerKey<?>... layers) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(document, "document");
     final Set<LayerKey<?>> present = document.layers();
     for (final LayerKey<?> layer : layers) {
       if (!present.contains(layer)) {
@@ -146,9 +145,7 @@ public final class DocumentAnnotators {
    *         run does not lie inside the layer.
    */
   public static String[] values(List<Annotation<String>> layer, int first, int count) {
-    if (layer == null) {
-      throw new IllegalArgumentException("layer must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(layer, "layer");
     if (first < 0 || count < 0 || first > layer.size() - count) {
       throw new IllegalArgumentException("run of " + count + " annotations at " + first
           + " lies outside the layer's " + layer.size() + " annotations");
@@ -186,15 +183,9 @@ public final class DocumentAnnotators {
    */
   public static Span toCharacterSpan(List<Annotation<String>> tokens, int first,
       int count, Span span, String source) {
-    if (tokens == null) {
-      throw new IllegalArgumentException("tokens must not be null");
-    }
-    if (span == null) {
-      throw new IllegalArgumentException("span must not be null");
-    }
-    if (source == null) {
-      throw new IllegalArgumentException("source must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(tokens, "tokens");
+    ArgumentChecks.requireNonNullArg(span, "span");
+    ArgumentChecks.requireNonNullArg(source, "source");
     if (first < 0 || count < 0 || first > tokens.size() - count) {
       throw new IllegalArgumentException("sentence of " + count + " tokens at " + first
           + " lies outside the token layer's " + tokens.size() + " tokens");

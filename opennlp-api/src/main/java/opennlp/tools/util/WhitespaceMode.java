@@ -82,9 +82,7 @@ public enum WhitespaceMode {
    * @throws IllegalArgumentException If {@code mode} is {@code null}.
    */
   public static void setActive(WhitespaceMode mode) {
-    if (mode == null) {
-      throw new IllegalArgumentException("mode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(mode, "mode");
     active = mode;
     warnIfLegacy(mode);
   }

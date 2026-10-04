@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * Runs a fixed sequence of {@link DocumentAnnotator annotators} over a text, producing
  * one {@link Document} that carries every step's layers.
@@ -83,9 +85,7 @@ public final class DocumentAnalyzer {
      * @throws IllegalArgumentException Thrown if {@code annotator} is {@code null}.
      */
     public Builder add(DocumentAnnotator annotator) {
-      if (annotator == null) {
-        throw new IllegalArgumentException("annotator must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(annotator, "annotator");
       annotators.add(annotator);
       return this;
     }
