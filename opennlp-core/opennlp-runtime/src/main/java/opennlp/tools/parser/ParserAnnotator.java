@@ -27,6 +27,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
@@ -74,9 +75,7 @@ public final class ParserAnnotator implements DocumentAnnotator {
       if (label == null || StringUtil.isBlank(label)) {
         throw new IllegalArgumentException("label must not be null or blank");
       }
-      if (head == null) {
-        throw new IllegalArgumentException("head must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(head, "head");
     }
   }
 
@@ -95,9 +94,7 @@ public final class ParserAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code parser} is {@code null}.
    */
   public ParserAnnotator(Parser parser) {
-    if (parser == null) {
-      throw new IllegalArgumentException("parser must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(parser, "parser");
     this.parser = parser;
   }
 

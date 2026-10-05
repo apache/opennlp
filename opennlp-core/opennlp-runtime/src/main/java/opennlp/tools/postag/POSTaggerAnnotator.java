@@ -27,6 +27,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * Adapts a {@link POSTagger} to the document pipeline: reads {@link Layers#SENTENCES}
@@ -52,9 +53,7 @@ public final class POSTaggerAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code tagger} is {@code null}.
    */
   public POSTaggerAnnotator(POSTagger tagger) {
-    if (tagger == null) {
-      throw new IllegalArgumentException("tagger must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(tagger, "tagger");
     this.tagger = tagger;
   }
 

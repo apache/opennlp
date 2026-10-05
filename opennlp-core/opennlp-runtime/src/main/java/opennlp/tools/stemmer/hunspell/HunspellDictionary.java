@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -572,15 +573,9 @@ public final class HunspellDictionary {
    */
   public static HunspellDictionary load(Path affixFile, Path dictionaryFile,
       LoadMode mode) throws IOException {
-    if (affixFile == null) {
-      throw new IllegalArgumentException("affixFile must not be null");
-    }
-    if (dictionaryFile == null) {
-      throw new IllegalArgumentException("dictionaryFile must not be null");
-    }
-    if (mode == null) {
-      throw new IllegalArgumentException("mode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(affixFile, "affixFile");
+    ArgumentChecks.requireNonNullArg(dictionaryFile, "dictionaryFile");
+    ArgumentChecks.requireNonNullArg(mode, "mode");
     try (InputStream affix = Files.newInputStream(affixFile);
          InputStream dictionary = Files.newInputStream(dictionaryFile)) {
       return loadStreams(affix, dictionary, mode, affixFile.toString());
@@ -626,15 +621,9 @@ public final class HunspellDictionary {
    */
   public static HunspellDictionary load(InputStream affixStream,
       InputStream dictionaryStream, LoadMode mode) throws IOException {
-    if (affixStream == null) {
-      throw new IllegalArgumentException("affixStream must not be null");
-    }
-    if (dictionaryStream == null) {
-      throw new IllegalArgumentException("dictionaryStream must not be null");
-    }
-    if (mode == null) {
-      throw new IllegalArgumentException("mode must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(affixStream, "affixStream");
+    ArgumentChecks.requireNonNullArg(dictionaryStream, "dictionaryStream");
+    ArgumentChecks.requireNonNullArg(mode, "mode");
     return loadStreams(affixStream, dictionaryStream, mode, AFFIX_STREAM);
   }
 

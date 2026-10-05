@@ -20,6 +20,7 @@ package opennlp.tools.stemmer.snowball;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * A thread-safe factory that captures a Snowball stemmer configuration for APIs that accept a
@@ -54,9 +55,7 @@ public class SnowballStemmerFactory implements StemmerFactory {
    *     is not positive.
    */
   public SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int repeat) {
-    if (algorithm == null) {
-      throw new IllegalArgumentException("algorithm must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(algorithm, "algorithm");
     if (repeat <= 0) {
       throw new IllegalArgumentException("repeat must be positive, got " + repeat);
     }
@@ -96,9 +95,7 @@ public class SnowballStemmerFactory implements StemmerFactory {
      */
     @Override
     public CharSequence stem(CharSequence word) {
-      if (word == null) {
-        throw new IllegalArgumentException("word must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(word, "word");
       engine.setCurrent(word.toString());
       for (int i = 0; i < repeat; i++) {
         engine.stem();

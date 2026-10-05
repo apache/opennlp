@@ -26,6 +26,7 @@ import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -48,9 +49,7 @@ public final class SentenceDetectorAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code detector} is {@code null}.
    */
   public SentenceDetectorAnnotator(SentenceDetector detector) {
-    if (detector == null) {
-      throw new IllegalArgumentException("detector must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(detector, "detector");
     this.detector = detector;
   }
 
@@ -66,9 +65,7 @@ public final class SentenceDetectorAnnotator implements DocumentAnnotator {
    */
   @Override
   public Document annotate(Document document) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(document, "document");
     final CharSequence text = document.text();
     final List<Annotation<String>> sentences = new ArrayList<>();
     for (final Span span : detector.sentPosDetect(text)) {

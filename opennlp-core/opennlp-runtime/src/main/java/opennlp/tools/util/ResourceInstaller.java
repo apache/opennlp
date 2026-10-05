@@ -209,15 +209,11 @@ public final class ResourceInstaller {
     public Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
         long maxDownloadBytes, long maxExpandedBytes, long maxEntries,
         long maxExpansionRatio) {
-      if (connectTimeout == null) {
-        throw new IllegalArgumentException("connectTimeout must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(connectTimeout, "connectTimeout");
       if (connectTimeout.isZero() || connectTimeout.isNegative()) {
         throw new IllegalArgumentException("connectTimeout must be positive");
       }
-      if (readTimeout == null) {
-        throw new IllegalArgumentException("readTimeout must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(readTimeout, "readTimeout");
       if (readTimeout.isZero() || readTimeout.isNegative()) {
         throw new IllegalArgumentException("readTimeout must be positive");
       }
@@ -466,9 +462,7 @@ public final class ResourceInstaller {
    */
   static Path installNamed(URI source, Path targetDirectory, String checksum,
       String name) throws IOException {
-    if (name == null) {
-      throw new IllegalArgumentException("name must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(name, "name");
     return install(source, targetDirectory, checksum, name, Limits.DEFAULT);
   }
 
@@ -488,15 +482,9 @@ public final class ResourceInstaller {
    */
   private static Path install(URI source, Path targetDirectory, String checksum,
       String name, Limits limits) throws IOException {
-    if (source == null) {
-      throw new IllegalArgumentException("source must not be null");
-    }
-    if (targetDirectory == null) {
-      throw new IllegalArgumentException("targetDirectory must not be null");
-    }
-    if (limits == null) {
-      throw new IllegalArgumentException("limits must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(source, "source");
+    ArgumentChecks.requireNonNullArg(targetDirectory, "targetDirectory");
+    ArgumentChecks.requireNonNullArg(limits, "limits");
     validateSource(source);
     final String expected = validateChecksum(checksum);
     if (expected == null && isHttp(source.getScheme())) {

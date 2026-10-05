@@ -29,6 +29,7 @@ import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.Affix;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.CompoundPattern;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.CompoundPosition;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * A dictionary-backed {@link Stemmer} over a {@link HunspellDictionary}: a surface form
@@ -82,9 +83,7 @@ public final class HunspellStemmer implements Stemmer {
    * @throws IllegalArgumentException Thrown if {@code dictionary} is {@code null}.
    */
   public HunspellStemmer(HunspellDictionary dictionary) {
-    if (dictionary == null) {
-      throw new IllegalArgumentException("dictionary must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(dictionary, "dictionary");
     this.dictionary = dictionary;
   }
 
@@ -107,9 +106,7 @@ public final class HunspellStemmer implements Stemmer {
    */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
-    if (word == null) {
-      throw new IllegalArgumentException("word must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(word, "word");
     final String surface = word.toString();
     final List<String> analyses = findWord(dictionary.inputForm(surface), false);
     if (analyses.isEmpty()) {
@@ -135,9 +132,7 @@ public final class HunspellStemmer implements Stemmer {
    * @throws IllegalArgumentException Thrown if {@code word} is {@code null}.
    */
   List<String> analyze(CharSequence word) {
-    if (word == null) {
-      throw new IllegalArgumentException("word must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(word, "word");
     return findWord(dictionary.inputForm(word.toString()), true);
   }
 

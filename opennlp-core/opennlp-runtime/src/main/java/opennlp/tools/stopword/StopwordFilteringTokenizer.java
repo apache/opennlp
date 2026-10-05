@@ -22,6 +22,7 @@ import java.util.List;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -62,12 +63,8 @@ public final class StopwordFilteringTokenizer implements Tokenizer {
    *                                  {@code null}.
    */
   public StopwordFilteringTokenizer(final Tokenizer delegate, final StopwordFilter filter) {
-    if (delegate == null) {
-      throw new IllegalArgumentException("delegate must not be null");
-    }
-    if (filter == null) {
-      throw new IllegalArgumentException("filter must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(delegate, "delegate");
+    ArgumentChecks.requireNonNullArg(filter, "filter");
     this.delegate = delegate;
     this.filter = filter;
   }

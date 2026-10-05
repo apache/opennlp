@@ -27,6 +27,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
+import opennlp.tools.util.ArgumentChecks;
 
 /**
  * Adapts a {@link Stemmer} to the document pipeline: stems the token layer and provides
@@ -54,9 +55,7 @@ public final class StemmerAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code stemmer} is {@code null}.
    */
   public StemmerAnnotator(Stemmer stemmer) {
-    if (stemmer == null) {
-      throw new IllegalArgumentException("stemmer must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(stemmer, "stemmer");
     this.stemmer = stemmer;
   }
 
