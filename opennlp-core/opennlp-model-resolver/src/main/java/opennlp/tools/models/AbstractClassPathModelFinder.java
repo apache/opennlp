@@ -81,10 +81,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
    * @throws IllegalArgumentException Thrown if {@code jarModelPrefix} is {@code null}.
    */
   public AbstractClassPathModelFinder(String jarModelPrefix) {
-    if (jarModelPrefix == null) {
-      throw new IllegalArgumentException("jarModelPrefix must not be null");
-    }
-    this.jarModelPrefix = jarModelPrefix;
+    this.jarModelPrefix = ArgumentChecks.requireNonNullArg(jarModelPrefix, "jarModelPrefix");
   }
 
   @Override

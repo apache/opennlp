@@ -33,6 +33,8 @@ import java.util.Set;
 
 import de.hhn.mi.domain.SvmModel;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * A model for SVM-based document categorization. This model wraps a zlibsvm
  * {@link SvmModel} together with the feature vocabulary, category label
@@ -196,9 +198,7 @@ public class SvmDoccatModel implements Serializable {
    * @throws IllegalArgumentException if {@code out} is {@code null}.
    */
   public void serialize(OutputStream out) throws IOException {
-    if (out == null) {
-      throw new IllegalArgumentException("out must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(out, "out");
     try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
       oos.writeObject(this);
     }
@@ -260,12 +260,8 @@ public class SvmDoccatModel implements Serializable {
    */
   public static SvmDoccatModel deserialize(InputStream in, DeserializationLimits limits)
       throws IOException, ClassNotFoundException {
-    if (in == null) {
-      throw new IllegalArgumentException("in must not be null");
-    }
-    if (limits == null) {
-      throw new IllegalArgumentException("limits must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(in, "in");
+    ArgumentChecks.requireNonNullArg(limits, "limits");
     try (ObjectInputStream ois = new ObjectInputStream(in)) {
       ois.setObjectInputFilter(buildFilter(limits));
       return (SvmDoccatModel) ois.readObject();
