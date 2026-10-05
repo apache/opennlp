@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import opennlp.tools.util.ParamChecks;
+
 /**
  * An immutable set of Unicode code points with O(1) membership.
  *
@@ -52,10 +54,11 @@ public final class CodePointSet {
    *
    * @param codePoints The code points to include.
    * @return The set.
-   * @throws IllegalArgumentException Thrown if any value is not a valid Unicode code point
-   *     (outside {@code [0, U+10FFFF]}).
+   * @throws IllegalArgumentException Thrown if {@code codePoints} is {@code null}, or if any value
+   *     is not a valid Unicode code point (outside {@code [0, U+10FFFF]}).
    */
   public static CodePointSet of(int... codePoints) {
+    ParamChecks.requireNonNullArg(codePoints, "codePoints");
     final BitSet members = new BitSet();
     for (final int codePoint : codePoints) {
       requireValid(codePoint);
@@ -100,10 +103,12 @@ public final class CodePointSet {
    * @return The code points declared under {@code section}, or an empty set if the section is
    *     absent.
    * @throws IOException Thrown if the file cannot be read.
-   * @throws IllegalArgumentException Thrown if a line is malformed, naming the offending line.
+   * @throws IllegalArgumentException Thrown if {@code definitions} or {@code section} is
+   *     {@code null}, or if a line is malformed, naming the offending line.
    */
   public static CodePointSet fromFile(Path definitions, String section) throws IOException {
-    Objects.requireNonNull(definitions, "definitions");
+    ParamChecks.requireNonNullArg(definitions, "definitions");
+    ParamChecks.requireNonNullArg(section, "section");
     return parse(Files.readAllLines(definitions, StandardCharsets.UTF_8), section);
   }
 
@@ -219,9 +224,10 @@ public final class CodePointSet {
    *
    * @param other The set to union with.
    * @return The union, a new set; neither input is modified.
+   * @throws IllegalArgumentException Thrown if {@code other} is {@code null}.
    */
   public CodePointSet union(CodePointSet other) {
-    Objects.requireNonNull(other, "other");
+    ParamChecks.requireNonNullArg(other, "other");
     final BitSet merged = (BitSet) members.clone();
     merged.or(other.members);
     return new CodePointSet(merged);

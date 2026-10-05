@@ -42,6 +42,15 @@ public class PlainTextByLineStreamTest {
       '\n';
 
   @Test
+  void testRejectsNullInputStreamFactory() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new PlainTextByLineStream(null, StandardCharsets.UTF_8));
+    Assertions.assertEquals("inputStreamFactory must not be null", e.getMessage());
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new PlainTextByLineStream(null, "UTF-8"));
+  }
+
+  @Test
   void testLineSegmentation() throws IOException {
     ObjectStream<String> stream =
         new PlainTextByLineStream(new MockInputStreamFactory(testString), StandardCharsets.UTF_8);

@@ -19,6 +19,7 @@ package opennlp.tools.util.normalizer;
 import java.util.Arrays;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -130,10 +131,12 @@ public final class Alignment {
    *
    * @param next The next stage, whose original side is this stage's normalized text.
    * @return The composed alignment.
-   * @throws IllegalArgumentException Thrown if {@code next.originalLength()} does not equal this
-   *     {@code normalizedLength()} (the stages do not line up).
+   * @throws IllegalArgumentException Thrown if {@code next} is {@code null}, or if
+   *     {@code next.originalLength()} does not equal this {@code normalizedLength()} (the stages do
+   *     not line up).
    */
   public Alignment andThen(Alignment next) {
+    ParamChecks.requireNonNullArg(next, "next");
     if (next.originalLength != normalizedLength()) {
       throw new IllegalArgumentException("stages do not line up: this normalizedLength="
           + normalizedLength() + " but next originalLength=" + next.originalLength);

@@ -70,4 +70,13 @@ public class DocumentSampleTest {
     return new DocumentSample("anotherCategory", new String[] {"a", "small", "text"});
   }
 
+  @Test
+  void testRejectsNullArguments() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new DocumentSample(null, new String[] {"a"}));
+    Assertions.assertEquals("category must not be null", e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new DocumentSample("c", null));
+    Assertions.assertEquals("text must not be null", e.getMessage());
+  }
 }

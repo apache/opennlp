@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Sample;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -62,13 +63,14 @@ public class NameSample implements Sample {
    * @param additionalContext Additional context in a 2-dimensional array.
    * @param clearAdaptiveData If {@code true} the adaptive data of the feature generators is cleared.
    *
+   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null}.
    * @throws RuntimeException Thrown if name spans are overlapping.
    */
   public NameSample(String id, String[] sentence, Span[] names, String[][] additionalContext,
                     boolean clearAdaptiveData) {
     this.id = id;
 
-    Objects.requireNonNull(sentence, "sentence must not be null");
+    ParamChecks.requireNonNullArg(sentence, "sentence");
 
     if (names == null) {
       names = new Span[0];
@@ -112,6 +114,7 @@ public class NameSample implements Sample {
    * @param additionalContext Additional context in a 2-dimensional array.
    * @param clearAdaptiveData If {@code true} the adaptive data of the feature generators is cleared.
    *
+   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null}.
    * @throws RuntimeException Thrown if name spans are overlapping.
    */
   public NameSample(String[] sentence, Span[] names,
@@ -126,6 +129,7 @@ public class NameSample implements Sample {
    * @param names The {@link Span names} to use.
    * @param clearAdaptiveData If {@code true} the adaptive data of the feature generators is cleared.
    *
+   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null}.
    * @throws RuntimeException Thrown if name spans are overlapping.
    */
   public NameSample(String[] sentence, Span[] names, boolean clearAdaptiveData) {

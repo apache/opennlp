@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import opennlp.tools.commons.Sample;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Class which holds a classified document and its category.
@@ -40,6 +41,7 @@ public class DocumentSample implements Sample {
    *
    * @param category The category to be used. Must not be {@code null}.
    * @param text The plain text in a tokenized form. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code category} or {@code text} is {@code null}.
    */
   public DocumentSample(String category, String[] text) {
     this(category, text, null);
@@ -51,11 +53,12 @@ public class DocumentSample implements Sample {
    * @param category The category to be used.Must not be {@code null}.
    * @param text The plain text in a tokenized form. Must not be {@code null}.
    * @param extraInformation Additional information for context.
+   * @throws IllegalArgumentException Thrown if {@code category} or {@code text} is {@code null}.
    */
   public DocumentSample(String category, String[] text, Map<String, Object> extraInformation) {
-    Objects.requireNonNull(text, "text must not be null");
+    ParamChecks.requireNonNullArg(text, "text");
 
-    this.category = Objects.requireNonNull(category, "category must not be null");
+    this.category = ParamChecks.requireNonNullArg(category, "category");
     this.text = List.of(text);
     this.extraInformation = Objects.requireNonNullElse(extraInformation, Collections.emptyMap());
   }

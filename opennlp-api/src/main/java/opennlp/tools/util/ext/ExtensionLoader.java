@@ -21,11 +21,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import opennlp.tools.commons.Internal;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -93,11 +93,10 @@ public class ExtensionLoader {
    *
    * @param packagePrefix The package prefix to allow, e.g. {@code "com.example.nlp"}.
    *                      Must not be {@code null} or blank.
-   * @throws NullPointerException if {@code packagePrefix} is {@code null}.
-   * @throws IllegalArgumentException if {@code packagePrefix} is blank.
+   * @throws IllegalArgumentException if {@code packagePrefix} is {@code null} or blank.
    */
   public static void registerAllowedPackage(String packagePrefix) {
-    Objects.requireNonNull(packagePrefix, "packagePrefix must not be null");
+    ParamChecks.requireNonNullArg(packagePrefix, "packagePrefix");
     if (packagePrefix.isBlank()) {
       throw new IllegalArgumentException("packagePrefix must not be blank");
     }
@@ -115,10 +114,10 @@ public class ExtensionLoader {
    *
    * @param packagePrefix The package prefix to remove, e.g. {@code "com.example.nlp"}.
    *                      Must not be {@code null}.
-   * @throws NullPointerException if {@code packagePrefix} is {@code null}.
+   * @throws IllegalArgumentException if {@code packagePrefix} is {@code null}.
    */
   public static void unregisterAllowedPackage(String packagePrefix) {
-    Objects.requireNonNull(packagePrefix, "packagePrefix must not be null");
+    ParamChecks.requireNonNullArg(packagePrefix, "packagePrefix");
     String normalized = packagePrefix.endsWith(".") ? packagePrefix : packagePrefix + ".";
     ALLOWED_PREFIXES.remove(normalized);
   }

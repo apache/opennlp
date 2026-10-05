@@ -124,6 +124,18 @@ public class DocumentAnnotatorsTest {
   }
 
   @Test
+  void testForEachSentenceRejectsNullArguments() {
+    final DocumentAnnotators.SentenceTokenConsumer consumer = (first, words) -> {
+    };
+    assertEquals("sentences must not be null", assertThrows(IllegalArgumentException.class,
+        () -> DocumentAnnotators.forEachSentence(null, List.of(), consumer)).getMessage());
+    assertEquals("tokens must not be null", assertThrows(IllegalArgumentException.class,
+        () -> DocumentAnnotators.forEachSentence(List.of(), null, consumer)).getMessage());
+    assertEquals("consumer must not be null", assertThrows(IllegalArgumentException.class,
+        () -> DocumentAnnotators.forEachSentence(List.of(), List.of(), null)).getMessage());
+  }
+
+  @Test
   void testRequireAlignedAcceptsEqualSizes() {
     final Document document = Document.of("Ana runs")
         .with(Layers.TOKENS, List.of(

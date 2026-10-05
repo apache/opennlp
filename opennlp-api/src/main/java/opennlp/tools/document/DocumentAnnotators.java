@@ -86,10 +86,14 @@ public final class DocumentAnnotators {
    * @param tokens The token layer, in text order. Must not be {@code null}.
    * @param consumer Receives each token-carrying sentence's run. Must not be
    *                 {@code null}.
-   * @throws IllegalArgumentException Thrown if a token lies outside every sentence.
+   * @throws IllegalArgumentException Thrown if {@code sentences}, {@code tokens} or
+   *         {@code consumer} is {@code null}, or if a token lies outside every sentence.
    */
   public static void forEachSentence(List<Annotation<String>> sentences,
       List<Annotation<String>> tokens, SentenceTokenConsumer consumer) {
+    ParamChecks.requireNonNullArg(sentences, "sentences");
+    ParamChecks.requireNonNullArg(tokens, "tokens");
+    ParamChecks.requireNonNullArg(consumer, "consumer");
     int next = 0;
     for (final Annotation<String> sentence : sentences) {
       final int first = next;

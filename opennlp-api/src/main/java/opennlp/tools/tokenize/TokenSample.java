@@ -25,6 +25,7 @@ import java.util.Objects;
 
 import opennlp.tools.commons.Sample;
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -48,11 +49,13 @@ public class TokenSample implements Sample {
    *             Must not be {@code null}.
    * @param tokenSpans The spans which mark the start and end of the tokens.
    *                   Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code tokenSpans} is
+   *     {@code null}.
    */
   public TokenSample(String text, Span[] tokenSpans) {
-    Objects.requireNonNull(tokenSpans, "tokenSpans must not be null");
+    ParamChecks.requireNonNullArg(tokenSpans, "tokenSpans");
 
-    this.text = Objects.requireNonNull(text, "text must not be null");
+    this.text = ParamChecks.requireNonNullArg(text, "text");
     this.tokenSpans = List.of(tokenSpans);
 
     for (Span tokenSpan : tokenSpans) {
@@ -69,11 +72,13 @@ public class TokenSample implements Sample {
    *
    * @param detokenizer The text which contains the tokens. Must not be {@code null}.
    * @param tokens The tokens to be processed. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code detokenizer} or {@code tokens} is
+   *     {@code null}.
    */
   public TokenSample(Detokenizer detokenizer, String[] tokens) {
 
-    Objects.requireNonNull(detokenizer, "detokenizer must not be null");
-    Objects.requireNonNull(tokens, "tokens must not be null");
+    ParamChecks.requireNonNullArg(detokenizer, "detokenizer");
+    ParamChecks.requireNonNullArg(tokens, "tokens");
     
     DetokenizationOperation[] operations = detokenizer.detokenize(tokens);
 
@@ -174,10 +179,12 @@ public class TokenSample implements Sample {
    * @param separatorChars The characters to be considered separators.
    *                       See {@link #DEFAULT_SEPARATOR_CHARS}. Must not be {@code null}.
    * @return A valid {@link TokenSample} instance.
+   * @throws IllegalArgumentException Thrown if {@code sampleString} or {@code separatorChars}
+   *     is {@code null}.
    */
   public static TokenSample parse(String sampleString, String separatorChars) {
-    Objects.requireNonNull(sampleString, "sampleString must not be null");
-    Objects.requireNonNull(separatorChars, "separatorChars must not be null");
+    ParamChecks.requireNonNullArg(sampleString, "sampleString");
+    ParamChecks.requireNonNullArg(separatorChars, "separatorChars");
 
     Span[] whitespaceTokenSpans = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
 

@@ -20,6 +20,8 @@ package opennlp.tools.langdetect;
 import java.io.Serializable;
 import java.util.Objects;
 
+import opennlp.tools.util.ParamChecks;
+
 /**
  * Class for holding the document language and its confidence
  */
@@ -31,6 +33,7 @@ public class Language implements Serializable {
 
   /**
    * @param lang The language identifier.
+   * @throws IllegalArgumentException Thrown if {@code lang} is {@code null}.
    */
   public Language(String lang) {
     this(lang, 0);
@@ -39,9 +42,10 @@ public class Language implements Serializable {
   /**
    * @param lang The language identifier.
    * @param confidence The confidence computed during language detection.
+   * @throws IllegalArgumentException Thrown if {@code lang} is {@code null}.
    */
   public Language(String lang, double confidence) {
-    Objects.requireNonNull(lang, "lang must not be null");
+    ParamChecks.requireNonNullArg(lang, "lang");
     this.lang = lang;
     this.confidence = confidence;
   }

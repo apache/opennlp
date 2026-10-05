@@ -36,6 +36,25 @@ import opennlp.tools.util.Span;
 public record AlignedText(CharSequence original, CharSequence normalized, Alignment alignment) {
 
   /**
+   * Validates the components.
+   *
+   * @throws IllegalArgumentException Thrown if a component is {@code null}, or if the lengths of
+   *     {@code original} and {@code normalized} do not match the lengths of {@code alignment}.
+   */
+  public AlignedText {
+    ParamChecks.requireNonNullArg(original, "original");
+    ParamChecks.requireNonNullArg(normalized, "normalized");
+    ParamChecks.requireNonNullArg(alignment, "alignment");
+    if (alignment.originalLength() != original.length()
+        || alignment.normalizedLength() != normalized.length()) {
+      throw new IllegalArgumentException("alignment lengths (original="
+          + alignment.originalLength() + ", normalized=" + alignment.normalizedLength()
+          + ") do not match the texts (original=" + original.length() + ", normalized="
+          + normalized.length() + ")");
+    }
+  }
+
+  /**
    * Returns the normalized text as a {@code String}.
    *
    * <p>This is the materialized result of the normalization. All implementations build the

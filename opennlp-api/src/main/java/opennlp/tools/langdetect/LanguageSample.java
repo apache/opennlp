@@ -19,7 +19,8 @@ package opennlp.tools.langdetect;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Objects;
+
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Holds a classified document and its {@link Language}.
@@ -29,9 +30,17 @@ public record LanguageSample(Language language, CharSequence context) implements
   @Serial
   private static final long serialVersionUID = -4791295976215940258L;
 
+  /**
+   * Instantiates a {@link LanguageSample}.
+   *
+   * @param language The {@link Language} of the sample. Must not be {@code null}.
+   * @param context The text of the sample. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code language} or {@code context} is
+   *     {@code null}.
+   */
   public LanguageSample(Language language, CharSequence context) {
-    this.language = Objects.requireNonNull(language, "language must not be null");
-    this.context = Objects.requireNonNull(context, "context must not be null");
+    this.language = ParamChecks.requireNonNullArg(language, "language");
+    this.context = ParamChecks.requireNonNullArg(context, "context");
   }
 
   @Override

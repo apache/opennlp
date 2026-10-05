@@ -149,13 +149,15 @@ public class ExtensionLoaderTest {
   }
 
   /**
-   * registerAllowedPackage() throws NullPointerException for null and
-   * IllegalArgumentException for blank inputs.
+   * registerAllowedPackage() throws IllegalArgumentException for null and
+   * blank inputs.
    */
   @Test
   void testRegisterAllowedPackageRejectsNullAndBlank() {
-    Assertions.assertThrows(NullPointerException.class,
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> ExtensionLoader.registerAllowedPackage(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ExtensionLoader.unregisterAllowedPackage(null));
 
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> ExtensionLoader.registerAllowedPackage(""));

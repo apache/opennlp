@@ -24,20 +24,20 @@ public class EventTest {
 
   @Test
   void testNullOutcome() {
-    try {
-      new Event(null, new String[] {"aa", "bb", "cc"});
-      Assertions.fail("NPE must be thrown");
-    } catch (NullPointerException expected) {
-    }
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Event(null, new String[] {"aa", "bb", "cc"}));
+    Assertions.assertEquals("outcome must not be null", e.getMessage());
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Event(null, new String[] {"aa"}, null));
   }
 
   @Test
   void testNullContext() {
-    try {
-      new Event("o1", null);
-      Assertions.fail("NPE must be thrown");
-    } catch (NullPointerException expected) {
-    }
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Event("o1", null));
+    Assertions.assertEquals("context must not be null", e.getMessage());
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Event("o1", (String[]) null, null));
   }
 
   @Test
