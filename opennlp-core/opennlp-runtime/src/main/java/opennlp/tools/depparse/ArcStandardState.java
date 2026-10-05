@@ -19,7 +19,7 @@ package opennlp.tools.depparse;
 
 import java.util.Arrays;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Tracks the state of an arc-standard dependency parse: a stack of tokens
@@ -104,7 +104,7 @@ final class ArcStandardState {
    * @throws IllegalArgumentException Thrown if {@code transition} is {@code null}.
    */
   boolean canApply(Transition transition) {
-    ArgumentChecks.requireNonNullArg(transition, "transition");
+    ParamChecks.requireNonNullArg(transition, "transition");
     return switch (transition.type()) {
       case SHIFT -> bufferFront < tokenCount;
       case LEFT_ARC -> top >= 2;

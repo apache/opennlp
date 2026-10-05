@@ -20,8 +20,8 @@ package opennlp.tools.depparse;
 import java.io.IOException;
 import java.util.function.Predicate;
 
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 
@@ -84,9 +84,9 @@ public class DependencyCrossValidator {
    */
   public DependencyCrossValidator(String languageCode, TrainingParameters params,
       Predicate<String> punctuationTag, DependencyEvaluationMonitor... listeners) {
-    ArgumentChecks.requireNonNullArg(languageCode, "languageCode");
-    ArgumentChecks.requireNonNullArg(params, "params");
-    ArgumentChecks.requireNonNullArg(punctuationTag, "punctuationTag");
+    ParamChecks.requireNonNullArg(languageCode, "languageCode");
+    ParamChecks.requireNonNullArg(params, "params");
+    ParamChecks.requireNonNullArg(punctuationTag, "punctuationTag");
     this.languageCode = languageCode;
     this.params = params;
     this.punctuationTag = punctuationTag;
@@ -106,7 +106,7 @@ public class DependencyCrossValidator {
    *         an event model trainer.
    */
   public void evaluate(ObjectStream<DependencySample> samples, int folds) throws IOException {
-    ArgumentChecks.requireNonNullArg(samples, "samples");
+    ParamChecks.requireNonNullArg(samples, "samples");
     if (folds < MIN_FOLDS) {
       throw new IllegalArgumentException("folds must be at least " + MIN_FOLDS + ": " + folds);
     }

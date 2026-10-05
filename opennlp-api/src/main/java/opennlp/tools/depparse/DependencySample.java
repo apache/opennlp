@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import opennlp.tools.commons.Sample;
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * One dependency-annotated sentence: tokens, their part-of-speech tags, and the gold
@@ -59,7 +59,7 @@ public final class DependencySample implements Sample {
    *         {@code null} entry, or the lengths of tokens, tags and tree disagree.
    */
   public DependencySample(String[] tokens, String[] tags, DependencyTree tree) {
-    ArgumentChecks.requireNonNullArg(tree, "tree");
+    ParamChecks.requireNonNullArg(tree, "tree");
     checkTokensAndTags(tokens, tags);
     if (tokens.length != tree.size()) {
       throw new IllegalArgumentException("tokens, tags and tree must agree in length: "
@@ -82,23 +82,7 @@ public final class DependencySample implements Sample {
    *         is empty, the lengths do not match, or an entry is {@code null}.
    */
   private void checkTokensAndTags(String[] tokens, String[] tags) {
-    ArgumentChecks.requireNonNullArg(tokens, "tokens");
-    ArgumentChecks.requireNonNullArg(tags, "tags");
-    if (tokens.length == 0) {
-      throw new IllegalArgumentException("tokens must not be empty");
-    }
-    if (tokens.length != tags.length) {
-      throw new IllegalArgumentException("tokens and tags must have the same length: "
-          + tokens.length + " != " + tags.length);
-    }
-    for (int i = 0; i < tokens.length; i++) {
-      if (tokens[i] == null) {
-        throw new IllegalArgumentException("token must not be null at index " + i);
-      }
-      if (tags[i] == null) {
-        throw new IllegalArgumentException("tag must not be null at index " + i);
-      }
-    }
+    ParamChecks.requireNonEmptyParallelArrays(tokens, "tokens", tags, "tags");
   }
 
   /**

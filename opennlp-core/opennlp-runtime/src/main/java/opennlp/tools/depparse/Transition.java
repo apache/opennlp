@@ -17,7 +17,7 @@
 
 package opennlp.tools.depparse;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -59,7 +59,7 @@ record Transition(Type type, String label) {
    *         carries a label, or an arc action has a {@code null} or blank label.
    */
   Transition {
-    ArgumentChecks.requireNonNullArg(type, "type");
+    ParamChecks.requireNonNullArg(type, "type");
     if (type == Type.SHIFT) {
       if (label != null) {
         throw new IllegalArgumentException("a shift must not carry a label: " + label);
@@ -110,7 +110,7 @@ record Transition(Type type, String label) {
    *         name a valid transition.
    */
   static Transition decode(String outcome) {
-    ArgumentChecks.requireNonNullArg(outcome, "outcome");
+    ParamChecks.requireNonNullArg(outcome, "outcome");
     if (Type.SHIFT.name().equals(outcome)) {
       return SHIFT;
     }

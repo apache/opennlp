@@ -188,4 +188,36 @@ public final class ParamChecks {
     }
     return value;
   }
+
+  /**
+   * Checks two arrays that hold corresponding values. Both arrays must be non-empty,
+   * have the same length, and contain no {@code null} entries.
+   *
+   * @param first The first array to check.
+   * @param firstName The first parameter name used in exception messages.
+   * @param second The second array to check.
+   * @param secondName The second parameter name used in exception messages.
+   * @throws IllegalArgumentException Thrown if either array is {@code null} or empty,
+   *     their lengths differ, or an entry is {@code null}.
+   */
+  public static void requireNonEmptyParallelArrays(Object[] first, String firstName,
+      Object[] second, String secondName) {
+    requireNonNullArg(first, firstName);
+    requireNonNullArg(second, secondName);
+    if (first.length == 0) {
+      throw new IllegalArgumentException(firstName + " must not be empty");
+    }
+    if (first.length != second.length) {
+      throw new IllegalArgumentException(firstName + " and " + secondName
+          + " must have the same length: " + first.length + " != " + second.length);
+    }
+    for (int i = 0; i < first.length; i++) {
+      if (first[i] == null) {
+        throw new IllegalArgumentException(firstName + "[" + i + "]" + NOT_NULL_SUFFIX);
+      }
+      if (second[i] == null) {
+        throw new IllegalArgumentException(secondName + "[" + i + "]" + NOT_NULL_SUFFIX);
+      }
+    }
+  }
 }

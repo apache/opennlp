@@ -26,8 +26,8 @@ import java.util.Map;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -61,9 +61,9 @@ public class DependencyModel extends BaseModel {
    */
   public DependencyModel(String languageCode, MaxentModel parserModel,
       Map<String, String> manifestInfoEntries) {
-    super(COMPONENT_NAME, ArgumentChecks.requireNonNullArg(languageCode, "languageCode"),
+    super(COMPONENT_NAME, ParamChecks.requireNonNullArg(languageCode, "languageCode"),
         manifestInfoEntries);
-    ArgumentChecks.requireNonNullArg(parserModel, "parserModel");
+    ParamChecks.requireNonNullArg(parserModel, "parserModel");
     artifactMap.put(PARSER_MODEL_ENTRY_NAME, parserModel);
     checkArtifactMap();
   }
@@ -76,7 +76,7 @@ public class DependencyModel extends BaseModel {
    * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    */
   public DependencyModel(InputStream in) throws IOException {
-    super(COMPONENT_NAME, ArgumentChecks.requireNonNullArg(in, "in"));
+    super(COMPONENT_NAME, ParamChecks.requireNonNullArg(in, "in"));
   }
 
   /**
@@ -87,7 +87,7 @@ public class DependencyModel extends BaseModel {
    * @throws IllegalArgumentException Thrown if {@code modelFile} is {@code null}.
    */
   public DependencyModel(File modelFile) throws IOException {
-    super(COMPONENT_NAME, ArgumentChecks.requireNonNullArg(modelFile, "modelFile"));
+    super(COMPONENT_NAME, ParamChecks.requireNonNullArg(modelFile, "modelFile"));
   }
 
   /**
@@ -98,7 +98,7 @@ public class DependencyModel extends BaseModel {
    * @throws IllegalArgumentException Thrown if {@code modelPath} is {@code null}.
    */
   public DependencyModel(Path modelPath) throws IOException {
-    super(COMPONENT_NAME, ArgumentChecks.requireNonNullArg(modelPath, "modelPath"));
+    super(COMPONENT_NAME, ParamChecks.requireNonNullArg(modelPath, "modelPath"));
   }
 
   /**

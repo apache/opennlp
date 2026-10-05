@@ -20,11 +20,15 @@ package opennlp.tools.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,6 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * names the parameter.
  */
 public class ParamChecksTest {
+
+  private static final String FIRST_NAME = "words";
+  private static final String SECOND_NAME = "labels";
 
   @Test
   void testNonNullArgumentIsReturnedUnchanged() {
@@ -181,5 +188,53 @@ public class ParamChecksTest {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> ParamChecks.requireFinite(value, "weight"));
     assertEquals("weight must be finite", e.getMessage());
+  }
+
+  /**
+   * Supplies invalid parallel arrays, including inputs that violate several checks.
+   *
+   * @return The arrays and the expected message for the first violation.
+   */
+  private static Stream<Arguments> rejectedParallelArrays() {
+    final Object[] values = {"a", "b"};
+    return Stream.of(
+        Arguments.of(null, values, "words must not be null"),
+        Arguments.of(values, null, "labels must not be null"),
+        Arguments.of(null, null, "words must not be null"),
+        Arguments.of(new Object[0], null, "labels must not be null"),
+        Arguments.of(new Object[0], new Object[0], "words must not be empty"),
+        Arguments.of(new Object[0], values, "words must not be empty"),
+        Arguments.of(values, new Object[0], "words and labels must have the same length: 2 != 0"),
+        Arguments.of(new Object[] {null}, values,
+            "words and labels must have the same length: 1 != 2"),
+        Arguments.of(new Object[] {null, "b"}, values, "words[0] must not be null"),
+        Arguments.of(new Object[] {"a", null}, values, "words[1] must not be null"),
+        Arguments.of(values, new Object[] {null, "b"}, "labels[0] must not be null"),
+        Arguments.of(values, new Object[] {"a", null}, "labels[1] must not be null"),
+        Arguments.of(new Object[] {null, "b"}, new Object[] {null, "b"},
+            "words[0] must not be null"),
+        Arguments.of(new Object[] {"a", null}, new Object[] {null, "b"},
+            "labels[0] must not be null"));
+  }
+
+  @ParameterizedTest(name = "{2}")
+  @MethodSource("rejectedParallelArrays")
+  void testParallelArraysRejectInvalidInput(Object[] first, Object[] second, String message) {
+    final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonEmptyParallelArrays(first, FIRST_NAME, second, SECOND_NAME));
+    assertEquals(message, exception.getMessage());
+  }
+
+  @Test
+  void testParallelArraysAcceptDifferentElementTypesWithoutChangingTheArrays() {
+    final String[] first = {"", "a", "b"};
+    final Integer[] second = {0, 1, 2};
+    final String[] firstCopy = first.clone();
+    final Integer[] secondCopy = second.clone();
+
+    ParamChecks.requireNonEmptyParallelArrays(first, FIRST_NAME, second, SECOND_NAME);
+
+    assertArrayEquals(firstCopy, first);
+    assertArrayEquals(secondCopy, second);
   }
 }

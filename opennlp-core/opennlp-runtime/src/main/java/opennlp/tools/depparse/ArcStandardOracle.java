@@ -20,7 +20,7 @@ package opennlp.tools.depparse;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Converts an annotated dependency tree into the sequence of parser
@@ -63,7 +63,7 @@ final class ArcStandardOracle {
    *         projective.
    */
   static List<Transition> transitions(DependencyTree gold) {
-    ArgumentChecks.requireNonNullArg(gold, "gold");
+    ParamChecks.requireNonNullArg(gold, "gold");
     final int n = gold.size();
     final int[] goldDependents = new int[n];
     for (int i = 0; i < n; i++) {
@@ -130,7 +130,7 @@ final class ArcStandardOracle {
    * @throws IllegalArgumentException Thrown if {@code gold} is {@code null}.
    */
   static boolean isProjective(DependencyTree gold) {
-    ArgumentChecks.requireNonNullArg(gold, "gold");
+    ParamChecks.requireNonNullArg(gold, "gold");
     for (int first = 0; first < gold.size(); first++) {
       final int firstLow = Math.min(first, gold.headOf(first));
       final int firstHigh = Math.max(first, gold.headOf(first));

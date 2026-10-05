@@ -139,11 +139,11 @@ public class DependencySampleTest {
         Arguments.of(new String[] {"one"}, TAGS, "tokens and tags must have the same length: 1 != 3"),
         Arguments.of(TOKENS, new String[] {"DT"}, "tokens and tags must have the same length: 3 != 1"),
         Arguments.of(TOKENS, new String[0], "tokens and tags must have the same length: 3 != 0"),
-        Arguments.of(new String[] {null, "dog", "barks"}, TAGS, "token must not be null at index 0"),
-        Arguments.of(new String[] {"the", "dog", null}, TAGS, "token must not be null at index 2"),
-        Arguments.of(TOKENS, new String[] {"DT", "NN", null}, "tag must not be null at index 2"),
+        Arguments.of(new String[] {null, "dog", "barks"}, TAGS, "tokens[0] must not be null"),
+        Arguments.of(new String[] {"the", "dog", null}, TAGS, "tokens[2] must not be null"),
+        Arguments.of(TOKENS, new String[] {"DT", "NN", null}, "tags[2] must not be null"),
         Arguments.of(new String[] {"the", null, "barks"}, new String[] {null, "NN", "VBZ"},
-            "tag must not be null at index 0"));
+            "tags[0] must not be null"));
   }
 
   /** Rejected token and tag arrays report the first violation in array order. */
@@ -196,7 +196,7 @@ public class DependencySampleTest {
     tags[length - 1] = null;
     final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
         () -> new DependencySample(tokens, tags, tree));
-    assertEquals("tag must not be null at index " + (length - 1), exception.getMessage());
+    assertEquals("tags[" + (length - 1) + "] must not be null", exception.getMessage());
   }
 
   /** The stream class carries the declared serial version UID, so the field is picked up. */

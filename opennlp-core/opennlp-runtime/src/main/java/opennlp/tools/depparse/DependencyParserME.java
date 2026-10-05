@@ -29,8 +29,8 @@ import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -59,7 +59,7 @@ public class DependencyParserME implements DependencyParser {
    *         outcome inventory is invalid or cannot parse a sentence.
    */
   public DependencyParserME(DependencyModel model) {
-    ArgumentChecks.requireNonNullArg(model, "model");
+    ParamChecks.requireNonNullArg(model, "model");
     this.model = model.getParserModel();
     this.contextGenerator = new DependencyContextGenerator();
     this.transitions = decodeOutcomes(this.model);
@@ -130,23 +130,7 @@ public class DependencyParserME implements DependencyParser {
    *         is empty, the lengths do not match, or an entry is {@code null}.
    */
   private void checkTokensAndTags(String[] tokens, String[] tags) {
-    ArgumentChecks.requireNonNullArg(tokens, "tokens");
-    ArgumentChecks.requireNonNullArg(tags, "tags");
-    if (tokens.length == 0) {
-      throw new IllegalArgumentException("tokens must not be empty");
-    }
-    if (tokens.length != tags.length) {
-      throw new IllegalArgumentException("tokens and tags must have the same length: "
-          + tokens.length + " != " + tags.length);
-    }
-    for (int i = 0; i < tokens.length; i++) {
-      if (tokens[i] == null) {
-        throw new IllegalArgumentException("token must not be null at index " + i);
-      }
-      if (tags[i] == null) {
-        throw new IllegalArgumentException("tag must not be null at index " + i);
-      }
-    }
+    ParamChecks.requireNonEmptyParallelArrays(tokens, "tokens", tags, "tags");
   }
 
   /**
@@ -207,9 +191,9 @@ public class DependencyParserME implements DependencyParser {
   public static DependencyModel train(String languageCode,
       ObjectStream<DependencySample> samples, TrainingParameters parameters)
       throws IOException {
-    ArgumentChecks.requireNonNullArg(languageCode, "languageCode");
-    ArgumentChecks.requireNonNullArg(samples, "samples");
-    ArgumentChecks.requireNonNullArg(parameters, "parameters");
+    ParamChecks.requireNonNullArg(languageCode, "languageCode");
+    ParamChecks.requireNonNullArg(samples, "samples");
+    ParamChecks.requireNonNullArg(parameters, "parameters");
     final TrainerType trainerType = TrainerFactory.getTrainerType(parameters);
     if (!TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);

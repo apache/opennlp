@@ -30,10 +30,10 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.depparse.DependencyTree;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -116,8 +116,8 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
    */
   public ConlluDependencySampleStream(InputStreamFactory in, ConlluTagset tagset)
       throws IOException {
-    ArgumentChecks.requireNonNullArg(in, "in");
-    ArgumentChecks.requireNonNullArg(tagset, "tagset");
+    ParamChecks.requireNonNullArg(in, "in");
+    ParamChecks.requireNonNullArg(tagset, "tagset");
     this.in = in;
     this.tagColumn = tagset == ConlluTagset.U ? UPOS : XPOS;
     this.reader = open();

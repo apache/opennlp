@@ -141,9 +141,9 @@ public class DependencyParserMETest {
         Arguments.of(THE_DOG_BARKS_TOKENS, null, "tags must not be null"),
         Arguments.of(new String[0], new String[0], "tokens must not be empty"),
         Arguments.of(new String[] {"the"}, tags, "tokens and tags must have the same length: 1 != 3"),
-        Arguments.of(new String[] {"the", null, "barks"}, tags, "token must not be null at index 1"),
+        Arguments.of(new String[] {"the", null, "barks"}, tags, "tokens[1] must not be null"),
         Arguments.of(THE_DOG_BARKS_TOKENS, new String[] {"DT", "NN", null},
-            "tag must not be null at index 2"));
+            "tags[2] must not be null"));
   }
 
   @ParameterizedTest(name = "{2}")

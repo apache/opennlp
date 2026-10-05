@@ -26,8 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Turns {@link DependencySample samples} into training {@link Event events}: for each
@@ -56,8 +56,8 @@ class DependencyEventStream implements ObjectStream<Event> {
    */
   DependencyEventStream(ObjectStream<DependencySample> samples,
       DependencyContextGenerator contextGenerator) {
-    ArgumentChecks.requireNonNullArg(samples, "samples");
-    ArgumentChecks.requireNonNullArg(contextGenerator, "contextGenerator");
+    ParamChecks.requireNonNullArg(samples, "samples");
+    ParamChecks.requireNonNullArg(contextGenerator, "contextGenerator");
     this.samples = samples;
     this.contextGenerator = contextGenerator;
   }

@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -88,8 +88,8 @@ public final class DependencyTree implements Serializable {
    * @throws IllegalArgumentException Thrown if any of the above constraints is violated.
    */
   public static DependencyTree of(int[] heads, String[] relations) {
-    ArgumentChecks.requireNonNullArg(heads, "heads");
-    ArgumentChecks.requireNonNullArg(relations, "relations");
+    ParamChecks.requireNonNullArg(heads, "heads");
+    ParamChecks.requireNonNullArg(relations, "relations");
     if (heads.length == 0) {
       throw new IllegalArgumentException("a dependency tree needs at least one token");
     }
