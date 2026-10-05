@@ -129,7 +129,7 @@ public class ConlluWordLine {
   }
 
   /**
-   * @return Retrieves the enhanced dependency graph in the form of a list of
+   * @return Retrieves the enhanced dependency tree in the form of a list of
    * head-deprel pairs.
    */
   public String getDeps() {
