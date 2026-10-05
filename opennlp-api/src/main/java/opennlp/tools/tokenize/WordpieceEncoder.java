@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -225,18 +226,10 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   public WordpieceEncoder(Map<String, Integer> vocabularyIds, boolean lowerCase,
                           String classificationToken, String separatorToken,
                           String unknownToken, int maxWordCodePoints) {
-    if (vocabularyIds == null) {
-      throw new IllegalArgumentException("vocabularyIds must not be null");
-    }
-    if (classificationToken == null) {
-      throw new IllegalArgumentException("classificationToken must not be null");
-    }
-    if (separatorToken == null) {
-      throw new IllegalArgumentException("separatorToken must not be null");
-    }
-    if (unknownToken == null) {
-      throw new IllegalArgumentException("unknownToken must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(vocabularyIds, "vocabularyIds");
+    ArgumentChecks.requireNonNullArg(classificationToken, "classificationToken");
+    ArgumentChecks.requireNonNullArg(separatorToken, "separatorToken");
+    ArgumentChecks.requireNonNullArg(unknownToken, "unknownToken");
     if (classificationToken.isEmpty()) {
       throw new IllegalArgumentException("classificationToken must not be empty");
     }
@@ -278,9 +271,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
 
   /** Converts an ordered vocabulary to a piece-to-id mapping. */
   private static Map<String, Integer> byPiece(List<String> vocabulary) {
-    if (vocabulary == null) {
-      throw new IllegalArgumentException("vocabulary must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(vocabulary, "vocabulary");
     final Map<String, Integer> byPiece = HashMap.newHashMap(vocabulary.size());
     for (int id = 0; id < vocabulary.size(); id++) {
       final String piece = vocabulary.get(id);
@@ -312,9 +303,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   /** {@inheritDoc} */
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("text must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
     final String original = text.toString();
 
     // Stores an original-text range for each normalized char.

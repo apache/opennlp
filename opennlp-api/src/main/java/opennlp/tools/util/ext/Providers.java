@@ -49,6 +49,7 @@ import java.util.function.UnaryOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -162,9 +163,7 @@ public final class Providers<P extends Provider<?>> {
   private Providers(final Class<P> spi, final ClassLoader loader,
                     final UnaryOperator<String> configuration,
                     final Predicate<Class<?>> trusted) {
-    if (spi == null) {
-      throw new IllegalArgumentException("spi must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(spi, "spi");
     if (!spi.isInterface() || Provider.class.equals(spi) || !Provider.class.isAssignableFrom(spi)) {
       throw new IllegalArgumentException("spi must be a sub-interface of "
           + Provider.class.getName() + ": " + spi.getName());
@@ -413,9 +412,7 @@ public final class Providers<P extends Provider<?>> {
    * @throws IllegalArgumentException Thrown if {@code spec} is {@code null}.
    */
   public List<P> supporting(final ProviderSpec spec) {
-    if (spec == null) {
-      throw new IllegalArgumentException("spec must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(spec, "spec");
     final List<Registration<P>> candidates = candidates(spec, disabledNames(), null);
     final List<P> providers = new ArrayList<>(candidates.size());
     for (final Registration<P> candidate : candidates) {
@@ -437,9 +434,7 @@ public final class Providers<P extends Provider<?>> {
    * @throws AmbiguousProviderException Thrown if several candidates have the highest priority.
    */
   public P select(final ProviderSpec spec) {
-    if (spec == null) {
-      throw new IllegalArgumentException("spec must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(spec, "spec");
     final Set<String> disabled = disabledNames();
     final String selected = configuredName();
     final List<Registration<P>> candidates = candidates(spec, disabled, selected);

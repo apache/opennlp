@@ -19,6 +19,7 @@ package opennlp.tools.document;
 
 import java.util.Objects;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -112,9 +113,7 @@ public final class LayerKey<T> {
     if (id == null || StringUtil.isBlank(id)) {
       throw new IllegalArgumentException("id must not be null or blank");
     }
-    if (type == null) {
-      throw new IllegalArgumentException("type must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(type, "type");
     return new LayerKey<>(id, type, scope);
   }
 

@@ -17,6 +17,7 @@
 
 package opennlp.tools.document;
 
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -48,9 +49,7 @@ public record Annotation<T>(Span span, T value) {
    * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
    */
   public Annotation {
-    if (value == null) {
-      throw new IllegalArgumentException("value must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(value, "value");
   }
 
   /**
