@@ -258,9 +258,7 @@ public final class ProviderSpec {
    * @throws IllegalArgumentException Thrown if {@code suffix} is {@code null} or empty.
    */
   public boolean locationEndsWith(final String suffix) {
-    if (suffix == null || suffix.isEmpty()) {
-      throw new IllegalArgumentException("suffix must not be null or empty");
-    }
+    ParamChecks.requireNonEmpty(suffix, "suffix");
     if (location == null) {
       return false;
     }

@@ -97,9 +97,9 @@ public final class SymSpellModel implements SerializableArtifact {
    */
   public SymSpellModel(String language, String name, String version, SymSpellConfig config,
                        Map<String, Long> unigrams, Map<String, Long> bigrams) {
-    this.language = requireNonBlank(language, "language");
-    this.name = requireNonBlank(name, "name");
-    this.version = requireNonBlank(version, "version");
+    this.language = ParamChecks.requireNonBlank(language, "language");
+    this.name = ParamChecks.requireNonBlank(name, "name");
+    this.version = ParamChecks.requireNonBlank(version, "version");
     this.config = ParamChecks.requireNonNullArg(config, "config");
     ParamChecks.requireNonNullArg(unigrams, "unigrams");
     ParamChecks.requireNonNullArg(bigrams, "bigrams");
@@ -165,12 +165,5 @@ public final class SymSpellModel implements SerializableArtifact {
   @Override
   public Class<?> getArtifactSerializerClass() {
     return SymSpellModelSerializer.class;
-  }
-
-  private static String requireNonBlank(String value, String field) {
-    if (value == null || value.isBlank()) {
-      throw new IllegalArgumentException(field + " must not be null or blank");
-    }
-    return value;
   }
 }

@@ -107,9 +107,7 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
       throw new IllegalArgumentException("model must be a regular file: " + model);
     }
     final String vocabulary = spec.option(VOCABULARY_OPTION, null);
-    if (vocabulary == null || vocabulary.isBlank()) {
-      throw new IllegalArgumentException(VOCABULARY_OPTION + " must not be null or blank");
-    }
+    ParamChecks.requireNonBlank(vocabulary, VOCABULARY_OPTION);
     final boolean lowerCase = booleanOption(spec, LOWER_CASE_OPTION);
     final boolean normalize = booleanOption(spec, NORMALIZE_OPTION);
     final Pooling pooling = poolingOption(spec);

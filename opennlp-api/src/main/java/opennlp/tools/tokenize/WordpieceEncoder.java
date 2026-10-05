@@ -239,9 +239,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     if (unknownToken.isEmpty()) {
       throw new IllegalArgumentException("unknownToken must not be empty");
     }
-    if (maxWordCodePoints < 0) {
-      throw new IllegalArgumentException("maxWordCodePoints must not be negative");
-    }
+    ParamChecks.requireNonNegative(maxWordCodePoints, "maxWordCodePoints");
     final Map<String, Integer> byPiece = HashMap.newHashMap(vocabularyIds.size());
     for (final Map.Entry<String, Integer> entry : vocabularyIds.entrySet()) {
       if (entry.getKey() == null || entry.getValue() == null) {

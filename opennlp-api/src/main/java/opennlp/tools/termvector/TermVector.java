@@ -92,9 +92,7 @@ public record TermVector(String term, int frequency, List<Span> spans) {
    *         {@code spans} is {@code null} or empty.
    */
   public static TermVector withSpans(String term, List<Span> spans) {
-    if (spans == null || spans.isEmpty()) {
-      throw new IllegalArgumentException("spans must not be null or empty");
-    }
+    ParamChecks.requireNonEmpty(spans, "spans");
     return new TermVector(term, spans.size(), spans);
   }
 

@@ -64,9 +64,7 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    *                                  backslash, or contains an unpaired surrogate.
    */
   public BasicContextGenerator(String sep) {
-    if (sep == null || sep.isEmpty()) {
-      throw new IllegalArgumentException("sep must not be null or empty");
-    }
+    ParamChecks.requireNonEmpty(sep, "sep");
     if (sep.indexOf(BACKSLASH) >= 0) {
       throw new IllegalArgumentException(
           "sep is taken as written and must not contain a backslash: " + sep);

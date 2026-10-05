@@ -82,9 +82,7 @@ public final class SymSpellModelResolver {
                                String nameFragment) {
     this.finder = ParamChecks.requireNonNullArg(finder, "finder");
     this.loader = ParamChecks.requireNonNullArg(loader, "loader");
-    if (nameFragment == null || nameFragment.isBlank()) {
-      throw new IllegalArgumentException("nameFragment must not be null or blank");
-    }
+    ParamChecks.requireNonBlank(nameFragment, "nameFragment");
     this.nameFragment = nameFragment;
   }
 
@@ -115,9 +113,7 @@ public final class SymSpellModelResolver {
    */
   public Optional<SymSpellModel> resolveByLanguage(String language, boolean reloadCache)
       throws IOException {
-    if (language == null || language.isBlank()) {
-      throw new IllegalArgumentException("language must not be null or blank");
-    }
+    ParamChecks.requireNonBlank(language, "language");
 
     final Set<ClassPathModelEntry> entries = finder.findModels(reloadCache);
     for (ClassPathModelEntry entry : entries) {
