@@ -91,6 +91,8 @@ public class SuggestItemTest {
 
   @Test
   void nullTermIsRejected() {
-    assertThrows(NullPointerException.class, () -> new SuggestItem(null, 0, 1L));
+    final IllegalArgumentException ex =
+        assertThrows(IllegalArgumentException.class, () -> new SuggestItem(null, 0, 1L));
+    assertEquals("term must not be null", ex.getMessage());
   }
 }

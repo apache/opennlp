@@ -17,10 +17,9 @@
 
 package opennlp.spellcheck.symspell;
 
-import java.util.Objects;
-
 import opennlp.spellcheck.distance.DamerauOSADistance;
 import opennlp.spellcheck.distance.EditDistance;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Immutable configuration for {@link SymSpell}, created through {@link #builder()}.
@@ -163,9 +162,10 @@ public final class SymSpellConfig {
     /**
      * @param value verification metric to inject; must not be {@code null}
      * @return this builder
+     * @throws IllegalArgumentException if {@code value} is {@code null}
      */
     public Builder editDistance(EditDistance value) {
-      this.editDistance = Objects.requireNonNull(value, "editDistance must not be null");
+      this.editDistance = ParamChecks.requireNonNullArg(value, "editDistance");
       return this;
     }
 

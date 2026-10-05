@@ -17,7 +17,7 @@
 
 package opennlp.spellcheck;
 
-import java.util.Objects;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * An immutable spelling suggestion produced by a {@link SpellChecker}.
@@ -37,8 +37,13 @@ import java.util.Objects;
 public record SuggestItem(String term, int editDistance, long frequency)
     implements Comparable<SuggestItem> {
 
+  /**
+   * Creates a suggestion.
+   *
+   * @throws IllegalArgumentException if {@code term} is {@code null}
+   */
   public SuggestItem {
-    Objects.requireNonNull(term, "term must not be null");
+    ParamChecks.requireNonNullArg(term, "term");
   }
 
   @Override

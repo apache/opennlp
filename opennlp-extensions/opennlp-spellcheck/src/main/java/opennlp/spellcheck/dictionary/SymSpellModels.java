@@ -27,11 +27,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 import opennlp.spellcheck.symspell.SymSpellConfig;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Convenience factory and (de)serialization helpers for {@link SymSpellModel}.
@@ -80,13 +80,15 @@ public final class SymSpellModels {
    *                        {@code null} to skip bigrams
    * @return the built model
    * @throws IOException Thrown on IO errors or a malformed dictionary line.
+   * @throws IllegalArgumentException if {@code config}, {@code charset} or
+   *     {@code unigramSource} is {@code null}
    */
   public static SymSpellModel buildModel(String language, SymSpellConfig config, Charset charset,
                                          InputStreamFactory unigramSource,
                                          InputStreamFactory bigramSource) throws IOException {
-    Objects.requireNonNull(config, "config must not be null");
-    Objects.requireNonNull(charset, "charset must not be null");
-    Objects.requireNonNull(unigramSource, "unigramSource must not be null");
+    ParamChecks.requireNonNullArg(config, "config");
+    ParamChecks.requireNonNullArg(charset, "charset");
+    ParamChecks.requireNonNullArg(unigramSource, "unigramSource");
 
     final FrequencyDictionaryLoader loader = new FrequencyDictionaryLoader(charset);
 
@@ -159,10 +161,11 @@ public final class SymSpellModels {
    * @param modelBytes  the serialized binary form of {@code model} (see {@link #toBytes});
    *                    must not be {@code null}
    * @return the populated {@link Properties}
+   * @throws IllegalArgumentException if {@code model} or {@code modelBytes} is {@code null}
    */
   public static Properties buildProperties(SymSpellModel model, byte[] modelBytes) {
-    Objects.requireNonNull(model, "model must not be null");
-    Objects.requireNonNull(modelBytes, "modelBytes must not be null");
+    ParamChecks.requireNonNullArg(model, "model");
+    ParamChecks.requireNonNullArg(modelBytes, "modelBytes");
     final Properties props = new Properties();
     props.setProperty(PROP_LANGUAGE, model.getLanguage());
     props.setProperty(PROP_NAME, model.getName());
@@ -198,9 +201,10 @@ public final class SymSpellModels {
    * @param language a language tag; must not be {@code null}
    * @return the conventional Maven artifactId for a packaged model of that language,
    *     e.g. {@code "opennlp-models-spellcheck-en"}
+   * @throws IllegalArgumentException if {@code language} is {@code null}
    */
   public static String artifactId(String language) {
-    return MODEL_ARTIFACT_PREFIX + Objects.requireNonNull(language, "language must not be null");
+    return MODEL_ARTIFACT_PREFIX + ParamChecks.requireNonNullArg(language, "language");
   }
 
   static String sha256Hex(byte[] data) {

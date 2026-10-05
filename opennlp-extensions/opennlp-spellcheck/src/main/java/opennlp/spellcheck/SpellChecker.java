@@ -43,9 +43,8 @@ public interface SpellChecker {
    * @param maxEditDistance the maximum edit distance to consider; must not be negative and
    *                       must not exceed {@link #maxEditDistance()}
    * @return the matching suggestions in natural order (best first); never {@code null}
-   * @throws NullPointerException     if {@code term} or {@code verbosity} is {@code null}
-   * @throws IllegalArgumentException if {@code maxEditDistance} is negative or exceeds
-   *     {@link #maxEditDistance()}
+   * @throws IllegalArgumentException if {@code term} or {@code verbosity} is {@code null},
+   *     or if {@code maxEditDistance} is negative or exceeds {@link #maxEditDistance()}
    */
   List<SuggestItem> lookup(String term, Verbosity verbosity, int maxEditDistance);
 
@@ -65,7 +64,7 @@ public interface SpellChecker {
    *
    * @param term the (possibly misspelled) term to correct; must not be {@code null}
    * @return the matching suggestions in natural order (best first); never {@code null}
-   * @throws NullPointerException if {@code term} is {@code null}
+   * @throws IllegalArgumentException if {@code term} is {@code null}
    */
   List<SuggestItem> lookup(String term);
 
@@ -80,8 +79,8 @@ public interface SpellChecker {
    * @param input           the input phrase to correct; must not be {@code null}
    * @param maxEditDistance the maximum edit distance per token; must not be negative
    * @return a singleton list holding the best correction of the whole input; never {@code null}
-   * @throws NullPointerException     if {@code input} is {@code null}
-   * @throws IllegalArgumentException if {@code maxEditDistance} is negative
+   * @throws IllegalArgumentException if {@code input} is {@code null} or if
+   *     {@code maxEditDistance} is negative
    */
   List<SuggestItem> lookupCompound(String input, int maxEditDistance);
 }

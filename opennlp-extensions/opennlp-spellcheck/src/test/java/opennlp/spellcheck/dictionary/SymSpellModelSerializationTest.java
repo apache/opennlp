@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SymSpellModelSerializationTest {
@@ -167,5 +169,31 @@ public class SymSpellModelSerializationTest {
       }
       return in;
     };
+  }
+
+  @Test
+  void nullArgumentsAreRejected() {
+    final SymSpellConfig config = SymSpellConfig.defaultConfig();
+    final Map<String, Long> unigrams = Map.of("haus", 100L);
+    final Map<String, Long> bigrams = Map.of();
+    assertThrows(IllegalArgumentException.class,
+        () -> new SymSpellModel("de", null, unigrams, bigrams));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SymSpellModel("de", config, null, bigrams));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SymSpellModel("de", "n", "1", config, unigrams, null));
+
+    final InputStreamFactory unigramSource = resource(UNIGRAMS);
+    assertThrows(IllegalArgumentException.class, () -> SymSpellModels.buildModel("en", null,
+        FrequencyDictionaryLoader.DEFAULT_CHARSET, unigramSource, null));
+    assertThrows(IllegalArgumentException.class, () -> SymSpellModels.buildModel("en", config,
+        null, unigramSource, null));
+    assertThrows(IllegalArgumentException.class, () -> SymSpellModels.buildModel("en", config,
+        FrequencyDictionaryLoader.DEFAULT_CHARSET, null, null));
+
+    final byte[] bytes = new byte[0];
+    assertThrows(IllegalArgumentException.class, () -> SymSpellModels.buildProperties(null, bytes));
+    assertThrows(IllegalArgumentException.class, () -> SymSpellModels.buildProperties(model, null));
+    assertThrows(IllegalArgumentException.class, () -> SymSpellModels.artifactId(null));
   }
 }

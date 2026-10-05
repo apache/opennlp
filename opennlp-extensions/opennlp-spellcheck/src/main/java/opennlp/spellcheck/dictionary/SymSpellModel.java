@@ -20,10 +20,10 @@ package opennlp.spellcheck.dictionary;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.spellcheck.symspell.SymSpellConfig;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
@@ -69,6 +69,8 @@ public final class SymSpellModel implements SerializableArtifact {
    * @param unigrams the {@code word -> count} source map; must not be {@code null}
    * @param bigrams  the {@code "w1 w2" -> count} source map; must not be {@code null}
    *                 (may be empty)
+   * @throws IllegalArgumentException if {@code language} is {@code null} or blank, or if
+   *     {@code config}, {@code unigrams} or {@code bigrams} is {@code null}
    */
   public SymSpellModel(String language, SymSpellConfig config,
                        Map<String, Long> unigrams, Map<String, Long> bigrams) {
@@ -89,15 +91,18 @@ public final class SymSpellModel implements SerializableArtifact {
    * @param unigrams the {@code word -> count} source map; must not be {@code null}
    * @param bigrams  the {@code "w1 w2" -> count} source map; must not be {@code null}
    *                 (may be empty)
+   * @throws IllegalArgumentException if {@code language}, {@code name} or {@code version}
+   *     is {@code null} or blank, or if {@code config}, {@code unigrams} or {@code bigrams}
+   *     is {@code null}
    */
   public SymSpellModel(String language, String name, String version, SymSpellConfig config,
                        Map<String, Long> unigrams, Map<String, Long> bigrams) {
     this.language = requireNonBlank(language, "language");
     this.name = requireNonBlank(name, "name");
     this.version = requireNonBlank(version, "version");
-    this.config = Objects.requireNonNull(config, "config must not be null");
-    Objects.requireNonNull(unigrams, "unigrams must not be null");
-    Objects.requireNonNull(bigrams, "bigrams must not be null");
+    this.config = ParamChecks.requireNonNullArg(config, "config");
+    ParamChecks.requireNonNullArg(unigrams, "unigrams");
+    ParamChecks.requireNonNullArg(bigrams, "bigrams");
 
     // Defensive, order-preserving copies so the model is fully immutable.
     this.unigrams = Collections.unmodifiableMap(new LinkedHashMap<>(unigrams));
