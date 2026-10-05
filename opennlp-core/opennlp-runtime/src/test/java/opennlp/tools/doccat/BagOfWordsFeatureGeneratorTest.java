@@ -29,8 +29,8 @@ public class BagOfWordsFeatureGeneratorTest {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator();
     try {
       generator.extractFeatures(null, Collections.emptyMap());
-      Assertions.fail("NullPointerException must be thrown");
-    } catch (NullPointerException expected) {
+      Assertions.fail("IllegalArgumentException must be thrown");
+    } catch (IllegalArgumentException expected) {
     }
   }
 

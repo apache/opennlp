@@ -17,7 +17,6 @@
 package opennlp.tools.util.normalizer;
 
 import java.util.Locale;
-import java.util.Objects;
 
 import opennlp.tools.util.ParamChecks;
 
@@ -50,10 +49,10 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
    * Creates a normalizer that lower cases using the given locale.
    *
    * @param locale The locale whose case rules to apply.
+   * @throws IllegalArgumentException Thrown if {@code locale} is {@code null}.
    */
   public CaseFoldCharSequenceNormalizer(Locale locale) {
-    this.locale = Objects.requireNonNull(locale,
-        "locale must not be null; call getInstance() for the locale-independent default");
+    this.locale = ParamChecks.requireNonNullArg(locale, "locale");
   }
 
   /** {@return the shared, stateless {@link Locale#ROOT} instance} */
@@ -66,12 +65,11 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
    * for {@code Locale.ROOT}.
    *
    * @param locale The locale whose case rules to apply.
-   * @throws NullPointerException Thrown if {@code locale} is null; call {@link #getInstance()} for
-   *     the locale-independent default.
+   * @throws IllegalArgumentException Thrown if {@code locale} is null; call {@link #getInstance()}
+   *     for the locale-independent default.
    */
   public static CaseFoldCharSequenceNormalizer getInstance(Locale locale) {
-    Objects.requireNonNull(locale,
-        "locale must not be null; call getInstance() for the locale-independent default");
+    ParamChecks.requireNonNullArg(locale, "locale");
     return Locale.ROOT.equals(locale) ? INSTANCE : new CaseFoldCharSequenceNormalizer(locale);
   }
 

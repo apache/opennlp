@@ -59,9 +59,9 @@ public class CaseFoldCharSequenceNormalizerTest {
   void testNullLocaleIsRejected() {
     // Both the constructor and the factory fail loud rather than defaulting; the locale-independent
     // default is the no-arg getInstance().
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> new CaseFoldCharSequenceNormalizer((Locale) null));
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> CaseFoldCharSequenceNormalizer.getInstance((Locale) null));
   }
 }

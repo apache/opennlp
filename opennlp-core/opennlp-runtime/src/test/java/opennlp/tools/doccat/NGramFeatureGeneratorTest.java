@@ -33,8 +33,8 @@ public class NGramFeatureGeneratorTest {
     NGramFeatureGenerator generator = new NGramFeatureGenerator();
     try {
       generator.extractFeatures(null, Collections.emptyMap());
-      Assertions.fail("NullPointerException must be thrown");
-    } catch (NullPointerException expected) {
+      Assertions.fail("IllegalArgumentException must be thrown");
+    } catch (IllegalArgumentException expected) {
     }
   }
 

@@ -19,9 +19,9 @@ package opennlp.tools.namefind;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 
@@ -42,10 +42,11 @@ public class DictionaryNameFinder implements TokenNameFinder {
    *
    * @param dictionary The {@link Dictionary} to use. Must not be {@code null}.
    * @param type the name type used for the produced spans. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code dictionary} or {@code type} is {@code null}.
    */
   public DictionaryNameFinder(Dictionary dictionary, String type) {
-    this.mDictionary = Objects.requireNonNull(dictionary, "dictionary must not be null");
-    this.type = Objects.requireNonNull(type, "type must not be null");
+    this.mDictionary = ParamChecks.requireNonNullArg(dictionary, "dictionary");
+    this.type = ParamChecks.requireNonNullArg(type, "type");
   }
 
   /**

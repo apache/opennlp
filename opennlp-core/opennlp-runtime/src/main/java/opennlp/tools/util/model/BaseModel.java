@@ -45,6 +45,7 @@ import java.util.zip.ZipOutputStream;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.LanguageCodeValidator;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Version;
 import opennlp.tools.util.ext.ExtensionLoader;
 
@@ -103,13 +104,14 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param languageCode The ISO language code to configure. Must not be {@code null}.
    * @param manifestInfoEntries Mapping for additional information in the manifest.
    * @param factory The {@link BaseToolFactory factory} to use.
+   * @throws IllegalArgumentException Thrown if {@code languageCode} is {@code null}.
    */
   protected BaseModel(String componentName, String languageCode,
       Map<String, String> manifestInfoEntries, BaseToolFactory factory) {
 
     this(componentName, false);
 
-    Objects.requireNonNull(languageCode, "languageCode must not be null");
+    ParamChecks.requireNonNullArg(languageCode, "languageCode");
     LanguageCodeValidator.validateLanguageCode(languageCode);
 
     createBaseArtifactSerializers(artifactSerializers);
@@ -156,6 +158,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param componentName The component name to create the model for.
    * @param languageCode The ISO language code to configure. Must not be {@code null}.
    * @param manifestInfoEntries Mapping for additional information in the manifest.
+   * @throws IllegalArgumentException Thrown if {@code languageCode} is {@code null}.
    */
   protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
     this(componentName, languageCode, manifestInfoEntries, null);
@@ -169,6 +172,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param in A valid, open {@link InputStream} to read the model from.
    *
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    */
   protected BaseModel(String componentName, InputStream in) throws IOException {
     this(componentName, true);
@@ -184,9 +188,12 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param modelFile A valid, accessible {@link File} to read the model from.
    *
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if {@code modelFile} is {@code null}.
    */
   protected BaseModel(String componentName, File modelFile) throws IOException  {
     this(componentName, true);
+
+    ParamChecks.requireNonNullArg(modelFile, "modelFile");
 
     try (InputStream in = new BufferedInputStream(new FileInputStream(modelFile))) {
       loadModel(in);
@@ -201,9 +208,12 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param modelPath A valid, accessible {@link Path} to read the model from.
    *
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if {@code modelPath} is {@code null}.
    */
   protected BaseModel(String componentName, Path modelPath) throws IOException  {
     this(componentName, true);
+
+    ParamChecks.requireNonNullArg(modelPath, "modelPath");
 
     try (InputStream in = Files.newInputStream(modelPath)) {
       loadModel(in);
@@ -218,9 +228,12 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param modelURL A valid, accessible {@link URL} to read the model from.
    *
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if {@code modelURL} is {@code null}.
    */
   protected BaseModel(String componentName, URL modelURL) throws IOException  {
     this(componentName, true);
+
+    ParamChecks.requireNonNullArg(modelURL, "modelURL");
 
     try (InputStream in = new BufferedInputStream(modelURL.openStream())) {
       loadModel(in);
@@ -229,7 +242,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
   private void loadModel(InputStream in) throws IOException {
 
-    Objects.requireNonNull(in, "in must not be null");
+    ParamChecks.requireNonNullArg(in, "in");
 
     createBaseArtifactSerializers(artifactSerializers);
 

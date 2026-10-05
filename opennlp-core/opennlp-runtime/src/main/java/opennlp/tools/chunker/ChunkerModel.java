@@ -32,6 +32,7 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -134,9 +135,10 @@ public class ChunkerModel extends BaseModel {
    * @param modelPath The {@link Path} used for loading the model.
    *
    * @throws IOException Thrown if IO errors occurred during initialization.
+   * @throws IllegalArgumentException Thrown if {@code modelPath} is {@code null}.
    */
   public ChunkerModel(Path modelPath) throws IOException {
-    this(modelPath.toFile());
+    this(ParamChecks.requireNonNullArg(modelPath, "modelPath").toFile());
   }
 
   /**

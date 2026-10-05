@@ -36,6 +36,7 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ChunkerModelSerializer;
@@ -92,6 +93,8 @@ public class ParserModel extends BaseModel {
    * @param headRules The {@link HeadRules} to to use for parsing.
    * @param modelType The {@link ParserType} to use.
    * @param manifestInfoEntries Additional information kept in the manifest.
+   * @throws IllegalArgumentException Thrown if {@code attachModel} is {@code null} for a
+   *     {@link ParserType#TREEINSERT} parser.
    */
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
       MaxentModel attachModel, POSModel parserTagger, ChunkerModel chunkerTagger,
@@ -110,7 +113,7 @@ public class ParserModel extends BaseModel {
           throw new IllegalArgumentException("attachModel must be null for chunking parser!");
     }
     else if (ParserType.TREEINSERT.equals(modelType)) {
-      Objects.requireNonNull(attachModel, "attachModel must not be null");
+      ParamChecks.requireNonNullArg(attachModel, "attachModel");
       artifactMap.put(ATTACH_MODEL_ENTRY_NAME, attachModel);
     }
     else {
@@ -135,6 +138,8 @@ public class ParserModel extends BaseModel {
    * @param chunkerTagger A valid {@link ChunkerModel} to chunk.
    * @param headRules The {@link HeadRules} to to use for parsing.
    * @param modelType The {@link ParserType} to use.
+   * @throws IllegalArgumentException Thrown if {@code attachModel} is {@code null} for a
+   *     {@link ParserType#TREEINSERT} parser.
    */
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
       MaxentModel attachModel, POSModel parserTagger, ChunkerModel chunkerTagger,
@@ -190,9 +195,10 @@ public class ParserModel extends BaseModel {
    * @param modelPath The {@link Path} used for loading the model.
    *
    * @throws IOException Thrown if IO errors occurred during initialization.
+   * @throws IllegalArgumentException Thrown if {@code modelPath} is {@code null}.
    */
   public ParserModel(Path modelPath) throws IOException {
-    this(modelPath.toFile());
+    this(ParamChecks.requireNonNullArg(modelPath, "modelPath").toFile());
   }
 
   /**

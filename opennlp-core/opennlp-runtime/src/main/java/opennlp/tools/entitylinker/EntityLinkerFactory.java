@@ -18,8 +18,8 @@
 package opennlp.tools.entitylinker;
 
 import java.io.IOException;
-import java.util.Objects;
 
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
@@ -79,7 +79,7 @@ public class EntityLinkerFactory {
    * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public static synchronized EntityLinker<?> getLinker(EntityLinkerProperties properties) throws IOException {
-    Objects.requireNonNull(properties, "properties argument must not be null");
+    ParamChecks.requireNonNullArg(properties, "properties");
 
     String linkerImplFullName = properties.getProperty("linker", "");
 

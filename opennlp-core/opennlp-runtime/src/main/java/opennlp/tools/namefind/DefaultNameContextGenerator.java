@@ -19,8 +19,8 @@ package opennlp.tools.namefind;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorUtil;
 
@@ -37,10 +37,10 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
    * {@link AdaptiveFeatureGenerator feature generators}.
    *
    * @param featureGenerators One or more {@link AdaptiveFeatureGenerator feature generators}.
+   * @throws IllegalArgumentException Thrown if {@code featureGenerators} is {@code null}.
    */
   public DefaultNameContextGenerator(AdaptiveFeatureGenerator... featureGenerators) {
-    this.featureGenerators = Objects.requireNonNull(
-            featureGenerators, "Please specify at least one featureGenerator");
+    this.featureGenerators = ParamChecks.requireNonNullArg(featureGenerators, "featureGenerators");
   }
 
   @Override

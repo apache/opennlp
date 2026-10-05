@@ -63,9 +63,17 @@ public class AccentFoldCharSequenceNormalizer implements CharSequenceNormalizer 
    *     other script are preserved.
    * @param foldStrokeLetters Whether atomic Latin letters such as the stroke letters and ligatures
    *     are mapped to an ASCII approximation.
+   * @throws IllegalArgumentException Thrown if {@code foldScripts} is {@code null} or contains a
+   *     {@code null} element.
    */
   public AccentFoldCharSequenceNormalizer(Set<Character.UnicodeScript> foldScripts,
                                           boolean foldStrokeLetters) {
+    ParamChecks.requireNonNullArg(foldScripts, "foldScripts");
+    for (final Character.UnicodeScript script : foldScripts) {
+      if (script == null) {
+        throw new IllegalArgumentException("foldScripts must not contain null");
+      }
+    }
     this.foldScripts = Set.copyOf(foldScripts);
     this.foldStrokeLetters = foldStrokeLetters;
   }

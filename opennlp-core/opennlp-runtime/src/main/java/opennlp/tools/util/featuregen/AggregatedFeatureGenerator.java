@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+
+import opennlp.tools.util.ParamChecks;
 
 /**
  * The {@link AggregatedFeatureGenerator} aggregates a set of
@@ -36,11 +37,16 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * Initializes an {@link AggregatedFeatureGenerator} via specified {@code generators}.
    *
    * @param generators A collection of generators, {@code null} values are not permitted.
+   * @throws IllegalArgumentException Thrown if {@code generators} is {@code null} or contains
+   *     {@code null}.
    */
   public AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
+    ParamChecks.requireNonNullArg(generators, "generators");
 
     for (AdaptiveFeatureGenerator generator : generators) {
-      Objects.requireNonNull(generator, "null values in generators are not permitted");
+      if (generator == null) {
+        throw new IllegalArgumentException("generators must not contain null");
+      }
     }
 
     this.generators = new ArrayList<>(generators.length);
@@ -54,9 +60,12 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * Initializes an {@link AggregatedFeatureGenerator} via specified {@code generators}.
    *
    * @param generators A collection of generators, {@code null} values are not permitted.
+   * @throws IllegalArgumentException Thrown if {@code generators} is {@code null} or contains
+   *     {@code null}.
    */
   public AggregatedFeatureGenerator(Collection<AdaptiveFeatureGenerator> generators) {
-    this(generators.toArray(new AdaptiveFeatureGenerator[0]));
+    this(ParamChecks.requireNonNullArg(generators, "generators")
+        .toArray(new AdaptiveFeatureGenerator[0]));
   }
 
   /**

@@ -25,13 +25,13 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelWriter;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
 
@@ -59,8 +59,8 @@ public final class ModelUtil {
   public static void writeModel(MaxentModel model, final OutputStream out)
           throws IOException, IllegalArgumentException {
 
-    Objects.requireNonNull(model, "model parameter must not be null");
-    Objects.requireNonNull(out, "out parameter must not be null");
+    ParamChecks.requireNonNullArg(model, "model");
+    ParamChecks.requireNonNullArg(out, "out");
 
     GenericModelWriter modelWriter = new GenericModelWriter((AbstractModel) model,
         new DataOutputStream(new OutputStream() {

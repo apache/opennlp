@@ -19,12 +19,12 @@
 package opennlp.tools.log;
 
 import java.io.PrintStream;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
 
 import opennlp.tools.commons.Internal;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * This class serves as an adapter for a {@link Logger} used within a {@link PrintStream}.
@@ -39,6 +39,7 @@ public class LogPrintStream extends PrintStream {
    * Creates a {@link LogPrintStream} for the given {@link Logger}.
    *
    * @param logger must not be {@code null}
+   * @throws IllegalArgumentException Thrown if {@code logger} is {@code null}.
    */
   public LogPrintStream(Logger logger) {
     this(logger, Level.INFO);
@@ -50,11 +51,12 @@ public class LogPrintStream extends PrintStream {
    *
    * @param logger must not be {@code null}
    * @param level  must not be {@code null}
+   * @throws IllegalArgumentException Thrown if {@code logger} or {@code level} is {@code null}.
    */
   public LogPrintStream(Logger logger, Level level) {
     super(nullOutputStream());
-    Objects.requireNonNull(logger, "logger must not be NULL.");
-    Objects.requireNonNull(level, "log level must not be NULL.");
+    ParamChecks.requireNonNullArg(logger, "logger");
+    ParamChecks.requireNonNullArg(level, "level");
     this.logger = logger;
     this.level = level;
   }
