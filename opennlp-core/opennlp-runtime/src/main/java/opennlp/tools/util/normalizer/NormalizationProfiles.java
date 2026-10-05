@@ -23,6 +23,7 @@ import java.util.Set;
 
 import opennlp.tools.langdetect.LanguageDetector;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
+import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.LanguageCodeValidator;
 
 /**
@@ -94,9 +95,7 @@ public final class NormalizationProfiles {
    * @throws IllegalArgumentException if {@code language} is {@code null}.
    */
   public static Optional<NormalizationProfile> forLanguage(String language) {
-    if (language == null) {
-      throw new IllegalArgumentException("language must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(language, "language");
     final String code = LanguageCodeValidator.toIso6393(language.strip());
     return Optional.ofNullable(BY_LANGUAGE.get(code));
   }
@@ -111,12 +110,8 @@ public final class NormalizationProfiles {
    */
   public static Optional<NormalizationProfile> detect(CharSequence text,
       LanguageDetector detector) {
-    if (text == null) {
-      throw new IllegalArgumentException("text must not be null");
-    }
-    if (detector == null) {
-      throw new IllegalArgumentException("detector must not be null");
-    }
+    ArgumentChecks.requireNonNullArg(text, "text");
+    ArgumentChecks.requireNonNullArg(detector, "detector");
     return forLanguage(detector.predictLanguage(text).getLang());
   }
 

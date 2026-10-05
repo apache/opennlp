@@ -19,6 +19,8 @@ package opennlp.tools.util.normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.ArgumentChecks;
+
 /**
  * Entry point for composing normalization steps into a single {@link CharSequenceNormalizer}.
  *
@@ -192,9 +194,7 @@ public final class TextNormalizer {
      * @throws IllegalArgumentException if {@code custom} is {@code null}.
      */
     public Builder with(CharSequenceNormalizer custom) {
-      if (custom == null) {
-        throw new IllegalArgumentException("custom must not be null");
-      }
+      ArgumentChecks.requireNonNullArg(custom, "custom");
       return add(custom);
     }
 
