@@ -19,7 +19,7 @@ package opennlp.tools.tokenize.lattice;
 
 import java.util.List;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -54,15 +54,15 @@ public record Morpheme(Span span, String surface, List<String> features,
    *         or the surface and span lengths differ.
    */
   public Morpheme {
-    ArgumentChecks.requireNonNullArg(span, "span");
-    ArgumentChecks.requireNonNullArg(surface, "surface");
+    ParamChecks.requireNonNullArg(span, "span");
+    ParamChecks.requireNonNullArg(surface, "surface");
     if (surface.isEmpty()) {
       throw new IllegalArgumentException("surface must not be empty");
     }
     if (surface.length() != span.length()) {
       throw new IllegalArgumentException("surface length must match span length");
     }
-    ArgumentChecks.requireNonNullArg(features, "features");
+    ParamChecks.requireNonNullArg(features, "features");
     for (final String feature : features) {
       if (feature == null) {
         throw new IllegalArgumentException("features must not contain null");

@@ -34,7 +34,7 @@ import java.util.jar.JarFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A base implementation of a {@link ClassPathModelFinder} for the detection of
@@ -81,7 +81,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
    * @throws IllegalArgumentException Thrown if {@code jarModelPrefix} is {@code null}.
    */
   public AbstractClassPathModelFinder(String jarModelPrefix) {
-    this.jarModelPrefix = ArgumentChecks.requireNonNullArg(jarModelPrefix, "jarModelPrefix");
+    this.jarModelPrefix = ParamChecks.requireNonNullArg(jarModelPrefix, "jarModelPrefix");
   }
 
   @Override
@@ -167,7 +167,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
    * @throws IllegalArgumentException Thrown if {@code candidates} is {@code null}.
    */
   protected final List<URI> getMatchingJarEntryURIs(List<URL> candidates, String wildcardPattern) {
-    ArgumentChecks.requireNonNullArg(candidates, "candidates");
+    ParamChecks.requireNonNullArg(candidates, "candidates");
     final List<URI> matches = new ArrayList<>();
     if (wildcardPattern == null) {
       return matches;

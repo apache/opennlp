@@ -29,11 +29,11 @@ import opennlp.tools.commons.Internal;
  * @since 3.0.0
  */
 @Internal
-public final class ArgumentChecks {
+public final class ParamChecks {
 
   private static final String NOT_NULL_SUFFIX = " must not be null";
 
-  private ArgumentChecks() {
+  private ParamChecks() {
     // utility class
   }
 

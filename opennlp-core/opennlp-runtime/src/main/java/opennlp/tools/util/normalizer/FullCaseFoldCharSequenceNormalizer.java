@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -102,7 +102,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
    */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     return CharClass.substitute(text, FOLDINGS::get);
   }
 
@@ -113,7 +113,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
    */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     return CharClass.substituteAligned(text, FOLDINGS::get);
   }
 

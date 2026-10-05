@@ -16,8 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.CompatibilityMode;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} implementation that replaces each run of complete emoji with
@@ -73,7 +73,7 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (CompatibilityMode.current() == CompatibilityMode.LEGACY) {
       return removeLegacyRuns(text);
     }

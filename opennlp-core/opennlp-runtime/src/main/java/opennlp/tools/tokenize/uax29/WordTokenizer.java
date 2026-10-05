@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -94,8 +94,8 @@ public final class WordTokenizer implements Tokenizer {
    * @throws IllegalArgumentException Thrown if {@code text} or {@code handler} is {@code null}.
    */
   public void tokenize(CharSequence text, TokenHandler handler) {
-    ArgumentChecks.requireNonNullArg(text, "text");
-    ArgumentChecks.requireNonNullArg(handler, "handler");
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(handler, "handler");
     WordSegmenter.forEachSegment(text, (start, end) -> {
       final WordType type = WordType.of(text, start, end);
       if (type != null) {
@@ -113,7 +113,7 @@ public final class WordTokenizer implements Tokenizer {
    */
   @Override
   public String[] tokenize(String text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return new String[0];
     }
@@ -131,7 +131,7 @@ public final class WordTokenizer implements Tokenizer {
    */
   @Override
   public Span[] tokenizePos(String text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return new Span[0];
     }
@@ -147,7 +147,7 @@ public final class WordTokenizer implements Tokenizer {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<Span> tokenizeSpans(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return new ArrayList<>();
     }
@@ -164,7 +164,7 @@ public final class WordTokenizer implements Tokenizer {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<WordToken> tokenizeTyped(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (text.length() == 0) {
       return new ArrayList<>();
     }

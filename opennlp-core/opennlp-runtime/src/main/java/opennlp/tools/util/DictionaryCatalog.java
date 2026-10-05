@@ -66,7 +66,7 @@ public final class DictionaryCatalog {
    * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    */
   public static DictionaryCatalog load(InputStream in) throws IOException {
-    ArgumentChecks.requireNonNullArg(in, "in");
+    ParamChecks.requireNonNullArg(in, "in");
     final Properties properties = new Properties();
     properties.load(in);
     return new DictionaryCatalog(properties);
@@ -94,7 +94,7 @@ public final class DictionaryCatalog {
    * @throws IllegalArgumentException Thrown if {@code id} is {@code null}.
    */
   public Entry get(String id) throws IOException {
-    ArgumentChecks.requireNonNullArg(id, "id");
+    ParamChecks.requireNonNullArg(id, "id");
     final String url = properties.getProperty(id + URL_SUFFIX);
     final String sha512 = properties.getProperty(id + ".sha512");
     if (url == null || sha512 == null) {
@@ -124,8 +124,8 @@ public final class DictionaryCatalog {
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public void install(String id, Path targetDirectory) throws IOException {
-    ArgumentChecks.requireNonNullArg(id, "id");
-    ArgumentChecks.requireNonNullArg(targetDirectory, "targetDirectory");
+    ParamChecks.requireNonNullArg(id, "id");
+    ParamChecks.requireNonNullArg(targetDirectory, "targetDirectory");
     if (!Boolean.getBoolean(REMOTE_DOWNLOAD_PROPERTY)) {
       throw new IOException("remote dictionary catalog downloads are disabled; set -D"
           + REMOTE_DOWNLOAD_PROPERTY + "=true to enable");
@@ -158,12 +158,12 @@ public final class DictionaryCatalog {
      *         {@code filename} is not a local file name.
      */
     public Entry {
-      ArgumentChecks.requireNonNullArg(id, "id");
-      ArgumentChecks.requireNonNullArg(uri, "uri");
+      ParamChecks.requireNonNullArg(id, "id");
+      ParamChecks.requireNonNullArg(uri, "uri");
       if (!uri.isAbsolute()) {
         throw new IllegalArgumentException("uri must be absolute");
       }
-      ArgumentChecks.requireNonNullArg(sha512, "sha512");
+      ParamChecks.requireNonNullArg(sha512, "sha512");
       if (sha512.length() != SHA_512_HEX_LENGTH) {
         throw new IllegalArgumentException("sha512 must be 128 hex digits");
       }

@@ -22,9 +22,9 @@ import java.io.IOException;
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
 import opennlp.spellcheck.normalizer.SpellCheckingCharSequenceNormalizer;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link FilterObjectStream} for <em>tokenized</em> data: each element read from the
@@ -65,7 +65,7 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SpellChecker spellChecker) {
     this(samples,
         SpellCheckingCharSequenceNormalizer.builder(
-            ArgumentChecks.requireNonNullArg(spellChecker, "spellChecker"))
+            ParamChecks.requireNonNullArg(spellChecker, "spellChecker"))
             .mode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN).build(),
         DEFAULT_DELIMITER);
   }
@@ -79,7 +79,7 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    * @throws IllegalArgumentException if {@code samples} or {@code model} is {@code null}
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SymSpellModel model) {
-    this(samples, ArgumentChecks.requireNonNullArg(model, "model").getSymSpell());
+    this(samples, ParamChecks.requireNonNullArg(model, "model").getSymSpell());
   }
 
   /**
@@ -101,9 +101,9 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
   public SpellCorrectingTokenStream(ObjectStream<String> samples,
                                     SpellCheckingCharSequenceNormalizer normalizer,
                                     String delimiter) {
-    super(ArgumentChecks.requireNonNullArg(samples, "samples"));
-    ArgumentChecks.requireNonNullArg(normalizer, "normalizer");
-    ArgumentChecks.requireNonNullArg(delimiter, "delimiter");
+    super(ParamChecks.requireNonNullArg(samples, "samples"));
+    ParamChecks.requireNonNullArg(normalizer, "normalizer");
+    ParamChecks.requireNonNullArg(delimiter, "delimiter");
     if (delimiter.isEmpty()) {
       throw new IllegalArgumentException("delimiter must not be empty");
     }

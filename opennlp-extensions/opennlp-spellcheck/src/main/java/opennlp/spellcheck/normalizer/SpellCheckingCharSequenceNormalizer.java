@@ -24,7 +24,7 @@ import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.dictionary.SymSpellModel;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
@@ -130,7 +130,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   }
 
   private SpellCheckingCharSequenceNormalizer(Builder b) {
-    this.spellChecker = ArgumentChecks.requireNonNullArg(b.spellChecker, "spellChecker");
+    this.spellChecker = ParamChecks.requireNonNullArg(b.spellChecker, "spellChecker");
     this.mode = b.mode;
     this.minTokenLength = b.minTokenLength;
     // Clamp to the engine's configured maximum; a smaller requested distance is still honored.
@@ -155,7 +155,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @throws IllegalArgumentException if {@code spellChecker} is {@code null}
    */
   public static Builder builder(SpellChecker spellChecker) {
-    ArgumentChecks.requireNonNullArg(spellChecker, "spellChecker");
+    ParamChecks.requireNonNullArg(spellChecker, "spellChecker");
     return new Builder(spellChecker);
   }
 
@@ -165,7 +165,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @throws IllegalArgumentException if {@code model} is {@code null}
    */
   public static Builder builder(SymSpellModel model) {
-    ArgumentChecks.requireNonNullArg(model, "model");
+    ParamChecks.requireNonNullArg(model, "model");
     return new Builder(model.getSymSpell());
   }
 
@@ -198,7 +198,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @throws IllegalArgumentException if {@code mode} is {@code null}
    */
   public SpellCheckingCharSequenceNormalizer withMode(Mode mode) {
-    ArgumentChecks.requireNonNullArg(mode, "mode");
+    ParamChecks.requireNonNullArg(mode, "mode");
     return mode == this.mode ? this : new SpellCheckingCharSequenceNormalizer(this, mode);
   }
 
@@ -214,7 +214,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
       throw new IllegalStateException("no SpellChecker attached; this instance was likely "
           + "restored by Java deserialization. Re-attach one via withSpellChecker(...).");
     }
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (text.isEmpty()) {
       return text;
     }
@@ -548,7 +548,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
      * @throws IllegalArgumentException if {@code value} is {@code null}
      */
     public Builder mode(Mode value) {
-      this.mode = ArgumentChecks.requireNonNullArg(value, "mode");
+      this.mode = ParamChecks.requireNonNullArg(value, "mode");
       return this;
     }
 

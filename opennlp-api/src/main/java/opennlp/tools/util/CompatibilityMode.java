@@ -83,7 +83,7 @@ public enum CompatibilityMode {
    * @throws IllegalArgumentException Thrown if {@code mode} is {@code null}.
    */
   public static void setActive(CompatibilityMode mode) {
-    ArgumentChecks.requireNonNullArg(mode, "mode");
+    ParamChecks.requireNonNullArg(mode, "mode");
     active = mode;
     warnIfLegacy(mode);
   }

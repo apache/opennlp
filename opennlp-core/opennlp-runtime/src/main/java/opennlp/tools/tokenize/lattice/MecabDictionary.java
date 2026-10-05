@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import opennlp.tools.tokenize.lattice.CategoryTable.CategoryAssignment;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.HexCodePoints;
@@ -212,8 +212,8 @@ public final class MecabDictionary {
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static MecabDictionary load(Path directory, Charset charset) throws IOException {
-    ArgumentChecks.requireNonNullArg(directory, "directory");
-    ArgumentChecks.requireNonNullArg(charset, "charset");
+    ParamChecks.requireNonNullArg(directory, "directory");
+    ParamChecks.requireNonNullArg(charset, "charset");
     // The connection matrix is read first because its dimensions are what every
     // lexicon entry's context ids have to be inside of.
     final Path matrixFile = directory.resolve(MATRIX_DEF);

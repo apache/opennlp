@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Describes what a {@link Provider} should create: an optional location, such as a model file,
@@ -60,7 +60,7 @@ public final class ProviderSpec {
    * @throws IllegalArgumentException Thrown if {@code options} is invalid.
    */
   private ProviderSpec(final URI location, final Map<String, String> options) {
-    ArgumentChecks.requireNonNullArg(options, "options");
+    ParamChecks.requireNonNullArg(options, "options");
     final Map<String, String> copy = new LinkedHashMap<>();
     for (final Map.Entry<String, String> option : options.entrySet()) {
       if (option.getKey() == null || option.getValue() == null) {
@@ -117,7 +117,7 @@ public final class ProviderSpec {
    *                                  or if {@code options} is invalid.
    */
   public static ProviderSpec of(final URI location, final Map<String, String> options) {
-    ArgumentChecks.requireNonNullArg(location, "location");
+    ParamChecks.requireNonNullArg(location, "location");
     if (!location.isAbsolute()) {
       throw new IllegalArgumentException("location must be an absolute URI: " + location);
     }
@@ -150,7 +150,7 @@ public final class ProviderSpec {
    *                                  {@code options} is invalid.
    */
   public static ProviderSpec of(final Path location, final Map<String, String> options) {
-    ArgumentChecks.requireNonNullArg(location, "location");
+    ParamChecks.requireNonNullArg(location, "location");
     return new ProviderSpec(uriOf(location), options);
   }
 
@@ -218,7 +218,7 @@ public final class ProviderSpec {
    * @throws IllegalArgumentException Thrown if {@code key} is {@code null}.
    */
   public String option(final String key, final String defaultValue) {
-    ArgumentChecks.requireNonNullArg(key, "key");
+    ParamChecks.requireNonNullArg(key, "key");
     return options.getOrDefault(key, defaultValue);
   }
 
@@ -232,7 +232,7 @@ public final class ProviderSpec {
    *                                  {@code null} element.
    */
   public boolean hasOnlyOptions(final String... names) {
-    ArgumentChecks.requireNonNullArg(names, "names");
+    ParamChecks.requireNonNullArg(names, "names");
     for (final String name : names) {
       if (name == null) {
         throw new IllegalArgumentException("names must not contain a null element");

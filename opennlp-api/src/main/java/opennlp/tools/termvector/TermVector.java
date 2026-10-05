@@ -20,7 +20,7 @@ package opennlp.tools.termvector;
 import java.util.List;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -62,11 +62,11 @@ public record TermVector(String term, int frequency, List<Span> spans) {
    *         spans.
    */
   public TermVector {
-    ArgumentChecks.requireNonNullArg(term, "term");
+    ParamChecks.requireNonNullArg(term, "term");
     if (frequency < 1) {
       throw new IllegalArgumentException("frequency must be at least one: " + frequency);
     }
-    ArgumentChecks.requireNonNullArg(spans, "spans");
+    ParamChecks.requireNonNullArg(spans, "spans");
     for (final Span span : spans) {
       if (span == null) {
         throw new IllegalArgumentException("spans must not contain null");

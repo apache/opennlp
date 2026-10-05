@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -56,7 +56,7 @@ final class ImmutableDocument implements Document {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   static ImmutableDocument empty(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     return new ImmutableDocument(text.toString(), Collections.emptyMap());
   }
 
@@ -70,7 +70,7 @@ final class ImmutableDocument implements Document {
   @Override
   @SuppressWarnings("unchecked")
   public <T> List<Annotation<T>> get(LayerKey<T> layer) {
-    ArgumentChecks.requireNonNullArg(layer, "layer");
+    ParamChecks.requireNonNullArg(layer, "layer");
     final List<Annotation<?>> annotations = layers.get(layer);
     if (annotations == null) {
       return List.of();
@@ -91,8 +91,8 @@ final class ImmutableDocument implements Document {
   /** {@inheritDoc} */
   @Override
   public <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations) {
-    ArgumentChecks.requireNonNullArg(layer, "layer");
-    ArgumentChecks.requireNonNullArg(annotations, "annotations");
+    ParamChecks.requireNonNullArg(layer, "layer");
+    ParamChecks.requireNonNullArg(annotations, "annotations");
     if (layers.containsKey(layer)) {
       throw new IllegalArgumentException("layer is already present: " + layer);
     }
@@ -108,8 +108,8 @@ final class ImmutableDocument implements Document {
    */
   @Override
   public Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
-    ArgumentChecks.requireNonNullArg(other, "other");
-    ArgumentChecks.requireNonNullArg(duplicateLayers, "duplicateLayers");
+    ParamChecks.requireNonNullArg(other, "other");
+    ParamChecks.requireNonNullArg(duplicateLayers, "duplicateLayers");
     if (!text.contentEquals(other.text())) {
       throw new IllegalArgumentException(
           "merge requires both documents to carry the same text");
@@ -139,7 +139,7 @@ final class ImmutableDocument implements Document {
    */
   private <T> List<Annotation<?>> copyValidated(LayerKey<T> layer, Document from) {
     final List<Annotation<T>> annotations = from.get(layer);
-    ArgumentChecks.requireNonNullArg(annotations, "annotations");
+    ParamChecks.requireNonNullArg(annotations, "annotations");
     validate(layer, annotations);
     return List.copyOf(annotations);
   }

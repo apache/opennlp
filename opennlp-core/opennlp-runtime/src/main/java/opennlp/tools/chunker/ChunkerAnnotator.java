@@ -27,7 +27,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -67,7 +67,7 @@ public final class ChunkerAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code chunker} is {@code null}.
    */
   public ChunkerAnnotator(Chunker chunker) {
-    ArgumentChecks.requireNonNullArg(chunker, "chunker");
+    ParamChecks.requireNonNullArg(chunker, "chunker");
     this.chunker = chunker;
   }
 

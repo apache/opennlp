@@ -39,7 +39,7 @@ import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.EmbeddingException;
 import opennlp.tools.embeddings.TextEmbedder;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Facilitates the generation of sentence vectors using
@@ -161,7 +161,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
 
     super(model, vocabulary, new OrtSession.SessionOptions(), lowerCase);
     try {
-      ArgumentChecks.requireNonNullArg(pooling, "pooling");
+      ParamChecks.requireNonNullArg(pooling, "pooling");
       if (maxLength < MIN_LENGTH) {
         throw new IllegalArgumentException("maxLength must be at least " + MIN_LENGTH);
       }
@@ -197,7 +197,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    */
   public float[] getVectors(final String sentence) throws OrtException {
 
-    ArgumentChecks.requireNonNullArg(sentence, "sentence");
+    ParamChecks.requireNonNullArg(sentence, "sentence");
     return run(new Tokens[] {encode(sentence)})[0];
 
   }
@@ -210,7 +210,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    */
   @Override
   public float[] embed(final CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     try {
       return run(new Tokens[] {encode(text)})[0];
     } catch (final OrtException e) {
@@ -227,7 +227,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    */
   @Override
   public float[][] embedAll(final List<? extends CharSequence> texts) {
-    ArgumentChecks.requireNonNullArg(texts, "texts");
+    ParamChecks.requireNonNullArg(texts, "texts");
     final CharSequence[] checked = new CharSequence[texts.size()];
     for (int i = 0; i < checked.length; i++) {
       checked[i] = texts.get(i);

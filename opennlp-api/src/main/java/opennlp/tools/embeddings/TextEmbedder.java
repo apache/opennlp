@@ -20,7 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Encodes text into a fixed-length vector.
@@ -74,7 +74,7 @@ public interface TextEmbedder extends Closeable {
    * @throws IllegalStateException Thrown if this embedder is closed.
    */
   default float[][] embedAll(List<? extends CharSequence> texts) {
-    ArgumentChecks.requireNonNullArg(texts, "texts");
+    ParamChecks.requireNonNullArg(texts, "texts");
     final CharSequence[] checked = new CharSequence[texts.size()];
     for (int i = 0; i < checked.length; i++) {
       checked[i] = texts.get(i);

@@ -20,8 +20,8 @@ package opennlp.tools.stemmer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.OwnerOrPerThreadState;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Shared plumbing for {@link Stemmer} wrappers that route each call to a per-thread payload minted
@@ -54,7 +54,7 @@ abstract class DelegatingStemmer<P> implements Stemmer {
    * @throws IllegalArgumentException if {@code factory} is {@code null}.
    */
   static StemmerFactory requireFactory(StemmerFactory factory) {
-    ArgumentChecks.requireNonNullArg(factory, "factory");
+    ParamChecks.requireNonNullArg(factory, "factory");
     return factory;
   }
 

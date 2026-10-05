@@ -25,9 +25,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Class for using a file of real-valued {@link Event events} as an
@@ -147,7 +147,7 @@ public class RealValueFileEventStream extends FileEventStream {
    * @since 3.0.0
    */
   public static Event parseEvent(String line) throws InvalidFormatException {
-    ArgumentChecks.requireNonNullArg(line, "line");
+    ParamChecks.requireNonNullArg(line, "line");
     String[] fields = EventFields.split(line);
     if (fields.length == 0) {
       throw new InvalidFormatException(EventFields.MISSING_OUTCOME + line + "\"");

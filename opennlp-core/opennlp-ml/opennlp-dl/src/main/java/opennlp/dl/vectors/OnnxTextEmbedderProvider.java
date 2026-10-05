@@ -26,7 +26,7 @@ import ai.onnxruntime.OrtException;
 
 import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.embeddings.TextEmbedderProvider;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.ext.ProviderSpec;
 
 /**
@@ -91,7 +91,7 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
 
   @Override
   public boolean supports(final ProviderSpec spec) {
-    ArgumentChecks.requireNonNullArg(spec, "spec");
+    ParamChecks.requireNonNullArg(spec, "spec");
     return spec.path().isPresent() && spec.locationEndsWith(MODEL_SUFFIX)
         && spec.hasOnlyOptions(VOCABULARY_OPTION, LOWER_CASE_OPTION, POOLING_OPTION,
             NORMALIZE_OPTION, MAX_LENGTH_OPTION);

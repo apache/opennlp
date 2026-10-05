@@ -127,7 +127,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static String[] splitOnUnicodeWhitespace(CharSequence input) {
-    ArgumentChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(input, "input");
     final List<String> terms = new ArrayList<>();
     final int n = input.length();
     int start = -1;
@@ -195,7 +195,7 @@ public class StringUtil {
    *     {@code separator} is a surrogate.
    */
   public static String[] split(CharSequence input, char separator, int limit) {
-    ArgumentChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(input, "input");
     if (Character.isSurrogate(separator)) {
       throw new IllegalArgumentException("separator must not be a surrogate");
     }
@@ -237,7 +237,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static boolean startsWithByteOrderMark(CharSequence input) {
-    ArgumentChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(input, "input");
     return !input.isEmpty() && input.charAt(0) == BYTE_ORDER_MARK;
   }
 
@@ -270,8 +270,8 @@ public class StringUtil {
    *     {@code separators} is empty, or a separator is a surrogate.
    */
   public static String[] splitNonEmpty(CharSequence input, char... separators) {
-    ArgumentChecks.requireNonNullArg(input, "input");
-    ArgumentChecks.requireNonNullArg(separators, "separators");
+    ParamChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(separators, "separators");
     if (separators.length == 0) {
       throw new IllegalArgumentException("separators must not be empty");
     }
@@ -317,7 +317,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static boolean containsAsciiUpperCase(CharSequence input) {
-    ArgumentChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(input, "input");
     for (int i = 0; i < input.length(); i++) {
       if (isAsciiUpperCase(input.charAt(i))) {
         return true;
@@ -335,7 +335,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static boolean containsAsciiDigit(CharSequence input) {
-    ArgumentChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(input, "input");
     for (int i = 0; i < input.length(); i++) {
       if (isAsciiDigit(input.charAt(i))) {
         return true;
@@ -460,7 +460,7 @@ public class StringUtil {
    *         range.
    */
   private static void requireOffset(CharSequence text, int from) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (from < 0 || from > text.length()) {
       throw new IllegalArgumentException("from must be between 0 and " + text.length());
     }
@@ -475,7 +475,7 @@ public class StringUtil {
    * @throws IllegalArgumentException If {@code input} is {@code null}.
    */
   public static String trimUnicodeWhitespace(CharSequence input) {
-    ArgumentChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(input, "input");
     int start = 0;
     int end = input.length();
     while (start < end) {
@@ -582,7 +582,7 @@ public class StringUtil {
    * @since 1.5.1
    */
   public static boolean isEmpty(CharSequence theString) {
-    ArgumentChecks.requireNonNullArg(theString, "theString");
+    ParamChecks.requireNonNullArg(theString, "theString");
     return theString.length() == 0;
   }
 
@@ -600,7 +600,7 @@ public class StringUtil {
    * @throws IllegalArgumentException Thrown if {@code theString} is {@code null}.
    */
   public static boolean isBlank(CharSequence theString) {
-    ArgumentChecks.requireNonNullArg(theString, "theString");
+    ParamChecks.requireNonNullArg(theString, "theString");
     for (int i = 0; i < theString.length(); ) {
       final int codePoint = Character.codePointAt(theString, i);
       if (!isWhitespace(codePoint)) {

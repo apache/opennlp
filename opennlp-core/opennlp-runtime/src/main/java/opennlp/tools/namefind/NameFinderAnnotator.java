@@ -27,7 +27,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -70,7 +70,7 @@ public final class NameFinderAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code finder} is {@code null}.
    */
   public NameFinderAnnotator(TokenNameFinder finder) {
-    ArgumentChecks.requireNonNullArg(finder, "finder");
+    ParamChecks.requireNonNullArg(finder, "finder");
     this.finder = finder;
   }
 

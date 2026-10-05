@@ -19,7 +19,7 @@ package opennlp.tools.util.normalizer;
 import java.text.Normalizer;
 import java.util.Set;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} that folds diacritics for matching, the
@@ -79,7 +79,7 @@ public class AccentFoldCharSequenceNormalizer implements CharSequenceNormalizer 
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder out = new StringBuilder(decomposed.length());
 

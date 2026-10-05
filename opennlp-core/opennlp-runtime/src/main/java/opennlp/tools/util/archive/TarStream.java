@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import opennlp.tools.commons.Internal;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A forward-only reader for classic v7, POSIX ustar, GNU, and pax tar streams.
@@ -107,7 +107,7 @@ public final class TarStream {
    *         {@code maxEntries} is not positive.
    */
   public TarStream(InputStream in, long maxEntries) {
-    ArgumentChecks.requireNonNullArg(in, "in");
+    ParamChecks.requireNonNullArg(in, "in");
     if (maxEntries <= 0) {
       throw new IllegalArgumentException("maxEntries must be positive");
     }
@@ -128,7 +128,7 @@ public final class TarStream {
    *         support mark and reset.
    */
   public static boolean startsWithHeader(InputStream in) throws IOException {
-    ArgumentChecks.requireNonNullArg(in, "in");
+    ParamChecks.requireNonNullArg(in, "in");
     if (!in.markSupported()) {
       throw new IllegalArgumentException("in must support mark and reset");
     }

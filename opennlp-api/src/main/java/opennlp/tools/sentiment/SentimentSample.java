@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import opennlp.tools.commons.Sample;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Class for holding text used for sentiment analysis.
@@ -50,8 +50,8 @@ public class SentimentSample implements Sample {
 
   public SentimentSample(String sentiment, String[] sentence,
       boolean clearAdaptiveData) {
-    ArgumentChecks.requireNonNullArg(sentiment, "sentiment");
-    ArgumentChecks.requireNonNullArg(sentence, "sentence");
+    ParamChecks.requireNonNullArg(sentiment, "sentiment");
+    ParamChecks.requireNonNullArg(sentence, "sentence");
 
     this.sentiment = sentiment;
     this.sentence = List.of(sentence);

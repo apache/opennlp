@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -158,7 +158,7 @@ public class WordpieceTokenizer implements Tokenizer {
 
   /** Validates and copies a vocabulary. */
   private Set<String> copyVocabulary(Set<String> vocabulary) {
-    ArgumentChecks.requireNonNullArg(vocabulary, "vocabulary");
+    ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
     final Set<String> copy = new HashSet<>(vocabulary.size());
     for (final String piece : vocabulary) {
       if (piece == null) {
@@ -174,7 +174,7 @@ public class WordpieceTokenizer implements Tokenizer {
 
   /** Validates a special token. */
   private String requireToken(String token, String name) {
-    ArgumentChecks.requireNonNullArg(token, name);
+    ParamChecks.requireNonNullArg(token, name);
     if (token.isEmpty()) {
       throw new IllegalArgumentException(name + " must not be empty");
     }
@@ -210,7 +210,7 @@ public class WordpieceTokenizer implements Tokenizer {
   @Override
   public String[] tokenize(final String text) {
 
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
 
     final List<String> tokens = new LinkedList<>();
     tokens.add(classificationToken);

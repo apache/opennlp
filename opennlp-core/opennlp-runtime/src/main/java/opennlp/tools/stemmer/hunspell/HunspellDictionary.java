@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -573,9 +573,9 @@ public final class HunspellDictionary {
    */
   public static HunspellDictionary load(Path affixFile, Path dictionaryFile,
       LoadMode mode) throws IOException {
-    ArgumentChecks.requireNonNullArg(affixFile, "affixFile");
-    ArgumentChecks.requireNonNullArg(dictionaryFile, "dictionaryFile");
-    ArgumentChecks.requireNonNullArg(mode, "mode");
+    ParamChecks.requireNonNullArg(affixFile, "affixFile");
+    ParamChecks.requireNonNullArg(dictionaryFile, "dictionaryFile");
+    ParamChecks.requireNonNullArg(mode, "mode");
     try (InputStream affix = Files.newInputStream(affixFile);
          InputStream dictionary = Files.newInputStream(dictionaryFile)) {
       return loadStreams(affix, dictionary, mode, affixFile.toString());
@@ -621,9 +621,9 @@ public final class HunspellDictionary {
    */
   public static HunspellDictionary load(InputStream affixStream,
       InputStream dictionaryStream, LoadMode mode) throws IOException {
-    ArgumentChecks.requireNonNullArg(affixStream, "affixStream");
-    ArgumentChecks.requireNonNullArg(dictionaryStream, "dictionaryStream");
-    ArgumentChecks.requireNonNullArg(mode, "mode");
+    ParamChecks.requireNonNullArg(affixStream, "affixStream");
+    ParamChecks.requireNonNullArg(dictionaryStream, "dictionaryStream");
+    ParamChecks.requireNonNullArg(mode, "mode");
     return loadStreams(affixStream, dictionaryStream, mode, AFFIX_STREAM);
   }
 
