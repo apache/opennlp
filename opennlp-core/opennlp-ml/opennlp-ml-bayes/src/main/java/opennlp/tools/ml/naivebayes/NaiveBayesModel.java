@@ -129,7 +129,7 @@ public class NaiveBayesModel extends AbstractModel {
   /**
    * Evaluates a {@link NaiveBayesModel}.
    *
-   * @param context The {@link Context[] parameters} to set..
+   * @param context The array of {@link Context} parameters to evaluate.
    * @param values The {@code float[]} values to be used.
    * @param prior The data prior to the evaluation as {@code double[]}.
    * @param model The {@link EvalParameters} used for evaluation.

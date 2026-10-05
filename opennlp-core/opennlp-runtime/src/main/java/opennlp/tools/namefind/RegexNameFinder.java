@@ -42,8 +42,8 @@ public final class RegexNameFinder implements TokenNameFinder {
   /**
    * Initializes a {@link RegexNameFinder} instance.
    * 
-   * @param regexMap A {@link Map} where the key is a type, and the value is a
-   *                 {@link Pattern[]}. Must not be {@code null}.
+   * @param regexMap A {@link Map} where the key is a type, and the value is an
+   *                 array of {@link Pattern} instances. Must not be {@code null}.
    */
   public RegexNameFinder(Map<String, Pattern[]> regexMap) {
     this.regexMap = Objects.requireNonNull(regexMap, "regexMap must not be null");
@@ -52,7 +52,7 @@ public final class RegexNameFinder implements TokenNameFinder {
   /**
    * Initializes a {@link RegexNameFinder} instance.
    *
-   * @param patterns The {@link Pattern[] patterns} to use.
+   * @param patterns The array of {@link Pattern} instances to use.
    *                 Must not be {@code null} and not be empty.
    * @param type The type to use.
    *
@@ -131,7 +131,7 @@ public final class RegexNameFinder implements TokenNameFinder {
    * Finds {@link Span spans} with character indices, rather than word.
    *
    * @param text The text to use.
-   * @return A {@link Span[]} representing the annotations.
+   * @return An array of {@link Span} instances representing the annotations.
    */
   public Span[] find(String text) {
     return getAnnotations(text);

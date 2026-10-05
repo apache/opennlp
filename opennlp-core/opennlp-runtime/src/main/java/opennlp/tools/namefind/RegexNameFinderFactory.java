@@ -36,8 +36,8 @@ public class RegexNameFinderFactory {
    * Allows for use of selected Defaults as well as regexes from external
    * configuration.
    *
-   * @param config   A {@link Map} where the key is a type, and the value is a
-   *                 {@link Pattern[]}. If a key clashes with one of the default keys,
+   * @param config   A {@link Map} where the key is a type, and the value is an
+   *                 array of {@link Pattern} instances. If a key clashes with one of the default keys,
    *                 the config map entry will be taken.
    * @param defaults One or more of the default {@link DEFAULT_REGEX_NAME_FINDER} enum values.
    * @return A {@link RegexNameFinder} instance.
