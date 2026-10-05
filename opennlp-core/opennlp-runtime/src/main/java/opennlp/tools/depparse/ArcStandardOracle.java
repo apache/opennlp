@@ -23,23 +23,26 @@ import java.util.List;
 import opennlp.tools.util.ArgumentChecks;
 
 /**
- * Turns a known correct dependency tree into the sequence of arc-standard parser actions
- * that rebuilds it. Those actions are the answers the parser is trained on.
+ * Converts an annotated dependency tree into the sequence of parser
+ * transitions needed to reconstruct it. These transitions provide the
+ * training targets for the arc-standard dependency parser.
  *
- * <p>The parser keeps a stack of tokens being processed and a buffer of tokens not read
- * yet. For each step the oracle picks one of three actions, using the annotated tree to
- * decide the head and the relation label:</p>
+ * <p>The annotated tree, also called the gold tree, supplies the correct
+ * head and dependency relation for each token. At each step, the oracle
+ * uses this tree and the current {@link ArcStandardState} to choose a
+ * transition:</p>
  * <ul>
  * <li>{@code SHIFT}: move the next token from the buffer onto the stack.</li>
- * <li>{@code LEFT_ARC(label)}: make the top token the head of the token below it, and
- * remove that dependent from the stack.</li>
- * <li>{@code RIGHT_ARC(label)}: make the second token the head of the top token, and
- * remove that dependent from the stack.</li>
+ * <li>{@code LEFT_ARC(label)}: attach the token immediately below the top
+ * of the stack to the top token, then remove the dependent.</li>
+ * <li>{@code RIGHT_ARC(label)}: attach the top token to the token immediately
+ * below it, then remove the dependent.</li>
  * </ul>
  *
- * <p>An arc is only created once all dependents of the token being attached have been
- * collected. The oracle is defined for projective trees only; a non-projective tree has
- * no arc-standard derivation and is rejected.</p>
+ * <p>A token must have all its dependents attached before it is removed
+ * from the stack. Only projective trees can be reconstructed with these
+ * transitions. In a projective tree, dependency arcs do not cross when
+ * drawn above the token sequence. Non-projective trees are rejected.</p>
  *
  * @since 3.0.0
  */
