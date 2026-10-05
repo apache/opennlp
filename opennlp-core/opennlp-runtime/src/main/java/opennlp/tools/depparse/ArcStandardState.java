@@ -22,19 +22,25 @@ import java.util.Arrays;
 import opennlp.tools.util.ArgumentChecks;
 
 /**
- * The working state of one arc-standard parse: the stack of tokens being processed, the
- * buffer of tokens not read yet, and the arcs assigned so far. Every transition the parser
- * applies moves one token from the buffer to the stack or attaches one token to its head,
- * until the buffer is empty and only the root is left on the stack. The transition system
- * is described in <a href="https://aclanthology.org/W04-0308/">Nivre (2004)</a>.
+ * Tracks the state of an arc-standard dependency parse: a stack of tokens
+ * being processed, a buffer of unread tokens, and the dependency arcs
+ * created so far.
  *
- * <p>The bottom of the stack holds an artificial root token, exposed as {@link #ROOT}.
- * Positions that do not exist, such as the second stack element at the start of a parse,
- * are exposed as {@link #NONE}. A right arc from the artificial root is only allowed once
- * the buffer is empty and the root is the only other token on the stack, so every finished
- * parse has exactly one sentence root.</p>
+ * <p>A SHIFT transition moves the next token from the buffer onto the stack.
+ * LEFT_ARC and RIGHT_ARC create a dependency arc between the top two stack
+ * entries and remove the dependent. Parsing is complete when the buffer
+ * is empty and only the artificial root remains on the stack.</p>
  *
- * <p>Instances are confined to a single parse and must not be shared between threads.</p>
+ * <p>The artificial root, represented by {@link #ROOT}, stays at the bottom
+ * of the stack. The final RIGHT_ARC transition attaches the remaining token
+ * to this root, ensuring that the sentence has exactly one root token.
+ * Stack and buffer accessors return {@link #NONE} for positions that do
+ * not exist.</p>
+ *
+ * <p>The transition system is described in
+ * <a href="https://aclanthology.org/W04-0308/">Nivre (2004)</a>.</p>
+ *
+ * <p>Each instance is used for a single parse and is not thread-safe.</p>
  *
  * @since 3.0.0
  */
