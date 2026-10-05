@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The scope of this test is to verify that the name finder code finds dates in different formats and
  * for multiple languages, German and English for instance.
  * <p>
- * Note:</br>
+ * Note:<br>
  * A proper testing and evaluation of the name finder is only possible with a large corpus which contains
  * a huge amount of test sentences.
  * 

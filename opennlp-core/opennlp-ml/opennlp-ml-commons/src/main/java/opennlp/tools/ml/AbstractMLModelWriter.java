@@ -42,12 +42,12 @@ public abstract class AbstractMLModelWriter extends AbstractModelWriter {
    * Sorts and optimizes the model parameters. Thereby, parameters with
    * {@code 0} weight and predicates with no parameters are removed.
    *
-   * @return A {@link ComparablePredicate[]}.
+   * @return An array of {@link ComparablePredicate} instances.
    */
   protected abstract ComparablePredicate[] sortValues();
 
   /**
-   * Computes outcome patterns via {@link ComparablePredicate[] predicates}.
+   * Computes outcome patterns from an array of {@link ComparablePredicate} instances.
    *
    * @return A {@link List} of {@link List<ComparablePredicate>} that represent
    *         the outcomes patterns.

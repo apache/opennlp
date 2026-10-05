@@ -136,7 +136,7 @@ public abstract class AbstractDataIndexer<P extends Parameters> implements DataI
    * <p>
    * It does an in place sort, followed by an in place edit to remove duplicates.
    *
-   * @param eventsToCompare The {@link List< ComparableEvent >} events used as input.
+   * @param eventsToCompare The list of {@link ComparableEvent} events used as input.
    * @param sort Whether to use sorting, or not.
    *
    * @return The number of unique events in the specified list.
@@ -199,7 +199,7 @@ public abstract class AbstractDataIndexer<P extends Parameters> implements DataI
    * <b>Note:</b>
    * Make sure the {@link #init(Parameters, Map)} method is called first.
    *
-   * @param events A {@link ObjectStream< Event >} of events used as input.
+   * @param events An {@link ObjectStream} of {@link Event} instances used as input.
    * @param predicateIndex A {@link Map} providing the data of a predicate index.
    *
    * @throws IOException Thrown if IO errors occurred during indexing.

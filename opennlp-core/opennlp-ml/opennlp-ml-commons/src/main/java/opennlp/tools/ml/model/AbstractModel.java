@@ -50,7 +50,7 @@ public abstract class AbstractModel implements MaxentModel {
   /**
    * Initializes an {@link AbstractModel}.
    *
-   * @param params The {@link Context[] parameters} to set.
+   * @param params The array of {@link Context} parameters to set.
    * @param predLabels The predicted labels.
    * @param pmap A {@link Map} that provides a mapping between predicates and contexts.
    * @param outcomeNames The names of the outcomes.
