@@ -32,7 +32,9 @@ import java.util.Optional;
  * for whitespace but carry {@code White_Space=no} (zero-width and other format characters).
  * The data mirrors the tables in
  * <a href="https://en.wikipedia.org/wiki/Whitespace_character">Whitespace character</a>
- * and the Unicode Character Database ({@code PropList.txt}).</p>
+ * and the Unicode Character Database
+ * (<a href="https://www.unicode.org/Public/16.0.0/ucd/PropList.txt">{@code PropList.txt}</a>,
+ * Unicode 16.0.0).</p>
  *
  * <p>The membership test is deliberately built from this explicit table rather than from
  * {@link Character#isWhitespace(int)} or {@link Character#isSpaceChar(int)}, both of which
@@ -40,6 +42,8 @@ import java.util.Optional;
  * excludes the non-breaking spaces and {@code NEL} but includes the information-separator
  * controls {@code U+001C}-{@code U+001F}; {@code Character.isSpaceChar} excludes tab, newline,
  * and the other line breaks. {@link #isWhitespace(int)} matches the standard exactly.</p>
+ *
+ * @since 3.0.0
  */
 public final class UnicodeWhitespace {
 

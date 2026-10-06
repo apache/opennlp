@@ -34,18 +34,12 @@ import static opennlp.tools.tokenize.BertNormalization.CONTINUATION_PREFIX;
  * stripping, punctuation isolation) followed by greedy longest-match wordpiece segmentation.
  *
  * <p>Each result includes a vocabulary id and range in the <i>original</i> text. The range
- * refers to the input before normalization. Classification and separator entries use empty
- * ranges at the text boundaries, so {@link #encode(CharSequence)} includes both control
- * entries.</p>
+ * refers to the input before normalization. {@link #encode(CharSequence)} always starts with the
+ * classification entry, with an empty range at offset 0, and ends with the separator entry,
+ * with an empty range at the end of the text.</p>
  *
- * <p>The wordpiece inventory was introduced by Schuster and Nakajima (2012) as the
- * {@code WordPieceModel}: word units learned greedily from unsegmented text to maximize the
- * language-model likelihood, so that no input is out of vocabulary. Wu et al. (2016), section
- * 4.1, adopt it for neural machine translation, and Devlin et al. (2019), section 3, build BERT
- * on a 30,000 entry WordPiece vocabulary with a leading classification token. Those papers
- * describe how an inventory is <i>trained</i>; the greedy longest-match-first segmentation and
- * the {@code ##} continuation marker applied here are the <i>inference</i> conventions of the
- * BERT reference implementation. Wu et al. instead mark word starts with {@code _}.</p>
+ * <p>Segmentation is greedy longest-match-first with the {@code ##} continuation marker, as in
+ * the BERT reference implementation.</p>
  *
  * <p>Ids follow the line-number convention of BERT {@code vocab.txt} files. List constructors use
  * the list index, while the map constructor uses the supplied ids. The classification, separator,
@@ -127,7 +121,8 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    *
    * @param vocabulary The ordered vocabulary; the list index becomes the id. Must not be
    *                   {@code null} or contain {@code null}, empty, or duplicate entries.
-   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent stripping),
+   *                  {@code false} for cased models.
    * @param maxWordCodePoints The non-negative maximum number of normalized Unicode code points
    *                          in one word.
    * @throws IllegalArgumentException Thrown if an argument is invalid or a BERT special token is
@@ -166,10 +161,14 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    *
    * @param vocabulary The ordered vocabulary; the list index becomes the id. Must not be
    *                   {@code null} or contain {@code null}, empty, or duplicate entries.
-   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
-   * @param classificationToken The CLS token; must be present in the vocabulary.
-   * @param separatorToken The SEP token; must be present in the vocabulary.
-   * @param unknownToken The UNK token; must be present in the vocabulary.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent stripping),
+   *                  {@code false} for cased models.
+   * @param classificationToken The CLS token; must not be {@code null} or empty and must be in
+   *                            the vocabulary.
+   * @param separatorToken The SEP token; must not be {@code null} or empty and must be in the
+   *                       vocabulary.
+   * @param unknownToken The UNK token; must not be {@code null} or empty and must be in the
+   *                     vocabulary.
    * @param maxWordCodePoints The non-negative maximum number of normalized Unicode code points
    *                          in one word.
    * @throws IllegalArgumentException Thrown if an argument is invalid or a special token is
@@ -210,12 +209,16 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   /**
    * Instantiates an encoder from a piece-to-id mapping with a custom word-length limit.
    *
-   * @param vocabularyIds The piece-to-id mapping. Must not be {@code null} or contain invalid
-   *                      entries.
-   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
-   * @param classificationToken The CLS token; must be present in the vocabulary.
-   * @param separatorToken The SEP token; must be present in the vocabulary.
-   * @param unknownToken The UNK token; must be present in the vocabulary.
+   * @param vocabularyIds The piece-to-id mapping. Must not be {@code null} or contain
+   *                      {@code null} or empty keys, {@code null} values, or negative ids.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent stripping),
+   *                  {@code false} for cased models.
+   * @param classificationToken The CLS token; must not be {@code null} or empty and must be in
+   *                            the vocabulary.
+   * @param separatorToken The SEP token; must not be {@code null} or empty and must be in the
+   *                       vocabulary.
+   * @param unknownToken The UNK token; must not be {@code null} or empty and must be in the
+   *                     vocabulary.
    * @param maxWordCodePoints The non-negative maximum number of normalized Unicode code points
    *                          in one word.
    * @throws IllegalArgumentException Thrown if an argument is invalid or a special token is

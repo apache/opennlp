@@ -85,7 +85,8 @@ public final class MecabDictionary {
   /**
    * Maximum category count accepted by MeCab's
    * <a href="https://github.com/taku910/mecab/blob/61b90ba6e669dc2d7d533d4a80d206f3b31d52b1/mecab/src/char_property.cpp#L205">
-   * character-property compiler</a>.
+   * character-property compiler</a>. {@link CategoryTable.CategoryAssignment} relies on
+   * this limit staying below 32 for its {@code int} category mask.
    */
   private static final int MAX_CATEGORY_COUNT = 17;
 

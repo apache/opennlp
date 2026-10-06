@@ -86,7 +86,8 @@ final class CategoryTable {
 
   /**
    * The categories assigned to one code point, stored both in mapping order and as a
-   * mask over the dictionary's dense category ids.
+   * mask over the dictionary's dense category ids. The mask is an {@code int}, which
+   * holds every id because {@link MecabDictionary} accepts at most 17 categories.
    */
   static final class CategoryAssignment {
 

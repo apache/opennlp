@@ -30,6 +30,8 @@ package opennlp.tools.util.normalizer;
  *
  * <p>Callers check for the capability with {@code normalizer instanceof OffsetAwareNormalizer},
  * the same way {@link opennlp.tools.namefind.OffsetMappingNameFinder} is detected on a name finder.</p>
+ *
+ * @since 3.0.0
  */
 public interface OffsetAwareNormalizer extends CharSequenceNormalizer {
 

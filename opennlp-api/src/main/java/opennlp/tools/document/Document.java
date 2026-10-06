@@ -121,15 +121,16 @@ public interface Document {
   }
 
   /**
-   * Returns a new document combining this document's layers with another document's
+   * Returns a document combining this document's layers with another document's
    * layers over the same text, joining documents grown independently, for example by
    * pipelines that ran in parallel.
    *
    * @param other The document whose layers are added on top of this document's layers.
    *              Must not be {@code null}, must carry the same text content, and must
    *              not provide a layer this document already has.
-   * @return A new {@link Document} carrying the layers of both documents. Never
-   *         {@code null}; both source documents are left untouched.
+   * @return A {@link Document} carrying the layers of both documents. This document
+   *         itself may be returned when {@code other} adds no layer. Never {@code null};
+   *         both source documents are left untouched.
    * @throws IllegalArgumentException Thrown if {@code other} is {@code null}, if its
    *         text content differs, or if a layer key is present on both documents; the
    *         exception names the offending key.
@@ -139,7 +140,7 @@ public interface Document {
   }
 
   /**
-   * Returns a new document combining this document's layers with another document's
+   * Returns a document combining this document's layers with another document's
    * layers over the same text, resolving duplicate layer keys with
    * {@code duplicateLayers}.
    *
@@ -147,8 +148,9 @@ public interface Document {
    *              Must not be {@code null} and must carry the same text content.
    * @param duplicateLayers How to treat a layer key present on both documents. Must
    *                        not be {@code null}.
-   * @return A new {@link Document} carrying the layers of both documents. Never
-   *         {@code null}; both source documents are left untouched.
+   * @return A {@link Document} carrying the layers of both documents. This document
+   *         itself may be returned when {@code other} adds no layer. Never {@code null};
+   *         both source documents are left untouched.
    * @throws IllegalArgumentException Thrown if either argument is {@code null}, if the
    *         text content differs, or if a layer key is present on both documents and
    *         the policy does not keep it; the exception names the offending key.

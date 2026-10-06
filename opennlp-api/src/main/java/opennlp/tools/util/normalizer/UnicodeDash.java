@@ -28,11 +28,12 @@ import java.util.Optional;
  * Reference data for Unicode dashes, plus O(1) membership lookups.
  *
  * <p>This is a static, immutable table of every code point that carries the Unicode {@code Dash}
- * property (Unicode Character Database, {@code PropList.txt}). The set is broader than the
- * {@code Pd} (dash punctuation) general category: it also includes the swung dash ({@code Po})
- * and the mathematical minus signs ({@code Sm}). Java offers no {@code Dash} predicate and
- * {@code \p{Pd}} would miss the {@code Sm} and {@code Po} members, which is why the set is kept
- * here explicitly.</p>
+ * property (Unicode Character Database,
+ * <a href="https://www.unicode.org/Public/16.0.0/ucd/PropList.txt">{@code PropList.txt}</a>,
+ * Unicode 16.0.0). The set is broader than the {@code Pd} (dash punctuation) general category:
+ * it also includes the swung dash ({@code Po}) and the mathematical minus signs ({@code Sm}).
+ * Java offers no {@code Dash} predicate and {@code \p{Pd}} would miss the {@code Sm} and
+ * {@code Po} members, which is why the set is kept here explicitly.</p>
  *
  * <p>Two distinctions matter for normalization:</p>
  * <ul>
@@ -44,6 +45,8 @@ import java.util.Optional;
  *   ({@code White_Space=no}, {@code Dash=no}), an invisible line-break hint, and must not be
  *   turned into a visible hyphen.</li>
  * </ul>
+ *
+ * @since 3.0.0
  */
 public final class UnicodeDash {
 

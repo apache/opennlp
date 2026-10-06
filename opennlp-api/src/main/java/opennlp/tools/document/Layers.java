@@ -22,27 +22,9 @@ import opennlp.tools.util.StringUtil;
 /**
  * The standard {@link LayerKey layer keys} for the results the toolkit produces itself.
  *
- * <p>This class is a convenience, not a registry: the key space stays open, and any
- * producer may define further keys in its own package. New capabilities must never
- * require an addition here to function.</p>
- *
- * <p>Namespace rule: every key the toolkit itself defines carries the
- * {@code opennlp:} id prefix. An extension defines its keys under its own prefix, and
- * a bare id without a prefix is legal for an application-local layer, so ids from
- * independent producers cannot collide. Toolkit keys are created through
- * {@link #key(String, Class)} and {@link #documentKey(String, Class)}, which apply the
- * prefix, so no producer spells it.</p>
- *
- * <p>Gold versus predicted: a corpus may carry a hand-annotated version of a layer
- * beside a produced one. The convention is a {@code gold:} id prefix on the same key
- * scheme, for example {@code gold:opennlp:tokens} beside {@code opennlp:tokens}.
- * Because adding a layer is once-only, competing versions of a layer always live under
- * distinct keys and never replace each other.</p>
- *
- * <p>Placement rule: this class holds only the keys of the core linguistic layers
- * every pipeline shares (sentences, tokens, tags, entities). A capability-specific
- * layer's key lives on the annotator that provides it, for example the lemma layer's
- * key on its adapter, so adding a capability never touches this class.</p>
+ * <p>Every key defined here carries the {@code opennlp:} id prefix, which
+ * {@link #key(String, Class)} and {@link #documentKey(String, Class)} apply. Other
+ * producers define their keys in their own packages under their own prefix.</p>
  *
  * @since 3.0.0
  */

@@ -36,10 +36,11 @@ import static opennlp.tools.util.normalizer.UnicodeWhitespace.SPACE;
  * presets ({@link #whitespace()}, {@link #dashes()}); any other class is one more configured
  * instance with no new engine code.</p>
  *
- * <p>Every operation is a single forward cursor pass over the text: no regular expression and no
- * per-call allocation beyond the result.</p>
+ * <p>Every operation is a single forward cursor pass over the text.</p>
  *
  * <p>Instances are immutable and thread-safe.</p>
+ *
+ * @since 3.0.0
  */
 public final class CharClass {
 
@@ -170,8 +171,9 @@ public final class CharClass {
   /**
    * Replaces each member code point with the replacement, one for one.
    *
-   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
-   * {@link CharSequence#toString() string form}) without copying.</p>
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged as its
+   * {@link CharSequence#toString() string form}, which is not a copy for {@code String}
+   * input.</p>
    *
    * @param text The text to normalize.
    * @return The normalized text.
@@ -202,8 +204,9 @@ public final class CharClass {
    * the empty string). Use {@link #trim(CharSequence)} to drop edge members, or collapse and then
    * trim to do both.</p>
    *
-   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
-   * {@link CharSequence#toString() string form}) without copying.</p>
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged as its
+   * {@link CharSequence#toString() string form}, which is not a copy for {@code String}
+   * input.</p>
    *
    * @param text The text to collapse.
    * @return The collapsed text.
@@ -234,8 +237,7 @@ public final class CharClass {
   /**
    * Collapses runs of members like {@link #collapse(CharSequence)}, but emits
    * {@code keepReplacement} instead of the usual replacement for any run that contains a code
-   * point in {@code keep}. The whitespace "squish" that preserves a line break uses this with the
-   * line-break code points as {@code keep} and {@code '\n'} as {@code keepReplacement}.
+   * point in {@code keep}.
    *
    * @param text The text to collapse.
    * @param keep The member code points whose presence in a run preserves structure.
@@ -283,8 +285,9 @@ public final class CharClass {
   /**
    * Removes every member code point.
    *
-   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
-   * {@link CharSequence#toString() string form}) without copying.</p>
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged as its
+   * {@link CharSequence#toString() string form}, which is not a copy for {@code String}
+   * input.</p>
    *
    * @param text The text to filter.
    * @return The text with all members removed.
@@ -373,9 +376,7 @@ public final class CharClass {
    * Collapses runs of members like {@link #collapse(CharSequence)}, but emits
    * {@code paragraphReplacement} when a run contains two or more logical line breaks, or the usual
    * {@code replacement} when it contains at most one. A carriage return immediately followed by a
-   * line feed counts as one break, not two. The hard-wrap unwrap for Gutenberg-style prose uses
-   * this with the line-break code points as {@code lineBreaks} and {@code '\n'} as
-   * {@code paragraphReplacement}.
+   * line feed counts as one break, not two.
    *
    * @param text The text to collapse.
    * @param lineBreaks The member code points that count as a line break when tallying a run.
@@ -479,12 +480,11 @@ public final class CharClass {
 
   /**
    * Applies a per-code-point substitution: each code point for which {@code substitution} returns a
-   * non-null string is replaced by that string, and the rest are copied through. This is the shared
-   * cursor pass behind the expanding folds, with no regular expression.
+   * non-null string is replaced by that string, and the rest are copied through.
    *
    * <p>When {@code substitution} returns {@code null} for every code point of {@code text}, the
-   * text is returned unchanged (as its {@link CharSequence#toString() string form}) without
-   * copying. The mapper is still applied exactly once per code point.</p>
+   * text is returned unchanged as its {@link CharSequence#toString() string form}, which is not a
+   * copy for {@code String} input. The mapper is still applied exactly once per code point.</p>
    *
    * @param text         The text to transform.
    * @param substitution The replacement for a code point, or {@code null} to copy it through.

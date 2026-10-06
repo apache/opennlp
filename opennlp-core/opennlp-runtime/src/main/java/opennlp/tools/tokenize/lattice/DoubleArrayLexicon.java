@@ -177,10 +177,11 @@ final class DoubleArrayLexicon {
     }
 
     /**
-     * Places one trie and the descendants without consuming the thread stack.
+     * Places one trie node and all its descendants, using an explicit work stack
+     * instead of recursion.
      *
      * @param left The first surface of the node's range.
-     * @param right The exclusive last surface of the node's range.
+     * @param right The exclusive end of the node's surface range.
      * @param depth The character depth of the node.
      * @param state The node's own slot.
      */
@@ -232,8 +233,9 @@ final class DoubleArrayLexicon {
     }
 
     /**
-     * Finds the lowest base at which all labels use free indices. Labels are in
-     * surface-character order, so this method computes the numeric bounds.
+     * Finds the lowest base at which all labels use free indices. Labels follow
+     * surface-character order, not numeric order, so this method computes their
+     * smallest and largest values first.
      *
      * @param labels The child labels to place.
      * @param labelCount How many leading elements of {@code labels} are in use.
