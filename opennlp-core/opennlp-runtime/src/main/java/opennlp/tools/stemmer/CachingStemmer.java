@@ -42,8 +42,7 @@ import opennlp.tools.util.ParamChecks;
 public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.ThreadState> {
 
   /**
-   * Covers the high-frequency vocabulary of most corpora while keeping the per-thread footprint
-   * small.
+   * The default maximum number of word-to-stem entries cached per thread: {@value}.
    */
   public static final int DEFAULT_CAPACITY = 1024;
 
@@ -51,7 +50,7 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
    * Creates a caching stemmer with the {@linkplain #DEFAULT_CAPACITY default capacity}.
    *
    * @param factory The factory that mints one delegate per thread. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code factory} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code factory} is {@code null}.
    */
   public CachingStemmer(StemmerFactory factory) {
     this(factory, DEFAULT_CAPACITY);
@@ -62,7 +61,7 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
    *
    * @param factory  The factory that mints one delegate per thread. Must not be {@code null}.
    * @param capacity The maximum number of word-to-stem entries kept per thread; must be positive.
-   * @throws IllegalArgumentException if {@code factory} is {@code null} or {@code capacity} is
+   * @throws IllegalArgumentException Thrown if {@code factory} is {@code null} or {@code capacity} is
    *     not positive.
    */
   public CachingStemmer(StemmerFactory factory, int capacity) {
@@ -76,7 +75,7 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
    * @param factory  The factory that mints one delegate per thread. Must not be {@code null}.
    * @param capacity The maximum number of word-to-stem entries kept per thread; must be positive.
    * @return a supplier of fresh per-thread state.
-   * @throws IllegalArgumentException if {@code factory} is {@code null} or {@code capacity} is
+   * @throws IllegalArgumentException Thrown if {@code factory} is {@code null} or {@code capacity} is
    *     not positive.
    */
   private static Supplier<ThreadState> threadStateSupplier(StemmerFactory factory, int capacity) {

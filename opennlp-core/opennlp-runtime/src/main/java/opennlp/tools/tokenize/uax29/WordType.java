@@ -80,7 +80,8 @@ public enum WordType {
    * Classifies the code points of {@code text} over {@code [start, end)} as a word token type, or
    * {@code null} when the range is not a word (pure whitespace, punctuation, or symbols). Emoji
    * win over scripts, scripts over the generic alphanumeric/numeric split. The script category is
-   * taken from the first script code point in the range; UAX&#160;#29 word segments are
+   * taken from the first script code point in the range;
+   * <a href="https://www.unicode.org/reports/tr29/">UAX&#160;#29</a> word segments are
    * single-script in practice, so for an unusual mixed-script run this reports the leading script,
    * not a per-character determination.
    *

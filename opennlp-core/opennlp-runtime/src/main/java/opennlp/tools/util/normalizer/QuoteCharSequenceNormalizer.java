@@ -22,8 +22,7 @@ package opennlp.tools.util.normalizer;
  *
  * <p>This is high value for matching, since curly quotes, guillemets, and fullwidth quotes
  * otherwise prevent {@code "don't"} from matching {@code "don" + U+2019 + "t"}. It is built from
- * two {@link CharClass} sets, so membership is O(1) and scanning is a single cursor pass with no
- * regular expression. ASCII quotes are left unchanged.</p>
+ * two {@link CharClass} sets, so membership is O(1). ASCII quotes are left unchanged.</p>
  */
 public class QuoteCharSequenceNormalizer implements OffsetAwareNormalizer {
 

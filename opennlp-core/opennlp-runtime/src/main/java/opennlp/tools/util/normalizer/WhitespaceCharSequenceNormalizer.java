@@ -23,7 +23,7 @@ package opennlp.tools.util.normalizer;
  * <p>Unlike a {@code \s} regular expression, this recognizes the full Unicode {@code White_Space}
  * set (no-break space, ideographic space, the typographic spaces, line and paragraph separators,
  * and so on), so spacing copied from the web, PDFs, or non-Latin sources normalizes consistently.
- * It is the Unicode-aware, regex-free counterpart to {@link ShrinkCharSequenceNormalizer}.</p>
+ * It is the Unicode-aware counterpart to {@link ShrinkCharSequenceNormalizer}.</p>
  */
 public class WhitespaceCharSequenceNormalizer implements OffsetAwareNormalizer {
 

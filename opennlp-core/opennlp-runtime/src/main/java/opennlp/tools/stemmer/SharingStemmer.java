@@ -37,8 +37,10 @@ import opennlp.tools.util.ParamChecks;
 public final class SharingStemmer extends DelegatingStemmer<Stemmer> {
 
   /**
+   * Creates a sharing stemmer.
+   *
    * @param factory The factory that mints per-thread delegates. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code factory} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code factory} is {@code null}.
    */
   public SharingStemmer(StemmerFactory factory) {
     super(requireFactory(factory)::newStemmer, stemmer -> { });

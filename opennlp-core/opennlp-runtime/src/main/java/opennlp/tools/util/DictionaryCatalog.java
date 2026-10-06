@@ -149,6 +149,8 @@ public final class DictionaryCatalog {
    */
   public record Entry(String id, URI uri, String sha512, String filename) {
     /**
+     * Validates the components.
+     *
      * @param id The catalog id. Must not be {@code null}.
      * @param uri The absolute download URI. Must not be {@code null}.
      * @param sha512 The expected SHA-512 hex digest. Must not be {@code null}.

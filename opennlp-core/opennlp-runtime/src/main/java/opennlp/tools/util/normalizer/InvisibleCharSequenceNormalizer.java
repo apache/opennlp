@@ -22,11 +22,10 @@ package opennlp.tools.util.normalizer;
  * byte-order mark, zero width space, word joiner, bidi marks/embeddings/overrides/isolates, the
  * invisible math operators, soft hyphen, and the Arabic letter mark).
  *
- * <p>Membership is an O(1) {@link CharClass} lookup and removal is a single cursor pass with no
- * regular expression. The zero width joiner ({@code U+200D}) and non-joiner ({@code U+200C}) are
- * deliberately <em>kept</em>, because they carry meaning in Persian, Indic scripts, and emoji
- * sequences; so are variation selectors. Use this only for a matching/search form, not for
- * display.</p>
+ * <p>Membership is an O(1) {@link CharClass} lookup. The zero width joiner ({@code U+200D}) and
+ * non-joiner ({@code U+200C}) are deliberately <em>kept</em>, because they carry meaning in
+ * Persian, Indic scripts, and emoji sequences; so are variation selectors. Use this only for a
+ * matching/search form, not for display.</p>
  */
 public class InvisibleCharSequenceNormalizer implements OffsetAwareNormalizer {
 
@@ -64,11 +63,13 @@ public class InvisibleCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return INVISIBLE.removeAll(text);
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     return INVISIBLE.removeAllAligned(text);

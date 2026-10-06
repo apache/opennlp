@@ -29,7 +29,7 @@ import java.util.Optional;
  * thread-safe when the join is.
  *
  * <p>Annotations are per-symbol metadata, not text transforms; a parallel surface beside
- * {@link Term} rather than {@link Dimension} constants. See OPENNLP-1870.</p>
+ * {@link Term} rather than {@link Dimension} constants.</p>
  */
 public final class EmojiAnnotator {
 
@@ -70,7 +70,7 @@ public final class EmojiAnnotator {
    *
    * @param join The joined-facts hook, called while a record is assembled. Must not be
    *             {@code null}.
-   * @throws IllegalArgumentException if {@code join} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code join} is {@code null}.
    */
   public EmojiAnnotator(EmojiAnnotationJoin join) {
     if (join == null) {
@@ -80,13 +80,12 @@ public final class EmojiAnnotator {
   }
 
   /**
-   * Annotates one term, keyed on its {@link Term#original() original} text (see the class note on
-   * why the original layer is the one annotations describe).
+   * Annotates one term, keyed on its {@link Term#original() original} text.
    *
    * @param term The term to annotate. Must not be {@code null}.
    * @return The assembled record, or empty when the term is not an annotated symbol.
-   * @throws IllegalArgumentException if {@code term} is {@code null}.
-   * @throws IllegalStateException if the configured join violates its contract (returns
+   * @throws IllegalArgumentException Thrown if {@code term} is {@code null}.
+   * @throws IllegalStateException Thrown if the configured join violates its contract (returns
    *     {@code null} or a key colliding with an existing attribute).
    */
   public Optional<EmojiAnnotation> annotate(Term term) {
@@ -102,8 +101,8 @@ public final class EmojiAnnotator {
    * @param symbol The code point sequence of one symbol (one token). U+FE0F presentation
    *               selectors are ignored. Must not be {@code null}.
    * @return The assembled record, or empty when {@code symbol} is not an annotated symbol.
-   * @throws IllegalArgumentException if {@code symbol} is {@code null}.
-   * @throws IllegalStateException if the configured join violates its contract (returns
+   * @throws IllegalArgumentException Thrown if {@code symbol} is {@code null}.
+   * @throws IllegalStateException Thrown if the configured join violates its contract (returns
    *     {@code null} or a key colliding with an existing attribute).
    */
   public Optional<EmojiAnnotation> annotate(CharSequence symbol) {
@@ -164,8 +163,8 @@ public final class EmojiAnnotator {
    *
    * @param token    The token to describe. Must not be {@code null}.
    * @param features The collection to append feature strings to. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code token} or {@code features} is {@code null}.
-   * @throws IllegalStateException if the configured join violates its contract (see
+   * @throws IllegalArgumentException Thrown if {@code token} or {@code features} is {@code null}.
+   * @throws IllegalStateException Thrown if the configured join violates its contract (see
    *     {@link #annotate(CharSequence)}).
    */
   public void collectFeatures(CharSequence token, Collection<String> features) {

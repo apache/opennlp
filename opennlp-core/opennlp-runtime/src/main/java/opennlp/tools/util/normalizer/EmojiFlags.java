@@ -16,6 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -67,7 +68,7 @@ public final class EmojiFlags {
    * (per-token annotation of arbitrary text) can probe safely.
    *
    * @param symbol The code point sequence of one symbol. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code symbol} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code symbol} is {@code null}.
    */
   public static boolean isFlag(CharSequence symbol) {
     if (symbol == null) {
@@ -85,7 +86,7 @@ public final class EmojiFlags {
    * @return The ISO 3166 code, or empty when {@code symbol} is not flag-shaped at all (no leading
    *     regional indicator and no tag sequence over U+1F3F4; a lone U+1F3F4 and the ZWJ pirate
    *     flag are not region flags).
-   * @throws IllegalArgumentException if {@code symbol} is {@code null}, or if it is flag-shaped
+   * @throws IllegalArgumentException Thrown if {@code symbol} is {@code null}, or if it is flag-shaped
    *     but malformed: a lone regional indicator, more or fewer than exactly two regional
    *     indicators, or a tag sequence that is unterminated, too short for a subdivision code, not
    *     letter-led, or followed by trailing content.
@@ -104,7 +105,7 @@ public final class EmojiFlags {
    *
    * @param symbol The code point sequence of one symbol. Must not be {@code null}.
    * @return The ISO 3166 code, or {@code null} when {@code symbol} is not a well-formed flag.
-   * @throws IllegalArgumentException if {@code symbol} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code symbol} is {@code null}.
    */
   static String isoRegionOrNull(CharSequence symbol) {
     if (symbol == null) {
@@ -168,8 +169,8 @@ public final class EmojiFlags {
       }
       if (!isTagCharacter(codePoint)) {
         return malformed(lenient, "Malformed emoji tag sequence: expected a tag character or"
-            + " CANCEL TAG, got U+" + Integer.toHexString(codePoint).toUpperCase() + " in: "
-            + symbol);
+            + " CANCEL TAG, got U+" + Integer.toHexString(codePoint).toUpperCase(Locale.ROOT)
+            + " in: " + symbol);
       }
       decoded.append((char) (codePoint - TAG_OFFSET));
     }

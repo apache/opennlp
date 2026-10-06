@@ -192,15 +192,8 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     return sentences;
   }
 
-  // The whitespace definition of the sentence detector: the Unicode White_Space set
-  // (OPENNLP-205). It drives both the detection loop of sentPosDetect (the delimiter-run skip
-  // heuristic and the placement of sentence-start positions) and the position-to-span mapping,
-  // so both stages agree on what separates sentences. Unlike the previously used
-  // StringUtil.isWhitespace, this covers the next line control (U+0085) and does not treat the
-  // U+001C..U+001F information separators as whitespace; around those characters the candidate
-  // positions themselves can differ from pre-OPENNLP-205 releases, not only the span edges.
-  // Both deltas are pinned in SentenceDetectorMESpanMappingTest. Model feature generation
-  // (SDContextGenerator) is not affected.
+  // The Unicode White_Space set. It drives both the detection loop of sentPosDetect and the
+  // position-to-span mapping, so both stages agree on what separates sentences.
   private static final CharClass WHITESPACE = CharClass.whitespace();
 
   private int getFirstWS(CharSequence s, int pos) {
@@ -281,12 +274,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
   }
 
   /**
-   * Maps accepted sentence-start positions to trimmed sentence {@link Span}s, the core of the
-   * end-of-sentence position to span mapping (OPENNLP-205). Not part of the public API; the
-   * package visibility is deliberate, kept so the mapping can be exercised directly in tests.
-   * Several branches (the whitespace-only candidate that keeps {@code probs} aligned, and the
-   * stale-{@code probs} reset in the zero-positions branch) are not reachable through the public
-   * {@code sentPosDetect} entry point.
+   * Maps accepted sentence-start positions to trimmed sentence {@link Span}s.
    *
    * <p>Each span runs from the previous position (or the text start) to the next position, with
    * Unicode {@code White_Space} trimmed from both edges. A candidate that is whitespace-only is
@@ -425,7 +413,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
     /**
      * The dictionary entries, folded to lower case unless the dictionary is case-sensitive.
-     * Only the first token of a multi-token entry participates, as before.
+     * Only the first token of a multi-token entry participates.
      */
     private final Set<String> entries;
 
@@ -445,6 +433,8 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     private final boolean caseSensitive;
 
     /**
+     * Creates an index over a dictionary.
+     *
      * @param abbDict The {@link Dictionary} to index, may be {@code null}.
      * @return An index over {@code abbDict}, or {@code null} if {@code abbDict} is {@code null}.
      */
@@ -473,6 +463,8 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     }
 
     /**
+     * Checks whether a sentence break at a candidate position is allowed by the dictionary.
+     *
      * @param s The text in which the break occurred.
      * @param fromIndex The start of the segment currently being evaluated.
      * @param candidateIndex The index of the candidate sentence ending.

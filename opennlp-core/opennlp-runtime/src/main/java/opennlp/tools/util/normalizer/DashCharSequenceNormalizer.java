@@ -38,11 +38,13 @@ public class DashCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return DASHES.normalize(text);
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     return DASHES.normalizeAligned(text);

@@ -56,7 +56,10 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
   private static final String HTTP = "http";
   private static final String HTTPS = "https";
 
-  /** The characters a scheme continues with after its first letter, per RFC 3986. */
+  /**
+   * The characters a scheme continues with after its first letter, per
+   * <a href="https://www.rfc-editor.org/rfc/rfc3986">RFC 3986</a>.
+   */
   private static final CodePointSet SCHEME_BODY =
       AsciiChars.ALPHANUMERIC.union(CodePointSet.of('+', '-', '.'));
 

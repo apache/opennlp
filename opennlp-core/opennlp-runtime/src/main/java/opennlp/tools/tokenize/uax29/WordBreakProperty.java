@@ -30,10 +30,9 @@ import opennlp.tools.util.normalizer.HexCodePoints;
  * Looks up the Unicode {@link WordBreak Word_Break} property of a code point.
  *
  * <p>The data is loaded on first use from the {@code WordBreakProperty.txt} resource of the
- * Unicode Character Database (parsed with simple cursor scanning, no regular expression). Lookup
- * is O(1) for the Basic Multilingual Plane (a direct array index) and O(log n) for supplementary
- * code points (a binary search over a small sorted range table), so it imposes no per-character
- * allocation on the word boundary algorithm.</p>
+ * Unicode Character Database. Lookup is O(1) for the Basic Multilingual Plane (a direct array
+ * index) and O(log n) for supplementary code points (a binary search over a small sorted range
+ * table), so it imposes no per-character allocation on the word boundary algorithm.</p>
  */
 public final class WordBreakProperty {
 

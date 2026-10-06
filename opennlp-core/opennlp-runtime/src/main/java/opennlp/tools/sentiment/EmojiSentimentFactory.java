@@ -24,6 +24,8 @@ package opennlp.tools.sentiment;
  * opennlp.tools.util.TrainingParameters, SentimentFactory) SentimentME.train} to opt in; the
  * factory class is recorded in the trained model's manifest, so prediction re-creates the same
  * context. The default {@link SentimentFactory} is unchanged.
+ *
+ * @since 3.0.0
  */
 public class EmojiSentimentFactory extends SentimentFactory {
 

@@ -22,7 +22,7 @@ import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} that applies Unicode Normalization Form C (canonical
- * composition, UAX #15).
+ * composition, <a href="https://www.unicode.org/reports/tr15/">UAX #15</a>).
  *
  * <p>NFC is the safe, lossless (under canonical equivalence) baseline for matching: precomposed
  * and decomposed spellings of the same text (for example {@code U+00E9} versus {@code e} plus a

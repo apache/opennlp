@@ -25,8 +25,7 @@ package opennlp.tools.util.normalizer;
  * <p>This is the correct diacritic fold for German, where the generic
  * {@link AccentFoldCharSequenceNormalizer} (which would yield {@code a}, {@code o}, {@code u}) is
  * wrong. It is an expanding, offset-changing transform, so like the other folds it belongs to the
- * derived matching form rather than to anything offset-preserving. A cursor pass with no regular
- * expression.</p>
+ * derived matching form rather than to anything offset-preserving.</p>
  *
  * <p>The fold matches the precomposed code points. A base letter followed by a combining diaeresis
  * (for example {@code a} + U+0308) is not a member and passes through unchanged, so apply NFC
@@ -56,11 +55,13 @@ public class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return CharClass.substitute(text, GermanUmlautCharSequenceNormalizer::expansion);
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     return CharClass.substituteAligned(text, GermanUmlautCharSequenceNormalizer::expansion);

@@ -38,8 +38,7 @@ import opennlp.tools.util.StringUtil;
  * perform: the sharp s (U+00DF) to {@code ss}, the Latin ligatures (for example U+FB00 to
  * {@code ff}), and the Greek and Armenian multi-character folds. It is therefore an expanding,
  * offset-changing transform, so it is offset-aware: {@link #normalizeAligned(CharSequence)} reports
- * the {@link Alignment} from the folded text back to the input. A single cursor pass with no regular
- * expression.</p>
+ * the {@link Alignment} from the folded text back to the input.</p>
  *
  * <p>The {@code S} simple and {@code T} Turkic status mappings are excluded, so the Turkish and
  * Azerbaijani dotless-i rule is not applied here. Input is expected in NFC: the fold matches
@@ -99,9 +98,9 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   /**
    * {@inheritDoc}
    *
-   * @throws IllegalArgumentException if {@code text} is {@code null}.
-   * @throws IllegalStateException if the bundled {@code CaseFolding.txt} resource is missing.
-   * @throws UncheckedIOException if the bundled {@code CaseFolding.txt} resource cannot be read.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * @throws IllegalStateException Thrown if the bundled {@code CaseFolding.txt} resource is missing.
+   * @throws UncheckedIOException Thrown if the bundled {@code CaseFolding.txt} resource cannot be read.
    */
   @Override
   public CharSequence normalize(CharSequence text) {
@@ -112,9 +111,9 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   /**
    * {@inheritDoc}
    *
-   * @throws IllegalArgumentException if {@code text} is {@code null}.
-   * @throws IllegalStateException if the bundled {@code CaseFolding.txt} resource is missing.
-   * @throws UncheckedIOException if the bundled {@code CaseFolding.txt} resource cannot be read.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * @throws IllegalStateException Thrown if the bundled {@code CaseFolding.txt} resource is missing.
+   * @throws UncheckedIOException Thrown if the bundled {@code CaseFolding.txt} resource cannot be read.
    */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
@@ -125,8 +124,8 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   /**
    * {@return the folding table parsed from the bundled {@code CaseFolding.txt} resource}
    *
-   * @throws IllegalStateException if the resource is missing.
-   * @throws UncheckedIOException if the resource cannot be read.
+   * @throws IllegalStateException Thrown if the resource is missing.
+   * @throws UncheckedIOException Thrown if the resource cannot be read.
    */
   private static Map<Integer, String> initFoldings() {
     return Map.copyOf(BundledUnicodeData.load(FullCaseFoldCharSequenceNormalizer.class, RESOURCE,
@@ -141,8 +140,8 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
    *
    * @param in the stream to parse, in {@code CaseFolding.txt} format. Must not be {@code null}.
    * @return the mapping from source code point to its full case folding.
-   * @throws IOException if the stream cannot be read.
-   * @throws IllegalArgumentException if the data is malformed.
+   * @throws IOException Thrown if the stream cannot be read.
+   * @throws IllegalArgumentException Thrown if the data is malformed.
    */
   static Map<Integer, String> parse(InputStream in) throws IOException {
     final Map<Integer, String> map = new HashMap<>();

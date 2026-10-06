@@ -25,9 +25,10 @@ import opennlp.tools.util.ParamChecks;
  * Entry point for composing normalization steps into a single {@link CharSequenceNormalizer}.
  *
  * <p>Use {@link #builder()} to assemble a chain, or {@link #defaultChain()} for a conservative,
- * ready-made chain. Steps run in the order they are added. Each step is a shared, stateless
- * normalizer; the built result is an {@link AggregateCharSequenceNormalizer} that applies them
- * in sequence.</p>
+ * ready-made chain. Steps run in the order they are added. Each built-in step is a shared,
+ * stateless normalizer; steps added through {@link Builder#with(CharSequenceNormalizer)} are used
+ * as given. The built result is an {@link AggregateCharSequenceNormalizer} that applies them in
+ * sequence.</p>
  *
  * <pre>{@code
  * CharSequenceNormalizer n = TextNormalizer.builder()

@@ -37,6 +37,7 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
  * join is): it keeps no adaptive data.</p>
  *
  * @see EmojiAnnotator
+ * @since 3.0.0
  */
 public class EmojiAnnotationFeatureGenerator implements AdaptiveFeatureGenerator {
 
@@ -53,7 +54,7 @@ public class EmojiAnnotationFeatureGenerator implements AdaptiveFeatureGenerator
    * Instantiates a generator over a configured annotator, for example one with a gazetteer join.
    *
    * @param annotator The annotator to use. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code annotator} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code annotator} is {@code null}.
    */
   public EmojiAnnotationFeatureGenerator(EmojiAnnotator annotator) {
     if (annotator == null) {
@@ -67,7 +68,7 @@ public class EmojiAnnotationFeatureGenerator implements AdaptiveFeatureGenerator
    *
    * <p>Adds one feature per present annotation attribute of the token at {@code index}.</p>
    *
-   * @throws IllegalArgumentException if {@code features} or {@code tokens} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code features} or {@code tokens} is {@code null}.
    */
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
