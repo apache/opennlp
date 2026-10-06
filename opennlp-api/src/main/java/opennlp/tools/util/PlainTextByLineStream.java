@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.Objects;
 
 /**
  * Reads a plain text file and returns each line as a {@link String} object.
@@ -41,6 +40,7 @@ public class PlainTextByLineStream implements ObjectStream<String> {
    * @param charsetName The name of the {@link Charset} that is used for interpreting characters.
    *
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if {@code inputStreamFactory} is {@code null}.
    */
   public PlainTextByLineStream(InputStreamFactory inputStreamFactory, String charsetName)
           throws IOException {
@@ -54,11 +54,12 @@ public class PlainTextByLineStream implements ObjectStream<String> {
    * @param charset The {@link Charset} that is used for interpreting characters.
    *
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if {@code inputStreamFactory} is {@code null}.
    */
   public PlainTextByLineStream(InputStreamFactory inputStreamFactory, Charset charset)
           throws IOException {
-    this.inputStreamFactory = Objects.requireNonNull(
-            inputStreamFactory, "inputStreamFactory must not be null!");
+    this.inputStreamFactory = ParamChecks.requireNonNullArg(
+            inputStreamFactory, "inputStreamFactory");
     this.encoding = charset;
 
     reset();

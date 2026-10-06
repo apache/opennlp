@@ -108,6 +108,29 @@ public class CodePointSetTest {
   }
 
   @Test
+  void testOfRejectsNullArray() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> CodePointSet.of((int[]) null));
+    assertEquals("codePoints must not be null", e.getMessage());
+  }
+
+  @Test
+  void testUnionRejectsNull() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> CodePointSet.of(0x20).union(null));
+    assertEquals("other must not be null", e.getMessage());
+  }
+
+  @Test
+  void testFromFileRejectsNullArguments(@TempDir Path dir) {
+    final Path file = dir.resolve("definitions.txt");
+    assertEquals("definitions must not be null", assertThrows(IllegalArgumentException.class,
+        () -> CodePointSet.fromFile(null, "whitespace")).getMessage());
+    assertEquals("section must not be null", assertThrows(IllegalArgumentException.class,
+        () -> CodePointSet.fromFile(file, null)).getMessage());
+  }
+
+  @Test
   void testParseAcceptsSingleHexDigit() {
     assertTrue(CodePointSet.parse(List.of("[s]", "9"), "s").contains(0x9));
   }

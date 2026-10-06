@@ -167,4 +167,22 @@ public class AlignedTextTest {
     assertThrows(IllegalArgumentException.class, () -> collapsed.andThen(unrelated));
   }
 
+  @Test
+  void constructorRejectsNullComponents() {
+    final Alignment alignment = new Alignment.Builder().equal(1).replace(2, 1).equal(1).build(4);
+    assertEquals("original must not be null", assertThrows(IllegalArgumentException.class,
+        () -> new AlignedText(null, "a b", alignment)).getMessage());
+    assertEquals("normalized must not be null", assertThrows(IllegalArgumentException.class,
+        () -> new AlignedText("a  b", null, alignment)).getMessage());
+    assertEquals("alignment must not be null", assertThrows(IllegalArgumentException.class,
+        () -> new AlignedText("a  b", "a b", null)).getMessage());
+  }
+
+  @Test
+  void constructorRejectsLengthMismatch() {
+    final Alignment alignment = new Alignment.Builder().equal(1).replace(2, 1).equal(1).build(4);
+    assertThrows(IllegalArgumentException.class, () -> new AlignedText("a b", "a b", alignment));
+    assertThrows(IllegalArgumentException.class, () -> new AlignedText("a  b", "a  b", alignment));
+  }
+
 }

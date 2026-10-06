@@ -131,4 +131,27 @@ public class TokenSampleTest {
     Assertions.assertNotEquals(createPredSample(), createGoldSample());
     Assertions.assertNotEquals(new Object(), createPredSample());
   }
+
+  @Test
+  void testRejectsNullArguments() throws IOException {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new TokenSample(null, new Span[0]));
+    Assertions.assertEquals("text must not be null", e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new TokenSample("text", null));
+    Assertions.assertEquals("tokenSpans must not be null", e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new TokenSample(null, new String[] {"a"}));
+    Assertions.assertEquals("detokenizer must not be null", e.getMessage());
+    Detokenizer detokenizer = DictionaryDetokenizerTest.createLatinDetokenizer();
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new TokenSample(detokenizer, null));
+    Assertions.assertEquals("tokens must not be null", e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> TokenSample.parse(null, TokenSample.DEFAULT_SEPARATOR_CHARS));
+    Assertions.assertEquals("sampleString must not be null", e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> TokenSample.parse("a b", null));
+    Assertions.assertEquals("separatorChars must not be null", e.getMessage());
+  }
 }

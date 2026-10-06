@@ -17,8 +17,7 @@
 
 package opennlp.tools.ml.model;
 
-
-import java.util.Objects;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * The context of a decision point during training.
@@ -34,6 +33,7 @@ public class Event {
    *
    * @param outcome The outcome to use. Must not be {@code null}.
    * @param context The {@link String array} of context elements. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code outcome} or {@code context} is {@code null}.
    */
   public Event(String outcome, CharSequence[] context) {
     this(outcome,context,null);
@@ -45,10 +45,11 @@ public class Event {
    * @param outcome The outcome to use. Must not be {@code null}.
    * @param context The {@link String array} of context elements. Must not be {@code null}.
    * @param values The {@code float} array to use.
+   * @throws IllegalArgumentException Thrown if {@code outcome} or {@code context} is {@code null}.
    */
   public Event(String outcome, String[] context, float[] values) {
-    this.outcome = Objects.requireNonNull(outcome, "outcome must not be null");
-    this.context = Objects.requireNonNull(context, "context must not be null");
+    this.outcome = ParamChecks.requireNonNullArg(outcome, "outcome");
+    this.context = ParamChecks.requireNonNullArg(context, "context");
     this.values = values;
   }
 
@@ -58,9 +59,11 @@ public class Event {
    * @param outcome The outcome to use. Must not be {@code null}.
    * @param context The {@link CharSequence array} of context elements. Must not be {@code null}.
    * @param values The {@code float} array to use.
+   * @throws IllegalArgumentException Thrown if {@code outcome} or {@code context} is {@code null}.
    */
   public Event(String outcome, CharSequence[] context, float[] values) {
-    this.outcome = Objects.requireNonNull(outcome, "outcome must not be null");
+    this.outcome = ParamChecks.requireNonNullArg(outcome, "outcome");
+    ParamChecks.requireNonNullArg(context, "context");
     final String[] ctx = new String[context.length];
     for (int i = 0; i < context.length; i++) {
       ctx[i] = context[i].toString();

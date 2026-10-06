@@ -112,6 +112,14 @@ public class AlignmentTest {
   }
 
   @Test
+  void testAndThenRejectsNull() {
+    final Alignment first = new Alignment.Builder().equal(2).build(2);
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> first.andThen(null));
+    assertEquals("next must not be null", e.getMessage());
+  }
+
+  @Test
   void testAllDeletedProducesEmptyNormalized() {
     final Alignment a = new Alignment.Builder().replace(2, 0).build(2); // "  " -> ""
     assertEquals(0, a.normalizedLength());

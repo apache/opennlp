@@ -72,7 +72,7 @@ public class LanguageSampleTest {
 
   @Test
   void testNullLang() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
       CharSequence context = "aContext";
 
       new LanguageSample(null, context);
@@ -82,7 +82,7 @@ public class LanguageSampleTest {
 
   @Test
   void testNullContext() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
       Language lang = new Language("aLang");
 
       new LanguageSample(lang, null);

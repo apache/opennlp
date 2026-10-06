@@ -99,14 +99,14 @@ public class ObjectStreamUtils {
    * @param <T> The generic type of the elements in the {@code collection}.
    *
    * @return The concatenated {@link ObjectStream} aggregating all elements in {@code streams}.
+   * @throws IllegalArgumentException Thrown if {@code streams} or one of its elements is {@code null}.
    */
   public static <T> ObjectStream<T> concatenateObjectStream(final Collection<ObjectStream<T>> streams) {
+    ParamChecks.requireNonNullArg(streams, "streams");
 
     // We may want to skip null streams instead of throwing a 
     for (ObjectStream<T> stream : streams) {
-      if (stream == null) {
-        throw new NullPointerException("stream cannot be null");
-      }
+      ParamChecks.requireNonNullArg(stream, "stream");
     }
 
     return new ObjectStream<>() {
@@ -155,14 +155,14 @@ public class ObjectStreamUtils {
    * @param <T> The generic type of the elements in the {@code streams}.
    *           
    * @return The concatenated {@link ObjectStream} aggregating all elements in {@code streams}.
+   * @throws IllegalArgumentException Thrown if {@code streams} or one of its elements is {@code null}.
    */
   @SafeVarargs
   public static <T> ObjectStream<T> concatenateObjectStream(final ObjectStream<T>... streams) {
+    ParamChecks.requireNonNullArg(streams, "streams");
 
     for (ObjectStream<T> stream : streams) {
-      if (stream == null) {
-        throw new NullPointerException("stream cannot be null");
-      }
+      ParamChecks.requireNonNullArg(stream, "stream");
     }
 
     return new ObjectStream<>() {

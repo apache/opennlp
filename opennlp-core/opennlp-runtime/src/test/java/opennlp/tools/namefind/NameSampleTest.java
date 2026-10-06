@@ -301,4 +301,11 @@ public class NameSampleTest {
   public static NameSample createPredSample() {
     return createSimpleNameSample(false);
   }
+
+  @Test
+  void testRejectsNullSentence() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new NameSample(null, new Span[0], false));
+    Assertions.assertEquals("sentence must not be null", e.getMessage());
+  }
 }

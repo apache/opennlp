@@ -97,6 +97,27 @@ public class ObjectStreamUtilsTest {
     }
   }
 
+  @Test
+  @SuppressWarnings("unchecked")
+  void testConcatenateRejectsNullArguments() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ObjectStreamUtils.concatenateObjectStream((List<ObjectStream<String>>) null));
+    Assertions.assertEquals("streams must not be null", e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ObjectStreamUtils.concatenateObjectStream((ObjectStream<String>[]) null));
+    Assertions.assertEquals("streams must not be null", e.getMessage());
+
+    List<ObjectStream<String>> withNull = new ArrayList<>();
+    withNull.add(ObjectStreamUtils.createObjectStream("a"));
+    withNull.add(null);
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ObjectStreamUtils.concatenateObjectStream(withNull));
+    Assertions.assertEquals("stream must not be null", e.getMessage());
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ObjectStreamUtils.concatenateObjectStream(ObjectStreamUtils.createObjectStream("a"), null));
+    Assertions.assertEquals("stream must not be null", e.getMessage());
+  }
+
   private void compareUpToLastCharacter(ObjectStream<String> stream,
                                         String[] expectedValues) throws IOException {
 
