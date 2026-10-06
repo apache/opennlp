@@ -18,10 +18,10 @@
 package opennlp.tools.tokenize;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * This class is a {@link FilterObjectStream stream filter} which reads in string encoded
@@ -48,10 +48,12 @@ public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
    * @param separatorChars The characters to be considered separators.
    *                       See {@link TokenSample#DEFAULT_SEPARATOR_CHARS}.
    *                       Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code samples} or {@code separatorChars} is
+   *     {@code null}.
    */
   public TokenSampleStream(ObjectStream<String> samples, String separatorChars) {
-    super(Objects.requireNonNull(samples, "sampleStrings must not be null"));
-    this.separatorChars = Objects.requireNonNull(separatorChars,"separatorChars must not be null");
+    super(ParamChecks.requireNonNullArg(samples, "samples"));
+    this.separatorChars = ParamChecks.requireNonNullArg(separatorChars, "separatorChars");
   }
 
   /**

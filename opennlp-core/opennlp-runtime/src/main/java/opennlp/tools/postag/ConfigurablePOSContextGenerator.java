@@ -19,10 +19,10 @@ package opennlp.tools.postag;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.Cache;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 /**
@@ -62,6 +62,7 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
    * A cache size of {@code 0} will be used as default.
    *
    * @param featureGenerator The {@link AdaptiveFeatureGenerator} to be used.
+   * @throws IllegalArgumentException Thrown if {@code featureGenerator} is {@code null}.
    */
   public ConfigurablePOSContextGenerator(AdaptiveFeatureGenerator featureGenerator) {
     this(0, featureGenerator);
@@ -74,10 +75,10 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
    * @param cacheSize The size of the per-thread context cache.
    *                  Use {@code 0} to disable caching.
    * @param featureGenerator The {@link AdaptiveFeatureGenerator} to be used.
+   * @throws IllegalArgumentException Thrown if {@code featureGenerator} is {@code null}.
    */
   public ConfigurablePOSContextGenerator(int cacheSize, AdaptiveFeatureGenerator featureGenerator) {
-    this.featureGenerator = Objects.requireNonNull(featureGenerator,
-        "featureGenerator must not be null");
+    this.featureGenerator = ParamChecks.requireNonNullArg(featureGenerator, "featureGenerator");
     this.cacheSize = cacheSize;
     this.threadState = cacheSize > 0
         ? ThreadLocal.withInitial(() -> new CacheState(cacheSize))

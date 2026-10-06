@@ -20,7 +20,6 @@ package opennlp.tools.util;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import opennlp.tools.util.jvm.StringInterners;
@@ -76,7 +75,7 @@ public class StringList implements Iterable<String> {
    * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public StringList(boolean isCaseSensitive, String... tokens) {
-    Objects.requireNonNull(tokens, "tokens must not be null");
+    ParamChecks.requireNonNullArg(tokens, "tokens");
 
     if (tokens.length == 0) {
       throw new IllegalArgumentException("tokens must not be empty");

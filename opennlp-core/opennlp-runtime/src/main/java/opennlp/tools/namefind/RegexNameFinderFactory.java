@@ -19,8 +19,9 @@ package opennlp.tools.namefind;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
+
+import opennlp.tools.util.ParamChecks;
 
 /**
  *
@@ -41,10 +42,11 @@ public class RegexNameFinderFactory {
    *                 the config map entry will be taken.
    * @param defaults One or more of the default {@link DEFAULT_REGEX_NAME_FINDER} enum values.
    * @return A {@link RegexNameFinder} instance.
+   * @throws IllegalArgumentException Thrown if {@code config} is {@code null}.
    */
   public static synchronized RegexNameFinder getDefaultRegexNameFinders(
       Map<String, Pattern[]> config, DEFAULT_REGEX_NAME_FINDER... defaults) {
-    Objects.requireNonNull(config, "config must not be null");
+    ParamChecks.requireNonNullArg(config, "config");
 
     Map<String, Pattern[]> defaultsToMap = new HashMap<>();
     if (defaults != null) {
@@ -59,10 +61,11 @@ public class RegexNameFinderFactory {
    *
    * @param defaults One or more of the default {@link DEFAULT_REGEX_NAME_FINDER} enum values.
    * @return A {@link RegexNameFinder} instance.
+   * @throws IllegalArgumentException Thrown if {@code defaults} is {@code null}.
    */
   public static synchronized RegexNameFinder getDefaultRegexNameFinders(
       DEFAULT_REGEX_NAME_FINDER... defaults) {
-    Objects.requireNonNull(defaults, "defaults must not be null");
+    ParamChecks.requireNonNullArg(defaults, "defaults");
     return new RegexNameFinder(defaultsToMap(defaults));
   }
 

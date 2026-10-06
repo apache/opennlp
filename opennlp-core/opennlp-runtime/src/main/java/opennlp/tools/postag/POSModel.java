@@ -34,6 +34,7 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ByteArraySerializer;
@@ -61,6 +62,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
    * @param posModel A valid {@link SequenceClassificationModel}.
    * @param manifestInfoEntries Additional information kept in the manifest.
    * @param posFactory The {@link POSTaggerFactory} for creating related objects.
+   * @throws IllegalArgumentException Thrown if {@code posModel} is {@code null}.
    */
   public POSModel(String languageCode, SequenceClassificationModel posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
@@ -68,7 +70,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
 
     artifactMap.put(POS_MODEL_ENTRY_NAME,
-        Objects.requireNonNull(posModel, "posModel must not be null"));
+        ParamChecks.requireNonNullArg(posModel, "posModel"));
 
     artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, posFactory.getFeatureGenerator());
     artifactMap.putAll(posFactory.getResources());
@@ -98,13 +100,14 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
    * @param beamSize The size of the beam that should be used when decoding sequences.
    * @param manifestInfoEntries Additional information kept in the manifest.
    * @param posFactory The {@link POSTaggerFactory} for creating related objects.
+   * @throws IllegalArgumentException Thrown if {@code posModel} is {@code null}.
    */
   public POSModel(String languageCode, MaxentModel posModel, int beamSize,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
 
-    Objects.requireNonNull(posModel, "posModel must not be null");
+    ParamChecks.requireNonNullArg(posModel, "posModel");
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.setProperty(BeamSearch.BEAM_SIZE_PARAMETER, Integer.toString(beamSize));
@@ -144,9 +147,10 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
    * @param modelPath The {@link Path} used for loading the model.
    *
    * @throws IOException Thrown if IO errors occurred during initialization.
+   * @throws IllegalArgumentException Thrown if {@code modelPath} is {@code null}.
    */
   public POSModel(Path modelPath) throws IOException {
-    this(modelPath.toFile());
+    this(ParamChecks.requireNonNullArg(modelPath, "modelPath").toFile());
   }
 
   /**

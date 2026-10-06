@@ -18,7 +18,6 @@
 package opennlp.tools.util;
 
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Abstract base class for filtering {@link ObjectStream streams}.
@@ -38,9 +37,10 @@ public abstract class FilterObjectStream<S, T> implements ObjectStream<T> {
    *
    * @param samples The {@link ObjectStream<S> stream} of samples to filter.
    *                Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code samples} is {@code null}.
    */
   protected FilterObjectStream(ObjectStream<S> samples) {
-    this.samples = Objects.requireNonNull(samples, "samples must not be null!");
+    this.samples = ParamChecks.requireNonNullArg(samples, "samples");
   }
 
   @Override

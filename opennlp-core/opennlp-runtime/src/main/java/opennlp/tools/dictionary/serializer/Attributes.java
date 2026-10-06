@@ -20,7 +20,8 @@ package opennlp.tools.dictionary.serializer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
+
+import opennlp.tools.util.ParamChecks;
 
 /**
  * The {@link Attributes} class stores name value pairs.
@@ -50,10 +51,11 @@ public class Attributes {
    *            Must not be {@code null}.
    * @param value The value that shall be retrievable via its {@code key}.
    *              Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code key} or {@code value} is {@code null}.
    */
   public void setValue(String key, String value) {
-    Objects.requireNonNull(key, "key must not be null");
-    Objects.requireNonNull(value, "value must not be null");
+    ParamChecks.requireNonNullArg(key, "key");
+    ParamChecks.requireNonNullArg(value, "value");
 
     mNameValueMap.put(key, value);
   }

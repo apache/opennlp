@@ -24,6 +24,8 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.ParamChecks;
+
 /**
  * A mapping implementation for converting between different POS tag formats.
  * This class supports conversion between Penn Treebank (PENN) and Universal Dependencies (UD) formats.
@@ -124,9 +126,10 @@ public class POSTagFormatMapper {
    * @param tags a list of tags to be converted.
    * @return an array containing the converted tags with the same order and size as the given input list.
    * Note: A given tag might be {@code ?} if no mapping for the given {@code tag} could be found.
+   * @throws IllegalArgumentException Thrown if {@code tags} is {@code null}.
    */
   public String[] convertTags(List<String> tags) {
-    Objects.requireNonNull(tags, "Supplied tags must not be NULL.");
+    ParamChecks.requireNonNullArg(tags, "tags");
     return tags.stream()
         .map(this::convertTag)
         .toArray(String[]::new);
@@ -211,9 +214,10 @@ public class POSTagFormatMapper {
    * Guesses the {@link POSTagFormat} of a given {@link POSModel}
    * @param posModel must not be {@code null}.
    * @return the guessed {@link POSTagFormat}.
+   * @throws IllegalArgumentException Thrown if {@code posModel} is {@code null}.
    */
   public static POSTagFormat guessFormat(POSModel posModel) {
-    Objects.requireNonNull(posModel, "POSModel must not be NULL.");
+    ParamChecks.requireNonNullArg(posModel, "posModel");
     Objects.requireNonNull(posModel.getPosSequenceModel(), "POSSequenceModel must not be NULL.");
     final POSTagFormatMapper mapper = new POSTagFormatMapper(posModel.getPosSequenceModel().getOutcomes());
     return mapper.getGuessedFormat();
@@ -225,9 +229,14 @@ public class POSTagFormatMapper {
       super(new String[0]);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IllegalArgumentException Thrown if {@code tags} is {@code null}.
+     */
     @Override
     public String[] convertTags(List<String> tags) {
-      Objects.requireNonNull(tags, "tags must not be NULL.");
+      ParamChecks.requireNonNullArg(tags, "tags");
       return tags.toArray(new String[0]);
     }
 

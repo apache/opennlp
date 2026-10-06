@@ -28,6 +28,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -86,9 +87,10 @@ public class SentenceModel extends BaseModel {
    * @param modelPath The {@link Path} used for loading the model.
    *
    * @throws IOException Thrown if IO errors occurred during initialization.
+   * @throws IllegalArgumentException Thrown if {@code modelPath} is {@code null}.
    */
   public SentenceModel(Path modelPath) throws IOException {
-    this(modelPath.toFile());
+    this(ParamChecks.requireNonNullArg(modelPath, "modelPath").toFile());
   }
 
   /**

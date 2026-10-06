@@ -21,10 +21,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -44,9 +44,10 @@ public final class RegexNameFinder implements TokenNameFinder {
    * 
    * @param regexMap A {@link Map} where the key is a type, and the value is an
    *                 array of {@link Pattern} instances. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code regexMap} is {@code null}.
    */
   public RegexNameFinder(Map<String, Pattern[]> regexMap) {
-    this.regexMap = Objects.requireNonNull(regexMap, "regexMap must not be null");
+    this.regexMap = ParamChecks.requireNonNullArg(regexMap, "regexMap");
   }
 
   /**

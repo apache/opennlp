@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -157,8 +158,11 @@ public final class WordSegmenter {
    *
    * @param text     The text to segment; may be empty, in which case no segment is delivered.
    * @param consumer The receiver of the segment ranges.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code consumer} is {@code null}.
    */
   public static void forEachSegment(CharSequence text, SegmentConsumer consumer) {
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(consumer, "consumer");
     final int length = text.length();
     if (length == 0) {
       return;
@@ -268,8 +272,10 @@ public final class WordSegmenter {
    *
    * @param text The text to segment.
    * @return The boundary offsets; for empty text, {@code [0]}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public static int[] boundaries(CharSequence text) {
+    ParamChecks.requireNonNullArg(text, "text");
     if (text.length() == 0) {
       return new int[] {0};
     }
@@ -285,8 +291,10 @@ public final class WordSegmenter {
    *
    * @param text The text to segment.
    * @return The segment spans, in order.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public static List<Span> segments(CharSequence text) {
+    ParamChecks.requireNonNullArg(text, "text");
     final List<Span> spans = new ArrayList<>();
     forEachSegment(text, (start, end) -> spans.add(new Span(start, end)));
     return spans;

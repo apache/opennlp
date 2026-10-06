@@ -21,8 +21,8 @@ package opennlp.tools.doccat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.featuregen.StringPattern;
 
 /**
@@ -48,9 +48,14 @@ public class BagOfWordsFeatureGenerator implements FeatureGenerator {
     this.useOnlyAllLetterTokens = useOnlyAllLetterTokens;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
   @Override
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation) {
-    Objects.requireNonNull(text, "text must not be null");
+    ParamChecks.requireNonNullArg(text, "text");
     Collection<String> bagOfWords = new ArrayList<>(text.length);
 
     for (String word : text) {

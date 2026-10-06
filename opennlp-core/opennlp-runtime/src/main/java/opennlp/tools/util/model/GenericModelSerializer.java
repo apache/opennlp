@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Objects;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.GenericModelReader;
 import opennlp.tools.ml.model.GenericModelWriter;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * An {@link ArtifactSerializer} implementation for {@link AbstractModel models}.
@@ -39,10 +39,15 @@ public class GenericModelSerializer implements ArtifactSerializer<AbstractModel>
     return new GenericModelReader(new BinaryFileDataReader(in)).getModel();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code artifact} or {@code out} is {@code null}.
+   */
   @Override
   public void serialize(AbstractModel artifact, OutputStream out) throws IOException {
-    Objects.requireNonNull(artifact, "model parameter must not be null");
-    Objects.requireNonNull(out, "out parameter must not be null");
+    ParamChecks.requireNonNullArg(artifact, "artifact");
+    ParamChecks.requireNonNullArg(out, "out");
 
     GenericModelWriter modelWriter = new GenericModelWriter(artifact,
             new DataOutputStream(new OutputStream() {

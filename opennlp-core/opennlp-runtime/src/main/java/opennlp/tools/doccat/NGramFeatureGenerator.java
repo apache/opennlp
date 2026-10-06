@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Generates ngram features for a document.
@@ -66,9 +66,14 @@ public class NGramFeatureGenerator implements FeatureGenerator {
     this(2, 2);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
   @Override
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInfo) {
-    Objects.requireNonNull(text, "text must not be null");
+    ParamChecks.requireNonNullArg(text, "text");
     List<String> features = new ArrayList<>();
 
     for (int i = 0; i <= text.length - minGram; i++) {

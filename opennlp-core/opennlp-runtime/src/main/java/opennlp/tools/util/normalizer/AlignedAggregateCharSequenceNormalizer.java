@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.ParamChecks;
+
 /**
  * An {@link OffsetAwareNormalizer} that applies a chain of offset-aware normalizers in order and composes
  * their per-stage {@link Alignment}s with {@link Alignment#andThen(Alignment)}, so the result maps a
@@ -37,6 +39,7 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
+    ParamChecks.requireNonNullArg(text, "text");
     CharSequence result = text;
     for (final OffsetAwareNormalizer step : steps) {
       result = step.normalize(result);
@@ -47,6 +50,7 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
   /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
+    ParamChecks.requireNonNullArg(text, "text");
     if (steps.length == 0) {
       // Identity pipeline: use one String for both sides so the alignment's lengths cannot diverge
       // from the stored original for a CharSequence whose length() differs from its toString().
