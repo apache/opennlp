@@ -199,6 +199,20 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
   }
 
   @Test
+  void testContextWithoutANumberNextToAValueIsKeptWholeWithValueOne() throws IOException {
+    Event e = RealValueFileEventStream.parseEvent("other wc=ic=2.0 wc=abc");
+    Assertions.assertArrayEquals(new String[] {"wc=ic", "wc=abc"}, e.getContext());
+    Assertions.assertArrayEquals(new float[] {2.0f, 1.0f}, e.getValues());
+  }
+
+  @Test
+  void testParseContextsRejectsNull() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> RealValueFileEventStream.parseContexts(null));
+    Assertions.assertEquals("contexts must not be null", e.getMessage());
+  }
+
+  @Test
   void testContextsWithAndWithoutValuesMix() throws IOException {
     Event e = RealValueFileEventStream.parseEvent("other wc=ic=2.0 wc n1wc=lc=0.5");
     Assertions.assertArrayEquals(new String[] {"wc=ic", "wc", "n1wc=lc"}, e.getContext());
@@ -220,6 +234,26 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> RealValueFileEventStream.parseEvent("other " + context));
     Assertions.assertEquals("Values must be finite: " + context, e.getMessage());
+  }
+
+  /** {@link RealValueFileEventStream#read()} reports a value error as malformed input. */
+  @ParameterizedTest
+  @MethodSource("invalidValues")
+  void testReadRejectsAnInvalidValueAsInvalidFormat(String context, String message)
+      throws IOException {
+    try (ObjectStream<Event> eventStream = createEventStream("other " + context + "\n")) {
+      InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
+          eventStream::read);
+      Assertions.assertEquals(message + context, e.getMessage());
+      Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
+    }
+  }
+
+  private static Stream<Arguments> invalidValues() {
+    return Stream.of(
+        Arguments.of("wc=ic=-1", "Negative values are not allowed: "),
+        Arguments.of("wc=ic=NaN", "Values must be finite: "),
+        Arguments.of("wc=ic=Infinity", "Values must be finite: "));
   }
 
   @ParameterizedTest

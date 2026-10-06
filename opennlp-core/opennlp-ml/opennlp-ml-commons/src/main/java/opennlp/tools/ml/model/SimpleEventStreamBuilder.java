@@ -18,6 +18,7 @@
 package opennlp.tools.ml.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
@@ -34,9 +35,9 @@ public class SimpleEventStreamBuilder {
   private static final String FORMAT_ERROR = "format error of the event \"%s\"";
   private static final String NOT_NAME_VALUE = FORMAT_ERROR + ". \"%s\" is not name;value";
   private static final String NOT_A_NUMBER = FORMAT_ERROR + ". \"%s\" is not a number";
+  private static final String INVALID_VALUE = FORMAT_ERROR + ". %s";
 
   private final List<Event> eventList = new ArrayList<>();
-  private int pos = 0;
 
   /**
    * Adds one event. The outcome runs up to the first {@code /}; the contexts follow it, separated
@@ -84,11 +85,10 @@ public class SimpleEventStreamBuilder {
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(String.format(NOT_A_NUMBER, event, value), e);
         }
-        if (!Float.isFinite(values[i])) {
-          throw new IllegalArgumentException(EventFields.NON_FINITE_VALUE + pair);
-        }
-        if (values[i] < 0) {
-          throw new IllegalArgumentException(EventFields.NEGATIVE_VALUE + pair);
+        try {
+          EventFields.requireValidValue(values[i], pair);
+        } catch (IllegalArgumentException e) {
+          throw new IllegalArgumentException(String.format(INVALID_VALUE, event, e.getMessage()), e);
         }
       }
       eventList.add(new Event(outcome, context, values));
@@ -100,15 +100,14 @@ public class SimpleEventStreamBuilder {
   }
 
   /**
+   * Returns a stream over the events added so far. Each call returns a new stream that starts
+   * at the first event, and events added later do not appear in it.
+   *
    * @return An {@link ObjectStream} over the added events, in insertion order. The stream
    *         does not support {@link ObjectStream#reset()}.
    */
   public ObjectStream<Event> build() {
-    return () -> {
-      if (eventList.size() <= pos) {
-        return null;
-      }
-      return eventList.get(pos++);
-    };
+    final Iterator<Event> events = List.copyOf(eventList).iterator();
+    return () -> events.hasNext() ? events.next() : null;
   }
 }

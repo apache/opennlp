@@ -20,7 +20,6 @@ package opennlp.tools.ml.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,13 +91,19 @@ public class RealValueFileEventStream extends FileEventStream {
    * Parses the specified {@code contexts} and re-populates context array with features
    * and returns the values for these features. If all values are unspecified,
    * then {@code null} is returned.
+   * <p>
+   * The value follows the last {@code =} of a context. A context without such a value, or
+   * whose text after the last {@code =} is not a number, is kept whole with the value
+   * {@code 1}; a value that is not a number is logged as an error.
    *
-   * @param contexts The contexts with real values specified.
+   * @param contexts The contexts with real values specified. Must not be {@code null}.
    * @return The value for each context or {@code null} if all values are unspecified.
    *
-   * @throws IllegalArgumentException Thrown if a value is negative, NaN or infinite.
+   * @throws IllegalArgumentException Thrown if {@code contexts} is {@code null} or a value is
+   *         negative, NaN or infinite.
    */
   public static float[] parseContexts(String[] contexts) {
+    ParamChecks.requireNonNullArg(contexts, "contexts");
     boolean hasRealValue = false;
     float[] values = new float[contexts.length];
     for (int ci = 0; ci < contexts.length; ci++) {
@@ -113,12 +118,7 @@ public class RealValueFileEventStream extends FileEventStream {
           values[ci] = 1;
         }
         if (gotReal) {
-          if (!Float.isFinite(values[ci])) {
-            throw new IllegalArgumentException(EventFields.NON_FINITE_VALUE + contexts[ci]);
-          }
-          if (values[ci] < 0) {
-            throw new IllegalArgumentException(EventFields.NEGATIVE_VALUE + contexts[ci]);
-          }
+          EventFields.requireValidValue(values[ci], contexts[ci]);
           contexts[ci] = contexts[ci].substring(0, ei);
           hasRealValue = true;
         }
@@ -136,7 +136,8 @@ public class RealValueFileEventStream extends FileEventStream {
    * Parses one real-valued event line. Fields are separated by runs of space, tab,
    * carriage return, line feed and form feed, as in {@link FileEventStream}. The first
    * field is the outcome and the remaining fields are contexts, whose values are parsed
-   * by {@link #parseContexts(String[])}.
+   * by {@link #parseContexts(String[])}. A context whose value is not a number is kept
+   * whole with the value {@code 1}.
    *
    * @param line The event line. Must not be {@code null}.
    * @return The parsed {@link Event}. A line with only an outcome yields an event without
@@ -148,26 +149,27 @@ public class RealValueFileEventStream extends FileEventStream {
    */
   public static Event parseEvent(String line) throws InvalidFormatException {
     ParamChecks.requireNonNullArg(line, "line");
-    String[] fields = EventFields.split(line);
-    if (fields.length == 0) {
-      throw new InvalidFormatException(EventFields.MISSING_OUTCOME + line + "\"");
-    }
-    String[] contexts = Arrays.copyOfRange(fields, 1, fields.length);
-    return new Event(fields[0], contexts, parseContexts(contexts));
+    EventFields.EventLine fields = EventFields.splitLine(line);
+    String[] contexts = fields.contexts();
+    return new Event(fields.outcome(), contexts, parseContexts(contexts));
   }
 
   /**
    * {@inheritDoc}
    *
    * @throws IOException Thrown if there is an error during reading.
-   * @throws InvalidFormatException Thrown if a line is empty or contains only separators.
-   * @throws IllegalArgumentException Thrown if a value is negative, NaN or infinite.
+   * @throws InvalidFormatException Thrown if a line is empty or contains only separators, or
+   *         if a value is negative, NaN or infinite.
    */
   @Override
   public Event read() throws IOException {
     String line;
     if ((line = reader.readLine()) != null) {
-      return parseEvent(line);
+      try {
+        return parseEvent(line);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidFormatException(e.getMessage(), e);
+      }
     }
 
     return null;

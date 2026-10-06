@@ -24,10 +24,11 @@ public interface ContextGenerator<T> {
 
   /**
    * Builds up the list of contextual predicates given an {@link T object}.
+   * Implementations should throw an {@link IllegalArgumentException} if {@code o} is
+   * {@code null}.
    *
    * @param o The {@link T object} used as input.
    * @return The contextual predicates of {@code o}, in order.
-   * @throws IllegalArgumentException Thrown if {@code o} is {@code null}.
    */
   String[] getContext(T o);
 

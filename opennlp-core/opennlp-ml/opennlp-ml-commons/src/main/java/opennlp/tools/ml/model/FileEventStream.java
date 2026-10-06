@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
@@ -105,11 +104,8 @@ public class FileEventStream implements ObjectStream<Event> {
   public Event read() throws IOException {
     String line;
     if ((line = reader.readLine()) != null) {
-      String[] fields = EventFields.split(line);
-      if (fields.length == 0) {
-        throw new InvalidFormatException(EventFields.MISSING_OUTCOME + line + "\"");
-      }
-      return new Event(fields[0], Arrays.copyOfRange(fields, 1, fields.length));
+      EventFields.EventLine fields = EventFields.splitLine(line);
+      return new Event(fields.outcome(), fields.contexts());
     }
     else {
       return null;

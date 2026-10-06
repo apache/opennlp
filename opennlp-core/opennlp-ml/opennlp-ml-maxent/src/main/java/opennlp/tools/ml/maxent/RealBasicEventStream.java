@@ -23,6 +23,7 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Class for real-valued {@link Event events} as an
@@ -38,18 +39,18 @@ public class RealBasicEventStream implements ObjectStream<Event> {
   /**
    * Instantiates a {@link RealBasicEventStream} over a stream of event lines.
    *
-   * @param ds The {@link ObjectStream} of lines, one event per line.
+   * @param ds The {@link ObjectStream} of lines, one event per line. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code ds} is {@code null}.
    */
   public RealBasicEventStream(ObjectStream<String> ds) {
-    this.ds = ds;
+    this.ds = ParamChecks.requireNonNullArg(ds, "ds");
   }
 
   /**
    * {@inheritDoc}
    * <p>
-   * Each line is parsed by {@link RealValueFileEventStream#parseEvent(String)}. Since 3.0, a line
-   * with only an outcome is an event without contexts; earlier versions ended the stream at
-   * such a line.
+   * Each line is parsed by {@link RealValueFileEventStream#parseEvent(String)}. A line with only
+   * an outcome yields an event without contexts.
    *
    * @throws IOException Thrown if there is an error during reading.
    * @throws InvalidFormatException Thrown if a line is blank.
