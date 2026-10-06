@@ -74,14 +74,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private static final Map<String, String> HAREM;
 
   private static final String NER_PREFIX = "NER:";
-  private static final String HYPHEN = "-";
   private static final char HYPHEN_CHAR = '-';
   private static final char[] UNDERSCORE_SEPARATOR = {'_'};
   private static final char TAG_OPEN = '<';
   private static final char TAG_CLOSE = '>';
   private static final String LITERARY_PREFIX = "LIT";
   private static final String SCIENTIFIC_PREFIX = "CIE";
-  private static final String INVALID_METADATA = "Invalid metadata: ";
 
   static {
     Map<String, String> harem = new HashMap<>();
@@ -358,12 +356,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
 
     // lets split all hyphens
-    if (this.splitHyphenatedTokens && tok.contains(HYPHEN) && tok.length() > 1) {
+    if (this.splitHyphenatedTokens && tok.indexOf(HYPHEN_CHAR) != -1 && tok.length() > 1) {
       String[] parts = matchHyphenatedToken(tok);
 
       if (parts != null) {
         addIfNotEmpty(parts[0], out);
-        addIfNotEmpty(HYPHEN, out);
+        addIfNotEmpty(String.valueOf(HYPHEN_CHAR), out);
         addIfNotEmpty(parts[1], out);
         addIfNotEmpty(parts[2], out);
         tokAdded = true;
@@ -535,11 +533,11 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * Reads the id of the text a sentence belongs to; adaptive data is cleared when it changes. In
    * the Amazonia corpus it is the text id of the metadata. In the literary and scientific corpora
    * the text is named by its reference prefix or its source attribute instead, and the id counts
-   * the distinct names seen so far, so it changes when a new text starts (OPENNLP-1951).
+   * the distinct names seen so far, so it changes when a new text starts.
    *
    * @param paragraph The sentence.
    * @return The id.
-   * @throws RuntimeException If the metadata has no id or one that does not fit into an
+   * @throws RuntimeException Thrown if the metadata has no id or one that does not fit into an
    *                          {@code int}.
    */
   private int getTextID(Sentence paragraph) {
@@ -548,7 +546,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     if (literary || meta.startsWith(SCIENTIFIC_PREFIX)) {
       String textName = literary ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
       if (textName == null) {
-        throw new RuntimeException(INVALID_METADATA + meta);
+        throw new RuntimeException(ADMetadata.INVALID_METADATA + meta);
       }
       if (textName.isEmpty()) {
         return -1;
@@ -559,11 +557,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       }
       return textIdMeta2;
     }
-    ADMetadata.TextAndParagraph ids = ADMetadata.parseTextAndParagraph(meta);
-    if (ids == null) {
-      throw new RuntimeException(INVALID_METADATA + meta);
-    }
-    return ids.text();
+    return ADMetadata.requireTextAndParagraph(meta).text();
   }
 
 }

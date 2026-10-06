@@ -158,8 +158,6 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
   /**
    * Merges the word lines of each multiword token range into the range line and removes them.
-   * Stops at the first missing id before allocating further entries in a range. A long
-   * cursor permits an inclusive range ending at the largest integer without wrapping.
    *
    * @param lines The word lines of one sentence.
    * @return The lines with each range merged.
@@ -181,6 +179,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       if (line.getId().indexOf(MULTIWORD_SEPARATOR) != -1) {
         List<String> expandedContractions = new ArrayList<>();
         MultiwordRange range = parseContractionRange(line.getId());
+        // a long cursor lets an inclusive range end at the largest int without wrapping
         for (long j = range.start(); j <= range.end(); j++) {
           String js = Long.toString(j);
           if (!index.containsKey(js)) {
