@@ -89,6 +89,9 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   private static final char DOT = '.';
   private static final char COMMA = ',';
   private static final char UNDERSCORE = '_';
+  private static final char PLUS_SIGN = '+';
+  private static final char MINUS_SIGN = '-';
+  private static final char PERCENT_SIGN = '%';
 
   /** The correction mode. */
   public enum Mode {
@@ -518,18 +521,17 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   /**
    * {@return whether {@code core} looks like a number: an optional sign, then digits with
    * optional grouping or decimal marks containing at least one ASCII digit, then an optional
-   * trailing percent sign} Package private so the differential test can drive the
-   * classification directly.
+   * trailing percent sign} Package private for testing.
    *
    * @param core The token to classify; never null.
    */
   boolean isNumberLike(String core) {
     int start = 0;
-    if (start < core.length() && (core.charAt(start) == '+' || core.charAt(start) == '-')) {
+    if (start < core.length() && (core.charAt(start) == PLUS_SIGN || core.charAt(start) == MINUS_SIGN)) {
       start++;
     }
     int end = core.length();
-    if (end > start && core.charAt(end - 1) == '%') {
+    if (end > start && core.charAt(end - 1) == PERCENT_SIGN) {
       end--;
     }
     if (start >= end) {

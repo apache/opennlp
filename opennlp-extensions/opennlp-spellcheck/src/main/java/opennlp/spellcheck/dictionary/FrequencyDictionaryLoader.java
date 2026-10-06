@@ -46,7 +46,8 @@ import opennlp.tools.util.StringUtil;
  *
  * <p>Columns are separated by one or more TAB or space characters, so the space-delimited
  * SymSpell reference dictionaries load as they are, as do TAB-delimited files. The count
- * column holds decimal digits in any script, such as ASCII or Devanagari digits.</p>
+ * column holds decimal digits in any script, such as ASCII or Devanagari digits. Columns
+ * after the count are ignored.</p>
  *
  * <p>The loader is encoding-aware (UTF-8 by default) and tolerant of input noise: a
  * leading UTF-8 byte-order mark is stripped; blank lines, lines that are entirely
