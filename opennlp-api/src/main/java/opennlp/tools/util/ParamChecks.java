@@ -101,8 +101,9 @@ public final class ParamChecks {
   /**
    * Returns {@code value} if it is neither {@code null} nor blank.
    * <p>
-   * A string is blank if it is empty or contains only white space as defined by
-   * {@link String#isBlank()}. The message of a thrown exception is
+   * A string is blank if it is empty or contains only Unicode {@code White_Space} code points,
+   * as defined by {@link StringUtil#isUnicodeBlank(CharSequence)}. The message of a thrown
+   * exception is
    * {@code "<name> must not be null or blank"}.
    *
    * @param value The argument to check.
@@ -111,7 +112,7 @@ public final class ParamChecks {
    * @throws IllegalArgumentException Thrown if {@code value} is {@code null} or blank.
    */
   public static String requireNonBlank(String value, String name) {
-    if (value == null || value.isBlank()) {
+    if (StringUtil.isUnicodeBlank(value)) {
       throw new IllegalArgumentException(name + NOT_BLANK_SUFFIX);
     }
     return value;

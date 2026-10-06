@@ -107,7 +107,7 @@ public class ParamChecksTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"text", " a ", "😀", "\u00A0"})
+  @ValueSource(strings = {"text", " a ", "😀", "\u001C"})
   void testNonBlankStringIsReturnedUnchanged(String value) {
     assertSame(value, ParamChecks.requireNonBlank(value, "name"));
   }
@@ -120,7 +120,7 @@ public class ParamChecksTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", " ", "\t", " \n\r "})
+  @ValueSource(strings = {"", " ", "\t", " \n\r ", "\u00A0", "\u2003", "\u3000", "\u0085"})
   void testBlankStringIsRejected(String value) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> ParamChecks.requireNonBlank(value, "language"));
