@@ -244,14 +244,14 @@ public class SpellCheckingCharSequenceNormalizerTest {
   @ParameterizedTest
   @ValueSource(strings = {"0", "5", "5%", "+3,14%", "-1.5", "1,000.25", ".5", "5.", "+0%"})
   void numberLikeAcceptsSignedDigitsWithMarks(String core) {
-    Assertions.assertTrue(SpellCheckingCharSequenceNormalizer.isNumberLike(core));
+    Assertions.assertTrue(normalizer.isNumberLike(core));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"", "+", "-", "%", "+%", "5%%", "1,2a", "..,,", "a1", "1-2", "%5",
       "+-1"})
   void numberLikeRejectsOtherTokens(String core) {
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike(core));
+    Assertions.assertFalse(normalizer.isNumberLike(core));
   }
 
   @Test
@@ -268,7 +268,7 @@ public class SpellCheckingCharSequenceNormalizerTest {
       }
       final String core = token.toString();
       Assertions.assertEquals(reference.matcher(core).matches(),
-          SpellCheckingCharSequenceNormalizer.isNumberLike(core),
+          normalizer.isNumberLike(core),
           () -> "core: " + core);
     }
   }

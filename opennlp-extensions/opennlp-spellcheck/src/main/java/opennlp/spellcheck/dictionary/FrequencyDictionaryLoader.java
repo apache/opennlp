@@ -148,7 +148,7 @@ public final class FrequencyDictionaryLoader {
   long parseUnigrams(InputStreamFactory factory, Map<String, Long> into) throws IOException {
     Objects.requireNonNull(into, "into must not be null");
     return readUnigrams(factory,
-        (word, count) -> into.merge(word, count, FrequencyDictionaryLoader::saturatedAdd));
+        (word, count) -> into.merge(word, count, this::saturatedAdd));
   }
 
   /**
@@ -164,7 +164,7 @@ public final class FrequencyDictionaryLoader {
   long parseBigrams(InputStreamFactory factory, Map<String, Long> into) throws IOException {
     Objects.requireNonNull(into, "into must not be null");
     return readBigrams(factory,
-        (w1, w2, count) -> into.merge(w1 + " " + w2, count, FrequencyDictionaryLoader::saturatedAdd));
+        (w1, w2, count) -> into.merge(w1 + " " + w2, count, this::saturatedAdd));
   }
 
   private long readUnigrams(InputStreamFactory factory, UnigramSink sink) throws IOException {
@@ -222,7 +222,7 @@ public final class FrequencyDictionaryLoader {
    * @param line The line without its byte-order mark. Must not be {@code null}.
    * @return {@code true} if the line is to be skipped.
    */
-  private static boolean isSkippable(String line) {
+  private boolean isSkippable(String line) {
     if (line.isBlank()) {
       return true;
     }
@@ -240,7 +240,7 @@ public final class FrequencyDictionaryLoader {
    * @throws MalformedDictionaryLineException Thrown if the column is not digits only, is a
    *         negative number, or does not fit in a {@code long}.
    */
-  private static long parseCount(String raw, long lineNo, String line) throws IOException {
+  private long parseCount(String raw, long lineNo, String line) throws IOException {
     final boolean negative = raw.charAt(0) == MINUS_SIGN;
     int i = negative ? 1 : 0;
     if (i == raw.length()) {
@@ -274,7 +274,7 @@ public final class FrequencyDictionaryLoader {
    * @param b The second count.
    * @return The sum, or {@link Long#MAX_VALUE} if the sum does not fit in a {@code long}.
    */
-  private static long saturatedAdd(long a, long b) {
+  private long saturatedAdd(long a, long b) {
     final long sum = a + b;
     if (((a ^ sum) & (b ^ sum)) < 0) {
       return Long.MAX_VALUE;

@@ -374,7 +374,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    *
    * @param token The token to scan; never null.
    */
-  private static int leadingNonWordLength(String token) {
+  private int leadingNonWordLength(String token) {
     int i = 0;
     while (i < token.length()) {
       final int codePoint = token.codePointAt(i);
@@ -393,7 +393,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @param token The token to scan; never null.
    * @param from  The index the backward scan must not cross.
    */
-  private static int trailingNonWordLength(String token, int from) {
+  private int trailingNonWordLength(String token, int from) {
     int end = token.length();
     while (end > from) {
       final int codePoint = token.codePointBefore(end);
@@ -411,7 +411,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    *
    * @param codePoint The code point to classify.
    */
-  private static boolean isLetterOrNumber(int codePoint) {
+  private boolean isLetterOrNumber(int codePoint) {
     if (Character.isLetter(codePoint)) {
       return true;
     }
@@ -506,7 +506,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    *
    * @param core The token to classify; never null.
    */
-  static boolean isNumberLike(String core) {
+  boolean isNumberLike(String core) {
     int start = 0;
     if (start < core.length() && (core.charAt(start) == PLUS_SIGN || core.charAt(start) == MINUS_SIGN)) {
       start++;
