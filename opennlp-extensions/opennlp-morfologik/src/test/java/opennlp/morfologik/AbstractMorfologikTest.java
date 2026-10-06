@@ -36,11 +36,13 @@ public abstract class AbstractMorfologikTest {
 
   /**
    * Builds a Morfologik FSA dictionary from the {@code .txt} and {@code .info} test
-   * resources sharing the given base name.
+   * resources sharing the given base name. The column separator is read from the
+   * {@code .info} resource.
    *
-   * @param resourceBaseName The base name of the tab separated dictionary resource pair.
+   * @param resourceBaseName The base name of the dictionary resource pair.
    *
    * @return The {@link Path} of the built FSA dictionary.
+   * @throws Exception Thrown if the resources cannot be copied or the dictionary cannot be built.
    */
   protected static Path createMorfologikDictionary(String resourceBaseName) throws Exception {
     Path tabFilePath = File.createTempFile(AbstractMorfologikTest.class.getName(), ".txt").toPath();

@@ -56,7 +56,8 @@ public class MorfologikTagDictionary implements TagDictionary {
    * Initializes a {@link MorfologikTagDictionary}
    *
    * @param dict A Morfologik FSA {@link Dictionary}.
-   * @param caseSensitive If {@code true} it performs case-sensitive lookup
+   * @param caseSensitive If {@code true} it performs case-sensitive lookup, otherwise
+   *                      words are lower-cased with {@link Locale#ROOT} before lookup.
    * @throws IllegalArgumentException Thrown if FSA's root node cannot be acquired
    *                                  (dictionary is empty).
    */
