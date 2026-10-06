@@ -39,8 +39,12 @@ import opennlp.tools.util.normalizer.CodePoints.At;
  */
 public final class CharClass {
 
+  private static final int SPACE = 0x0020;
+  private static final int CARRIAGE_RETURN = 0x000D;
+  private static final int LINE_FEED = 0x000A;
+
   private static final CharClass WHITESPACE =
-      new CharClass(CodePointSet.of(UnicodeWhitespace.codePoints()), 0x0020);
+      new CharClass(CodePointSet.of(UnicodeWhitespace.codePoints()), SPACE);
   private static final CharClass DASHES =
       new CharClass(CodePointSet.of(UnicodeDash.defaultDashCodePoints()), UnicodeDash.HYPHEN_MINUS);
 
@@ -244,30 +248,7 @@ public final class CharClass {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(keep, "keep");
     requireValidCodePoint(keepReplacement);
-    final StringBuilder out = new StringBuilder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final At cp = CodePoints.at(text, i);
-      if (members.contains(cp.codePoint())) {
-        boolean preserve = keep.contains(cp.codePoint());
-        int j = cp.nextIndex(i);
-        while (j < length) {
-          final At next = CodePoints.at(text, j);
-          if (!members.contains(next.codePoint())) {
-            break;
-          }
-          preserve |= keep.contains(next.codePoint());
-          j = next.nextIndex(j);
-        }
-        out.appendCodePoint(preserve ? keepReplacement : replacement);
-        i = j;
-      } else {
-        out.appendCodePoint(cp.codePoint());
-        i = cp.nextIndex(i);
-      }
-    }
-    return out.toString();
+    return collapseRuns(text, preservingReplacement(text, keep, keepReplacement), null);
   }
 
   /**
@@ -366,24 +347,7 @@ public final class CharClass {
    */
   public AlignedText collapseAligned(CharSequence text) {
     ParamChecks.requireNonNullArg(text, "text");
-    final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final At cp = CodePoints.at(text, i);
-      if (members.contains(cp.codePoint())) {
-        final int runEnd = skipRun(text, i);
-        out.appendCodePoint(replacement);
-        alignment.replace(runEnd - i, Character.charCount(replacement));
-        i = runEnd;
-      } else {
-        out.appendCodePoint(cp.codePoint());
-        alignment.equal(cp.charCount());
-        i = cp.nextIndex(i);
-      }
-    }
-    return new AlignedText(text, out.toString(), alignment.build(length));
+    return collapseRunsAligned(text, (runStart, runEnd) -> replacement);
   }
 
   /**
@@ -402,34 +366,7 @@ public final class CharClass {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(keep, "keep");
     requireValidCodePoint(keepReplacement);
-    final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final At cp = CodePoints.at(text, i);
-      if (members.contains(cp.codePoint())) {
-        boolean preserve = keep.contains(cp.codePoint());
-        int j = cp.nextIndex(i);
-        while (j < length) {
-          final At next = CodePoints.at(text, j);
-          if (!members.contains(next.codePoint())) {
-            break;
-          }
-          preserve |= keep.contains(next.codePoint());
-          j = next.nextIndex(j);
-        }
-        final int emitted = preserve ? keepReplacement : replacement;
-        out.appendCodePoint(emitted);
-        alignment.replace(j - i, Character.charCount(emitted));
-        i = j;
-      } else {
-        out.appendCodePoint(cp.codePoint());
-        alignment.equal(cp.charCount());
-        i = cp.nextIndex(i);
-      }
-    }
-    return new AlignedText(text, out.toString(), alignment.build(length));
+    return collapseRunsAligned(text, preservingReplacement(text, keep, keepReplacement));
   }
 
   /**
@@ -452,30 +389,7 @@ public final class CharClass {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(lineBreaks, "lineBreaks");
     requireValidCodePoint(paragraphReplacement);
-    final StringBuilder out = new StringBuilder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final At cp = CodePoints.at(text, i);
-      if (members.contains(cp.codePoint())) {
-        int j = cp.nextIndex(i);
-        while (j < length) {
-          final At next = CodePoints.at(text, j);
-          if (!members.contains(next.codePoint())) {
-            break;
-          }
-          j = next.nextIndex(j);
-        }
-        final int emitted = countLogicalLineBreaks(text, i, j, lineBreaks) >= 2
-            ? paragraphReplacement : replacement;
-        out.appendCodePoint(emitted);
-        i = j;
-      } else {
-        out.appendCodePoint(cp.codePoint());
-        i = cp.nextIndex(i);
-      }
-    }
-    return out.toString();
+    return collapseRuns(text, paragraphReplacement(text, lineBreaks, paragraphReplacement), null);
   }
 
   /**
@@ -494,33 +408,7 @@ public final class CharClass {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(lineBreaks, "lineBreaks");
     requireValidCodePoint(paragraphReplacement);
-    final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final At cp = CodePoints.at(text, i);
-      if (members.contains(cp.codePoint())) {
-        int j = cp.nextIndex(i);
-        while (j < length) {
-          final At next = CodePoints.at(text, j);
-          if (!members.contains(next.codePoint())) {
-            break;
-          }
-          j = next.nextIndex(j);
-        }
-        final int emitted = countLogicalLineBreaks(text, i, j, lineBreaks) >= 2
-            ? paragraphReplacement : replacement;
-        out.appendCodePoint(emitted);
-        alignment.replace(j - i, Character.charCount(emitted));
-        i = j;
-      } else {
-        out.appendCodePoint(cp.codePoint());
-        alignment.equal(cp.charCount());
-        i = cp.nextIndex(i);
-      }
-    }
-    return new AlignedText(text, out.toString(), alignment.build(length));
+    return collapseRunsAligned(text, paragraphReplacement(text, lineBreaks, paragraphReplacement));
   }
 
   /**
@@ -690,6 +578,112 @@ public final class CharClass {
     return length;
   }
 
+  /** Chooses the code point that replaces one maximal run of member code points. */
+  @FunctionalInterface
+  private interface RunReplacement {
+
+    /**
+     * Returns the replacement for one member run.
+     *
+     * @param runStart The index where the member run starts.
+     * @param runEnd The index of the first code point after the run.
+     * @return The code point to emit for the run.
+     */
+    int replacementFor(int runStart, int runEnd);
+  }
+
+  /**
+   * Collapses each maximal run of member code points to the code point chosen by
+   * {@code runReplacement} and copies every other code point.
+   *
+   * @param text The text to collapse.
+   * @param runReplacement Chooses the replacement for each run.
+   * @param alignment Receives the edits of the pass, or {@code null} if no alignment is needed.
+   * @return The collapsed text.
+   */
+  private String collapseRuns(CharSequence text, RunReplacement runReplacement,
+                              Alignment.Builder alignment) {
+    final StringBuilder out = new StringBuilder(text.length());
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
+        final int runEnd = skipRun(text, i);
+        final int emitted = runReplacement.replacementFor(i, runEnd);
+        out.appendCodePoint(emitted);
+        if (alignment != null) {
+          alignment.replace(runEnd - i, Character.charCount(emitted));
+        }
+        i = runEnd;
+      } else {
+        out.appendCodePoint(cp.codePoint());
+        if (alignment != null) {
+          alignment.equal(cp.charCount());
+        }
+        i = cp.nextIndex(i);
+      }
+    }
+    return out.toString();
+  }
+
+  /**
+   * Collapses runs like {@link #collapseRuns(CharSequence, RunReplacement, Alignment.Builder)}
+   * and pairs the result with its {@link Alignment} back to {@code text}.
+   *
+   * @param text The text to collapse.
+   * @param runReplacement Chooses the replacement for each run.
+   * @return The collapsed text and its alignment.
+   */
+  private AlignedText collapseRunsAligned(CharSequence text, RunReplacement runReplacement) {
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
+    final String collapsed = collapseRuns(text, runReplacement, alignment);
+    return new AlignedText(text, collapsed, alignment.build(text.length()));
+  }
+
+  /**
+   * Returns the run replacement of the {@code collapsePreserving} operations:
+   * {@code keepReplacement} for a run that contains a {@code keep} code point, the usual
+   * replacement otherwise.
+   */
+  private RunReplacement preservingReplacement(CharSequence text, CodePointSet keep,
+                                               int keepReplacement) {
+    return (runStart, runEnd) -> containsAny(text, runStart, runEnd, keep)
+        ? keepReplacement : replacement;
+  }
+
+  /**
+   * Returns the run replacement of the {@code collapseParagraphPreserving} operations:
+   * {@code paragraphReplacement} for a run with two or more logical line breaks, the usual
+   * replacement otherwise.
+   */
+  private RunReplacement paragraphReplacement(CharSequence text, CodePointSet lineBreaks,
+                                              int paragraphReplacement) {
+    return (runStart, runEnd) -> countLogicalLineBreaks(text, runStart, runEnd, lineBreaks) >= 2
+        ? paragraphReplacement : replacement;
+  }
+
+  /**
+   * Tests whether a code point of {@code set} occurs in a range of {@code text}.
+   *
+   * @param text The text to scan.
+   * @param from The index where the range starts.
+   * @param to The index where the range ends, exclusive.
+   * @param set The code points to look for.
+   * @return {@code true} if any code point in the range is in {@code set}.
+   */
+  private static boolean containsAny(CharSequence text, int from, int to, CodePointSet set) {
+    int i = from;
+    while (i < to) {
+      final At cp = CodePoints.at(text, i);
+      if (set.contains(cp.codePoint())) {
+        return true;
+      }
+      i = cp.nextIndex(i);
+    }
+    return false;
+  }
+
   /**
    * Advances past a run of member code points.
    *
@@ -728,9 +722,9 @@ public final class CharClass {
     while (k < runEnd) {
       final At cp = CodePoints.at(text, k);
       if (lineBreaks.contains(cp.codePoint())) {
-        if (cp.codePoint() == 0x000D) {
+        if (cp.codePoint() == CARRIAGE_RETURN) {
           final int next = cp.nextIndex(k);
-          if (next < runEnd && CodePoints.at(text, next).codePoint() == 0x000A) {
+          if (next < runEnd && CodePoints.at(text, next).codePoint() == LINE_FEED) {
             k = CodePoints.at(text, next).nextIndex(next);
           } else {
             k = next;

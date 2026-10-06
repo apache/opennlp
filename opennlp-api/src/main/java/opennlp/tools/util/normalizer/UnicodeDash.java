@@ -80,7 +80,7 @@ public final class UnicodeDash {
 
     /** {@return the {@code U+XXXX} notation for this code point} */
     public String toUnicodeNotation() {
-      return String.format("U+%04X", codePoint);
+      return HexCodePoints.toUnicodeNotation(codePoint);
     }
   }
 
@@ -117,25 +117,29 @@ public final class UnicodeDash {
       new DashCharacter(0x10D6E, "garay hyphen", Category.Pd),
       new DashCharacter(0x10EAD, "yezidi hyphenation mark", Category.Pd));
 
-  private static final Map<Integer, DashCharacter> BY_CODE_POINT = new HashMap<>();
+  private static final Map<Integer, DashCharacter> BY_CODE_POINT;
   private static final BitSet MEMBERSHIP = new BitSet();
   private static final int[] CODE_POINTS = new int[DASHES.size()];
-  private static final List<DashCharacter> MATHEMATICAL = new ArrayList<>();
+  private static final List<DashCharacter> MATHEMATICAL;
   private static final int[] DEFAULT_CODE_POINTS;
 
   static {
+    final Map<Integer, DashCharacter> byCodePoint = new HashMap<>();
+    final List<DashCharacter> mathematical = new ArrayList<>();
     final List<Integer> defaults = new ArrayList<>();
     for (int i = 0; i < DASHES.size(); i++) {
       final DashCharacter dash = DASHES.get(i);
-      BY_CODE_POINT.put(dash.codePoint(), dash);
+      byCodePoint.put(dash.codePoint(), dash);
       MEMBERSHIP.set(dash.codePoint());
       CODE_POINTS[i] = dash.codePoint();
       if (dash.isMathematical()) {
-        MATHEMATICAL.add(dash);
+        mathematical.add(dash);
       } else {
         defaults.add(dash.codePoint());
       }
     }
+    BY_CODE_POINT = Map.copyOf(byCodePoint);
+    MATHEMATICAL = List.copyOf(mathematical);
     DEFAULT_CODE_POINTS = defaults.stream().mapToInt(Integer::intValue).toArray();
   }
 
@@ -169,7 +173,7 @@ public final class UnicodeDash {
 
   /** {@return the mathematical minus signs, excluded from the default normalization set} */
   public static List<DashCharacter> mathematical() {
-    return List.copyOf(MATHEMATICAL);
+    return MATHEMATICAL;
   }
 
   /** {@return all dash code points, in ascending order, including the mathematical minus signs} */

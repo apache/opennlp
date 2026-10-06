@@ -80,7 +80,7 @@ public final class MecabDictionary {
 
   private static final String MATRIX_DEF = "matrix.def";
   static final String CHAR_DEF = "char.def";
-  private static final String UNK_DEF = "unk.def";
+  static final String UNK_DEF = "unk.def";
 
   /**
    * Maximum category count accepted by MeCab's
@@ -217,9 +217,7 @@ public final class MecabDictionary {
     // The connection matrix is read first because its dimensions are what every
     // lexicon entry's context ids have to be inside of.
     final Path matrixFile = directory.resolve(MATRIX_DEF);
-    if (!Files.exists(matrixFile)) {
-      throw new IOException("required dictionary file is missing: " + matrixFile);
-    }
+    requireFile(matrixFile);
     final int leftSize;
     final int rightSize;
     final short[] costs;
@@ -356,9 +354,7 @@ public final class MecabDictionary {
   private static void readLexicon(Path file, Charset charset,
       Map<String, List<WordEntry>> target, int leftSize, int rightSize, int[] entryCount)
       throws IOException {
-    if (!Files.exists(file)) {
-      throw new IOException("required dictionary file is missing: " + file);
-    }
+    requireFile(file);
     int lineNumber = 0;
     try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
       String line;
@@ -420,9 +416,7 @@ public final class MecabDictionary {
   private static void readCharacterDefinition(Path file, Charset charset,
       Map<String, Category> categories, CategoryTable.Builder categoryTable)
       throws IOException {
-    if (!Files.exists(file)) {
-      throw new IOException("required dictionary file is missing: " + file);
-    }
+    requireFile(file);
     int lineNumber = 0;
     try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
       String raw;
@@ -560,6 +554,18 @@ public final class MecabDictionary {
    */
   private static boolean isFlag(String field) {
     return FLAG_ON.equals(field) || FLAG_OFF.equals(field);
+  }
+
+  /**
+   * Checks that a required dictionary file exists.
+   *
+   * @param file The file to check.
+   * @throws IOException Thrown if {@code file} does not exist.
+   */
+  private static void requireFile(Path file) throws IOException {
+    if (!Files.exists(file)) {
+      throw new IOException("required dictionary file is missing: " + file);
+    }
   }
 
   /**

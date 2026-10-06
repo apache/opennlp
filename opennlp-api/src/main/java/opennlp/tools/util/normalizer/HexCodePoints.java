@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.Locale;
+
 import opennlp.tools.commons.Internal;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
@@ -179,6 +181,16 @@ public final class HexCodePoints {
       throw new IllegalArgumentException("Descending code point range: " + hex);
     }
     return new int[] {first, last};
+  }
+
+  /**
+   * Formats a code point in {@code U+XXXX} notation, with at least four upper case hex digits.
+   *
+   * @param codePoint The code point to format.
+   * @return The notation, for example {@code U+00A0}.
+   */
+  static String toUnicodeNotation(int codePoint) {
+    return String.format(Locale.ROOT, "U+%04X", codePoint);
   }
 
   /**

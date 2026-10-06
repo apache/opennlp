@@ -149,6 +149,22 @@ public class CodePointSetTest {
   }
 
   @Test
+  void testParseTrimsUnicodeWhitespace() {
+    final String nbsp = Character.toString(0x00A0);
+    final List<String> lines = List.of(nbsp + "[ s ]" + nbsp, nbsp + "U+0041" + nbsp,
+        "U+0042 " + nbsp + "-" + nbsp + " U+0043");
+    final CodePointSet set = CodePointSet.parse(lines, nbsp + "s" + nbsp);
+    assertArrayEquals(new int[] {0x41, 0x42, 0x43}, set.toArray());
+  }
+
+  @Test
+  void testParseKeepsNonWhitespaceControls() {
+    final String separator = Character.toString(0x001C);
+    assertThrows(IllegalArgumentException.class,
+        () -> CodePointSet.parse(List.of("[s]", separator + "U+0041"), "s"));
+  }
+
+  @Test
   void testParseRejectsTooShortSectionHeader() {
     assertThrows(IllegalArgumentException.class,
         () -> CodePointSet.parse(List.of("[]", "U+0041"), "s"));

@@ -558,6 +558,10 @@ public class DocumentContractTest {
     assertEquals(Set.of(WORDS, lengths), merged.layers());
     assertEquals(1, merged.get(WORDS).size());
 
+    final IllegalArgumentException rejected = assertThrows(IllegalArgumentException.class,
+        () -> words.merge(counted));
+    assertEquals("layer is already present: words<String>", rejected.getMessage());
+
     final Document retokenized = Document.of("the dog")
         .with(WORDS, List.of(new Annotation<>(new Span(0, 7), "the dog")));
     final IllegalArgumentException differing = assertThrows(IllegalArgumentException.class,

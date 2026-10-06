@@ -59,8 +59,6 @@ import opennlp.tools.util.Span;
  */
 public class WordpieceTokenizer implements Tokenizer {
 
-  private static final String CONTINUATION_PREFIX = "##";
-
   /** BERT classification token: {@code [CLS]}. */
   public static final String BERT_CLS_TOKEN = "[CLS]";
   /** BERT separator token: {@code [SEP]}. */
@@ -150,10 +148,11 @@ public class WordpieceTokenizer implements Tokenizer {
       final String unknownToken,
       final int maxTokenLength) {
     this.vocabulary = copyVocabulary(vocabulary);
-    this.classificationToken = requireToken(classificationToken, "classificationToken");
-    this.separatorToken = requireToken(separatorToken, "separatorToken");
-    this.unknownToken = requireToken(unknownToken, "unknownToken");
-    this.maxTokenLength = requireNonNegative(maxTokenLength);
+    this.classificationToken =
+        BertNormalization.requireToken(classificationToken, "classificationToken");
+    this.separatorToken = BertNormalization.requireToken(separatorToken, "separatorToken");
+    this.unknownToken = BertNormalization.requireToken(unknownToken, "unknownToken");
+    this.maxTokenLength = ParamChecks.requireNonNegative(maxTokenLength, "maxTokenLength");
   }
 
   /** Validates and copies a vocabulary. */
@@ -170,24 +169,6 @@ public class WordpieceTokenizer implements Tokenizer {
       copy.add(piece);
     }
     return Set.copyOf(copy);
-  }
-
-  /** Validates a special token. */
-  private String requireToken(String token, String name) {
-    ParamChecks.requireNonNullArg(token, name);
-    if (token.isEmpty()) {
-      throw new IllegalArgumentException(name + " must not be empty");
-    }
-    return token;
-  }
-
-  /** Validates the maximum token length. */
-  private int requireNonNegative(final int maxTokenLength) {
-    if (maxTokenLength < 0) {
-      throw new IllegalArgumentException(
-          "maxTokenLength must be non-negative: " + maxTokenLength);
-    }
-    return maxTokenLength;
   }
 
   /**
@@ -255,7 +236,7 @@ public class WordpieceTokenizer implements Tokenizer {
 
             // This is a substring so prefix it with ##.
             if (start > 0) {
-              substring = CONTINUATION_PREFIX + substring;
+              substring = BertNormalization.CONTINUATION_PREFIX + substring;
             }
 
             // See if the substring is in the vocabulary.

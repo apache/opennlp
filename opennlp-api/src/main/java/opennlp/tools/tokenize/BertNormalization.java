@@ -17,6 +17,8 @@
 
 package opennlp.tools.tokenize;
 
+import opennlp.tools.util.ParamChecks;
+
 /**
  * Character classifications and text transforms of the reference BERT
  * {@code BasicTokenizer}, shared by {@link WordpieceEncoder} and
@@ -27,8 +29,31 @@ final class BertNormalization {
   /** Default maximum word length used by BERT wordpiece tokenizers. */
   static final int DEFAULT_MAX_WORD_CODE_POINTS = 100;
 
+  /**
+   * The wordpiece vocabulary convention: a piece with this prefix continues the current word,
+   * so it can only match after the word's first piece.
+   */
+  static final String CONTINUATION_PREFIX = "##";
+
   private BertNormalization() {
   }
+
+  /**
+   * Validates a special token.
+   *
+   * @param token The token to validate.
+   * @param name The parameter name used in the exception message.
+   * @return The {@code token}.
+   * @throws IllegalArgumentException Thrown if {@code token} is {@code null} or empty.
+   */
+  static String requireToken(String token, String name) {
+    ParamChecks.requireNonNullArg(token, name);
+    if (token.isEmpty()) {
+      throw new IllegalArgumentException(name + " must not be empty");
+    }
+    return token;
+  }
+
 
   /**
    * Surrounds every punctuation character with spaces, so each punctuation
@@ -44,6 +69,35 @@ final class BertNormalization {
       }
     });
     return spaced.toString();
+  }
+
+  /**
+   * Surrounds every punctuation character with spaces that map to an empty range at the
+   * character's start and end, so each punctuation character becomes its own token.
+   *
+   * @param in The mapped text to transform.
+   * @return A new mapping with the isolation spaces inserted.
+   */
+  static MappedText isolatePunctuation(MappedText in) {
+    final MappedText out = new MappedText(in.length + 16);
+    int i = 0;
+    while (i < in.length) {
+      final int codePoint = in.codePointAt(i);
+      final int width = Character.charCount(codePoint);
+      if (isPunctuation(codePoint)) {
+        out.add(' ', in.starts[i], in.starts[i]);
+        for (int c = 0; c < width; c++) {
+          out.add(in.chars[i + c], in.starts[i + c], in.ends[i + c]);
+        }
+        out.add(' ', in.ends[i + width - 1], in.ends[i + width - 1]);
+      } else {
+        for (int c = 0; c < width; c++) {
+          out.add(in.chars[i + c], in.starts[i + c], in.ends[i + c]);
+        }
+      }
+      i += width;
+    }
+    return out;
   }
 
   /**

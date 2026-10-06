@@ -20,8 +20,6 @@ package opennlp.tools.document;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.util.ParamChecks;
-
 /**
  * An offset-anchored annotation container: the original text of one document plus any
  * number of typed annotation layers over it.
@@ -156,32 +154,16 @@ public interface Document {
    *         the policy does not keep it; the exception names the offending key.
    */
   default Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
-    ParamChecks.requireNonNullArg(other, "other");
-    ParamChecks.requireNonNullArg(duplicateLayers, "duplicateLayers");
-    if (!text().toString().contentEquals(other.text())) {
-      throw new IllegalArgumentException(
-          "merge requires both documents to carry the same text");
-    }
+    DocumentMerges.checkMergeable(this, other, duplicateLayers);
     Document merged = this;
     for (final LayerKey<?> layer : other.layers()) {
-      if (duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
-          && merged.layers().contains(layer)) {
-        if (layersEqual(merged, layer, other)) {
-          continue;
-        }
-        throw new IllegalArgumentException(
-            "layer is present on both documents with differing contents: " + layer);
+      if (merged.layers().contains(layer)) {
+        DocumentMerges.checkDuplicateLayer(merged, layer, other, duplicateLayers);
+        continue;
       }
       merged = addLayer(merged, layer, other);
     }
     return merged;
-  }
-
-  /**
-   * @return Whether the two documents carry structurally equal contents for the layer.
-   */
-  private static <T> boolean layersEqual(Document first, LayerKey<T> layer, Document second) {
-    return first.get(layer).equals(second.get(layer));
   }
 
   /**

@@ -203,11 +203,11 @@ public final class UnigramSegmenter implements Tokenizer {
    */
   public static UnigramSegmenter load(InputStream lexiconStream, Charset charset)
       throws IOException {
-    return loadInternal(lexiconStream, charset, ResourceLimits.MAX_ENTRIES);
+    return load(lexiconStream, charset, ResourceLimits.MAX_ENTRIES);
   }
 
   /**
-   * Loads a frequency lexicon under an entry limit.
+   * Loads a frequency lexicon under a caller-supplied entry limit.
    *
    * @param lexiconStream The lexicon content. Must not be {@code null}. Not closed.
    * @param charset The lexicon encoding. Must not be {@code null}.
@@ -216,8 +216,8 @@ public final class UnigramSegmenter implements Tokenizer {
    * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
    * @throws IllegalArgumentException Thrown if a parameter is invalid.
    */
-  private static UnigramSegmenter loadInternal(InputStream lexiconStream, Charset charset,
-      int maxEntries) throws IOException {
+  static UnigramSegmenter load(InputStream lexiconStream, Charset charset, int maxEntries)
+      throws IOException {
     ParamChecks.requireNonNullArg(lexiconStream, "lexiconStream");
     ParamChecks.requireNonNullArg(charset, "charset");
     if (maxEntries < 1) {
@@ -283,21 +283,6 @@ public final class UnigramSegmenter implements Tokenizer {
   }
 
   /**
-   * Loads a frequency lexicon under a caller-supplied entry limit.
-   *
-   * @param lexiconStream The lexicon content. Must not be {@code null}. Not closed.
-   * @param charset The lexicon encoding. Must not be {@code null}.
-   * @param maxEntries The inclusive limit on distinct lexicon entries.
-   * @return The segmenter. Not {@code null}.
-   * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
-   * @throws IllegalArgumentException Thrown if a parameter is invalid.
-   */
-  static UnigramSegmenter load(InputStream lexiconStream, Charset charset, int maxEntries)
-      throws IOException {
-    return loadInternal(lexiconStream, charset, maxEntries);
-  }
-
-  /**
    * {@inheritDoc}
    *
    * <p>Reports the segmented surfaces, whitespace omitted.</p>
@@ -320,19 +305,7 @@ public final class UnigramSegmenter implements Tokenizer {
   public Span[] tokenizePos(String text) {
     ParamChecks.requireNonNullArg(text, "text");
     final List<Span> spans = new ArrayList<>();
-    int start = 0;
-    while (start < text.length()) {
-      if (StringUtil.isWhitespace(text.charAt(start))) {
-        start++;
-        continue;
-      }
-      int end = start;
-      while (end < text.length() && !StringUtil.isWhitespace(text.charAt(end))) {
-        end++;
-      }
-      decode(text, start, end, spans);
-      start = end;
-    }
+    WhitespaceRuns.forEachNonWhitespaceRun(text, (from, to) -> decode(text, from, to, spans));
     return spans.toArray(new Span[0]);
   }
 
