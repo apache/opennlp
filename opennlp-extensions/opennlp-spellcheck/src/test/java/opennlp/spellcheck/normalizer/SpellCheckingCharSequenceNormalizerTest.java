@@ -240,29 +240,24 @@ public class SpellCheckingCharSequenceNormalizerTest {
     assertThrows(IllegalArgumentException.class,
         () -> new SpellCheckingCharSequenceNormalizer((SymSpell) null));
   }
-  private boolean numberLike(String core) {
-    return normalizer.isNumberLike(core);
+
+  @ParameterizedTest
+  @ValueSource(strings = {"0", "5", "5%", "+3,14%", "-1.5", "1,000.25", ".5", "5.", "+0%"})
+  void numberLikeAcceptsSignedDigitsWithMarks(String core) {
+    Assertions.assertTrue(SpellCheckingCharSequenceNormalizer.isNumberLike(core));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "+", "-", "%", "+%", "5%%", "1,2a", "..,,", "a1", "1-2", "%5",
+      "+-1"})
+  void numberLikeRejectsOtherTokens(String core) {
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike(core));
   }
 
   @Test
-  void numberLikeRejectsShapesTheFormerRegexRejected() {
-    // Reject-side pins for the scan structure: at most one trailing percent, a digit required,
-    // no letters, no bare sign.
-    Assertions.assertFalse(numberLike("5%%"));
-    Assertions.assertFalse(numberLike("+%"));
-    Assertions.assertFalse(numberLike("1,2a"));
-    Assertions.assertFalse(numberLike("+"));
-    Assertions.assertFalse(numberLike(""));
-    Assertions.assertFalse(numberLike("%"));
-    Assertions.assertFalse(numberLike("..,,"));
-    Assertions.assertTrue(numberLike("+3,14%"));
-    Assertions.assertTrue(numberLike("5%"));
-  }
-
-  @Test
-  void numberLikeMatchesTheFormerRegexOverGeneratedTokens() {
-    // Differential over the token alphabet of the former "[+-]?[\\d.,]*\\d[\\d.,]*%?" guard.
-    final Pattern former = Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
+  void numberLikeAgreesWithReferencePatternOverGeneratedTokens() {
+    // Reference specification of the number guard, checked over generated tokens.
+    final Pattern reference = Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
     final char[] alphabet = {'+', '-', '%', '.', ',', '0', '5', '9', 'a'};
     final Random random = new Random(42);
     for (int round = 0; round < 20_000; round++) {
@@ -272,8 +267,8 @@ public class SpellCheckingCharSequenceNormalizerTest {
         token.append(alphabet[random.nextInt(alphabet.length)]);
       }
       final String core = token.toString();
-      Assertions.assertEquals(former.matcher(core).matches(),
-          numberLike(core),
+      Assertions.assertEquals(reference.matcher(core).matches(),
+          SpellCheckingCharSequenceNormalizer.isNumberLike(core),
           () -> "core: " + core);
     }
   }
@@ -324,9 +319,8 @@ public class SpellCheckingCharSequenceNormalizerTest {
 
   @Test
   void perTokenTreatsNoBreakSpaceAsTokenBoundary() {
-    // Since 3.0 PER_TOKEN boundaries use the Unicode White_Space set, which includes the
-    // no-break spaces; both sides are corrected and the separator is copied verbatim
-    // (Character.isWhitespace excluded the Zs no-break spaces).
+    // PER_TOKEN boundaries use the Unicode White_Space set, which includes the no-break
+    // spaces; both sides are corrected and the separator is copied verbatim.
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
         .minTokenLength(3).build();
     assertEquals("the" + cp(0x00A0) + "fox",
@@ -337,8 +331,7 @@ public class SpellCheckingCharSequenceNormalizerTest {
 
   @Test
   void perTokenTreatsNextLineControlAsTokenBoundary() {
-    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 it separates
-    // tokens (Character.isWhitespace excludes it).
+    // U+0085 NEL carries the Unicode White_Space property, so it separates tokens.
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
         .minTokenLength(3).build();
     assertEquals("the" + cp(0x0085) + "fox",
@@ -347,10 +340,9 @@ public class SpellCheckingCharSequenceNormalizerTest {
 
   @Test
   void perTokenTreatsInformationSeparatorAsPartOfTheToken() {
-    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
-    // they no longer separate tokens; the joined token has no dictionary entry within
-    // reach and passes through unchanged (Character.isWhitespace treated U+001C as
-    // whitespace and corrected both sides).
+    // The U+001C..U+001F information separators are not Unicode White_Space, so they do
+    // not separate tokens; the joined token has no dictionary entry within reach and
+    // passes through unchanged.
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
         .minTokenLength(3).build();
     String input = "teh" + cp(0x001C) + "fxo";
