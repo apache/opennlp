@@ -26,7 +26,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
@@ -109,6 +115,29 @@ public abstract class AbstractEvalTest {
       throw new FileNotFoundException("The OPENNLP_DATA_DIR path of " + dataDirectory + " was not found.");
     }
     return file;
+  }
+
+  /**
+   * Runs the tasks concurrently on a fixed thread pool and fails if a task fails or the tasks do
+   * not finish in time. The pool is shut down on every path without waiting for hung tasks.
+   *
+   * @param tasks The tasks to run.
+   * @param threads The number of pool threads.
+   * @param timeoutSeconds The time in seconds within which all tasks must finish.
+   * @param <T> The result type of the tasks.
+   * @throws Exception Thrown if a task fails or the calling thread is interrupted.
+   */
+  static <T> void runConcurrently(Collection<? extends Callable<T>> tasks, int threads,
+                                  long timeoutSeconds) throws Exception {
+    final ExecutorService executor = Executors.newFixedThreadPool(threads);
+    try {
+      for (Future<T> future : executor.invokeAll(tasks, timeoutSeconds, TimeUnit.SECONDS)) {
+        Assertions.assertFalse(future.isCancelled(), "concurrent tasks timed out");
+        future.get();
+      }
+    } finally {
+      executor.shutdownNow();
+    }
   }
 
   public TrainingParameters createPerceptronParams() {
