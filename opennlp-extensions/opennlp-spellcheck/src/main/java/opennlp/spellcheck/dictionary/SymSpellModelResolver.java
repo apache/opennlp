@@ -20,7 +20,6 @@ package opennlp.spellcheck.dictionary;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,6 +28,7 @@ import opennlp.tools.models.ClassPathModelEntry;
 import opennlp.tools.models.ClassPathModelFinder;
 import opennlp.tools.models.ClassPathModelLoader;
 import opennlp.tools.models.simple.SimpleClassPathModelFinder;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Resolves packaged {@link SymSpellModel SymSpell models} from the classpath by language.
@@ -75,11 +75,13 @@ public final class SymSpellModelResolver {
    * @param nameFragment a substring that the candidate's {@code model.name} must contain
    *                     to be considered a spellcheck model; must not be {@code null} or
    *                     blank
+   * @throws IllegalArgumentException if {@code finder} or {@code loader} is {@code null},
+   *     or if {@code nameFragment} is {@code null} or blank
    */
   public SymSpellModelResolver(ClassPathModelFinder finder, ClassPathModelLoader loader,
                                String nameFragment) {
-    this.finder = Objects.requireNonNull(finder, "finder must not be null");
-    this.loader = Objects.requireNonNull(loader, "loader must not be null");
+    this.finder = ParamChecks.requireNonNullArg(finder, "finder");
+    this.loader = ParamChecks.requireNonNullArg(loader, "loader");
     if (nameFragment == null || nameFragment.isBlank()) {
       throw new IllegalArgumentException("nameFragment must not be null or blank");
     }

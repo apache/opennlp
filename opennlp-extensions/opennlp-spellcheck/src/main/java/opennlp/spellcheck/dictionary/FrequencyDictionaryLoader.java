@@ -26,6 +26,7 @@ import java.util.Objects;
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.StringUtil;
 
@@ -95,9 +96,10 @@ public final class FrequencyDictionaryLoader {
    *
    * @param charset the character set used to decode the dictionary text; must not be
    *                {@code null}
+   * @throws IllegalArgumentException if {@code charset} is {@code null}
    */
   public FrequencyDictionaryLoader(Charset charset) {
-    this.charset = Objects.requireNonNull(charset, "charset must not be null");
+    this.charset = ParamChecks.requireNonNullArg(charset, "charset");
   }
 
   /**
@@ -108,9 +110,11 @@ public final class FrequencyDictionaryLoader {
    * @return the number of dictionary entries that were read (after skipping blank and
    *     comment lines)
    * @throws IOException Thrown on IO errors or on a malformed line.
+   * @throws IllegalArgumentException if {@code target} or {@code factory} is {@code null}
    */
   public long loadUnigrams(SymSpell target, InputStreamFactory factory) throws IOException {
-    Objects.requireNonNull(target, "target must not be null");
+    ParamChecks.requireNonNullArg(target, "target");
+    ParamChecks.requireNonNullArg(factory, "factory");
     return readUnigrams(factory, target::add);
   }
 
@@ -122,9 +126,11 @@ public final class FrequencyDictionaryLoader {
    * @return the number of bigram entries that were read (after skipping blank and
    *     comment lines)
    * @throws IOException Thrown on IO errors or on a malformed line.
+   * @throws IllegalArgumentException if {@code target} or {@code factory} is {@code null}
    */
   public long loadBigrams(SymSpell target, InputStreamFactory factory) throws IOException {
-    Objects.requireNonNull(target, "target must not be null");
+    ParamChecks.requireNonNullArg(target, "target");
+    ParamChecks.requireNonNullArg(factory, "factory");
     return readBigrams(factory, target::addBigram);
   }
 

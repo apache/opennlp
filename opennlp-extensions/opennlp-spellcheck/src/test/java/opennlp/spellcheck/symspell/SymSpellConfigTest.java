@@ -85,7 +85,7 @@ public class SymSpellConfigTest {
 
   @Test
   void nullEditDistanceIsRejected() {
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> SymSpellConfig.builder().editDistance(null));
   }
 

@@ -137,7 +137,7 @@ public class SymSpellCompoundTest {
 
   @Test
   void nullInputIsRejected() {
-    assertThrows(NullPointerException.class, () -> tiny.lookupCompound(null, 2));
+    assertThrows(IllegalArgumentException.class, () -> tiny.lookupCompound(null, 2));
   }
 
   // ------------------------------------------------------------------

@@ -208,8 +208,18 @@ public class SymSpellLookupTest {
   @Test
   void nullArgumentsAreRejected() {
     final SymSpell s = ascii();
-    assertThrows(NullPointerException.class, () -> s.lookup(null, Verbosity.TOP, 2));
-    assertThrows(NullPointerException.class, () -> s.lookup("bank", null, 2));
+    assertThrows(IllegalArgumentException.class, () -> s.lookup(null, Verbosity.TOP, 2));
+    assertThrows(IllegalArgumentException.class, () -> s.lookup("bank", null, 2));
+    assertThrows(IllegalArgumentException.class, () -> s.lookup(null));
     assertThrows(IllegalArgumentException.class, () -> s.lookup("bank", Verbosity.TOP, -1));
+  }
+
+  @Test
+  void nullBuildArgumentsAreRejected() {
+    assertThrows(IllegalArgumentException.class, () -> new SymSpell(null));
+    final SymSpell s = ascii();
+    assertThrows(IllegalArgumentException.class, () -> s.add(null, 1L));
+    assertThrows(IllegalArgumentException.class, () -> s.addBigram(null, "bank", 1L));
+    assertThrows(IllegalArgumentException.class, () -> s.addBigram("the", null, 1L));
   }
 }

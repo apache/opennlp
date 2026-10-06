@@ -23,13 +23,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.distance.EditDistance;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -93,10 +93,10 @@ public final class SymSpell implements SpellChecker {
    * their defaults.
    *
    * @param config the engine configuration; must not be {@code null}
-   * @throws NullPointerException if {@code config} is {@code null}
+   * @throws IllegalArgumentException if {@code config} is {@code null}
    */
   public SymSpell(SymSpellConfig config) {
-    Objects.requireNonNull(config, "config must not be null");
+    ParamChecks.requireNonNullArg(config, "config");
     this.maxDictionaryEditDistance = config.maxDictionaryEditDistance();
     this.prefixLength = config.prefixLength();
     this.countThreshold = config.countThreshold();
@@ -123,11 +123,10 @@ public final class SymSpell implements SpellChecker {
    * @param word  the dictionary term; must not be {@code null}
    * @param count the corpus count to add; must be {@code >= 0}
    * @return {@code true} if the term became (or remained) indexed
-   * @throws NullPointerException     if {@code word} is {@code null}
-   * @throws IllegalArgumentException if {@code count} is negative
+   * @throws IllegalArgumentException if {@code word} is {@code null} or {@code count} is negative
    */
   public boolean add(String word, long count) {
-    Objects.requireNonNull(word, "word must not be null");
+    ParamChecks.requireNonNullArg(word, "word");
     if (count < 0) {
       throw new IllegalArgumentException("count must not be negative: " + count);
     }
@@ -182,12 +181,12 @@ public final class SymSpell implements SpellChecker {
    * @param w1    the first word; must not be {@code null}
    * @param w2    the second word; must not be {@code null}
    * @param count the corpus count to add; must be {@code >= 0}
-   * @throws NullPointerException     if {@code w1} or {@code w2} is {@code null}
-   * @throws IllegalArgumentException if {@code count} is negative
+   * @throws IllegalArgumentException if {@code w1} or {@code w2} is {@code null}, or if
+   *     {@code count} is negative
    */
   public void addBigram(String w1, String w2, long count) {
-    Objects.requireNonNull(w1, "w1 must not be null");
-    Objects.requireNonNull(w2, "w2 must not be null");
+    ParamChecks.requireNonNullArg(w1, "w1");
+    ParamChecks.requireNonNullArg(w2, "w2");
     if (count < 0) {
       throw new IllegalArgumentException("count must not be negative: " + count);
     }
@@ -233,8 +232,8 @@ public final class SymSpell implements SpellChecker {
 
   @Override
   public List<SuggestItem> lookup(String term, Verbosity verbosity, int maxEditDistance) {
-    Objects.requireNonNull(term, "term must not be null");
-    Objects.requireNonNull(verbosity, "verbosity must not be null");
+    ParamChecks.requireNonNullArg(term, "term");
+    ParamChecks.requireNonNullArg(verbosity, "verbosity");
     if (maxEditDistance < 0) {
       throw new IllegalArgumentException("maxEditDistance must not be negative: " + maxEditDistance);
     }
@@ -400,7 +399,7 @@ public final class SymSpell implements SpellChecker {
    */
   @Override
   public List<SuggestItem> lookupCompound(String input, int maxEditDistance) {
-    Objects.requireNonNull(input, "input must not be null");
+    ParamChecks.requireNonNullArg(input, "input");
     if (maxEditDistance < 0) {
       throw new IllegalArgumentException("maxEditDistance must not be negative: " + maxEditDistance);
     }

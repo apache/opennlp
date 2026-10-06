@@ -32,6 +32,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.tools.util.InputStreamFactory;
 
 /**
@@ -256,5 +257,22 @@ public class FrequencyDictionaryLoaderTest {
     Assertions.assertEquals(1,
         new FrequencyDictionaryLoader().parseBigrams(stringResource("a b\u00A0c 5\n"), into));
     Assertions.assertEquals(Map.of("a b\u00A0c", 5L), into);
+  }
+
+  @Test
+  void testNullArgumentsAreRejected() {
+    final FrequencyDictionaryLoader loader = new FrequencyDictionaryLoader();
+    final SymSpell target = new SymSpell();
+    final InputStreamFactory factory = stringResource("the 5\n");
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new FrequencyDictionaryLoader(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> loader.loadUnigrams(null, factory));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> loader.loadUnigrams(target, null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> loader.loadBigrams(null, factory));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> loader.loadBigrams(target, null));
   }
 }

@@ -37,6 +37,7 @@ import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.symspell.SymSpellConfig;
 import opennlp.tools.AbstractTempDirTest;
+import opennlp.tools.models.ClassPathModelLoader;
 import opennlp.tools.models.simple.SimpleClassPathModelFinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -138,5 +139,15 @@ public class SymSpellModelResolverTest extends AbstractTempDirTest {
     assertEquals("2.1", restored.getVersion());
     assertEquals(model.unigrams(), restored.unigrams());
     assertEquals(model.bigrams(), restored.bigrams());
+  }
+
+  @Test
+  void nullConstructorArgumentsAreRejected() {
+    final SimpleClassPathModelFinder finder = new SimpleClassPathModelFinder();
+    final ClassPathModelLoader loader = new ClassPathModelLoader();
+    assertThrows(IllegalArgumentException.class,
+        () -> new SymSpellModelResolver(null, loader, SymSpellModelResolver.DEFAULT_NAME_FRAGMENT));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SymSpellModelResolver(finder, null, SymSpellModelResolver.DEFAULT_NAME_FRAGMENT));
   }
 }
