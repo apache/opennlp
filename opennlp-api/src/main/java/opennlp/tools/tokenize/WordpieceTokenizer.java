@@ -149,9 +149,9 @@ public class WordpieceTokenizer implements Tokenizer {
       final int maxTokenLength) {
     this.vocabulary = copyVocabulary(vocabulary);
     this.classificationToken =
-        BertNormalization.requireToken(classificationToken, "classificationToken");
-    this.separatorToken = BertNormalization.requireToken(separatorToken, "separatorToken");
-    this.unknownToken = BertNormalization.requireToken(unknownToken, "unknownToken");
+        ParamChecks.requireNonEmpty(classificationToken, "classificationToken");
+    this.separatorToken = ParamChecks.requireNonEmpty(separatorToken, "separatorToken");
+    this.unknownToken = ParamChecks.requireNonEmpty(unknownToken, "unknownToken");
     this.maxTokenLength = ParamChecks.requireNonNegative(maxTokenLength, "maxTokenLength");
   }
 

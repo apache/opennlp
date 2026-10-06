@@ -223,9 +223,9 @@ public final class WordpieceEncoder implements SubwordTokenizer {
                           String classificationToken, String separatorToken,
                           String unknownToken, int maxWordCodePoints) {
     ParamChecks.requireNonNullArg(vocabularyIds, "vocabularyIds");
-    BertNormalization.requireToken(classificationToken, "classificationToken");
-    BertNormalization.requireToken(separatorToken, "separatorToken");
-    BertNormalization.requireToken(unknownToken, "unknownToken");
+    ParamChecks.requireNonEmpty(classificationToken, "classificationToken");
+    ParamChecks.requireNonEmpty(separatorToken, "separatorToken");
+    ParamChecks.requireNonEmpty(unknownToken, "unknownToken");
     ParamChecks.requireNonNegative(maxWordCodePoints, "maxWordCodePoints");
     final Map<String, Integer> byPiece = HashMap.newHashMap(vocabularyIds.size());
     for (final Map.Entry<String, Integer> entry : vocabularyIds.entrySet()) {

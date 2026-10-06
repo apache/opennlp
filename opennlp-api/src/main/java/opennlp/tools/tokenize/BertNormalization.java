@@ -17,8 +17,6 @@
 
 package opennlp.tools.tokenize;
 
-import opennlp.tools.util.ParamChecks;
-
 /**
  * Character classifications and text transforms of the reference BERT
  * {@code BasicTokenizer}, shared by {@link WordpieceEncoder} and
@@ -37,23 +35,6 @@ final class BertNormalization {
 
   private BertNormalization() {
   }
-
-  /**
-   * Validates a special token.
-   *
-   * @param token The token to validate.
-   * @param name The parameter name used in the exception message.
-   * @return The {@code token}.
-   * @throws IllegalArgumentException Thrown if {@code token} is {@code null} or empty.
-   */
-  static String requireToken(String token, String name) {
-    ParamChecks.requireNonNullArg(token, name);
-    if (token.isEmpty()) {
-      throw new IllegalArgumentException(name + " must not be empty");
-    }
-    return token;
-  }
-
 
   /**
    * Surrounds every punctuation character with spaces, so each punctuation
