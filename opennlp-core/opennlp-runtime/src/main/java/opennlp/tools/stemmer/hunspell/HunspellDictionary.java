@@ -115,12 +115,8 @@ public final class HunspellDictionary {
      *     number is not positive.
      */
     public UnsupportedDirective {
-      if (directive == null || directive.isBlank()) {
-        throw new IllegalArgumentException("directive must not be null or blank");
-      }
-      if (source == null || source.isBlank()) {
-        throw new IllegalArgumentException("source must not be null or blank");
-      }
+      ParamChecks.requireNonBlank(directive, "directive");
+      ParamChecks.requireNonBlank(source, "source");
       if (lineNumber < 1) {
         throw new IllegalArgumentException("lineNumber must be positive");
       }

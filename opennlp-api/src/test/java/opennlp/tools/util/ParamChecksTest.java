@@ -17,6 +17,10 @@
 
 package opennlp.tools.util;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -26,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Pins the contract of {@link ParamChecks#requireNonNullArg(Object, String)}: a non-null
- * argument is returned as is, and a {@code null} argument is rejected with an
- * {@link IllegalArgumentException} whose message names the parameter.
+ * Pins the contract of the {@link ParamChecks} helpers: a valid argument is returned as is,
+ * and an invalid argument is rejected with an {@link IllegalArgumentException} whose message
+ * names the parameter.
  */
 public class ParamChecksTest {
 
@@ -56,5 +60,98 @@ public class ParamChecksTest {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> ParamChecks.requireNonNullArg(null, name));
     assertEquals(name + " must not be null", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {" ", "text", "😀"})
+  void testNonEmptyCharSequenceIsReturnedUnchanged(String value) {
+    assertSame(value, ParamChecks.requireNonEmpty(value, "text"));
+    final StringBuilder builder = new StringBuilder(value);
+    assertSame(builder, ParamChecks.requireNonEmpty(builder, "text"));
+  }
+
+  @Test
+  void testNullCharSequenceIsRejectedAsEmpty() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonEmpty((String) null, "suffix"));
+    assertEquals("suffix must not be null or empty", e.getMessage());
+  }
+
+  @Test
+  void testEmptyCharSequenceIsRejected() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonEmpty(new StringBuilder(), "sep"));
+    assertEquals("sep must not be null or empty", e.getMessage());
+  }
+
+  @Test
+  void testNonEmptyCollectionIsReturnedUnchanged() {
+    final List<String> list = List.of("a");
+    assertSame(list, ParamChecks.requireNonEmpty(list, "spans"));
+    final Set<Integer> set = Set.of(1, 2);
+    assertSame(set, ParamChecks.requireNonEmpty(set, "spans"));
+  }
+
+  @Test
+  void testNullCollectionIsRejectedAsEmpty() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonEmpty((List<String>) null, "spans"));
+    assertEquals("spans must not be null or empty", e.getMessage());
+  }
+
+  @Test
+  void testEmptyCollectionIsRejected() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonEmpty(new ArrayList<String>(), "spans"));
+    assertEquals("spans must not be null or empty", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"text", " a ", "😀", "\u001C"})
+  void testNonBlankStringIsReturnedUnchanged(String value) {
+    assertSame(value, ParamChecks.requireNonBlank(value, "name"));
+  }
+
+  @Test
+  void testNullStringIsRejectedAsBlank() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonBlank(null, "name"));
+    assertEquals("name must not be null or blank", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", " ", "\t", " \n\r ", "\u00A0", "\u2003", "\u3000", "\u0085"})
+  void testBlankStringIsRejected(String value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonBlank(value, "language"));
+    assertEquals("language must not be null or blank", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, Integer.MAX_VALUE})
+  void testNonNegativeIntIsReturnedUnchanged(int value) {
+    assertEquals(value, ParamChecks.requireNonNegative(value, "id"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {-1, Integer.MIN_VALUE})
+  void testNegativeIntIsRejected(int value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonNegative(value, "id"));
+    assertEquals("id must not be negative", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(longs = {0L, 1L, Long.MAX_VALUE})
+  void testNonNegativeLongIsReturnedUnchanged(long value) {
+    assertEquals(value, ParamChecks.requireNonNegative(value, "count"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(longs = {-1L, Long.MIN_VALUE})
+  void testNegativeLongIsRejected(long value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonNegative(value, "count"));
+    assertEquals("count must not be negative", e.getMessage());
   }
 }

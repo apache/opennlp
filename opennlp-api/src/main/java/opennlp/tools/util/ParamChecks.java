@@ -17,6 +17,8 @@
 
 package opennlp.tools.util;
 
+import java.util.Collection;
+
 import opennlp.tools.commons.Internal;
 
 /**
@@ -32,6 +34,9 @@ import opennlp.tools.commons.Internal;
 public final class ParamChecks {
 
   private static final String NOT_NULL_SUFFIX = " must not be null";
+  private static final String NOT_EMPTY_SUFFIX = " must not be null or empty";
+  private static final String NOT_BLANK_SUFFIX = " must not be null or blank";
+  private static final String NOT_NEGATIVE_SUFFIX = " must not be negative";
 
   private ParamChecks() {
     // utility class
@@ -51,6 +56,98 @@ public final class ParamChecks {
   public static <T> T requireNonNullArg(T value, String name) {
     if (value == null) {
       throw new IllegalArgumentException(name + NOT_NULL_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is neither {@code null} nor empty.
+   * <p>
+   * The message of a thrown exception is {@code "<name> must not be null or empty"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @param <T> The argument type.
+   * @return {@code value}, never {@code null} or empty.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null} or has a length
+   *     of zero.
+   */
+  public static <T extends CharSequence> T requireNonEmpty(T value, String name) {
+    if (value == null || value.isEmpty()) {
+      throw new IllegalArgumentException(name + NOT_EMPTY_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is neither {@code null} nor empty.
+   * <p>
+   * The message of a thrown exception is {@code "<name> must not be null or empty"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @param <T> The argument type.
+   * @return {@code value}, never {@code null} or empty.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null} or contains no
+   *     elements.
+   */
+  public static <T extends Collection<?>> T requireNonEmpty(T value, String name) {
+    if (value == null || value.isEmpty()) {
+      throw new IllegalArgumentException(name + NOT_EMPTY_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is neither {@code null} nor blank.
+   * <p>
+   * A string is blank if it is empty or contains only Unicode {@code White_Space} code points,
+   * as defined by {@link StringUtil#isUnicodeBlank(CharSequence)}. The message of a thrown
+   * exception is
+   * {@code "<name> must not be null or blank"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @return {@code value}, never {@code null} or blank.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null} or blank.
+   */
+  public static String requireNonBlank(String value, String name) {
+    if (StringUtil.isUnicodeBlank(value)) {
+      throw new IllegalArgumentException(name + NOT_BLANK_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is not negative.
+   * <p>
+   * The message of a thrown exception is {@code "<name> must not be negative"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @return {@code value}, never negative.
+   * @throws IllegalArgumentException Thrown if {@code value} is less than zero.
+   */
+  public static int requireNonNegative(int value, String name) {
+    if (value < 0) {
+      throw new IllegalArgumentException(name + NOT_NEGATIVE_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is not negative.
+   * <p>
+   * The message of a thrown exception is {@code "<name> must not be negative"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @return {@code value}, never negative.
+   * @throws IllegalArgumentException Thrown if {@code value} is less than zero.
+   */
+  public static long requireNonNegative(long value, String name) {
+    if (value < 0) {
+      throw new IllegalArgumentException(name + NOT_NEGATIVE_SUFFIX);
     }
     return value;
   }

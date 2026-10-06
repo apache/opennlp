@@ -217,9 +217,7 @@ public final class ResourceInstaller {
       if (readTimeout.isZero() || readTimeout.isNegative()) {
         throw new IllegalArgumentException("readTimeout must be positive");
       }
-      if (maxRedirects < 0) {
-        throw new IllegalArgumentException("maxRedirects must not be negative");
-      }
+      ParamChecks.requireNonNegative(maxRedirects, "maxRedirects");
       if (maxDownloadBytes <= 0) {
         throw new IllegalArgumentException("maxDownloadBytes must be positive");
       }

@@ -59,12 +59,8 @@ public record SubwordPiece(String piece, int id, int start, int end) {
     if (piece.isEmpty()) {
       throw new IllegalArgumentException("piece must not be empty");
     }
-    if (id < 0) {
-      throw new IllegalArgumentException("id must not be negative");
-    }
-    if (start < 0) {
-      throw new IllegalArgumentException("start must not be negative");
-    }
+    ParamChecks.requireNonNegative(id, "id");
+    ParamChecks.requireNonNegative(start, "start");
     if (end < start) {
       throw new IllegalArgumentException("end must be at least start");
     }

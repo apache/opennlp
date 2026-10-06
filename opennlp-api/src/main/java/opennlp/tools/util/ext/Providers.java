@@ -378,9 +378,7 @@ public final class Providers<P extends Provider<?>> {
    *                                    priority.
    */
   public Optional<P> byName(final String name) {
-    if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("name must not be null or blank");
-    }
+    ParamChecks.requireNonBlank(name, "name");
     if (disabledNames().contains(name)) {
       return Optional.empty();
     }
