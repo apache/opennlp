@@ -17,7 +17,7 @@
 package opennlp.tools.util.normalizer;
 
 import opennlp.tools.commons.Internal;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -49,7 +49,7 @@ public final class HexCodePoints {
    * @throws IllegalArgumentException Thrown if {@code line} is {@code null}.
    */
   public static String stripComment(String line) {
-    ArgumentChecks.requireNonNullArg(line, "line");
+    ParamChecks.requireNonNullArg(line, "line");
     final int hash = line.indexOf(COMMENT_MARKER);
     return hash < 0 ? line : line.substring(0, hash);
   }
@@ -66,7 +66,7 @@ public final class HexCodePoints {
    *     value outside {@code [0, U+10FFFF]}.
    */
   public static int parseCodePoint(CharSequence hex, int start, int end) {
-    ArgumentChecks.requireNonNullArg(hex, "hex");
+    ParamChecks.requireNonNullArg(hex, "hex");
     if (start < 0 || end > hex.length()) {
       throw new IllegalArgumentException("Region [" + start + ", " + end
           + ") outside of: " + hex);
@@ -101,7 +101,7 @@ public final class HexCodePoints {
    *     character that is not a hex digit, or names a value outside {@code [0, U+10FFFF]}.
    */
   public static int parseCodePoint(CharSequence hex) {
-    ArgumentChecks.requireNonNullArg(hex, "hex");
+    ParamChecks.requireNonNullArg(hex, "hex");
     return parseCodePoint(hex, 0, hex.length());
   }
 
@@ -134,7 +134,7 @@ public final class HexCodePoints {
    *     {@code separator} is a surrogate, or one of the code points is malformed.
    */
   public static String decodeSequence(CharSequence hex, char separator) {
-    ArgumentChecks.requireNonNullArg(hex, "hex");
+    ParamChecks.requireNonNullArg(hex, "hex");
     final StringBuilder decoded = new StringBuilder();
     for (String token : StringUtil.split(hex, separator)) {
       decoded.appendCodePoint(parseCodePoint(token));
@@ -150,7 +150,7 @@ public final class HexCodePoints {
    * @throws IllegalArgumentException Thrown if {@code hex} is {@code null} or holds no token.
    */
   public static String[] codePointTokens(CharSequence hex) {
-    ArgumentChecks.requireNonNullArg(hex, "hex");
+    ParamChecks.requireNonNullArg(hex, "hex");
     final String[] tokens = StringUtil.splitOnUnicodeWhitespace(hex);
     if (tokens.length == 0) {
       throw new IllegalArgumentException("Empty code point sequence: \"" + hex + "\"");
@@ -167,7 +167,7 @@ public final class HexCodePoints {
    *     malformed, or the range ends before it starts.
    */
   public static int[] parseRange(CharSequence hex) {
-    ArgumentChecks.requireNonNullArg(hex, "hex");
+    ParamChecks.requireNonNullArg(hex, "hex");
     final int dots = indexOfRangeSeparator(hex);
     if (dots < 0) {
       final int codePoint = parseCodePoint(hex);

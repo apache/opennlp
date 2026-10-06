@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -823,7 +823,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    *         is {@code null} or empty.
    */
   public static Parse createFromTokens(final String[] tokens) {
-    ArgumentChecks.requireNonNullArg(tokens, "tokens");
+    ParamChecks.requireNonNullArg(tokens, "tokens");
     if (tokens.length == 0) {
       throw new IllegalArgumentException("tokens must not be empty");
     }

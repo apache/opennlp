@@ -20,7 +20,7 @@ package opennlp.tools.stemmer.hunspell;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * The shareable handle for Hunspell stemming: holds one immutable
@@ -42,7 +42,7 @@ public class HunspellStemmerFactory implements StemmerFactory {
    * @throws IllegalArgumentException Thrown if {@code dictionary} is {@code null}.
    */
   public HunspellStemmerFactory(HunspellDictionary dictionary) {
-    ArgumentChecks.requireNonNullArg(dictionary, "dictionary");
+    ParamChecks.requireNonNullArg(dictionary, "dictionary");
     this.dictionary = dictionary;
   }
 

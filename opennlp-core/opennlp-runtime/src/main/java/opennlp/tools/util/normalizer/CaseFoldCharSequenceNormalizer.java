@@ -19,7 +19,7 @@ package opennlp.tools.util.normalizer;
 import java.util.Locale;
 import java.util.Objects;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} that lower cases text for case-insensitive matching. It uses
@@ -78,7 +78,7 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     return text.toString().toLowerCase(locale);
   }
 }

@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.LanguageCodeValidator;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Static factory for {@link StopwordFilter} instances backed by bundled
@@ -82,7 +82,7 @@ public final class StopwordLists {
    * @throws UncheckedIOException if reading the bundled resource fails.
    */
   public static StopwordFilter forLanguage(final String iso639Code) {
-    ArgumentChecks.requireNonNullArg(iso639Code, "iso639Code");
+    ParamChecks.requireNonNullArg(iso639Code, "iso639Code");
     LanguageCodeValidator.validateLanguageCode(iso639Code);
 
     final String normalized = LanguageCodeValidator.toIso6391(iso639Code);
@@ -133,8 +133,8 @@ public final class StopwordLists {
    */
   public static StopwordFilter load(final InputStream in, final Charset cs,
                                     final boolean caseSensitive) throws IOException {
-    ArgumentChecks.requireNonNullArg(in, "in");
-    ArgumentChecks.requireNonNullArg(cs, "cs");
+    ParamChecks.requireNonNullArg(in, "in");
+    ParamChecks.requireNonNullArg(cs, "cs");
     return new DictionaryStopwordFilter(in, cs, caseSensitive);
   }
 }

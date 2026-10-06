@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntFunction;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.CodePoints.At;
 
@@ -63,7 +63,7 @@ public final class CharClass {
    *     {@code replacement} is not a valid code point.
    */
   public static CharClass of(CodePointSet members, int replacement) {
-    ArgumentChecks.requireNonNullArg(members, "members");
+    ParamChecks.requireNonNullArg(members, "members");
     requireValidCodePoint(replacement);
     return new CharClass(members, replacement);
   }
@@ -90,7 +90,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code extra} is {@code null}.
    */
   public CharClass withAdditional(CodePointSet extra) {
-    ArgumentChecks.requireNonNullArg(extra, "extra");
+    ParamChecks.requireNonNullArg(extra, "extra");
     return new CharClass(members.union(extra), replacement);
   }
 
@@ -123,7 +123,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<Span> splitSpans(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final List<Span> spans = new ArrayList<>();
     final int length = text.length();
     int tokenStart = -1;
@@ -174,7 +174,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final int length = text.length();
     final int first = firstMember(text);
     if (first == length) {
@@ -206,7 +206,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String collapse(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final int length = text.length();
     final int first = firstMember(text);
     if (first == length) {
@@ -241,8 +241,8 @@ public final class CharClass {
    *     {@code keepReplacement} is not a valid code point.
    */
   public String collapsePreserving(CharSequence text, CodePointSet keep, int keepReplacement) {
-    ArgumentChecks.requireNonNullArg(text, "text");
-    ArgumentChecks.requireNonNullArg(keep, "keep");
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(keep, "keep");
     requireValidCodePoint(keepReplacement);
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
@@ -278,7 +278,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String trim(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final int length = text.length();
     int start = 0;
     while (start < length) {
@@ -310,7 +310,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String removeAll(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final int length = text.length();
     final int first = firstMember(text);
     if (first == length) {
@@ -337,7 +337,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public AlignedText normalizeAligned(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
@@ -365,7 +365,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public AlignedText collapseAligned(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
@@ -399,8 +399,8 @@ public final class CharClass {
    */
   public AlignedText collapsePreservingAligned(CharSequence text, CodePointSet keep,
                                                int keepReplacement) {
-    ArgumentChecks.requireNonNullArg(text, "text");
-    ArgumentChecks.requireNonNullArg(keep, "keep");
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(keep, "keep");
     requireValidCodePoint(keepReplacement);
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder(text.length());
@@ -449,8 +449,8 @@ public final class CharClass {
    */
   public String collapseParagraphPreserving(CharSequence text, CodePointSet lineBreaks,
                                             int paragraphReplacement) {
-    ArgumentChecks.requireNonNullArg(text, "text");
-    ArgumentChecks.requireNonNullArg(lineBreaks, "lineBreaks");
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(lineBreaks, "lineBreaks");
     requireValidCodePoint(paragraphReplacement);
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
@@ -491,8 +491,8 @@ public final class CharClass {
    */
   public AlignedText collapseParagraphPreservingAligned(CharSequence text, CodePointSet lineBreaks,
                                                         int paragraphReplacement) {
-    ArgumentChecks.requireNonNullArg(text, "text");
-    ArgumentChecks.requireNonNullArg(lineBreaks, "lineBreaks");
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(lineBreaks, "lineBreaks");
     requireValidCodePoint(paragraphReplacement);
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder(text.length());
@@ -533,7 +533,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public AlignedText trimAligned(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final int length = text.length();
     int start = 0;
     while (start < length) {
@@ -571,7 +571,7 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public AlignedText removeAllAligned(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
@@ -604,8 +604,8 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} or {@code substitution} is {@code null}.
    */
   public static String substitute(CharSequence text, IntFunction<String> substitution) {
-    ArgumentChecks.requireNonNullArg(text, "text");
-    ArgumentChecks.requireNonNullArg(substitution, "substitution");
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(substitution, "substitution");
     final int length = text.length();
     String firstReplacement = null;
     int first = 0;
@@ -648,8 +648,8 @@ public final class CharClass {
    * @throws IllegalArgumentException Thrown if {@code text} or {@code substitution} is {@code null}.
    */
   public static AlignedText substituteAligned(CharSequence text, IntFunction<String> substitution) {
-    ArgumentChecks.requireNonNullArg(text, "text");
-    ArgumentChecks.requireNonNullArg(substitution, "substitution");
+    ParamChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(substitution, "substitution");
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();

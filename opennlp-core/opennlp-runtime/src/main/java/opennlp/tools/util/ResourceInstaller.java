@@ -209,11 +209,11 @@ public final class ResourceInstaller {
     public Limits(Duration connectTimeout, Duration readTimeout, int maxRedirects,
         long maxDownloadBytes, long maxExpandedBytes, long maxEntries,
         long maxExpansionRatio) {
-      ArgumentChecks.requireNonNullArg(connectTimeout, "connectTimeout");
+      ParamChecks.requireNonNullArg(connectTimeout, "connectTimeout");
       if (connectTimeout.isZero() || connectTimeout.isNegative()) {
         throw new IllegalArgumentException("connectTimeout must be positive");
       }
-      ArgumentChecks.requireNonNullArg(readTimeout, "readTimeout");
+      ParamChecks.requireNonNullArg(readTimeout, "readTimeout");
       if (readTimeout.isZero() || readTimeout.isNegative()) {
         throw new IllegalArgumentException("readTimeout must be positive");
       }
@@ -462,7 +462,7 @@ public final class ResourceInstaller {
    */
   static Path installNamed(URI source, Path targetDirectory, String checksum,
       String name) throws IOException {
-    ArgumentChecks.requireNonNullArg(name, "name");
+    ParamChecks.requireNonNullArg(name, "name");
     return install(source, targetDirectory, checksum, name, Limits.DEFAULT);
   }
 
@@ -482,9 +482,9 @@ public final class ResourceInstaller {
    */
   private static Path install(URI source, Path targetDirectory, String checksum,
       String name, Limits limits) throws IOException {
-    ArgumentChecks.requireNonNullArg(source, "source");
-    ArgumentChecks.requireNonNullArg(targetDirectory, "targetDirectory");
-    ArgumentChecks.requireNonNullArg(limits, "limits");
+    ParamChecks.requireNonNullArg(source, "source");
+    ParamChecks.requireNonNullArg(targetDirectory, "targetDirectory");
+    ParamChecks.requireNonNullArg(limits, "limits");
     validateSource(source);
     final String expected = validateChecksum(checksum);
     if (expected == null && isHttp(source.getScheme())) {

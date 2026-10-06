@@ -16,7 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} implementation that normalizes text in terms of numbers:
@@ -44,7 +44,7 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
    */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     // The common digit-free text is returned without copying, like the sibling normalizers.
     final int length = text.length();
     for (int i = 0; i < length; i++) {

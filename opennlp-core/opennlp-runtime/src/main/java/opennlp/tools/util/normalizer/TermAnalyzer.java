@@ -29,7 +29,7 @@ import opennlp.tools.stemmer.CachingStemmer;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
 import opennlp.tools.tokenize.uax29.WordTokenizer;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -95,7 +95,7 @@ public final class TermAnalyzer {
    *     part-of-speech tags are available from raw text.
    */
   public List<Term> analyze(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (chain.contains(Dimension.LEMMA)) {
       throw new IllegalStateException("Dimension LEMMA requires part-of-speech tags, which"
           + " analyze(CharSequence) cannot supply; use analyze(tokens, tags)");
@@ -121,8 +121,8 @@ public final class TermAnalyzer {
    *     differ in length, or if {@code tokens} contains a {@code null} element.
    */
   public List<Term> analyze(String[] tokens, String[] tags) {
-    ArgumentChecks.requireNonNullArg(tokens, "tokens");
-    ArgumentChecks.requireNonNullArg(tags, "tags");
+    ParamChecks.requireNonNullArg(tokens, "tokens");
+    ParamChecks.requireNonNullArg(tags, "tags");
     if (tokens.length != tags.length) {
       throw new IllegalArgumentException(
           "tokens and tags must be the same length, got " + tokens.length + " and " + tags.length);
@@ -309,7 +309,7 @@ public final class TermAnalyzer {
      * @throws IllegalStateException if {@link Dimension#FULL_CASE_FOLD} is already configured.
      */
     public Builder caseFold(Locale locale) {
-      ArgumentChecks.requireNonNullArg(locale, "locale");
+      ParamChecks.requireNonNullArg(locale, "locale");
       return transform(Dimension.CASE_FOLD, CaseFoldCharSequenceNormalizer.getInstance(locale));
     }
 
@@ -366,7 +366,7 @@ public final class TermAnalyzer {
      *     {@code null} element.
      */
     public Builder accentFold(Set<Character.UnicodeScript> foldScripts, boolean foldStrokeLetters) {
-      ArgumentChecks.requireNonNullArg(foldScripts, "foldScripts");
+      ParamChecks.requireNonNullArg(foldScripts, "foldScripts");
       return transform(Dimension.ACCENT_FOLD,
           new AccentFoldCharSequenceNormalizer(foldScripts, foldStrokeLetters));
     }
@@ -408,8 +408,8 @@ public final class TermAnalyzer {
      *     {@link Dimension#FULL_CASE_FOLD} and the other one is already configured.
      */
     public Builder transform(Dimension dimension, CharSequenceNormalizer normalizer) {
-      ArgumentChecks.requireNonNullArg(dimension, "dimension");
-      ArgumentChecks.requireNonNullArg(normalizer, "normalizer");
+      ParamChecks.requireNonNullArg(dimension, "dimension");
+      ParamChecks.requireNonNullArg(normalizer, "normalizer");
       if (dimension == Dimension.ORIGINAL || dimension == Dimension.STEM
           || dimension == Dimension.LEMMA) {
         throw new IllegalArgumentException(

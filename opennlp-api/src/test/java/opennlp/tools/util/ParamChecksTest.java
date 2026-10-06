@@ -26,35 +26,35 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Pins the contract of {@link ArgumentChecks#requireNonNullArg(Object, String)}: a non-null
+ * Pins the contract of {@link ParamChecks#requireNonNullArg(Object, String)}: a non-null
  * argument is returned as is, and a {@code null} argument is rejected with an
  * {@link IllegalArgumentException} whose message names the parameter.
  */
-public class ArgumentChecksTest {
+public class ParamChecksTest {
 
   @Test
   void testNonNullArgumentIsReturnedUnchanged() {
     final Object value = new Object();
-    assertSame(value, ArgumentChecks.requireNonNullArg(value, "value"));
+    assertSame(value, ParamChecks.requireNonNullArg(value, "value"));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"", " ", "text", "😀"})
   void testNonNullStringIsReturnedUnchanged(String value) {
-    assertSame(value, ArgumentChecks.requireNonNullArg(value, "text"));
+    assertSame(value, ParamChecks.requireNonNullArg(value, "text"));
   }
 
   @Test
   void testEmptyArrayIsAccepted() {
     final String[] value = new String[0];
-    assertSame(value, ArgumentChecks.requireNonNullArg(value, "tokens"));
+    assertSame(value, ParamChecks.requireNonNullArg(value, "tokens"));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"text", "samples", "texts[1]", "😀"})
   void testNullArgumentIsRejectedWithParameterName(String name) {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> ArgumentChecks.requireNonNullArg(null, name));
+        () -> ParamChecks.requireNonNullArg(null, name));
     assertEquals(name + " must not be null", e.getMessage());
   }
 }

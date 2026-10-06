@@ -17,8 +17,8 @@
 
 package opennlp.tools.util.normalizer;
 
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.CompatibilityMode;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -88,7 +88,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
    */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     if (CompatibilityMode.current() == CompatibilityMode.LEGACY) {
       return MailAddressScan.removeAll(removeLegacyUrls(text));
     }

@@ -19,9 +19,9 @@ package opennlp.tools.stopword;
 
 import java.io.IOException;
 
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link FilterObjectStream} which removes stopwords from each
@@ -51,8 +51,8 @@ public final class StopwordFilterStream extends FilterObjectStream<String[], Str
    */
   public StopwordFilterStream(final ObjectStream<String[]> samples,
                               final StopwordFilter filter) {
-    super(ArgumentChecks.requireNonNullArg(samples, "samples"));
-    ArgumentChecks.requireNonNullArg(filter, "filter");
+    super(ParamChecks.requireNonNullArg(samples, "samples"));
+    ParamChecks.requireNonNullArg(filter, "filter");
     this.filter = filter;
   }
 

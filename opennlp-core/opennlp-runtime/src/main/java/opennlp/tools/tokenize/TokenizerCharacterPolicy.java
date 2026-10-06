@@ -18,7 +18,7 @@ package opennlp.tools.tokenize;
 
 import java.util.function.Predicate;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.normalizer.CodePointSet;
 import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
@@ -66,9 +66,9 @@ public final class TokenizerCharacterPolicy implements Predicate<CharSequence> {
    */
   public static TokenizerCharacterPolicy of(
       CodePointSet letters, CodePointSet digits, CodePointSet marks) {
-    ArgumentChecks.requireNonNullArg(letters, "letters");
-    ArgumentChecks.requireNonNullArg(digits, "digits");
-    ArgumentChecks.requireNonNullArg(marks, "marks");
+    ParamChecks.requireNonNullArg(letters, "letters");
+    ParamChecks.requireNonNullArg(digits, "digits");
+    ParamChecks.requireNonNullArg(marks, "marks");
     if (letters.isEmpty() && digits.isEmpty()) {
       throw new IllegalArgumentException("At least one letter or digit is required");
     }
@@ -96,7 +96,7 @@ public final class TokenizerCharacterPolicy implements Predicate<CharSequence> {
    */
   @Override
   public boolean test(CharSequence input) {
-    ArgumentChecks.requireNonNullArg(input, "input");
+    ParamChecks.requireNonNullArg(input, "input");
     if (input.isEmpty()) {
       return false;
     }

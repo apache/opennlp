@@ -74,7 +74,7 @@ public final class ResourceLimits {
    * @throws IllegalArgumentException Thrown if {@code property} is {@code null}.
    */
   static int initLimit(String property, int defaultValue) {
-    ArgumentChecks.requireNonNullArg(property, "property");
+    ParamChecks.requireNonNullArg(property, "property");
     final String prop = System.getProperty(property, "").trim();
     if (!prop.isEmpty()) {
       try {
@@ -101,7 +101,7 @@ public final class ResourceLimits {
    */
   @Internal
   public static long initLimit(String property, long defaultValue) {
-    ArgumentChecks.requireNonNullArg(property, "property");
+    ParamChecks.requireNonNullArg(property, "property");
     final String prop = System.getProperty(property, "").trim();
     if (!prop.isEmpty()) {
       try {
@@ -147,8 +147,8 @@ public final class ResourceLimits {
   @Internal
   public static <E extends Exception> void requireWithinMaxEntries(long count, String label,
       Function<String, E> exceptionFactory) throws E {
-    ArgumentChecks.requireNonNullArg(label, "label");
-    ArgumentChecks.requireNonNullArg(exceptionFactory, "exceptionFactory");
+    ParamChecks.requireNonNullArg(label, "label");
+    ParamChecks.requireNonNullArg(exceptionFactory, "exceptionFactory");
     if (count < 0 || count > MAX_ENTRIES) {
       throw exceptionFactory.apply(label + " " + count + " exceeds safe limit of " + MAX_ENTRIES);
     }

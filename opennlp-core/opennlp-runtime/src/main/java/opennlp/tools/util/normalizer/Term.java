@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -59,8 +59,8 @@ public final class Term {
    *     missing (see {@link TermAnalyzer#apply(Dimension, String, String)}).
    */
   Term(TermAnalyzer analyzer, String original, Span span, String posTag) {
-    ArgumentChecks.requireNonNullArg(analyzer, "analyzer");
-    ArgumentChecks.requireNonNullArg(original, "original");
+    ParamChecks.requireNonNullArg(analyzer, "analyzer");
+    ParamChecks.requireNonNullArg(original, "original");
     this.analyzer = analyzer;
     this.span = span;
     this.posTag = posTag;
@@ -114,7 +114,7 @@ public final class Term {
    *     (see {@link Dimension#STEM} and {@link Dimension#LEMMA}).
    */
   public String at(Dimension dimension) {
-    ArgumentChecks.requireNonNullArg(dimension, "dimension");
+    ParamChecks.requireNonNullArg(dimension, "dimension");
     final String cached = layers.get(dimension);
     if (cached != null) {
       return cached;

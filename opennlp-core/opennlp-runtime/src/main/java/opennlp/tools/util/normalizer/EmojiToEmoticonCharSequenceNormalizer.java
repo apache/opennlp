@@ -16,7 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} that folds emoji to ASCII emoticons, using the bundled
@@ -48,14 +48,14 @@ public final class EmojiToEmoticonCharSequenceNormalizer implements OffsetAwareN
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     return EmojiEmoticons.getInstance().emojiToEmoticon(text);
   }
 
   /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     return EmojiEmoticons.getInstance().emojiToEmoticonAligned(text);
   }
 }

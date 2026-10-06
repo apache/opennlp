@@ -27,7 +27,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Adapts a {@link Lemmatizer} to the document pipeline: reads {@link Layers#SENTENCES},
@@ -59,7 +59,7 @@ public final class LemmatizerAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code lemmatizer} is {@code null}.
    */
   public LemmatizerAnnotator(Lemmatizer lemmatizer) {
-    ArgumentChecks.requireNonNullArg(lemmatizer, "lemmatizer");
+    ParamChecks.requireNonNullArg(lemmatizer, "lemmatizer");
     this.lemmatizer = lemmatizer;
   }
 

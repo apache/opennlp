@@ -27,7 +27,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Computes the Unicode confusable <em>skeleton</em> of text, following the skeleton algorithm
@@ -135,7 +135,7 @@ public final class Confusables {
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public static String skeleton(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final Data d = DATA;
     final BitSet keys = d.keys();
 
@@ -184,8 +184,8 @@ public final class Confusables {
    * @throws IllegalArgumentException Thrown if {@code left} or {@code right} is {@code null}.
    */
   public static boolean confusable(CharSequence left, CharSequence right) {
-    ArgumentChecks.requireNonNullArg(left, "left");
-    ArgumentChecks.requireNonNullArg(right, "right");
+    ParamChecks.requireNonNullArg(left, "left");
+    ParamChecks.requireNonNullArg(right, "right");
     return skeleton(left).equals(skeleton(right));
   }
 }

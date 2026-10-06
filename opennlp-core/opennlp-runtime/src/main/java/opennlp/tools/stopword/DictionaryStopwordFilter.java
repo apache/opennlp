@@ -33,7 +33,7 @@ import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
 
@@ -81,8 +81,8 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
    */
   public DictionaryStopwordFilter(final InputStream in, final Charset cs,
                                   final boolean caseSensitive) throws IOException {
-    ArgumentChecks.requireNonNullArg(in, "in");
-    ArgumentChecks.requireNonNullArg(cs, "cs");
+    ParamChecks.requireNonNullArg(in, "in");
+    ParamChecks.requireNonNullArg(cs, "cs");
     this.backing = parseStream(in, cs, caseSensitive);
   }
 
@@ -95,7 +95,7 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
    * @throws IllegalArgumentException if {@code source} is {@code null}.
    */
   public DictionaryStopwordFilter(final Dictionary source) {
-    ArgumentChecks.requireNonNullArg(source, "source");
+    ParamChecks.requireNonNullArg(source, "source");
     final Dictionary copy = new Dictionary(source.isCaseSensitive());
     for (final StringList entry : source) {
       copy.put(entry);
@@ -186,7 +186,7 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
    */
   @Override
   public String[] filter(final String[] tokens) {
-    ArgumentChecks.requireNonNullArg(tokens, "tokens");
+    ParamChecks.requireNonNullArg(tokens, "tokens");
     final int maxWindow = backing.getMaxTokenCount();
     final List<String> kept = new ArrayList<>(tokens.length);
     int i = 0;
@@ -317,7 +317,7 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
      *     if any element is {@code null} or empty.
      */
     public Builder addAll(final Collection<String[]> entries) {
-      ArgumentChecks.requireNonNullArg(entries, "entries");
+      ParamChecks.requireNonNullArg(entries, "entries");
       for (final String[] entry : entries) {
         add(entry);
       }
@@ -350,7 +350,7 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
      *     if any element is {@code null} or empty.
      */
     public Builder removeAll(final Collection<String[]> entries) {
-      ArgumentChecks.requireNonNullArg(entries, "entries");
+      ParamChecks.requireNonNullArg(entries, "entries");
       for (final String[] entry : entries) {
         remove(entry);
       }
@@ -370,8 +370,8 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
      * @throws IOException If an IO error occurs while reading.
      */
     public Builder load(final InputStream in, final Charset cs) throws IOException {
-      ArgumentChecks.requireNonNullArg(in, "in");
-      ArgumentChecks.requireNonNullArg(cs, "cs");
+      ParamChecks.requireNonNullArg(in, "in");
+      ParamChecks.requireNonNullArg(cs, "cs");
       try (Reader reader = new InputStreamReader(in, cs);
            BufferedReader lineReader = new BufferedReader(reader)) {
         String line;

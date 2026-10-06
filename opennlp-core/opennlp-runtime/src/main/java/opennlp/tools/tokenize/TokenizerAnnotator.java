@@ -26,7 +26,7 @@ import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -51,7 +51,7 @@ public final class TokenizerAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code tokenizer} is {@code null}.
    */
   public TokenizerAnnotator(Tokenizer tokenizer) {
-    ArgumentChecks.requireNonNullArg(tokenizer, "tokenizer");
+    ParamChecks.requireNonNullArg(tokenizer, "tokenizer");
     this.tokenizer = tokenizer;
   }
 
@@ -67,7 +67,7 @@ public final class TokenizerAnnotator implements DocumentAnnotator {
    */
   @Override
   public Document annotate(Document document) {
-    ArgumentChecks.requireNonNullArg(document, "document");
+    ParamChecks.requireNonNullArg(document, "document");
     final String text = document.text().toString();
     final List<Annotation<String>> tokens = new ArrayList<>();
     if (!document.layers().contains(Layers.SENTENCES)) {

@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * Runs a fixed sequence of {@link DocumentAnnotator annotators} over a text, producing
@@ -85,7 +85,7 @@ public final class DocumentAnalyzer {
      * @throws IllegalArgumentException Thrown if {@code annotator} is {@code null}.
      */
     public Builder add(DocumentAnnotator annotator) {
-      ArgumentChecks.requireNonNullArg(annotator, "annotator");
+      ParamChecks.requireNonNullArg(annotator, "annotator");
       annotators.add(annotator);
       return this;
     }

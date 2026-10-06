@@ -20,8 +20,8 @@ package opennlp.tools.stemmer;
 import java.util.List;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.OwnerOrPerThreadState;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link Stemmer} that is safe to share across threads by routing each call to a per-thread
@@ -49,7 +49,7 @@ public final class SharingStemmer extends DelegatingStemmer<Stemmer> {
    */
   @Override
   public CharSequence stem(CharSequence word) {
-    ArgumentChecks.requireNonNullArg(word, "word");
+    ParamChecks.requireNonNullArg(word, "word");
     return state.get().stem(word);
   }
 
@@ -58,7 +58,7 @@ public final class SharingStemmer extends DelegatingStemmer<Stemmer> {
    */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
-    ArgumentChecks.requireNonNullArg(word, "word");
+    ParamChecks.requireNonNullArg(word, "word");
     return state.get().stemAll(word);
   }
 }

@@ -39,8 +39,8 @@ import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -105,9 +105,9 @@ public abstract class AbstractDL implements AutoCloseable {
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
       throws IOException, OrtException {
-    ArgumentChecks.requireNonNullArg(model, "model");
-    ArgumentChecks.requireNonNullArg(vocabulary, "vocabulary");
-    ArgumentChecks.requireNonNullArg(sessionOptions, "sessionOptions");
+    ParamChecks.requireNonNullArg(model, "model");
+    ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
+    ParamChecks.requireNonNullArg(sessionOptions, "sessionOptions");
     this.env = OrtEnvironment.getEnvironment();
     // try-with-resources closes the session options once the session has consumed them.
     try (sessionOptions) {
@@ -159,7 +159,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static OrtSession.SessionOptions sessionOptions(final InferenceOptions inferenceOptions)
       throws OrtException {
-    ArgumentChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
+    ParamChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
     validateSplitOptions(inferenceOptions);
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
     if (inferenceOptions.isGpu()) {
@@ -275,7 +275,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   static WordpieceEncoder createWordpieceEncoder(
       final Map<String, Integer> vocab, final boolean lowerCase) {
-    ArgumentChecks.requireNonNullArg(vocab, "vocab");
+    ParamChecks.requireNonNullArg(vocab, "vocab");
     if (vocab.containsKey(
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
@@ -350,7 +350,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static boolean resolveLowerCase(
       final InferenceOptions options, final boolean componentDefault) {
-    ArgumentChecks.requireNonNullArg(options, "options");
+    ParamChecks.requireNonNullArg(options, "options");
     return options.getLowerCase() != null ? options.getLowerCase() : componentDefault;
   }
 
@@ -361,7 +361,7 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws IllegalArgumentException Thrown if the split settings cannot make progress.
    */
   protected static void validateSplitOptions(final InferenceOptions options) {
-    ArgumentChecks.requireNonNullArg(options, "options");
+    ParamChecks.requireNonNullArg(options, "options");
     validateSplitOptions(options.getDocumentSplitSize(), options.getSplitOverlapSize());
   }
 
@@ -606,7 +606,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   @Internal(since = "3.0.0")
   protected static double[] softmaxProbabilities(final float[] scores) {
-    ArgumentChecks.requireNonNullArg(scores, "scores");
+    ParamChecks.requireNonNullArg(scores, "scores");
 
     final ScoreSummary summary = summarize(scores);
     final double[] probabilities = new double[scores.length];
@@ -645,7 +645,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   @Internal(since = "3.0.0")
   protected static double softmaxProbability(final float[] scores, final int index) {
-    ArgumentChecks.requireNonNullArg(scores, "scores");
+    ParamChecks.requireNonNullArg(scores, "scores");
     if (index < 0 || index >= scores.length) {
       throw new IllegalArgumentException("The index " + index
           + " is out of range for " + scores.length + " scores.");
@@ -724,10 +724,10 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param value The parameter value to validate.
    * @param name The parameter name used in the exception message.
    * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
-   * @deprecated Use {@link ArgumentChecks#requireNonNullArg(Object, String)} instead.
+   * @deprecated Use {@link ParamChecks#requireNonNullArg(Object, String)} instead.
    */
   @Deprecated(since = "3.0.0", forRemoval = true)
   protected static void requireNonNullArg(Object value, String name) {
-    ArgumentChecks.requireNonNullArg(value, name);
+    ParamChecks.requireNonNullArg(value, name);
   }
 }

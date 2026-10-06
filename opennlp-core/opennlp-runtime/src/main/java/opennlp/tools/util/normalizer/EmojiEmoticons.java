@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -348,7 +348,7 @@ final class EmojiEmoticons {
    * @throws IllegalArgumentException if the data is malformed.
    */
   static Tables parse(InputStream in) throws IOException {
-    ArgumentChecks.requireNonNullArg(in, "in");
+    ParamChecks.requireNonNullArg(in, "in");
     final Map<Integer, List<Mapping>> emojiToEmoticon = new HashMap<>();
     final Map<Integer, List<Mapping>> emoticonToEmoji = new HashMap<>();
     try (BufferedReader reader =

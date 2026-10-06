@@ -16,7 +16,7 @@
  */
 package opennlp.tools.tokenize;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * One subword unit produced by a {@link SubwordTokenizer}, including the model representation
@@ -55,7 +55,7 @@ public record SubwordPiece(String piece, int id, int start, int end) {
    *     {@code id} is negative, or the span is negative or inverted.
    */
   public SubwordPiece {
-    ArgumentChecks.requireNonNullArg(piece, "piece");
+    ParamChecks.requireNonNullArg(piece, "piece");
     if (piece.isEmpty()) {
       throw new IllegalArgumentException("piece must not be empty");
     }

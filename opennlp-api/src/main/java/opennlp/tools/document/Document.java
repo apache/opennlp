@@ -20,7 +20,7 @@ package opennlp.tools.document;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * An offset-anchored annotation container: the original text of one document plus any
@@ -156,8 +156,8 @@ public interface Document {
    *         the policy does not keep it; the exception names the offending key.
    */
   default Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
-    ArgumentChecks.requireNonNullArg(other, "other");
-    ArgumentChecks.requireNonNullArg(duplicateLayers, "duplicateLayers");
+    ParamChecks.requireNonNullArg(other, "other");
+    ParamChecks.requireNonNullArg(duplicateLayers, "duplicateLayers");
     if (!text().toString().contentEquals(other.text())) {
       throw new IllegalArgumentException(
           "merge requires both documents to carry the same text");

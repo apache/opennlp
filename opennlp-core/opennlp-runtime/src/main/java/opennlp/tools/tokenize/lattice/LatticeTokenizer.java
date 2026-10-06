@@ -24,7 +24,7 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.lattice.CategoryTable.CategoryAssignment;
 import opennlp.tools.tokenize.lattice.MecabDictionary.Category;
 import opennlp.tools.tokenize.lattice.MecabDictionary.WordEntry;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
@@ -64,7 +64,7 @@ public final class LatticeTokenizer implements Tokenizer {
    * @throws IllegalArgumentException Thrown if {@code dictionary} is {@code null}.
    */
   public LatticeTokenizer(MecabDictionary dictionary) {
-    ArgumentChecks.requireNonNullArg(dictionary, "dictionary");
+    ParamChecks.requireNonNullArg(dictionary, "dictionary");
     this.dictionary = dictionary;
   }
 
@@ -108,7 +108,7 @@ public final class LatticeTokenizer implements Tokenizer {
    *         position, which a {@code unk.def} without a {@code DEFAULT} template does.
    */
   public List<Morpheme> analyze(String text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final List<Morpheme> morphemes = new ArrayList<>();
     int start = 0;
     while (start < text.length()) {

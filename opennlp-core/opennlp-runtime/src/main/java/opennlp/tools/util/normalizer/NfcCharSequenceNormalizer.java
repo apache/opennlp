@@ -18,7 +18,7 @@ package opennlp.tools.util.normalizer;
 
 import java.text.Normalizer;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} that applies Unicode Normalization Form C (canonical
@@ -43,7 +43,7 @@ public class NfcCharSequenceNormalizer implements CharSequenceNormalizer {
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     return Normalizer.normalize(text, Normalizer.Form.NFC);
   }
 }

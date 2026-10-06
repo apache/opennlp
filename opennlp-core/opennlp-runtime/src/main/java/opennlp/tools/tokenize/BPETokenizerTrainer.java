@@ -24,7 +24,7 @@ import java.util.Map;
 
 import opennlp.tools.commons.Trainer;
 import opennlp.tools.tokenize.BPETokenizer.SymbolPair;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingConfiguration;
 
@@ -134,8 +134,8 @@ public final class BPETokenizerTrainer implements Trainer<Parameters> {
   public BPEModel train(final Iterable<String> corpus,
                          final int numMerges,
                          final String languageCode) {
-    ArgumentChecks.requireNonNullArg(corpus, "corpus");
-    ArgumentChecks.requireNonNullArg(languageCode, "languageCode");
+    ParamChecks.requireNonNullArg(corpus, "corpus");
+    ParamChecks.requireNonNullArg(languageCode, "languageCode");
     if (numMerges <= 0) {
       throw new IllegalArgumentException(
           "numMerges must be positive, got: " + numMerges);

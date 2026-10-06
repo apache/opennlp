@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -226,10 +226,10 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   public WordpieceEncoder(Map<String, Integer> vocabularyIds, boolean lowerCase,
                           String classificationToken, String separatorToken,
                           String unknownToken, int maxWordCodePoints) {
-    ArgumentChecks.requireNonNullArg(vocabularyIds, "vocabularyIds");
-    ArgumentChecks.requireNonNullArg(classificationToken, "classificationToken");
-    ArgumentChecks.requireNonNullArg(separatorToken, "separatorToken");
-    ArgumentChecks.requireNonNullArg(unknownToken, "unknownToken");
+    ParamChecks.requireNonNullArg(vocabularyIds, "vocabularyIds");
+    ParamChecks.requireNonNullArg(classificationToken, "classificationToken");
+    ParamChecks.requireNonNullArg(separatorToken, "separatorToken");
+    ParamChecks.requireNonNullArg(unknownToken, "unknownToken");
     if (classificationToken.isEmpty()) {
       throw new IllegalArgumentException("classificationToken must not be empty");
     }
@@ -271,7 +271,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
 
   /** Converts an ordered vocabulary to a piece-to-id mapping. */
   private static Map<String, Integer> byPiece(List<String> vocabulary) {
-    ArgumentChecks.requireNonNullArg(vocabulary, "vocabulary");
+    ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
     final Map<String, Integer> byPiece = HashMap.newHashMap(vocabulary.size());
     for (int id = 0; id < vocabulary.size(); id++) {
       final String piece = vocabulary.get(id);
@@ -303,7 +303,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   /** {@inheritDoc} */
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
     final String original = text.toString();
 
     // Stores an original-text range for each normalized char.

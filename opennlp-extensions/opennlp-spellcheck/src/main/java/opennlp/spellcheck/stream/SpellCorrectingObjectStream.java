@@ -22,9 +22,9 @@ import java.io.IOException;
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
 import opennlp.spellcheck.normalizer.SpellCheckingCharSequenceNormalizer;
-import opennlp.tools.util.ArgumentChecks;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
@@ -62,7 +62,7 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples, SpellChecker spellChecker) {
     this(samples, new SpellCheckingCharSequenceNormalizer(
-        ArgumentChecks.requireNonNullArg(spellChecker, "spellChecker")));
+        ParamChecks.requireNonNullArg(spellChecker, "spellChecker")));
   }
 
   /**
@@ -75,7 +75,7 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples, SymSpellModel model) {
     this(samples, new SpellCheckingCharSequenceNormalizer(
-        ArgumentChecks.requireNonNullArg(model, "model")));
+        ParamChecks.requireNonNullArg(model, "model")));
   }
 
   /**
@@ -88,8 +88,8 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples,
                                      SpellCheckingCharSequenceNormalizer normalizer) {
-    super(ArgumentChecks.requireNonNullArg(samples, "samples"));
-    this.normalizer = ArgumentChecks.requireNonNullArg(normalizer, "normalizer");
+    super(ParamChecks.requireNonNullArg(samples, "samples"));
+    this.normalizer = ParamChecks.requireNonNullArg(normalizer, "normalizer");
   }
 
   /** {@inheritDoc} */

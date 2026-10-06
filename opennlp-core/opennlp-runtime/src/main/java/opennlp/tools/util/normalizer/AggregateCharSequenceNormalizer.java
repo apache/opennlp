@@ -18,7 +18,7 @@
 
 package opennlp.tools.util.normalizer;
 
-import opennlp.tools.util.ArgumentChecks;
+import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} implementation that aggregates the
@@ -39,7 +39,7 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
    *         contains {@code null}.
    */
   public AggregateCharSequenceNormalizer(CharSequenceNormalizer... normalizers) {
-    ArgumentChecks.requireNonNullArg(normalizers, "normalizers");
+    ParamChecks.requireNonNullArg(normalizers, "normalizers");
     for (CharSequenceNormalizer normalizer : normalizers) {
       if (normalizer == null) {
         throw new IllegalArgumentException("The normalizers must not contain null.");
@@ -51,7 +51,7 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
   /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
-    ArgumentChecks.requireNonNullArg(text, "text");
+    ParamChecks.requireNonNullArg(text, "text");
 
     for (CharSequenceNormalizer normalizer : normalizers) {
       text = normalizer.normalize(text);
