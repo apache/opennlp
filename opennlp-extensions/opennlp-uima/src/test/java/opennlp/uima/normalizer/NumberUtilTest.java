@@ -20,6 +20,8 @@ import java.text.ParseException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Tests for opennlp.uima.normalizer.NumberUtil
@@ -63,24 +65,12 @@ class NumberUtilTest {
     } , "java.lang.IllegalArgumentException: Language INVALID is not supported!");
   }
 
-  @Test
-  void parse_withNoBreakSpaces() throws ParseException {
-    // Since 3.0 the pre-parse strip removes every Unicode White_Space code point, so the
-    // no-break spaces used as digit grouping separators no longer stop the parse (the
-    // previous ASCII \s strip left them in place and en parsing stopped at them).
-    Assertions.assertEquals(1234L, NumberUtil.parse("1" + cp(0x00A0) + "234",
-        VALID_LANGUAGE_CODE).longValue());
-    Assertions.assertEquals(1234L, NumberUtil.parse("1" + cp(0x202F) + "234",
-        VALID_LANGUAGE_CODE).longValue());
-  }
-
-  @Test
-  void parse_withLineSeparatorAndNextLineControl() throws ParseException {
-    // U+2028 and U+0085 carry the Unicode White_Space property, so since 3.0 they are
-    // stripped as well.
-    Assertions.assertEquals(1234L, NumberUtil.parse("12" + cp(0x2028) + "34",
-        VALID_LANGUAGE_CODE).longValue());
-    Assertions.assertEquals(1234L, NumberUtil.parse("12" + cp(0x0085) + "34",
+  @ParameterizedTest
+  @ValueSource(ints = {0x00A0, 0x202F, 0x2028, 0x0085})
+  void parse_withUnicodeWhitespace(int codePoint) throws ParseException {
+    // Every Unicode White_Space code point is stripped before parsing, also in the
+    // thousands separator position where no-break spaces appear.
+    Assertions.assertEquals(1234L, NumberUtil.parse("1" + cp(codePoint) + "234",
         VALID_LANGUAGE_CODE).longValue());
   }
 

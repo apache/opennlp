@@ -53,8 +53,8 @@ public final class NumberUtil {
   /**
    * Parses a specified {@link String number} for a certain {@code languageCode}.
    * <p>
-   * Before parsing, every Unicode {@code White_Space} code point is removed from
-   * {@code number}.
+   * Before parsing, every Unicode {@code White_Space} code point, as defined by
+   * {@link StringUtil#isUnicodeWhitespace(int)}, is removed from {@code number}.
    *
    * @param number The suspected number to parse.
    * @param languageCode A ISO conform language code, e.g. "en", "pt"
@@ -79,6 +79,9 @@ public final class NumberUtil {
 
   /**
    * Removes every Unicode {@code White_Space} code point from the given string.
+   *
+   * @param s The string to strip.
+   * @return The string without any Unicode {@code White_Space} code point.
    */
   private static String removeWhitespace(String s) {
     final StringBuilder sb = new StringBuilder(s.length());
