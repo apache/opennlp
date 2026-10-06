@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.RestoreDefaultLocale;
-import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerEvaluator;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -38,25 +37,11 @@ public class ChunkerDetailedFMeasureListenerTest {
   @Test
   void testEvaluator() throws IOException {
 
-    ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
-        getClass(), "/opennlp/tools/cmdline/chunker/output.txt");
-    ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
-        "/opennlp/tools/cmdline/chunker/output.txt");
+    ChunkerDetailedFMeasureListener listener = new ChunkerDetailedFMeasureListener();
+    evaluate(listener);
+
     ResourceAsStreamFactory detailedOutputStream = new ResourceAsStreamFactory(
         getClass(), "/opennlp/tools/cmdline/chunker/detailedOutput.txt");
-
-    DummyChunkSampleStream predictedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inPredicted, StandardCharsets.UTF_8), true);
-
-    DummyChunkSampleStream expectedSample = new DummyChunkSampleStream(
-        new PlainTextByLineStream(inExpected, StandardCharsets.UTF_8), false);
-
-    Chunker dummyChunker = new DummyChunker(predictedSample);
-
-    ChunkerDetailedFMeasureListener listener = new ChunkerDetailedFMeasureListener();
-    ChunkerEvaluator evaluator = new ChunkerEvaluator(dummyChunker, listener);
-
-    evaluator.evaluate(expectedSample);
 
     StringBuilder expected = new StringBuilder();
     BufferedReader reader = new BufferedReader(
