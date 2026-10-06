@@ -115,10 +115,24 @@ public abstract class DetailedFMeasureListener<T> implements EvaluationMonitor<T
   private static final String FORMAT_EXTRA = FORMAT
       + " [target: %3d; tp: %3d; fp: %3d]";
 
+  /**
+   * Creates the report, formatting the numbers with {@link Locale#ROOT}.
+   * Use {@code createReport(Locale.getDefault())} to format them with the
+   * default {@link Locale} instead.
+   *
+   * @return The report.
+   */
   public String createReport() {
     return createReport(Locale.ROOT);
   }
 
+  /**
+   * Creates the report, formatting the numbers with the given {@link Locale}.
+   *
+   * @param locale The {@link Locale} to format the numbers with.
+   *
+   * @return The report.
+   */
   public String createReport(Locale locale) {
     StringBuilder ret = new StringBuilder();
     int tp = generalStats.getTruePositives();
@@ -149,6 +163,11 @@ public abstract class DetailedFMeasureListener<T> implements EvaluationMonitor<T
     return ret.toString();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns the report of {@link #createReport()}, formatted with {@link Locale#ROOT}.
+   */
   @Override
   public String toString() {
     return createReport();
