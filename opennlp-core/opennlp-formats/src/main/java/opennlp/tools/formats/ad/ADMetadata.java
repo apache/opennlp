@@ -31,11 +31,6 @@ final class ADMetadata {
   private static final char QUOTE = '"';
 
   /**
-   * The message prefix of the exception thrown for metadata without valid ids.
-   */
-  static final String INVALID_METADATA = "Invalid metadata: ";
-
-  /**
    * The ids of a sentence.
    *
    * @param text The text id.
@@ -84,7 +79,7 @@ final class ADMetadata {
   static TextAndParagraph requireTextAndParagraph(String meta) {
     TextAndParagraph ids = parseTextAndParagraph(meta);
     if (ids == null) {
-      throw new RuntimeException(INVALID_METADATA + meta);
+      throw new RuntimeException("Invalid metadata: " + meta);
     }
     return ids;
   }

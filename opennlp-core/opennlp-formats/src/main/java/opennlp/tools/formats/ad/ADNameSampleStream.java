@@ -546,7 +546,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     if (literary || meta.startsWith(SCIENTIFIC_PREFIX)) {
       String textName = literary ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
       if (textName == null) {
-        throw new RuntimeException(ADMetadata.INVALID_METADATA + meta);
+        throw new RuntimeException("Invalid metadata: " + meta);
       }
       if (textName.isEmpty()) {
         return -1;

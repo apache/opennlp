@@ -1051,7 +1051,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    * @param name The tag name.
    * @return {@code true} if the whole line is such a tag.
    */
-  static boolean isOpeningTag(String line, String name) {
+  boolean isOpeningTag(String line, String name) {
     int last = line.length() - 1;
     int afterName = name.length() + 1;
     if (last < afterName || line.charAt(0) != TAG_OPEN || !line.startsWith(name, 1)
@@ -1071,7 +1071,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    * @param name The tag name.
    * @return {@code true} if the whole line is that closing tag.
    */
-  static boolean isClosingTag(String line, String name) {
+  boolean isClosingTag(String line, String name) {
     return line.length() == name.length() + CLOSING_TAG_OPEN.length() + 1
         && line.startsWith(CLOSING_TAG_OPEN) && line.startsWith(name, CLOSING_TAG_OPEN.length())
         && line.charAt(line.length() - 1) == TAG_CLOSE;

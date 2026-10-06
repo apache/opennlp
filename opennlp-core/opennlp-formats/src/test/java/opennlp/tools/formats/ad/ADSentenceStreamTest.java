@@ -144,6 +144,10 @@ public class ADSentenceStreamTest {
     return ((ADSentenceStream.SentenceParser.Node) top[0]).getElements().length;
   }
 
+  private static ADSentenceStream emptyStream() {
+    return new ADSentenceStream(ObjectStreamUtils.createObjectStream());
+  }
+
   private static Stream<Arguments> nodeLines() {
     return Stream.of(
         Arguments.of("STA:fcl", 1, "STA:fcl"),
@@ -434,7 +438,7 @@ public class ADSentenceStreamTest {
       "<s\u001Cid=\"1\">|s|false"
   })
   void testIsOpeningTag(String line, String name, boolean expected) {
-    Assertions.assertEquals(expected, ADSentenceStream.isOpeningTag(line, name));
+    Assertions.assertEquals(expected, emptyStream().isOpeningTag(line, name));
   }
 
   @ParameterizedTest
@@ -458,13 +462,13 @@ public class ADSentenceStreamTest {
       "</t >|t|false"
   })
   void testIsClosingTag(String line, String name, boolean expected) {
-    Assertions.assertEquals(expected, ADSentenceStream.isClosingTag(line, name));
+    Assertions.assertEquals(expected, emptyStream().isClosingTag(line, name));
   }
 
   @Test
   void testTrailingCarriageReturnIsNotATag() {
-    Assertions.assertFalse(ADSentenceStream.isOpeningTag("<s>\r", "s"));
-    Assertions.assertFalse(ADSentenceStream.isClosingTag("</s>\r", "s"));
+    Assertions.assertFalse(emptyStream().isOpeningTag("<s>\r", "s"));
+    Assertions.assertFalse(emptyStream().isClosingTag("</s>\r", "s"));
   }
 
   private static Stream<Arguments> leafLinesWithMarkupInside() {
@@ -716,9 +720,10 @@ public class ADSentenceStreamTest {
   @MethodSource("whitespaceModes")
   void testOpeningTagWhitespaceIsTheUnicodeDefinitionInEveryMode(WhitespaceMode mode) {
     WhitespaceMode.setActive(mode);
-    Assertions.assertTrue(ADSentenceStream.isOpeningTag("<s\u0085id=\"1\">", "s"));
-    Assertions.assertTrue(ADSentenceStream.isOpeningTag("<s\u00A0id=\"1\">", "s"));
-    Assertions.assertFalse(ADSentenceStream.isOpeningTag("<s\u001Cid=\"1\">", "s"));
+    ADSentenceStream stream = emptyStream();
+    Assertions.assertTrue(stream.isOpeningTag("<s\u0085id=\"1\">", "s"));
+    Assertions.assertTrue(stream.isOpeningTag("<s\u00A0id=\"1\">", "s"));
+    Assertions.assertFalse(stream.isOpeningTag("<s\u001Cid=\"1\">", "s"));
   }
 
   private static Stream<WhitespaceMode> whitespaceModes() {
