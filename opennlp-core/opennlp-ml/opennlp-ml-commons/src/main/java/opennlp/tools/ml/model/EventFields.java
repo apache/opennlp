@@ -27,12 +27,6 @@ import opennlp.tools.util.StringUtil;
  */
 final class EventFields {
 
-  /** Message prefix for a negative context value; the offending context follows. */
-  private static final String NEGATIVE_VALUE = "Negative values are not allowed: ";
-
-  /** Message prefix for a NaN or infinite context value; the offending context follows. */
-  private static final String NON_FINITE_VALUE = "Values must be finite: ";
-
   /** Message for a blank line; the line is filled in. */
   private static final String MISSING_OUTCOME = "An event line must start with an outcome: \"%s\"";
 
@@ -75,21 +69,5 @@ final class EventFields {
       throw new InvalidFormatException(String.format(MISSING_OUTCOME, line));
     }
     return new EventLine(fields[0], Arrays.copyOfRange(fields, 1, fields.length));
-  }
-
-  /**
-   * Checks that a context value is finite and not negative.
-   *
-   * @param value The parsed value.
-   * @param context The context named in the message.
-   * @throws IllegalArgumentException Thrown if {@code value} is negative, NaN or infinite.
-   */
-  static void requireValidValue(float value, String context) {
-    if (!Float.isFinite(value)) {
-      throw new IllegalArgumentException(NON_FINITE_VALUE + context);
-    }
-    if (value < 0) {
-      throw new IllegalArgumentException(NEGATIVE_VALUE + context);
-    }
   }
 }

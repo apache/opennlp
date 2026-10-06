@@ -86,7 +86,7 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
     try (RealBasicEventStream eventStream = createEventStream(EVENTS_INVALID_NEGATIVE)) {
       IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
           eventStream::read);
-      Assertions.assertEquals("Negative values are not allowed: wc=ic=-1.0", e.getMessage());
+      Assertions.assertEquals("wc=ic=-1.0 must not be negative", e.getMessage());
     }
   }
 

@@ -148,7 +148,7 @@ public class SimpleEventStreamBuilderTest {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add("other/n=x;1 " + context));
     Assertions.assertEquals("format error of the event \"other/n=x;1 " + context
-        + "\". Negative values are not allowed: " + context, e.getMessage());
+        + "\". " + context + " must not be negative", e.getMessage());
     Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
   }
 
@@ -159,7 +159,7 @@ public class SimpleEventStreamBuilderTest {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add("other/n=x;1 " + context));
     Assertions.assertEquals("format error of the event \"other/n=x;1 " + context
-        + "\". Values must be finite: " + context, e.getMessage());
+        + "\". " + context + " must be finite", e.getMessage());
     Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
   }
 

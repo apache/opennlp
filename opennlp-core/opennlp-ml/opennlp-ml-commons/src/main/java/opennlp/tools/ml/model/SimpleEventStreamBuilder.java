@@ -86,7 +86,8 @@ public class SimpleEventStreamBuilder {
           throw new IllegalArgumentException(String.format(NOT_A_NUMBER, event, value), e);
         }
         try {
-          EventFields.requireValidValue(values[i], pair);
+          ParamChecks.requireFinite(values[i], pair);
+          ParamChecks.requireNonNegative(values[i], pair);
         } catch (IllegalArgumentException e) {
           throw new IllegalArgumentException(String.format(INVALID_VALUE, event, e.getMessage()), e);
         }

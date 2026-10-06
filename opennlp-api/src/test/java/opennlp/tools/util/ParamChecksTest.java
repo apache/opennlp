@@ -154,4 +154,32 @@ public class ParamChecksTest {
         () -> ParamChecks.requireNonNegative(value, "count"));
     assertEquals("count must not be negative", e.getMessage());
   }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {0.0, -0.0, 1.5, Double.MAX_VALUE, Double.POSITIVE_INFINITY, Double.NaN})
+  void testNonNegativeDoubleIsReturnedUnchanged(double value) {
+    assertEquals(value, ParamChecks.requireNonNegative(value, "weight"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {-1.0, -Double.MIN_VALUE, Double.NEGATIVE_INFINITY})
+  void testNegativeDoubleIsRejected(double value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireNonNegative(value, "weight"));
+    assertEquals("weight must not be negative", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {0.0, -1.5, Double.MAX_VALUE, -Double.MAX_VALUE})
+  void testFiniteDoubleIsReturnedUnchanged(double value) {
+    assertEquals(value, ParamChecks.requireFinite(value, "weight"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY})
+  void testNonFiniteDoubleIsRejected(double value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requireFinite(value, "weight"));
+    assertEquals("weight must be finite", e.getMessage());
+  }
 }

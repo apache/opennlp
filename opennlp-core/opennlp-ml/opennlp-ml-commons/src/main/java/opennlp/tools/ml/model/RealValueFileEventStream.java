@@ -118,7 +118,8 @@ public class RealValueFileEventStream extends FileEventStream {
           values[ci] = 1;
         }
         if (gotReal) {
-          EventFields.requireValidValue(values[ci], contexts[ci]);
+          ParamChecks.requireFinite(values[ci], contexts[ci]);
+          ParamChecks.requireNonNegative(values[ci], contexts[ci]);
           contexts[ci] = contexts[ci].substring(0, ei);
           hasRealValue = true;
         }
