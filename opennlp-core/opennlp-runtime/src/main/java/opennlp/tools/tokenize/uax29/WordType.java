@@ -18,6 +18,8 @@ package opennlp.tools.tokenize.uax29;
 
 import java.util.BitSet;
 
+import opennlp.tools.util.normalizer.EmojiFlags;
+
 /**
  * The category of a {@linkplain WordTokenizer word token}. {@link #ALPHANUMERIC} and
  * {@link #NUMERIC} cover letter and digit words; the remaining categories identify scripts and
@@ -49,9 +51,6 @@ public enum WordType {
 
   /** An emoji, emoji sequence, or regional-indicator flag. */
   EMOJI;
-
-  private static final int REGIONAL_INDICATOR_FIRST = 0x1F1E6;
-  private static final int REGIONAL_INDICATOR_LAST = 0x1F1FF;
 
   // No code point below this can belong to a script-specific category (the lowest is Thai, U+0E00),
   // so Latin, Greek, Cyrillic, and ASCII text skips the relatively costly script lookup entirely.
@@ -111,7 +110,7 @@ public enum WordType {
         }
         continue;
       }
-      if (ExtendedPictographic.is(pictographs, codePoint) || isRegionalIndicator(codePoint)) {
+      if (ExtendedPictographic.is(pictographs, codePoint) || EmojiFlags.isRegionalIndicator(codePoint)) {
         return EMOJI;
       }
       if (codePoint >= LOWEST_SCRIPT_CODE_POINT && script == null) {
@@ -133,10 +132,6 @@ public enum WordType {
       return NUMERIC;
     }
     return null;
-  }
-
-  private static boolean isRegionalIndicator(int codePoint) {
-    return codePoint >= REGIONAL_INDICATOR_FIRST && codePoint <= REGIONAL_INDICATOR_LAST;
   }
 
   // Maps a code point to a script-specific token type, or null for scripts (Latin, Greek, ...) that

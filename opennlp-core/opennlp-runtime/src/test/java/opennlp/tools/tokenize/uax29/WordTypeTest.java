@@ -18,6 +18,7 @@ package opennlp.tools.tokenize.uax29;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -25,10 +26,6 @@ public class WordTypeTest {
 
   private static WordType of(String token) {
     return WordType.of(token, 0, token.length());
-  }
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
   }
 
   @Test

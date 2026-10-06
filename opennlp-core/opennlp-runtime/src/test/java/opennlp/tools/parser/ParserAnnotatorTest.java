@@ -17,7 +17,6 @@
 
 package opennlp.tools.parser;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.Layers;
+import opennlp.tools.document.TestComponents;
 import opennlp.tools.parser.ParserAnnotator.Phrase;
 import opennlp.tools.util.Span;
 
@@ -77,23 +77,12 @@ public class ParserAnnotatorTest {
     }
   }
 
-  private static List<Annotation<String>> tokens(String text, String... forms) {
-    final List<Annotation<String>> annotations = new ArrayList<>(forms.length);
-    int cursor = 0;
-    for (final String form : forms) {
-      final int start = text.indexOf(form, cursor);
-      annotations.add(new Annotation<>(new Span(start, start + form.length()), form));
-      cursor = start + form.length();
-    }
-    return annotations;
-  }
-
   /** One six-token sentence whose text carries a double space the parse text lacks. */
   private static Document sentence() {
     final String text = "The dog  of Mary ran.";
     return Document.of(text)
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 21), "s")))
-        .with(Layers.TOKENS, tokens(text, "The", "dog", "of", "Mary", "ran", "."));
+        .with(Layers.TOKENS, TestComponents.tokens(text, "The", "dog", "of", "Mary", "ran", "."));
   }
 
   @Test

@@ -40,6 +40,9 @@ import opennlp.tools.util.ParamChecks;
  * lemmatizer are sliced per sentence; the produced lemma layer stays aligned with
  * {@link Layers#TOKENS} by position.</p>
  *
+ * <p>The adapter holds no per-call state; it is as thread-safe as the lemmatizer it
+ * wraps.</p>
+ *
  * @since 3.0.0
  */
 public final class LemmatizerAnnotator implements DocumentAnnotator {

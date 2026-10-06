@@ -36,6 +36,9 @@ import opennlp.tools.util.Span;
  * <p>The wrapped detector stays the primary API for single-task use; this adapter calls
  * it like any other caller would.</p>
  *
+ * <p>The adapter holds no per-call state; it is as thread-safe as the detector it
+ * wraps.</p>
+ *
  * @since 3.0.0
  */
 public final class SentenceDetectorAnnotator implements DocumentAnnotator {

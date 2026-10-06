@@ -59,4 +59,9 @@ public final class EmoticonToEmojiCharSequenceNormalizer implements OffsetAwareN
     ParamChecks.requireNonNullArg(text, "text");
     return EmojiEmoticons.getInstance().emoticonToEmojiAligned(text);
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

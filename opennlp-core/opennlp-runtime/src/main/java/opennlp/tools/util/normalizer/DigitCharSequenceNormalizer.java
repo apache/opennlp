@@ -63,4 +63,9 @@ public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
   public AlignedText normalizeAligned(CharSequence text) {
     return CharClass.substituteAligned(text, DigitCharSequenceNormalizer::toAscii);
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

@@ -40,21 +40,11 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  * {@link TermVector} per distinct term, carrying the term string, its occurrence count,
  * and (in {@link Mode#FULL full mode}) the occurrence offsets.
  *
- * <p>Term identity comes from the annotator's inputs, not from logic of its own. Without
- * a normalizer, the term is the token layer's value as-is, that is, the token's covered
- * text in the original document. With a plain {@link CharSequenceNormalizer}, the general
- * path, each token's covered text is normalized on its own to produce the term, so any
- * normalizer works: case folding, NFC, accent folding, a stemmer-backed normalizer. With
- * an {@link OffsetAwareNormalizer}, the whole document text is normalized once with its
- * alignment recorded, each token span is mapped forward to the normalized form, and the
- * covered normalized text is the term; this path can see across token boundaries but is
- * limited to alignment-reporting normalizers. On every path, tokens that differ only by
- * a normalization fold (case, an eszett expansion, collapsed whitespace) group together,
- * and the occurrence spans emitted in {@link Mode#FULL full mode} are the token layer's
- * own spans and therefore always point into the original text. A token whose normalized
- * form is empty, for example one the normalizer deleted entirely, is omitted from the
- * layer; an empty string is no term, and the token layer still accounts for the
- * token.</p>
+ * <p>Term identity comes from the configured normalizer: without one, the term is the
+ * token's covered text; with a {@link CharSequenceNormalizer}, each token is normalized
+ * on its own; with an {@link OffsetAwareNormalizer}, the document is normalized once and
+ * each token span is mapped into the normalized text. Occurrence spans always point into
+ * the original text. A token whose term is empty is omitted.</p>
  *
  * <p>The layer is {@link LayerKey.Scope#DOCUMENT document-scoped}: each {@link TermVector}
  * is a whole-document statistic, so the annotations carry no span of their own and the
@@ -276,6 +266,15 @@ public final class TermVectorAnnotator implements DocumentAnnotator {
   @Override
   public Set<LayerKey<?>> provides() {
     return Set.of(TERM_VECTORS);
+  }
+
+  /**
+   * {@return the adapter's simple class name, which names it in pipeline validation
+   * messages}
+   */
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
   }
 
   /**

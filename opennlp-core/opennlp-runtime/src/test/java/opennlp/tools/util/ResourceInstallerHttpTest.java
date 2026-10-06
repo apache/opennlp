@@ -46,11 +46,11 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static opennlp.tools.util.DigestTestUtil.sha256;
 import static opennlp.tools.util.InstallerTestSupport.KIBIBYTE;
 import static opennlp.tools.util.InstallerTestSupport.MEBIBYTE;
 import static opennlp.tools.util.InstallerTestSupport.installedFiles;
-import static opennlp.tools.util.InstallerTestSupport.sha256;
-import static opennlp.tools.util.InstallerTestSupport.tarGz;
+import static opennlp.tools.util.archive.TarArchives.gzippedTar;
 
 /**
  * Exercises {@link ResourceInstaller} against a local scripted HTTP server: happy
@@ -145,7 +145,7 @@ public class ResourceInstallerHttpTest {
     final AtomicBoolean fetched = new AtomicBoolean();
     server.route("/corpus.tar.gz", out -> {
       fetched.set(true);
-      StubServer.ok(out, tarGz(new String[][] {{"corpus/data.txt", "unverified"}}));
+      StubServer.ok(out, gzippedTar(new String[][] {{"corpus/data.txt", "unverified"}}));
     });
 
     final URI source = server.uri("/corpus.tar.gz");
@@ -172,7 +172,7 @@ public class ResourceInstallerHttpTest {
 
   @Test
   void testHttpDownloadInstallsArchive(@TempDir Path target) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "over http"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "over http"}});
     server.route("/corpus.tar.gz", out -> StubServer.ok(out, archive));
 
     ResourceInstaller.install(server.uri("/corpus.tar.gz"), target, sha256(archive));
@@ -204,7 +204,7 @@ public class ResourceInstallerHttpTest {
 
   @Test
   void testAbsoluteRedirectIsFollowed(@TempDir Path target) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "moved"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "moved"}});
     server.route("/old.tar.gz", out -> StubServer.redirect(out,
         server.uri("/new.tar.gz").toString()));
     server.route("/new.tar.gz", out -> StubServer.ok(out, archive));
@@ -218,7 +218,7 @@ public class ResourceInstallerHttpTest {
   @Test
   void testRelativeRedirectIsResolvedAgainstTheSource(@TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "relative"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "relative"}});
     server.route("/mirror/old.tar.gz",
         out -> StubServer.redirect(out, "new.tar.gz"));
     server.route("/mirror/new.tar.gz", out -> StubServer.ok(out, archive));
@@ -234,7 +234,7 @@ public class ResourceInstallerHttpTest {
       "307 Temporary Redirect", "308 Permanent Redirect"})
   void testEveryRedirectStatusIsFollowed(String status, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "followed"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "followed"}});
     server.route("/old.tar.gz", out -> StubServer.redirect(out, status, "/new.tar.gz"));
     server.route("/new.tar.gz", out -> StubServer.ok(out, archive));
 
@@ -415,7 +415,7 @@ public class ResourceInstallerHttpTest {
   @Test
   void testTimeoutBeyondTheMillisecondRangeIsCapped(@TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"payload/data.txt", "content"}});
+    final byte[] archive = gzippedTar(new String[][] {{"payload/data.txt", "content"}});
     server.route("/payload.tar.gz", out -> StubServer.ok(out, archive));
     final Duration beyondMillis = Duration.ofSeconds(Long.MAX_VALUE / 1000 + 1);
     final ResourceInstaller.Limits limits = ResourceInstaller.Limits.builder()

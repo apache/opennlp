@@ -16,6 +16,10 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +28,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -74,6 +79,34 @@ class CharSequenceNormalizerContractTest {
   void testEmptyTextIsAccepted(String name, CharSequenceNormalizer normalizer) {
     assertEquals("", normalizer.normalize("").toString(),
         name + " must pass empty text through");
+  }
+
+  static Stream<Arguments> singletons() {
+    return Stream.of(
+        Arguments.of("bullet", BulletCharSequenceNormalizer.getInstance()),
+        Arguments.of("confusableSkeleton", ConfusableSkeletonCharSequenceNormalizer.getInstance()),
+        Arguments.of("dash", DashCharSequenceNormalizer.getInstance()),
+        Arguments.of("digit", DigitCharSequenceNormalizer.getInstance()),
+        Arguments.of("emojiToEmoticon", EmojiToEmoticonCharSequenceNormalizer.getInstance()),
+        Arguments.of("emoticonToEmoji", EmoticonToEmojiCharSequenceNormalizer.getInstance()),
+        Arguments.of("fullCaseFold", FullCaseFoldCharSequenceNormalizer.getInstance()),
+        Arguments.of("germanUmlaut", GermanUmlautCharSequenceNormalizer.getInstance()),
+        Arguments.of("nfc", NfcCharSequenceNormalizer.getInstance()),
+        Arguments.of("nfkc", NfkcCharSequenceNormalizer.getInstance()),
+        Arguments.of("quote", QuoteCharSequenceNormalizer.getInstance()));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("singletons")
+  void testDeserializationReturnsSharedInstance(String name, CharSequenceNormalizer normalizer)
+      throws Exception {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+      out.writeObject(normalizer);
+    }
+    try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
+      assertSame(normalizer, in.readObject(), name + " must deserialize to its shared instance");
+    }
   }
 
   @Test

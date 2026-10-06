@@ -26,6 +26,7 @@ import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnalyzer;
 import opennlp.tools.document.Layers;
+import opennlp.tools.document.TestComponents;
 import opennlp.tools.tokenize.TokenizerAnnotator;
 import opennlp.tools.util.Span;
 
@@ -47,7 +48,7 @@ public class TermVectorPipelineTest {
   @Test
   void testTokenizerAndTermVectorPipeline() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new TokenizerAnnotator(SingleSpaceTokens.TOKENIZER))
+        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .add(new TermVectorAnnotator())
         .build();
 
@@ -82,7 +83,7 @@ public class TermVectorPipelineTest {
   @Test
   void testScoringOnlyPipeline() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new TokenizerAnnotator(SingleSpaceTokens.TOKENIZER))
+        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .add(new TermVectorAnnotator(TermVectorAnnotator.Mode.SCORING_ONLY))
         .build();
 

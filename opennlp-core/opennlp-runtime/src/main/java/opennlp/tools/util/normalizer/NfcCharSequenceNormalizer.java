@@ -46,4 +46,9 @@ public class NfcCharSequenceNormalizer implements CharSequenceNormalizer {
     ParamChecks.requireNonNullArg(text, "text");
     return Normalizer.normalize(text, Normalizer.Form.NFC);
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

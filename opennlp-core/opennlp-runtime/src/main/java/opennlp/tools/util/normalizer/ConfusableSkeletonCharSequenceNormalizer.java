@@ -27,7 +27,7 @@ import opennlp.tools.util.ParamChecks;
  * The result is a matching key, not readable text: it is lossy and does not preserve offsets, so it
  * is only meaningful as a derived layer of the original/normalized model.</p>
  */
-public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNormalizer {
+public final class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = 1068969405606517368L;
 
@@ -47,5 +47,10 @@ public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNor
   public CharSequence normalize(CharSequence text) {
     ParamChecks.requireNonNullArg(text, "text");
     return Confusables.skeleton(text);
+  }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
   }
 }

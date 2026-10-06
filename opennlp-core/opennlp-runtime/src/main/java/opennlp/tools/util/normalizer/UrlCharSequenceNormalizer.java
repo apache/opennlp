@@ -310,14 +310,14 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
    */
   private int matchLegacyUrlEnd(CharSequence text, int start) {
     final int length = text.length();
-    if (!regionEquals(text, start, HTTP)) {
+    if (!AsciiChars.regionMatches(text, start, HTTP)) {
       return -1;
     }
     int bodyStart = start + HTTP.length();
     if (bodyStart < length && text.charAt(bodyStart) == 's'
-        && regionEquals(text, bodyStart + 1, SCHEME_SEPARATOR)) {
+        && AsciiChars.regionMatches(text, bodyStart + 1, SCHEME_SEPARATOR)) {
       bodyStart += 1 + SCHEME_SEPARATOR.length();
-    } else if (regionEquals(text, bodyStart, SCHEME_SEPARATOR)) {
+    } else if (AsciiChars.regionMatches(text, bodyStart, SCHEME_SEPARATOR)) {
       bodyStart += SCHEME_SEPARATOR.length();
     } else {
       return -1;
@@ -330,24 +330,5 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
       end++;
     }
     return end;
-  }
-
-  /**
-   * {@return whether the chars at {@code at} equal {@code literal} exactly}
-   *
-   * @param text    The text to look into; never null.
-   * @param at      The index the comparison starts at.
-   * @param literal The chars to compare against; never null.
-   */
-  private boolean regionEquals(CharSequence text, int at, String literal) {
-    if (at + literal.length() > text.length()) {
-      return false;
-    }
-    for (int k = 0; k < literal.length(); k++) {
-      if (text.charAt(at + k) != literal.charAt(k)) {
-        return false;
-      }
-    }
-    return true;
   }
 }

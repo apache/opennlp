@@ -205,7 +205,8 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
    * @return A valid {@link POSDictionary} instance.
    *
    * @throws IOException Thrown if IO errors occurred during creation.
-   * @throws InvalidFormatException Thrown if the entries don't have exactly one token.
+   * @throws InvalidFormatException Thrown if an entry does not have exactly one token or has
+   *     no tags attribute.
    */
   public static POSDictionary create(InputStream in) throws IOException {
 
@@ -214,6 +215,9 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
     boolean isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> {
 
       String tagString = entry.attributes().getValue("tags");
+      if (tagString == null) {
+        throw new InvalidFormatException("Each entry must have a tags attribute! " + entry.tokens());
+      }
       String[] tags = StringUtil.split(tagString, ' ');
       StringList word = entry.tokens();
 

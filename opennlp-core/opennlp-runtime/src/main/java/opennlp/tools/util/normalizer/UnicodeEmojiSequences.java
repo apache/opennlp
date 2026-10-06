@@ -60,10 +60,10 @@ final class UnicodeEmojiSequences {
    * U+FE0E asks for text presentation. It has no {@code Emoji_Component} property but it binds
    * to the symbol before it the same way U+FE0F does, so it counts as a structural component.
    */
-  private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
+  static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
 
   /** U+FE0F asks for emoji presentation. */
-  private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
+  static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
 
   /**
    * The bases of the keycap sequences: {@code #}, {@code *} and the ASCII digits. They have the

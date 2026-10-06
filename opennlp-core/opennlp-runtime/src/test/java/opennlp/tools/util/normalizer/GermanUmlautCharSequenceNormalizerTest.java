@@ -20,16 +20,13 @@ import java.text.Normalizer;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GermanUmlautCharSequenceNormalizerTest {
 
   private static final GermanUmlautCharSequenceNormalizer FOLD =
       GermanUmlautCharSequenceNormalizer.getInstance();
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   private static String fold(String text) {
     return FOLD.normalize(text).toString();

@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,10 +42,6 @@ class UnicodeEmojiSequencesParseTest {
 
   private InputStream in(String data) {
     return new ByteArrayInputStream(data.getBytes(StandardCharsets.US_ASCII));
-  }
-
-  private String cp(int... codePoints) {
-    return new String(codePoints, 0, codePoints.length);
   }
 
   @Test

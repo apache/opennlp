@@ -79,4 +79,23 @@ final class AsciiChars {
   static boolean caseInsensitiveEquals(int a, int b) {
     return toLower(a) == toLower(b);
   }
+
+  /**
+   * {@return whether the chars of {@code text} at {@code at} equal {@code literal} exactly}
+   *
+   * @param text    The text to look into.
+   * @param at      The index the comparison starts at.
+   * @param literal The chars to compare against.
+   */
+  static boolean regionMatches(CharSequence text, int at, String literal) {
+    if (at + literal.length() > text.length()) {
+      return false;
+    }
+    for (int k = 0; k < literal.length(); k++) {
+      if (text.charAt(at + k) != literal.charAt(k)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

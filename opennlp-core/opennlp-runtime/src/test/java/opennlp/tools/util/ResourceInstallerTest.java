@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -50,16 +49,16 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.archive.TarArchives;
 
+import static opennlp.tools.util.DigestTestUtil.sha256;
+import static opennlp.tools.util.DigestTestUtil.sha512;
 import static opennlp.tools.util.InstallerTestSupport.BLOCK;
 import static opennlp.tools.util.InstallerTestSupport.KIBIBYTE;
 import static opennlp.tools.util.InstallerTestSupport.MEBIBYTE;
 import static opennlp.tools.util.InstallerTestSupport.TERMINATOR_SIZE;
-import static opennlp.tools.util.InstallerTestSupport.gzip;
 import static opennlp.tools.util.InstallerTestSupport.installedFiles;
-import static opennlp.tools.util.InstallerTestSupport.sha256;
-import static opennlp.tools.util.InstallerTestSupport.sha512;
 import static opennlp.tools.util.InstallerTestSupport.tarEntry;
-import static opennlp.tools.util.InstallerTestSupport.tarGz;
+import static opennlp.tools.util.archive.TarArchives.gzip;
+import static opennlp.tools.util.archive.TarArchives.gzippedTar;
 
 public class ResourceInstallerTest {
 
@@ -145,7 +144,7 @@ public class ResourceInstallerTest {
   @Test
   void testInstallEndToEndUsageExample(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"corpus/README", "A tiny example corpus.\n"},
         {"corpus/tokens.txt", "the\ncat\n"},
         {"corpus/pos/tags.tsv", "the\tDET\ncat\tNOUN\n"}});
@@ -169,7 +168,7 @@ public class ResourceInstallerTest {
   @Test
   void testTarGzUnpacksWithStructure(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"corpus-1.0/train.conllu", "# sent_id = 1\n"},
         {"corpus-1.0/sub/readme.txt", "hello"}});
     final Path file = source.resolve("corpus.tgz");
@@ -186,7 +185,7 @@ public class ResourceInstallerTest {
   @Test
   void testChecksumMismatchFailsBeforeUnpacking(@TempDir Path source,
       @TempDir Path target) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"a/file.txt", "content"}});
+    final byte[] archive = gzippedTar(new String[][] {{"a/file.txt", "content"}});
     final Path file = source.resolve("archive.tar.gz");
     Files.write(file, archive);
 
@@ -201,7 +200,7 @@ public class ResourceInstallerTest {
   @Test
   void testChecksumComparisonIgnoresHexLetterCase(@TempDir Path source,
       @TempDir Path target) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"data/entry.txt", "payload"}});
+    final byte[] archive = gzippedTar(new String[][] {{"data/entry.txt", "payload"}});
     final Path file = source.resolve("cased.tar.gz");
     Files.write(file, archive);
     // The uppercase digest must differ textually from the lowercase one, otherwise
@@ -217,7 +216,7 @@ public class ResourceInstallerTest {
   @Test
   void testChecksumIgnoresUnicodeWhitespace(@TempDir Path source,
       @TempDir Path target) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "verified"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "verified"}});
     final Path file = source.resolve("unicode-space.tar.gz");
     Files.write(file, archive);
     final String emSpace = Character.toString(0x2003);
@@ -232,7 +231,7 @@ public class ResourceInstallerTest {
   @Test
   void testEscapingEntriesAreRejected(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"../escape.txt", "bad"}});
+    final byte[] archive = gzippedTar(new String[][] {{"../escape.txt", "bad"}});
     final Path file = source.resolve("evil.tar.gz");
     Files.write(file, archive);
 
@@ -243,7 +242,7 @@ public class ResourceInstallerTest {
   @Test
   void testAbsoluteTarEntryIsRejected(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"/absolute-escape-attempt/evil.txt", "bad"}});
     final Path file = source.resolve("absolute.tar.gz");
     Files.write(file, archive);
@@ -365,12 +364,8 @@ public class ResourceInstallerTest {
   @Test
   void testPlainGzipDecompressesToTheSourceName(@TempDir Path source,
       @TempDir Path target) throws Exception {
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    try (GZIPOutputStream gzip = new GZIPOutputStream(out)) {
-      gzip.write("word\tlemma\n".getBytes(StandardCharsets.UTF_8));
-    }
     final Path file = source.resolve("lexicon.tsv.gz");
-    Files.write(file, out.toByteArray());
+    Files.write(file, gzip("word\tlemma\n".getBytes(StandardCharsets.UTF_8)));
 
     ResourceInstaller.install(file.toUri(), target);
 
@@ -458,7 +453,7 @@ public class ResourceInstallerTest {
   @Test
   void testSha512ChecksumVerifies(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"data/entry.txt", "payload"}});
+    final byte[] archive = gzippedTar(new String[][] {{"data/entry.txt", "payload"}});
     final Path file = source.resolve("checked.tar.gz");
     Files.write(file, archive);
 
@@ -471,7 +466,7 @@ public class ResourceInstallerTest {
   @Test
   void testSha512ChecksumMismatchFailsBeforeUnpacking(@TempDir Path source,
       @TempDir Path target) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"a/file.txt", "content"}});
+    final byte[] archive = gzippedTar(new String[][] {{"a/file.txt", "content"}});
     final Path file = source.resolve("archive.tar.gz");
     Files.write(file, archive);
 
@@ -486,7 +481,7 @@ public class ResourceInstallerTest {
   @Test
   void testFailedTarUnpackLeavesTargetEmpty(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"good.txt", "fine"},
         {"../escape.txt", "bad"}});
     final Path file = source.resolve("partial.tar.gz");
@@ -670,7 +665,7 @@ public class ResourceInstallerTest {
   void testFailedInstallKeepsPreexistingTargetContent(@TempDir Path source,
       @TempDir Path target) throws Exception {
     Files.writeString(target.resolve("existing.txt"), "keep");
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"good.txt", "fine"},
         {"../escape.txt", "bad"}});
     final Path file = source.resolve("partial.tar.gz");
@@ -685,7 +680,7 @@ public class ResourceInstallerTest {
   @Test
   void testInstallationLeavesNoStagingResidue(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "content"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "content"}});
     final Path file = source.resolve("clean.tar.gz");
     Files.write(file, archive);
 
@@ -881,7 +876,7 @@ public class ResourceInstallerTest {
   @Test
   void testInstallWithinCustomLimitsSucceeds(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "small"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "small"}});
     final Path file = source.resolve("small.tar.gz");
     Files.write(file, archive);
 
@@ -929,7 +924,7 @@ public class ResourceInstallerTest {
   @Test
   void testTarEntryCountLimitRejectsArchive(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"corpus/one.txt", "1"},
         {"corpus/two.txt", "2"},
         {"corpus/three.txt", "3"}});
@@ -984,7 +979,7 @@ public class ResourceInstallerTest {
   @Test
   void testEntryCountExactlyAtLimitSucceeds(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"corpus/one.txt", "1"},
         {"corpus/two.txt", "2"}});
     final Path file = source.resolve("exact.tar.gz");
@@ -999,7 +994,7 @@ public class ResourceInstallerTest {
   @Test
   void testSha512ChecksumComparisonIgnoresHexLetterCase(@TempDir Path source,
       @TempDir Path target) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"data/entry.txt", "payload"}});
+    final byte[] archive = gzippedTar(new String[][] {{"data/entry.txt", "payload"}});
     final Path file = source.resolve("cased512.tar.gz");
     Files.write(file, archive);
     final String upperCase = sha512(archive).toUpperCase(Locale.ROOT);
@@ -1056,8 +1051,8 @@ public class ResourceInstallerTest {
   @Test
   void testReinstallOverAnExistingFileIsRejected(@TempDir Path source, @TempDir Path target)
       throws Exception {
-    final byte[] first = tarGz(new String[][] {{"corpus/data.txt", "version one"}});
-    final byte[] second = tarGz(new String[][] {{"corpus/data.txt", "version two"}});
+    final byte[] first = gzippedTar(new String[][] {{"corpus/data.txt", "version one"}});
+    final byte[] second = gzippedTar(new String[][] {{"corpus/data.txt", "version two"}});
     final Path firstFile = source.resolve("first.tar.gz");
     final Path secondFile = source.resolve("second.tar.gz");
     Files.write(firstFile, first);
@@ -1084,7 +1079,7 @@ public class ResourceInstallerTest {
       throws Exception {
     Files.createDirectories(target.resolve("corpus"));
     Files.writeString(target.resolve("corpus/data.txt"), "keep");
-    final byte[] archive = tarGz(new String[][] {
+    final byte[] archive = gzippedTar(new String[][] {
         {"corpus/fresh.txt", "new"},
         {"corpus/data.txt", "replacement"}});
     final Path file = source.resolve("colliding.tar.gz");
@@ -1107,7 +1102,7 @@ public class ResourceInstallerTest {
       @TempDir Path target, @TempDir Path outside) throws Exception {
     final Path link = target.resolve("link");
     Files.createSymbolicLink(link, outside);
-    final byte[] archive = tarGz(new String[][] {{"link/planted.txt", "escaped"}});
+    final byte[] archive = gzippedTar(new String[][] {{"link/planted.txt", "escaped"}});
     final Path file = source.resolve("symlink.tar.gz");
     Files.write(file, archive);
 
@@ -1124,7 +1119,7 @@ public class ResourceInstallerTest {
   void testNestedDirectoryThatIsNotASymlinkStillInstalls(@TempDir Path source,
       @TempDir Path target) throws Exception {
     Files.createDirectory(target.resolve("link"));
-    final byte[] archive = tarGz(new String[][] {{"link/planted.txt", "fine"}});
+    final byte[] archive = gzippedTar(new String[][] {{"link/planted.txt", "fine"}});
     final Path file = source.resolve("nested.tar.gz");
     Files.write(file, archive);
 
@@ -1296,7 +1291,7 @@ public class ResourceInstallerTest {
     Files.writeString(staleStaging.resolve("partial.txt"), "half");
     Files.writeString(target.resolve(".opennlp-downloadOLD.part"), "half");
     final Path file = source.resolve("corpus.tar.gz");
-    Files.write(file, tarGz(new String[][] {{"corpus/data.txt", "content"}}));
+    Files.write(file, gzippedTar(new String[][] {{"corpus/data.txt", "content"}}));
 
     ResourceInstaller.install(file.toUri(), target);
 
@@ -1309,7 +1304,7 @@ public class ResourceInstallerTest {
   @Test
   void testFailedInstallRemovesTheTargetDirectoryItCreated(@TempDir Path source,
       @TempDir Path parent) throws Exception {
-    final byte[] archive = tarGz(new String[][] {{"corpus/data.txt", "content"}});
+    final byte[] archive = gzippedTar(new String[][] {{"corpus/data.txt", "content"}});
     final Path file = source.resolve("corpus.tar.gz");
     Files.write(file, archive);
     final Path target = parent.resolve("fresh");

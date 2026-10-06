@@ -35,6 +35,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
+
 public class EmojiCharSequenceNormalizerTest {
   private static final EmojiCharSequenceNormalizer NORMALIZER =
       EmojiCharSequenceNormalizer.getInstance();
@@ -44,10 +46,6 @@ public class EmojiCharSequenceNormalizerTest {
    * emoji-test.txt, the same number dev/UnicodeEmojiSequenceGenerator.java pins for that release.
    */
   private static final int EMOJI_17_SEQUENCE_COUNT = 4973;
-
-  private static String cp(int... codePoints) {
-    return new String(codePoints, 0, codePoints.length);
-  }
 
   private static Stream<Arguments> emojiSequences() {
     return Stream.of(

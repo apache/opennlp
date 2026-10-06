@@ -31,6 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.CompatibilityMode;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -71,10 +72,6 @@ public class EmojiCharSequenceNormalizerCharacterizationTest {
   @AfterEach
   void resetMode() {
     CompatibilityMode.reset();
-  }
-
-  private static String cp(int... codePoints) {
-    return new String(codePoints, 0, codePoints.length);
   }
 
   static Stream<Arguments> emojiRuns() {

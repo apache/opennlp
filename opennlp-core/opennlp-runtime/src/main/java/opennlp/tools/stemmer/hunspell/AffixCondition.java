@@ -85,7 +85,7 @@ final class AffixCondition {
           negate = true;
           members = members.substring(1);
         }
-        positions.add(toCodePoints(members));
+        positions.add(members.codePoints().toArray());
         negations.add(negate);
         i = end + 1;
       } else if (codePoint == '.') {
@@ -104,24 +104,6 @@ final class AffixCondition {
       negated[p] = negations.get(p);
     }
     return new AffixCondition(accepted, negated, suffix);
-  }
-
-  /**
-   * Collects the code points of a character-class body.
-   *
-   * @param members The class body text.
-   * @return The code points in order. Never {@code null}.
-   */
-  private static int[] toCodePoints(String members) {
-    final int[] codePoints = new int[members.codePointCount(0, members.length())];
-    int i = 0;
-    int out = 0;
-    while (i < members.length()) {
-      final int codePoint = members.codePointAt(i);
-      codePoints[out++] = codePoint;
-      i += Character.charCount(codePoint);
-    }
-    return codePoints;
   }
 
   /**

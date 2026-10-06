@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -38,10 +39,6 @@ public class AlignedNormalizerPipelineTest {
   private static final int EM_DASH = 0x2014;
   private static final int YEZIDI_HYPHEN = 0x10EAD; // a supplementary (non-BMP) dash
   private static final int MATH_BOLD_DIGIT_ZERO = 0x1D7CE; // a supplementary decimal digit
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   private static String covered(AlignedText aligned, int normalizedStart, int normalizedEnd) {
     final Span span = aligned.toOriginalSpan(normalizedStart, normalizedEnd);
@@ -187,8 +184,8 @@ public class AlignedNormalizerPipelineTest {
     assertFalse(NfkcCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertFalse(CaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertFalse(AccentFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
-    assertFalse(ConfusableSkeletonCharSequenceNormalizer.getInstance()
-        instanceof OffsetAwareNormalizer);
+    final CharSequenceNormalizer skeleton = ConfusableSkeletonCharSequenceNormalizer.getInstance();
+    assertFalse(skeleton instanceof OffsetAwareNormalizer);
   }
 
   @Test

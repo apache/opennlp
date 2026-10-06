@@ -28,7 +28,7 @@ import opennlp.tools.util.Span;
  * Deterministic stand-in components shared by the document pipeline tests, so every
  * expected span in those tests follows directly from the definitions here.
  */
-final class TestComponents {
+public final class TestComponents {
 
   /**
    * A deterministic sentence detector that ends a sentence after every period and
@@ -62,7 +62,7 @@ final class TestComponents {
    * other characters, including sentence-final periods, attached to their token. Only
    * the span-producing method is implemented because the adapter calls no other method.
    */
-  static final Tokenizer SPACE_TOKENIZER = new Tokenizer() {
+  public static final Tokenizer SPACE_TOKENIZER = new Tokenizer() {
 
     @Override
     public String[] tokenize(String s) {
@@ -85,6 +85,25 @@ final class TestComponents {
       return spans.toArray(new Span[0]);
     }
   };
+
+  /**
+   * Builds a token layer by locating each form in {@code text}, searching from the end of
+   * the previous form, so tokens may be separated by any run of other characters.
+   *
+   * @param text The document text.
+   * @param forms The token forms, in text order.
+   * @return One annotation per form, valued with the form.
+   */
+  public static List<Annotation<String>> tokens(String text, String... forms) {
+    final List<Annotation<String>> annotations = new ArrayList<>(forms.length);
+    int cursor = 0;
+    for (final String form : forms) {
+      final int start = text.indexOf(form, cursor);
+      annotations.add(new Annotation<>(new Span(start, start + form.length()), form));
+      cursor = start + form.length();
+    }
+    return annotations;
+  }
 
   private TestComponents() {
     // Not instantiated; this class provides shared test fixtures only.

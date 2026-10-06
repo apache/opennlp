@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,10 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class WordTokenizerTest {
 
   private static final WordTokenizer TOKENIZER = new WordTokenizer();
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   private static List<String> words(String text) {
     return List.of(TOKENIZER.tokenize(text));

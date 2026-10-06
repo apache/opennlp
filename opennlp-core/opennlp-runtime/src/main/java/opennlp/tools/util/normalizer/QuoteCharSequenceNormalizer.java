@@ -74,4 +74,9 @@ public class QuoteCharSequenceNormalizer implements OffsetAwareNormalizer {
     final AlignedText single = SINGLE.normalizeAligned(text);
     return single.andThen(DOUBLE.normalizeAligned(single.normalized()));
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

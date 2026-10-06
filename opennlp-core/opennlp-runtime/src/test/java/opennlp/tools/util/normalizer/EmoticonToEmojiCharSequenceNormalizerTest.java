@@ -25,6 +25,7 @@ import opennlp.tools.tokenize.uax29.WordTokenizer;
 import opennlp.tools.tokenize.uax29.WordType;
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -33,10 +34,6 @@ public class EmoticonToEmojiCharSequenceNormalizerTest {
 
   private static EmoticonToEmojiCharSequenceNormalizer norm() {
     return EmoticonToEmojiCharSequenceNormalizer.getInstance();
-  }
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
   }
 
   @Test

@@ -58,8 +58,6 @@ final class EmojiEmoticons {
   private static final char MAPPING_CODE_POINT_SEPARATOR = ' ';
 
   private static final int ZERO_WIDTH_JOINER = 0x200D;
-  private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
-  private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
 
   private static final BundledUnicodeData.Lazy<EmojiEmoticons> INSTANCE =
       new BundledUnicodeData.Lazy<>(() -> new EmojiEmoticons(loadBundled()));
@@ -259,7 +257,7 @@ final class EmojiEmoticons {
     for (int index = 0; index < candidates.size(); index++) {
       final Mapping candidate = candidates.get(index);
       int end = i + candidate.source().length();
-      if (end > text.length() || !regionMatches(text, i, candidate.source())) {
+      if (!AsciiChars.regionMatches(text, i, candidate.source())) {
         continue;
       }
       if (delimited) {
@@ -269,12 +267,14 @@ final class EmojiEmoticons {
         continue;
       }
       // Absorb one trailing emoji-presentation selector into the fold.
-      if (end < text.length() && Character.codePointAt(text, end) == VARIATION_SELECTOR_EMOJI) {
+      if (end < text.length()
+          && Character.codePointAt(text, end) == UnicodeEmojiSequences.VARIATION_SELECTOR_EMOJI) {
         end++;
       }
       if (end < text.length()) {
         final int following = Character.codePointAt(text, end);
-        if (following == ZERO_WIDTH_JOINER || following == VARIATION_SELECTOR_TEXT) {
+        if (following == ZERO_WIDTH_JOINER
+            || following == UnicodeEmojiSequences.VARIATION_SELECTOR_TEXT) {
           continue;
         }
       }
@@ -301,23 +301,6 @@ final class EmojiEmoticons {
    */
   private static boolean boundaryAfter(CharSequence text, int end) {
     return end == text.length() || CharClass.whitespace().contains(Character.codePointAt(text, end));
-  }
-
-  /**
-   * {@return whether {@code text} contains exactly {@code source} starting at {@code start}}
-   *
-   * @param text   the text being scanned.
-   * @param start  the position to compare from. The caller guarantees
-   *               {@code start + source.length() <= text.length()}.
-   * @param source the sequence to compare against.
-   */
-  private static boolean regionMatches(CharSequence text, int start, String source) {
-    for (int k = 0; k < source.length(); k++) {
-      if (text.charAt(start + k) != source.charAt(k)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**

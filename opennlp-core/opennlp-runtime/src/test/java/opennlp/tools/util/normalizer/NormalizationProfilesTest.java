@@ -25,6 +25,8 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.langdetect.Language;
 import opennlp.tools.langdetect.LanguageDetector;
@@ -95,12 +97,11 @@ public class NormalizationProfilesTest {
         profile.matchingAnalyzer().dimensions());
   }
 
-  @Test
-  void testRomanceLanguagesUseTheGenericFold() {
-    for (final String language : List.of("fra", "spa", "por", "ita", "cat")) {
-      assertSame(AccentFoldCharSequenceNormalizer.getInstance(),
-          NormalizationProfiles.forLanguage(language).orElseThrow().accentFold());
-    }
+  @ParameterizedTest
+  @ValueSource(strings = {"fra", "spa", "por", "ita", "cat"})
+  void testRomanceLanguagesUseTheGenericFold(String language) {
+    assertSame(AccentFoldCharSequenceNormalizer.getInstance(),
+        NormalizationProfiles.forLanguage(language).orElseThrow().accentFold());
   }
 
   @Test

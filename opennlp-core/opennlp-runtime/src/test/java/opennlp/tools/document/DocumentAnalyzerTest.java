@@ -29,6 +29,7 @@ import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerAnnotator;
 import opennlp.tools.sentdetect.SentenceDetectorAnnotator;
+import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerAnnotator;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
@@ -159,6 +160,32 @@ public class DocumentAnalyzerTest {
         .annotate(Document.of("the dog").with(Layers.SENTENCES, List.of()));
     assertTrue(document.layers().contains(Layers.TOKENS));
     assertTrue(document.get(Layers.TOKENS).isEmpty());
+  }
+
+  /**
+   * Verifies that shifting a token span into document coordinates keeps the type and
+   * probability the tokenizer reported.
+   */
+  @Test
+  void testTokenizerKeepsSpanTypeAndProbabilityWhenShifting() {
+    final Tokenizer typed = new Tokenizer() {
+
+      @Override
+      public String[] tokenize(String s) {
+        throw new UnsupportedOperationException("the adapter only calls tokenizePos");
+      }
+
+      @Override
+      public Span[] tokenizePos(String s) {
+        return new Span[] {new Span(0, s.length(), "word", 0.5)};
+      }
+    };
+    final Document document = new TokenizerAnnotator(typed)
+        .annotate(Document.of("ab cd").with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 2), "ab"), new Annotation<>(new Span(3, 5), "cd"))));
+    final Span shifted = document.get(Layers.TOKENS).get(1).span();
+    assertEquals(new Span(3, 5, "word"), shifted);
+    assertEquals(0.5, shifted.getProb());
   }
 
   @Test
