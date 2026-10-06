@@ -35,6 +35,8 @@ import opennlp.tools.lemmatizer.Lemmatizer;
 /**
  * A {@link Lemmatizer} implementation based on Morfologik binary
  * dictionaries
+ * <p>
+ * Words are always lower-cased with {@link Locale#ROOT} before lookup.
  */
 public class MorfologikLemmatizer implements Lemmatizer {
 
