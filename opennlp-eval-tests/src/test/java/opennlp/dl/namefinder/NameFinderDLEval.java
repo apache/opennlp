@@ -43,6 +43,8 @@ import opennlp.tools.util.Span;
 public class NameFinderDLEval extends AbstractEvalTest {
 
   private static final Logger logger = LoggerFactory.getLogger(NameFinderDLEval.class);
+  private static final String MODEL_PATH = "onnx/namefinder/model.onnx";
+  private static final String VOCAB_PATH = "onnx/namefinder/vocab.txt";
   private final SentenceDetector sentenceDetector;
 
   public NameFinderDLEval() throws IOException {
@@ -55,8 +57,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
@@ -100,8 +102,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
   @Test
   public void tokenNameFinderConcurrentTest() throws Exception {
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
@@ -163,8 +165,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
   @Test
   public void nameFinderDlConcurrentWithSentenceDetectorMe() throws Exception {
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
@@ -225,8 +227,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
   @Test
   public void tokenNameFinderSnapshotsInferenceOptionsTest() throws Exception {
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
@@ -268,8 +270,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[] {"His", "name", "was", "George", "Washington"};
 
@@ -296,8 +298,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[] {"His", "name", "was", "George"};
 
@@ -323,8 +325,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[] {};
 
@@ -342,8 +344,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[] {"I", "went", "to", "the", "park"};
 
@@ -362,8 +364,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final String[] tokens = new String[] {"George", "Washington", "and", "Abraham", "Lincoln",
         "were", "presidents"};
@@ -416,8 +418,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
   @Test
   public void findInOriginalMapsSpansAcrossNonBmpDash() throws Exception {
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final InferenceOptions options = new InferenceOptions();
     options.setNormalizeDashes(true);
@@ -441,8 +443,7 @@ public class NameFinderDLEval extends AbstractEvalTest {
         }
       }
       Assertions.assertNotNull(person, "the PER entity should still be detected after the dash");
-      // Mapped back through the alignment, the span covers the entity in the ORIGINAL input (which
-      // still contains the two-unit dash); without the mapping it would be shifted left by one.
+      // The original input still contains the two-unit dash.
       Assertions.assertEquals("George Washington", person.getCoveredText(original));
       Assertions.assertEquals(original.indexOf("George Washington"), person.getStart());
     }
@@ -459,8 +460,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
   @Test
   public void findKeepsFullEntityAcrossChunkBoundary() throws Exception {
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final InferenceOptions options = new InferenceOptions();
     // chunk 1 = tokens [0,7) (ends at "United"); chunk 2 = tokens [5,9) ("the United States .").
@@ -503,8 +504,8 @@ public class NameFinderDLEval extends AbstractEvalTest {
   @Test
   public void findDeduplicatesEntityDecodedInBothOverlappingChunks() throws Exception {
 
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
 
     final InferenceOptions options = new InferenceOptions();
     // chunk 1 = tokens [0,8); chunk 2 = tokens [4,9); "United States" (tokens 6,7) is in both.
@@ -534,7 +535,14 @@ public class NameFinderDLEval extends AbstractEvalTest {
 
   }
 
-  // Asserts no two spans overlap in character coordinates, the post-merge invariant of locate().
+  /**
+   * Asserts that no two spans overlap in character coordinates, as
+   * {@link NameFinderDL#find(String[])} and {@link NameFinderDL#findInOriginal(String[])}
+   * guarantee.
+   *
+   * @param spans The spans to check.
+   * @param text The joined input, for failure messages.
+   */
   private static void assertNoOverlappingSpans(final Span[] spans, final String text) {
     for (int i = 0; i < spans.length; i++) {
       for (int j = i + 1; j < spans.length; j++) {
@@ -545,18 +553,48 @@ public class NameFinderDLEval extends AbstractEvalTest {
     }
   }
 
+  /**
+   * Checks that {@link NameFinderDL#find(String[])} and
+   * {@link NameFinderDL#findInOriginal(String[])} reject a {@code null} token array and an array
+   * holding a {@code null} token.
+   */
   @Test
   public void findRejectsNullInput() throws Exception {
-    // Public entry points fail fast on a null token array rather than deeper inside String.join.
-    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+    final File model = model();
+    final File vocab = vocab();
+    final String[] nullToken = {"George", null};
 
     try (final NameFinderDL nameFinderDL =
              new NameFinderDL(model, vocab, getIds2Labels(), sentenceDetector)) {
       Assertions.assertThrows(IllegalArgumentException.class, () -> nameFinderDL.find(null));
       Assertions.assertThrows(IllegalArgumentException.class,
           () -> nameFinderDL.findInOriginal(null));
+      Assertions.assertThrows(IllegalArgumentException.class, () -> nameFinderDL.find(nullToken));
+      Assertions.assertThrows(IllegalArgumentException.class,
+          () -> nameFinderDL.findInOriginal(nullToken));
     }
+  }
+
+  /**
+   * Locates the ONNX name finder model under the evaluation data directory.
+   *
+   * @return The model file.
+   * @throws IOException Thrown if the data directory does not exist.
+   * @throws IllegalArgumentException Thrown if OPENNLP_DATA_DIR is not set.
+   */
+  private static File model() throws IOException {
+    return new File(getOpennlpDataDir(), MODEL_PATH);
+  }
+
+  /**
+   * Locates the vocabulary of the ONNX name finder model under the evaluation data directory.
+   *
+   * @return The vocabulary file.
+   * @throws IOException Thrown if the data directory does not exist.
+   * @throws IllegalArgumentException Thrown if OPENNLP_DATA_DIR is not set.
+   */
+  private static File vocab() throws IOException {
+    return new File(getOpennlpDataDir(), VOCAB_PATH);
   }
 
   private Map<Integer, String> getIds2Labels() {

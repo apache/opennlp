@@ -28,12 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestReporter;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -54,7 +52,7 @@ public class HunspellCompatibilityEval extends AbstractEvalTest {
   private static final int THREADS = 4;
   private static final int REPETITIONS = 10;
   private static final int TIMEOUT_SECONDS = 60;
-  private static final String UNKNOWN = "zyzzyvax";
+  static final String UNKNOWN = "zyzzyvax";
 
   private static final Map<Dictionary, HunspellStemmer> STEMMERS = new EnumMap<>(Dictionary.class);
 
@@ -98,10 +96,10 @@ public class HunspellCompatibilityEval extends AbstractEvalTest {
    * @param accepted Whether the Hunspell spell checker accepted the input.
    * @param stems The distinct stems the Hunspell stemmer returned.
    */
-  private record Recorded(boolean accepted, Set<String> stems) { }
+  record Recorded(boolean accepted, Set<String> stems) { }
 
   /** The classification of one comparison. */
-  private enum Outcome {
+  enum Outcome {
     EXACT, EXPECTED_DIFFERENCE, IDENTITY_FALLBACK, UNEXPECTED
   }
 
@@ -123,26 +121,10 @@ public class HunspellCompatibilityEval extends AbstractEvalTest {
     }
   }
 
-  /** Checks the comparison classification on synthetic results. */
-  @Test
-  void comparisonValidation() {
-    final Set<String> complete = Set.of("card");
-    final Set<String> empty = Set.of();
-    final Set<String> identity = Set.of(UNKNOWN);
-    final Recorded accepted = new Recorded(true, complete);
-    final Recorded acceptedEmpty = new Recorded(true, Set.of());
-    final Recorded rejected = new Recorded(false, Set.of());
-    Assertions.assertAll(
-        () -> Assertions.assertEquals(Outcome.EXACT, classify("card", accepted, complete, null)),
-        () -> Assertions.assertEquals(Outcome.EXPECTED_DIFFERENCE,
-            classify("card", acceptedEmpty, complete, complete)),
-        () -> Assertions.assertEquals(Outcome.IDENTITY_FALLBACK, classify(UNKNOWN, rejected, identity, null)),
-        () -> Assertions.assertEquals(Outcome.UNEXPECTED, classify("card", accepted, empty, null)),
-        () -> Assertions.assertEquals(Outcome.UNEXPECTED, classify("card", acceptedEmpty, complete, null)),
-        () -> Assertions.assertEquals(Outcome.UNEXPECTED, classify("card", rejected, Set.of("cards"), null)),
-        () -> Assertions.assertEquals(Outcome.UNEXPECTED, classify("card", accepted, complete, complete)),
-        () -> Assertions.assertEquals(Outcome.UNEXPECTED, classify("card", acceptedEmpty, empty, complete)),
-        () -> Assertions.assertEquals(Outcome.UNEXPECTED, classify(UNKNOWN, accepted, identity, null)));
+  /** Releases the loaded dictionaries. */
+  @AfterAll
+  static void releaseDictionaries() {
+    STEMMERS.clear();
   }
 
   /**
@@ -246,12 +228,7 @@ public class HunspellCompatibilityEval extends AbstractEvalTest {
         return null;
       });
     }
-    try (var executor = Executors.newFixedThreadPool(THREADS)) {
-      for (var future : executor.invokeAll(tasks, TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-        Assertions.assertFalse(future.isCancelled(), "concurrent stemming timed out");
-        future.get();
-      }
-    }
+    runConcurrently(tasks, THREADS, TIMEOUT_SECONDS);
   }
 
   /**
@@ -290,7 +267,7 @@ public class HunspellCompatibilityEval extends AbstractEvalTest {
    * @param expected The recorded OpenNLP stems for a known difference, or {@code null}.
    * @return The classification.
    */
-  private static Outcome classify(String word, Recorded reference, Set<String> stems, Set<String> expected) {
+  static Outcome classify(String word, Recorded reference, Set<String> stems, Set<String> expected) {
     if (expected != null) {
       return reference.accepted() && !reference.stems().equals(stems) && expected.equals(stems)
           ? Outcome.EXPECTED_DIFFERENCE : Outcome.UNEXPECTED;
