@@ -33,6 +33,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -74,7 +75,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private static final Map<String, String> HAREM;
 
   private static final String NER_PREFIX = "NER:";
-  private static final char HYPHEN_CHAR = '-';
+  private static final char HYPHEN = '-';
   private static final char[] UNDERSCORE_SEPARATOR = {'_'};
   private static final char TAG_OPEN = '<';
   private static final char TAG_CLOSE = '>';
@@ -356,12 +357,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
 
     // lets split all hyphens
-    if (this.splitHyphenatedTokens && tok.indexOf(HYPHEN_CHAR) != -1 && tok.length() > 1) {
+    if (this.splitHyphenatedTokens && tok.indexOf(HYPHEN) != -1 && tok.length() > 1) {
       String[] parts = matchHyphenatedToken(tok);
 
       if (parts != null) {
         addIfNotEmpty(parts[0], out);
-        addIfNotEmpty(String.valueOf(HYPHEN_CHAR), out);
+        addIfNotEmpty(String.valueOf(HYPHEN), out);
         addIfNotEmpty(parts[1], out);
         addIfNotEmpty(parts[2], out);
         tokAdded = true;
@@ -431,10 +432,10 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    */
   String[] matchHyphenatedToken(String tok) {
     int len = tok.length();
-    if (len > 1 && tok.charAt(len - 1) == HYPHEN_CHAR && lettersEnd(tok, 0) == len - 1) {
+    if (len > 1 && tok.charAt(len - 1) == HYPHEN && lettersEnd(tok, 0) == len - 1) {
       return new String[] {tok.substring(0, len - 1), null, null};
     }
-    if (tok.charAt(0) == HYPHEN_CHAR) {
+    if (tok.charAt(0) == HYPHEN) {
       int lettersEnd = lettersEnd(tok, 1);
       if (lettersEnd > 1) {
         return new String[] {null, tok.substring(1, lettersEnd), tok.substring(lettersEnd)};
@@ -442,7 +443,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       return null;
     }
     int firstEnd = lettersEnd(tok, 0);
-    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == HYPHEN_CHAR) {
+    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == HYPHEN) {
       int secondEnd = lettersEnd(tok, firstEnd + 1);
       if (secondEnd > firstEnd + 1) {
         return new String[] {tok.substring(0, firstEnd),
@@ -537,16 +538,16 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    *
    * @param paragraph The sentence.
    * @return The id.
-   * @throws RuntimeException Thrown if the metadata has no id or one that does not fit into an
-   *                          {@code int}.
+   * @throws InvalidFormatException Thrown if the metadata has no id or one that does not fit into
+   *                                an {@code int}.
    */
-  private int getTextID(Sentence paragraph) {
+  private int getTextID(Sentence paragraph) throws InvalidFormatException {
     final String meta = paragraph.metadata();
     boolean literary = meta.startsWith(LITERARY_PREFIX);
     if (literary || meta.startsWith(SCIENTIFIC_PREFIX)) {
       String textName = literary ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
       if (textName == null) {
-        throw new RuntimeException("Invalid metadata: " + meta);
+        throw new InvalidFormatException("Invalid metadata: " + meta);
       }
       if (textName.isEmpty()) {
         return -1;

@@ -27,6 +27,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -132,7 +133,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     return false;
   }
 
-  private void updateMeta() {
+  private void updateMeta() throws InvalidFormatException {
     if (this.sent != null) {
       String meta = this.sent.metadata();
       ADMetadata.TextAndParagraph ids = ADMetadata.requireTextAndParagraph(meta);

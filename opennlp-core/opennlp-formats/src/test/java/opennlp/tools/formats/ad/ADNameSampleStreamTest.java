@@ -33,6 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -308,7 +309,7 @@ public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSampl
     List<String> lines = List.of("<s>", source, sentenceId + " Olá .", "</s>");
     try (ADNameSampleStream stream =
              new ADNameSampleStream(ObjectStreamUtils.createObjectStream(lines), false)) {
-      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class, stream::read);
       Assertions.assertTrue(e.getMessage().startsWith("Invalid metadata: " + sentenceId + " p="));
     }
   }

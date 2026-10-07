@@ -17,6 +17,7 @@
 
 package opennlp.tools.formats.ad;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -73,13 +74,13 @@ final class ADMetadata {
    *
    * @param meta The metadata.
    * @return The two ids.
-   * @throws RuntimeException Thrown if either id is missing or does not fit into an
-   *                          {@code int}.
+   * @throws InvalidFormatException Thrown if either id is missing or does not fit into an
+   *                                {@code int}.
    */
-  static TextAndParagraph requireTextAndParagraph(String meta) {
+  static TextAndParagraph requireTextAndParagraph(String meta) throws InvalidFormatException {
     TextAndParagraph ids = parseTextAndParagraph(meta);
     if (ids == null) {
-      throw new RuntimeException("Invalid metadata: " + meta);
+      throw new InvalidFormatException("Invalid metadata: " + meta);
     }
     return ids;
   }
