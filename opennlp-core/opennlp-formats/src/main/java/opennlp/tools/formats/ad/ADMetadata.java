@@ -17,6 +17,7 @@
 
 package opennlp.tools.formats.ad;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -66,6 +67,22 @@ final class ADMetadata {
     int text = parseDigits(meta, spans.textStart(), spans.textEnd());
     int paragraph = parseDigits(meta, spans.paragraphStart(), spans.paragraphEnd());
     return text == -1 || paragraph == -1 ? null : new TextAndParagraph(text, paragraph);
+  }
+
+  /**
+   * Parses the text id and the paragraph id as {@link #parseTextAndParagraph(String)} does.
+   *
+   * @param meta The metadata.
+   * @return The two ids.
+   * @throws InvalidFormatException Thrown if either id is missing or does not fit into an
+   *                                {@code int}.
+   */
+  static TextAndParagraph requireTextAndParagraph(String meta) throws InvalidFormatException {
+    TextAndParagraph ids = parseTextAndParagraph(meta);
+    if (ids == null) {
+      throw new InvalidFormatException("Invalid metadata: " + meta);
+    }
+    return ids;
   }
 
   /**
@@ -137,15 +154,11 @@ final class ADMetadata {
    * @return The number, or -1 if it does not fit into an {@code int}.
    */
   private static int parseDigits(String meta, int start, int end) {
-    int value = 0;
-    for (int i = start; i < end; i++) {
-      int digit = meta.charAt(i) - '0';
-      if (value > (Integer.MAX_VALUE - digit) / 10) {
-        return -1;
-      }
-      value = value * 10 + digit;
+    try {
+      return Integer.parseInt(meta, start, end, 10);
+    } catch (NumberFormatException e) {
+      return -1;
     }
-    return value;
   }
 
 }

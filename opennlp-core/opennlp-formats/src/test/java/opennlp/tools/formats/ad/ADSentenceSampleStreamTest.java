@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.sentdetect.SentenceSample;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -75,7 +76,7 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
         "</s>");
     try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
         ObjectStreamUtils.createObjectStream(lines), true)) {
-      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class, stream::read);
       Assertions.assertEquals("Invalid metadata: AX p=0 src", e.getMessage());
     }
   }
@@ -103,7 +104,7 @@ public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<Sente
     List<String> lines = List.of("<s>", "SOURCE: src", "2147483648 Hello .", "</s>");
     try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
         ObjectStreamUtils.createObjectStream(lines), true)) {
-      RuntimeException e = Assertions.assertThrows(RuntimeException.class, stream::read);
+      InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class, stream::read);
       Assertions.assertEquals("Invalid metadata: 2147483648 p=0 src", e.getMessage());
     }
   }

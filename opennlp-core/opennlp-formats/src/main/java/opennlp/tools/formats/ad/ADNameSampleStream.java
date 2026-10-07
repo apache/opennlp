@@ -33,6 +33,7 @@ import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
@@ -74,14 +75,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private static final Map<String, String> HAREM;
 
   private static final String NER_PREFIX = "NER:";
-  private static final String HYPHEN = "-";
-  private static final char HYPHEN_CHAR = '-';
+  private static final char HYPHEN = '-';
   private static final char[] UNDERSCORE_SEPARATOR = {'_'};
   private static final char TAG_OPEN = '<';
   private static final char TAG_CLOSE = '>';
   private static final String LITERARY_PREFIX = "LIT";
   private static final String SCIENTIFIC_PREFIX = "CIE";
-  private static final String INVALID_METADATA = "Invalid metadata: ";
 
   static {
     Map<String, String> harem = new HashMap<>();
@@ -358,12 +357,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
 
     // lets split all hyphens
-    if (this.splitHyphenatedTokens && tok.contains(HYPHEN) && tok.length() > 1) {
+    if (this.splitHyphenatedTokens && tok.indexOf(HYPHEN) != -1 && tok.length() > 1) {
       String[] parts = matchHyphenatedToken(tok);
 
       if (parts != null) {
         addIfNotEmpty(parts[0], out);
-        addIfNotEmpty(HYPHEN, out);
+        addIfNotEmpty(String.valueOf(HYPHEN), out);
         addIfNotEmpty(parts[1], out);
         addIfNotEmpty(parts[2], out);
         tokAdded = true;
@@ -433,10 +432,10 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    */
   String[] matchHyphenatedToken(String tok) {
     int len = tok.length();
-    if (len > 1 && tok.charAt(len - 1) == HYPHEN_CHAR && lettersEnd(tok, 0) == len - 1) {
+    if (len > 1 && tok.charAt(len - 1) == HYPHEN && lettersEnd(tok, 0) == len - 1) {
       return new String[] {tok.substring(0, len - 1), null, null};
     }
-    if (tok.charAt(0) == HYPHEN_CHAR) {
+    if (tok.charAt(0) == HYPHEN) {
       int lettersEnd = lettersEnd(tok, 1);
       if (lettersEnd > 1) {
         return new String[] {null, tok.substring(1, lettersEnd), tok.substring(lettersEnd)};
@@ -444,7 +443,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       return null;
     }
     int firstEnd = lettersEnd(tok, 0);
-    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == HYPHEN_CHAR) {
+    if (firstEnd > 0 && firstEnd + 1 < len && tok.charAt(firstEnd) == HYPHEN) {
       int secondEnd = lettersEnd(tok, firstEnd + 1);
       if (secondEnd > firstEnd + 1) {
         return new String[] {tok.substring(0, firstEnd),
@@ -535,20 +534,20 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * Reads the id of the text a sentence belongs to; adaptive data is cleared when it changes. In
    * the Amazonia corpus it is the text id of the metadata. In the literary and scientific corpora
    * the text is named by its reference prefix or its source attribute instead, and the id counts
-   * the distinct names seen so far, so it changes when a new text starts (OPENNLP-1951).
+   * the distinct names seen so far, so it changes when a new text starts.
    *
    * @param paragraph The sentence.
    * @return The id.
-   * @throws RuntimeException If the metadata has no id or one that does not fit into an
-   *                          {@code int}.
+   * @throws InvalidFormatException Thrown if the metadata has no id or one that does not fit into
+   *                                an {@code int}.
    */
-  private int getTextID(Sentence paragraph) {
+  private int getTextID(Sentence paragraph) throws InvalidFormatException {
     final String meta = paragraph.metadata();
     boolean literary = meta.startsWith(LITERARY_PREFIX);
     if (literary || meta.startsWith(SCIENTIFIC_PREFIX)) {
       String textName = literary ? ADMetadata.textPrefix(meta) : ADMetadata.source(meta);
       if (textName == null) {
-        throw new RuntimeException(INVALID_METADATA + meta);
+        throw new InvalidFormatException("Invalid metadata: " + meta);
       }
       if (textName.isEmpty()) {
         return -1;
@@ -559,11 +558,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       }
       return textIdMeta2;
     }
-    ADMetadata.TextAndParagraph ids = ADMetadata.parseTextAndParagraph(meta);
-    if (ids == null) {
-      throw new RuntimeException(INVALID_METADATA + meta);
-    }
-    return ids.text();
+    return ADMetadata.requireTextAndParagraph(meta).text();
   }
 
 }

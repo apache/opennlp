@@ -45,8 +45,7 @@ final class MascParserTestUtil {
    * @throws Exception Thrown if the document is not well-formed or the handler rejects it.
    */
   static <T extends DefaultHandler> T parse(String xml, T handler) throws Exception {
-    XmlUtil.createSaxParser().parse(
-        new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), handler);
+    XmlUtil.createSaxParser().parse(input(xml), handler);
     return handler;
   }
 

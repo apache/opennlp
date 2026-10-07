@@ -922,9 +922,10 @@ Organization: precision:   85.11%;  recall:   79.38%; F1:   82.14%. [target: 130
 		</para>
 		<para>
 		An identifier is the prefix <code>seg-r</code>, <code>penn-n</code> or <code>ne-n</code>
-		followed by ASCII digits, and a region has two nonnegative offsets in order. Lists of
-		identifiers and offsets are separated by space, tab, carriage return or line feed. A
-		document with another value in an annotation is skipped, and the log names the value.
+		followed by ASCII digits, and a region has two nonnegative offsets in order, each written
+		with ASCII digits only and no sign. Lists of identifiers and offsets are separated by
+		space, tab, carriage return or line feed. A document with another value in an annotation
+		is skipped, and the log names the value.
 		</para>
 	</section>
 </chapter>

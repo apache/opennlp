@@ -79,14 +79,15 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
 
           int endOffset;
           int nextBeginOffset = -1;
-          if (values[i].getCoveredText(line).toString().contains(";")) {
-            String[] parts = StringUtil.split(values[i].getCoveredText(line).toString(), ';');
+          String offsets = values[i].getCoveredText(line).toString();
+          if (offsets.contains(";")) {
+            String[] parts = StringUtil.split(offsets, ';');
             endOffset = parseInt(parts[0]);
             fragments.add(new Span(beginIndex, endOffset, type));
             beginIndex = parseInt(parts[1]);
           }
           else {
-            endOffset = parseInt(values[i].getCoveredText(line).toString());
+            endOffset = parseInt(offsets);
             firstTextTokenIndex = i + 1;
             fragments.add(new Span(beginIndex, endOffset, type));
             break;
