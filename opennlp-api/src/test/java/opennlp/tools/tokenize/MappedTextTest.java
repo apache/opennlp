@@ -31,6 +31,11 @@ public class MappedTextTest {
   }
 
   @Test
+  void testCapacityIsUsedAsGiven() {
+    assertEquals(42, new MappedText(42).capacity());
+  }
+
+  @Test
   void testZeroCapacityGrowsOnFirstAdd() {
     final MappedText mapped = new MappedText(0);
     mapped.add('a', 0, 1);

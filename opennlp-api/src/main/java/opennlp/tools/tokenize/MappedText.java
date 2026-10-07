@@ -50,13 +50,20 @@ final class MappedText {
    *
    * @param capacity The expected number of UTF-16 code units. Must not be negative. Zero is
    *     allowed and allocates nothing up front; the buffers grow on the first {@code add}.
+   *     Since it is only a sizing hint, a value above {@link #MAX_CAPACITY} is clamped to it.
    * @throws IllegalArgumentException Thrown if {@code capacity} is negative.
    */
   MappedText(int capacity) {
     ParamChecks.requireNonNegative(capacity, "capacity");
-    chars = new char[capacity];
-    starts = new int[capacity];
-    ends = new int[capacity];
+    final int initial = Math.min(capacity, MAX_CAPACITY);
+    chars = new char[initial];
+    starts = new int[initial];
+    ends = new int[initial];
+  }
+
+  /** {@return the number of code units the buffers hold before they have to grow} */
+  int capacity() {
+    return chars.length;
   }
 
   /**
