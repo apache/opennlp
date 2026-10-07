@@ -101,8 +101,8 @@ public class SimpleEventStreamBuilder {
   }
 
   /**
-   * Returns a stream over the events added so far. Each call returns a new stream that starts
-   * at the first event, and events added later do not appear in it.
+   * Returns a {@link ObjectStream stream} over the events added so far. Each call returns a new
+   * stream that starts at the first event, and events added later do not appear in it.
    *
    * @return An {@link ObjectStream} over the added events, in insertion order. The stream
    *         does not support {@link ObjectStream#reset()}.
