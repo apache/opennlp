@@ -16,6 +16,9 @@
  */
 package opennlp.tools.ml.model;
 
+import java.util.Arrays;
+
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -24,19 +27,22 @@ import opennlp.tools.util.StringUtil;
  */
 final class EventFields {
 
-  /** Message prefix for a negative context value; the offending context follows. */
-  static final String NEGATIVE_VALUE = "Negative values are not allowed: ";
-
-  /** Message prefix for a NaN or infinite context value; the offending context follows. */
-  static final String NON_FINITE_VALUE = "Values must be finite: ";
-
-  /** Message prefix for a blank line; the quoted line follows. */
-  static final String MISSING_OUTCOME = "An event line must start with an outcome: \"";
+  /** Message for a blank line; the line is filled in. */
+  private static final String MISSING_OUTCOME = "An event line must start with an outcome: \"%s\"";
 
   /** Space, tab, carriage return, line feed and form feed. */
   private static final char[] SEPARATORS = {' ', '\t', '\r', '\n', '\f'};
 
   private EventFields() {
+  }
+
+  /**
+   * The fields of one event line.
+   *
+   * @param outcome The outcome.
+   * @param contexts The contexts, possibly empty.
+   */
+  record EventLine(String outcome, String[] contexts) {
   }
 
   /**
@@ -48,5 +54,20 @@ final class EventFields {
    */
   static String[] split(String text) {
     return StringUtil.splitNonEmpty(text, SEPARATORS);
+  }
+
+  /**
+   * Splits an event line into its outcome and contexts, see {@link #split(String)}.
+   *
+   * @param line The event line, already checked for {@code null} by the caller.
+   * @return The first field as outcome and the other fields as contexts.
+   * @throws InvalidFormatException Thrown if {@code line} is empty or contains only separators.
+   */
+  static EventLine splitLine(String line) throws InvalidFormatException {
+    String[] fields = split(line);
+    if (fields.length == 0) {
+      throw new InvalidFormatException(String.format(MISSING_OUTCOME, line));
+    }
+    return new EventLine(fields[0], Arrays.copyOfRange(fields, 1, fields.length));
   }
 }

@@ -59,15 +59,15 @@ public class BasicContextGenerator implements ContextGenerator<String> {
    *
    * @param sep The separator, taken as written and not as a regular expression.
    *            Must not be {@code null} or empty, and must not contain a backslash or
-   *            an unpaired surrogate.
+   *            an unpaired surrogate. A backslash is rejected to catch regular expression
+   *            separators written for 2.x, such as {@code \s+}.
    * @throws IllegalArgumentException Thrown if {@code sep} is {@code null}, empty, contains a
    *                                  backslash, or contains an unpaired surrogate.
    */
   public BasicContextGenerator(String sep) {
     ParamChecks.requireNonEmpty(sep, "sep");
     if (sep.indexOf(BACKSLASH) >= 0) {
-      throw new IllegalArgumentException(
-          "sep is taken as written and must not contain a backslash: " + sep);
+      throw new IllegalArgumentException("sep must not contain a backslash: " + sep);
     }
     if (sep.codePoints().anyMatch(StringUtil::isUnpairedSurrogate)) {
       throw new IllegalArgumentException("sep must not contain an unpaired surrogate");
@@ -77,7 +77,8 @@ public class BasicContextGenerator implements ContextGenerator<String> {
 
   /**
    * {@inheritDoc}
-   * Splits {@code o} at each occurrence of the separator and leaves out empty parts.
+   * Splits {@code o} at each occurrence of the separator, or on runs of Unicode whitespace
+   * if none was given, and leaves out empty parts.
    */
   @Override
   public String[] getContext(String o) {

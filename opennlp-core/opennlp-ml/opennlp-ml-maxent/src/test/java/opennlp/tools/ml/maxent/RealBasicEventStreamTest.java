@@ -86,7 +86,7 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
     try (RealBasicEventStream eventStream = createEventStream(EVENTS_INVALID_NEGATIVE)) {
       IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
           eventStream::read);
-      Assertions.assertEquals("Negative values are not allowed: wc=ic=-1.0", e.getMessage());
+      Assertions.assertEquals("wc=ic=-1.0 must not be negative", e.getMessage());
     }
   }
 
@@ -99,22 +99,41 @@ public class RealBasicEventStreamTest extends AbstractEventStreamTest {
     }
   }
 
-  /**
-   * An outcome-only line is an event without contexts and does not end the stream, a tab
-   * separates fields, a no-break space does not, and a blank line is reported.
-   */
+  @Test
+  void testConstructorRejectsNull() {
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new RealBasicEventStream(null));
+    Assertions.assertEquals("ds must not be null", e.getMessage());
+  }
+
   @Test
   void testOutcomeOnlyLineDoesNotEndTheStream() throws IOException {
-    String input = "other\r\nsecond\tword=New\u00A0York=2.0\t中文=3.0\n \nother wc=x=1.0\n";
-    try (ObjectStream<Event> eventStream = createEventStream(input)) {
+    try (ObjectStream<Event> eventStream = createEventStream("other\r\nsecond wc=x=1.0\n")) {
       Event e = eventStream.read();
       Assertions.assertEquals("other", e.getOutcome());
       Assertions.assertEquals(0, e.getContext().length);
-      e = eventStream.read();
+      Assertions.assertEquals("second", eventStream.read().getOutcome());
+      Assertions.assertNull(eventStream.read());
+    }
+  }
+
+  @Test
+  void testTabSeparatesFieldsAndNoBreakSpaceDoesNot() throws IOException {
+    try (ObjectStream<Event> eventStream =
+             createEventStream("second\tword=New\u00A0York=2.0\t中文=3.0\n")) {
+      Event e = eventStream.read();
       Assertions.assertEquals("second", e.getOutcome());
       Assertions.assertArrayEquals(new String[] {"word=New\u00A0York", "中文"}, e.getContext());
       Assertions.assertArrayEquals(new float[] {2.0f, 3.0f}, e.getValues());
-      Assertions.assertThrows(InvalidFormatException.class, eventStream::read);
+    }
+  }
+
+  @Test
+  void testBlankLineIsRejected() throws IOException {
+    try (ObjectStream<Event> eventStream = createEventStream("other wc=x=1.0\n \nother wc=x=1.0\n")) {
+      Assertions.assertEquals("other", eventStream.read().getOutcome());
+      InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class, eventStream::read);
+      Assertions.assertEquals("An event line must start with an outcome: \" \"", e.getMessage());
     }
   }
 }

@@ -147,7 +147,9 @@ public class SimpleEventStreamBuilderTest {
   void testAddRejectsANegativeValueWithTheContextNamed(String context) {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add("other/n=x;1 " + context));
-    Assertions.assertEquals("Negative values are not allowed: " + context, e.getMessage());
+    Assertions.assertEquals("format error of the event \"other/n=x;1 " + context
+        + "\". " + context + " must not be negative", e.getMessage());
+    Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
   }
 
   /** {@code Float.parseFloat} accepts these, but they are no usable feature values. */
@@ -156,7 +158,9 @@ public class SimpleEventStreamBuilderTest {
   void testAddRejectsANonFiniteValueWithTheContextNamed(String context) {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add("other/n=x;1 " + context));
-    Assertions.assertEquals("Values must be finite: " + context, e.getMessage());
+    Assertions.assertEquals("format error of the event \"other/n=x;1 " + context
+        + "\". " + context + " must be finite", e.getMessage());
+    Assertions.assertInstanceOf(IllegalArgumentException.class, e.getCause());
   }
 
   private static Stream<Arguments> valuesThatAreNotNumbers() {
@@ -181,14 +185,45 @@ public class SimpleEventStreamBuilderTest {
   // no slash, empty outcome, no contexts, blank contexts
   @ValueSource(strings = {"other w=he", "/w=he", "other/", "other/ \t "})
   void testAddRejectsMissingOutcomeOrContexts(String event) {
-    Assertions.assertThrows(IllegalArgumentException.class,
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add(event));
+    Assertions.assertEquals("format error of the event \"" + event + "\"", e.getMessage());
   }
 
   @Test
   void testAddRejectsAContextWithoutValueWhenTheFirstHasOne() {
-    Assertions.assertThrows(IllegalArgumentException.class,
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SimpleEventStreamBuilder().add("other/w=he;0.5 n1w=belongs"));
+    Assertions.assertEquals("format error of the event \"other/w=he;0.5 n1w=belongs\". "
+        + "\"n1w=belongs\" is not name;value", e.getMessage());
+  }
+
+  @Test
+  void testEachBuiltStreamStartsAtTheFirstEvent() throws IOException {
+    SimpleEventStreamBuilder builder = new SimpleEventStreamBuilder().add("a/x").add("b/y");
+    try (ObjectStream<Event> first = builder.build(); ObjectStream<Event> second = builder.build()) {
+      Assertions.assertEquals("a", first.read().getOutcome());
+      Assertions.assertEquals("a", second.read().getOutcome());
+      Assertions.assertEquals("b", first.read().getOutcome());
+      Assertions.assertNull(first.read());
+      Assertions.assertEquals("b", second.read().getOutcome());
+      Assertions.assertNull(second.read());
+    }
+  }
+
+  @Test
+  void testEventsAddedAfterBuildAreNotInTheBuiltStream() throws IOException {
+    SimpleEventStreamBuilder builder = new SimpleEventStreamBuilder().add("a/x");
+    try (ObjectStream<Event> before = builder.build()) {
+      builder.add("b/y");
+      Assertions.assertEquals("a", before.read().getOutcome());
+      Assertions.assertNull(before.read());
+    }
+    try (ObjectStream<Event> after = builder.build()) {
+      Assertions.assertEquals("a", after.read().getOutcome());
+      Assertions.assertEquals("b", after.read().getOutcome());
+      Assertions.assertNull(after.read());
+    }
   }
 
   @ParameterizedTest

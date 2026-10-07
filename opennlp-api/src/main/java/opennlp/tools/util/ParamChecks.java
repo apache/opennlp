@@ -37,6 +37,7 @@ public final class ParamChecks {
   private static final String NOT_EMPTY_SUFFIX = " must not be null or empty";
   private static final String NOT_BLANK_SUFFIX = " must not be null or blank";
   private static final String NOT_NEGATIVE_SUFFIX = " must not be negative";
+  private static final String FINITE_SUFFIX = " must be finite";
 
   private ParamChecks() {
     // utility class
@@ -148,6 +149,42 @@ public final class ParamChecks {
   public static long requireNonNegative(long value, String name) {
     if (value < 0) {
       throw new IllegalArgumentException(name + NOT_NEGATIVE_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is not negative.
+   * <p>
+   * {@code NaN} is not less than zero and is returned unchanged, so check it with
+   * {@link #requireFinite(double, String)} first where it is not allowed. The message of a
+   * thrown exception is {@code "<name> must not be negative"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @return {@code value}, never negative.
+   * @throws IllegalArgumentException Thrown if {@code value} is less than zero.
+   */
+  public static double requireNonNegative(double value, String name) {
+    if (value < 0) {
+      throw new IllegalArgumentException(name + NOT_NEGATIVE_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is finite.
+   * <p>
+   * The message of a thrown exception is {@code "<name> must be finite"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @return {@code value}, never {@code NaN} or infinite.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code NaN} or infinite.
+   */
+  public static double requireFinite(double value, String name) {
+    if (!Double.isFinite(value)) {
+      throw new IllegalArgumentException(name + FINITE_SUFFIX);
     }
     return value;
   }

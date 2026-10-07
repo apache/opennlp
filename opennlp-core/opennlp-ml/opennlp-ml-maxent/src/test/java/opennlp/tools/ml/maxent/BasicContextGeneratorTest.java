@@ -108,8 +108,7 @@ public class BasicContextGeneratorTest {
   void testEscapedSeparatorIsRejected(String separator) {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new BasicContextGenerator(separator));
-    Assertions.assertEquals("sep is taken as written and must not contain a backslash: "
-        + separator, e.getMessage());
+    Assertions.assertEquals("sep must not contain a backslash: " + separator, e.getMessage());
   }
 
   private static Stream<Arguments> whitespaceSeparators() {
