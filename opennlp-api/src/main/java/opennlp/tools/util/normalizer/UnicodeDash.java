@@ -18,6 +18,7 @@ package opennlp.tools.util.normalizer;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,8 +139,8 @@ public final class UnicodeDash {
         defaults.add(dash.codePoint());
       }
     }
-    BY_CODE_POINT = Map.copyOf(byCodePoint);
-    MATHEMATICAL = List.copyOf(mathematical);
+    BY_CODE_POINT = Collections.unmodifiableMap(byCodePoint);
+    MATHEMATICAL = Collections.unmodifiableList(mathematical);
     DEFAULT_CODE_POINTS = defaults.stream().mapToInt(Integer::intValue).toArray();
   }
 

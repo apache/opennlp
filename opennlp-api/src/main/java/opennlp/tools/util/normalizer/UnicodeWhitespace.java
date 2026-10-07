@@ -18,6 +18,7 @@ package opennlp.tools.util.normalizer;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,9 +192,9 @@ public final class UnicodeWhitespace {
         nonBreaking.add(ws);
       }
     }
-    BY_CODE_POINT = Map.copyOf(byCodePoint);
-    LINE_BREAKS = List.copyOf(lineBreaks);
-    NON_BREAKING = List.copyOf(nonBreaking);
+    BY_CODE_POINT = Collections.unmodifiableMap(byCodePoint);
+    LINE_BREAKS = Collections.unmodifiableList(lineBreaks);
+    NON_BREAKING = Collections.unmodifiableList(nonBreaking);
     for (final RelatedCharacter related : LOOKALIKES) {
       LOOKALIKE_MEMBERSHIP.set(related.codePoint());
     }
