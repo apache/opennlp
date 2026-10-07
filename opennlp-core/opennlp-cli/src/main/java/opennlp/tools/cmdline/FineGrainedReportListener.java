@@ -45,6 +45,10 @@ public abstract class FineGrainedReportListener {
   private static final char[] alpha = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
       'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
       'w', 'x', 'y', 'z' };
+  private static final String PERCENT_PATTERN = "{0,number,#.##%}";
+  private static final String SCORE_PATTERN = "{0,number,#.###}";
+  private static final String AVERAGE_PATTERN = "{0,number,#.##}";
+  private static final char CATEGORY_SEPARATOR = '-';
   private final PrintStream printStream;
   private final Stats stats = new Stats();
 
@@ -177,6 +181,19 @@ public abstract class FineGrainedReportListener {
     return new MessageFormat(pattern, Locale.ROOT).format(new Object[] {value});
   }
 
+  /**
+   * Returns the category of a label, which is the part before the first
+   * {@link #CATEGORY_SEPARATOR}, or the whole label if it has none.
+   *
+   * @param label The label to extract the category from.
+   *
+   * @return The category of {@code label}.
+   */
+  private static String category(String label) {
+    final int separator = label.indexOf(CATEGORY_SEPARATOR);
+    return separator < 0 ? label : label.substring(0, separator);
+  }
+
   private double[][] getConfusionMatrix() {
     return stats.getConfusionMatrix();
   }
@@ -201,7 +218,7 @@ public abstract class FineGrainedReportListener {
           minColumnSize = matrix[i][j].length();
         }
       }
-      matrix[i][j] = formatNumber("{0,number,#.##%}", data[i][j]);
+      matrix[i][j] = formatNumber(PERCENT_PATTERN, data[i][j]);
       if (data[i][j] == 1 && filter) {
         initialIndex = i + 1;
       }
@@ -243,12 +260,12 @@ public abstract class FineGrainedReportListener {
         String.format("%21s: %6s", "Max sentence size", getMaxSentenceSize())).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Average sentence size",
-            formatNumber("{0,number,#.##}", getAverageSentenceSize()))).append("\n");
+            formatNumber(AVERAGE_PATTERN, getAverageSentenceSize()))).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Tags count", getNumberOfTags())).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Accuracy",
-            formatNumber("{0,number,#.##%}", getAccuracy()))).append("\n");
+            formatNumber(PERCENT_PATTERN, getAccuracy()))).append("\n");
     printFooter("Evaluation Corpus Statistics");
   }
 
@@ -322,7 +339,7 @@ public abstract class FineGrainedReportListener {
       String tok = tokIterator.next();
       int ocurrencies = getTokenFrequency(tok);
       int errors = getTokenErrors(tok);
-      String rate = formatNumber("{0,number,#.##%}", (double) errors
+      String rate = formatNumber(PERCENT_PATTERN, (double) errors
           / ocurrencies);
 
       printStream.append(String.format(format, tok, errors, ocurrencies, rate)
@@ -361,7 +378,7 @@ public abstract class FineGrainedReportListener {
     for (String tag : tags) {
       int ocurrencies = getTagFrequency(tag);
       int errors = getTagErrors(tag);
-      String rate = formatNumber("{0,number,#.###}", (double) errors
+      String rate = formatNumber(SCORE_PATTERN, (double) errors
           / ocurrencies);
 
       double p = getTagPrecision(tag);
@@ -369,9 +386,9 @@ public abstract class FineGrainedReportListener {
       double f = getTagFMeasure(tag);
 
       printStream.append(String.format(format, tag, errors, ocurrencies, rate,
-          formatNumber("{0,number,#.###}", p > 0 ? p : 0),
-          formatNumber("{0,number,#.###}", r > 0 ? r : 0),
-          formatNumber("{0,number,#.###}", f > 0 ? f : 0))
+          formatNumber(SCORE_PATTERN, p > 0 ? p : 0),
+          formatNumber(SCORE_PATTERN, r > 0 ? r : 0),
+          formatNumber(SCORE_PATTERN, f > 0 ? f : 0))
 
       );
     }
@@ -419,7 +436,7 @@ public abstract class FineGrainedReportListener {
             .append("]\n")
             .append(
                 String.format("%12s: %-8s", "Accuracy",
-                    formatNumber("{0,number,#.##%}", acc)))
+                    formatNumber(PERCENT_PATTERN, acc)))
             .append("\n");
         printStream.append(
             String.format("%12s: %-8s", "Ocurrencies",
@@ -507,8 +524,7 @@ public abstract class FineGrainedReportListener {
       for (Entry<String, ConfusionMatrixLine> entry : confusionMatrix.entrySet()) {
         final String key = entry.getKey();
         final ConfusionMatrixLine confusionMatrixLine = entry.getValue();
-        final int dash = key.indexOf('-');
-        final String category = dash < 0 ? key : key.substring(0, dash);
+        final String category = category(key);
         double currentAccuracy = categoryAccuracy.getOrDefault(category, 0.0d);
         categoryAccuracy.put(category, currentAccuracy + confusionMatrixLine.getAccuracy());
       }
@@ -519,10 +535,8 @@ public abstract class FineGrainedReportListener {
       if (o1.equals(o2)) {
         return 0;
       }
-      final int dash1 = o1.indexOf('-');
-      final int dash2 = o2.indexOf('-');
-      final String c1 = dash1 < 0 ? o1 : o1.substring(0, dash1);
-      final String c2 = dash2 < 0 ? o2 : o2.substring(0, dash2);
+      final String c1 = category(o1);
+      final String c2 = category(o2);
 
       if (c1.equals(c2)) { // same category - sort by confusion matrix
 
@@ -611,8 +625,7 @@ public abstract class FineGrainedReportListener {
       for (Entry<String, Counter> entry : labelCounter.entrySet()) {
         final String key = entry.getKey();
         final Counter value = entry.getValue();
-        final int dash = key.indexOf('-');
-        final String category = dash < 0 ? key : key.substring(0, dash);
+        final String category = category(key);
         int currentCount = categoryCounter.getOrDefault(category, 0);
         categoryCounter.put(category, currentCount + value.value());
       }
@@ -623,10 +636,8 @@ public abstract class FineGrainedReportListener {
       if (o1.equals(o2)) {
         return 0;
       }
-      final int dash1 = o1.indexOf('-');
-      final int dash2 = o2.indexOf('-');
-      final String c1 = dash1 < 0 ? o1 : o1.substring(0, dash1);
-      final String c2 = dash2 < 0 ? o2 : o2.substring(0, dash2);
+      final String c1 = category(o1);
+      final String c2 = category(o2);
 
       if (c1.equals(c2)) { // same category - sort by confusion matrix
 
