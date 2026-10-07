@@ -42,6 +42,15 @@ import java.util.Optional;
  */
 public final class UnicodeWhitespace {
 
+  /** The canonical ASCII whitespace that whitespace is normalized to: {@code U+0020} SPACE. */
+  public static final int SPACE = 0x0020;
+
+  /** {@code U+000D} CARRIAGE RETURN, the first half of a {@code CRLF} line break. */
+  public static final int CARRIAGE_RETURN = 0x000D;
+
+  /** {@code U+000A} LINE FEED, a line break on its own or the second half of {@code CRLF}. */
+  public static final int LINE_FEED = 0x000A;
+
   /** Unicode general category for a whitespace or related code point. */
   public enum Category {
     /** {@code Cc} - control. */

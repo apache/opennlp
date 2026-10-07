@@ -24,6 +24,10 @@ import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.CodePoints.At;
 
+import static opennlp.tools.util.normalizer.UnicodeWhitespace.CARRIAGE_RETURN;
+import static opennlp.tools.util.normalizer.UnicodeWhitespace.LINE_FEED;
+import static opennlp.tools.util.normalizer.UnicodeWhitespace.SPACE;
+
 /**
  * A configurable class of Unicode code points and the cursor based operations over it.
  *
@@ -38,10 +42,6 @@ import opennlp.tools.util.normalizer.CodePoints.At;
  * <p>Instances are immutable and thread-safe.</p>
  */
 public final class CharClass {
-
-  private static final int SPACE = 0x0020;
-  private static final int CARRIAGE_RETURN = 0x000D;
-  private static final int LINE_FEED = 0x000A;
 
   private static final CharClass WHITESPACE =
       new CharClass(CodePointSet.of(UnicodeWhitespace.codePoints()), SPACE);
@@ -633,7 +633,7 @@ public final class CharClass {
    *
    * @param text The text to collapse.
    * @param runReplacement Chooses the replacement for each run.
-   * @return The collapsed text and its alignment.
+   * @return The collapsed text and its alignment, as {@link AlignedText}.
    */
   private AlignedText collapseRunsAligned(CharSequence text, RunReplacement runReplacement) {
     final Alignment.Builder alignment = new Alignment.Builder(text.length());
@@ -642,7 +642,7 @@ public final class CharClass {
   }
 
   /**
-   * Returns the run replacement of the {@code collapsePreserving} operations:
+   * Returns the {@link RunReplacement} of the {@code collapsePreserving} operations:
    * {@code keepReplacement} for a run that contains a {@code keep} code point, the usual
    * replacement otherwise.
    */
@@ -653,7 +653,7 @@ public final class CharClass {
   }
 
   /**
-   * Returns the run replacement of the {@code collapseParagraphPreserving} operations:
+   * Returns the {@link RunReplacement} of the {@code collapseParagraphPreserving} operations:
    * {@code paragraphReplacement} for a run with two or more logical line breaks, the usual
    * replacement otherwise.
    */
@@ -669,7 +669,7 @@ public final class CharClass {
    * @param text The text to scan.
    * @param from The index where the range starts.
    * @param to The index where the range ends, exclusive.
-   * @param set The code points to look for.
+   * @param set The {@link CodePointSet} of code points to look for.
    * @return {@code true} if any code point in the range is in {@code set}.
    */
   private static boolean containsAny(CharSequence text, int from, int to, CodePointSet set) {

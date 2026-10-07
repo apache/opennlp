@@ -25,6 +25,8 @@ import java.util.Set;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.tokenize.BertNormalization.CONTINUATION_PREFIX;
+
 /**
  * A {@link Tokenizer} implementation which performs tokenization
  * using word pieces.
@@ -236,7 +238,7 @@ public class WordpieceTokenizer implements Tokenizer {
 
             // This is a substring so prefix it with ##.
             if (start > 0) {
-              substring = BertNormalization.CONTINUATION_PREFIX + substring;
+              substring = CONTINUATION_PREFIX + substring;
             }
 
             // See if the substring is in the vocabulary.

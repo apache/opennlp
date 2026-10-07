@@ -26,6 +26,8 @@ import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
+import static opennlp.tools.tokenize.BertNormalization.CONTINUATION_PREFIX;
+
 /**
  * A {@link SubwordTokenizer} implementing the BERT tokenization stages: basic tokenization
  * (control removal, whitespace normalization, CJK isolation, optional lower casing with accent
@@ -366,11 +368,11 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     private VocabularyTrie(Map<String, Integer> vocabulary, boolean continuation) {
       for (final Map.Entry<String, Integer> entry : vocabulary.entrySet()) {
         final String piece = entry.getKey();
-        final boolean continuationPiece = piece.startsWith(BertNormalization.CONTINUATION_PREFIX);
+        final boolean continuationPiece = piece.startsWith(CONTINUATION_PREFIX);
         if (continuationPiece != continuation) {
           continue;
         }
-        final int offset = continuationPiece ? BertNormalization.CONTINUATION_PREFIX.length() : 0;
+        final int offset = continuationPiece ? CONTINUATION_PREFIX.length() : 0;
         if (offset == piece.length()) {
           continue;
         }

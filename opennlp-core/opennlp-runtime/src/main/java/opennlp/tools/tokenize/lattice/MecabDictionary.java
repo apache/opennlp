@@ -78,7 +78,7 @@ public final class MecabDictionary {
    */
   static final String DEFAULT_CATEGORY = "DEFAULT";
 
-  private static final String MATRIX_DEF = "matrix.def";
+  static final String MATRIX_DEF = "matrix.def";
   static final String CHAR_DEF = "char.def";
   static final String UNK_DEF = "unk.def";
 

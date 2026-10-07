@@ -56,8 +56,8 @@ final class BertNormalization {
    * Surrounds every punctuation character with spaces that map to an empty range at the
    * character's start and end, so each punctuation character becomes its own token.
    *
-   * @param in The mapped text to transform.
-   * @return A new mapping with the isolation spaces inserted.
+   * @param in The {@link MappedText mapped text} to transform.
+   * @return A new {@link MappedText mapping} with the isolation spaces inserted.
    */
   static MappedText isolatePunctuation(MappedText in) {
     final MappedText out = new MappedText(in.length + 16);
