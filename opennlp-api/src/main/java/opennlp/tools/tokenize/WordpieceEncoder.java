@@ -18,7 +18,6 @@ package opennlp.tools.tokenize;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,8 @@ import java.util.Map;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
+
+import static opennlp.tools.tokenize.BertNormalization.CONTINUATION_PREFIX;
 
 /**
  * A {@link SubwordTokenizer} implementing the BERT tokenization stages: basic tokenization
@@ -79,10 +80,7 @@ import opennlp.tools.util.StringUtil;
 @ThreadSafe
 public final class WordpieceEncoder implements SubwordTokenizer {
 
-  // The wordpiece vocabulary convention: a piece with this prefix continues the current word,
-  // so it can only match after the word's first piece.
-  private static final String CONTINUATION_PREFIX = "##";
-
+  private static final int REPLACEMENT_CHARACTER = 0xFFFD;
   private static final int GREEK_CAPITAL_SIGMA = 0x03A3;
   private static final int GREEK_SMALL_FINAL_SIGMA = 0x03C2;
 
@@ -227,18 +225,9 @@ public final class WordpieceEncoder implements SubwordTokenizer {
                           String classificationToken, String separatorToken,
                           String unknownToken, int maxWordCodePoints) {
     ParamChecks.requireNonNullArg(vocabularyIds, "vocabularyIds");
-    ParamChecks.requireNonNullArg(classificationToken, "classificationToken");
-    ParamChecks.requireNonNullArg(separatorToken, "separatorToken");
-    ParamChecks.requireNonNullArg(unknownToken, "unknownToken");
-    if (classificationToken.isEmpty()) {
-      throw new IllegalArgumentException("classificationToken must not be empty");
-    }
-    if (separatorToken.isEmpty()) {
-      throw new IllegalArgumentException("separatorToken must not be empty");
-    }
-    if (unknownToken.isEmpty()) {
-      throw new IllegalArgumentException("unknownToken must not be empty");
-    }
+    ParamChecks.requireNonEmpty(classificationToken, "classificationToken");
+    ParamChecks.requireNonEmpty(separatorToken, "separatorToken");
+    ParamChecks.requireNonEmpty(unknownToken, "unknownToken");
     ParamChecks.requireNonNegative(maxWordCodePoints, "maxWordCodePoints");
     final Map<String, Integer> byPiece = HashMap.newHashMap(vocabularyIds.size());
     for (final Map.Entry<String, Integer> entry : vocabularyIds.entrySet()) {
@@ -309,7 +298,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     if (lowerCase) {
       mapped = lowerCaseAndStripAccents(mapped);
     }
-    mapped = isolatePunctuation(mapped);
+    mapped = BertNormalization.isolatePunctuation(mapped);
 
     final List<SubwordPiece> pieces = new ArrayList<>();
     pieces.add(new SubwordPiece(classificationToken, classificationId, 0, 0));
@@ -426,60 +415,6 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     private int id;
   }
 
-  /**
-   * The normalized text with the original-text range for each character. Characters inserted by
-   * the pipeline (isolation spaces) use an empty range at the insertion point.
-   */
-  private static final class MappedText {
-    private char[] chars;
-    private int[] starts;
-    private int[] ends;
-    private int length;
-
-    /** Creates an empty mapping with space for the expected number of UTF-16 code units. */
-    private MappedText(int capacity) {
-      chars = new char[capacity];
-      starts = new int[capacity];
-      ends = new int[capacity];
-    }
-
-    /** Adds one UTF-16 code unit with a source range. */
-    private void add(char c, int originalStart, int originalEnd) {
-      if (length == chars.length) {
-        final int capacity = Math.max(16, length * 2);
-        chars = Arrays.copyOf(chars, capacity);
-        starts = Arrays.copyOf(starts, capacity);
-        ends = Arrays.copyOf(ends, capacity);
-      }
-      chars[length] = c;
-      starts[length] = originalStart;
-      ends[length] = originalEnd;
-      length++;
-    }
-
-    /** Adds a string with one source range shared by all code units. */
-    private void add(String s, int originalStart, int originalEnd) {
-      for (int i = 0; i < s.length(); i++) {
-        add(s.charAt(i), originalStart, originalEnd);
-      }
-    }
-
-    /** Adds one code point with a source range shared by all code units. */
-    private void addCodePoint(int codePoint, int originalStart, int originalEnd) {
-      if (Character.isBmpCodePoint(codePoint)) {
-        add((char) codePoint, originalStart, originalEnd);
-      } else {
-        add(Character.highSurrogate(codePoint), originalStart, originalEnd);
-        add(Character.lowSurrogate(codePoint), originalStart, originalEnd);
-      }
-    }
-
-    /** Returns the mapped character content. */
-    private String text() {
-      return new String(chars, 0, length);
-    }
-  }
-
   /** Removes BERT control characters, normalizes whitespace, and isolates CJK ideographs. */
   private MappedText cleanAndIsolateCjk(String original) {
     final MappedText out = new MappedText(original.length() + 16);
@@ -487,7 +422,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     while (i < original.length()) {
       final int codePoint = original.codePointAt(i);
       final int width = Character.charCount(codePoint);
-      if (codePoint == 0 || codePoint == 0xFFFD || BertNormalization.isControl(codePoint)) {
+      if (codePoint == 0 || codePoint == REPLACEMENT_CHARACTER || BertNormalization.isControl(codePoint)) {
         i += width;
         continue;
       }
@@ -503,32 +438,6 @@ public final class WordpieceEncoder implements SubwordTokenizer {
       } else {
         for (int c = 0; c < width; c++) {
           out.add(original.charAt(i + c), i, i + width);
-        }
-      }
-      i += width;
-    }
-    return out;
-  }
-
-  /**
-   * Surrounds each BERT punctuation character with mapped spaces. Keep the character
-   * classification in sync with {@link BertNormalization#isolatePunctuation(String)}.
-   */
-  private MappedText isolatePunctuation(MappedText in) {
-    final MappedText out = new MappedText(in.length + 16);
-    int i = 0;
-    while (i < in.length) {
-      final int codePoint = codePointAt(in, i);
-      final int width = Character.charCount(codePoint);
-      if (BertNormalization.isPunctuation(codePoint)) {
-        out.add(' ', in.starts[i], in.starts[i]);
-        for (int c = 0; c < width; c++) {
-          out.add(in.chars[i + c], in.starts[i + c], in.ends[i + c]);
-        }
-        out.add(' ', in.ends[i + width - 1], in.ends[i + width - 1]);
-      } else {
-        for (int c = 0; c < width; c++) {
-          out.add(in.chars[i + c], in.starts[i + c], in.ends[i + c]);
         }
       }
       i += width;
@@ -582,7 +491,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     int sourceIndex = from;
     int lowerIndex = 0;
     while (sourceIndex < to) {
-      final int sourceCodePoint = codePointAt(in, sourceIndex);
+      final int sourceCodePoint = in.codePointAt(sourceIndex);
       final int sourceWidth = Character.charCount(sourceCodePoint);
       int lowerCodePoint = lower.codePointAt(lowerIndex);
       final int lowerWidth = Character.charCount(lowerCodePoint);
@@ -616,7 +525,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
 
     int after = index + Character.charCount(GREEK_CAPITAL_SIGMA);
     while (after < to) {
-      final int codePoint = codePointAt(in, after);
+      final int codePoint = in.codePointAt(after);
       if (!isCaseIgnorable(codePoint)) {
         return !isCased(codePoint);
       }
@@ -658,7 +567,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     final MappedText decomposed = new MappedText(text.length + 16);
     int index = 0;
     while (index < text.length) {
-      final int codePoint = codePointAt(text, index);
+      final int codePoint = text.codePointAt(index);
       final int width = Character.charCount(codePoint);
       final String source = new String(text.chars, index, width);
       final String normalized = Normalizer.isNormalized(source, Normalizer.Form.NFD)
@@ -674,7 +583,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     final int outputStart = out.length;
     int index = 0;
     while (index < text.length) {
-      final int codePoint = codePointAt(text, index);
+      final int codePoint = text.codePointAt(index);
       final int width = Character.charCount(codePoint);
       if (Character.getType(codePoint) == Character.NON_SPACING_MARK) {
         if (out.length > outputStart) {
@@ -699,15 +608,5 @@ public final class WordpieceEncoder implements SubwordTokenizer {
       }
       index += Character.charCount(codePoint);
     }
-  }
-
-  /** Returns a code point from the mapped UTF-16 buffer. */
-  private int codePointAt(MappedText text, int index) {
-    final char c = text.chars[index];
-    if (Character.isHighSurrogate(c) && index + 1 < text.length
-        && Character.isLowSurrogate(text.chars[index + 1])) {
-      return Character.toCodePoint(c, text.chars[index + 1]);
-    }
-    return c;
   }
 }

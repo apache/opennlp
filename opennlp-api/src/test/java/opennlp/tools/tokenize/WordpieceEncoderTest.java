@@ -551,17 +551,17 @@ class WordpieceEncoderTest {
 
   private static Stream<Arguments> invalidSpecialTokens() {
     return Stream.of(
-        Arguments.of("classificationToken must not be null",
+        Arguments.of("classificationToken must not be null or empty",
             (Executable) () -> new WordpieceEncoder(VOCAB, true, null, "[SEP]", "[UNK]")),
-        Arguments.of("separatorToken must not be null",
+        Arguments.of("separatorToken must not be null or empty",
             (Executable) () -> new WordpieceEncoder(VOCAB, true, "[CLS]", null, "[UNK]")),
-        Arguments.of("unknownToken must not be null",
+        Arguments.of("unknownToken must not be null or empty",
             (Executable) () -> new WordpieceEncoder(VOCAB, true, "[CLS]", "[SEP]", null)),
-        Arguments.of("classificationToken must not be empty",
+        Arguments.of("classificationToken must not be null or empty",
             (Executable) () -> new WordpieceEncoder(VOCAB, true, "", "[SEP]", "[UNK]")),
-        Arguments.of("separatorToken must not be empty",
+        Arguments.of("separatorToken must not be null or empty",
             (Executable) () -> new WordpieceEncoder(VOCAB, true, "[CLS]", "", "[UNK]")),
-        Arguments.of("unknownToken must not be empty",
+        Arguments.of("unknownToken must not be null or empty",
             (Executable) () -> new WordpieceEncoder(VOCAB, true, "[CLS]", "[SEP]", "")));
   }
 

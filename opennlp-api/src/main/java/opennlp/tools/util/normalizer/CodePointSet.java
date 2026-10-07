@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import opennlp.tools.util.ParamChecks;
+import opennlp.tools.util.StringUtil;
 
 /**
  * An immutable set of Unicode code points with O(1) membership.
@@ -115,14 +116,14 @@ public final class CodePointSet {
   // Package visible so the parser can be exercised directly, without a temporary file.
   static CodePointSet parse(List<String> lines, String section) {
     Objects.requireNonNull(section, "section");
-    final String wanted = section.trim().toLowerCase(Locale.ROOT);
+    final String wanted = StringUtil.trimUnicodeWhitespace(section).toLowerCase(Locale.ROOT);
     final BitSet members = new BitSet();
     String current = null;
 
     for (int i = 0; i < lines.size(); i++) {
       final String raw = lines.get(i);
       final int lineNumber = i + 1;
-      final String line = HexCodePoints.stripComment(raw).strip();
+      final String line = StringUtil.trimUnicodeWhitespace(HexCodePoints.stripComment(raw));
       if (line.isEmpty()) {
         continue;
       }
@@ -130,7 +131,8 @@ public final class CodePointSet {
         if (line.length() < 3 || line.charAt(line.length() - 1) != ']') {
           throw malformed("section header", lineNumber, raw);
         }
-        current = line.substring(1, line.length() - 1).strip().toLowerCase(Locale.ROOT);
+        current = StringUtil.trimUnicodeWhitespace(line.substring(1, line.length() - 1))
+            .toLowerCase(Locale.ROOT);
         continue;
       }
       if (current == null) {
@@ -151,8 +153,10 @@ public final class CodePointSet {
       members.set(parseCodePoint(line, lineNumber, raw));
       return;
     }
-    final int low = parseCodePoint(line.substring(0, separator).strip(), lineNumber, raw);
-    final int high = parseCodePoint(line.substring(separator + 1).strip(), lineNumber, raw);
+    final int low = parseCodePoint(StringUtil.trimUnicodeWhitespace(line.substring(0, separator)),
+        lineNumber, raw);
+    final int high = parseCodePoint(StringUtil.trimUnicodeWhitespace(line.substring(separator + 1)),
+        lineNumber, raw);
     if (low > high) {
       throw new IllegalArgumentException("Descending code point range on line "
           + lineNumber + ": " + raw);

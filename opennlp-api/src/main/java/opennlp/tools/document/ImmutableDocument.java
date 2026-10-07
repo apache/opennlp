@@ -108,22 +108,12 @@ final class ImmutableDocument implements Document {
    */
   @Override
   public Document merge(Document other, DuplicateLayerPolicy duplicateLayers) {
-    ParamChecks.requireNonNullArg(other, "other");
-    ParamChecks.requireNonNullArg(duplicateLayers, "duplicateLayers");
-    if (!text.contentEquals(other.text())) {
-      throw new IllegalArgumentException(
-          "merge requires both documents to carry the same text");
-    }
+    DocumentMerges.checkMergeable(this, other, duplicateLayers);
     final Map<LayerKey<?>, List<Annotation<?>>> combined = new LinkedHashMap<>(layers);
     for (final LayerKey<?> layer : other.layers()) {
       if (combined.containsKey(layer)) {
-        if (duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
-            && get(layer).equals(other.get(layer))) {
-          continue;
-        }
-        throw new IllegalArgumentException(duplicateLayers == DuplicateLayerPolicy.KEEP_EQUAL
-            ? "layer is present on both documents with differing contents: " + layer
-            : "layer is already present: " + layer);
+        DocumentMerges.checkDuplicateLayer(this, layer, other, duplicateLayers);
+        continue;
       }
       combined.put(layer, copyValidated(layer, other));
     }

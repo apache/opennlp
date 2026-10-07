@@ -18,8 +18,13 @@ package opennlp.tools.util.normalizer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.Span;
 
@@ -34,6 +39,7 @@ public class CharClassTest {
 
   private static final CharClass WS = CharClass.whitespace();
   private static final CharClass DASH = CharClass.dashes();
+  private static final CodePointSet NEWLINE = CodePointSet.of('\n');
 
   // Non-ASCII test characters are built from code points (no literal glyphs, no Unicode escapes)
   // so the source stays pure ASCII and the intent is explicit. Tab and newline use \t and \n.
@@ -519,37 +525,45 @@ public class CharClassTest {
     }
   }
 
-  @Test
-  void nullParametersAreRejectedWithIllegalArgumentException() {
-    final CharClass ws = CharClass.whitespace();
-    final CodePointSet nl = CodePointSet.of('\n');
-    assertThrows(IllegalArgumentException.class, () -> CharClass.of(null, ' '));
-    assertThrows(IllegalArgumentException.class, () -> ws.withAdditional(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.splitSpans(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.normalize(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.collapse(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.collapsePreserving(null, nl, '\n'));
-    assertThrows(IllegalArgumentException.class, () -> ws.collapsePreserving("x", null, '\n'));
-    assertThrows(IllegalArgumentException.class, () -> ws.collapseParagraphPreserving(null, nl, '\n'));
-    assertThrows(IllegalArgumentException.class, () -> ws.collapseParagraphPreserving("x", null, '\n'));
-    assertThrows(IllegalArgumentException.class, () -> ws.trim(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.removeAll(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.normalizeAligned(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.collapseAligned(null));
-    assertThrows(IllegalArgumentException.class,
-        () -> ws.collapsePreservingAligned(null, nl, '\n'));
-    assertThrows(IllegalArgumentException.class,
-        () -> ws.collapsePreservingAligned("x", null, '\n'));
-    assertThrows(IllegalArgumentException.class,
-        () -> ws.collapseParagraphPreservingAligned(null, nl, '\n'));
-    assertThrows(IllegalArgumentException.class,
-        () -> ws.collapseParagraphPreservingAligned("x", null, '\n'));
-    assertThrows(IllegalArgumentException.class, () -> ws.trimAligned(null));
-    assertThrows(IllegalArgumentException.class, () -> ws.removeAllAligned(null));
-    assertThrows(IllegalArgumentException.class, () -> CharClass.substitute(null, cp -> null));
-    assertThrows(IllegalArgumentException.class, () -> CharClass.substitute("x", null));
-    assertThrows(IllegalArgumentException.class,
-        () -> CharClass.substituteAligned(null, cp -> null));
-    assertThrows(IllegalArgumentException.class, () -> CharClass.substituteAligned("x", null));
+  private static Stream<Named<Executable>> nullParameterCalls() {
+    return Stream.of(
+        Named.of("of(null)", (Executable) () -> CharClass.of(null, ' ')),
+        Named.of("withAdditional(null)", (Executable) () -> WS.withAdditional(null)),
+        Named.of("splitSpans(null)", (Executable) () -> WS.splitSpans(null)),
+        Named.of("normalize(null)", (Executable) () -> WS.normalize(null)),
+        Named.of("collapse(null)", (Executable) () -> WS.collapse(null)),
+        Named.of("collapsePreserving(null text)",
+            (Executable) () -> WS.collapsePreserving(null, NEWLINE, '\n')),
+        Named.of("collapsePreserving(null keep)", (Executable) () -> WS.collapsePreserving("x", null, '\n')),
+        Named.of("collapseParagraphPreserving(null text)",
+            (Executable) () -> WS.collapseParagraphPreserving(null, NEWLINE, '\n')),
+        Named.of("collapseParagraphPreserving(null lineBreaks)",
+            (Executable) () -> WS.collapseParagraphPreserving("x", null, '\n')),
+        Named.of("trim(null)", (Executable) () -> WS.trim(null)),
+        Named.of("removeAll(null)", (Executable) () -> WS.removeAll(null)),
+        Named.of("normalizeAligned(null)", (Executable) () -> WS.normalizeAligned(null)),
+        Named.of("collapseAligned(null)", (Executable) () -> WS.collapseAligned(null)),
+        Named.of("collapsePreservingAligned(null text)",
+            (Executable) () -> WS.collapsePreservingAligned(null, NEWLINE, '\n')),
+        Named.of("collapsePreservingAligned(null keep)",
+            (Executable) () -> WS.collapsePreservingAligned("x", null, '\n')),
+        Named.of("collapseParagraphPreservingAligned(null text)",
+            (Executable) () -> WS.collapseParagraphPreservingAligned(null, NEWLINE, '\n')),
+        Named.of("collapseParagraphPreservingAligned(null lineBreaks)",
+            (Executable) () -> WS.collapseParagraphPreservingAligned("x", null, '\n')),
+        Named.of("trimAligned(null)", (Executable) () -> WS.trimAligned(null)),
+        Named.of("removeAllAligned(null)", (Executable) () -> WS.removeAllAligned(null)),
+        Named.of("substitute(null text)", (Executable) () -> CharClass.substitute(null, cp -> null)),
+        Named.of("substitute(null substitution)", (Executable) () -> CharClass.substitute("x", null)),
+        Named.of("substituteAligned(null text)",
+            (Executable) () -> CharClass.substituteAligned(null, cp -> null)),
+        Named.of("substituteAligned(null substitution)",
+            (Executable) () -> CharClass.substituteAligned("x", null)));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("nullParameterCalls")
+  void nullParametersAreRejectedWithIllegalArgumentException(Executable call) {
+    assertThrows(IllegalArgumentException.class, call);
   }
 }

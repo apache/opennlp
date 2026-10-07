@@ -25,6 +25,8 @@ import java.util.Set;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.tokenize.BertNormalization.CONTINUATION_PREFIX;
+
 /**
  * A {@link Tokenizer} implementation which performs tokenization
  * using word pieces.
@@ -58,8 +60,6 @@ import opennlp.tools.util.Span;
  * @see WordpieceEncoder
  */
 public class WordpieceTokenizer implements Tokenizer {
-
-  private static final String CONTINUATION_PREFIX = "##";
 
   /** BERT classification token: {@code [CLS]}. */
   public static final String BERT_CLS_TOKEN = "[CLS]";
@@ -150,10 +150,11 @@ public class WordpieceTokenizer implements Tokenizer {
       final String unknownToken,
       final int maxTokenLength) {
     this.vocabulary = copyVocabulary(vocabulary);
-    this.classificationToken = requireToken(classificationToken, "classificationToken");
-    this.separatorToken = requireToken(separatorToken, "separatorToken");
-    this.unknownToken = requireToken(unknownToken, "unknownToken");
-    this.maxTokenLength = requireNonNegative(maxTokenLength);
+    this.classificationToken =
+        ParamChecks.requireNonEmpty(classificationToken, "classificationToken");
+    this.separatorToken = ParamChecks.requireNonEmpty(separatorToken, "separatorToken");
+    this.unknownToken = ParamChecks.requireNonEmpty(unknownToken, "unknownToken");
+    this.maxTokenLength = ParamChecks.requireNonNegative(maxTokenLength, "maxTokenLength");
   }
 
   /** Validates and copies a vocabulary. */
@@ -170,24 +171,6 @@ public class WordpieceTokenizer implements Tokenizer {
       copy.add(piece);
     }
     return Set.copyOf(copy);
-  }
-
-  /** Validates a special token. */
-  private String requireToken(String token, String name) {
-    ParamChecks.requireNonNullArg(token, name);
-    if (token.isEmpty()) {
-      throw new IllegalArgumentException(name + " must not be empty");
-    }
-    return token;
-  }
-
-  /** Validates the maximum token length. */
-  private int requireNonNegative(final int maxTokenLength) {
-    if (maxTokenLength < 0) {
-      throw new IllegalArgumentException(
-          "maxTokenLength must be non-negative: " + maxTokenLength);
-    }
-    return maxTokenLength;
   }
 
   /**

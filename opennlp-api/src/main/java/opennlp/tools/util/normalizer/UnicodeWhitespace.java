@@ -18,6 +18,7 @@ package opennlp.tools.util.normalizer;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,15 @@ import java.util.Optional;
  * and the other line breaks. {@link #isWhitespace(int)} matches the standard exactly.</p>
  */
 public final class UnicodeWhitespace {
+
+  /** The canonical ASCII whitespace that whitespace is normalized to: {@code U+0020} SPACE. */
+  public static final int SPACE = 0x0020;
+
+  /** {@code U+000D} CARRIAGE RETURN, the first half of a {@code CRLF} line break. */
+  public static final int CARRIAGE_RETURN = 0x000D;
+
+  /** {@code U+000A} LINE FEED, a line break on its own or the second half of {@code CRLF}. */
+  public static final int LINE_FEED = 0x000A;
 
   /** Unicode general category for a whitespace or related code point. */
   public enum Category {
@@ -90,7 +100,7 @@ public final class UnicodeWhitespace {
 
     /** {@return the {@code U+XXXX} notation for this code point} */
     public String toUnicodeNotation() {
-      return String.format("U+%04X", codePoint);
+      return HexCodePoints.toUnicodeNotation(codePoint);
     }
   }
 
@@ -108,7 +118,7 @@ public final class UnicodeWhitespace {
 
     /** {@return the {@code U+XXXX} notation for this code point} */
     public String toUnicodeNotation() {
-      return String.format("U+%04X", codePoint);
+      return HexCodePoints.toUnicodeNotation(codePoint);
     }
   }
 
@@ -155,30 +165,36 @@ public final class UnicodeWhitespace {
       new RelatedCharacter(0xFEFF, "zero width no-break space", "BOM",
           "format; byte order mark"));
 
-  private static final Map<Integer, WhitespaceCharacter> BY_CODE_POINT = new HashMap<>();
+  private static final Map<Integer, WhitespaceCharacter> BY_CODE_POINT;
   private static final BitSet MEMBERSHIP = new BitSet();
   private static final BitSet LOOKALIKE_MEMBERSHIP = new BitSet();
   private static final int[] CODE_POINTS = new int[WHITESPACE.size()];
-  private static final List<WhitespaceCharacter> LINE_BREAKS = new ArrayList<>();
-  private static final List<WhitespaceCharacter> NON_BREAKING = new ArrayList<>();
+  private static final List<WhitespaceCharacter> LINE_BREAKS;
+  private static final List<WhitespaceCharacter> NON_BREAKING;
   private static final CodePointSet LINE_BREAK_CODE_POINT_SET;
 
   static {
+    final Map<Integer, WhitespaceCharacter> byCodePoint = new HashMap<>();
+    final List<WhitespaceCharacter> lineBreaks = new ArrayList<>();
+    final List<WhitespaceCharacter> nonBreaking = new ArrayList<>();
     final int[] lineBreakCodePointBuffer = new int[WHITESPACE.size()];
     int lineBreakCodePointCount = 0;
     for (int i = 0; i < WHITESPACE.size(); i++) {
       final WhitespaceCharacter ws = WHITESPACE.get(i);
-      BY_CODE_POINT.put(ws.codePoint(), ws);
+      byCodePoint.put(ws.codePoint(), ws);
       MEMBERSHIP.set(ws.codePoint());
       CODE_POINTS[i] = ws.codePoint();
       if (ws.isLineBreak()) {
-        LINE_BREAKS.add(ws);
+        lineBreaks.add(ws);
         lineBreakCodePointBuffer[lineBreakCodePointCount++] = ws.codePoint();
       }
       if (ws.isNonBreaking()) {
-        NON_BREAKING.add(ws);
+        nonBreaking.add(ws);
       }
     }
+    BY_CODE_POINT = Collections.unmodifiableMap(byCodePoint);
+    LINE_BREAKS = Collections.unmodifiableList(lineBreaks);
+    NON_BREAKING = Collections.unmodifiableList(nonBreaking);
     for (final RelatedCharacter related : LOOKALIKES) {
       LOOKALIKE_MEMBERSHIP.set(related.codePoint());
     }
@@ -235,7 +251,7 @@ public final class UnicodeWhitespace {
 
   /** {@return the whitespace characters that force a line or paragraph break} */
   public static List<WhitespaceCharacter> lineBreaks() {
-    return List.copyOf(LINE_BREAKS);
+    return LINE_BREAKS;
   }
 
   /**
@@ -248,7 +264,7 @@ public final class UnicodeWhitespace {
 
   /** {@return the non-breaking whitespace characters} */
   public static List<WhitespaceCharacter> nonBreaking() {
-    return List.copyOf(NON_BREAKING);
+    return NON_BREAKING;
   }
 
   /** {@return the whitespace code points, in ascending order} */

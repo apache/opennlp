@@ -90,10 +90,13 @@ public class WordpieceTokenizerTest {
   @Test
   void testRejectsNegativeMaxTokenLength() {
 
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new WordpieceTokenizer(getVocabulary(), -1));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new WordpieceTokenizer(getVocabulary(), "[CLS]", "[SEP]", "[UNK]", -1));
+    Assertions.assertEquals("maxTokenLength must not be negative",
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new WordpieceTokenizer(getVocabulary(), -1)).getMessage());
+    Assertions.assertEquals("maxTokenLength must not be negative",
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new WordpieceTokenizer(getVocabulary(), "[CLS]", "[SEP]", "[UNK]", -1))
+            .getMessage());
 
   }
 

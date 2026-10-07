@@ -26,7 +26,6 @@ import opennlp.tools.tokenize.lattice.MecabDictionary.Category;
 import opennlp.tools.tokenize.lattice.MecabDictionary.WordEntry;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Dictionary-driven segmentation for languages written without spaces: a Viterbi
@@ -110,19 +109,7 @@ public final class LatticeTokenizer implements Tokenizer {
   public List<Morpheme> analyze(String text) {
     ParamChecks.requireNonNullArg(text, "text");
     final List<Morpheme> morphemes = new ArrayList<>();
-    int start = 0;
-    while (start < text.length()) {
-      if (StringUtil.isWhitespace(text.charAt(start))) {
-        start++;
-        continue;
-      }
-      int end = start;
-      while (end < text.length() && !StringUtil.isWhitespace(text.charAt(end))) {
-        end++;
-      }
-      decode(text, start, end, morphemes);
-      start = end;
-    }
+    WhitespaceRuns.forEachNonWhitespaceRun(text, (from, to) -> decode(text, from, to, morphemes));
     return morphemes;
   }
 
@@ -339,7 +326,7 @@ public final class LatticeTokenizer implements Tokenizer {
     }
     if (candidates.isEmpty()) {
       throw new IllegalStateException("dictionary provides no candidate at position "
-          + position + "; unk.def lacks a DEFAULT template");
+          + position + "; " + MecabDictionary.UNK_DEF + " lacks a DEFAULT template");
     }
   }
 
