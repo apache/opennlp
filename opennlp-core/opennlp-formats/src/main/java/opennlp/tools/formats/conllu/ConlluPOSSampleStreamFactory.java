@@ -61,11 +61,7 @@ public class ConlluPOSSampleStreamFactory extends
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
-    ConlluTagset tagset = switch (params.getTagset()) {
-      case "u" -> ConlluTagset.U;
-      case "x" -> ConlluTagset.X;
-      default -> throw new TerminateToolException(-1, "Unknown tagset parameter: " + params.getTagset());
-    };
+    final ConlluTagset tagset = ConlluTagset.fromFactoryParameter(params.getTagset());
 
     try {
       return new ConlluPOSSampleStream(new ConlluStream(
