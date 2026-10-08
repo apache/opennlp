@@ -29,8 +29,11 @@ import org.slf4j.LoggerFactory;
  * OpenNLP's legacy definition from 1.x/2.x.
  * <p>
  * Resolved from the {@value #MODE_PROPERTY} system property when this class is initialized
- * and shared process-wide, so a model is trained and decoded under one definition. Tests and
- * embedders may override the mode via {@link #setActive(WhitespaceMode)} and {@link #reset()}.
+ * and shared process-wide, so a model is trained and decoded under one definition. The mode is
+ * read on every whitespace check and is not recorded in a model, so it must be fixed before any
+ * component is used and must match the mode the loaded models were trained under.
+ * {@link #setActive(WhitespaceMode)} and {@link #reset()} are meant for tests and application
+ * startup only.
  *
  * @since 3.0.0
  */
@@ -74,8 +77,12 @@ public enum WhitespaceMode {
 
   /**
    * Overrides the active {@link WhitespaceMode} for the whole process, taking precedence
-   * over the {@value #MODE_PROPERTY} system property. Intended for tests and embedders;
-   * callers pinning a mode temporarily should call {@link #reset()} afterward.
+   * over the {@value #MODE_PROPERTY} system property. Intended for tests and application
+   * startup only; callers pinning a mode temporarily should call {@link #reset()} afterward.
+   * <p>
+   * The switch takes effect immediately for every thread, so a component processing text
+   * concurrently may apply the old mode to one part of that text and the new mode to the rest.
+   * Call this method before any component is created or used.
    *
    * @param mode The {@link WhitespaceMode} to activate. Must not be {@code null}.
    *
@@ -89,7 +96,9 @@ public enum WhitespaceMode {
 
   /**
    * Discards any override set via {@link #setActive(WhitespaceMode)} and re-resolves the
-   * active mode from the {@value #MODE_PROPERTY} system property.
+   * active mode from the {@value #MODE_PROPERTY} system property. Intended for tests and
+   * application startup only, with the same process-wide effect as
+   * {@link #setActive(WhitespaceMode)}.
    *
    * @throws IllegalArgumentException If the property holds a value other than
    *     {@code LEGACY} or {@code UNICODE} (case-insensitive); the previous mode is retained.
