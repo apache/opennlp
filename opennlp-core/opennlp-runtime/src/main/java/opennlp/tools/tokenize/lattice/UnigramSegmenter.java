@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.Span;
@@ -167,7 +168,8 @@ public final class UnigramSegmenter implements Tokenizer {
    *
    * @param lexicon The lexicon file. Must not be {@code null}.
    * @return The segmenter. Not {@code null}.
-   * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
+   * @throws InvalidFormatException Thrown if the lexicon is empty or malformed.
+   * @throws IOException Thrown if reading fails or the lexicon exceeds a size limit.
    * @throws IllegalArgumentException Thrown if {@code lexicon} is {@code null}.
    */
   public static UnigramSegmenter load(Path lexicon) throws IOException {
@@ -181,7 +183,8 @@ public final class UnigramSegmenter implements Tokenizer {
    *                line. Must not be {@code null}.
    * @param charset The lexicon encoding. Must not be {@code null}.
    * @return The segmenter. Not {@code null}.
-   * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
+   * @throws InvalidFormatException Thrown if the lexicon is empty or malformed.
+   * @throws IOException Thrown if reading fails or the lexicon exceeds a size limit.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static UnigramSegmenter load(Path lexicon, Charset charset) throws IOException {
@@ -198,7 +201,8 @@ public final class UnigramSegmenter implements Tokenizer {
    * @param lexiconStream The lexicon content. Must not be {@code null}. Not closed.
    * @param charset The lexicon encoding. Must not be {@code null}.
    * @return The segmenter. Not {@code null}.
-   * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
+   * @throws InvalidFormatException Thrown if the lexicon is empty or malformed.
+   * @throws IOException Thrown if reading fails or the lexicon exceeds a size limit.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static UnigramSegmenter load(InputStream lexiconStream, Charset charset)
@@ -213,7 +217,8 @@ public final class UnigramSegmenter implements Tokenizer {
    * @param charset The lexicon encoding. Must not be {@code null}.
    * @param maxEntries The inclusive limit on distinct lexicon entries.
    * @return The segmenter. Not {@code null}.
-   * @throws IOException Thrown if reading fails or the lexicon is empty or malformed.
+   * @throws InvalidFormatException Thrown if the lexicon is empty or malformed.
+   * @throws IOException Thrown if reading fails or the lexicon exceeds a size limit.
    * @throws IllegalArgumentException Thrown if a parameter is invalid.
    */
   static UnigramSegmenter load(InputStream lexiconStream, Charset charset, int maxEntries)
@@ -239,17 +244,17 @@ public final class UnigramSegmenter implements Tokenizer {
       }
       final String[] fields = StringUtil.splitOnUnicodeWhitespace(line);
       if (fields.length < 2) {
-        throw new IOException("lexicon line " + lineNumber + " has no count");
+        throw new InvalidFormatException("lexicon line " + lineNumber + " has no count");
       }
       final String word = fields[0];
       final long count;
       try {
         count = Long.parseLong(fields[1]);
       } catch (NumberFormatException e) {
-        throw new IOException("malformed count at lexicon line " + lineNumber, e);
+        throw new InvalidFormatException("malformed count at lexicon line " + lineNumber, e);
       }
       if (count <= 0) {
-        throw new IOException("count must be positive at lexicon line " + lineNumber);
+        throw new InvalidFormatException("count must be positive at lexicon line " + lineNumber);
       }
       if (!counts.containsKey(word) && counts.size() >= maxEntries) {
         throw new IOException(
@@ -263,7 +268,7 @@ public final class UnigramSegmenter implements Tokenizer {
       }
     }
     if (counts.isEmpty()) {
-      throw new IOException("the lexicon lists no words");
+      throw new InvalidFormatException("the lexicon lists no words");
     }
 
     final WordTrieBuilder root = new WordTrieBuilder();

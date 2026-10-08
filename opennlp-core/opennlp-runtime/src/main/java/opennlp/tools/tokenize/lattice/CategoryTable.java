@@ -17,7 +17,6 @@
 
 package opennlp.tools.tokenize.lattice;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
@@ -26,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import opennlp.tools.tokenize.lattice.MecabDictionary.Category;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * The {@code char.def} code point to category mappings over the Unicode code point
@@ -190,9 +190,9 @@ final class CategoryTable {
      * @param categories The categories the {@code char.def} category section defined,
      *                   keyed by name.
      * @return The table. Not {@code null}.
-     * @throws IOException Thrown if a mapping names a category that was not defined.
+     * @throws InvalidFormatException Thrown if a mapping names a category that was not defined.
      */
-    CategoryTable build(Map<String, Category> categories) throws IOException {
+    CategoryTable build(Map<String, Category> categories) throws InvalidFormatException {
       // Cut the supplementary ranges at every boundary they introduce, so that each
       // resulting elementary interval is covered by a single winning range and the
       // table stays sorted and non-overlapping for binary search.
@@ -259,11 +259,11 @@ final class CategoryTable {
      *                            shared category-name arrays.
      * @param codePoint A code point the mapping covers, for the error message.
      * @return The resolved assignment. Not {@code null}.
-     * @throws IOException Thrown if any named category was not defined.
+     * @throws InvalidFormatException Thrown if any named category was not defined.
      */
     private CategoryAssignment resolve(String[] names, Map<String, Category> categories,
         Map<String[], CategoryAssignment> resolvedAssignments, int codePoint)
-        throws IOException {
+        throws InvalidFormatException {
       final CategoryAssignment cached = resolvedAssignments.get(names);
       if (cached != null) {
         return cached;
@@ -272,7 +272,7 @@ final class CategoryTable {
       for (int i = 0; i < names.length; i++) {
         resolved[i] = categories.get(names[i]);
         if (resolved[i] == null) {
-          throw new IOException(String.format(Locale.ROOT,
+          throw new InvalidFormatException(String.format(Locale.ROOT,
               MecabDictionary.CHAR_DEF + " declaration at U+%04X names the"
                   + " undefined category %s", codePoint, names[i]));
         }
