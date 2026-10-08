@@ -133,6 +133,7 @@ For users of the traditional CLI toolkit, nothing changes with the 3.x release l
 
 - `AbstractClassPathModelFinder`: the protected `asRegex` and `matchesPattern` methods were removed. Custom model finders call `matchesWildcard(url, "*.bin")` instead ([OPENNLP-1932](https://issues.apache.org/jira/browse/OPENNLP-1932)).
 - `BasicContextGenerator(String)`: the separator is taken literally instead of as a regular expression, and a separator containing a backslash throws `IllegalArgumentException`. Empty predicates are no longer returned, and the default constructor splits on runs of Unicode whitespace ([OPENNLP-1929](https://issues.apache.org/jira/browse/OPENNLP-1929)).
+- AD reader: a self-closing markup line such as `<s/>`, `<s />` or `<s id="1"/>` no longer opens a sentence, paragraph, title, box or text. A tag whose name only starts with `s`, `p`, `t`, `caixa` or `ext`, such as `<sx>`, is no longer read as that tag, and attributes must be separated from the tag name by Unicode whitespace ([GH-1447](https://github.com/apache/opennlp/issues/1447)).
 - MASC reader: region offsets must be written with ASCII digits only and no sign. A document with a signed or non-ASCII offset is skipped ([OPENNLP-1990](https://issues.apache.org/jira/browse/OPENNLP-1990)).
 
 ### Thread safety

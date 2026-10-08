@@ -969,6 +969,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
   private static final String PARAGRAPH_TAG = "p";
   private static final char TAG_OPEN = '<';
   private static final char TAG_CLOSE = '>';
+  private static final char SLASH = '/';
   private static final String CLOSING_TAG_OPEN = "</";
 
   private final SentenceParser parser;
@@ -1044,8 +1045,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    * Checks whether a line is an opening markup tag with the given name: the name right after the
    * opening angle bracket, then either the closing angle bracket or whitespace and attributes,
    * which contain no closing angle bracket, then the closing angle bracket as the last character.
-   * A slash directly after the name, as in {@code <s/>}, is rejected. A slash after whitespace
-   * counts as part of the attributes, so {@code <s />} and {@code <s id="1"/>} are accepted.
+   * A self-closing tag, with a slash right before the closing angle bracket as in {@code <s/>},
+   * {@code <s />} or {@code <s id="1"/>}, is not an opening tag.
    *
    * @param line The line.
    * @param name The tag name.
@@ -1055,7 +1056,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     int last = line.length() - 1;
     int afterName = name.length() + 1;
     if (last < afterName || line.charAt(0) != TAG_OPEN || !line.startsWith(name, 1)
-        || line.charAt(last) != TAG_CLOSE) {
+        || line.charAt(last) != TAG_CLOSE || line.charAt(last - 1) == SLASH) {
       return false;
     }
     if (afterName < last && !StringUtil.isUnicodeWhitespace(line.charAt(afterName))) {

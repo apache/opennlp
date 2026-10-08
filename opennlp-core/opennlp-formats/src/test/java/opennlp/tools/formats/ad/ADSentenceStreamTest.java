@@ -137,6 +137,24 @@ public class ADSentenceStreamTest {
     }
   }
 
+  /** A title tag marks the next sentence as a title, a self-closing title tag does not. */
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "<t>|true",
+      "<t id=\"1\">|true",
+      "<t/>|false",
+      "<t />|false",
+      "<t id=\"1\"/>|false"
+  })
+  void testTitleTagMarksATitleOnlyWhenOpening(String titleTag, boolean title) throws IOException {
+    try (ADSentenceStream stream = stream(lines(titleTag, "<s id=\"1\">", SOURCE, FIRST_TEXT,
+        join(FIRST_TREE), "</s>"))) {
+      ADSentenceStream.Sentence sentence = stream.read();
+      Assertions.assertNotNull(sentence);
+      Assertions.assertEquals(title, sentence.metadata().contains(" title"));
+    }
+  }
+
   /** The number of elements of the clause node under the root. */
   private static int elementsOfClause(ADSentenceStream.Sentence sentence) {
     ADSentenceStream.SentenceParser.TreeElement[] top = sentence.root().getElements();
@@ -433,6 +451,11 @@ public class ADSentenceStreamTest {
       "<t/>|t|false",
       "<caixa/>|caixa|false",
       "<ext/>|ext|false",
+      "<s />|s|false",
+      "<s id=\"1\"/>|s|false",
+      "<p id=\"1\" />|p|false",
+      "<s id=\"a/b\">|s|true",
+      "<s id=\"1\" >|s|true",
       // next line is Unicode whitespace, file separator is not
       "<s\u0085id=\"1\">|s|true",
       "<s\u001Cid=\"1\">|s|false"

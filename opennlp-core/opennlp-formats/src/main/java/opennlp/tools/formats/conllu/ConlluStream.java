@@ -48,7 +48,6 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
   private static final char MULTIWORD_SEPARATOR = '-';
   private static final String INVALID_MULTIWORD_ID = "Invalid multiword token id: ";
   private static final String BACKWARDS_MULTIWORD_ID = "Multiword token id runs backwards: ";
-  private static final String MISSING_MULTIWORD_LINE = "Multiword token %s has no word line for id %s";
 
   /**
    * The token range a multiword token line covers.
@@ -161,8 +160,8 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
    *
    * @param lines The word lines of one sentence.
    * @return The lines with each range merged.
-   * @throws InvalidFormatException If a multiword token id is malformed, or a range names a
-   *                                 word id that has no line.
+   * @throws InvalidFormatException Thrown if a multiword token id is malformed, or a range names
+   *                                a word id that has no line.
    */
   private List<ConlluWordLine> postProcessContractions(List<ConlluWordLine> lines)
       throws InvalidFormatException {
@@ -184,7 +183,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
           String js = Long.toString(j);
           if (!index.containsKey(js)) {
             throw new InvalidFormatException(
-                String.format(MISSING_MULTIWORD_LINE, line.getId(), js));
+                String.format("Multiword token %s has no word line for id %s", line.getId(), js));
           }
           expandedContractions.add(js);
           linesToDelete.add(js);
