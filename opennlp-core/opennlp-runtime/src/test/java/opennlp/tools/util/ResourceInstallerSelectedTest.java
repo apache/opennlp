@@ -136,7 +136,7 @@ public class ResourceInstallerSelectedTest {
             staging -> Files.writeString(staging.resolve("a.keep"), "a"),
             relative -> Path.of(destination)));
 
-    Assertions.assertEquals("selected destination leaves the target: " + destination,
+    Assertions.assertEquals("selected destination leaves the target: " + Path.of(destination),
         e.getMessage());
     Assertions.assertEquals(List.of(), list(target));
     Assertions.assertEquals(List.of("out"), list(parent));

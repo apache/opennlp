@@ -925,15 +925,17 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Checks that a selected destination stays beneath the target: it must be relative,
-   * non-empty, and normalized without a leading {@code ..}, so it has no {@code .} or
-   * {@code ..} segments.
+   * Checks that a selected destination stays beneath the target: it must be relative
+   * without a root, non-empty, and normalized without a leading {@code ..}, so it has no
+   * {@code .} or {@code ..} segments. A root without a drive, such as {@code \x} on
+   * Windows, is not absolute but still resolves outside the target.
    *
    * @param relative The file's destination path relative to the target.
-   * @throws IOException Thrown if the destination is absolute, empty, or not normalized.
+   * @throws IOException Thrown if the destination is absolute, has a root, is empty, or is
+   *     not normalized.
    */
   private static void requireInsideTarget(Path relative) throws IOException {
-    if (relative.isAbsolute() || relative.toString().isEmpty()
+    if (relative.isAbsolute() || relative.getRoot() != null || relative.toString().isEmpty()
         || !relative.normalize().equals(relative) || relative.startsWith(PARENT_DIRECTORY)) {
       throw new IOException("selected destination leaves the target: " + relative);
     }
