@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
@@ -84,7 +83,7 @@ public final class CodePointSet {
     requireValid(lastInclusive);
     if (firstInclusive > lastInclusive) {
       throw new IllegalArgumentException("Range start " + firstInclusive
-          + " must not exceed range end " + lastInclusive + ".");
+          + " must not exceed range end " + lastInclusive);
     }
     final BitSet members = new BitSet();
     members.set(firstInclusive, lastInclusive + 1);
@@ -117,7 +116,7 @@ public final class CodePointSet {
 
   // Package visible so the parser can be exercised directly, without a temporary file.
   static CodePointSet parse(List<String> lines, String section) {
-    Objects.requireNonNull(section, "section");
+    ParamChecks.requireNonNullArg(section, "section");
     final String wanted = StringUtil.trimUnicodeWhitespace(section).toLowerCase(Locale.ROOT);
     final BitSet members = new BitSet();
     String current = null;
@@ -209,7 +208,14 @@ public final class CodePointSet {
     return new IllegalArgumentException("Malformed " + what + " on line " + lineNumber + ": " + raw);
   }
 
-  private static void requireValid(int codePoint) {
+  /**
+   * Validates that {@code codePoint} is a Unicode code point.
+   *
+   * @param codePoint The value to validate.
+   * @throws IllegalArgumentException Thrown if {@code codePoint} is negative or greater than
+   *     {@link Character#MAX_CODE_POINT}.
+   */
+  static void requireValid(int codePoint) {
     if (codePoint < 0 || codePoint > Character.MAX_CODE_POINT) {
       throw new IllegalArgumentException("Not a Unicode code point: " + codePoint);
     }

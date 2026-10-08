@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -323,12 +324,32 @@ public class CharClassTest {
     assertFalse(WS.contains('_'), "the preset must be unchanged");
   }
 
-  @Test
-  void testOfRejectsInvalidReplacement() {
-    assertThrows(IllegalArgumentException.class,
-        () -> CharClass.of(CodePointSet.of(0x20), -1));
-    assertThrows(IllegalArgumentException.class,
-        () -> CharClass.of(CodePointSet.of(0x20), Character.MAX_CODE_POINT + 1));
+  /**
+   * Lists every call that takes a replacement code point, each invoked with {@code replacement}.
+   *
+   * @param replacement The replacement code point to pass.
+   * @return The named calls.
+   */
+  private static List<Named<Executable>> replacementCalls(int replacement) {
+    return List.of(
+        Named.of("of", () -> CharClass.of(CodePointSet.of(0x20), replacement)),
+        Named.of("collapsePreserving", () -> WS.collapsePreserving("x", NEWLINE, replacement)),
+        Named.of("collapsePreservingAligned",
+            () -> WS.collapsePreservingAligned("x", NEWLINE, replacement)),
+        Named.of("collapseParagraphPreserving",
+            () -> WS.collapseParagraphPreserving("x", NEWLINE, replacement)),
+        Named.of("collapseParagraphPreservingAligned",
+            () -> WS.collapseParagraphPreservingAligned("x", NEWLINE, replacement)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {-1, Character.MAX_CODE_POINT + 1})
+  void testRejectsInvalidReplacement(int replacement) {
+    for (Named<Executable> call : replacementCalls(replacement)) {
+      assertEquals("Not a Unicode code point: " + replacement,
+          assertThrows(IllegalArgumentException.class, call.getPayload(), call.getName()).getMessage(),
+          call.getName());
+    }
   }
 
   // --- aligned variants (Alignment / AlignedText) ------------------------------------------

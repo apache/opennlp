@@ -56,7 +56,13 @@ public final class UnicodeWhitespace {
   /** {@code U+000A} LINE FEED, a line break on its own or the second half of {@code CRLF}. */
   public static final int LINE_FEED = 0x000A;
 
-  /** Unicode general category for a whitespace or related code point. */
+  /**
+   * Unicode general category for a whitespace or related code point.
+   *
+   * <p>The constant names are the two-letter general category abbreviations of the Unicode
+   * Character Database, kept as is so they match the Unicode tables and {@code \p{Zs}}-style
+   * property names.</p>
+   */
   public enum Category {
     /** {@code Cc} - control. */
     Cc,

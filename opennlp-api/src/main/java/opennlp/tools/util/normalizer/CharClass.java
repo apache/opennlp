@@ -69,7 +69,7 @@ public final class CharClass {
    */
   public static CharClass of(CodePointSet members, int replacement) {
     ParamChecks.requireNonNullArg(members, "members");
-    requireValidCodePoint(replacement);
+    CodePointSet.requireValid(replacement);
     return new CharClass(members, replacement);
   }
 
@@ -249,7 +249,7 @@ public final class CharClass {
   public String collapsePreserving(CharSequence text, CodePointSet keep, int keepReplacement) {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(keep, "keep");
-    requireValidCodePoint(keepReplacement);
+    CodePointSet.requireValid(keepReplacement);
     return collapseRuns(text, preservingReplacement(text, keep, keepReplacement), null);
   }
 
@@ -262,23 +262,8 @@ public final class CharClass {
    */
   public String trim(CharSequence text) {
     ParamChecks.requireNonNullArg(text, "text");
-    final int length = text.length();
-    int start = 0;
-    while (start < length) {
-      final At cp = CodePoints.at(text, start);
-      if (!members.contains(cp.codePoint())) {
-        break;
-      }
-      start = cp.nextIndex(start);
-    }
-    int end = length;
-    while (end > start) {
-      final At cp = CodePoints.before(text, end);
-      if (!members.contains(cp.codePoint())) {
-        break;
-      }
-      end = cp.previousIndex(end);
-    }
+    final int start = skipRun(text, 0);
+    final int end = skipRunBackward(text, start, text.length());
     return text.subSequence(start, end).toString();
   }
 
@@ -368,7 +353,7 @@ public final class CharClass {
                                                int keepReplacement) {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(keep, "keep");
-    requireValidCodePoint(keepReplacement);
+    CodePointSet.requireValid(keepReplacement);
     return collapseRunsAligned(text, preservingReplacement(text, keep, keepReplacement));
   }
 
@@ -389,7 +374,7 @@ public final class CharClass {
                                             int paragraphReplacement) {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(lineBreaks, "lineBreaks");
-    requireValidCodePoint(paragraphReplacement);
+    CodePointSet.requireValid(paragraphReplacement);
     return collapseRuns(text, paragraphReplacement(text, lineBreaks, paragraphReplacement), null);
   }
 
@@ -408,7 +393,7 @@ public final class CharClass {
                                                         int paragraphReplacement) {
     ParamChecks.requireNonNullArg(text, "text");
     ParamChecks.requireNonNullArg(lineBreaks, "lineBreaks");
-    requireValidCodePoint(paragraphReplacement);
+    CodePointSet.requireValid(paragraphReplacement);
     return collapseRunsAligned(text, paragraphReplacement(text, lineBreaks, paragraphReplacement));
   }
 
@@ -424,23 +409,9 @@ public final class CharClass {
   public AlignedText trimAligned(CharSequence text) {
     ParamChecks.requireNonNullArg(text, "text");
     final int length = text.length();
-    int start = 0;
-    while (start < length) {
-      final At cp = CodePoints.at(text, start);
-      if (!members.contains(cp.codePoint())) {
-        break;
-      }
-      start = cp.nextIndex(start);
-    }
-    int end = length;
-    while (end > start) {
-      final At cp = CodePoints.before(text, end);
-      if (!members.contains(cp.codePoint())) {
-        break;
-      }
-      end = cp.previousIndex(end);
-    }
-    final Alignment.Builder alignment = new Alignment.Builder(text.length());
+    final int start = skipRun(text, 0);
+    final int end = skipRunBackward(text, start, length);
+    final Alignment.Builder alignment = new Alignment.Builder(length);
     if (start > 0) {
       alignment.replace(start, 0);
     }
@@ -706,6 +677,27 @@ public final class CharClass {
   }
 
   /**
+   * Moves back past a run of member code points that ends at {@code runEnd}.
+   *
+   * @param text The text to scan.
+   * @param floor The lowest index the scan may reach.
+   * @param runEnd The index after the last code point of the run.
+   * @return The index after the last non-member code point before {@code runEnd}, or
+   *     {@code floor} when every code point in {@code [floor, runEnd)} is a member.
+   */
+  private int skipRunBackward(CharSequence text, int floor, int runEnd) {
+    int i = runEnd;
+    while (i > floor) {
+      final At cp = CodePoints.before(text, i);
+      if (!members.contains(cp.codePoint())) {
+        break;
+      }
+      i = cp.previousIndex(i);
+    }
+    return i;
+  }
+
+  /**
    * Counts logical line breaks in a whitespace run. A carriage return immediately followed by a
    * line feed counts as one break.
    *
@@ -738,18 +730,5 @@ public final class CharClass {
       }
     }
     return count;
-  }
-
-  /**
-   * Validates that {@code codePoint} is a Unicode code point.
-   *
-   * @param codePoint The value to validate.
-   * @throws IllegalArgumentException Thrown if {@code codePoint} is negative or greater than
-   *     {@link Character#MAX_CODE_POINT}.
-   */
-  private static void requireValidCodePoint(int codePoint) {
-    if (codePoint < 0 || codePoint > Character.MAX_CODE_POINT) {
-      throw new IllegalArgumentException("Not a Unicode code point: " + codePoint);
-    }
   }
 }
