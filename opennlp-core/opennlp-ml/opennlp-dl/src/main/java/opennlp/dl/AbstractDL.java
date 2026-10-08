@@ -56,6 +56,22 @@ public abstract class AbstractDL implements AutoCloseable {
   public static final String ATTENTION_MASK = "attention_mask";
   public static final String TOKEN_TYPE_IDS = "token_type_ids";
 
+  private static final String TOKENIZER_MODEL_KEY = "model";
+  private static final String TOKENIZER_TYPE_KEY = "type";
+  private static final String TOKENIZER_VOCAB_KEY = "vocab";
+  private static final String TOKENIZER_SUBWORD_PREFIX_KEY = "continuing_subword_prefix";
+  private static final String TOKENIZER_ADDED_TOKENS_KEY = "added_tokens";
+  private static final String TOKENIZER_ID_KEY = "id";
+  private static final String TOKENIZER_CONTENT_KEY = "content";
+  private static final String TOKENIZER_NORMALIZER_KEY = "normalizer";
+  private static final String TOKENIZER_LOWERCASE_KEY = "lowercase";
+  /** The only {@code model.type} of a {@code tokenizer.json} the WordPiece encoder can use. */
+  private static final String WORDPIECE_MODEL_TYPE = "WordPiece";
+  /** The continuing subword prefix the WordPiece encoder assumes. */
+  private static final String WORDPIECE_SUBWORD_PREFIX = "##";
+  /** The first non-whitespace character of a vocabulary file that is read as JSON. */
+  private static final String JSON_OBJECT_START = "{";
+
   protected final OrtEnvironment env;
   protected final OrtSession session;
   protected final SubwordTokenizer tokenizer;
@@ -96,11 +112,14 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param sessionOptions The session options (e.g. CUDA execution provider); build with
    *     {@link #sessionOptions(InferenceOptions)} when honoring {@link InferenceOptions}.
    * @param lowerCase {@code true} for uncased models (lower casing and accent stripping
-   *     during tokenization), {@code false} for cased models.
+   *     during tokenization), {@code false} for cased models. A {@code tokenizer.json} that
+   *     sets {@code normalizer.lowercase} must agree with it.
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if the {@code model} or {@code vocabulary} cannot be read.
-   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed.
+   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, has an
+   *     unsupported layout, or sets {@code normalizer.lowercase} to the other value than
+   *     {@code lowerCase}.
    */
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
@@ -113,7 +132,9 @@ public abstract class AbstractDL implements AutoCloseable {
     try (sessionOptions) {
       final OrtSession createdSession = env.createSession(model.getPath(), sessionOptions);
       try {
-        this.vocab = Map.copyOf(loadVocabFile(vocabulary));
+        final Vocabulary loaded = readVocabFile(vocabulary);
+        requireLowerCase(vocabulary, loaded, lowerCase);
+        this.vocab = Map.copyOf(loaded.ids());
         this.tokenizer = createWordpieceEncoder(vocab, lowerCase);
       } catch (IOException | RuntimeException e) {
         // Vocabulary/tokenizer init failed after the native session was created; close it
@@ -170,47 +191,57 @@ public abstract class AbstractDL implements AutoCloseable {
 
   /**
    * Loads a vocabulary {@link File} from disk. A file with an opening brace as its first
-   * non-whitespace character is read as JSON: one object that maps each token to a non-negative
-   * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
-   * per line, the line number being the ID, as in {@code vocab.txt}. An empty line in a plain
-   * text file is skipped but still counts toward the IDs of the lines after it; a line that
-   * holds only whitespace is a token. A byte order mark at the start of the file is not
-   * content in either format. The JSON layout is that of
-   * {@link #loadJsonVocab(String)}.
+   * non-whitespace character is read as JSON, in one of two layouts: one object that maps each
+   * token to a non-negative integer ID, as in {@code vocab.json}, or a Hugging Face
+   * {@code tokenizer.json} of a WordPiece model, whose {@code model.vocab} object supplies the
+   * tokens and whose {@code added_tokens} absent from {@code model.vocab} are added with their
+   * ids. Any other file is read as plain text with one token per line, the line number being
+   * the ID, as in {@code vocab.txt}. An empty line in a plain text file is skipped but still
+   * counts toward the IDs of the lines after it; a line that holds only whitespace is a token.
+   * A byte order mark at the start of the file is not content in either format.
    *
    * @param vocabFile The vocabulary file.
    * @return A map of vocabulary words to IDs.
    * @throws IOException Thrown if the vocabulary file cannot be opened or read.
-   * @throws InvalidFormatException Thrown if a JSON vocabulary is malformed, has a layout that
-   *     is not supported, or contains a value that is not a non-negative integer. The message
-   *     names the file and the offset or the token.
+   * @throws InvalidFormatException Thrown if a JSON vocabulary is malformed, contains a value
+   *     that is not a non-negative integer, or is a {@code tokenizer.json} of another model type
+   *     than WordPiece or with an added token that conflicts with the vocabulary. The message
+   *     names the file and the offset, the token, or the unsupported member.
    */
   public Map<String, Integer> loadVocab(
       final File vocabFile) throws IOException {
 
-    return loadVocabFile(vocabFile);
+    return readVocabFile(vocabFile).ids();
   }
 
   /**
-   * Loads a vocabulary file as {@link #loadVocab(File)} does.
+   * A vocabulary read from a file or JSON text.
+   *
+   * @param ids The map of tokens to IDs.
+   * @param lowercase The {@code normalizer.lowercase} setting of a {@code tokenizer.json}, or
+   *     {@code null} if the vocabulary does not carry that setting.
+   */
+  record Vocabulary(Map<String, Integer> ids, Boolean lowercase) {
+  }
+
+  /**
+   * Reads a vocabulary file as {@link #loadVocab(File)} does, keeping the settings of a
+   * {@code tokenizer.json} that a component must agree with.
    *
    * @param vocabFile The vocabulary file.
-   * @return A map of vocabulary words to IDs.
+   * @return The vocabulary.
    * @throws IOException Thrown if the vocabulary file cannot be opened or read.
    * @throws InvalidFormatException Thrown if a JSON vocabulary is malformed, has a layout that
    *     is not supported, or contains a value that is not a non-negative integer.
    */
-  static Map<String, Integer> loadVocabFile(
-      final File vocabFile) throws IOException {
-
+  Vocabulary readVocabFile(final File vocabFile) throws IOException {
     final String read = Files.readString(Path.of(vocabFile.getPath()), StandardCharsets.UTF_8);
     final String content = StringUtil.stripByteOrderMark(read);
     final String trimmed = content.trim();
 
-    // Detect JSON format by leading brace
-    if (trimmed.startsWith("{")) {
+    if (trimmed.startsWith(JSON_OBJECT_START)) {
       try {
-        return loadJsonVocab(trimmed);
+        return readJsonVocab(trimmed);
       } catch (IllegalArgumentException e) {
         throw new InvalidFormatException(
             "Vocabulary file " + vocabFile.getName() + ": " + e.getMessage(), e);
@@ -229,7 +260,28 @@ public abstract class AbstractDL implements AutoCloseable {
       }
     });
 
-    return vocab;
+    return new Vocabulary(vocab, null);
+  }
+
+  /**
+   * Checks that the lower casing a component is configured with agrees with the
+   * {@code normalizer.lowercase} setting of its vocabulary file, so that the component encodes
+   * text as the model's own tokenizer does.
+   *
+   * @param vocabFile The vocabulary file, named in the message.
+   * @param vocabulary The vocabulary read from it.
+   * @param lowerCase {@code true} if the component lower cases text, {@code false} otherwise.
+   * @throws InvalidFormatException Thrown if the file sets {@code normalizer.lowercase} to the
+   *     other value.
+   */
+  void requireLowerCase(final File vocabFile, final Vocabulary vocabulary,
+      final boolean lowerCase) throws InvalidFormatException {
+    final Boolean lowercase = vocabulary.lowercase();
+    if (lowercase != null && lowercase != lowerCase) {
+      throw new InvalidFormatException("Vocabulary file " + vocabFile.getName()
+          + " sets normalizer.lowercase to " + lowercase
+          + ", but the component is configured with lowerCase " + lowerCase);
+    }
   }
 
   /**
@@ -543,30 +595,168 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Reads a JSON vocabulary as one object mapping tokens to non-negative integer IDs, as in
-   * {@code vocab.json}. Keys are decoded from their escapes, and a later entry for the same
-   * token overwrites an earlier one.
+   * Reads a JSON vocabulary in one of two layouts: a {@code vocab.json} object that maps each
+   * token to its ID, or a {@code tokenizer.json} of a WordPiece model, recognized by a
+   * {@code model} object with a string {@code type}, whose {@code model.vocab} object supplies
+   * the tokens and whose {@code added_tokens} entries absent from {@code model.vocab} are added
+   * with their ids. Keys are decoded from their escapes, and a later entry for the same token
+   * overwrites an earlier one.
    *
    * @param json The JSON text of the vocabulary.
-   * @return A map of vocabulary tokens to IDs.
+   * @return The vocabulary, with the {@code normalizer.lowercase} setting of a
+   *     {@code tokenizer.json}.
    * @throws IllegalArgumentException Thrown if the text is not a single well-formed JSON object,
-   *     or if a value of the vocabulary object is not a
-   *     non-negative integer that fits into an {@code int}. The message names the offset or the
-   *     token.
+   *     if a value of the vocabulary object is not a non-negative integer that fits into an
+   *     {@code int}, if a {@code tokenizer.json} is not that of a WordPiece model with the
+   *     {@code ##} continuing subword prefix and a {@code model.vocab} object, or if an added
+   *     token is malformed or conflicts with another token or id. The message names the offset,
+   *     the token, or the unsupported member.
    */
-  static Map<String, Integer> loadJsonVocab(final String json) {
+  Vocabulary readJsonVocab(final String json) {
     final List<JsonScan.Member> document = JsonScan.document(json);
-    final Map<String, Integer> vocab = new HashMap<>();
-    for (JsonScan.Member member : document) {
-      try {
-        vocab.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException(
-            "Expected one object mapping tokens to integer ids, as in vocab.json: "
-                + e.getMessage(), e);
+    final JsonScan.Member model = JsonScan.member(document, TOKENIZER_MODEL_KEY);
+    if (model != null && JsonScan.isObject(json, model)) {
+      final List<JsonScan.Member> modelMembers = JsonScan.members(json, model.valueStart());
+      final JsonScan.Member type = JsonScan.member(modelMembers, TOKENIZER_TYPE_KEY);
+      if (type != null && JsonScan.isString(json, type)) {
+        final Map<String, Integer> vocab =
+            tokenizerVocab(json, modelMembers, JsonScan.stringValue(json, type));
+        addTokens(json, document, vocab);
+        return new Vocabulary(vocab, lowercaseSetting(json, document));
       }
     }
-    return vocab;
+    final Map<String, Integer> vocab = new HashMap<>();
+    for (JsonScan.Member member : document) {
+      vocab.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
+    }
+    return new Vocabulary(vocab, null);
+  }
+
+  /**
+   * Reads the vocabulary of the {@code model} object of a {@code tokenizer.json}.
+   *
+   * @param json The JSON text.
+   * @param model The members of the {@code model} object.
+   * @param type The value of {@code model.type}.
+   * @return A map of the tokens of {@code model.vocab} to their IDs.
+   * @throws IllegalArgumentException Thrown if {@code type} is not {@code WordPiece}, if
+   *     {@code model.continuing_subword_prefix} is present and not {@code ##}, if
+   *     {@code model.vocab} is missing or not an object, or if a value of it is not a
+   *     non-negative integer that fits into an {@code int}.
+   */
+  private Map<String, Integer> tokenizerVocab(final String json,
+      final List<JsonScan.Member> model, final String type) {
+    if (!WORDPIECE_MODEL_TYPE.equals(type)) {
+      throw new IllegalArgumentException("Unsupported tokenizer.json: only WordPiece models"
+          + " are supported, found model.type \"" + type + "\"");
+    }
+    final JsonScan.Member prefix = JsonScan.member(model, TOKENIZER_SUBWORD_PREFIX_KEY);
+    if (prefix != null) {
+      final String found = JsonScan.isString(json, prefix) ? JsonScan.stringValue(json, prefix)
+          : json.substring(prefix.valueStart(), prefix.valueEnd());
+      if (!WORDPIECE_SUBWORD_PREFIX.equals(found)) {
+        throw new IllegalArgumentException("Unsupported tokenizer.json:"
+            + " model.continuing_subword_prefix must be \"##\", found " + found);
+      }
+    }
+    final JsonScan.Member vocab = JsonScan.member(model, TOKENIZER_VOCAB_KEY);
+    if (vocab == null) {
+      throw new IllegalArgumentException("Unsupported tokenizer.json: model.vocab is missing");
+    }
+    if (!JsonScan.isObject(json, vocab)) {
+      throw new IllegalArgumentException(
+          "Unsupported tokenizer.json: model.vocab must be an object that maps tokens to ids");
+    }
+    final Map<String, Integer> ids = new HashMap<>();
+    for (JsonScan.Member member : JsonScan.members(json, vocab.valueStart())) {
+      ids.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
+    }
+    return ids;
+  }
+
+  /**
+   * Reads the {@code normalizer.lowercase} setting of a {@code tokenizer.json}.
+   *
+   * @param json The JSON text.
+   * @param document The members of the top-level object.
+   * @return The setting, or {@code null} if there is no {@code normalizer} object or it has no
+   *     {@code lowercase} member.
+   * @throws IllegalArgumentException Thrown if the setting is neither {@code true} nor
+   *     {@code false}.
+   */
+  private Boolean lowercaseSetting(final String json,
+      final List<JsonScan.Member> document) {
+    final JsonScan.Member normalizer = JsonScan.member(document, TOKENIZER_NORMALIZER_KEY);
+    if (normalizer == null || !JsonScan.isObject(json, normalizer)) {
+      return null;
+    }
+    final JsonScan.Member lowercase = JsonScan.member(
+        JsonScan.members(json, normalizer.valueStart()), TOKENIZER_LOWERCASE_KEY);
+    if (lowercase == null) {
+      return null;
+    }
+    return JsonScan.booleanValue(json, lowercase);
+  }
+
+  /**
+   * Adds the entries of the {@code added_tokens} list of a {@code tokenizer.json} to a
+   * vocabulary. An entry whose token the vocabulary already maps to the same id is left as it
+   * is.
+   *
+   * @param json The JSON text.
+   * @param document The members of the top-level object.
+   * @param vocab The vocabulary read from {@code model.vocab}, extended in place.
+   * @throws IllegalArgumentException Thrown if {@code added_tokens} is present and not a list,
+   *     if an entry is not an object with a string {@code content} and a non-negative integer
+   *     {@code id}, or if an entry conflicts with the vocabulary: its token has another id
+   *     there, or its id belongs to another token.
+   */
+  private void addTokens(final String json, final List<JsonScan.Member> document,
+      final Map<String, Integer> vocab) {
+    final JsonScan.Member addedTokens = JsonScan.member(document, TOKENIZER_ADDED_TOKENS_KEY);
+    if (addedTokens == null) {
+      return;
+    }
+    if (!JsonScan.isArray(json, addedTokens)) {
+      throw new IllegalArgumentException("Unsupported tokenizer.json: added_tokens must be a list");
+    }
+    Map<Integer, String> tokensById = null;
+    for (JsonScan.Member entry : JsonScan.elements(json, addedTokens.valueStart())) {
+      final String where = "added_tokens[" + entry.key() + "]";
+      if (!JsonScan.isObject(json, entry)) {
+        throw new IllegalArgumentException(
+            "Unsupported tokenizer.json: " + where + " must be an object");
+      }
+      final List<JsonScan.Member> fields = JsonScan.members(json, entry.valueStart());
+      final JsonScan.Member content = JsonScan.member(fields, TOKENIZER_CONTENT_KEY);
+      final JsonScan.Member id = JsonScan.member(fields, TOKENIZER_ID_KEY);
+      if (content == null || id == null) {
+        throw new IllegalArgumentException("Unsupported tokenizer.json: " + where
+            + " must have \"content\" and \"id\"");
+      }
+      final String token = JsonScan.stringValue(json, content);
+      final int tokenId = JsonScan.nonNegativeIntValue(json, id);
+      final Integer known = vocab.get(token);
+      if (known != null) {
+        if (known != tokenId) {
+          throw new IllegalArgumentException("Unsupported tokenizer.json: added token \"" + token
+              + "\" has id " + tokenId + " but the vocabulary maps it to " + known);
+        }
+        continue;
+      }
+      if (tokensById == null) {
+        tokensById = new HashMap<>();
+        for (Map.Entry<String, Integer> e : vocab.entrySet()) {
+          tokensById.put(e.getValue(), e.getKey());
+        }
+      }
+      final String holder = tokensById.putIfAbsent(tokenId, token);
+      if (holder != null) {
+        throw new IllegalArgumentException("Unsupported tokenizer.json: added token \"" + token
+            + "\" has id " + tokenId + " but the vocabulary maps \"" + holder + "\" to it");
+      }
+      vocab.put(token, tokenId);
+    }
   }
 
   /**

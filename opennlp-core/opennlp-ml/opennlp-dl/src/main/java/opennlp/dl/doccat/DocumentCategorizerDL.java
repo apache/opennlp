@@ -119,7 +119,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
-   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed.
+   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, has an
+   *     unsupported layout, or sets a lower casing that disagrees with {@code inferenceOptions}.
    */
   public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -156,9 +157,10 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException  Thrown if errors occurred loading the {@code model}, the
    *     {@code vocabulary}, or the {@code config}.
-   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, or if
-   *     {@code config} is not well-formed JSON, its {@code id2label} member does not map keys
-   *     to strings, or a key is not an integer.
+   * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, has an
+   *     unsupported layout, or sets a lower casing that disagrees with {@code inferenceOptions},
+   *     or if {@code config} is not well-formed JSON, its {@code id2label} member does not map
+   *     keys to strings, or a key is not an integer.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,
