@@ -126,9 +126,7 @@ abstract class AbstractNameFinderTest {
   }
 
   private static void downloadModel(URL url) throws IOException {
-    if (!Files.isDirectory(OPENNLP_DIR)) {
-      OPENNLP_DIR.toFile().mkdir();
-    }
+    Files.createDirectories(OPENNLP_DIR);
     final String filename = url.toString().substring(url.toString().lastIndexOf("/") + 1);
     final Path localFile = Paths.get(OPENNLP_DIR.toString(), filename);
 
