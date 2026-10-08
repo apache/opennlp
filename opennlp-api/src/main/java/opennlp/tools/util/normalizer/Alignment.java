@@ -41,6 +41,8 @@ import opennlp.tools.util.Span;
  * normalization pipeline still map a result all the way back to the original.</p>
  *
  * <p>Instances are immutable and thread-safe; build one with {@link Builder}.</p>
+ *
+ * @since 3.0.0
  */
 @ThreadSafe
 public final class Alignment {
@@ -150,15 +152,8 @@ public final class Alignment {
       final int start = middleStart < normalizedLength() ? originalStart[middleStart] : originalLength;
       final int end = middleEnd > 0 ? originalEnd[middleEnd - 1] : 0;
       starts[f] = start;
-      // Math.max keeps the original span non-inverted. When next inserted this final character
-      // (a zero-width middle range, middleStart == middleEnd) the max collapses it to a zero-width
-      // original span -- correct for every insertion except one landing strictly inside an
-      // expansion this stage produced, where the characters on either side share one atomic
-      // original block (originalEnd[middleEnd - 1] > originalStart[middleStart]) that has no
-      // interior offset to point at. There the insertion is attributed to that whole block, the
-      // only choice that keeps originalStart/originalEnd sorted so toOriginalSpan/toNormalizedSpan
-      // keep their O(log n) search; forcing it to zero-width would push originalEnd below its
-      // predecessor and corrupt the reverse mapping.
+      // Math.max keeps the span non-inverted. An insertion inside an expansion is attributed
+      // to the whole expanded block, which keeps originalStart and originalEnd sorted.
       ends[f] = Math.max(start, end);
     }
     return new Alignment(starts, ends, originalLength);

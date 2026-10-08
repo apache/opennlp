@@ -41,6 +41,8 @@ import opennlp.tools.util.StringUtil;
  * standards-sourced data layer that {@link CharClass} and the reference tables
  * ({@link UnicodeWhitespace}, {@link UnicodeDash}) are built from, and that users extend or
  * override through {@link #fromFile(Path, String)}.</p>
+ *
+ * @since 3.0.0
  */
 public final class CodePointSet {
 
@@ -92,12 +94,12 @@ public final class CodePointSet {
   /**
    * Loads the code points declared under one section of a user definitions file.
    *
-   * <p>The format is line oriented and parsed with simple cursor scanning, not a regular
-   * expression: a {@code [name]} line opens a section; a {@code #} begins a comment that runs to
-   * end of line; each remaining line is a single hex code point ({@code U+00A0}, {@code 0x00A0},
-   * or {@code 00A0}) or an inclusive range ({@code U+2000-U+200A}). Section names match case
-   * insensitively. Only entries under the requested section are returned, so one file can carry,
-   * for example, both {@code [whitespace]} and {@code [dash]} sections.</p>
+   * <p>The format is line oriented: a {@code [name]} line opens a section; a {@code #} begins a
+   * comment that runs to end of line; each remaining line is a single hex code point
+   * ({@code U+00A0}, {@code 0x00A0}, or {@code 00A0}) or an inclusive range
+   * ({@code U+2000-U+200A}). Section names match case insensitively. Only entries under the
+   * requested section are returned, so one file can carry, for example, both
+   * {@code [whitespace]} and {@code [dash]} sections.</p>
    *
    * @param definitions The file to read (UTF-8).
    * @param section The section whose entries should be loaded.

@@ -119,8 +119,7 @@ public class StringUtil {
 
   /**
    * Splits {@code input} on runs of Unicode {@code White_Space}. Leading and trailing
-   * runs are ignored, so whitespace-only input yields an empty array. This is a
-   * code-point scan, not a regular expression.
+   * runs are ignored, so whitespace-only input yields an empty array.
    *
    * @param input The text to split. Must not be {@code null}.
    * @return The non-whitespace terms in order.

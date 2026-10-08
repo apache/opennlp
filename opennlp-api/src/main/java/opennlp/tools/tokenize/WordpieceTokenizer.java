@@ -86,7 +86,8 @@ public class WordpieceTokenizer implements Tokenizer {
    * maximum token length of 100 Unicode code points.
    *
    * @param vocabulary A set of tokens considered the vocabulary; must not be {@code null}
-   *     or contain {@code null} or empty entries.
+   *     or contain {@code null} or empty entries. The set is copied at construction, so
+   *     later changes to it do not affect this tokenizer.
    * @throws IllegalArgumentException Thrown if {@code vocabulary} is invalid.
    */
   public WordpieceTokenizer(Set<String> vocabulary) {
@@ -99,7 +100,8 @@ public class WordpieceTokenizer implements Tokenizer {
    * {@code maxTokenLength}.
    *
    * @param vocabulary A set of tokens considered the vocabulary; must not be {@code null}
-   *     or contain {@code null} or empty entries.
+   *     or contain {@code null} or empty entries. The set is copied at construction, so
+   *     later changes to it do not affect this tokenizer.
    * @param maxTokenLength The non-negative maximum number of Unicode code points in one token.
    * @throws IllegalArgumentException Thrown if {@code vocabulary} is invalid or
    *     {@code maxTokenLength} is negative.
@@ -116,7 +118,8 @@ public class WordpieceTokenizer implements Tokenizer {
    * defaults.
    *
    * @param vocabulary          The vocabulary; must not be {@code null} or contain {@code null}
-   *                            or empty entries.
+   *                            or empty entries. The set is copied at construction, so later
+   *                            changes to it do not affect this tokenizer.
    * @param classificationToken The CLS token; must not be {@code null} or empty.
    * @param separatorToken      The SEP token; must not be {@code null} or empty.
    * @param unknownToken        The UNK token; must not be {@code null} or empty.
@@ -136,7 +139,8 @@ public class WordpieceTokenizer implements Tokenizer {
    * custom special tokens and a custom {@code maxTokenLength}.
    *
    * @param vocabulary          The vocabulary; must not be {@code null} or contain {@code null}
-   *                            or empty entries.
+   *                            or empty entries. The set is copied at construction, so later
+   *                            changes to it do not affect this tokenizer.
    * @param classificationToken The CLS token; must not be {@code null} or empty.
    * @param separatorToken      The SEP token; must not be {@code null} or empty.
    * @param unknownToken        The UNK token; must not be {@code null} or empty.
@@ -293,7 +297,9 @@ public class WordpieceTokenizer implements Tokenizer {
   }
 
   /**
-   * @return The maximum token length.
+   * Returns the maximum token length.
+   *
+   * @return The maximum number of Unicode code points in one token.
    */
   public int getMaxTokenLength() {
     return maxTokenLength;

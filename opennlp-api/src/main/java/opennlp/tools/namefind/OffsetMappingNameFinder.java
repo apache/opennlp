@@ -22,14 +22,11 @@ import opennlp.tools.util.Span;
  * A {@link TokenNameFinder} that can additionally report detected spans in the character coordinates
  * of the original input, mapping back through any text normalization applied before detection.
  *
- * <p>An implementation that normalizes input before detection (for example an ONNX model that folds
- * Unicode whitespace or dashes) returns spans from {@link #find(String[])} in the coordinates of the
- * normalized text, which no longer line up with the caller's input when a fold changes the length.
- * {@link #findInOriginal(String[])} maps those spans back to original-input coordinates. This is a
- * separate capability interface rather than a method on {@link TokenNameFinder} because the classic
- * contract reports token-index spans, for which an original-character mapping is not meaningful; an
- * interface-typed caller tests for the capability ({@code finder instanceof OffsetMappingNameFinder})
- * instead of depending on a concrete implementation.</p>
+ * <p>{@link #find(String[])} may report spans in the coordinates of the normalized text, which
+ * differ from the caller's input when normalization changes the length.
+ * {@link #findInOriginal(String[])} reports the same spans in original-input coordinates.</p>
+ *
+ * @since 3.0.0
  */
 public interface OffsetMappingNameFinder extends TokenNameFinder {
 

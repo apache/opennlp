@@ -18,9 +18,11 @@
 package opennlp.tools.stemmer;
 
 /**
- * A factory that captures a stemmer configuration and mints configured {@link Stemmer}
+ * A factory that captures a stemmer configuration and creates configured {@link Stemmer}
  * instances on demand. Unlike {@code BaseToolFactory}, this type is not loaded from a model
  * manifest.
+ *
+ * @since 3.0.0
  */
 public interface StemmerFactory {
 

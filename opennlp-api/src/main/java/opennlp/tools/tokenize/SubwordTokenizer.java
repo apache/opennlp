@@ -43,6 +43,11 @@ import java.util.List;
  * @see <a href="https://aclanthology.org/P16-1162/">Rico Sennrich, Barry Haddow, Alexandra Birch
  *     (2016): Neural Machine Translation of Rare Words with Subword Units. ACL 2016,
  *     pages 1715-1725</a>
+ * @see <a href="https://research.google/pubs/pub37842/">Mike Schuster, Kaisuke Nakajima (2012):
+ *     Japanese and Korean Voice Search. ICASSP 2012, pages 5149-5152</a>
+ * @see <a href="https://arxiv.org/abs/1609.08144">Yonghui Wu et al. (2016): Google's Neural
+ *     Machine Translation System: Bridging the Gap between Human and Machine Translation.
+ *     arXiv:1609.08144</a>
  * @see <a href="https://aclanthology.org/P18-1007/">Taku Kudo (2018): Subword Regularization:
  *     Improving Neural Network Translation Models with Multiple Subword Candidates. ACL 2018,
  *     pages 66-75</a>
