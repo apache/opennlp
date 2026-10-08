@@ -131,6 +131,18 @@ public class CodePointSetTest {
   }
 
   @Test
+  void testParseRejectsNullSection() {
+    assertEquals("section must not be null", assertThrows(IllegalArgumentException.class,
+        () -> CodePointSet.parse(List.of("[s]", "9"), null)).getMessage());
+  }
+
+  @Test
+  void testOfRangeRejectsDescendingBounds() {
+    assertEquals("Range start 66 must not exceed range end 65",
+        assertThrows(IllegalArgumentException.class, () -> CodePointSet.ofRange(66, 65)).getMessage());
+  }
+
+  @Test
   void testParseAcceptsSingleHexDigit() {
     assertTrue(CodePointSet.parse(List.of("[s]", "9"), "s").contains(0x9));
   }

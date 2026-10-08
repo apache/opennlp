@@ -50,7 +50,13 @@ public final class UnicodeDash {
   /** The canonical ASCII dash that dashes are normalized to: {@code U+002D} HYPHEN-MINUS. */
   public static final int HYPHEN_MINUS = 0x002D;
 
-  /** The Unicode general category of a dash code point. */
+  /**
+   * The Unicode general category of a dash code point.
+   *
+   * <p>The constant names are the two-letter general category abbreviations of the Unicode
+   * Character Database, kept as is so they match the Unicode tables and {@code \p{Pd}}-style
+   * property names.</p>
+   */
   public enum Category {
     /** {@code Pd} - dash punctuation. */
     Pd,
