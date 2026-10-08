@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HexFormat;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -37,8 +36,9 @@ import java.util.Set;
  */
 public final class DictionaryCatalog {
 
-  private static final int SHA_512_HEX_LENGTH = 128;
   private static final String URL_SUFFIX = ".url";
+  private static final String SHA512_SUFFIX = ".sha512";
+  private static final String FILENAME_SUFFIX = ".filename";
 
   /**
    * System property that must be {@code true} before a catalog entry may be
@@ -96,11 +96,11 @@ public final class DictionaryCatalog {
   public Entry get(String id) throws IOException {
     ParamChecks.requireNonNullArg(id, "id");
     final String url = properties.getProperty(id + URL_SUFFIX);
-    final String sha512 = properties.getProperty(id + ".sha512");
+    final String sha512 = properties.getProperty(id + SHA512_SUFFIX);
     if (url == null || sha512 == null) {
       throw new IOException("unknown or incomplete dictionary catalog entry: " + id);
     }
-    final String filename = properties.getProperty(id + ".filename");
+    final String filename = properties.getProperty(id + FILENAME_SUFFIX);
     try {
       return new Entry(id, new URI(url), sha512.trim(), filename);
     } catch (URISyntaxException | IllegalArgumentException e) {
@@ -109,11 +109,10 @@ public final class DictionaryCatalog {
   }
 
   /**
-   * Installs a catalog entry into {@code targetDirectory} after checking that remote
-   * catalog downloads are enabled. The entry is fetched, digest-verified, and unpacked
-   * by {@link ResourceInstaller}: an archive expands into the directory, and a plain
-   * file is stored under the entry's {@code <id>.filename} value when the catalog sets
-   * one, or under the file name of its source URI otherwise.
+   * Installs a catalog entry into {@code targetDirectory} under
+   * {@link ResourceInstaller.Limits#DEFAULT} when {@link #REMOTE_DOWNLOAD_PROPERTY} is
+   * {@code true}, as described in
+   * {@link #install(String, Path, boolean, ResourceInstaller.Limits)}.
    *
    * @param id The entry id. Must not be {@code null}.
    * @param targetDirectory The directory to install into; created when absent. Must
@@ -130,13 +129,39 @@ public final class DictionaryCatalog {
       throw new IOException("remote dictionary catalog downloads are disabled; set -D"
           + REMOTE_DOWNLOAD_PROPERTY + "=true to enable");
     }
-    final Entry entry = get(id);
-    if (entry.filename() == null) {
-      ResourceInstaller.install(entry.uri(), targetDirectory, entry.sha512());
-    } else {
-      ResourceInstaller.installNamed(
-          entry.uri(), targetDirectory, entry.sha512(), entry.filename());
+    install(id, targetDirectory, true, ResourceInstaller.Limits.DEFAULT);
+  }
+
+  /**
+   * Installs a catalog entry into {@code targetDirectory} when remote downloads are
+   * enabled. The entry is fetched, digest-verified, and unpacked by
+   * {@link ResourceInstaller}: an archive expands into the directory, and a plain file
+   * is stored under the entry's {@code <id>.filename} value when the catalog sets one,
+   * or under the file name of its source URI otherwise.
+   *
+   * @param id The entry id. Must not be {@code null}.
+   * @param targetDirectory The directory to install into; created when absent. Must
+   *                        not be {@code null}.
+   * @param remoteDownloadEnabled Whether the caller allows the entry to be fetched;
+   *                              {@code false} rejects the installation.
+   * @param limits The limits the installation runs under. Must not be {@code null}.
+   * @throws IOException Thrown if remote downloads are not enabled, the entry is
+   *         missing, a limit is exceeded, the download fails verification, or the
+   *         target already contains an installed file.
+   * @throws IllegalArgumentException Thrown if {@code id}, {@code targetDirectory}, or
+   *         {@code limits} is {@code null}.
+   */
+  public void install(String id, Path targetDirectory, boolean remoteDownloadEnabled,
+      ResourceInstaller.Limits limits) throws IOException {
+    ParamChecks.requireNonNullArg(id, "id");
+    ParamChecks.requireNonNullArg(targetDirectory, "targetDirectory");
+    ParamChecks.requireNonNullArg(limits, "limits");
+    if (!remoteDownloadEnabled) {
+      throw new IOException("remote dictionary catalog downloads are disabled");
     }
+    final Entry entry = get(id);
+    ResourceInstaller.install(
+        entry.uri(), targetDirectory, entry.sha512(), entry.filename(), limits);
   }
 
   /**
@@ -164,13 +189,8 @@ public final class DictionaryCatalog {
         throw new IllegalArgumentException("uri must be absolute");
       }
       ParamChecks.requireNonNullArg(sha512, "sha512");
-      if (sha512.length() != SHA_512_HEX_LENGTH) {
+      if (!Checksums.isHexDigest(sha512, Checksums.SHA_512_HEX_LENGTH)) {
         throw new IllegalArgumentException("sha512 must be 128 hex digits");
-      }
-      try {
-        HexFormat.of().parseHex(sha512);
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("sha512 must be 128 hex digits", e);
       }
       if (filename != null) {
         try {

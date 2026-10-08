@@ -42,13 +42,13 @@ Catalog downloads stay inactive until you set `-Dopennlp.download.remote=true`.
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import opennlp.tools.stemmer.hunspell.HunspellDictionaryDownload;
+import opennlp.tools.stemmer.hunspell.HunspellDictionaryInstaller;
 import opennlp.tools.util.DictionaryCatalog;
 
 // JVM flag: -Dopennlp.download.remote=true
 try (InputStream in = Files.newInputStream(Path.of("dictionary-catalog.properties"))) {
   DictionaryCatalog catalog = DictionaryCatalog.load(in);
-  HunspellDictionaryDownload.downloadFromCatalog(
+  HunspellDictionaryInstaller.installFromCatalog(
       catalog, "en_US", Path.of("/tmp/hunspell-en_US"));
 }
 ```

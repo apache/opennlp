@@ -32,15 +32,15 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.ProviderNotFoundException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -48,6 +48,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.archive.TarStream;
 
 /**
@@ -91,10 +92,6 @@ import opennlp.tools.util.archive.TarStream;
  */
 public final class ResourceInstaller {
 
-  private static final String SHA_256 = "SHA-256";
-  private static final String SHA_512 = "SHA-512";
-  private static final int SHA_256_HEX_LENGTH = 64;
-  private static final int SHA_512_HEX_LENGTH = 128;
   private static final String GZIP_SUFFIX = ".gz";
 
   /** OpenNLP model files are packed zip archives; install them packed. */
@@ -103,7 +100,10 @@ public final class ResourceInstaller {
   private static final String STAGING_PREFIX = ".opennlp-staging";
   private static final String DOWNLOAD_PREFIX = ".opennlp-download";
   private static final String DOWNLOAD_SUFFIX = ".part";
-  private static final int BUFFER_SIZE = 8192;
+  /** The path segment that names the parent directory. */
+  private static final String PARENT_DIRECTORY = "..";
+  /** The buffer size, in bytes, for streaming copies and digests in this package. */
+  static final int BUFFER_SIZE = 8192;
   private static final int MAGIC_LENGTH = 4;
   private static final int GZIP_MAGIC_FIRST = 0x1F;
   private static final int GZIP_MAGIC_SECOND = 0x8B;
@@ -121,7 +121,6 @@ public final class ResourceInstaller {
   private static final int ZIP_CENTRAL_SIZE_OFFSET = 12;
   private static final int ZIP_CENTRAL_OFFSET_OFFSET = 16;
   private static final int ZIP_COMMENT_LENGTH_OFFSET = 20;
-  private static final int TAR_END_BLOCKS_LENGTH = 1024;
 
   /** The expanded size every compressed source may reach regardless of the ratio. */
   private static final long MIN_EXPANSION_BYTES = 1L << 20;
@@ -367,6 +366,23 @@ public final class ResourceInstaller {
     }
   }
 
+  /**
+   * Writes content into the staging directory of
+   * {@link #installSelected(Path, StagingStep, Function)}.
+   */
+  @Internal
+  @FunctionalInterface
+  public interface StagingStep {
+
+    /**
+     * Writes content into the staging directory.
+     *
+     * @param staging The empty staging directory. Not {@code null}.
+     * @throws IOException Thrown if fetching or writing the content fails.
+     */
+    void fill(Path staging) throws IOException;
+  }
+
   /** Prevents construction of this utility class. */
   private ResourceInstaller() {
   }
@@ -448,23 +464,6 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Installs a catalog entry under its preferred file name when it is not an archive.
-   *
-   * @param source The resource location.
-   * @param targetDirectory The directory to install into.
-   * @param checksum The expected digest, or {@code null} for a file source.
-   * @param name The preferred name for non-archive content.
-   * @return The target directory.
-   * @throws IOException Thrown if fetching, verification, or unpacking fails.
-   * @throws IllegalArgumentException Thrown if an argument is invalid.
-   */
-  static Path installNamed(URI source, Path targetDirectory, String checksum,
-      String name) throws IOException {
-    ParamChecks.requireNonNullArg(name, "name");
-    return install(source, targetDirectory, checksum, name, Limits.DEFAULT);
-  }
-
-  /**
    * Validates the request, downloads and verifies the resource, and installs it from a
    * staging directory.
    *
@@ -478,7 +477,7 @@ public final class ResourceInstaller {
    * @throws IOException Thrown if fetching, verification, or installation fails.
    * @throws IllegalArgumentException Thrown if an argument is invalid.
    */
-  private static Path install(URI source, Path targetDirectory, String checksum,
+  static Path install(URI source, Path targetDirectory, String checksum,
       String name, Limits limits) throws IOException {
     ParamChecks.requireNonNullArg(source, "source");
     ParamChecks.requireNonNullArg(targetDirectory, "targetDirectory");
@@ -500,7 +499,8 @@ public final class ResourceInstaller {
       if (expected != null) {
         verify(downloaded, expected);
       }
-      installStaged(downloaded, resourceName, targetDirectory, limits);
+      installStaged(targetDirectory,
+          staging -> unpack(downloaded, resourceName, staging, limits), Function.identity());
       return targetDirectory;
     } catch (IOException e) {
       Files.deleteIfExists(downloaded);
@@ -510,6 +510,49 @@ public final class ResourceInstaller {
       throw e;
     } finally {
       Files.deleteIfExists(downloaded);
+    }
+  }
+
+  /**
+   * Installs a selection of the files that a caller-supplied step writes into a staging
+   * directory. The step runs against an empty hidden staging directory beneath the
+   * target, typically by calling {@link #install(URI, Path, String)} with the staging
+   * directory as its target. The selector then maps each staged regular file, by its
+   * path relative to the staging directory, to its path relative to the target, or to
+   * {@code null} to leave it out. The selected files are promoted under the same rules
+   * as {@link #install(URI, Path, String)}: nothing is promoted when the step fails,
+   * and an existing destination aborts the promotion before the first move.
+   *
+   * @param targetDirectory The directory to install into; created when absent. Must not
+   *                        be {@code null}.
+   * @param step Writes the content into the staging directory. Must not be
+   *             {@code null}.
+   * @param selector Maps a staged file's relative path to its relative destination
+   *                 beneath the target, or to {@code null} to skip the file. A
+   *                 destination must be relative and normalized. Must not be
+   *                 {@code null}.
+   * @return The number of files installed.
+   * @throws IOException Thrown if the step fails, a destination is absolute or not
+   *         normalized, two staged files map to the same destination, a destination
+   *         already exists, or moving fails.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
+   */
+  @Internal
+  public static int installSelected(Path targetDirectory, StagingStep step,
+      Function<Path, Path> selector) throws IOException {
+    ParamChecks.requireNonNullArg(targetDirectory, "targetDirectory");
+    ParamChecks.requireNonNullArg(step, "step");
+    ParamChecks.requireNonNullArg(selector, "selector");
+    final boolean createdTarget = Files.notExists(targetDirectory);
+    Files.createDirectories(targetDirectory);
+    removeStaleWorkFiles(targetDirectory);
+    try {
+      return installStaged(targetDirectory, step, selector);
+    } catch (IOException | RuntimeException e) {
+      if (createdTarget) {
+        removeIfEmpty(targetDirectory, e);
+      }
+      throw e;
     }
   }
 
@@ -553,7 +596,7 @@ public final class ResourceInstaller {
    * @param targetDirectory The directory this installation created.
    * @param failure The failure being reported; a cleanup error is added to it.
    */
-  private static void removeIfEmpty(Path targetDirectory, IOException failure) {
+  private static void removeIfEmpty(Path targetDirectory, Exception failure) {
     try (Stream<Path> entries = Files.list(targetDirectory)) {
       if (entries.findAny().isEmpty()) {
         Files.deleteIfExists(targetDirectory);
@@ -590,31 +633,12 @@ public final class ResourceInstaller {
       return null;
     }
     final String trimmed = checksum.strip();
-    if ((trimmed.length() == SHA_256_HEX_LENGTH || trimmed.length() == SHA_512_HEX_LENGTH)
-        && isHex(trimmed)) {
+    if (Checksums.isHexDigest(trimmed, Checksums.SHA_256_HEX_LENGTH)
+        || Checksums.isHexDigest(trimmed, Checksums.SHA_512_HEX_LENGTH)) {
       return trimmed;
     }
     throw new IllegalArgumentException(
         "checksum must be 64 (SHA-256) or 128 (SHA-512) hex characters; pass null to skip");
-  }
-
-  /**
-   * Checks whether a string is made up entirely of hexadecimal digits.
-   *
-   * @param value The string to inspect.
-   * @return {@code true} if every character is a hexadecimal digit.
-   */
-  private static boolean isHex(String value) {
-    for (int i = 0; i < value.length(); i++) {
-      final char c = value.charAt(i);
-      final boolean digit = c >= '0' && c <= '9';
-      final boolean lower = c >= 'a' && c <= 'f';
-      final boolean upper = c >= 'A' && c <= 'F';
-      if (!digit && !lower && !upper) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**
@@ -817,22 +841,9 @@ public final class ResourceInstaller {
    * @throws IOException Thrown if the file cannot be read or the digests differ.
    */
   private static void verify(Path file, String expected) throws IOException {
-    final String algorithm =
-        expected.length() == SHA_512_HEX_LENGTH ? SHA_512 : SHA_256;
-    final MessageDigest digest;
-    try {
-      digest = MessageDigest.getInstance(algorithm);
-    } catch (NoSuchAlgorithmException e) {
-      throw new IOException(algorithm + " is unavailable in this runtime", e);
-    }
-    try (InputStream in = Files.newInputStream(file)) {
-      final byte[] buffer = new byte[BUFFER_SIZE];
-      int read;
-      while ((read = in.read(buffer)) >= 0) {
-        digest.update(buffer, 0, read);
-      }
-    }
-    final String actual = HexFormat.of().formatHex(digest.digest());
+    final String algorithm = expected.length() == Checksums.SHA_512_HEX_LENGTH
+        ? Checksums.SHA_512 : Checksums.SHA_256;
+    final String actual = Checksums.hexDigest(file, algorithm);
     if (!actual.equalsIgnoreCase(expected)) {
       throw new IOException(
           "checksum mismatch: expected " + expected + " but downloaded " + actual);
@@ -840,25 +851,27 @@ public final class ResourceInstaller {
   }
 
   /**
-   * Unpacks the downloaded content into a hidden staging directory beneath the target
-   * and promotes it into the target only after every entry unpacked cleanly. The
-   * staging directory lives on the target's filesystem so promotion is a sequence of
-   * renames, and it is removed whether the installation succeeds or fails.
+   * Runs a staging step in a hidden staging directory beneath the target and promotes
+   * the selected files into the target only after the step completed. The staging
+   * directory lives on the target's filesystem so promotion is a sequence of renames,
+   * and it is removed whether the installation succeeds or fails.
    *
-   * @param downloaded The fetched and verified file.
-   * @param name The file name derived from the source location.
    * @param target The directory to install into.
-   * @param limits The limits to enforce while unpacking.
-   * @throws IOException Thrown if unpacking fails, a limit is exceeded, or promotion
-   *         or staging cleanup fails.
+   * @param step Writes the content into the staging directory.
+   * @param selector Maps a staged file's relative path to its relative destination, or
+   *                 to {@code null} to skip it.
+   * @return The number of files promoted.
+   * @throws IOException Thrown if the step fails, a limit is exceeded, or promotion or
+   *         staging cleanup fails.
    */
-  private static void installStaged(Path downloaded, String name, Path target,
-      Limits limits) throws IOException {
+  private static int installStaged(Path target, StagingStep step,
+      Function<Path, Path> selector) throws IOException {
     final Path staging = Files.createTempDirectory(target, STAGING_PREFIX);
+    final int promoted;
     try {
-      unpack(downloaded, name, staging, limits);
-      promote(staging, target);
-    } catch (IOException e) {
+      step.fill(staging);
+      promoted = promote(staging, target, selector);
+    } catch (IOException | RuntimeException e) {
       try {
         deleteRecursively(staging);
       } catch (IOException cleanup) {
@@ -867,29 +880,62 @@ public final class ResourceInstaller {
       throw e;
     }
     deleteRecursively(staging);
+    return promoted;
   }
 
   /**
-   * Moves all staged regular files to their relative locations beneath the target
+   * Moves the selected staged regular files to their destinations beneath the target
    * without replacing anything that already exists there. All destinations are
    * checked before the first move, so a collision leaves the target without a mix of
    * old and new files, and the move itself refuses an existing destination as well.
    *
    * @param staging The staging directory holding the fully unpacked content.
    * @param target The directory to install into.
-   * @throws IOException Thrown if a destination already exists, a move fails, or a
-   *         directory on the way to a destination is an existing symbolic link.
+   * @param selector Maps a staged file's relative path to its relative destination, or
+   *                 to {@code null} to skip it.
+   * @return The number of files moved.
+   * @throws IOException Thrown if a destination leaves the target, two files map to the
+   *         same destination, a destination already exists, a move fails, or a directory
+   *         on the way to a destination is an existing symbolic link.
    */
-  private static void promote(Path staging, Path target) throws IOException {
+  private static int promote(Path staging, Path target, Function<Path, Path> selector)
+      throws IOException {
     final List<Path> files;
     try (Stream<Path> walk = Files.walk(staging)) {
       files = walk.filter(Files::isRegularFile).toList();
     }
+    final Map<Path, Path> moves = new LinkedHashMap<>();
     for (final Path file : files) {
-      ensureVacant(target, staging.relativize(file));
+      final Path relative = selector.apply(staging.relativize(file));
+      if (relative == null) {
+        continue;
+      }
+      requireInsideTarget(relative);
+      if (moves.putIfAbsent(relative, file) != null) {
+        throw new IOException("two staged files install to the same path: " + relative);
+      }
     }
-    for (final Path file : files) {
-      moveIntoPlace(file, destination(target, staging.relativize(file)));
+    for (final Path relative : moves.keySet()) {
+      ensureVacant(target, relative);
+    }
+    for (final Map.Entry<Path, Path> move : moves.entrySet()) {
+      moveIntoPlace(move.getValue(), destination(target, move.getKey()));
+    }
+    return moves.size();
+  }
+
+  /**
+   * Checks that a selected destination stays beneath the target: it must be relative,
+   * non-empty, and normalized without a leading {@code ..}, so it has no {@code .} or
+   * {@code ..} segments.
+   *
+   * @param relative The file's destination path relative to the target.
+   * @throws IOException Thrown if the destination is absolute, empty, or not normalized.
+   */
+  private static void requireInsideTarget(Path relative) throws IOException {
+    if (relative.isAbsolute() || relative.toString().isEmpty()
+        || !relative.normalize().equals(relative) || relative.startsWith(PARENT_DIRECTORY)) {
+      throw new IOException("selected destination leaves the target: " + relative);
     }
   }
 
@@ -911,7 +957,7 @@ public final class ResourceInstaller {
    * anything. A missing directory on the way proves the destination vacant.
    *
    * @param target The directory to install into.
-   * @param relative The staged file's path relative to the staging directory.
+   * @param relative The file's destination path relative to the target.
    * @throws IOException Thrown if the destination already exists, or a directory on
    *         the way is a symbolic link or exists as something other than a directory.
    */
@@ -927,7 +973,7 @@ public final class ResourceInstaller {
    * leading to it one at a time.
    *
    * @param target The directory to install into.
-   * @param relative The staged file's path relative to the staging directory.
+   * @param relative The file's destination path relative to the target.
    * @return The destination path beneath the target. Not {@code null}.
    * @throws IOException Thrown if a directory on the way is a symbolic link or exists as
    *         something other than a directory, or if a directory cannot be created.
@@ -946,7 +992,7 @@ public final class ResourceInstaller {
    * a link created concurrently, between the check here and the move that follows.</p>
    *
    * @param target The directory to install into.
-   * @param relative The staged file's path relative to the staging directory.
+   * @param relative The file's destination path relative to the target.
    * @param create Whether to create a missing directory on the way; when {@code false},
    *               a missing directory ends the walk.
    * @return The destination path beneath the target, or {@code null} when a directory
@@ -1212,7 +1258,8 @@ public final class ResourceInstaller {
       Budget budget, Budget entryBudget) throws IOException {
     final InputStream decompressed = new BufferedInputStream(
         new BudgetInputStream(new GZIPInputStream(raw), budget), BUFFER_SIZE);
-    if (TarStream.startsWithHeader(decompressed) || startsWithEmptyTar(decompressed)) {
+    if (TarStream.startsWithHeader(decompressed)
+        || TarStream.startsWithEndOfArchive(decompressed)) {
       unpackTar(decompressed, staging, entryBudget);
       decompressed.transferTo(OutputStream.nullOutputStream());
     } else {
@@ -1221,32 +1268,6 @@ public final class ResourceInstaller {
       final String plainName = strippedName.isEmpty()
           ? DEFAULT_RESOURCE_NAME : strippedName;
       copy(decompressed, safeChild(staging, plainName));
-    }
-  }
-
-  /**
-   * Checks for the two zero blocks that make up an empty tar archive. There is no entry
-   * header for {@link TarStream#startsWithHeader(InputStream)} to recognize in this case.
-   *
-   * @param in The decompressed content. Must support mark and reset.
-   * @return {@code true} when the content starts with two zero tar blocks.
-   * @throws IOException Thrown if reading or resetting the stream fails.
-   */
-  private static boolean startsWithEmptyTar(InputStream in) throws IOException {
-    in.mark(TAR_END_BLOCKS_LENGTH);
-    try {
-      final byte[] blocks = in.readNBytes(TAR_END_BLOCKS_LENGTH);
-      if (blocks.length != TAR_END_BLOCKS_LENGTH) {
-        return false;
-      }
-      for (final byte b : blocks) {
-        if (b != 0) {
-          return false;
-        }
-      }
-      return true;
-    } finally {
-      in.reset();
     }
   }
 
@@ -1415,16 +1436,27 @@ public final class ResourceInstaller {
    * @throws IllegalArgumentException Thrown if {@code name} is not a file name.
    */
   static String validateSourceName(String name) {
-    if (name.isEmpty() || ".".equals(name) || "..".equals(name)) {
+    if (name.isEmpty() || ".".equals(name) || PARENT_DIRECTORY.equals(name)
+        || containsPathCharacter(name)) {
       throw new IllegalArgumentException("name must be a file name");
     }
+    return name;
+  }
+
+  /**
+   * Checks a name for a path separator or a NUL character.
+   *
+   * @param name The candidate local file name.
+   * @return {@code true} if {@code name} contains a slash, a backslash, or NUL.
+   */
+  private static boolean containsPathCharacter(String name) {
     for (int i = 0; i < name.length(); i++) {
       final char c = name.charAt(i);
       if (c == '/' || c == '\\' || c == 0) {
-        throw new IllegalArgumentException("name must be a file name");
+        return true;
       }
     }
-    return name;
+    return false;
   }
 
   /**

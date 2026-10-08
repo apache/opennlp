@@ -283,6 +283,64 @@ public class TarStreamTest {
             () -> TarStream.startsWithHeader(notMarkable)));
   }
 
+  /**
+   * Checks that the two zero blocks of an empty archive are recognized and that the
+   * stream position is unchanged afterwards.
+   *
+   * @throws IOException Thrown if reading the in-memory stream fails.
+   */
+  @Test
+  void testStartsWithEndOfArchiveDetectsAnEmptyArchiveAndKeepsPosition()
+      throws IOException {
+    final InputStream in = new ByteArrayInputStream(new byte[TERMINATOR_SIZE]);
+
+    Assertions.assertTrue(TarStream.startsWithEndOfArchive(in));
+    Assertions.assertEquals(TERMINATOR_SIZE, in.readAllBytes().length);
+  }
+
+  /**
+   * Checks content that does not start with the end-of-archive blocks.
+   *
+   * @param description What the content represents.
+   * @param content The content to inspect.
+   * @throws IOException Thrown if reading the in-memory stream fails.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("nonEndOfArchiveContent")
+  void testStartsWithEndOfArchiveRejectsOtherContent(String description, byte[] content)
+      throws IOException {
+    Assertions.assertFalse(
+        TarStream.startsWithEndOfArchive(new ByteArrayInputStream(content)), description);
+  }
+
+  /**
+   * {@return content that is not the end of a tar archive, with a description}
+   */
+  private static Stream<Arguments> nonEndOfArchiveContent() {
+    final byte[] nonZeroSecondBlock = new byte[TERMINATOR_SIZE];
+    nonZeroSecondBlock[TERMINATOR_SIZE - 1] = 1;
+    return Stream.of(
+        Arguments.of("one zero block only", new byte[BLOCK]),
+        Arguments.of("a non-zero byte in the second block", nonZeroSecondBlock),
+        Arguments.of("an entry header",
+            Arrays.copyOf(header("a.txt", 0, TYPE_REGULAR_FILE), TERMINATOR_SIZE)));
+  }
+
+  @Test
+  void testStartsWithEndOfArchiveRejectsUnusableStreams() {
+    final InputStream notMarkable = new InputStream() {
+      @Override
+      public int read() {
+        return -1;
+      }
+    };
+    Assertions.assertAll(
+        () -> Assertions.assertThrows(IllegalArgumentException.class,
+            () -> TarStream.startsWithEndOfArchive(null)),
+        () -> Assertions.assertThrows(IllegalArgumentException.class,
+            () -> TarStream.startsWithEndOfArchive(notMarkable)));
+  }
+
   @Test
   void testNullStreamIsRejected() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> new TarStream(null));
