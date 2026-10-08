@@ -38,18 +38,18 @@ final class BertNormalization {
 
   /**
    * Surrounds every punctuation character with spaces, so each punctuation
-   * character becomes its own token.
+   * character becomes its own token. Delegates to {@link #isolatePunctuation(MappedText)}
+   * with an identity mapping.
+   *
+   * @param text The text to transform.
+   * @return The text with the isolation spaces inserted.
    */
   static String isolatePunctuation(String text) {
-    final StringBuilder spaced = new StringBuilder(text.length());
-    text.codePoints().forEach(codePoint -> {
-      if (isPunctuation(codePoint)) {
-        spaced.append(' ').appendCodePoint(codePoint).append(' ');
-      } else {
-        spaced.appendCodePoint(codePoint);
-      }
-    });
-    return spaced.toString();
+    final MappedText mapped = new MappedText(text.length());
+    for (int i = 0; i < text.length(); i++) {
+      mapped.add(text.charAt(i), i, i + 1);
+    }
+    return isolatePunctuation(mapped).text();
   }
 
   /**

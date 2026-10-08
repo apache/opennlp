@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class WordpieceTokenizerTest {
 
@@ -178,6 +179,23 @@ public class WordpieceTokenizerTest {
 
     Assertions.assertThrows(UnsupportedOperationException.class,
         () -> tokenizer.tokenizePos("the lazy dog"));
+
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testIgnoresKeepNewLinesOfSharedWhitespaceTokenizer(boolean keepNewLines) {
+
+    final Tokenizer tokenizer = new WordpieceTokenizer(getVocabulary());
+
+    WhitespaceTokenizer.INSTANCE.setKeepNewLines(keepNewLines);
+    try {
+      Assertions.assertArrayEquals(
+          new String[] {"[CLS]", "the", "lazy", "dog", "[SEP]"},
+          tokenizer.tokenize("the\rlazy\r\ndog"));
+    } finally {
+      WhitespaceTokenizer.INSTANCE.setKeepNewLines(false);
+    }
 
   }
 
