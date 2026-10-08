@@ -167,7 +167,9 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 		<para>
 			The <code>onnx</code> provider supports a local model file named <code>*.onnx</code>. It
 			requires the option <code>vocabulary</code>, resolved against the directory of the model if
-			it is relative, and accepts <code>lowerCase=true</code> (default) or
+			it is relative, which names a <code>vocab.txt</code>, a <code>vocab.json</code>, or the
+			<code>tokenizer.json</code> of a WordPiece model, as described for the document categorizer
+			in <xref linkend="tools.doccat.api.onnx"/>, and accepts <code>lowerCase=true</code> (default) or
 			<code>lowerCase=false</code>, <code>pooling=mean</code> (default) or
 			<code>pooling=cls</code>, <code>normalize=true</code> (default) or
 			<code>normalize=false</code>, and <code>maxLength</code>, the maximum number of tokens
