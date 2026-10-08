@@ -80,6 +80,8 @@ public class WordpieceTokenizer implements Tokenizer {
   private final String separatorToken;
   private final String unknownToken;
   private final int maxTokenLength;
+  /** Splits words; not shared, so changes to {@link WhitespaceTokenizer#INSTANCE} do not apply. */
+  private final WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.newInstance(false);
 
   /**
    * Initializes a {@link WordpieceTokenizer} with a {@code vocabulary} and a default
@@ -207,7 +209,7 @@ public class WordpieceTokenizer implements Tokenizer {
     final String spacedPunctuation = BertNormalization.isolatePunctuation(text);
 
     // Split based on whitespace.
-    final String[] split = WhitespaceTokenizer.INSTANCE.tokenize(spacedPunctuation);
+    final String[] split = whitespaceTokenizer.tokenize(spacedPunctuation);
 
     // For each resulting word, if the word is found in the WordPiece vocabulary, keep it as-is.
     // If not, starting from the beginning, pull off the biggest piece that is in the vocabulary,

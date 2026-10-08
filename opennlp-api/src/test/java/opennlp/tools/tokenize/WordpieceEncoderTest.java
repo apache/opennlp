@@ -571,4 +571,29 @@ class WordpieceEncoderTest {
         assertThrows(IllegalArgumentException.class,
             () -> uncased().encode(null)).getMessage());
   }
+
+  @ParameterizedTest
+  @MethodSource("punctuationIsolation")
+  void testIsolatePunctuationOverloadsAgree(String input, String expected) {
+    assertEquals(expected, BertNormalization.isolatePunctuation(input));
+
+    final MappedText mapped = new MappedText(input.length());
+    for (int i = 0; i < input.length(); i++) {
+      mapped.add(input.charAt(i), i, i + 1);
+    }
+    assertEquals(expected, BertNormalization.isolatePunctuation(mapped).text());
+  }
+
+  /**
+   * {@return inputs with their punctuation-isolated form, covering BMP and supplementary
+   * punctuation, a supplementary non-punctuation symbol and an unpaired surrogate}
+   */
+  private static Stream<Arguments> punctuationIsolation() {
+    return Stream.of(
+        Arguments.of("a,b", "a , b"),
+        Arguments.of("\uD834\uDD1E!", "\uD834\uDD1E ! "),
+        Arguments.of("a\uD805\uDC4Bb", "a \uD805\uDC4B b"),
+        Arguments.of("x\uD800.", "x\uD800 . "),
+        Arguments.of("\uDC00\uD800", "\uDC00\uD800"));
+  }
 }
