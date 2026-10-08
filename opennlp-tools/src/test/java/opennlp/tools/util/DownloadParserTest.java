@@ -49,6 +49,7 @@ public class DownloadParserTest {
 
   private static final String INDEX = "opennlp/tools/util/index.html";
   private static final int LANGUAGES = 36;
+  private static final String UNREACHABLE = "file:/this/does/not/exist/";
 
   @ParameterizedTest(name = "Verify \"{0}\" available models")
   @MethodSource(value = "expectedModels")
@@ -57,7 +58,7 @@ public class DownloadParserTest {
     final URL baseUrl = fromClasspath(INDEX);
     assertNotNull(baseUrl);
 
-    final DownloadUtil.DownloadParser downloadParser = new DownloadUtil.DownloadParser(baseUrl);
+    final DownloadUtil.DownloadParser downloadParser = new DownloadUtil.DownloadParser(baseUrl, null);
 
     try {
       Map<String, Map<ModelType, URL>> result = downloadParser.getAvailableModels();
@@ -81,8 +82,7 @@ public class DownloadParserTest {
 
   @Test
   void testNullUrl() {
-    assertThrows(NullPointerException.class, () -> new DownloadUtil.DownloadParser(null)
-    );
+    assertThrows(IllegalArgumentException.class, () -> new DownloadUtil.DownloadParser(null, null));
   }
 
   private static Stream<Arguments> indexPages() {
@@ -130,7 +130,7 @@ public class DownloadParserTest {
   @MethodSource("indexPages")
   void testExtractLinks(String page, List<String> expected) {
     final DownloadUtil.DownloadParser downloadParser =
-        new DownloadUtil.DownloadParser(fromClasspath(INDEX));
+        new DownloadUtil.DownloadParser(fromClasspath(INDEX), null);
     assertEquals(expected, downloadParser.extractLinks(page));
   }
 
@@ -138,7 +138,7 @@ public class DownloadParserTest {
   void testInvalidUrl() {
     try {
       final DownloadUtil.DownloadParser downloadParser =
-          new DownloadUtil.DownloadParser(new URI("file:/this/does/not/exist").toURL());
+          new DownloadUtil.DownloadParser(new URI(UNREACHABLE).toURL(), null);
       Map<String, Map<ModelType, URL>> result = downloadParser.getAvailableModels();
       assertNotNull(result);
       assertEquals(0, result.size());
@@ -151,7 +151,7 @@ public class DownloadParserTest {
   void testLocalIndexIsUsedIfTheUrlCannotBeRead(@TempDir Path home) throws Exception {
     final Path localIndex = home.resolve("index.html");
     Files.writeString(localIndex, indexPage(), StandardCharsets.UTF_8);
-    final URL unreachable = new URI("file:/this/does/not/exist/").toURL();
+    final URL unreachable = new URI(UNREACHABLE).toURL();
 
     final Map<String, Map<ModelType, URL>> result =
         new DownloadUtil.DownloadParser(unreachable, localIndex).getAvailableModels();
@@ -192,10 +192,24 @@ public class DownloadParserTest {
     final Path localIndex = home.resolve("index.html");
 
     final Map<String, Map<ModelType, URL>> result = new DownloadUtil.DownloadParser(
-        new URI("file:/this/does/not/exist").toURL(), localIndex).getAvailableModels();
+        new URI(UNREACHABLE).toURL(), localIndex).getAvailableModels();
 
     assertTrue(result.isEmpty());
     assertFalse(Files.exists(localIndex));
+  }
+
+  @Test
+  void testLocalIndexIsUsedIfThePageListsNoModels(@TempDir Path home) throws Exception {
+    final Path page = home.resolve("page.html");
+    Files.writeString(page, "<html><body>Maintenance</body></html>", StandardCharsets.UTF_8);
+    final Path localIndex = home.resolve("index.html");
+    Files.writeString(localIndex, indexPage(), StandardCharsets.UTF_8);
+
+    final Map<String, Map<ModelType, URL>> result = new DownloadUtil.DownloadParser(
+        page.toUri().toURL(), localIndex).getAvailableModels();
+
+    assertEquals(LANGUAGES, result.size());
+    assertEquals(indexPage(), Files.readString(localIndex, StandardCharsets.UTF_8));
   }
 
   @ParameterizedTest

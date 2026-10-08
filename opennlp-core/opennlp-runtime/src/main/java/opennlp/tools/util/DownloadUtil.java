@@ -40,7 +40,6 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,17 +185,22 @@ public class DownloadUtil {
 
   /**
    * Lists the models published in the model index. A copy of the last index read is kept in
-   * the download directory and used when the index cannot be read.
+   * the download directory and used when the index cannot be read. An empty result is not
+   * kept, so the next call reads the index again.
    *
-   * @return The model URLs per language and {@link ModelType}. Empty if the index could not
-   *     be read.
+   * @return The model URLs per language and {@link ModelType}. Empty if neither the index nor
+   *     its local copy lists models.
    */
   public static Map<String, Map<ModelType, URL>> getAvailableModels() {
     if (availableModels == null) {
       try {
         final DownloadParser p = new DownloadParser(new URI(BASE_URL + MODEL_URI_PATH).toURL(),
             getDownloadHome().resolve(indexFileName(MODEL_URI_PATH)));
-        availableModels = p.getAvailableModels();
+        final Map<String, Map<ModelType, URL>> models = p.getAvailableModels();
+        if (models.isEmpty()) {
+          return Collections.emptyMap();
+        }
+        availableModels = models;
       } catch (MalformedURLException | URISyntaxException e) {
         throw new RuntimeException(e);
       }
@@ -356,7 +360,8 @@ public class DownloadUtil {
 
   /**
    * Names the local copy of the model index after the last segment of the model path, for
-   * example {@code ud-models-1.3.index.html} for {@code models/ud-models-1.3/}.
+   * example {@code ud-models-1.3.index.html} for {@code models/ud-models-1.3/}. The base URL
+   * is not part of the name, so hosts that serve the same model path share the copy.
    *
    * @param modelPath The model path, with or without trailing slashes.
    * @return The file name.
@@ -385,24 +390,15 @@ public class DownloadUtil {
     private final Path localIndex;
 
     /**
-     * Initializes a parser that always reads the index page from {@code indexUrl}.
-     *
-     * @param indexUrl The index page.
-     */
-    DownloadParser(URL indexUrl) {
-      this(indexUrl, null);
-    }
-
-    /**
      * Initializes a parser that keeps a copy of the index page.
      *
      * @param indexUrl The index page.
      * @param localIndex The file that keeps a copy of the index page, or {@code null} to
      *     keep no copy.
+     * @throws IllegalArgumentException Thrown if {@code indexUrl} is {@code null}.
      */
     DownloadParser(URL indexUrl, Path localIndex) {
-      Objects.requireNonNull(indexUrl);
-      this.indexUrl = indexUrl;
+      this.indexUrl = ParamChecks.requireNonNullArg(indexUrl, "indexUrl");
       this.localIndex = localIndex;
     }
 
@@ -429,7 +425,7 @@ public class DownloadUtil {
       if (local == null) {
         return new HashMap<>();
       }
-      logger.info("Using the local copy of the page index at {}.", localIndex);
+      logger.info("Using the local copy of the model index at {}.", localIndex);
       return toMap(extractLinks(local));
     }
 
@@ -445,7 +441,7 @@ public class DownloadUtil {
       try {
         return Files.readString(localIndex, StandardCharsets.UTF_8);
       } catch (IOException e) {
-        logger.warn("Could not read the local copy of the page index at {}.", localIndex, e);
+        logger.warn("Could not read the local copy of the model index at {}.", localIndex, e);
         return null;
       }
     }
@@ -477,7 +473,7 @@ public class DownloadUtil {
           Files.deleteIfExists(temporary);
         }
       } catch (IOException e) {
-        logger.warn("Could not store the local copy of the page index at {}.", localIndex, e);
+        logger.warn("Could not store the local copy of the model index at {}.", localIndex, e);
       }
     }
 
@@ -668,7 +664,7 @@ public class DownloadUtil {
           html.append(line);
         }
       } catch (IOException e) {
-        logger.error("Could not read page index from {}", indexUrl, e);
+        logger.warn("Could not read the model index from {}: {}", indexUrl, e.getMessage());
         return null;
       }
 
