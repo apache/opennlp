@@ -33,8 +33,8 @@ import java.util.Optional;
  * The data mirrors the tables in
  * <a href="https://en.wikipedia.org/wiki/Whitespace_character">Whitespace character</a>
  * and the Unicode Character Database
- * (<a href="https://www.unicode.org/Public/16.0.0/ucd/PropList.txt">{@code PropList.txt}</a>,
- * Unicode 16.0.0).</p>
+ * (<a href="https://www.unicode.org/Public/17.0.0/ucd/PropList.txt">{@code PropList.txt}</a>,
+ * Unicode 17.0.0).</p>
  *
  * <p>The membership test is deliberately built from this explicit table rather than from
  * {@link Character#isWhitespace(int)} or {@link Character#isSpaceChar(int)}, both of which

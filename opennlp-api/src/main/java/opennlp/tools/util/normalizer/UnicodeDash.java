@@ -29,8 +29,8 @@ import java.util.Optional;
  *
  * <p>This is a static, immutable table of every code point that carries the Unicode {@code Dash}
  * property (Unicode Character Database,
- * <a href="https://www.unicode.org/Public/16.0.0/ucd/PropList.txt">{@code PropList.txt}</a>,
- * Unicode 16.0.0). The set is broader than the {@code Pd} (dash punctuation) general category:
+ * <a href="https://www.unicode.org/Public/17.0.0/ucd/PropList.txt">{@code PropList.txt}</a>,
+ * Unicode 17.0.0). The set is broader than the {@code Pd} (dash punctuation) general category:
  * it also includes the swung dash ({@code Po}) and the mathematical minus signs ({@code Sm}).
  * Java offers no {@code Dash} predicate and {@code \p{Pd}} would miss the {@code Sm} and
  * {@code Po} members, which is why the set is kept here explicitly.</p>
