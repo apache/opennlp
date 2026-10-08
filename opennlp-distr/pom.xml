@@ -113,6 +113,30 @@
 
   <build>
     <plugins>
+      <!-- Copy only README.md, so the markdown plugin does not copy the whole repository tree. -->
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-readme</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/readme</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/..</directory>
+                  <includes>
+                    <include>README.md</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>com.ruleoftech</groupId>
         <artifactId>markdown-page-generator-plugin</artifactId>
@@ -126,7 +150,7 @@
           </execution>
         </executions>
         <configuration>
-          <inputDirectory>${basedir}/../</inputDirectory>
+          <inputDirectory>${project.build.directory}/readme</inputDirectory>
           <outputDirectory>${basedir}/target</outputDirectory>
           <headerHtmlFile>${basedir}/README_HEADER.html</headerHtmlFile>
           <footerHtmlFile>${basedir}/README_FOOTER.html</footerHtmlFile>
