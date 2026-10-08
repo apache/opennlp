@@ -19,6 +19,7 @@ package opennlp.dl;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
+import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
@@ -102,6 +105,40 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
+   * The {@link InferenceOptions} values a component reads during inference, copied once at
+   * construction so later changes to the options object do not affect a shared instance.
+   *
+   * @param includeAttentionMask Whether the {@value AbstractDL#ATTENTION_MASK} input is passed
+   *     to the model.
+   * @param includeTokenTypeIds Whether the {@value AbstractDL#TOKEN_TYPE_IDS} input is passed
+   *     to the model.
+   * @param documentSplitSize The maximum number of whitespace tokens per chunk.
+   * @param splitOverlapSize The number of whitespace tokens shared by consecutive chunks.
+   * @param normalizeWhitespace Whether Unicode whitespace is folded to ASCII spaces.
+   * @param normalizeDashes Whether Unicode dashes are folded to the ASCII hyphen.
+   */
+  @Internal(since = "3.0.0")
+  protected record InferenceSettings(boolean includeAttentionMask, boolean includeTokenTypeIds,
+                                     int documentSplitSize, int splitOverlapSize,
+                                     boolean normalizeWhitespace, boolean normalizeDashes) {
+
+    /**
+     * Copies the inference values of {@code options}.
+     *
+     * @param options The options to copy. Must not be {@code null}.
+     * @return The settings.
+     * @throws IllegalArgumentException Thrown if {@code options} is {@code null}.
+     */
+    public static InferenceSettings from(final InferenceOptions options) {
+      ParamChecks.requireNonNullArg(options, "options");
+      return new InferenceSettings(options.isIncludeAttentionMask(),
+          options.isIncludeTokenTypeIds(), options.getDocumentSplitSize(),
+          options.getSplitOverlapSize(), options.isNormalizeWhitespace(),
+          options.isNormalizeDashes());
+    }
+  }
+
+  /**
    * Initializes the shared, immutable inference state: the ONNX environment and session,
    * the loaded vocabulary and the configured tokenizer. These fields are {@code final}
    * and assigned exactly once here, so a fully constructed instance is safely published
@@ -120,6 +157,9 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, has an
    *     unsupported layout, or sets {@code normalizer.lowercase} to the other value than
    *     {@code lowerCase}.
+   * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary} or
+   *     {@code sessionOptions} is {@code null}, or if the vocabulary lacks the selected
+   *     classification, separator or unknown token.
    */
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
@@ -177,6 +217,8 @@ public abstract class AbstractDL implements AutoCloseable {
    * @return The configured session options.
    *
    * @throws OrtException Thrown if the CUDA execution provider cannot be added.
+   * @throws IllegalArgumentException Thrown if {@code inferenceOptions} is {@code null} or its
+   *     split sizes are invalid, see {@link #validateSplitOptions(int, int)}.
    */
   protected static OrtSession.SessionOptions sessionOptions(final InferenceOptions inferenceOptions)
       throws OrtException {
@@ -237,15 +279,9 @@ public abstract class AbstractDL implements AutoCloseable {
   Vocabulary readVocabFile(final File vocabFile) throws IOException {
     final String read = Files.readString(Path.of(vocabFile.getPath()), StandardCharsets.UTF_8);
     final String content = StringUtil.stripByteOrderMark(read);
-    final String trimmed = content.trim();
 
-    if (trimmed.startsWith(JSON_OBJECT_START)) {
-      try {
-        return readJsonVocab(trimmed);
-      } catch (IllegalArgumentException e) {
-        throw new InvalidFormatException(
-            "Vocabulary file " + vocabFile.getName() + ": " + e.getMessage(), e);
-      }
+    if (content.trim().startsWith(JSON_OBJECT_START)) {
+      return parseJson(vocabFile, "Vocabulary", read, this::readJsonVocab);
     }
 
     final Map<String, Integer> vocab =
@@ -285,6 +321,36 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
+   * Parses JSON text read from a file, naming the file when the text is rejected.
+   *
+   * @param file The file the text was read from, named in the message.
+   * @param fileKind The kind of file, such as {@code Vocabulary}, that starts the message.
+   * @param json The JSON text.
+   * @param parser The parser, which throws {@link IllegalArgumentException} for text it rejects.
+   * @param <T> The type of the parsed value.
+   * @return The parsed value.
+   * @throws InvalidFormatException Thrown if {@code parser} rejects the text. The message names
+   *     the file and repeats the parser's message.
+   * @throws IllegalArgumentException Thrown if {@code file}, {@code fileKind}, {@code json} or
+   *     {@code parser} is {@code null}.
+   */
+  @Internal(since = "3.0.0")
+  protected static <T> T parseJson(final File file, final String fileKind, final String json,
+                                   final Function<String, T> parser)
+      throws InvalidFormatException {
+    ParamChecks.requireNonNullArg(file, "file");
+    ParamChecks.requireNonNullArg(fileKind, "fileKind");
+    ParamChecks.requireNonNullArg(json, "json");
+    ParamChecks.requireNonNullArg(parser, "parser");
+    try {
+      return parser.apply(json);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidFormatException(
+          fileKind + " file " + file.getName() + ": " + e.getMessage(), e);
+    }
+  }
+
+  /**
    * Creates a {@link WordpieceTokenizer} that uses the
    * appropriate special tokens based on the vocabulary.
    * If the vocabulary contains RoBERTa-style tokens,
@@ -293,26 +359,31 @@ public abstract class AbstractDL implements AutoCloseable {
    *
    * @param vocab The vocabulary map.
    * @return A configured {@link WordpieceTokenizer}.
+   * @throws IllegalArgumentException Thrown if the vocabulary has the RoBERTa classification
+   *     and separator tokens but no unknown token.
+   * @deprecated Not used by this class; components encode text with
+   *     {@link #encodeTokens(CharSequence)}.
    */
+  @Deprecated(since = "3.0.0", forRemoval = true)
   protected WordpieceTokenizer createTokenizer(
       final Map<String, Integer> vocab) {
 
     return createWordpieceTokenizer(vocab);
   }
 
+  /**
+   * Creates a {@link WordpieceTokenizer} with the special tokens that
+   * {@link #specialTokens(Map)} selects for {@code vocab}.
+   *
+   * @param vocab The vocabulary map.
+   * @return A configured {@link WordpieceTokenizer}.
+   * @throws IllegalArgumentException Thrown if the vocabulary has the RoBERTa classification
+   *     and separator tokens but no unknown token.
+   */
   static WordpieceTokenizer createWordpieceTokenizer(
       final Map<String, Integer> vocab) {
-    if (vocab.containsKey(
-            WordpieceTokenizer.ROBERTA_CLS_TOKEN)
-        && vocab.containsKey(
-            WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      return new WordpieceTokenizer(
-          vocab.keySet(),
-          WordpieceTokenizer.ROBERTA_CLS_TOKEN,
-          WordpieceTokenizer.ROBERTA_SEP_TOKEN,
-          resolveUnknownToken(vocab));
-    }
-    return new WordpieceTokenizer(vocab.keySet());
+    final SpecialTokens special = specialTokens(vocab);
+    return new WordpieceTokenizer(vocab.keySet(), special.cls(), special.sep(), special.unk());
   }
 
   /**
@@ -328,21 +399,85 @@ public abstract class AbstractDL implements AutoCloseable {
   static WordpieceEncoder createWordpieceEncoder(
       final Map<String, Integer> vocab, final boolean lowerCase) {
     ParamChecks.requireNonNullArg(vocab, "vocab");
-    if (vocab.containsKey(
-            WordpieceTokenizer.ROBERTA_CLS_TOKEN)
-        && vocab.containsKey(
-            WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      return new WordpieceEncoder(
-          vocab,
-          lowerCase,
-          WordpieceTokenizer.ROBERTA_CLS_TOKEN,
-          WordpieceTokenizer.ROBERTA_SEP_TOKEN,
-          resolveUnknownToken(vocab));
+    final SpecialTokens special = specialTokens(vocab);
+    return new WordpieceEncoder(vocab, lowerCase, special.cls(), special.sep(), special.unk());
+  }
+
+  /**
+   * The classification, separator and unknown tokens a tokenizer adds or emits.
+   *
+   * @param cls The classification token.
+   * @param sep The separator token.
+   * @param unk The unknown token.
+   */
+  private record SpecialTokens(String cls, String sep, String unk) {
+  }
+
+  /**
+   * Selects the special tokens for a vocabulary: the RoBERTa tokens if the vocabulary has the
+   * RoBERTa classification and separator tokens, the BERT tokens otherwise.
+   *
+   * @param vocab The vocabulary map.
+   * @return The special tokens.
+   * @throws IllegalArgumentException Thrown if the vocabulary has the RoBERTa classification
+   *     and separator tokens but no unknown token.
+   */
+  private static SpecialTokens specialTokens(final Map<String, Integer> vocab) {
+    if (vocab.containsKey(WordpieceTokenizer.ROBERTA_CLS_TOKEN)
+        && vocab.containsKey(WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
+      return new SpecialTokens(WordpieceTokenizer.ROBERTA_CLS_TOKEN,
+          WordpieceTokenizer.ROBERTA_SEP_TOKEN, resolveUnknownToken(vocab));
     }
-    return new WordpieceEncoder(vocab, lowerCase,
-        WordpieceTokenizer.BERT_CLS_TOKEN,
-        WordpieceTokenizer.BERT_SEP_TOKEN,
-        WordpieceTokenizer.BERT_UNK_TOKEN);
+    return new SpecialTokens(WordpieceTokenizer.BERT_CLS_TOKEN,
+        WordpieceTokenizer.BERT_SEP_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN);
+  }
+
+  /**
+   * Runs the model on one token window and returns its first output. The input tensors are
+   * closed before this method returns.
+   *
+   * @param tokens The encoded token window.
+   * @param settings The settings that decide whether the {@value #ATTENTION_MASK} and
+   *     {@value #TOKEN_TYPE_IDS} inputs are passed.
+   * @return The value of the first model output, copied into Java arrays.
+   * @throws IllegalArgumentException Thrown if {@code tokens} or {@code settings} is
+   *     {@code null}.
+   * @throws IllegalStateException Thrown if the model cannot be run, with the failure as cause.
+   */
+  @Internal(since = "3.0.0")
+  protected final Object runModel(final Tokens tokens, final InferenceSettings settings) {
+    ParamChecks.requireNonNullArg(tokens, "tokens");
+    ParamChecks.requireNonNullArg(settings, "settings");
+    // At most three inputs (ids, attention mask, token type ids), so size for exactly that.
+    final Map<String, OnnxTensor> inputs = HashMap.newHashMap(3);
+    try {
+      inputs.put(INPUT_IDS, tensor(tokens.ids()));
+      if (settings.includeAttentionMask()) {
+        inputs.put(ATTENTION_MASK, tensor(tokens.mask()));
+      }
+      if (settings.includeTokenTypeIds()) {
+        inputs.put(TOKEN_TYPE_IDS, tensor(tokens.types()));
+      }
+      // getValue() copies the tensor into Java arrays, so the result can be closed safely.
+      try (OrtSession.Result result = session.run(inputs)) {
+        return result.get(0).getValue();
+      }
+    } catch (OrtException | RuntimeException ex) {
+      throw new IllegalStateException("Unable to run the ONNX model: " + ex.getMessage(), ex);
+    } finally {
+      inputs.values().forEach(OnnxTensor::close);
+    }
+  }
+
+  /**
+   * Creates a tensor of shape {@code [1, values.length]} from one model input row.
+   *
+   * @param values The input row.
+   * @return The tensor.
+   * @throws OrtException Thrown if the tensor cannot be created.
+   */
+  private OnnxTensor tensor(final long[] values) throws OrtException {
+    return OnnxTensor.createTensor(env, LongBuffer.wrap(values), new long[] {1, values.length});
   }
 
   /**
@@ -399,6 +534,7 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param options The {@link InferenceOptions} to consult.
    * @param componentDefault The default to apply if the option is not set.
    * @return The effective lower casing behavior.
+   * @throws IllegalArgumentException Thrown if {@code options} is {@code null}.
    */
   protected static boolean resolveLowerCase(
       final InferenceOptions options, final boolean componentDefault) {
@@ -477,8 +613,7 @@ public abstract class AbstractDL implements AutoCloseable {
   /**
    * Like {@link #normalizeInput(String, boolean, boolean)} but also produces an {@link Alignment}
    * from the folded text back to {@code text}, so model output positions map to original character
-   * offsets even when a fold changes the string length (a supplementary dash shrinking, or, for
-   * folds that may be added later, an expansion such as an ellipsis to three dots).
+   * offsets even when a fold changes the string length, as a supplementary-plane dash does.
    *
    * @param text The input text.
    * @param normalizeWhitespace Whether to fold whitespace to ASCII spaces.
@@ -488,12 +623,7 @@ public abstract class AbstractDL implements AutoCloseable {
   @Internal(since = "3.0.0")
   protected static AlignedText normalizeInputAligned(final String text,
       final boolean normalizeWhitespace, final boolean normalizeDashes) {
-    // Compose each enabled fold's alignment with the running alignment so the returned mapping is
-    // correct no matter whether a stage changes length. Whitespace folding here is a one-for-one
-    // replacement and so is length-preserving today; only dash folding moves offsets (a
-    // supplementary-plane dash shrinks from two chars to one). Composing through andThen rather
-    // than relying on the whitespace stage staying length-preserving keeps findInOriginal() correct
-    // if that ever changes.
+    // Each enabled fold's alignment is composed with the running one.
     AlignedText result = identityAligned(text, text);
     if (normalizeWhitespace) {
       result = result.andThen(WHITESPACE.normalizeAligned(result.normalized()));
@@ -523,6 +653,8 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param documentSplitSize The maximum number of whitespace tokens per chunk.
    * @param splitOverlapSize The number of tokens shared between consecutive chunks.
    * @return The chunk strings, in order.
+   * @throws IllegalArgumentException Thrown if the split settings cannot make progress, see
+   *     {@link #validateSplitOptions(int, int)}.
    */
   @Internal(since = "3.0.0")
   protected static List<String> whitespaceChunks(final String text, final int documentSplitSize,
@@ -544,6 +676,8 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param documentSplitSize The maximum number of whitespace tokens per chunk.
    * @param splitOverlapSize The number of tokens shared between consecutive chunks.
    * @return The chunks, in order, each with its character span in {@code text}.
+   * @throws IllegalArgumentException Thrown if the split settings cannot make progress, see
+   *     {@link #validateSplitOptions(int, int)}.
    */
   @Internal(since = "3.0.0")
   protected static List<TextChunk> whitespaceChunkSpans(final String text,

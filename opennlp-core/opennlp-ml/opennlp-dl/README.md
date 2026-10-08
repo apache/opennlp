@@ -87,25 +87,18 @@ Export a Huggingface classification (e.g. sentiment) model to ONNX, e.g.:
 python -m transformers.onnx --model=nlptown/bert-base-multilingual-uncased-sentiment --feature sequence-classification exported
 ```
 
-## Behavior changes in this release
-
-Integrators upgrading from an earlier `opennlp-dl` should note these intentional changes (OPENNLP-1850):
+## Input validation and overlapping spans
 
 - `NameFinderDL.find(...)` reports spans in the coordinates of the joined input it ran inference on,
-  which differ from the original text only when length-changing dash folding is enabled. Use the new
-  `NameFinderDL.findInOriginal(...)` (from `OffsetMappingNameFinder`) for original-text coordinates.
-- Spans that overlap at chunk boundaries are now merged longest-wins; `find(...)` previously returned
-  every decoded span, overlaps included.
-- Chunking splits on the Unicode `White_Space` set rather than `String#split("\\s+")`, and
-  whitespace-only input now yields no spans without running the model.
-- `DocumentCategorizerDL.categorize(...)` now rejects `null`/empty input, and a document with no
-  non-whitespace token, with `IllegalArgumentException` rather than running the model on empty input.
-- A `null` input array, a `null` token passed to `NameFinderDL`, or a `null` document passed to
-  `DocumentCategorizerDL` is rejected with `IllegalArgumentException` instead of surfacing as a
-  `NullPointerException` deep in processing or being joined into the text as the literal string
-  `"null"`.
-- The example label constants `NameFinderDL.I_PER` and `NameFinderDL.B_PER` were removed; supply your
-  own label strings (any `B-<TYPE>`/`I-<TYPE>` pair works, as described above).
+  which differ from the original text only when length-changing dash folding is enabled.
+  `NameFinderDL.findInOriginal(...)` reports original-text coordinates; code that holds a
+  `TokenNameFinder` can check for `OffsetMappingNameFinder` to reach it.
+- Spans that overlap where consecutive chunks overlap are resolved longest-wins, ties going to the
+  higher probability.
+- Whitespace-only input yields no spans without running the model.
+- `NameFinderDL` rejects a `null` input array or a `null` token, and `DocumentCategorizerDL`
+  rejects a `null` or empty input array, a `null` document, and a document with no non-whitespace
+  token, with `IllegalArgumentException`.
 
 ## SentenceVectors
 

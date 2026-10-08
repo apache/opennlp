@@ -552,6 +552,25 @@ public class LoadVocabTest {
     assertEquals(Map.of("a", 0, "b", 1), DL.loadVocab(tempFile));
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {" \n\t{\"a\": 0, \"b\": 1} \n", "\uFEFF\r\n{\"a\": 0, \"b\": 1}"})
+  void testJsonVocabFileWithLeadingWhitespaceIsReadAsJson(String content) throws IOException {
+    final File tempFile = vocabFile("vocab-space.json", content);
+
+    assertEquals(Map.of("a", 0, "b", 1), DL.loadVocab(tempFile));
+  }
+
+  @Test
+  void testJsonVocabFileErrorNamesTheOffsetInTheFile() throws IOException {
+    final String content = "\n  {\"a\": \"x\"}";
+    final File tempFile = vocabFile("vocab-offset.json", content);
+
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> DL.loadVocab(tempFile));
+    assertTrue(e.getMessage().contains(tempFile.getName()), e.getMessage());
+    assertTrue(e.getMessage().contains("offset " + content.indexOf("\"x\"")), e.getMessage());
+  }
+
   @Test
   void testPlainTextVocabFileWithAByteOrderMarkKeepsTheFirstToken() throws IOException {
     final File tempFile = vocabFile("vocab-bom.txt", "\uFEFF[CLS]\n[SEP]\n");

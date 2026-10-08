@@ -20,6 +20,7 @@ package opennlp.dl;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class InferenceOptionsValidationTest {
@@ -73,5 +74,26 @@ public class InferenceOptionsValidationTest {
     options.setSplitOverlapSize(3);
 
     assertThrows(IllegalArgumentException.class, () -> AbstractDL.validateSplitOptions(options));
+  }
+
+  @Test
+  void testInferenceSettingsCopyTheOptionsOnce() {
+    final InferenceOptions options = new InferenceOptions();
+    options.setIncludeAttentionMask(false);
+    options.setIncludeTokenTypeIds(false);
+    options.setDocumentSplitSize(7);
+    options.setSplitOverlapSize(3);
+    options.setNormalizeWhitespace(true);
+    options.setNormalizeDashes(true);
+
+    final AbstractDL.InferenceSettings settings = AbstractDL.InferenceSettings.from(options);
+    options.setDocumentSplitSize(9);
+
+    assertEquals(new AbstractDL.InferenceSettings(false, false, 7, 3, true, true), settings);
+  }
+
+  @Test
+  void testInferenceSettingsRejectNullOptions() {
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.InferenceSettings.from(null));
   }
 }

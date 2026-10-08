@@ -24,6 +24,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import opennlp.dl.InferenceOptions;
+import opennlp.tools.sentdetect.NewlineSentenceDetector;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 
@@ -52,6 +54,18 @@ public class NameFinderDLTest {
     vocab.put("hello", 3);
     vocab.put("world", 4);
     return vocab;
+  }
+
+  @Test
+  void testFindFailsWithModelErrorWhenInferenceFails() {
+    final NameFinderDL finder = new NameFinderDL(null, null, vocab(), ID_TO_LABELS,
+        new InferenceOptions(), new NewlineSentenceDetector());
+
+    final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
+        finder.find(new String[] {"hello", "world"}));
+
+    assertTrue(e.getMessage().startsWith("Unable to run the ONNX model: "), e.getMessage());
+    assertTrue(e.getCause() instanceof NullPointerException, String.valueOf(e.getCause()));
   }
 
   @Test
@@ -128,9 +142,7 @@ public class NameFinderDLTest {
 
   @Test
   void testDecodeSpansSearchStartLocatesNextOccurrence() {
-    // "Paris" appears twice. Threading the cursor past the first occurrence (as find() does
-    // across chunks/sentences) locates the second one instead of re-emitting the first, so a
-    // repeated entity is not duplicated at the same offset.
+    // searchStart past the first occurrence locates the second one.
     final String text = "Paris and Paris";
     final String[] tokens = {"[CLS]", "Paris", "[SEP]"};
     final float[][] scores = {scoresFor(0), scoresFor(3), scoresFor(0)};

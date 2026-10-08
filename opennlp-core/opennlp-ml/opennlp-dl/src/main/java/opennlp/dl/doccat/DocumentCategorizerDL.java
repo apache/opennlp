@@ -19,7 +19,6 @@ package opennlp.dl.doccat;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.IntStream;
 
-import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
@@ -79,14 +77,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   private final Map<Integer, String> categories;
   private final ClassificationScoringStrategy classificationScoringStrategy;
-  // Inference options are snapshotted into final fields at construction so a shared
-  // instance never reads the caller's mutable InferenceOptions during inference.
-  private final boolean includeAttentionMask;
-  private final boolean includeTokenTypeIds;
-  private final int documentSplitSize;
-  private final int splitOverlapSize;
-  private final boolean normalizeWhitespace;
-  private final boolean normalizeDashes;
+  private final InferenceSettings settings;
 
   /**
    * Test-only constructor that injects an already-built {@link OrtSession} (or {@code null}),
@@ -99,12 +90,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     super(env, session, vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
     this.categories = Map.copyOf(categories);
     this.classificationScoringStrategy = classificationScoringStrategy;
-    this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
-    this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
-    this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
-    this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
-    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
-    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
+    this.settings = InferenceSettings.from(inferenceOptions);
   }
 
   /**
@@ -121,6 +107,10 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
    * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, has an
    *     unsupported layout, or sets a lower casing that disagrees with {@code inferenceOptions}.
+   * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary},
+   *     {@code categories}, {@code classificationScoringStrategy} or {@code inferenceOptions} is
+   *     {@code null}, if the split sizes of {@code inferenceOptions} are invalid, or if the
+   *     vocabulary lacks the classification, separator or unknown token.
    */
   public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -129,17 +119,12 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     super(model, vocabulary,
         sessionOptions(validateConstructorArguments(
-            inferenceOptions, categories, classificationScoringStrategy)),
+            inferenceOptions, categories, "categories", classificationScoringStrategy)),
         resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
 
     this.categories = Map.copyOf(categories);
     this.classificationScoringStrategy = classificationScoringStrategy;
-    this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
-    this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
-    this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
-    this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
-    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
-    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
+    this.settings = InferenceSettings.from(inferenceOptions);
 
   }
 
@@ -161,6 +146,10 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    *     unsupported layout, or sets a lower casing that disagrees with {@code inferenceOptions},
    *     or if {@code config} is not well-formed JSON, its {@code id2label} member does not map
    *     keys to strings, or a key is not an integer.
+   * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary}, {@code config},
+   *     {@code classificationScoringStrategy} or {@code inferenceOptions} is {@code null}, if the
+   *     split sizes of {@code inferenceOptions} are invalid, or if the vocabulary lacks the
+   *     classification, separator or unknown token.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -169,25 +158,30 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     super(model, vocabulary,
         sessionOptions(validateConstructorArguments(
-            inferenceOptions, config, classificationScoringStrategy)),
+            inferenceOptions, config, "config", classificationScoringStrategy)),
         resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
 
     this.categories = Map.copyOf(readCategories(config));
     this.classificationScoringStrategy = classificationScoringStrategy;
-    this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
-    this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
-    this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
-    this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
-    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
-    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
+    this.settings = InferenceSettings.from(inferenceOptions);
 
   }
 
+  /**
+   * Checks the arguments of a public constructor that the base class does not check.
+   *
+   * @param inferenceOptions The inference options.
+   * @param labels The categories or the configuration file that supplies them.
+   * @param labelsName The parameter name of {@code labels}, used in the message.
+   * @param classificationScoringStrategy The scoring strategy.
+   * @return {@code inferenceOptions}.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
+   */
   private static InferenceOptions validateConstructorArguments(
-      final InferenceOptions inferenceOptions, final Object categoriesOrConfig,
+      final InferenceOptions inferenceOptions, final Object labels, final String labelsName,
       final ClassificationScoringStrategy classificationScoringStrategy) {
     ParamChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
-    ParamChecks.requireNonNullArg(categoriesOrConfig, "categoriesOrConfig");
+    ParamChecks.requireNonNullArg(labels, labelsName);
     ParamChecks.requireNonNullArg(classificationScoringStrategy, "classificationScoringStrategy");
     return inferenceOptions;
   }
@@ -200,8 +194,9 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    *
    * @param strings The document to categorize; {@code strings[0]} is classified.
    * @return The per-category probabilities.
-   * @throws IllegalArgumentException If {@code strings} is {@code null} or empty, or if
-   *     {@code strings[0]} has no tokens to classify (it is empty or only whitespace).
+   * @throws IllegalArgumentException If {@code strings} is {@code null} or empty, if
+   *     {@code strings[0]} is {@code null}, or if {@code strings[0]} has no tokens to classify
+   *     (it is empty or only whitespace).
    * @throws IllegalStateException    If inference fails or the model returns an unexpected output.
    */
   @Override
@@ -242,40 +237,15 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   }
 
   /**
-   * Runs the model on one token window and returns its raw per-category logits. A failure executing
-   * the model (an {@link OrtException} or any runtime fault) is wrapped as an
-   * {@link IllegalStateException}; an unexpected output shape is its own loud failure.
+   * Runs the model on one token window and returns its raw per-category logits.
+   *
+   * @param t The encoded token window.
+   * @return The logits.
+   * @throws IllegalStateException Thrown if the model cannot be run or returns an output that is
+   *     neither {@code float[][]} nor {@code float[]}.
    */
   private float[] infer(final Tokens t) {
-
-    // At most three inputs (ids, attention mask, token type ids), so size for exactly that.
-    final Map<String, OnnxTensor> inputs = HashMap.newHashMap(3);
-    final Object output;
-    try {
-      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-          LongBuffer.wrap(t.ids()), new long[] {1, t.ids().length}));
-
-      if (includeAttentionMask) {
-        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(t.mask()), new long[] {1, t.mask().length}));
-      }
-
-      if (includeTokenTypeIds) {
-        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
-      }
-
-      // getValue() copies the tensor into Java arrays, so the result can be closed safely.
-      try (OrtSession.Result result = session.run(inputs)) {
-        output = result.get(0).getValue();
-      }
-    } catch (OrtException | RuntimeException ex) {
-      throw new IllegalStateException("Unable to perform document classification inference", ex);
-    } finally {
-      inputs.values().forEach(OnnxTensor::close);
-    }
-
-    return logitsFromOutput(output);
+    return logitsFromOutput(runModel(t, settings));
   }
 
   // Package-visible so the output-shape dispatch, including the null and unexpected-type failures,
@@ -375,12 +345,14 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   private List<Tokens> tokenize(final String input) {
 
-    final String text = normalizeInput(input, normalizeWhitespace, normalizeDashes);
+    final String text =
+        normalizeInput(input, settings.normalizeWhitespace(), settings.normalizeDashes());
 
     // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
     // InferenceOptions before feeding each chunk into BERT.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    final List<String> groups = whitespaceChunks(text, documentSplitSize, splitOverlapSize);
+    final List<String> groups =
+        whitespaceChunks(text, settings.documentSplitSize(), settings.splitOverlapSize());
     final List<Tokens> t = new ArrayList<>(groups.size());
     for (final String group : groups) {
 
@@ -434,16 +406,24 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    */
   static Map<Integer, String> readCategories(File config) throws IOException {
     final String json = Files.readString(config.toPath(), StandardCharsets.UTF_8);
-    final Map<Integer, String> categories = new HashMap<>();
-    try {
-      for (Map.Entry<String, String> label : DocumentCategorizerConfig.fromJson(json).id2label().entrySet()) {
-        categories.put(parseIndex(label.getKey()), label.getValue());
-      }
-    } catch (IllegalArgumentException e) {
-      throw new InvalidFormatException(
-          "Configuration file " + config.getName() + ": " + e.getMessage(), e);
+    return parseJson(config, "Configuration", json, DocumentCategorizerDL::parseCategories);
+  }
+
+  /**
+   * Reads the categories from the {@code id2label} member of a model configuration.
+   *
+   * @param json The JSON text of the configuration.
+   * @return The categories by output index, empty if the configuration has no {@code id2label}.
+   * @throws IllegalArgumentException Thrown if the text is not well-formed JSON, its
+   *     {@code id2label} member does not map keys to strings, or a key is not an integer.
+   */
+  private static Map<Integer, String> parseCategories(String json) {
+    final Map<Integer, String> parsed = new HashMap<>();
+    for (Map.Entry<String, String> label
+        : DocumentCategorizerConfig.fromJson(json).id2label().entrySet()) {
+      parsed.put(parseIndex(label.getKey()), label.getValue());
     }
-    return categories;
+    return parsed;
   }
 
   /**
