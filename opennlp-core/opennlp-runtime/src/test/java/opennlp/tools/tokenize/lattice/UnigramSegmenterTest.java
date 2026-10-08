@@ -32,6 +32,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.WhitespaceMode;
 
@@ -176,7 +177,7 @@ public class UnigramSegmenterTest {
   @ParameterizedTest(name = "lexicon content \"{0}\"")
   @ValueSource(strings = {"word\n", "word abc\n", "word 0\n", "\n\n"})
   void testMalformedLexiconsFailLoud(String lexicon) {
-    Assertions.assertThrows(IOException.class, () -> UnigramSegmenter.load(
+    Assertions.assertThrows(InvalidFormatException.class, () -> UnigramSegmenter.load(
         new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
         StandardCharsets.UTF_8));
   }
@@ -189,6 +190,7 @@ public class UnigramSegmenterTest {
             new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
             StandardCharsets.UTF_8, 1));
     Assertions.assertEquals("lexicon entry count exceeds safe limit of 1", e.getMessage());
+    Assertions.assertFalse(e instanceof InvalidFormatException);
   }
 
   @Test
@@ -284,7 +286,7 @@ public class UnigramSegmenterTest {
   void testInformationSeparatorDoesNotSeparateLexiconFields(WhitespaceMode mode) {
     WhitespaceMode.setActive(mode);
     final String lexicon = "我\u001C5000\n";
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> UnigramSegmenter.load(
             new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
             StandardCharsets.UTF_8));

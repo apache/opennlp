@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import opennlp.tools.tokenize.lattice.CategoryTable.CategoryAssignment;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.StringUtil;
@@ -191,7 +192,9 @@ public final class MecabDictionary {
    *
    * @param directory The unpacked dictionary directory. Must not be {@code null}.
    * @return The loaded dictionary. Never {@code null}.
-   * @throws IOException Thrown if reading fails or a file is malformed.
+   * @throws InvalidFormatException Thrown if a file is malformed.
+   * @throws IOException Thrown if reading fails, a required file is missing, or a size
+   *         limit is exceeded.
    * @throws IllegalArgumentException Thrown if {@code directory} is {@code null}.
    */
   public static MecabDictionary load(Path directory) throws IOException {
@@ -207,9 +210,10 @@ public final class MecabDictionary {
    * @param charset The encoding the distribution uses, for example UTF-8 or EUC-JP.
    *                Must not be {@code null}.
    * @return The loaded dictionary. Never {@code null}.
-   * @throws IOException Thrown if reading fails, a required file is missing, a file is
-   *         malformed, or a lexicon entry's context ids are outside the
-   *         {@code matrix.def} dimensions.
+   * @throws InvalidFormatException Thrown if a file is malformed or a lexicon entry's
+   *         context ids are outside the {@code matrix.def} dimensions.
+   * @throws IOException Thrown if reading fails, a required file is missing, or a size
+   *         limit is exceeded.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static MecabDictionary load(Path directory, Charset charset) throws IOException {
@@ -226,20 +230,20 @@ public final class MecabDictionary {
     try (BufferedReader reader = Files.newBufferedReader(matrixFile, charset)) {
       final String rawHeader = reader.readLine();
       if (rawHeader == null) {
-        throw new IOException("empty " + MATRIX_DEF + " under " + directory);
+        throw new InvalidFormatException("empty " + MATRIX_DEF + " under " + directory);
       }
       final String headerLine = StringUtil.trimUnicodeWhitespace(rawHeader);
       if (headerLine.isEmpty()) {
-        throw new IOException("empty " + MATRIX_DEF + " under " + directory);
+        throw new InvalidFormatException("empty " + MATRIX_DEF + " under " + directory);
       }
       final String[] header = StringUtil.splitOnUnicodeWhitespace(headerLine);
       if (header.length != 2) {
-        throw new IOException("malformed " + MATRIX_DEF + " header: " + headerLine);
+        throw new InvalidFormatException("malformed " + MATRIX_DEF + " header: " + headerLine);
       }
       leftSize = parseInt(header[0], MATRIX_DEF, 1);
       rightSize = parseInt(header[1], MATRIX_DEF, 1);
       if (leftSize < 1 || rightSize < 1) {
-        throw new IOException(MATRIX_DEF + " dimensions must be positive, got "
+        throw new InvalidFormatException(MATRIX_DEF + " dimensions must be positive, got "
             + leftSize + " " + rightSize);
       }
       if (leftSize > ResourceLimits.MAX_ENTRIES
@@ -271,31 +275,31 @@ public final class MecabDictionary {
         }
         final String[] fields = StringUtil.splitOnUnicodeWhitespace(line);
         if (fields.length != 3) {
-          throw new IOException("malformed " + MATRIX_DEF + " line " + lineNumber);
+          throw new InvalidFormatException("malformed " + MATRIX_DEF + " line " + lineNumber);
         }
         final int right = parseInt(fields[0], MATRIX_DEF, lineNumber);
         final int left = parseInt(fields[1], MATRIX_DEF, lineNumber);
         if (right < 0 || right >= leftSize || left < 0 || left >= rightSize) {
-          throw new IOException("malformed " + MATRIX_DEF + " line " + lineNumber
+          throw new InvalidFormatException("malformed " + MATRIX_DEF + " line " + lineNumber
               + ": context ids " + right + " " + left
               + " are outside the declared dimensions " + leftSize + " " + rightSize);
         }
         final int cost = parseInt(fields[2], MATRIX_DEF, lineNumber);
         if (cost < Short.MIN_VALUE || cost > Short.MAX_VALUE) {
-          throw new IOException("malformed " + MATRIX_DEF + " line " + lineNumber
+          throw new InvalidFormatException("malformed " + MATRIX_DEF + " line " + lineNumber
               + ": connection cost " + cost + " is outside the 16-bit range the"
               + " format defines");
         }
         final int index = right * rightSize + left;
         if (filled.get(index)) {
-          throw new IOException("duplicate " + MATRIX_DEF + " entry " + right + " "
+          throw new InvalidFormatException("duplicate " + MATRIX_DEF + " entry " + right + " "
               + left + " at line " + lineNumber);
         }
         costs[index] = (short) cost;
         filled.set(index);
       }
       if (filled.cardinality() != cellCount) {
-        throw new IOException(MATRIX_DEF + " declares " + leftSize + " x " + rightSize
+        throw new InvalidFormatException(MATRIX_DEF + " declares " + leftSize + " x " + rightSize
             + " connection costs but only " + filled.cardinality()
             + " pairs are listed");
       }
@@ -314,7 +318,7 @@ public final class MecabDictionary {
       readLexicon(csv, charset, lexicon, leftSize, rightSize, entryCount);
     }
     if (lexicon.isEmpty()) {
-      throw new IOException("no lexicon entries found under " + directory);
+      throw new InvalidFormatException("no lexicon entries found under " + directory);
     }
 
     final Map<String, Category> categories = new HashMap<>();
@@ -326,7 +330,7 @@ public final class MecabDictionary {
     readLexicon(unkFile, charset, unknown, leftSize, rightSize, new int[] {0});
     for (final String category : unknown.keySet()) {
       if (!categories.containsKey(category)) {
-        throw new IOException(
+        throw new InvalidFormatException(
             UNK_DEF + " names the undefined category " + category + ": " + unkFile);
       }
     }
@@ -348,9 +352,10 @@ public final class MecabDictionary {
    *                  ids.
    * @param entryCount A one-element running total of entries read so far, shared across
    *                   the lexicon files of one load.
-   * @throws IOException Thrown if the file is missing, an entry is malformed or has
-   *         an empty surface, an entry's context id is outside the matrix dimensions,
-   *         or the running entry count exceeds {@link ResourceLimits#MAX_ENTRIES}.
+   * @throws InvalidFormatException Thrown if an entry is malformed, has an empty surface,
+   *         a context id outside the matrix dimensions or a cost outside the 16-bit range.
+   * @throws IOException Thrown if the file is missing, reading fails, or the running entry
+   *         count exceeds {@link ResourceLimits#MAX_ENTRIES}.
    */
   private static void readLexicon(Path file, Charset charset,
       Map<String, List<WordEntry>> target, int leftSize, int rightSize, int[] entryCount)
@@ -409,10 +414,10 @@ public final class MecabDictionary {
    * @param charset The encoding to decode with.
    * @param categories Receives the defined categories, keyed by name.
    * @param categoryTable Receives the code point to category name mappings.
-   * @throws IOException Thrown if the file is missing, a line is malformed, a code
-   *         point is outside the Unicode range, a range descends, a category is
-   *         duplicated, category count or length exceeds the MeCab format, or the file
-   *         defines no {@code DEFAULT} category.
+   * @throws InvalidFormatException Thrown if a line is malformed, a code point is outside
+   *         the Unicode range, a range descends, a category is duplicated, category count or
+   *         length exceeds the MeCab format, or the file defines no {@code DEFAULT} category.
+   * @throws IOException Thrown if the file is missing or reading fails.
    */
   private static void readCharacterDefinition(Path file, Charset charset,
       Map<String, Category> categories, CategoryTable.Builder categoryTable)
@@ -443,35 +448,35 @@ public final class MecabDictionary {
             to = from;
           }
           if (fields.length < 2) {
-            throw new IOException(
+            throw new InvalidFormatException(
                 "mapping without category at " + file + " line " + lineNumber);
           }
           if (from > to) {
-            throw new IOException("code point range descends at " + file + " line "
+            throw new InvalidFormatException("code point range descends at " + file + " line "
                 + lineNumber);
           }
           categoryTable.map(from, to, Arrays.copyOfRange(fields, 1, fields.length));
         } else {
           if (fields.length < 4) {
-            throw new IOException(
+            throw new InvalidFormatException(
                 "malformed category at " + file + " line " + lineNumber);
           }
           if (!isFlag(fields[1]) || !isFlag(fields[2])) {
-            throw new IOException(
+            throw new InvalidFormatException(
                 "malformed category flag at " + file + " line " + lineNumber);
           }
           final int length = parseInt(fields[3], file.toString(), lineNumber);
           if (length < 0 || length > MAX_CATEGORY_LENGTH) {
-            throw new IOException(
+            throw new InvalidFormatException(
                 "category LENGTH must be between 0 and " + MAX_CATEGORY_LENGTH + " at "
                     + file + " line " + lineNumber);
           }
           if (categories.containsKey(fields[0])) {
-            throw new IOException("duplicate " + CHAR_DEF + " category "
+            throw new InvalidFormatException("duplicate " + CHAR_DEF + " category "
                 + fields[0] + " at line " + lineNumber);
           }
           if (categories.size() >= MAX_CATEGORY_COUNT) {
-            throw new IOException(CHAR_DEF + " defines " + (categories.size() + 1)
+            throw new InvalidFormatException(CHAR_DEF + " defines " + (categories.size() + 1)
                 + " categories; MeCab supports at most " + MAX_CATEGORY_COUNT);
           }
           final Category category = new Category(categories.size(), fields[0],
@@ -481,7 +486,7 @@ public final class MecabDictionary {
       }
     }
     if (!categories.containsKey(DEFAULT_CATEGORY)) {
-      throw new IOException(
+      throw new InvalidFormatException(
           CHAR_DEF + " defines no " + DEFAULT_CATEGORY + " category: " + file);
     }
   }
@@ -577,9 +582,9 @@ public final class MecabDictionary {
    * @param detail What is wrong with the line, or {@code null} for no detail.
    * @return The exception to throw. Never {@code null}.
    */
-  private static IOException malformedEntry(Path file, int lineNumber, String detail) {
+  private static InvalidFormatException malformedEntry(Path file, int lineNumber, String detail) {
     final String message = "malformed entry at " + file + " line " + lineNumber;
-    return new IOException(detail == null ? message : message + ": " + detail);
+    return new InvalidFormatException(detail == null ? message : message + ": " + detail);
   }
 
   /**
@@ -592,10 +597,10 @@ public final class MecabDictionary {
    * @param file The file the line came from, for error messages.
    * @param lineNumber The line's position in the file, for error messages.
    * @return The fields in order, empty fields included. Never {@code null}.
-   * @throws IOException Thrown if a quoted field is unterminated.
+   * @throws InvalidFormatException Thrown if a quoted field is unterminated.
    */
   private static List<String> splitCsv(String line, Path file, int lineNumber)
-      throws IOException {
+      throws InvalidFormatException {
     final List<String> fields = new ArrayList<>();
     final StringBuilder field = new StringBuilder();
     boolean inQuotes = false;
@@ -635,14 +640,14 @@ public final class MecabDictionary {
    * @param file The file being read, for the error message.
    * @param lineNumber The line being read, for the error message.
    * @return The parsed value.
-   * @throws IOException Thrown if the field is not a valid integer.
+   * @throws InvalidFormatException Thrown if the field is not a valid integer.
    */
   private static int parseInt(String text, String file, int lineNumber)
-      throws IOException {
+      throws InvalidFormatException {
     try {
       return Integer.parseInt(StringUtil.trimUnicodeWhitespace(text));
     } catch (NumberFormatException e) {
-      throw new IOException("malformed number in " + file + " line " + lineNumber, e);
+      throw new InvalidFormatException("malformed number in " + file + " line " + lineNumber, e);
     }
   }
 
@@ -653,21 +658,21 @@ public final class MecabDictionary {
    * @param file The file being read, for the error message.
    * @param lineNumber The line being read, for the error message.
    * @return The parsed code point, which may be in a supplementary plane.
-   * @throws IOException Thrown if the field does not start with the {@code 0x} prefix in
-   *         either case, is not a valid hexadecimal number, or names a value no Unicode code
-   *         point has.
+   * @throws InvalidFormatException Thrown if the field does not start with the {@code 0x}
+   *         prefix in either case, is not a valid hexadecimal number, or names a value no
+   *         Unicode code point has.
    */
   private static int parseCodePoint(String text, Path file, int lineNumber)
-      throws IOException {
+      throws InvalidFormatException {
     final String trimmed = StringUtil.trimUnicodeWhitespace(text);
     if (!trimmed.regionMatches(true, 0, HEX_PREFIX, 0, HEX_PREFIX.length())) {
-      throw new IOException("code point without " + HEX_PREFIX + " prefix in " + file
+      throw new InvalidFormatException("code point without " + HEX_PREFIX + " prefix in " + file
           + " line " + lineNumber);
     }
     try {
       return HexCodePoints.parseCodePoint(trimmed, HEX_PREFIX.length(), trimmed.length());
     } catch (IllegalArgumentException e) {
-      throw new IOException("malformed code point in " + file + " line " + lineNumber, e);
+      throw new InvalidFormatException("malformed code point in " + file + " line " + lineNumber, e);
     }
   }
 }

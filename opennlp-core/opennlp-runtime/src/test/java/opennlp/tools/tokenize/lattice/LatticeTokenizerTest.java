@@ -35,6 +35,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ResourceLimits;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.WhitespaceMode;
@@ -354,7 +355,7 @@ public class LatticeTokenizerTest {
     WhitespaceMode.setActive(mode);
     write(broken, LEXICON_CSV, "東,0,0,3000,noun\n");
     write(broken, MATRIX_DEF, "1\u001C1\n0 0 0\n");
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("malformed matrix.def header: 1\u001C1", e.getMessage());
   }
@@ -401,6 +402,7 @@ public class LatticeTokenizerTest {
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("required dictionary file is missing: "
         + broken.resolve(MATRIX_DEF), e.getMessage());
+    Assertions.assertFalse(e instanceof InvalidFormatException);
   }
 
   /**
@@ -413,7 +415,7 @@ public class LatticeTokenizerTest {
     write(broken, MATRIX_DEF, UNIT_MATRIX);
     write(broken, CHAR_DEF, "KANJI 0 0 2\n0x4E00..0x9FFF KANJI\n");
     write(broken, UNK_DEF, "KANJI,0,0,8000,noun\n");
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("char.def defines no DEFAULT category: "
         + broken.resolve(CHAR_DEF), e.getMessage());
@@ -488,7 +490,7 @@ public class LatticeTokenizerTest {
     write(broken, MATRIX_DEF, UNIT_MATRIX);
     write(broken, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\nLATIN 1 1 0\n" + range + " LATIN\n");
     write(broken, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
-    final IOException e = Assertions.assertThrows(IOException.class,
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("code point without 0x prefix in " + broken.resolve(CHAR_DEF)
         + " line 3", e.getMessage());
