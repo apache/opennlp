@@ -21,9 +21,11 @@
 		<title>Introduction</title>
 		<para>
 			Dependency parsing assigns each token a syntactic head and a relation label.
-			<code>DependencyParserME</code> accepts tokens with aligned part-of-speech tags
-			and returns a <code>DependencyTree</code>. A classifier picks the next
-			arc-standard transition for each parser state.
+			Two parsers implement <code>DependencyParser</code>: <code>DependencyParserME</code>
+			and <code>FeedforwardDependencyParser</code>. Both accept tokens with aligned
+			part-of-speech tags and return a <code>DependencyTree</code>. A classifier picks
+			the next arc-standard transition for each parser state. The command-line tools
+			cover the <code>DependencyParserME</code> parser only.
 		</para>
 	</section>
 
@@ -88,6 +90,32 @@ opennlp DependencyParserME en-depparse.bin < tagged-sentences.txt]]>
 			The evaluation and cross-validation tools report UAS and LAS over all scored tokens
 			and over the tokens that are not punctuation. With <code>-misclassified true</code>
 			they also print each misparsed sentence next to its gold tree.
+		</para>
+	</section>
+
+	<section xml:id="tools.dependency.feedforward">
+		<title>Feedforward parser</title>
+		<para>
+			The feedforward trainer has its own versioned model format. This example trains,
+			saves, reloads, and creates a parser with a beam size of four:
+			<programlisting language="java">
+<![CDATA[FeedforwardDependencyModel model;
+try (ObjectStream<DependencySample> samples =
+    new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+  model = FeedforwardDependencyTrainer.train(
+      samples, FeedforwardDependencyTrainer.Settings.defaults());
+}
+try (OutputStream out = Files.newOutputStream(Path.of("en-depparse-ff.bin"))) {
+  model.serialize(out);
+}
+
+DependencyParser parser = new FeedforwardDependencyParser(
+    FeedforwardDependencyModel.load(Path.of("en-depparse-ff.bin")), 4);]]>
+			</programlisting>
+		</para>
+		<para>
+			Greedy and beam parsing throw <code>IllegalStateException</code> if the model
+			produces a non-finite transition score.
 		</para>
 	</section>
 

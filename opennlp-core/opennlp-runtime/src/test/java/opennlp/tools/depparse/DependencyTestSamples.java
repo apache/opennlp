@@ -53,6 +53,9 @@ final class DependencyTestSamples {
   static final DependencyTree SHE_EATS_FISH_TREE =
       DependencyTree.of(new int[] {1, -1, 1}, new String[] {"nsubj", "root", "obj"});
 
+  /** Four-token heads whose arcs (2,0) and (3,1) cross, so the tree is non-projective. */
+  private static final int[] NON_PROJECTIVE_HEADS = {2, 3, -1, 2};
+
   /** How often the distinct sentences are repeated in {@link #corpus()}. */
   private static final int REPETITIONS = 40;
 
@@ -78,6 +81,32 @@ final class DependencyTestSamples {
   static DependencySample sample(String[] tokens, String[] tags, int[] heads,
       String[] relations) {
     return new DependencySample(tokens, tags, DependencyTree.of(heads, relations));
+  }
+
+  /**
+   * Builds a four-token sample whose gold arcs (2,0) and (3,1) cross, so the tree is
+   * non-projective and has no arc-standard derivation.
+   *
+   * @return The non-projective sample. Never {@code null}.
+   */
+  static DependencySample nonProjectiveSample() {
+    return nonProjectiveSample(new String[] {"the", "dog", "barks", "today"},
+        new String[] {"DT", "NN", "VBZ", "RB"},
+        new String[] {"det", "nsubj", "root", "advmod"});
+  }
+
+  /**
+   * Builds a four-token sample over the crossing arcs (2,0) and (3,1), so the tree is
+   * non-projective and has no arc-standard derivation.
+   *
+   * @param tokens The four sentence tokens. Must not be {@code null}.
+   * @param tags The part-of-speech tags aligned with {@code tokens}.
+   * @param relations The relation label per token.
+   * @return The non-projective sample. Never {@code null}.
+   */
+  static DependencySample nonProjectiveSample(String[] tokens, String[] tags,
+      String[] relations) {
+    return sample(tokens, tags, NON_PROJECTIVE_HEADS, relations);
   }
 
   /**
