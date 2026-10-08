@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -44,6 +45,9 @@ public class StringUtilTest {
 
   private static final int[] INFO_SEPARATORS = {0x001C, 0x001D, 0x001E, 0x001F};
 
+  private static final int[] SPACE_SEPARATORS = {0x1680, 0x2000, 0x2001, 0x2002, 0x2003,
+      0x2004, 0x2005, 0x2006, 0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x205F, 0x3000};
+
   private static final int DESERET_CAPITAL_BEE = 0x10412; // supplementary-plane letter
   private static final int DESERET_SMALL_BEE = 0x1043A;
   private static final int GRINNING_FACE = 0x1F600; // emoji, two chars
@@ -54,6 +58,10 @@ public class StringUtilTest {
 
   private static List<RelatedCharacter> lookalikes() {
     return UnicodeWhitespace.lookalikes();
+  }
+
+  private static IntStream infoSeparators() {
+    return Arrays.stream(INFO_SEPARATORS);
   }
 
   private static Stream<CharSequence> nonStringCharSequences() {
@@ -72,7 +80,7 @@ public class StringUtilTest {
   }
 
   // -------------------------------------------------------------------------
-  // isWhitespace / isUnicodeWhitespace (existing pins, kept)
+  // isWhitespace / isUnicodeWhitespace
   // -------------------------------------------------------------------------
 
   @Test
@@ -87,47 +95,20 @@ public class StringUtilTest {
   }
 
   /**
-   * Pins the exact semantics of {@link StringUtil#isWhitespace(int)} under the default
-   * {@link WhitespaceMode#UNICODE}, at the code points where the JVM predicates and the
-   * Unicode {@code White_Space} property disagree, so the predicate cannot drift silently:
-   * it excludes the {@code U+001C..U+001F} information separators and includes the next
-   * line control {@code U+0085}, agreeing with {@link StringUtil#isUnicodeWhitespace(int)}.
+   * Pins the exact semantics of {@link StringUtil#isWhitespace(int)} in each
+   * {@link WhitespaceMode}, at the code points where the JVM predicates and the Unicode
+   * {@code White_Space} property disagree, so the predicate cannot drift silently.
+   * {@link WhitespaceMode#UNICODE} excludes the {@code U+001C..U+001F} information separators
+   * and includes the next line control {@code U+0085}, agreeing with
+   * {@link StringUtil#isUnicodeWhitespace(int)}. {@link WhitespaceMode#LEGACY} is the union of
+   * {@link Character#isWhitespace(int)} and the {@code Zs} category, the opposite at those
+   * code points; trained sentence-detector and tokenizer models built under it depend on it.
    */
-  @Test
-  void testIsWhitespaceBoundaryCodePointsDefaultIsUnicode() {
-    for (int cp = 0x0009; cp <= 0x000D; cp++) {
-      Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
-    }
-    Assertions.assertTrue(StringUtil.isWhitespace(0x0020));
-
-    for (int cp : INFO_SEPARATORS) {
-      Assertions.assertFalse(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
-      Assertions.assertFalse(StringUtil.isWhitespace((char) cp), "U+" + Integer.toHexString(cp));
-    }
-
-    Assertions.assertTrue(StringUtil.isWhitespace(0x0085));
-    Assertions.assertTrue(StringUtil.isWhitespace((char) 0x0085));
-
-    int[] separators = {0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006,
-        0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x205F, 0x3000};
-    for (int cp : separators) {
-      Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
-    }
-
-    Assertions.assertFalse(StringUtil.isWhitespace(0x200B));
-    Assertions.assertFalse(StringUtil.isWhitespace(0xFEFF));
-  }
-
-  /**
-   * Pins the exact semantics of {@link StringUtil#isWhitespace(int)} under
-   * {@link WhitespaceMode#LEGACY}: the union of {@link Character#isWhitespace(int)} and the
-   * {@code Zs} category, the opposite of the Unicode {@code White_Space} set at
-   * {@code U+001C..U+001F} and {@code U+0085}. Trained sentence-detector and tokenizer
-   * models built under this definition depend on it.
-   */
-  @Test
-  void testIsWhitespaceBoundaryCodePointsUnderLegacyMode() {
-    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
+  @ParameterizedTest
+  @EnumSource(WhitespaceMode.class)
+  void testIsWhitespaceBoundaryCodePoints(WhitespaceMode mode) {
+    WhitespaceMode.setActive(mode);
+    final boolean unicode = mode == WhitespaceMode.UNICODE;
 
     for (int cp = 0x0009; cp <= 0x000D; cp++) {
       Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
@@ -135,16 +116,16 @@ public class StringUtilTest {
     Assertions.assertTrue(StringUtil.isWhitespace(0x0020));
 
     for (int cp : INFO_SEPARATORS) {
-      Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
-      Assertions.assertTrue(StringUtil.isWhitespace((char) cp), "U+" + Integer.toHexString(cp));
+      Assertions.assertEquals(!unicode, StringUtil.isWhitespace(cp),
+          "U+" + Integer.toHexString(cp));
+      Assertions.assertEquals(!unicode, StringUtil.isWhitespace((char) cp),
+          "U+" + Integer.toHexString(cp));
     }
 
-    Assertions.assertFalse(StringUtil.isWhitespace(0x0085));
-    Assertions.assertFalse(StringUtil.isWhitespace((char) 0x0085));
+    Assertions.assertEquals(unicode, StringUtil.isWhitespace(0x0085));
+    Assertions.assertEquals(unicode, StringUtil.isWhitespace((char) 0x0085));
 
-    int[] separators = {0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006,
-        0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x205F, 0x3000};
-    for (int cp : separators) {
+    for (int cp : SPACE_SEPARATORS) {
       Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
     }
 
@@ -414,7 +395,7 @@ public class StringUtilTest {
 
   @Test
   void testSplitOnUnicodeWhitespaceCollapsesMixedRuns() {
-    // Tab, space, NBSP, NEL, ideographic space between two tokens — one boundary.
+    // Tab, space, NBSP, NEL, ideographic space between two tokens form one boundary.
     final String input = "left" + "\t \u00A0\u0085\u3000" + "right";
     Assertions.assertArrayEquals(new String[] {"left", "right"},
         StringUtil.splitOnUnicodeWhitespace(input));
@@ -442,7 +423,7 @@ public class StringUtilTest {
   @ParameterizedTest
   @MethodSource("lookalikes")
   void testSplitOnUnicodeWhitespaceLookalikesDoNotSeparate(RelatedCharacter related) {
-    // ZWSP/BOM/etc. are not White_Space — they stay glued inside the token.
+    // ZWSP/BOM/etc. are not White_Space; they stay glued inside the token.
     final String glue = cp(related.codePoint());
     Assertions.assertArrayEquals(new String[] {"a" + glue + "b"},
         StringUtil.splitOnUnicodeWhitespace("a" + glue + "b"),
@@ -450,7 +431,7 @@ public class StringUtilTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = {0x001C, 0x001D, 0x001E, 0x001F})
+  @MethodSource("infoSeparators")
   void testSplitOnUnicodeWhitespaceInfoSeparatorsDoNotSeparate(int infoSep) {
     // Character.isWhitespace includes these; Unicode White_Space does not.
     Assertions.assertArrayEquals(new String[] {"a" + cp(infoSep) + "b"},
@@ -517,14 +498,14 @@ public class StringUtilTest {
         StringUtil.splitOnUnicodeWhitespace(run + "x" + run + "y" + run));
   }
 
-  @Test
-  void testSplitOnUnicodeWhitespaceSingleWhitespaceBetweenEmptyYieldsEmpty() {
-    // Only whitespace → empty array, never [""].
-    for (WhitespaceCharacter ws : UnicodeWhitespace.all()) {
-      Assertions.assertArrayEquals(new String[0],
-          StringUtil.splitOnUnicodeWhitespace(cp(ws.codePoint())),
-          () -> ws.toUnicodeNotation());
-    }
+  @ParameterizedTest
+  @MethodSource("whitespace")
+  void testSplitOnUnicodeWhitespaceSingleWhitespaceBetweenEmptyYieldsEmpty(
+      WhitespaceCharacter ws) {
+    // Only whitespace gives an empty array, never [""].
+    Assertions.assertArrayEquals(new String[0],
+        StringUtil.splitOnUnicodeWhitespace(cp(ws.codePoint())),
+        () -> ws.toUnicodeNotation());
   }
 
   @ParameterizedTest
@@ -552,8 +533,8 @@ public class StringUtilTest {
   }
 
   @Test
-  void testSplitOnUnicodeWhitespaceAllTwentyFiveAsMixedSeparators() {
-    // Build "t0 <ws0> t1 <ws1> ... t24 <ws24> t25" using every White_Space code point.
+  void testSplitOnUnicodeWhitespaceAllWhiteSpaceCodePointsAsMixedSeparators() {
+    // Build "t0 <ws0> t1 <ws1> ... tN" using every White_Space code point.
     final List<WhitespaceCharacter> all = UnicodeWhitespace.all();
     final StringBuilder sb = new StringBuilder();
     for (int i = 0; i < all.size(); i++) {
@@ -608,7 +589,7 @@ public class StringUtilTest {
   @MethodSource("lookalikes")
   void testTrimUnicodeWhitespaceLookalikesAreNotTrimmed(RelatedCharacter related) {
     final String glue = cp(related.codePoint());
-    // Leading/trailing lookalikes stay — they are not White_Space.
+    // Leading/trailing lookalikes stay; they are not White_Space.
     Assertions.assertEquals(glue + "x" + glue,
         StringUtil.trimUnicodeWhitespace(glue + "x" + glue),
         () -> related.toUnicodeNotation());
@@ -619,7 +600,7 @@ public class StringUtilTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = {0x001C, 0x001D, 0x001E, 0x001F})
+  @MethodSource("infoSeparators")
   void testTrimUnicodeWhitespaceInfoSeparatorsAreNotTrimmed(int infoSep) {
     final String sep = cp(infoSep);
     Assertions.assertEquals(sep + "x" + sep, StringUtil.trimUnicodeWhitespace(sep + "x" + sep));
@@ -663,7 +644,7 @@ public class StringUtilTest {
 
     WhitespaceMode.setActive(WhitespaceMode.LEGACY);
     Assertions.assertEquals("a\u0085b", StringUtil.trimUnicodeWhitespace(" a\u0085b "));
-    // Info separators still not trimmed under LEGACY — Unicode helper is unconditional.
+    // Info separators still not trimmed under LEGACY; the Unicode helper is unconditional.
     Assertions.assertEquals("\u001Cx\u001C",
         StringUtil.trimUnicodeWhitespace("\u001Cx\u001C"));
     // But NEL is still trimmed (Unicode), even though LEGACY isWhitespace(NEL) is false.
@@ -714,7 +695,7 @@ public class StringUtilTest {
   }
 
   @Test
-  void testIsUnicodeBlankAllTwentyFiveTogether() {
+  void testIsUnicodeBlankAllWhiteSpaceCodePointsTogether() {
     final String allWs = UnicodeWhitespace.all().stream()
         .map(ws -> cp(ws.codePoint()))
         .collect(Collectors.joining());
@@ -732,13 +713,12 @@ public class StringUtilTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = {0x001C, 0x001D, 0x001E, 0x001F})
+  @MethodSource("infoSeparators")
   void testIsUnicodeBlankInfoSeparatorsAreNotBlank(int infoSep) {
     Assertions.assertFalse(StringUtil.isUnicodeBlank(cp(infoSep)));
     // JVM String.isBlank uses Character.isWhitespace, which *does* treat info separators
-    // as blank — pin that we disagree.
+    // as blank; pin that we disagree.
     Assertions.assertTrue(cp(infoSep).isBlank());
-    Assertions.assertFalse(StringUtil.isUnicodeBlank(cp(infoSep)));
   }
 
   @Test
@@ -777,9 +757,8 @@ public class StringUtilTest {
   // Cross-helper invariants
   // -------------------------------------------------------------------------
 
-  @Test
-  void testBlankIffSplitEmptyAndTrimEmpty() {
-    final String[] samples = {
+  private static Stream<String> blankSamples() {
+    return Stream.of(
         "",
         "   ",
         "\t\n\u00A0\u0085\u3000",
@@ -791,34 +770,29 @@ public class StringUtilTest {
         cp(DESERET_CAPITAL_BEE),
         join(0x00A0, DESERET_CAPITAL_BEE, 0x3000),
         UnicodeWhitespace.all().stream().map(ws -> cp(ws.codePoint()))
-            .collect(Collectors.joining())
-    };
-    for (String sample : samples) {
-      final boolean blank = StringUtil.isUnicodeBlank(sample);
-      final String[] split = StringUtil.splitOnUnicodeWhitespace(sample);
-      final String trimmed = StringUtil.trimUnicodeWhitespace(sample);
-      Assertions.assertEquals(blank, split.length == 0,
-          () -> "blank iff split empty for: " + Arrays.toString(sample.codePoints().toArray()));
-      Assertions.assertEquals(blank, trimmed.isEmpty(),
-          () -> "blank iff trim empty for: " + Arrays.toString(sample.codePoints().toArray()));
-    }
+            .collect(Collectors.joining()));
   }
 
-  @Test
-  void testTrimThenSplitEqualsSplit() {
-    // Leading/trailing whitespace is ignored by split, so trim-then-split is a no-op.
-    final String[] samples = {
-        "  a  b  ",
-        "\u00A0hello\u3000world\u0085",
-        "\t\t alone \n",
-        "a\u2007b\u2009c"
-    };
-    for (String sample : samples) {
-      Assertions.assertArrayEquals(
-          StringUtil.splitOnUnicodeWhitespace(sample),
-          StringUtil.splitOnUnicodeWhitespace(StringUtil.trimUnicodeWhitespace(sample)),
-          () -> sample);
-    }
+  @ParameterizedTest
+  @MethodSource("blankSamples")
+  void testBlankIffSplitEmptyAndTrimEmpty(String sample) {
+    final boolean blank = StringUtil.isUnicodeBlank(sample);
+    final String[] split = StringUtil.splitOnUnicodeWhitespace(sample);
+    final String trimmed = StringUtil.trimUnicodeWhitespace(sample);
+    Assertions.assertEquals(blank, split.length == 0,
+        () -> "blank iff split empty for: " + Arrays.toString(sample.codePoints().toArray()));
+    Assertions.assertEquals(blank, trimmed.isEmpty(),
+        () -> "blank iff trim empty for: " + Arrays.toString(sample.codePoints().toArray()));
+  }
+
+  // Leading/trailing whitespace is ignored by split, so trim-then-split is a no-op.
+  @ParameterizedTest
+  @ValueSource(strings = {"  a  b  ", "\u00A0hello\u3000world\u0085", "\t\t alone \n",
+      "a\u2007b\u2009c"})
+  void testTrimThenSplitEqualsSplit(String sample) {
+    Assertions.assertArrayEquals(
+        StringUtil.splitOnUnicodeWhitespace(sample),
+        StringUtil.splitOnUnicodeWhitespace(StringUtil.trimUnicodeWhitespace(sample)));
   }
 
   @Test
@@ -830,21 +804,18 @@ public class StringUtilTest {
         StringUtil.splitOnUnicodeWhitespace(String.join(" ", tokens)));
   }
 
-  @Test
-  void testSplitDoesNotEmitEmptyTokensAroundSeparators() {
-    // Regex split("\\s+") on a leading-space string yields a leading "" with limit -1;
-    // our scanner must never emit empty strings.
-    for (String sample : List.of(" a", "a ", " a ", "  a  b  ", "\u00A0a\u00A0")) {
-      for (String token : StringUtil.splitOnUnicodeWhitespace(sample)) {
-        Assertions.assertFalse(token.isEmpty(), () -> "empty token from: '" + sample + "'");
-        Assertions.assertFalse(StringUtil.isUnicodeBlank(token),
-            () -> "whitespace-only token from: '" + sample + "'");
-      }
+  @ParameterizedTest
+  @ValueSource(strings = {" a", "a ", " a ", "  a  b  ", "\u00A0a\u00A0"})
+  void testSplitDoesNotEmitEmptyTokensAroundSeparators(String sample) {
+    for (String token : StringUtil.splitOnUnicodeWhitespace(sample)) {
+      Assertions.assertFalse(token.isEmpty(), () -> "empty token from: '" + sample + "'");
+      Assertions.assertFalse(StringUtil.isUnicodeBlank(token),
+          () -> "whitespace-only token from: '" + sample + "'");
     }
   }
 
   // -------------------------------------------------------------------------
-  // Existing non-whitespace StringUtil coverage
+  // toLowerCase, toUpperCase, isEmpty, isBlank
   // -------------------------------------------------------------------------
 
   @Test
