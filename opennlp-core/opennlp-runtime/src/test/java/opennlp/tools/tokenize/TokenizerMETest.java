@@ -20,7 +20,6 @@ package opennlp.tools.tokenize;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -42,11 +41,6 @@ import opennlp.tools.util.TrainingParameters;
  * @see TokenizerME
  */
 public class TokenizerMETest {
-
-  @AfterEach
-  void restoreSharedWhitespaceTokenizer() {
-    WhitespaceTokenizer.INSTANCE.setKeepNewLines(false);
-  }
 
   @Test
   void testTokenizerSimpleModel() throws IOException {

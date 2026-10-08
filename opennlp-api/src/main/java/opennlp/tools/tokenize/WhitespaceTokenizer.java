@@ -28,13 +28,19 @@ import opennlp.tools.util.StringUtil;
  * using white spaces.
  * <p>
  * To obtain an instance of this tokenizer use the static final
- * {@link #INSTANCE} field.
+ * {@link #INSTANCE} field. Use {@link #newInstance(boolean)} for a tokenizer with a
+ * non-default {@link #setKeepNewLines(boolean)} setting.
  */
 public class WhitespaceTokenizer extends AbstractTokenizer {
 
   /**
    * Use this static reference to retrieve an instance of the
    * {@link WhitespaceTokenizer}.
+   * <p>
+   * This instance is shared by every caller in the process, so it must not be reconfigured:
+   * calling {@link #setKeepNewLines(boolean)} on it changes the output of all other users and
+   * is not safely published to other threads. Use {@link #newInstance(boolean)} to obtain a
+   * tokenizer with a different setting.
    */
   public static final WhitespaceTokenizer INSTANCE = new WhitespaceTokenizer();
 
