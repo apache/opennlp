@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,7 +40,6 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +61,8 @@ public class DownloadUtil {
       System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.3/");
   private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
   private static final String CHECKSUM_EXTENSION = ".sha512";
+  private static final String INDEX_EXTENSION = ".index.html";
+  private static final String TEMP_EXTENSION = ".tmp";
 
   private static Map<String, Map<ModelType, URL>> availableModels;
 
@@ -181,11 +183,24 @@ public class DownloadUtil {
     }
   }
 
+  /**
+   * Lists the models published in the model index. A copy of the last index read is kept in
+   * the download directory and used when the index cannot be read. An empty result is not
+   * kept, so the next call reads the index again.
+   *
+   * @return The model URLs per language and {@link ModelType}. Empty if neither the index nor
+   *     its local copy lists models.
+   */
   public static Map<String, Map<ModelType, URL>> getAvailableModels() {
     if (availableModels == null) {
       try {
-        DownloadParser p = new DownloadParser(new URI(BASE_URL + MODEL_URI_PATH).toURL());
-        availableModels = p.getAvailableModels();
+        final DownloadParser p = new DownloadParser(new URI(BASE_URL + MODEL_URI_PATH).toURL(),
+            getDownloadHome().resolve(indexFileName(MODEL_URI_PATH)));
+        final Map<String, Map<ModelType, URL>> models = p.getAvailableModels();
+        if (models.isEmpty()) {
+          return Collections.emptyMap();
+        }
+        availableModels = models;
       } catch (MalformedURLException | URISyntaxException e) {
         throw new RuntimeException(e);
       }
@@ -343,6 +358,22 @@ public class DownloadUtil {
     }
   }
 
+  /**
+   * Names the local copy of the model index after the last segment of the model path, for
+   * example {@code ud-models-1.3.index.html} for {@code models/ud-models-1.3/}. The base URL
+   * is not part of the name, so hosts that serve the same model path share the copy.
+   *
+   * @param modelPath The model path, with or without trailing slashes.
+   * @return The file name.
+   */
+  static String indexFileName(String modelPath) {
+    String path = modelPath;
+    while (path.endsWith("/")) {
+      path = path.substring(0, path.length() - 1);
+    }
+    return path.substring(path.lastIndexOf('/') + 1) + INDEX_EXTENSION;
+  }
+
   private static Path getDownloadHome() {
     return Paths.get(System.getProperty(OPENNLP_DOWNLOAD_HOME,
             System.getProperty("user.home"))).resolve(".opennlp");
@@ -356,15 +387,94 @@ public class DownloadUtil {
     private static final char TAG_END = '>';
 
     private final URL indexUrl;
+    private final Path localIndex;
 
-    DownloadParser(URL indexUrl) {
-      Objects.requireNonNull(indexUrl);
-      this.indexUrl = indexUrl;
+    /**
+     * Initializes a parser that keeps a copy of the index page.
+     *
+     * @param indexUrl The index page.
+     * @param localIndex The file that keeps a copy of the index page, or {@code null} to
+     *     keep no copy.
+     * @throws IllegalArgumentException Thrown if {@code indexUrl} is {@code null}.
+     */
+    DownloadParser(URL indexUrl, Path localIndex) {
+      this.indexUrl = ParamChecks.requireNonNullArg(indexUrl, "indexUrl");
+      this.localIndex = localIndex;
     }
 
+    /**
+     * Lists the models of the index page. If the page lists models, it is stored as the
+     * local copy. Otherwise, for example if the page cannot be read, the local copy is used.
+     *
+     * @return The model URLs per language and {@link ModelType}. Empty if neither the page
+     *     nor the local copy lists models.
+     * @throws MalformedURLException Thrown if a model URL is malformed.
+     * @throws URISyntaxException Thrown if a model URL is not a valid URI.
+     */
     Map<String, Map<ModelType, URL>> getAvailableModels()
         throws MalformedURLException, URISyntaxException {
-      return toMap(extractLinks(fetchPageIndex()));
+      final String page = fetchPageIndex();
+      if (page != null) {
+        final Map<String, Map<ModelType, URL>> models = toMap(extractLinks(page));
+        if (!models.isEmpty()) {
+          storeLocalIndex(page);
+          return models;
+        }
+      }
+      final String local = readLocalIndex();
+      if (local == null) {
+        return new HashMap<>();
+      }
+      logger.info("Using the local copy of the model index at {}.", localIndex);
+      return toMap(extractLinks(local));
+    }
+
+    /**
+     * Reads the local copy of the index page.
+     *
+     * @return The page content, or {@code null} if there is no readable copy.
+     */
+    private String readLocalIndex() {
+      if (localIndex == null || !Files.isRegularFile(localIndex)) {
+        return null;
+      }
+      try {
+        return Files.readString(localIndex, StandardCharsets.UTF_8);
+      } catch (IOException e) {
+        logger.warn("Could not read the local copy of the model index at {}.", localIndex, e);
+        return null;
+      }
+    }
+
+    /**
+     * Stores the index page as the local copy. The page is written to a temporary file that
+     * then replaces the copy, so a reader never sees a partly written copy. A failure is only
+     * logged.
+     *
+     * @param page The page content.
+     */
+    private void storeLocalIndex(String page) {
+      if (localIndex == null) {
+        return;
+      }
+      try {
+        final Path directory = localIndex.toAbsolutePath().getParent();
+        Files.createDirectories(directory);
+        final Path temporary =
+            Files.createTempFile(directory, localIndex.getFileName().toString(), TEMP_EXTENSION);
+        try {
+          Files.writeString(temporary, page, StandardCharsets.UTF_8);
+          try {
+            Files.move(temporary, localIndex, StandardCopyOption.ATOMIC_MOVE);
+          } catch (AtomicMoveNotSupportedException e) {
+            Files.move(temporary, localIndex, StandardCopyOption.REPLACE_EXISTING);
+          }
+        } finally {
+          Files.deleteIfExists(temporary);
+        }
+      } catch (IOException e) {
+        logger.warn("Could not store the local copy of the model index at {}.", localIndex, e);
+      }
     }
 
     /**
@@ -540,6 +650,11 @@ public class DownloadUtil {
       result.putIfAbsent(locale, models);
     }
 
+    /**
+     * Reads the index page from its URL, joining its lines.
+     *
+     * @return The page content, or {@code null} if the page could not be read completely.
+     */
     private String fetchPageIndex() {
       final StringBuilder html = new StringBuilder();
       try (BufferedReader br = new BufferedReader(
@@ -549,7 +664,8 @@ public class DownloadUtil {
           html.append(line);
         }
       } catch (IOException e) {
-        logger.error("Could not read page index from {}", indexUrl, e);
+        logger.warn("Could not read the model index from {}: {}", indexUrl, e.getMessage());
+        return null;
       }
 
       return html.toString();
