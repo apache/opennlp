@@ -30,23 +30,22 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Requesting the CUDA execution provider must work as the first ONNX Runtime call of a JVM.
+ * Tests that {@link AbstractDL#sessionOptions(InferenceOptions)} can request the CUDA execution
+ * provider as the first ONNX Runtime call of a JVM. Without CUDA the request may fail, but not
+ * because ONNX Runtime's default logger is missing.
  *
- * <p>Loading a shared execution provider library goes through ONNX Runtime's default logger,
- * which only exists once an {@code OrtEnvironment} has been created. When
- * {@link AbstractDL#sessionOptions(InferenceOptions)} called {@code addCUDA} before that, the
- * {@code onnxruntime_gpu} build failed with "Attempt to use DefaultLogger but none has been
- * registered", on any machine, so a cold JVM could never get a GPU session. On a machine
- * without CUDA the request must still fail, but because the CUDA libraries cannot be loaded.</p>
- *
- * <p>The CPU-only {@code onnxruntime} build rejects the request before it gets that far, so
- * this test only discriminates in {@code opennlp-dl-gpu}, which reruns the tests of this module
- * against {@code onnxruntime_gpu}.</p>
+ * <p>The CPU-only {@code onnxruntime} build rejects the request earlier, so the test is
+ * meaningful in {@code opennlp-dl-gpu}, which runs the tests of this module against
+ * {@code onnxruntime_gpu}.</p>
  */
 class AbstractDLColdStartCudaTest {
 
   private static final String DEFAULT_LOGGER_FAILURE = "DefaultLogger";
 
+  /**
+   * Runs {@link ColdStartCudaProbe} in a child JVM and checks that the CUDA request was either
+   * added or rejected without a missing default logger.
+   */
   @Test
   void testCudaRequestDoesNotNeedAnEarlierOrtEnvironment() throws IOException, InterruptedException {
     final Path java = Path.of(System.getProperty("java.home"), "bin", "java");

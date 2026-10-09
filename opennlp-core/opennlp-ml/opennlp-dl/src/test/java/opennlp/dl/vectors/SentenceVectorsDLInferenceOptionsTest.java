@@ -36,14 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * {@link SentenceVectorsDL} takes {@link InferenceOptions}, so a GPU can be requested.
- *
- * <p>Before this constructor existed the class built its session from default options and could
- * only run on the CPU, although {@code opennlp-dl-gpu} documents GPU support. A request for a
- * device id no machine has proves the options reach ONNX Runtime: the CPU-only build rejects
- * the CUDA provider while the options are built, and the GPU build rejects the CUDA libraries or
- * the device. Either way it throws {@link OrtException}, and it could not unless the options
- * were passed through. ONNX Runtime does not fall back to the CPU in any of these cases.</p>
+ * Tests the {@link SentenceVectorsDL} constructor that takes {@link InferenceOptions}.
  */
 class SentenceVectorsDLInferenceOptionsTest {
 
@@ -53,8 +46,14 @@ class SentenceVectorsDLInferenceOptionsTest {
 
   private static final String TEXT = "hello world";
 
-  // Copied out of the classpath, because this test also runs from the opennlp-dl test-jar in
-  // opennlp-dl-gpu, where the resource URI is not hierarchical.
+  /**
+   * Copies the test model out of the classpath, because the test also runs from the
+   * {@code opennlp-dl} test-jar in {@code opennlp-dl-gpu}, where the resource is not a file.
+   *
+   * @param dir The directory to copy the model into.
+   * @return The model file.
+   * @throws IOException Thrown if the model cannot be copied.
+   */
   private static File model(final Path dir) throws IOException {
     final Path file = dir.resolve("tiny-vectors.onnx");
     try (InputStream is = Objects.requireNonNull(SentenceVectorsDLInferenceOptionsTest.class
@@ -64,6 +63,13 @@ class SentenceVectorsDLInferenceOptionsTest {
     return file.toFile();
   }
 
+  /**
+   * Writes the eight-entry vocabulary of the test model.
+   *
+   * @param dir The directory to write the vocabulary into.
+   * @return The vocabulary file.
+   * @throws IOException Thrown if the vocabulary cannot be written.
+   */
   private static File vocab(final Path dir) throws IOException {
     final Path file = dir.resolve("vocab.txt");
     Files.write(file, List.of("[PAD]", "unused1", "[UNK]", "[SEP]", "hello", "world",
@@ -71,6 +77,10 @@ class SentenceVectorsDLInferenceOptionsTest {
     return file.toFile();
   }
 
+  /**
+   * Requests a device id that no machine has and checks that ONNX Runtime rejects it, which
+   * shows that the options reach the session; ONNX Runtime does not fall back to the CPU.
+   */
   @Test
   void testGpuRequestReachesOnnxRuntime(@TempDir Path dir) throws IOException {
     final InferenceOptions options = new InferenceOptions();
@@ -82,6 +92,10 @@ class SentenceVectorsDLInferenceOptionsTest {
         false, SentenceVectorsDL.DEFAULT_MAX_LENGTH, options).close());
   }
 
+  /**
+   * Checks that default {@link InferenceOptions} give the same vectors as the constructor
+   * without options.
+   */
   @Test
   void testDefaultOptionsMatchTheDefaultSession(@TempDir Path dir) throws Exception {
     try (SentenceVectorsDL plain = new SentenceVectorsDL(model(dir), vocab(dir), true,
@@ -110,6 +124,9 @@ class SentenceVectorsDLInferenceOptionsTest {
     }
   }
 
+  /**
+   * Checks that {@code null} options are rejected.
+   */
   @Test
   void testNullOptionsAreRejected(@TempDir Path dir) throws IOException {
     final File model = model(dir);

@@ -37,6 +37,12 @@ public final class ColdStartCudaProbe {
   private ColdStartCudaProbe() {
   }
 
+  /**
+   * Requests the CUDA execution provider for device {@code 0} and prints {@link #ADDED} or
+   * {@link #REJECTED} followed by the ONNX Runtime error.
+   *
+   * @param args Not used.
+   */
   public static void main(String[] args) {
     final InferenceOptions options = new InferenceOptions();
     options.setGpu(true);
