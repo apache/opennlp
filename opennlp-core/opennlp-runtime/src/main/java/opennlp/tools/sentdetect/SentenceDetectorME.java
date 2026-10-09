@@ -274,7 +274,8 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
   }
 
   /**
-   * Maps accepted sentence-start positions to trimmed sentence {@link Span}s.
+   * Maps accepted sentence-start positions to trimmed sentence {@link Span}s, the core of the
+   * end-of-sentence position to span mapping (OPENNLP-205).
    *
    * <p>Each span runs from the previous position (or the text start) to the next position, with
    * Unicode {@code White_Space} trimmed from both edges. A candidate that is whitespace-only is
@@ -433,7 +434,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     private final boolean caseSensitive;
 
     /**
-     * Creates an index over a dictionary.
+     * Creates an {@link AbbreviationIndex} over a {@link Dictionary}.
      *
      * @param abbDict The {@link Dictionary} to index, may be {@code null}.
      * @return An index over {@code abbDict}, or {@code null} if {@code abbDict} is {@code null}.
@@ -463,7 +464,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     }
 
     /**
-     * Checks whether a sentence break at a candidate position is allowed by the dictionary.
+     * Checks whether a sentence break at a candidate position is allowed by the {@link Dictionary}.
      *
      * @param s The text in which the break occurred.
      * @param fromIndex The start of the segment currently being evaluated.
