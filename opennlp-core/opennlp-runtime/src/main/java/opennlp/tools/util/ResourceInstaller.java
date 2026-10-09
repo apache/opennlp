@@ -102,6 +102,12 @@ public final class ResourceInstaller {
   private static final String DOWNLOAD_SUFFIX = ".part";
   /** The path segment that names the parent directory. */
   private static final String PARENT_DIRECTORY = "..";
+  /** The path separator used on all platforms. */
+  private static final char SLASH = '/';
+  /** The path separator used on Windows. */
+  private static final char BACKSLASH = '\\';
+  /** The NUL character, which no file system accepts in a name. */
+  private static final char NUL = '\0';
   /** The buffer size, in bytes, for streaming copies and digests in this package. */
   static final int BUFFER_SIZE = 8192;
   private static final int MAGIC_LENGTH = 4;
@@ -1261,7 +1267,7 @@ public final class ResourceInstaller {
     final InputStream decompressed = new BufferedInputStream(
         new BudgetInputStream(new GZIPInputStream(raw), budget), BUFFER_SIZE);
     if (TarStream.startsWithHeader(decompressed)
-        || TarStream.startsWithEndOfArchive(decompressed)) {
+        || TarStream.isEmptyArchive(decompressed)) {
       unpackTar(decompressed, staging, entryBudget);
       decompressed.transferTo(OutputStream.nullOutputStream());
     } else {
@@ -1454,7 +1460,7 @@ public final class ResourceInstaller {
   private static boolean containsPathCharacter(String name) {
     for (int i = 0; i < name.length(); i++) {
       final char c = name.charAt(i);
-      if (c == '/' || c == '\\' || c == 0) {
+      if (c == SLASH || c == BACKSLASH || c == NUL) {
         return true;
       }
     }

@@ -141,9 +141,9 @@ public final class TarStream {
   }
 
   /**
-   * Checks whether the given stream is positioned at the two zero blocks that end a tar
-   * archive, leaving its position unchanged. An archive without entries consists of
-   * only these blocks, so {@link #startsWithHeader(InputStream)} does not recognize it.
+   * Checks whether the given stream is positioned at an archive without entries, leaving
+   * its position unchanged. Such an archive consists of only the two zero blocks that end
+   * a tar archive, which {@link #startsWithHeader(InputStream)} does not recognize.
    *
    * @param in The stream to inspect. Not {@code null} and must support
    *           {@link InputStream#mark(int) mark} and {@link InputStream#reset() reset}.
@@ -153,7 +153,7 @@ public final class TarStream {
    * @throws IllegalArgumentException Thrown if {@code in} is {@code null} or does not
    *         support mark and reset.
    */
-  public static boolean startsWithEndOfArchive(InputStream in) throws IOException {
+  public static boolean isEmptyArchive(InputStream in) throws IOException {
     requireMarkable(in);
     in.mark(END_OF_ARCHIVE_LENGTH);
     try {

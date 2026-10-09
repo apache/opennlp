@@ -290,11 +290,11 @@ public class TarStreamTest {
    * @throws IOException Thrown if reading the in-memory stream fails.
    */
   @Test
-  void testStartsWithEndOfArchiveDetectsAnEmptyArchiveAndKeepsPosition()
+  void testIsEmptyArchiveDetectsAnEmptyArchiveAndKeepsPosition()
       throws IOException {
     final InputStream in = new ByteArrayInputStream(new byte[TERMINATOR_SIZE]);
 
-    Assertions.assertTrue(TarStream.startsWithEndOfArchive(in));
+    Assertions.assertTrue(TarStream.isEmptyArchive(in));
     Assertions.assertEquals(TERMINATOR_SIZE, in.readAllBytes().length);
   }
 
@@ -306,17 +306,17 @@ public class TarStreamTest {
    * @throws IOException Thrown if reading the in-memory stream fails.
    */
   @ParameterizedTest(name = "{0}")
-  @MethodSource("nonEndOfArchiveContent")
-  void testStartsWithEndOfArchiveRejectsOtherContent(String description, byte[] content)
+  @MethodSource("notAnEmptyArchiveContent")
+  void testIsEmptyArchiveRejectsOtherContent(String description, byte[] content)
       throws IOException {
     Assertions.assertFalse(
-        TarStream.startsWithEndOfArchive(new ByteArrayInputStream(content)), description);
+        TarStream.isEmptyArchive(new ByteArrayInputStream(content)), description);
   }
 
   /**
-   * {@return content that is not the end of a tar archive, with a description}
+   * {@return content that is not an empty tar archive, with a description}
    */
-  private static Stream<Arguments> nonEndOfArchiveContent() {
+  private static Stream<Arguments> notAnEmptyArchiveContent() {
     final byte[] nonZeroSecondBlock = new byte[TERMINATOR_SIZE];
     nonZeroSecondBlock[TERMINATOR_SIZE - 1] = 1;
     return Stream.of(
@@ -327,7 +327,7 @@ public class TarStreamTest {
   }
 
   @Test
-  void testStartsWithEndOfArchiveRejectsUnusableStreams() {
+  void testIsEmptyArchiveRejectsUnusableStreams() {
     final InputStream notMarkable = new InputStream() {
       @Override
       public int read() {
@@ -336,9 +336,9 @@ public class TarStreamTest {
     };
     Assertions.assertAll(
         () -> Assertions.assertThrows(IllegalArgumentException.class,
-            () -> TarStream.startsWithEndOfArchive(null)),
+            () -> TarStream.isEmptyArchive(null)),
         () -> Assertions.assertThrows(IllegalArgumentException.class,
-            () -> TarStream.startsWithEndOfArchive(notMarkable)));
+            () -> TarStream.isEmptyArchive(notMarkable)));
   }
 
   @Test
