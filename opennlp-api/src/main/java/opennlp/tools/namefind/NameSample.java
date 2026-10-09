@@ -272,7 +272,7 @@ public class NameSample implements Sample {
   }
 
   /**
-   * Tests whether a token is a start tag, either {@code <START>} or {@code <START:type>}, where
+   * Checks whether a token is a start tag, either {@code <START>} or {@code <START:type>}, where
    * the possibly empty type contains neither {@code ':'}, {@code '>'} nor ASCII whitespace.
    *
    * @param token The token to test.
