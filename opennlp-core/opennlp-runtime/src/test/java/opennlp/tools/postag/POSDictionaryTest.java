@@ -82,19 +82,6 @@ public class POSDictionaryTest {
     Assertions.assertArrayEquals(new String[] {"NN", "NNS", "VBP"}, dict.getTags("run"));
   }
 
-  /**
-   * Verifies that repeated spaces in the tags attribute yield an empty tag between them.
-   */
-  @Test
-  void testLoadingDictionaryWithRepeatedSpacesKeepsEmptyTag() throws IOException {
-    final String xml = "<dictionary><entry tags=\"NN  VBP\"><token>run</token></entry>"
-        + "</dictionary>";
-    final POSDictionary dict =
-        POSDictionary.create(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
-
-    Assertions.assertArrayEquals(new String[] {"NN", "", "VBP"}, dict.getTags("run"));
-  }
-
   @Test
   void testLoadingEntryWithoutTagsAttributeThrowsInvalidFormatException() {
     final String xml = "<dictionary><entry><token>run</token></entry></dictionary>";

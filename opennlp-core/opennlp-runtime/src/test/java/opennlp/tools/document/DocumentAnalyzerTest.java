@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the {@link DocumentAnalyzer} pipeline over the adapter annotators, using the
- * deterministic components from {@link TestComponents} and a fixed-vocabulary tagger.
+ * deterministic components from {@link DocumentTestStubs} and a fixed-vocabulary tagger.
  * The point under test is the pipeline mechanics and span arithmetic, not model quality.
  */
 public class DocumentAnalyzerTest {
@@ -95,9 +95,9 @@ public class DocumentAnalyzerTest {
   @Test
   void testAdaptersNameThemselvesByClassName() {
     assertEquals("SentenceDetectorAnnotator",
-        new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER).toString());
+        new SentenceDetectorAnnotator(DocumentTestStubs.PERIOD_SPLITTER).toString());
     assertEquals("TokenizerAnnotator",
-        new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER).toString());
+        new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER).toString());
     assertEquals("POSTaggerAnnotator", new POSTaggerAnnotator(TAGGER).toString());
     assertEquals("NameFinderAnnotator", new NameFinderAnnotator(NO_NAMES).toString());
   }
@@ -105,8 +105,8 @@ public class DocumentAnalyzerTest {
   @Test
   void testPipelineProducesAlignedLayersInOriginalCoordinates() {
     final Document document = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
-        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
+        .add(new SentenceDetectorAnnotator(DocumentTestStubs.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER))
         .add(new POSTaggerAnnotator(TAGGER))
         .build()
         .analyze("the dog barks. she eats.");
@@ -136,8 +136,8 @@ public class DocumentAnalyzerTest {
   @ValueSource(strings = {"", "   "})
   void testEmptyAndBlankInputProduceEmptyLayers(String text) {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
-        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
+        .add(new SentenceDetectorAnnotator(DocumentTestStubs.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER))
         .add(new POSTaggerAnnotator(TAGGER))
         .add(new NameFinderAnnotator(NO_NAMES))
         .build();
@@ -156,7 +156,7 @@ public class DocumentAnalyzerTest {
    */
   @Test
   void testTokenizerHonorsPresentButEmptySentenceLayer() {
-    final Document document = new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER)
+    final Document document = new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER)
         .annotate(Document.of("the dog").with(Layers.SENTENCES, List.of()));
     assertTrue(document.layers().contains(Layers.TOKENS));
     assertTrue(document.get(Layers.TOKENS).isEmpty());
@@ -191,7 +191,7 @@ public class DocumentAnalyzerTest {
   @Test
   void testTokenizerWorksWithoutSentences() {
     final Document document = DocumentAnalyzer.builder()
-        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
+        .add(new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER))
         .build()
         .analyze("the dog");
     assertEquals(2, document.get(Layers.TOKENS).size());
@@ -220,8 +220,8 @@ public class DocumentAnalyzerTest {
   @Test
   void testAnnotatorAdaptersRejectNullDocuments() {
     final List<DocumentAnnotator> adapters = List.of(
-        new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER),
-        new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER),
+        new SentenceDetectorAnnotator(DocumentTestStubs.PERIOD_SPLITTER),
+        new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER),
         new POSTaggerAnnotator(TAGGER),
         new NameFinderAnnotator(NO_NAMES));
     for (final DocumentAnnotator adapter : adapters) {

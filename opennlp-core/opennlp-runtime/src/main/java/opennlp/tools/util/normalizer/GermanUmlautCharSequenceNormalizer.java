@@ -32,7 +32,7 @@ package opennlp.tools.util.normalizer;
  * (for example {@code a} + U+0308) is not a member and passes through unchanged, so apply NFC
  * composition first if the input may contain decomposed forms.</p>
  */
-public final class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer {
+public class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 5544134968448734502L;
 

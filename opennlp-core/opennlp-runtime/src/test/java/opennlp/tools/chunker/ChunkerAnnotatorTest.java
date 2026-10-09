@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
+import opennlp.tools.document.DocumentTestStubs;
 import opennlp.tools.document.Layers;
-import opennlp.tools.document.TestComponents;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 
@@ -91,7 +91,7 @@ public class ChunkerAnnotatorTest {
   /** Two sentences whose noun runs straddle neither sentence boundary. */
   private static Document twoSentences() {
     final String text = "Mary Jones leads Acme. She joined Acme Corp.";
-    final List<Annotation<String>> toks = TestComponents.tokens(text,
+    final List<Annotation<String>> toks = DocumentTestStubs.tokens(text,
         "Mary", "Jones", "leads", "Acme", ".", "She", "joined", "Acme", "Corp", ".");
     return Document.of(text)
         .with(Layers.SENTENCES, List.of(
@@ -151,7 +151,7 @@ public class ChunkerAnnotatorTest {
         () -> annotator.annotate(null));
     final Document untagged = Document.of("Mary.")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 5), "s")))
-        .with(Layers.TOKENS, TestComponents.tokens("Mary.", "Mary", "."));
+        .with(Layers.TOKENS, DocumentTestStubs.tokens("Mary.", "Mary", "."));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(untagged));
   }
@@ -159,7 +159,7 @@ public class ChunkerAnnotatorTest {
   @Test
   void testRejectsMisalignedTagLayer() {
     final String text = "Mary.";
-    final List<Annotation<String>> toks = TestComponents.tokens(text, "Mary", ".");
+    final List<Annotation<String>> toks = DocumentTestStubs.tokens(text, "Mary", ".");
     final Document document = Document.of(text)
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 5), "s")))
         .with(Layers.TOKENS, toks)

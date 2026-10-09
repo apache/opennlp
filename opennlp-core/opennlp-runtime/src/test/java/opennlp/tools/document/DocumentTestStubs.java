@@ -28,7 +28,7 @@ import opennlp.tools.util.Span;
  * Deterministic stand-in components shared by the document pipeline tests, so every
  * expected span in those tests follows directly from the definitions here.
  */
-public final class TestComponents {
+public final class DocumentTestStubs {
 
   /**
    * A deterministic sentence detector that ends a sentence after every period and
@@ -105,7 +105,7 @@ public final class TestComponents {
     return annotations;
   }
 
-  private TestComponents() {
+  private DocumentTestStubs() {
     // Not instantiated; this class provides shared test fixtures only.
   }
 }

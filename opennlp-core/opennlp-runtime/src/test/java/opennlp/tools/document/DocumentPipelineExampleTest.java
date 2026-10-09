@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * its spans in original text coordinates.
  *
  * <p>The wrapped components are the tiny deterministic stand-ins from
- * {@link TestComponents}, so every expected span and value below follows directly from
+ * {@link DocumentTestStubs}, so every expected span and value below follows directly from
  * the input text. The point under demonstration is how the layers connect, not the
  * quality of any single step.</p>
  */
@@ -154,8 +154,8 @@ public class DocumentPipelineExampleTest {
   @Test
   void testFullPipelineStory() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
-        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
+        .add(new SentenceDetectorAnnotator(DocumentTestStubs.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER))
         .add(new POSTaggerAnnotator(DICTIONARY_TAGGER))
         .add(new TokenLengthAnnotator())
         .build();
@@ -229,8 +229,8 @@ public class DocumentPipelineExampleTest {
   @Test
   void testAnalyzerIsReusableAcrossTexts() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
-        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
+        .add(new SentenceDetectorAnnotator(DocumentTestStubs.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(DocumentTestStubs.SPACE_TOKENIZER))
         .build();
 
     final Document first = analyzer.analyze("The dog barks.");

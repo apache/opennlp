@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.document.Annotation;
-import opennlp.tools.document.TestComponents;
+import opennlp.tools.document.DocumentTestStubs;
 import opennlp.tools.util.Span;
 
 /**
@@ -36,7 +36,7 @@ final class SingleSpaceTokens {
   }
 
   /**
-   * Builds a token layer from {@link TestComponents#SPACE_TOKENIZER}, each token valued
+   * Builds a token layer from {@link DocumentTestStubs#SPACE_TOKENIZER}, each token valued
    * with its covered text.
    *
    * @param text The text to split.
@@ -44,7 +44,7 @@ final class SingleSpaceTokens {
    */
   static List<Annotation<String>> tokens(String text) {
     final List<Annotation<String>> tokens = new ArrayList<>();
-    for (final Span span : TestComponents.SPACE_TOKENIZER.tokenizePos(text)) {
+    for (final Span span : DocumentTestStubs.SPACE_TOKENIZER.tokenizePos(text)) {
       tokens.add(new Annotation<>(span, text.substring(span.getStart(), span.getEnd())));
     }
     return tokens;

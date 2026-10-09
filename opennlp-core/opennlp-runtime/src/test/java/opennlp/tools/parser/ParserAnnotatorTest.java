@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
+import opennlp.tools.document.DocumentTestStubs;
 import opennlp.tools.document.Layers;
-import opennlp.tools.document.TestComponents;
 import opennlp.tools.parser.ParserAnnotator.Phrase;
 import opennlp.tools.util.Span;
 
@@ -82,7 +82,7 @@ public class ParserAnnotatorTest {
     final String text = "The dog  of Mary ran.";
     return Document.of(text)
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 21), "s")))
-        .with(Layers.TOKENS, TestComponents.tokens(text, "The", "dog", "of", "Mary", "ran", "."));
+        .with(Layers.TOKENS, DocumentTestStubs.tokens(text, "The", "dog", "of", "Mary", "ran", "."));
   }
 
   @Test
