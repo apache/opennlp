@@ -20,10 +20,9 @@ package opennlp.tools.util.normalizer;
  * A {@link CharSequenceNormalizer} that replaces unambiguous list-bullet characters with a space,
  * so a bullet acts as a token separator rather than sticking to the following word.
  *
- * <p>Membership is an O(1) {@link CharClass} lookup and scanning is a single cursor pass with no
- * regular expression. The middle dot ({@code U+00B7}) is deliberately <em>not</em> included,
- * because it is a letter in Catalan ({@code l..l}) and other orthographies; only characters that
- * are unambiguously list bullets are replaced.</p>
+ * <p>Membership is an O(1) {@link CharClass} lookup. The middle dot ({@code U+00B7}) is
+ * deliberately <em>not</em> included, because it is a letter in Catalan ({@code l..l}) and other
+ * orthographies; only characters that are unambiguously list bullets are replaced.</p>
  */
 public class BulletCharSequenceNormalizer implements OffsetAwareNormalizer {
 
@@ -44,11 +43,13 @@ public class BulletCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return BULLETS.normalize(text);
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     return BULLETS.normalizeAligned(text);

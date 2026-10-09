@@ -25,8 +25,7 @@ import opennlp.tools.util.StringUtil;
  * <p>It maps a code point when {@link Character#digit(int, int)} reports a value of {@code 0}-
  * {@code 9} in radix ten, that is, when the code point is a Unicode decimal digit. Other numeric
  * forms (Roman numerals, superscripts, circled numbers, fractions) are not decimal digits and are
- * left unchanged. Scanning is a single O(1)-per-code-point cursor pass with no regular
- * expression.</p>
+ * left unchanged.</p>
  */
 public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
 

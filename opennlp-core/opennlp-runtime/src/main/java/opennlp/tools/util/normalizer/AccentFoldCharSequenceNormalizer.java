@@ -37,9 +37,6 @@ import opennlp.tools.util.ParamChecks;
  * enabled (the default) these are mapped to an ASCII approximation. Folding is a recall
  * optimization, not a linguistically correct transform, so it is intended for a matching
  * token rather than for display or language-specific analysis.</p>
- *
- * <p>Scanning is a single cursor pass over the decomposed text; no regular expression is used, and
- * no global {@code \p{Mn}} strip is performed.</p>
  */
 public class AccentFoldCharSequenceNormalizer implements CharSequenceNormalizer {
 

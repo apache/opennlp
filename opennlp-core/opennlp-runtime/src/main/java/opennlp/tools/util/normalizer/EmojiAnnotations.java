@@ -74,10 +74,10 @@ public final class EmojiAnnotations {
    * @param symbol The code point sequence of one symbol, for example one {@link Term#original()}
    *               token. U+FE0F presentation selectors are ignored. Must not be {@code null}.
    * @return The record, or empty when the bundled data does not annotate the symbol.
-   * @throws IllegalArgumentException if {@code symbol} is {@code null}, or if the bundled data
-   *     is malformed.
-   * @throws IllegalStateException if the bundled data resource is missing.
-   * @throws UncheckedIOException if the bundled data resource cannot be read.
+   * @throws IllegalArgumentException Thrown if {@code symbol} is {@code null}, or if the bundled
+   *     data is malformed.
+   * @throws IllegalStateException Thrown if the bundled data resource is missing.
+   * @throws UncheckedIOException Thrown if the bundled data resource cannot be read.
    */
   public static Optional<EmojiAnnotation> lookup(CharSequence symbol) {
     if (symbol == null) {

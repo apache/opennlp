@@ -38,8 +38,11 @@ abstract class DelegatingStemmer<P> implements Stemmer {
   protected final OwnerOrPerThreadState<P> state;
 
   /**
-   * @param init    Mints the per-thread payload on first use by the owner and by each extra thread.
-   * @param cleanup Releases a per-thread payload when its thread clears state.
+   * Creates the payload holder and the owner payload.
+   *
+   * @param init    Creates a payload: once for the owner during construction, and once for each
+   *     other thread on its first call.
+   * @param cleanup Resets the owner payload when the owner thread clears its state.
    */
   DelegatingStemmer(Supplier<P> init, Consumer<P> cleanup) {
     this.state = new OwnerOrPerThreadState<>(init, cleanup);
@@ -51,7 +54,7 @@ abstract class DelegatingStemmer<P> implements Stemmer {
    *
    * @param factory The factory to validate. Must not be {@code null}.
    * @return {@code factory}.
-   * @throws IllegalArgumentException if {@code factory} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code factory} is {@code null}.
    */
   static StemmerFactory requireFactory(StemmerFactory factory) {
     ParamChecks.requireNonNullArg(factory, "factory");
@@ -59,9 +62,10 @@ abstract class DelegatingStemmer<P> implements Stemmer {
   }
 
   /**
-   * Removes this thread's payload to prevent classloader leaks in container environments. Call
-   * when the thread is returned to a pool or the stemmer is no longer needed, mirroring
-   * {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
+   * Clears the calling thread's state to prevent classloader leaks in container environments: a
+   * per-thread payload is removed, and the owner payload is reset but stays referenced by this
+   * instance. Call when the thread is returned to a pool or the stemmer is no longer needed,
+   * mirroring {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
    */
   public void clearThreadLocalState() {
     state.clearForCurrentThread();

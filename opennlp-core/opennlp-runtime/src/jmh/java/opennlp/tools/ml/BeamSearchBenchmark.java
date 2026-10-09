@@ -48,15 +48,8 @@ import opennlp.tools.util.SequenceValidator;
  * JMH benchmark for {@link BeamSearch} on long input sequences.
  * <p>
  * One op = one {@code bestSequence} call on a synthetic token sequence of
- * {@code sequenceLength} tokens. Long sequences are what expose the quadratic
- * per-candidate outcome-list copying removed with OPENNLP-1903; sentences of
- * 5-10 tokens, as used by the ME benchmarks, show no measurable difference.
- * Only public API that predates OPENNLP-1903 is used
- * ({@code BeamSearch(int, MaxentModel, int)} and
- * {@code bestSequence(T[], Object[], BeamSearchContextGenerator, SequenceValidator)}),
- * so the same compiled class exercises both implementations: to produce a
- * baseline, place an {@code opennlp-ml-commons} jar built before OPENNLP-1903
- * on the classpath ahead of the freshly built classes and rerun.
+ * {@code sequenceLength} tokens, decoded with a seeded model over a fixed outcome set.
+ * Long sequences measure how decoding cost grows with sequence length.
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)

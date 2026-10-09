@@ -38,6 +38,7 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
  * manifest.</p>
  *
  * @see EmojiAnnotator
+ * @since 3.0.0
  */
 public class EmojiFeatureGenerator implements FeatureGenerator {
 
@@ -54,7 +55,7 @@ public class EmojiFeatureGenerator implements FeatureGenerator {
    * Instantiates a generator over a configured annotator, for example one with a gazetteer join.
    *
    * @param annotator The annotator to use. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code annotator} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code annotator} is {@code null}.
    */
   public EmojiFeatureGenerator(EmojiAnnotator annotator) {
     if (annotator == null) {
@@ -66,7 +67,7 @@ public class EmojiFeatureGenerator implements FeatureGenerator {
   /**
    * {@inheritDoc}
    *
-   * @throws IllegalArgumentException if {@code text} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   @Override
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation) {

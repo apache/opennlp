@@ -26,7 +26,7 @@ package opennlp.tools.util.normalizer;
  * become a single space, yet a blank line between paragraphs survives as one newline rather than
  * being flattened into the surrounding text. It reuses the cursor based
  * {@link CharClass#collapsePreserving(CharSequence, CodePointSet, int)} engine, so it recognizes the
- * full Unicode {@code White_Space} set with no regular expression.</p>
+ * full Unicode {@code White_Space} set.</p>
  */
 public class LineBreakPreservingWhitespaceCharSequenceNormalizer implements OffsetAwareNormalizer {
 

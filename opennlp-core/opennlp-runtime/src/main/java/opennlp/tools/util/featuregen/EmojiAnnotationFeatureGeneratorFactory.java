@@ -28,6 +28,7 @@ import opennlp.tools.util.InvalidFormatException;
  * }</pre>
  *
  * @see EmojiAnnotationFeatureGenerator
+ * @since 3.0.0
  */
 public class EmojiAnnotationFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {

@@ -27,13 +27,12 @@ import opennlp.tools.util.LanguageCodeValidator;
 import opennlp.tools.util.ParamChecks;
 
 /**
- * A registry of {@link NormalizationProfile}s by language, with detection-based fallback. This is
- * the language dispatch the design note calls for: pick the profile for a requested language, or
- * detect the language with a {@link LanguageDetector} when it is unspecified. The covered languages
- * are the Snowball stemmer algorithms that name a natural language -- every
- * {@link SnowballStemmer.ALGORITHM} except {@code PORTER}, which is an English-only algorithm
- * variant rather than a distinct language. Several codes can map to one algorithm (the three
- * Norwegian written standards all use {@code NORWEGIAN}).
+ * A registry of {@link NormalizationProfile}s by language, with detection-based fallback: pick the
+ * profile for a requested language, or detect the language with a {@link LanguageDetector} when it
+ * is unspecified. The covered languages are the Snowball stemmer algorithms that name a natural
+ * language -- every {@link SnowballStemmer.ALGORITHM} except {@code PORTER}, which is an
+ * English-only algorithm variant rather than a distinct language. Several codes can map to one
+ * algorithm (the three Norwegian written standards all use {@code NORWEGIAN}).
  *
  * <p>Profiles are keyed by ISO 639-3 code (what {@link LanguageDetector} produces);
  * {@link #forLanguage(String)} also accepts ISO 639-1 two-letter codes and the ISO 639-2
@@ -48,9 +47,9 @@ public final class NormalizationProfiles {
 
   private static Map<String, NormalizationProfile> build() {
     final Map<String, NormalizationProfile> map = new HashMap<>();
-    // The generic accent fold is used for English and the major Romance languages, German uses its
-    // own ae/oe/ue/ss fold, and folding is disabled elsewhere (Nordic, non-Latin) where diacritics
-    // mark distinct letters.
+    // The generic accent fold is used for English, Catalan, French, Italian, Portuguese and
+    // Spanish, German uses its own ae/oe/ue/ss fold, and folding is disabled for all other
+    // languages.
     final CharSequenceNormalizer latin = AccentFoldCharSequenceNormalizer.getInstance();
     final CharSequenceNormalizer german = GermanUmlautCharSequenceNormalizer.getInstance();
     add(map, "ara", SnowballStemmer.ALGORITHM.ARABIC, null);

@@ -35,7 +35,8 @@ import java.util.OptionalInt;
  *
  * @param symbol     The annotated code point sequence, without the U+FE0F presentation selector.
  * @param attributes The attribute values keyed by attribute name ({@link #NAME},
- *                   {@link #SENTIMENT}, {@link #ENTITY_TYPE}, {@link #CATEGORY}).
+ *                   {@link #SENTIMENT}, {@link #ENTITY_TYPE}, {@link #CATEGORY},
+ *                   {@link #ISO_REGION}).
  */
 public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
 
@@ -69,6 +70,12 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
    */
   public record Value(String value, String source, String notes) {
 
+    /**
+     * Validates the components.
+     *
+     * @throws IllegalArgumentException Thrown if {@code value} or {@code source} is {@code null}
+     *     or empty, or if {@code notes} is {@code null}.
+     */
     public Value {
       if (value == null || value.isEmpty()) {
         throw new IllegalArgumentException("Value must not be null or empty");
@@ -88,7 +95,7 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
    * @param symbol     The annotated code point sequence. Must not be {@code null} or empty.
    * @param attributes The attribute values keyed by attribute name. Must not be {@code null} or
    *                   contain {@code null} keys or values; it is defensively copied.
-   * @throws IllegalArgumentException if {@code symbol} is {@code null} or empty, or if
+   * @throws IllegalArgumentException Thrown if {@code symbol} is {@code null} or empty, or if
    *     {@code attributes} is {@code null} or contains a {@code null} key or value.
    */
   public EmojiAnnotation {
@@ -112,7 +119,7 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
    *
    * @param name The attribute name, for example {@link #NAME}. Must not be {@code null}.
    * @return The value, or empty when this record does not carry the attribute.
-   * @throws IllegalArgumentException if {@code name} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code name} is {@code null}.
    */
   public Optional<Value> attribute(String name) {
     if (name == null) {
@@ -141,7 +148,7 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
   /**
    * {@return the project-authored coarse sentiment score in -2..2, or empty when not annotated}
    *
-   * @throws IllegalStateException if the stored value is not an integer, which cannot happen for
+   * @throws IllegalStateException Thrown if the stored value is not an integer, which cannot happen for
    *     records loaded from the bundled data (the loader validates it).
    */
   public OptionalInt sentiment() {
@@ -160,7 +167,7 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
   /**
    * {@return the coarse entity type, or empty when not annotated}
    *
-   * @throws IllegalStateException if the stored value is not an {@link EmojiEntityType} constant,
+   * @throws IllegalStateException Thrown if the stored value is not an {@link EmojiEntityType} constant,
    *     which cannot happen for records loaded from the bundled data (the loader validates it).
    */
   public Optional<EmojiEntityType> entityType() {
@@ -179,7 +186,7 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
   /**
    * {@return the document-category hint, or empty when not annotated}
    *
-   * @throws IllegalStateException if the stored value is not an {@link EmojiCategory} constant,
+   * @throws IllegalStateException Thrown if the stored value is not an {@link EmojiCategory} constant,
    *     which cannot happen for records loaded from the bundled data (the loader validates it).
    */
   public Optional<EmojiCategory> category() {

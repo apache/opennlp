@@ -323,8 +323,8 @@ final class EmojiEmoticons {
   /**
    * {@return the tables parsed from the bundled {@code emoji-emoticons.txt} resource}
    *
-   * @throws IllegalStateException if the resource is missing.
-   * @throws UncheckedIOException if the resource cannot be read.
+   * @throws IllegalStateException Thrown if the resource is missing.
+   * @throws UncheckedIOException Thrown if the resource cannot be read.
    */
   private static Tables loadBundled() {
     return BundledUnicodeData.load(EmojiEmoticons.class, RESOURCE, "emoji/emoticon fold",
@@ -340,8 +340,8 @@ final class EmojiEmoticons {
    *
    * @param in the stream to parse. Must not be {@code null}.
    * @return the two direction tables.
-   * @throws IOException if the stream cannot be read.
-   * @throws IllegalArgumentException if the data is malformed.
+   * @throws IOException Thrown if the stream cannot be read.
+   * @throws IllegalArgumentException Thrown if the data is malformed.
    */
   static Tables parse(InputStream in) throws IOException {
     ParamChecks.requireNonNullArg(in, "in");
@@ -411,7 +411,7 @@ final class EmojiEmoticons {
    * @param lineNumber    the line number, for the error message.
    * @param content       the full line, for the error message.
    * @return the decoded sequence.
-   * @throws IllegalArgumentException if the field is empty, not valid hexadecimal, or names a
+   * @throws IllegalArgumentException Thrown if the field is empty, not valid hexadecimal, or names a
    *     value outside {@code [0, U+10FFFF]}.
    */
   private static String decode(String hexCodePoints, int lineNumber, String content) {

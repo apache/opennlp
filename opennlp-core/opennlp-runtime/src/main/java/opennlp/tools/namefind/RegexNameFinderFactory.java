@@ -27,9 +27,6 @@ import opennlp.tools.util.ParamChecks;
  *
  * Returns a {@link RegexNameFinder} based on a selection of
  * defaults or a configuration and a selection of defaults.
- * <p>
- * Please note: RegEx is not allowed in the processing path of OpenNLP.
- * However, a RegEx step is an obvious exception.
  */
 public class RegexNameFinderFactory {
 

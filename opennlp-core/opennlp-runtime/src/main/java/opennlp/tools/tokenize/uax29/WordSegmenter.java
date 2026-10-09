@@ -29,11 +29,11 @@ import opennlp.tools.util.Span;
  * (<a href="https://www.unicode.org/reports/tr29/">UAX #29</a>), rules WB1 through WB999.
  *
  * <p>The implementation is a single forward cursor pass with O(1) {@link WordBreakProperty}
- * lookups and no regular expression. It decodes each code point once, keeps only a constant amount
- * of state, and allocates nothing per character. It implements the "ignore" semantics of WB4 (a
- * base character absorbs following {@code Extend}, {@code Format}, and {@code ZWJ}), the look-ahead
- * rules WB6/WB7/WB7b/WB12, the Hebrew quote rules WB7a-WB7c, the emoji zero-width-joiner rule WB3c,
- * and regional-indicator pairing WB15/WB16. The look-ahead for the WB6/WB7b/WB12 rules is resolved
+ * lookups. It decodes each code point once, keeps only a constant amount of state, and allocates
+ * nothing per character. It implements the "ignore" semantics of WB4 (a base character absorbs
+ * following {@code Extend}, {@code Format}, and {@code ZWJ}), the look-ahead rules
+ * WB6/WB7/WB7b/WB12, the Hebrew quote rules WB7a-WB7c, the emoji zero-width-joiner rule WB3c, and
+ * regional-indicator pairing WB15/WB16. The look-ahead for the WB6/WB7b/WB12 rules is resolved
  * lazily and only at mid-word punctuation, so the common case never scans ahead.</p>
  *
  * <p>{@link #forEachSegment(CharSequence, SegmentConsumer)} streams the segments with no

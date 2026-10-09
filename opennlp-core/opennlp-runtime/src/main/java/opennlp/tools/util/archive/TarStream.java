@@ -29,7 +29,11 @@ import opennlp.tools.commons.Internal;
 import opennlp.tools.util.ParamChecks;
 
 /**
- * A forward-only reader for classic v7, POSIX ustar, GNU, and pax tar streams.
+ * A forward-only reader for classic v7,
+ * <a href="https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html">POSIX ustar</a>,
+ * <a href="https://www.gnu.org/software/tar/manual/html_node/Standard.html">GNU</a>, and
+ * <a href="https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html">pax</a> tar
+ * streams.
  * {@link #next()} advances to the following entry and {@link #entryStream()} exposes
  * only the current entry's bytes.
  *
@@ -425,22 +429,22 @@ public final class TarStream {
   }
 
   /**
-   * @return The current entry's name as stored in the archive. Not {@code null}
-   *         after a successful {@link #next()}.
+   * {@return the current entry's name as stored in the archive; not {@code null} after a
+   * successful {@link #next()}}
    */
   public String name() {
     return name;
   }
 
   /**
-   * @return The current entry's size in bytes.
+   * {@return the current entry's size in bytes}
    */
   public long size() {
     return size;
   }
 
   /**
-   * @return {@code true} if the current entry is a regular file.
+   * {@return {@code true} if the current entry is a regular file}
    */
   public boolean isFile() {
     return type == TYPE_REGULAR_FILE || type == TYPE_REGULAR_FILE_CLASSIC;

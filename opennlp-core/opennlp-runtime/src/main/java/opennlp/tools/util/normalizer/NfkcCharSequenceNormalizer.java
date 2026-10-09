@@ -22,7 +22,7 @@ import opennlp.tools.util.ParamChecks;
 
 /**
  * A {@link CharSequenceNormalizer} that applies Unicode Normalization Form KC (compatibility
- * composition, UAX #15).
+ * composition, <a href="https://www.unicode.org/reports/tr15/">UAX #15</a>).
  *
  * <p>NFKC folds compatibility variants to their canonical form: fullwidth and halfwidth letters,
  * the {@code U+FB01} ligature to {@code fi}, and super/subscript digits to plain digits. It is

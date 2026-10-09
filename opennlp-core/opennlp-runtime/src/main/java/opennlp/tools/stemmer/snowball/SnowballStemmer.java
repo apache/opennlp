@@ -104,7 +104,8 @@ public class SnowballStemmer implements Stemmer {
   }
 
   /**
-   * Removes this thread's engine to prevent classloader leaks in container environments. Call
+   * Clears the calling thread's state to prevent classloader leaks in container environments: a
+   * per-thread engine is removed, and the owner engine stays referenced by this instance. Call
    * when the thread is returned to a pool or the stemmer is no longer needed, mirroring
    * {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
    */

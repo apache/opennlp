@@ -28,14 +28,14 @@ import opennlp.tools.util.ParamChecks;
  * diacritic fold appropriate for that language (if any).
  *
  * <p>The {@code accentFold} normalizer is the language's diacritic transform for a matching form, or
- * {@code null} when folding is not appropriate. It is the generic
- * {@link AccentFoldCharSequenceNormalizer} for English and the major Romance languages (where
- * accented letters are matching variants of their base letter), the German-specific
- * {@link GermanUmlautCharSequenceNormalizer} (a-umlaut to {@code ae}, eszett to {@code ss}, ...) for
- * German, and {@code null} where diacritics mark distinct letters (the Nordic languages and the
- * non-Latin scripts), because folding there is language-wrong. This is a search-recall choice, not a
- * statement of linguistic correctness; callers can build a {@link TermAnalyzer} directly to
- * override it.</p>
+ * {@code null} when folding is not appropriate. In the profiles of {@link NormalizationProfiles} it
+ * is the generic {@link AccentFoldCharSequenceNormalizer} for English, Catalan, French, Italian,
+ * Portuguese and Spanish (where accented letters are matching variants of their base letter), the
+ * German-specific {@link GermanUmlautCharSequenceNormalizer} (a-umlaut to {@code ae}, eszett to
+ * {@code ss}, ...) for German, and {@code null} for every other language, including those where
+ * diacritics mark distinct letters (such as the Nordic languages) and the non-Latin scripts. This
+ * is a search-recall choice, not a statement of linguistic correctness; callers can build a
+ * {@link TermAnalyzer} directly to override it.</p>
  *
  * @param language         The language, as an ISO 639-3 code (for example {@code "eng"}). Must
  *                         not be {@code null} or blank.

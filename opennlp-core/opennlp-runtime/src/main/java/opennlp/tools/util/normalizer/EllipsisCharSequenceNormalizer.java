@@ -21,8 +21,7 @@ package opennlp.tools.util.normalizer;
  * the horizontal ellipsis ({@code U+2026}) to {@code "..."} and the two-dot leader
  * ({@code U+2025}) to {@code ".."}.
  *
- * <p>Scanning is a single O(1)-per-code-point cursor pass with no regular expression. ASCII dot
- * runs are left unchanged.</p>
+ * <p>ASCII dot runs are left unchanged.</p>
  */
 public class EllipsisCharSequenceNormalizer implements OffsetAwareNormalizer {
 
@@ -36,11 +35,13 @@ public class EllipsisCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return CharClass.substitute(text, EllipsisCharSequenceNormalizer::expansion);
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     return CharClass.substituteAligned(text, EllipsisCharSequenceNormalizer::expansion);

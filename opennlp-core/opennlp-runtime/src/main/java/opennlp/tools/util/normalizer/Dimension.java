@@ -49,7 +49,10 @@ public enum Dimension {
   /** Case folding; lossy and locale sensitive. */
   CASE_FOLD(CaseFoldCharSequenceNormalizer::getInstance),
 
-  /** Unicode full case folding (UTS #21); lossy and expanding (sharp s to ss, the ligatures). */
+  /**
+   * Unicode full case folding (<a href="https://www.unicode.org/reports/tr21/">UTS #21</a>);
+   * lossy and expanding (sharp s to ss, the ligatures).
+   */
   FULL_CASE_FOLD(FullCaseFoldCharSequenceNormalizer::getInstance),
 
   /** Diacritic and accent folding; lossy, script gated, and language-wrong for some languages. */
@@ -58,7 +61,10 @@ public enum Dimension {
   /** Emoji folded to ASCII emoticons where a mapping exists; lossy, for matching only. */
   EMOJI_FOLD(EmojiToEmoticonCharSequenceNormalizer::getInstance),
 
-  /** Confusable (homoglyph) skeleton folding per UTS #39; lossy, for matching only. */
+  /**
+   * Confusable (homoglyph) skeleton folding per
+   * <a href="https://www.unicode.org/reports/tr39/">UTS #39</a>; lossy, for matching only.
+   */
   CONFUSABLE_FOLD(ConfusableSkeletonCharSequenceNormalizer::getInstance),
 
   /** Stemming through a configured {@link opennlp.tools.stemmer.Stemmer}. */

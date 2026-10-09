@@ -25,8 +25,7 @@ package opennlp.tools.util.normalizer;
  * <p>This is the form wanted before sentence detection on Gutenberg-style or other fixed-width
  * plain text: intra-paragraph line wraps become spaces, blank-line paragraph boundaries survive as
  * newlines. It reuses the cursor based {@link CharClass#collapseParagraphPreserving(CharSequence,
- * CodePointSet, int)} engine, so it recognizes the full Unicode {@code White_Space} set with no
- * regular expression.</p>
+ * CodePointSet, int)} engine, so it recognizes the full Unicode {@code White_Space} set.</p>
  *
  * <p>For display-oriented text where every line break should survive, use
  * {@link LineBreakPreservingWhitespaceCharSequenceNormalizer} instead. For raw markdown with lists,

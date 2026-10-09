@@ -38,6 +38,7 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
  *
  * @see EmojiSentimentFactory
  * @see EmojiAnnotator
+ * @since 3.0.0
  */
 public class EmojiSentimentContextGenerator extends SentimentContextGenerator {
 
@@ -55,7 +56,7 @@ public class EmojiSentimentContextGenerator extends SentimentContextGenerator {
    * gazetteer join.
    *
    * @param annotator The annotator to use. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code annotator} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code annotator} is {@code null}.
    */
   public EmojiSentimentContextGenerator(EmojiAnnotator annotator) {
     if (annotator == null) {
@@ -70,7 +71,7 @@ public class EmojiSentimentContextGenerator extends SentimentContextGenerator {
    * <p>Appends the emoji annotation features of every annotated token to the default token
    * context.</p>
    *
-   * @throws IllegalArgumentException if {@code text} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   @Override
   public String[] getContext(String[] text) {

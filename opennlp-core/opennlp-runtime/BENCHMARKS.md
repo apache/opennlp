@@ -131,6 +131,18 @@ cache, so the multiplier only applies to repeats within one task;
 workloads that stem a handful of words per task should expect
 uncached-level throughput there.
 
+### BeamSearch on long sequences
+
+`BeamSearchBenchmark` (in `opennlp.tools.ml`) measures one
+`bestSequence` call per op on a synthetic sequence of
+`sequenceLength` tokens. It uses only the
+`BeamSearch(int, MaxentModel, int)` constructor and the
+`bestSequence(T[], Object[], BeamSearchContextGenerator, SequenceValidator)`
+method, so the same compiled class runs against other
+`opennlp-ml-commons` builds. To get a baseline, place the
+`opennlp-ml-commons` jar to compare against on the classpath ahead of
+the freshly built classes and rerun.
+
 ### POSTagger cache impact
 
 The `POSTaggerMEBenchmark` uses `@Param({"0", "3"})` for cache

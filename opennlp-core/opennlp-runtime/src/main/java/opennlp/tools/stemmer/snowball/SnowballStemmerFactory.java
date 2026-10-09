@@ -40,7 +40,7 @@ public class SnowballStemmerFactory implements StemmerFactory {
    * Creates a factory with {@code repeat = 1}.
    *
    * @param algorithm The Snowball algorithm. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code algorithm} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code algorithm} is {@code null}.
    */
   public SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm) {
     this(algorithm, 1);
@@ -51,7 +51,7 @@ public class SnowballStemmerFactory implements StemmerFactory {
    *
    * @param algorithm The Snowball algorithm. Must not be {@code null}.
    * @param repeat    How many times to apply the stemmer per word; must be positive.
-   * @throws IllegalArgumentException if {@code algorithm} is {@code null} or {@code repeat}
+   * @throws IllegalArgumentException Thrown if {@code algorithm} is {@code null} or {@code repeat}
    *     is not positive.
    */
   public SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int repeat) {
@@ -90,8 +90,6 @@ public class SnowballStemmerFactory implements StemmerFactory {
 
     /**
      * {@inheritDoc}
-     *
-     * @throws IllegalArgumentException if {@code word} is {@code null}.
      */
     @Override
     public CharSequence stem(CharSequence word) {
