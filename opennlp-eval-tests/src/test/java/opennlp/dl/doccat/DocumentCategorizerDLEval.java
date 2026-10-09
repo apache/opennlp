@@ -171,7 +171,8 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
       // distribution.
       final IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, () ->
           documentCategorizerDL.categorize(new String[] {"hello world"}));
-      Assertions.assertTrue(e.getMessage().contains("document classification inference"));
+      Assertions.assertTrue(e.getMessage().startsWith("Unable to run the ONNX model: "),
+          e.getMessage());
 
       // The dependent API must not mask that inference failure with all-zero scores.
       Assertions.assertThrows(IllegalStateException.class, () ->
