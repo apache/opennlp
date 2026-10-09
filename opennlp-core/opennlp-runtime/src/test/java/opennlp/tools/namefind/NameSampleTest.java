@@ -24,9 +24,13 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -300,6 +304,69 @@ public class NameSampleTest {
 
   public static NameSample createPredSample() {
     return createSimpleNameSample(false);
+  }
+
+  /**
+   * The regular expression that matched start tags before 3.0.0. The tests below assert that
+   * it agrees with the current parser on every input.
+   */
+  private static final Pattern START_TAG_ORACLE = Pattern.compile("<START(:([^:>\\s]*))?>");
+
+  /**
+   * Checks that a valid start tag opens a name of the given type. A tag without a type uses
+   * the default type passed to the parser.
+   *
+   * @param tag The start tag.
+   * @param expectedType The expected name type.
+   * @throws IOException Thrown if parsing fails.
+   */
+  @ParameterizedTest
+  @CsvSource(delimiter = '|', value = {
+      "<START>|fallback",
+      "<START:person>|person",
+      "<START:type-1>|type-1",
+      "<START:NP-SBJ=2>|NP-SBJ=2",
+      "<START:a.b_c/d;e,f&g%h$i>|a.b_c/d;e,f&g%h$i",
+      "<START:a\u001Cb>|a\u001Cb",
+      "<START:\u00E9t\u00E9>|\u00E9t\u00E9",
+      "<START:\uD83D\uDE00>|\uD83D\uDE00"})
+  void testValidStartTagOpensName(String tag, String expectedType) throws IOException {
+    Assertions.assertTrue(START_TAG_ORACLE.matcher(tag).matches());
+
+    NameSample sample = NameSample.parse(tag + " word <END>", "fallback", false);
+    Assertions.assertArrayEquals(new String[] {"word"}, sample.getSentence());
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1, expectedType)}, sample.getNames());
+  }
+
+  /**
+   * Checks that a start tag with an empty type is rejected.
+   */
+  @Test
+  void testStartTagWithEmptyTypeIsRejected() {
+    Assertions.assertTrue(START_TAG_ORACLE.matcher("<START:>").matches());
+
+    Assertions.assertThrows(IOException.class,
+        () -> NameSample.parse("<START:> word <END>", false));
+  }
+
+  /**
+   * Checks that a token which is not a valid start tag is kept as an ordinary token and does
+   * not open a name.
+   *
+   * @param token The token that resembles a start tag.
+   * @throws IOException Thrown if parsing fails.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "<START:a:b>", "<START::>", "<START:a>b>", "<START:a>>", "<START>>", "<START>a>",
+      "<START", "<START:", "<START:person", "START:person>", "<start:person>", "<STARTX>",
+      "<START;person>", "x<START>", "<START:person>x", "<END:x>"})
+  void testInvalidStartTagIsKeptAsToken(String token) throws IOException {
+    Assertions.assertFalse(START_TAG_ORACLE.matcher(token).matches());
+
+    NameSample sample = NameSample.parse(token + " word", false);
+    Assertions.assertArrayEquals(new String[] {token, "word"}, sample.getSentence());
+    Assertions.assertEquals(0, sample.getNames().length);
   }
 
   @Test

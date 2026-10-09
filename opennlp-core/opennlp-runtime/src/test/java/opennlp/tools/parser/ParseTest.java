@@ -17,8 +17,17 @@
 
 package opennlp.tools.parser;
 
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -175,5 +184,177 @@ public class ParseTest {
     Assertions.assertEquals("Hello", p.getText());
     Assertions.assertEquals(1, p.getChildren().length);
     Assertions.assertEquals(new Span(0, 5), p.getChildren()[0].getSpan());
+  }
+
+  /**
+   * Reference expressions for the constituent label, the function tag and the token of a
+   * tree-bank constituent before 3.0.0; the constituent tests below assert that they agree
+   * with the current parser.
+   */
+  private static final Pattern TYPE_ORACLE = Pattern.compile("^([^ =-]+)");
+  private static final Pattern FUNCTION_TAG_ORACLE = Pattern.compile("^[^ =-]+-([^ =-]+)");
+  private static final Pattern TOKEN_ORACLE = Pattern.compile("^[^ ()]+ ([^ ()]+)\\s*\\)");
+
+  private static final Map<String, String> BRACKETS = Map.of("-LRB-", "(", "-RRB-", ")",
+      "-LCB-", "{", "-RCB-", "}", "-LSB-", "[", "-RSB-", "]");
+
+  /**
+   * Supplies constituents with a valid label: the input after the opening parenthesis, the
+   * expected label without and with function tags, and the expected token.
+   *
+   * @return The constituents and their expected label and token.
+   */
+  private static Stream<Arguments> constituentLabels() {
+    return Stream.of(
+        Arguments.of("NN word)", "NN", "NN", "word"),
+        Arguments.of("NP-SBJ word)", "NP", "NP-SBJ", "word"),
+        Arguments.of("NP-SBJ=2 word)", "NP", "NP-SBJ", "word"),
+        Arguments.of("NP-SBJ-1 word)", "NP", "NP-SBJ", "word"),
+        Arguments.of("NP-SBJ-TMP=3 word)", "NP", "NP-SBJ", "word"),
+        Arguments.of("NP=2 word)", "NP", "NP", "word"),
+        Arguments.of("NP--X word)", "NP", "NP", "word"),
+        Arguments.of("NP- word)", "NP", "NP", "word"),
+        Arguments.of("PRP$ her)", "PRP$", "PRP$", "her"),
+        Arguments.of("-NONE- *T*-1)", "-NONE-", "-NONE-", "*T*-1"),
+        Arguments.of("-LRB- -LRB-)", "-LRB-", "-LRB-", "("),
+        Arguments.of("-RRB- -RRB-)", "-RRB-", "-RRB-", ")"),
+        Arguments.of("-LCB- -LCB-)", "-LCB-", "-LCB-", "{"),
+        Arguments.of("-RSB- -RSB-)", "-RSB-", "-RSB-", "]"),
+        Arguments.of(". .)", ".", ".", "."),
+        Arguments.of(", ,)", ",", ",", ","),
+        Arguments.of("NN a=b-c)", "NN", "NN", "a=b-c"));
+  }
+
+  /**
+   * Checks the label and token of a valid constituent, without and with function tags.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   * @param type The expected label without function tags.
+   * @param typeWithFunctionTag The expected label with function tags.
+   * @param token The expected token.
+   */
+  @ParameterizedTest
+  @MethodSource("constituentLabels")
+  void testConstituentLabel(String rest, String type, String typeWithFunctionTag, String token) {
+    Assertions.assertEquals(type, oracleType(rest, false));
+    Assertions.assertEquals(typeWithFunctionTag, oracleType(rest, true));
+
+    assertConstituent(rest, false, type, token);
+    assertConstituent(rest, true, typeWithFunctionTag, token);
+  }
+
+  /**
+   * Supplies constituents whose token is followed by whitespace or contains non-ASCII
+   * characters: the input after the opening parenthesis and the expected token. Only ASCII
+   * whitespace between the token and the closing parenthesis is skipped.
+   *
+   * @return The constituents and their expected token.
+   */
+  private static Stream<Arguments> constituentTokens() {
+    return Stream.of(
+        Arguments.of("NN word )", "word"),
+        Arguments.of("NN word   )", "word"),
+        Arguments.of("NN word \t)", "word"),
+        Arguments.of("NN word \u000B\f\r\n)", "word"),
+        Arguments.of("NN word\t)", "word\t"),
+        Arguments.of("NN word )", "word "),
+        Arguments.of("NN été)", "été"),
+        Arguments.of("NN 😀)", "😀"));
+  }
+
+  /**
+   * Checks the token of a constituent whose token ends in whitespace or contains non-ASCII
+   * characters.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   * @param token The expected token.
+   */
+  @ParameterizedTest
+  @MethodSource("constituentTokens")
+  void testConstituentToken(String rest, String token) {
+    Assertions.assertEquals(token, oracleToken(rest));
+
+    assertConstituent(rest, false, "NN", token);
+    assertConstituent(rest, true, "NN", token);
+  }
+
+  /**
+   * Checks that an invalid constituent yields no node, without and with function tags.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "NN word  )", "NN word \u001C)", "NN word x)", "NN  word)", "NN)", "NN word",
+      "NN word ", "NN ", "NN"})
+  void testInvalidConstituentYieldsNoNode(String rest) {
+    Assertions.assertNull(oracleToken(rest));
+
+    for (boolean functionTags : new boolean[] {false, true}) {
+      Parse.useFunctionTags(functionTags);
+      try {
+        Assertions.assertEquals(0, Parse.parseParse("(" + rest).getChildren().length, rest);
+      } finally {
+        Parse.useFunctionTags(false);
+      }
+    }
+  }
+
+  /**
+   * Parses a single constituent and checks that it yields one node with the given label and
+   * token.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   * @param functionTags Whether function tags are appended to the label.
+   * @param type The expected label.
+   * @param token The expected token.
+   */
+  private static void assertConstituent(String rest, boolean functionTags, String type,
+                                        String token) {
+    Parse.useFunctionTags(functionTags);
+    try {
+      Parse p = Parse.parseParse("(" + rest);
+      Assertions.assertEquals(1, p.getChildren().length, rest);
+      Assertions.assertEquals(type, p.getChildren()[0].getType(), rest);
+      Assertions.assertEquals(token, p.getChildren()[0].getCoveredText(), rest);
+    } finally {
+      Parse.useFunctionTags(false);
+    }
+  }
+
+  /**
+   * Computes the expected label of a constituent with the reference expressions.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   * @param functionTags Whether function tags are appended to the label.
+   * @return The expected label, or {@code null} if there is none.
+   */
+  private static String oracleType(String rest, boolean functionTags) {
+    for (String bracket : new String[] {"-LCB-", "-RCB-", "-LRB-", "-RRB-", "-RSB-", "-LSB-",
+        "-NONE-"}) {
+      if (rest.startsWith(bracket)) {
+        return bracket;
+      }
+    }
+    Matcher type = TYPE_ORACLE.matcher(rest);
+    if (!type.find()) {
+      return null;
+    }
+    Matcher functionTag = FUNCTION_TAG_ORACLE.matcher(rest);
+    if (functionTags && functionTag.find()) {
+      return type.group(1) + "-" + functionTag.group(1);
+    }
+    return type.group(1);
+  }
+
+  /**
+   * Computes the expected token of a constituent with the reference expression.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   * @return The expected decoded token, or {@code null} if there is none.
+   */
+  private static String oracleToken(String rest) {
+    Matcher token = TOKEN_ORACLE.matcher(rest);
+    return token.find() ? BRACKETS.getOrDefault(token.group(1), token.group(1)) : null;
   }
 }

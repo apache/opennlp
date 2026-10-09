@@ -24,13 +24,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Sample;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Encapsulates names for a single unit of text.
@@ -43,6 +42,12 @@ public class NameSample implements Sample {
   public static final String START_TAG_PREFIX = "<START:";
   public static final String START_TAG = "<START>";
   public static final String END_TAG = "<END>";
+
+  /** Separates {@code <START} from the name type in a start tag. */
+  private static final char TYPE_SEPARATOR = ':';
+
+  /** Ends a start tag. */
+  private static final char TAG_END = '>';
 
 
   private final String id;
@@ -266,8 +271,42 @@ public class NameSample implements Sample {
     return errorString.toString();
   }
 
-  private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
+  /**
+   * Checks whether a token is a start tag, either {@code <START>} or {@code <START:type>}, where
+   * the possibly empty type contains neither {@code ':'}, {@code '>'} nor ASCII whitespace.
+   *
+   * @param token The token to test.
+   * @return {@code true} if {@code token} is a start tag.
+   */
+  private static boolean isStartTag(String token) {
+    if (START_TAG.equals(token)) {
+      return true;
+    }
+    if (!token.startsWith(START_TAG_PREFIX) || token.length() <= START_TAG_PREFIX.length()
+        || token.charAt(token.length() - 1) != TAG_END) {
+      return false;
+    }
+    for (int i = START_TAG_PREFIX.length(); i < token.length() - 1; i++) {
+      char c = token.charAt(i);
+      if (c == TYPE_SEPARATOR || c == TAG_END || StringUtil.isAsciiWhitespace(c)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
+  /**
+   * Extracts the type of a start tag accepted by {@link #isStartTag(String)}.
+   *
+   * @param startTag A start tag.
+   * @return The type, which is empty for {@code <START:>}, or {@code null} for {@code <START>}.
+   */
+  private static String startTagType(String startTag) {
+    if (START_TAG.equals(startTag)) {
+      return null;
+    }
+    return startTag.substring(START_TAG_PREFIX.length(), startTag.length() - 1);
+  }
 
   /**
    * Parses given input into a {@link NameSample}.
@@ -310,15 +349,14 @@ public class NameSample implements Sample {
     boolean catchingName = false;
 
     for (int pi = 0; pi < parts.length; pi++) {
-      Matcher startMatcher = START_TAG_PATTERN.matcher(parts[pi]);
-      if (startMatcher.matches()) {
+      if (isStartTag(parts[pi])) {
         if (catchingName) {
           throw new IOException("Found unexpected annotation" +
               " while handling a name sequence: " + errorTokenWithContext(parts, pi));
         }
         catchingName = true;
         startIndex = wordIndex;
-        String nameTypeFromSample = startMatcher.group(2);
+        String nameTypeFromSample = startTagType(parts[pi]);
         if (nameTypeFromSample != null) {
           if (nameTypeFromSample.length() == 0) {
             throw new IOException("Missing a name type: " + errorTokenWithContext(parts, pi));

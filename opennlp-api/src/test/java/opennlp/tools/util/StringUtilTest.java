@@ -20,6 +20,7 @@ package opennlp.tools.util;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -202,7 +203,7 @@ public class StringUtilTest {
   }
 
   // -------------------------------------------------------------------------
-  // isAsciiLetter, isAsciiLowerCase, isAsciiDigit, endOfAsciiDigits
+  // isAsciiLetter, isAsciiLowerCase, isAsciiDigit, isAsciiWhitespace, endOfAsciiDigits
   // -------------------------------------------------------------------------
 
   @ParameterizedTest
@@ -244,6 +245,29 @@ public class StringUtilTest {
   @ValueSource(ints = {'/', ':', 'a', 'Z', '_', ' ', 0x0661, 0xFF11, 0xBD, 0x1D7CE, 0})
   void testIsAsciiDigitRejects(int codePoint) {
     Assertions.assertFalse(StringUtil.isAsciiDigit(codePoint));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {' ', '\t', '\n', 0x0B, '\f', '\r'})
+  void testIsAsciiWhitespaceAccepts(int codePoint) {
+    Assertions.assertTrue(StringUtil.isAsciiWhitespace(codePoint));
+  }
+
+  @ParameterizedTest
+  // the neighbors of the range, the information separators, NEL, no-break space,
+  // ideographic space, line separator
+  @ValueSource(ints = {0x08, 0x0E, 0x1C, 0x1F, '!', 0x85, 0xA0, 0x3000, 0x2028, 0, -1})
+  void testIsAsciiWhitespaceRejects(int codePoint) {
+    Assertions.assertFalse(StringUtil.isAsciiWhitespace(codePoint));
+  }
+
+  @Test
+  void testIsAsciiWhitespaceMatchesRegexClass() {
+    Pattern whitespace = Pattern.compile("\\s");
+    for (int cp = 0; cp <= Character.MAX_CODE_POINT; cp++) {
+      Assertions.assertEquals(whitespace.matcher(Character.toString(cp)).matches(),
+          StringUtil.isAsciiWhitespace(cp), Integer.toHexString(cp));
+    }
   }
 
   @ParameterizedTest

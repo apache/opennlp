@@ -31,6 +31,9 @@ public class StringUtil {
 
   private static final char BYTE_ORDER_MARK = '\uFEFF';
 
+  /** U+0009, the first of the contiguous ASCII whitespace controls U+0009 to U+000D. */
+  private static final int CHARACTER_TABULATION = 0x0009;
+
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
@@ -381,6 +384,19 @@ public class StringUtil {
    */
   public static boolean isAsciiDigit(int codePoint) {
     return codePoint >= '0' && codePoint <= '9';
+  }
+
+  /**
+   * Tests for an ASCII whitespace character: space, tab, line feed, vertical tab, form feed
+   * or carriage return. This is the set matched by {@code \s} in a
+   * {@link java.util.regex.Pattern} compiled without {@code UNICODE_CHARACTER_CLASS}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII whitespace character.
+   */
+  public static boolean isAsciiWhitespace(int codePoint) {
+    return codePoint == UnicodeWhitespace.SPACE
+        || (codePoint >= CHARACTER_TABULATION && codePoint <= UnicodeWhitespace.CARRIAGE_RETURN);
   }
 
   /**
