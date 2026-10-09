@@ -27,14 +27,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Data structure for holding parse constituents.
@@ -106,22 +105,6 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * Specifies whether this constituent was built during the chunking phase.
    */
   private boolean isChunk;
-
-  /**
-   * The pattern used to find the base constituent label of a
-   * Penn Treebank labeled constituent.
-   */
-  private static final Pattern typePattern = Pattern.compile("^([^ =-]+)");
-
-  /**
-   * The pattern used to find the function tags.
-   */
-  private static final Pattern funTypePattern = Pattern.compile("^[^ =-]+-([^ =-]+)");
-
-  /**
-   * The patter used to identify tokens in Penn Treebank labeled constituents.
-   */
-  private static final Pattern tokenPattern = Pattern.compile("^[^ ()]+ ([^ ()]+)\\s*\\)");
 
   /**
    * The set of punctuation parses which are between this parse and the previous parse.
@@ -669,20 +652,60 @@ public class Parse implements Cloneable, Comparable<Parse> {
     } else if (rest.startsWith("-NONE-")) {
       return "-NONE-";
     } else {
-      Matcher typeMatcher = typePattern.matcher(rest);
-      if (typeMatcher.find()) {
-        String type = typeMatcher.group(1);
-        if (useFunctionTags) {
-          Matcher funMatcher = funTypePattern.matcher(rest);
-          if (funMatcher.find()) {
-            String ftag = funMatcher.group(1);
-            type = type + "-" + ftag;
+      int typeEnd = endOfLabel(rest, 0);
+      if (typeEnd > 0) {
+        String type = rest.substring(0, typeEnd);
+        if (useFunctionTags && typeEnd < rest.length() && rest.charAt(typeEnd) == '-') {
+          int ftagEnd = endOfLabel(rest, typeEnd + 1);
+          if (ftagEnd > typeEnd + 1) {
+            type = type + "-" + rest.substring(typeEnd + 1, ftagEnd);
           }
         }
         return type;
       }
     }
     return null;
+  }
+
+  /**
+   * Finds the end of the run of label characters that starts at {@code from}. A label
+   * character is any character except space, {@code '='} and {@code '-'}, which separate a
+   * constituent label from its function tags and co-index.
+   *
+   * @param text The text to scan.
+   * @param from The offset the run starts at.
+   * @return The offset after the last label character, or {@code from} if there is none.
+   */
+  private static int endOfLabel(String text, int from) {
+    int i = from;
+    while (i < text.length()) {
+      char c = text.charAt(i);
+      if (c == ' ' || c == '=' || c == '-') {
+        break;
+      }
+      i++;
+    }
+    return i;
+  }
+
+  /**
+   * Finds the end of the run of token characters that starts at {@code from}. A token
+   * character is any character except space and parentheses.
+   *
+   * @param text The text to scan.
+   * @param from The offset the run starts at.
+   * @return The offset after the last token character, or {@code from} if there is none.
+   */
+  private static int endOfTokenText(String text, int from) {
+    int i = from;
+    while (i < text.length()) {
+      char c = text.charAt(i);
+      if (c == ' ' || c == '(' || c == ')') {
+        break;
+      }
+      i++;
+    }
+    return i;
   }
 
   private static String encodeToken(String token) {
@@ -727,9 +750,22 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * string or {@code null} if the portion of the parse string does not represent a token.
    */
   private static String getToken(String rest) {
-    Matcher tokenMatcher = tokenPattern.matcher(rest);
-    if (tokenMatcher.find()) {
-      return decodeToken(tokenMatcher.group(1));
+    // Expected form: type, one space, token, optional ASCII whitespace, closing parenthesis.
+    int typeEnd = endOfTokenText(rest, 0);
+    if (typeEnd == 0 || typeEnd == rest.length() || rest.charAt(typeEnd) != ' ') {
+      return null;
+    }
+    int tokenStart = typeEnd + 1;
+    int tokenEnd = endOfTokenText(rest, tokenStart);
+    if (tokenEnd == tokenStart) {
+      return null;
+    }
+    int i = tokenEnd;
+    while (i < rest.length() && StringUtil.isAsciiWhitespace(rest.charAt(i))) {
+      i++;
+    }
+    if (i < rest.length() && rest.charAt(i) == ')') {
+      return decodeToken(rest.substring(tokenStart, tokenEnd));
     }
     return null;
   }

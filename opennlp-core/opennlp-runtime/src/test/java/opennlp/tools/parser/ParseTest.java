@@ -17,8 +17,14 @@
 
 package opennlp.tools.parser;
 
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -175,5 +181,86 @@ public class ParseTest {
     Assertions.assertEquals("Hello", p.getText());
     Assertions.assertEquals(1, p.getChildren().length);
     Assertions.assertEquals(new Span(0, 5), p.getChildren()[0].getSpan());
+  }
+
+  /**
+   * Reference expressions for the constituent label, the function tag and the token of a
+   * tree-bank constituent; they serve as the oracle for
+   * {@link #testConstituentMatchesRegexOracle(String)}.
+   */
+  private static final Pattern TYPE_ORACLE = Pattern.compile("^([^ =-]+)");
+  private static final Pattern FUNCTION_TAG_ORACLE = Pattern.compile("^[^ =-]+-([^ =-]+)");
+  private static final Pattern TOKEN_ORACLE = Pattern.compile("^[^ ()]+ ([^ ()]+)\\s*\\)");
+
+  private static final Map<String, String> BRACKETS = Map.of("-LRB-", "(", "-RRB-", ")",
+      "-LCB-", "{", "-RCB-", "}", "-LSB-", "[", "-RSB-", "]");
+
+  /**
+   * Parses a single constituent, with and without function tags, and checks its label and
+   * token against the reference expressions. A constituent without a token yields no node.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "NN word)", "NP-SBJ word)", "NP-SBJ=2 word)", "NP-SBJ-1 word)", "NP=2 word)",
+      "NP--X word)", "NP- word)", "NP-SBJ-TMP=3 word)", "PRP$ her)", "-NONE- *T*-1)",
+      "-LRB- -LRB-)", "-RRB- -RRB-)", "-LCB- -LCB-)", "-RSB- -RSB-)", ". .)", ", ,)",
+      "NN word )", "NN word   )", "NN word \t)", "NN word\t)", "NN word \u000B\f\r\n)",
+      "NN word\u00A0)", "NN \u00E9t\u00E9)", "NN \uD83D\uDE00)", "NN a=b-c)",
+      "NN word \u00A0)", "NN word \u001C)", "NN word x)", "NN  word)", "NN)", "NN word",
+      "NN word ", "NN ", "NN"})
+  void testConstituentMatchesRegexOracle(String rest) {
+    for (boolean functionTags : new boolean[] {false, true}) {
+      Parse.useFunctionTags(functionTags);
+      try {
+        Parse p = Parse.parseParse("(" + rest);
+        String token = oracleToken(rest);
+        if (token == null) {
+          Assertions.assertEquals(0, p.getChildren().length, rest);
+        } else {
+          Assertions.assertEquals(1, p.getChildren().length, rest);
+          Parse constituent = p.getChildren()[0];
+          Assertions.assertEquals(oracleType(rest, functionTags), constituent.getType(), rest);
+          Assertions.assertEquals(token, constituent.getCoveredText(), rest);
+        }
+      } finally {
+        Parse.useFunctionTags(false);
+      }
+    }
+  }
+
+  /**
+   * Computes the expected label of a constituent with the reference expressions.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   * @param functionTags Whether function tags are appended to the label.
+   * @return The expected label, or {@code null} if there is none.
+   */
+  private static String oracleType(String rest, boolean functionTags) {
+    for (String bracket : new String[] {"-LCB-", "-RCB-", "-LRB-", "-RRB-", "-RSB-", "-LSB-",
+        "-NONE-"}) {
+      if (rest.startsWith(bracket)) {
+        return bracket;
+      }
+    }
+    Matcher type = TYPE_ORACLE.matcher(rest);
+    if (!type.find()) {
+      return null;
+    }
+    Matcher functionTag = FUNCTION_TAG_ORACLE.matcher(rest);
+    if (functionTags && functionTag.find()) {
+      return type.group(1) + "-" + functionTag.group(1);
+    }
+    return type.group(1);
+  }
+
+  /**
+   * Computes the expected token of a constituent with the reference expression.
+   *
+   * @param rest The constituent text after the opening parenthesis.
+   * @return The expected decoded token, or {@code null} if there is none.
+   */
+  private static String oracleToken(String rest) {
+    Matcher token = TOKEN_ORACLE.matcher(rest);
+    return token.find() ? BRACKETS.getOrDefault(token.group(1), token.group(1)) : null;
   }
 }

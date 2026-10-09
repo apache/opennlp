@@ -24,9 +24,13 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -300,6 +304,41 @@ public class NameSampleTest {
 
   public static NameSample createPredSample() {
     return createSimpleNameSample(false);
+  }
+
+  /**
+   * Reference expression for the start tag syntax; serves as the oracle for
+   * {@link #testStartTagMatchesRegexOracle(String)}.
+   */
+  private static final Pattern START_TAG_ORACLE = Pattern.compile("<START(:([^:>\\s]*))?>");
+
+  /**
+   * Parses a single tag followed by one word and checks the result against
+   * {@link #START_TAG_ORACLE}: a tag the oracle matches opens a name of the captured type, an
+   * empty captured type is rejected, and any other tag is kept as an ordinary token.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "<START>", "<START:>", "<START:person>", "<START:type-1>", "<START:NP-SBJ=2>",
+      "<START:a.b_c/d;e,f&g%h$i>", "<START:a\u001Cb>", "<START:\u00E9t\u00E9>",
+      "<START:\uD83D\uDE00>", "<START:a:b>", "<START::>", "<START:a>b>", "<START:a>>",
+      "<START>>", "<START>a>", "<START", "<START:", "<START:person", "START:person>",
+      "<start:person>", "<STARTX>", "<START;person>", "x<START>", "<START:person>x", "<END:x>"})
+  void testStartTagMatchesRegexOracle(String tag) throws IOException {
+    Matcher oracle = START_TAG_ORACLE.matcher(tag);
+    if (!oracle.matches()) {
+      NameSample sample = NameSample.parse(tag + " word", false);
+      Assertions.assertArrayEquals(new String[] {tag, "word"}, sample.getSentence());
+      Assertions.assertEquals(0, sample.getNames().length);
+    } else if (oracle.group(2) != null && oracle.group(2).isEmpty()) {
+      Assertions.assertThrows(IOException.class,
+          () -> NameSample.parse(tag + " word <END>", false));
+    } else {
+      NameSample sample = NameSample.parse(tag + " word <END>", "fallback", false);
+      String expectedType = oracle.group(2) != null ? oracle.group(2) : "fallback";
+      Assertions.assertArrayEquals(new String[] {"word"}, sample.getSentence());
+      Assertions.assertArrayEquals(new Span[] {new Span(0, 1, expectedType)}, sample.getNames());
+    }
   }
 
   @Test

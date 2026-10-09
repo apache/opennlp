@@ -384,6 +384,18 @@ public class StringUtil {
   }
 
   /**
+   * Tests for an ASCII whitespace character: space, tab, line feed, vertical tab, form feed
+   * or carriage return. This is the set matched by {@code \s} in a
+   * {@link java.util.regex.Pattern} compiled without {@code UNICODE_CHARACTER_CLASS}.
+   *
+   * @param codePoint The code point to test.
+   * @return {@code true} if {@code codePoint} is an ASCII whitespace character.
+   */
+  public static boolean isAsciiWhitespace(int codePoint) {
+    return codePoint == ' ' || (codePoint >= '\t' && codePoint <= '\r');
+  }
+
+  /**
    * Finds the end of the run of ASCII digits that starts at {@code from}.
    *
    * @param text The text to scan. Must not be {@code null}.
