@@ -480,10 +480,11 @@ Execution time: 1,955 seconds]]>
 				<code>&lt;p&gt;</code>, <code>&lt;t&gt;</code>, <code>&lt;caixa&gt;</code>, and
 				<code>&lt;ext&gt;</code> may have attributes after whitespace. A tag with a name that only
 				starts with one of these names, such as <code>&lt;sx&gt;</code>, and a self-closing tag
-				such as <code>&lt;s/&gt;</code> are not sentence tags. A leaf line of a tree has its
-				lexeme after the closing parenthesis, separated by whitespace; a line with no text or
-				only whitespace after the parenthesis has no lexeme. Inside a quoted lemma, a secondary
-				tag, or the lexeme, a line separator or next line character is kept as part of the text.
+				such as <code>&lt;s/&gt;</code> or <code>&lt;s id="1"/&gt;</code> are not sentence tags.
+				A leaf line of a tree has its lexeme after the closing parenthesis, separated by
+				whitespace; a line with no text or only whitespace after the parenthesis has no lexeme.
+				Inside a quoted lemma, a secondary tag, or the lexeme, a line separator or next line
+				character is kept as part of the text.
 				A tree line that starts with equals signs but has no tag keeps all of the text after the
 				equals signs as its lexeme. Such a line is skipped when that text is empty, or when it is
 				a word of any script followed by a period or an angle bracket, and a line separator inside
