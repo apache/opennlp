@@ -18,11 +18,10 @@
 package opennlp.tools.parser.lang.es;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,12 +35,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
- * Tests the head rules shipped in {@code opennlp-tools/lang/es/parser/es-head-rules}
+ * Tests a copy of the head rules shipped in {@code opennlp-tools/lang/es/parser/es-head-rules}
  * with {@link AncoraSpanishHeadRules}.
  */
 public class AncoraSpanishHeadRulesBundledTest {
 
-  private static final String BUNDLED_RULES = "opennlp-tools/lang/es/parser/es-head-rules";
+  private static final String BUNDLED_RULES = "/opennlp/tools/parser/es_head_rules";
 
   private static final String FILLER = "FILLER";
 
@@ -49,21 +48,13 @@ public class AncoraSpanishHeadRulesBundledTest {
 
   @BeforeAll
   static void loadBundledRules() throws IOException {
-    Path rules = locateBundledRules();
-    assertNotNull(rules, "Bundled rules not found: " + BUNDLED_RULES);
-    try (Reader in = Files.newBufferedReader(rules, StandardCharsets.UTF_8)) {
-      headRules = new AncoraSpanishHeadRules(in);
-    }
-  }
-
-  private static Path locateBundledRules() {
-    for (Path dir = Paths.get("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
-      Path candidate = dir.resolve(BUNDLED_RULES);
-      if (Files.isRegularFile(candidate)) {
-        return candidate;
+    try (InputStream rules = AncoraSpanishHeadRulesBundledTest.class
+        .getResourceAsStream(BUNDLED_RULES)) {
+      assertNotNull(rules, "Bundled rules not found: " + BUNDLED_RULES);
+      try (Reader in = new InputStreamReader(rules, StandardCharsets.UTF_8)) {
+        headRules = new AncoraSpanishHeadRules(in);
       }
     }
-    return null;
   }
 
   private static Parse leaf(String type, int index) {
