@@ -24,21 +24,21 @@ import opennlp.tools.util.DictionaryCatalog;
 import opennlp.tools.util.ParamChecks;
 
 /**
- * Opt-in download of Hunspell {@code .aff}/{@code .dic} pairs and their license
+ * Opt-in installation of Hunspell {@code .aff}/{@code .dic} pairs and their license
  * readme from an application-supplied {@link DictionaryCatalog}. Requires
- * {@code -Dopennlp.download.remote=true}. OpenNLP bundles neither a catalog nor
- * dictionary data.
+ * {@link DictionaryCatalog#REMOTE_DOWNLOAD_PROPERTY} to be {@code true}. OpenNLP
+ * bundles neither a catalog nor dictionary data.
  *
  * @since 3.0.0
  */
-public final class HunspellDictionaryDownload {
+public final class HunspellDictionaryInstaller {
 
   /** Prevents construction of this utility class. */
-  private HunspellDictionaryDownload() {
+  private HunspellDictionaryInstaller() {
   }
 
   /**
-   * Downloads the cataloged {@code .aff}, {@code .dic}, and readme files for
+   * Installs the cataloged {@code .aff}, {@code .dic}, and readme files for
    * {@code dictionaryId} into {@code targetDirectory}. Each file uses its configured
    * name or source name, for example {@code en_US.aff}. Existing target files are not
    * replaced, so they must be removed before refreshing a dictionary.
@@ -53,7 +53,7 @@ public final class HunspellDictionaryDownload {
    *         files.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
-  public static void downloadFromCatalog(DictionaryCatalog catalog, String dictionaryId,
+  public static void installFromCatalog(DictionaryCatalog catalog, String dictionaryId,
       Path targetDirectory) throws IOException {
     ParamChecks.requireNonNullArg(catalog, "catalog");
     ParamChecks.requireNonNullArg(dictionaryId, "dictionaryId");

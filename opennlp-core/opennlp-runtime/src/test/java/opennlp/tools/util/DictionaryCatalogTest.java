@@ -192,6 +192,93 @@ public class DictionaryCatalogTest {
   }
 
   /**
+   * Verifies that an explicit opt-in installs the entry while the remote-download
+   * property is unset.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared or fetched.
+   */
+  @Test
+  void testExplicitOptInInstallsWithoutTheProperty(@TempDir Path dir) throws Exception {
+    final byte[] payload = "payload".getBytes(StandardCharsets.UTF_8);
+    final DictionaryCatalog loaded = demoCatalog(dir, payload);
+    final Path target = dir.resolve("out");
+
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    try {
+      loaded.install("demo", target, true, ResourceInstaller.Limits.DEFAULT);
+      Assertions.assertArrayEquals(payload,
+          Files.readAllBytes(target.resolve("dict.bin")));
+    } finally {
+      restore(previous);
+    }
+  }
+
+  /**
+   * Verifies that an explicit opt-out rejects the install while the remote-download
+   * property is set, before anything is created.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared.
+   */
+  @Test
+  void testExplicitOptOutRejectsDespiteTheProperty(@TempDir Path dir) throws Exception {
+    final DictionaryCatalog loaded =
+        demoCatalog(dir, "payload".getBytes(StandardCharsets.UTF_8));
+    final Path target = dir.resolve("out");
+
+    final String previous =
+        System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
+    System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, "true");
+    try {
+      final IOException e = Assertions.assertThrows(IOException.class,
+          () -> loaded.install("demo", target, false, ResourceInstaller.Limits.DEFAULT));
+      Assertions.assertEquals("remote dictionary catalog downloads are disabled",
+          e.getMessage());
+      Assertions.assertTrue(Files.notExists(target));
+    } finally {
+      restore(previous);
+    }
+  }
+
+  /**
+   * Verifies that the limits passed to an install are enforced.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared.
+   */
+  @Test
+  void testExplicitLimitsAreEnforced(@TempDir Path dir) throws Exception {
+    final DictionaryCatalog loaded =
+        demoCatalog(dir, "payload".getBytes(StandardCharsets.UTF_8));
+    final ResourceInstaller.Limits limits =
+        ResourceInstaller.Limits.builder().maxDownloadBytes(3).build();
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> loaded.install("demo", dir.resolve("out"), true, limits));
+    Assertions.assertEquals("download exceeds the limit of 3 bytes", e.getMessage());
+  }
+
+  /**
+   * Verifies that the limits argument is required.
+   *
+   * @param dir A scratch directory managed by the test framework.
+   * @throws Exception Thrown if the fixture catalog cannot be prepared.
+   */
+  @Test
+  void testNullLimitsAreRejected(@TempDir Path dir) throws Exception {
+    final DictionaryCatalog loaded =
+        demoCatalog(dir, "payload".getBytes(StandardCharsets.UTF_8));
+
+    final IllegalArgumentException e = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> loaded.install("demo", dir.resolve("out"), true, null));
+    Assertions.assertEquals("limits must not be null", e.getMessage());
+  }
+
+  /**
    * Verifies that the example catalog holds the MeCab and Hunspell entries, each with
    * a full-length SHA-512 digest. Applications load their own catalog through the same
    * {@link DictionaryCatalog#load(InputStream)} entry point.

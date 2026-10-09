@@ -31,12 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -308,7 +304,7 @@ public class DownloadUtil {
     if (expectedChecksum == null) {
       throw new IllegalArgumentException("The checksum file for " + model.getFileName() + " is blank");
     }
-    final String actualChecksum = calculateSHA512(model);
+    final String actualChecksum = Checksums.hexDigest(model, Checksums.SHA_512);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
       throw new IllegalStateException("SHA512 checksum validation failed for " + model.getFileName() +
           ". Expected: " + expectedChecksum + ", but got: " + actualChecksum);
@@ -330,32 +326,6 @@ public class DownloadUtil {
 
   private static Path checksumPathFor(Path model) {
     return model.resolveSibling(model.getFileName() + CHECKSUM_EXTENSION);
-  }
-
-  private static String calculateSHA512(Path file) throws IOException {
-    try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-512");
-      try (InputStream fis = Files.newInputStream(file);
-           DigestInputStream dis = new DigestInputStream(fis, digest)) {
-        byte[] buffer = new byte[4096];
-        //noinspection StatementWithEmptyBody
-        while (dis.read(buffer) != -1) {
-          // Reading the file to update the digest
-        }
-      }
-      return byteArrayToHexString(digest.digest());
-    } catch (NoSuchAlgorithmException e) {
-      throw new IOException("SHA-512 algorithm not found", e);
-    }
-  }
-
-  private static String byteArrayToHexString(byte[] bytes) {
-    try (Formatter formatter = new Formatter()) {
-      for (byte b : bytes) {
-        formatter.format("%02x", b);
-      }
-      return formatter.toString();
-    }
   }
 
   /**

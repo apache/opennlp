@@ -36,7 +36,7 @@ import opennlp.tools.util.DigestTestUtil;
 /**
  * Pins the Hunspell catalog download gate; network fetches are not exercised here.
  */
-public class HunspellDictionaryDownloadTest {
+public class HunspellDictionaryInstallerTest {
 
   /**
    * Verifies that a catalog download without the remote-download property fails with
@@ -53,7 +53,7 @@ public class HunspellDictionaryDownloadTest {
     System.clearProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     try {
       final IOException e = Assertions.assertThrows(IOException.class,
-          () -> HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", target));
+          () -> HunspellDictionaryInstaller.installFromCatalog(catalog, "demo", target));
       Assertions.assertTrue(
           e.getMessage().contains(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY));
     } finally {
@@ -76,7 +76,7 @@ public class HunspellDictionaryDownloadTest {
         System.getProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY);
     System.setProperty(DictionaryCatalog.REMOTE_DOWNLOAD_PROPERTY, "true");
     try {
-      HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", output);
+      HunspellDictionaryInstaller.installFromCatalog(catalog, "demo", output);
       Assertions.assertEquals("SET UTF-8\n",
           Files.readString(output.resolve("demo" + HunspellDictionary.AFFIX_FILE_SUFFIX)));
       Assertions.assertEquals("1\nword\n",
@@ -101,11 +101,11 @@ public class HunspellDictionaryDownloadTest {
     final DictionaryCatalog catalog = localCatalog(target);
     final Executable download = switch (argument) {
       case "catalog" -> () ->
-          HunspellDictionaryDownload.downloadFromCatalog(null, "demo", target);
+          HunspellDictionaryInstaller.installFromCatalog(null, "demo", target);
       case "dictionaryId" -> () ->
-          HunspellDictionaryDownload.downloadFromCatalog(catalog, null, target);
+          HunspellDictionaryInstaller.installFromCatalog(catalog, null, target);
       case "targetDirectory" -> () ->
-          HunspellDictionaryDownload.downloadFromCatalog(catalog, "demo", null);
+          HunspellDictionaryInstaller.installFromCatalog(catalog, "demo", null);
       default -> throw new IllegalArgumentException("unknown argument: " + argument);
     };
 

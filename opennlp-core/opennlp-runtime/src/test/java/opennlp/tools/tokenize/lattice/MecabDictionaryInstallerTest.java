@@ -112,8 +112,7 @@ public class MecabDictionaryInstallerTest {
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionaryInstaller.install(archiveFile.toUri(), target));
     Assertions.assertEquals(
-        "the archive flattens two entries to the same name: words.csv",
-        e.getMessage());
+        "two staged files install to the same path: words.csv", e.getMessage());
     Assertions.assertTrue(Files.notExists(target.resolve("words.csv")));
   }
 
@@ -315,9 +314,9 @@ public class MecabDictionaryInstallerTest {
   }
 
   @Test
-  void testStaleScratchOfAKilledInstallIsRemoved(@TempDir Path source,
+  void testStaleStagingOfAKilledInstallIsRemoved(@TempDir Path source,
       @TempDir Path target) throws IOException {
-    final Path stale = Files.createDirectories(target.resolve(".mecab-dict-OLD"));
+    final Path stale = Files.createDirectories(target.resolve(".opennlp-staging-OLD"));
     Files.writeString(stale.resolve("words.csv"), "half");
     final Path archiveFile = archive(source, new String[][] {
         {"d/words.csv", "cat,0,0,100,noun\n"}});

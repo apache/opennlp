@@ -44,6 +44,8 @@ import opennlp.tools.util.ParamChecks;
 public final class TarStream {
 
   private static final int BLOCK = 512;
+  /** The two zero blocks that end an archive. */
+  private static final int END_OF_ARCHIVE_LENGTH = 2 * BLOCK;
   private static final int NAME_LENGTH = 100;
   private static final int CHECKSUM_OFFSET = 148;
   private static final int CHECKSUM_LENGTH = 8;
@@ -128,16 +130,59 @@ public final class TarStream {
    *         support mark and reset.
    */
   public static boolean startsWithHeader(InputStream in) throws IOException {
-    ParamChecks.requireNonNullArg(in, "in");
-    if (!in.markSupported()) {
-      throw new IllegalArgumentException("in must support mark and reset");
-    }
+    requireMarkable(in);
     in.mark(BLOCK);
     try {
       final byte[] block = new byte[BLOCK];
       return in.readNBytes(block, 0, BLOCK) == BLOCK && isHeader(block);
     } finally {
       in.reset();
+    }
+  }
+
+  /**
+   * Checks whether the given stream is positioned at an archive without entries, leaving
+   * its position unchanged. Such an archive consists of only the two zero blocks that end
+   * a tar archive, which {@link #startsWithHeader(InputStream)} does not recognize.
+   *
+   * @param in The stream to inspect. Not {@code null} and must support
+   *           {@link InputStream#mark(int) mark} and {@link InputStream#reset() reset}.
+   * @return {@code true} if the next 1024 bytes are all zero, {@code false} if they are
+   *         not or if fewer than 1024 bytes are available.
+   * @throws IOException Thrown if reading from or repositioning the stream fails.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null} or does not
+   *         support mark and reset.
+   */
+  public static boolean isEmptyArchive(InputStream in) throws IOException {
+    requireMarkable(in);
+    in.mark(END_OF_ARCHIVE_LENGTH);
+    try {
+      final byte[] blocks = in.readNBytes(END_OF_ARCHIVE_LENGTH);
+      if (blocks.length != END_OF_ARCHIVE_LENGTH) {
+        return false;
+      }
+      for (final byte b : blocks) {
+        if (b != 0) {
+          return false;
+        }
+      }
+      return true;
+    } finally {
+      in.reset();
+    }
+  }
+
+  /**
+   * Rejects a stream that cannot be inspected without consuming it.
+   *
+   * @param in The stream to inspect.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null} or does not
+   *         support mark and reset.
+   */
+  private static void requireMarkable(InputStream in) {
+    ParamChecks.requireNonNullArg(in, "in");
+    if (!in.markSupported()) {
+      throw new IllegalArgumentException("in must support mark and reset");
     }
   }
 
