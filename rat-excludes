@@ -22,6 +22,7 @@ src/test/resources/opennlp/tools/*/*.txt
 src/test/resources/opennlp/tools/*/*.train
 src/test/resources/opennlp/tools/parser/en_head_rules
 src/test/resources/opennlp/tools/parser/en_head_rules
+src/test/resources/opennlp/tools/parser/es_head_rules
 src/test/resources/opennlp/tools/parser/parser.train
 src/test/resources/opennlp/tools/parser/test.parse
 src/test/resources/opennlp/tools/postag/AnnotatedSentences.txt
