@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.ArrayMath;
@@ -102,6 +103,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    */
   public static final String NO_SPLIT = "F";
 
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   private final Pattern alphanumeric;
 
   /*
@@ -200,6 +202,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    * @return   A {@link Span} array containing individual tokens as elements.
    */
   @Override
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   public Span[] tokenizePos(String d) {
     Span[] tokens = (keepNewLines ? WHITESPACE_KEEPING_NEW_LINES : WHITESPACE).tokenizePos(d);
     List<Span> localTokens = new ArrayList<>();

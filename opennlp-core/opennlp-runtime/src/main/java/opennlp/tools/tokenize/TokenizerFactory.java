@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.BaseToolFactory;
@@ -38,6 +39,7 @@ public class TokenizerFactory extends BaseToolFactory {
   private String languageCode;
   private Dictionary abbreviationDictionary;
   private Boolean useAlphaNumericOptimization = false;
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   private Pattern alphaNumericPattern;
 
   private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
@@ -62,6 +64,7 @@ public class TokenizerFactory extends BaseToolFactory {
    *                            (default is: {@code "^[A-Za-z0-9]+$"}, provided by
    *                            {@link Factory#DEFAULT_ALPHANUMERIC}.
    */
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   public TokenizerFactory(String languageCode, Dictionary abbreviationDictionary,
                           boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this.init(languageCode, abbreviationDictionary,
@@ -76,6 +79,7 @@ public class TokenizerFactory extends BaseToolFactory {
    *                            (default is: {@code "^[A-Za-z0-9]+$"}, provided by
    *                            {@link Factory#DEFAULT_ALPHANUMERIC}.
    */
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   protected void init(String languageCode, Dictionary abbreviationDictionary,
       boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this.languageCode = languageCode;
@@ -111,6 +115,7 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   @Override
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   public Map<String, String> createManifestEntries() {
     Map<String, String> manifestEntries = super.createManifestEntries();
 
@@ -140,6 +145,7 @@ public class TokenizerFactory extends BaseToolFactory {
    *
    * @throws InvalidFormatException Thrown if one of the input parameters doesn't comply the expected format.
    */
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   public static TokenizerFactory create(String subclassName, String languageCode,
                                         Dictionary abbreviationDictionary,
                                         boolean useAlphaNumericOptimization,
@@ -166,6 +172,7 @@ public class TokenizerFactory extends BaseToolFactory {
   /**
    * @return Retrieves the (user-)specified alphanumeric {@link Pattern} or a default.
    */
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   public Pattern getAlphaNumericPattern() {
     if (this.alphaNumericPattern == null) {
       if (this.artifactProvider != null) {

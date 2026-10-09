@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.AbstractEventStream;
@@ -44,6 +45,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
   private final boolean skipAlphaNumerics;
 
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   private final Pattern alphaNumeric;
 
   /**
@@ -56,6 +58,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    *                     {@link Factory#DEFAULT_ALPHANUMERIC}.
    * @param cg A {@link TokenContextGenerator} which should be used for the event stream {@code d}.
    */
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
                             Pattern alphaNumeric, TokenContextGenerator cg) {
     super(tokenSamples);
@@ -95,6 +98,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @return An {@link Iterator} for text {@link Event events} representing the {@code tokenSample}.
    */
   @Override
+  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   protected Iterator<Event> createEvents(TokenSample tokenSample) {
 
     List<Event> events = new ArrayList<>(50);
