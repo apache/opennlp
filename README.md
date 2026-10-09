@@ -120,7 +120,7 @@ For more details please check our [documentation](https://opennlp.apache.org/doc
 
 ## Migrating from 2.x to 3.x
 
-The 3.x release line of Apache OpenNLP introduces only a few breaking changes, listed below, but modularizes the project for better usage as a library and to support future extensibility.
+The 3.x release line of Apache OpenNLP modularizes the project for better usage as a library and to support future extensibility.
 The core API remains stable and compatible with 2.x, but the project structure has been reorganized into multiple modules.
 
 That means, that you can continue to use the previous `opennlp-tools` artifact as a dependency. However, we strongly recommend to switch to the new modular structure 
@@ -131,10 +131,16 @@ For users of the traditional CLI toolkit, nothing changes with the 3.x release l
 
 ### Breaking changes
 
+The list below covers the changes most likely to affect existing code. It is not exhaustive; the release notes and the [issue tracker](https://github.com/apache/opennlp/issues) record all changes.
+
+- Whitespace: tokenization, corpus format parsing and feature generation classify whitespace by the Unicode `White_Space` property. Set `-Dopennlp.whitespace.mode=LEGACY` to reproduce 2.x tokenization exactly, for example with models trained by 1.x or 2.x.
 - `AbstractClassPathModelFinder`: the protected `asRegex` and `matchesPattern` methods were removed. Custom model finders call `matchesWildcard(url, "*.bin")` instead ([OPENNLP-1932](https://issues.apache.org/jira/browse/OPENNLP-1932)).
 - `BasicContextGenerator(String)`: the separator is taken literally instead of as a regular expression, and a separator containing a backslash throws `IllegalArgumentException`. Empty predicates are no longer returned, and the default constructor splits on runs of Unicode whitespace ([OPENNLP-1929](https://issues.apache.org/jira/browse/OPENNLP-1929)).
 - AD reader: a self-closing markup line such as `<s/>`, `<s />` or `<s id="1"/>` no longer opens a sentence, paragraph, title, box or text. A tag whose name only starts with `s`, `p`, `t`, `caixa` or `ext`, such as `<sx>`, is no longer read as that tag, and attributes must be separated from the tag name by Unicode whitespace ([GH-1447](https://github.com/apache/opennlp/issues/1447)).
 - MASC reader: region offsets must be written with ASCII digits only and no sign. A document with a signed or non-ASCII offset is skipped ([OPENNLP-1990](https://issues.apache.org/jira/browse/OPENNLP-1990)).
+- CoNLL-U reader: a multiword token range whose word lines are missing from the sentence throws `InvalidFormatException`.
+- `PlainTextByLineStream.reset()` closes the previous reader, so its `InputStreamFactory` must return a new stream for each pass.
+- `RealBasicEventStream`: a line that contains only an outcome is read as an event without contexts and no longer ends the stream.
 
 ### Thread safety
 

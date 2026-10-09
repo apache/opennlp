@@ -100,25 +100,6 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 			since adding a layer is once-only, competing versions always live under
 			distinct keys and never replace each other.
 		</para>
-		<para>
-			Each rule above is pinned by a test in <code>DocumentContractTest</code>:
-			<code>testKeysWithSameIdButDifferentTypesAreDifferentLayers</code>,
-			<code>testToolkitKeysCarryTheNamespacePrefix</code>,
-			<code>testDocumentScopedLayersCarrySpanlessValues</code>,
-			<code>testLayerPreservesInsertionOrder</code>,
-			<code>testDuplicateLayerIsRejectedWithExactMessage</code>,
-			<code>testGoldLayerLivesBesideThePredictedLayer</code>, and
-			<code>testCustomLayerNeedsNoContainerChange</code>.
-		</para>
-		<para>
-			None of this is new architecture, and that is intended. Standoff annotations
-			over an unchanged original text are how the UIMA CAS works; typed keys that let
-			any module add a layer without the container knowing about it are the pattern of
-			Stanford CoreNLP's annotation map; and annotators that declare what they require
-			and provide, checked when the pipeline is assembled, follow spaCy's pipeline
-			analysis. The container takes the lightweight end of each: string ids with a
-			namespace instead of class identity, and no type system descriptors.
-		</para>
 	</section>
 
 	<section xml:id="tools.document.layers">
@@ -188,6 +169,12 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 						<entry>constituent</entry>
 						<entry><code>ParserAnnotator</code></entry>
 					</row>
+					<row>
+						<entry><code>opennlp:term-vectors</code></entry>
+						<entry><code>TermVector</code>: the term, its frequency and, except in <code>SCORING_ONLY</code> mode, its occurrence spans</entry>
+						<entry>distinct term; document-scoped, without a span</entry>
+						<entry><code>TermVectorAnnotator</code></entry>
+					</row>
 				</tbody>
 			</tgroup>
 		</table>
@@ -200,8 +187,7 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 			puts one annotation on each mention's span with the chain it belongs to, and a
 			dependency layer puts one annotation on each token's span naming the head token
 			by its index in <code>opennlp:tokens</code>. Adding such a layer requires no change
-			in this package; <code>testCustomLayerNeedsNoContainerChange</code> pins that,
-			and the section below shows how it is done.
+			in this package; the section below shows how it is done.
 		</para>
 	</section>
 
@@ -239,11 +225,6 @@ DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
 
 Document document = analyzer.analyze("The dog barks. It naps.");]]>
 		</programlisting>
-		<para>
-			<code>DocumentPipelineExampleTest</code> asserts the pipeline and layer
-			round-trip shown here; <code>DocumentAnalyzerTest</code> covers the build-time
-			checks, for example <code>testMisorderedPipelineFailsAtBuildTime</code>.
-		</para>
 		<para>
 			The resulting document carries exactly the four layers the pipeline provides:
 			the figure's three plus the custom token-lengths layer. The sentence
@@ -352,8 +333,6 @@ int firstTokenLength = lengths.get(0).value(); // 3, for "The" at [0..3)]]>
 			only by a normalization fold group together while their spans keep pointing into
 			the original text. A token whose normalized form is empty is omitted from the
 			layer. The layer preserves first-occurrence order.
-			<code>TermVectorPipelineTest#testTokenizerAndTermVectorPipeline</code> asserts the
-			behavior shown here.
 			<programlisting language="java"><![CDATA[
 DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
     .add(new TokenizerAnnotator(tokenizer))
@@ -371,8 +350,6 @@ List<Annotation<TermVector>> vectors = document.get(TermVectorAnnotator.TERM_VEC
 			normalizer is applied to each token's covered text to produce the term, so the
 			case, NFC, and accent folds that <code>buildAligned()</code> rejects all work
 			here, and every occurrence span stays the token's own span in the original text.
-			<code>TermVectorNormalizedExampleTest#testCaseFoldedTermsKeepOriginalSpans</code>
-			asserts the behavior shown here.
 			<programlisting language="java"><![CDATA[
 CharSequenceNormalizer folder = TextNormalizer.builder().caseFold().build();
 DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
@@ -388,8 +365,9 @@ List<Annotation<TermVector>> vectors = document.get(TermVectorAnnotator.TERM_VEC
 		<para>
 			Scoring-only consumers that never read offsets can skip storing them:
 			<code>new TermVectorAnnotator(TermVectorAnnotator.Mode.SCORING_ONLY)</code> emits
-			vectors that carry counts but no spans, and
-			<code>TermVector.count("dog", 2)</code> builds the matching expectation in tests.
+			vectors that carry counts but no spans. <code>TermVector.count(term, frequency)</code>
+			creates such a span-free vector; <code>TermVector.withSpans(term, spans)</code>
+			creates a full one.
 		</para>
 	</section>
 </chapter>

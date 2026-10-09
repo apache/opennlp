@@ -35,8 +35,6 @@
 			configured <code>Stemmer</code> instances on demand. It is a plain supplier
 			of stemmers, not a <code>BaseToolFactory</code> loaded from a model
 			manifest. The English Snowball factory needs no external data:
-			<code>StemmerFactoryUsageExampleTest</code> asserts the behavior shown
-			here.
 			<programlisting language="java"><![CDATA[
 StemmerFactory factory = new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH);
 Stemmer stemmer = factory.newStemmer();
@@ -80,7 +78,6 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 			license text with downloaded files. OpenNLP's Apache License does not
 			relicense those files. The dictionary is immutable and safe to share;
 			<code>HunspellStemmerFactory</code> creates a fresh stemmer per call.
-			<code>HunspellManualExampleTest</code> asserts the behavior shown here.
 			<programlisting language="java"><![CDATA[
 HunspellDictionary dictionary = HunspellDictionary.load(
     Path.of("dictionary.aff"), Path.of("dictionary.dic"));
@@ -89,12 +86,9 @@ Stemmer stemmer = new HunspellStemmerFactory(dictionary).newStemmer();
 stemmer.stem("workers");   // "work"
 stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
 			</programlisting>
-			The stems above are those of the project-authored miniature dictionary the
-			test loads, which lists <code>work</code> with an agentive and a plural
-			suffix; the test asserts the same stem for <code>worker</code>. Which stem a
-			published dictionary yields for a given form is decided by that dictionary.
-			Acquisition helpers and the supported affix feature set live in
-			<code>dev/README-hunspell-dictionaries.md</code>.
+			The stems above assume a dictionary that lists <code>work</code> with an
+			agentive and a plural suffix. Which stem a published dictionary yields for a
+			given form is decided by that dictionary.
 			An opt-in catalog download accepts an application-supplied
 			<code>DictionaryCatalog</code>, needs
 			<code>-Dopennlp.download.remote=true</code>, and fetches through the
@@ -146,9 +140,7 @@ for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupported
 			the spell checker for recognition and the analyzer for stems and fields
 			wherever the two agree, and resolves each disagreement the same way for
 			every caller. The results deviate from the native library in the
-			following cases. <code>HunspellCompatibilityEval</code> in
-			<code>opennlp-eval-tests</code> records each expected difference together
-			with the Hunspell output.
+			following cases.
 		</para>
 		<itemizedlist>
 			<listitem>
@@ -225,23 +217,15 @@ for (HunspellDictionary.UnsupportedDirective diagnostic : partial.getUnsupported
 			<code>FLAG</code> and <code>AF</code> declarations apply to the complete
 			affix file, including rules listed before those declarations. Parsing
 			rejects malformed text in parsed rules, invalid counts, numeric flags
-			outside the range 1 through 65535, and <code>COMPOUNDMIN</code> values
-			that cannot be doubled safely. Comments and unused metadata may retain a
-			legacy encoding. Default and <code>long</code> flag modes preserve raw
-			one-byte flag values in UTF-8 files. Compound length and boundary checks
+			outside the range 1 through 65535 and out-of-range <code>COMPOUNDMIN</code>
+			values. Compound length and boundary checks
 			count Unicode code points.
 			A rule that strips a whole stem applies only when the affix file
 			declares <code>FULLSTRIP</code>, as in Hunspell itself.
 			Each affix or dictionary stream is rejected when it exceeds
 			<code>HunspellDictionary.MAX_STREAM_BYTES</code> (64&#160;MiB).
-			Search permits at most 64 compound components, 2048 compound candidate
-			checks per case variant, and 2048 word-break attempts per input. Sharp-s
-			expansion permits at most 64 case variants. Output is limited to 2048
-			distinct results. Compound-rule patterns permit 4096 flag elements.
-			Simplified triple letters can be restored at multiple junctions;
-			<code>CHECKCOMPOUNDPATTERN</code> replacement applies at one junction.
-			These limits can exclude valid analyses; candidates must pass validation
-			before inclusion in the result.
+			Compound and word-break search is bounded, so an input with very many
+			candidate analyses may not yield all of them.
 		</para>
 	</section>
 </chapter>
