@@ -18,6 +18,7 @@ package opennlp.tools.util.normalizer;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
@@ -26,10 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
  * implementations, and their composition through {@link AggregateCharSequenceNormalizer}.
  */
 public class UnicodeCharSequenceNormalizerTest {
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   @Test
   void testWhitespaceCollapsesUnicodeRunsAndTrims() {

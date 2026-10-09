@@ -173,4 +173,9 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
     });
     return map;
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

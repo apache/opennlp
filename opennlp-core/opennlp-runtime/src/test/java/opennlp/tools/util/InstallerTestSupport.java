@@ -59,48 +59,6 @@ final class InstallerTestSupport {
   }
 
   /**
-   * Builds a gzip-compressed tar archive from name and content pairs.
-   *
-   * @param entries Pairs of entry name and UTF-8 text content. Must not be {@code null}.
-   * @return The archive bytes. Never {@code null}.
-   * @throws IOException Thrown if assembling the archive fails.
-   */
-  static byte[] tarGz(String[][] entries) throws IOException {
-    return TarArchives.gzippedTar(entries);
-  }
-
-  /**
-   * Compresses the given bytes with gzip.
-   *
-   * @param content The bytes to compress. Must not be {@code null}.
-   * @return The gzip-compressed bytes. Never {@code null}.
-   * @throws IOException Thrown if compressing fails.
-   */
-  static byte[] gzip(byte[] content) throws IOException {
-    return TarArchives.gzip(content);
-  }
-
-  /**
-   * Computes the SHA-256 of the given bytes as a lowercase hex string.
-   *
-   * @param content The bytes to digest. Must not be {@code null}.
-   * @return The 64-character lowercase hex digest. Never {@code null}.
-   */
-  static String sha256(byte[] content) {
-    return DigestTestUtil.sha256(content);
-  }
-
-  /**
-   * Computes the SHA-512 of the given bytes as a lowercase hex string.
-   *
-   * @param content The bytes to digest. Must not be {@code null}.
-   * @return The 128-character lowercase hex digest. Never {@code null}.
-   */
-  static String sha512(byte[] content) {
-    return DigestTestUtil.sha512(content);
-  }
-
-  /**
    * Lists every regular file below the given directory as relative paths with forward
    * slashes, sorted lexicographically, so tests can assert the exact installed file
    * set.

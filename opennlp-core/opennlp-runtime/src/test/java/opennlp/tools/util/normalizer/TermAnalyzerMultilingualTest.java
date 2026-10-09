@@ -18,6 +18,7 @@ package opennlp.tools.util.normalizer;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -27,10 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * built from code points to keep this file ASCII-only.
  */
 public class TermAnalyzerMultilingualTest {
-
-  private static String cp(int... codePoints) {
-    return new String(codePoints, 0, codePoints.length);
-  }
 
   private static String normalized(TermAnalyzer analyzer, String text) {
     return analyzer.analyze(text).get(0).normalized();

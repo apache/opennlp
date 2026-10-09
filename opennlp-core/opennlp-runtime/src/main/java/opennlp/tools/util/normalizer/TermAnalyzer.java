@@ -487,7 +487,10 @@ public final class TermAnalyzer {
     }
 
     /**
-     * Sets the tokenizer used by {@link TermAnalyzer#analyze(CharSequence)}.
+     * Sets the tokenizer used by {@link TermAnalyzer#analyze(CharSequence)}. The parameter is
+     * the UAX&#160;#29 {@link WordTokenizer} on purpose: the analyzer segments any
+     * {@link CharSequence} without copying it to a {@link String}, and its terms are defined
+     * by UAX&#160;#29 word boundaries rather than by an arbitrary tokenizer.
      *
      * @param value The tokenizer. Must not be {@code null}.
      * @return this builder

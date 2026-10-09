@@ -26,6 +26,8 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.util.InvalidFormatException;
+
 /**
  * Tests for the {@link POSDictionary} class.
  */
@@ -78,6 +80,14 @@ public class POSDictionaryTest {
         POSDictionary.create(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
 
     Assertions.assertArrayEquals(new String[] {"NN", "NNS", "VBP"}, dict.getTags("run"));
+  }
+
+  @Test
+  void testLoadingEntryWithoutTagsAttributeThrowsInvalidFormatException() {
+    final String xml = "<dictionary><entry><token>run</token></entry></dictionary>";
+
+    Assertions.assertThrows(InvalidFormatException.class, () ->
+        POSDictionary.create(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
   }
 
   @Test

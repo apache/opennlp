@@ -20,15 +20,12 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AccentFoldCharSequenceNormalizerTest {
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   private static String fold(String text) {
     return AccentFoldCharSequenceNormalizer.getInstance().normalize(text).toString();

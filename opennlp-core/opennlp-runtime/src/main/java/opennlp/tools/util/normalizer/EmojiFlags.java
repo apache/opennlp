@@ -57,7 +57,7 @@ public final class EmojiFlags {
    *
    * @param codePoint The code point to test.
    */
-  private static boolean isRegionalIndicator(int codePoint) {
+  public static boolean isRegionalIndicator(int codePoint) {
     return codePoint >= FIRST_REGIONAL_INDICATOR && codePoint <= LAST_REGIONAL_INDICATOR;
   }
 

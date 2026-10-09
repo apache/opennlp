@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,10 +29,6 @@ public class LineBreakPreservingWhitespaceCharSequenceNormalizerTest {
 
   private static LineBreakPreservingWhitespaceCharSequenceNormalizer norm() {
     return LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance();
-  }
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
   }
 
   @Test

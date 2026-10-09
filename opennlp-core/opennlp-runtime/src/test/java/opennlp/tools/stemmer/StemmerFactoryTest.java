@@ -343,6 +343,10 @@ class StemmerFactoryTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SharingStemmer(factory).stem(null));
     Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new CachingStemmer(factory).stemAll(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new SharingStemmer(factory).stemAll(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> new PorterStemmer().stem((CharSequence) null));
   }
 

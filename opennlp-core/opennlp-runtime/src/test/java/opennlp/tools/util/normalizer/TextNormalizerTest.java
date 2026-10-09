@@ -20,14 +20,11 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TextNormalizerTest {
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   @Test
   void testNormalizersApplyInOrder() {

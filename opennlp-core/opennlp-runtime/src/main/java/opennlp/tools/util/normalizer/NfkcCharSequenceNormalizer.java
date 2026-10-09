@@ -47,4 +47,9 @@ public class NfkcCharSequenceNormalizer implements CharSequenceNormalizer {
     ParamChecks.requireNonNullArg(text, "text");
     return Normalizer.normalize(text, Normalizer.Form.NFKC);
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

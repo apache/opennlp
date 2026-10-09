@@ -18,14 +18,11 @@ package opennlp.tools.util.normalizer;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class SetBasedNormalizerTest {
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   private static String quotes(String text) {
     return QuoteCharSequenceNormalizer.getInstance().normalize(text).toString();

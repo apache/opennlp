@@ -103,7 +103,7 @@ public final class EmojiAnnotations {
   static String stripPresentationSelector(CharSequence symbol) {
     final int length = symbol.length();
     int i = 0;
-    while (i < length && symbol.charAt(i) != 0xFE0F) {
+    while (i < length && symbol.charAt(i) != UnicodeEmojiSequences.VARIATION_SELECTOR_EMOJI) {
       i++;
     }
     if (i == length) {
@@ -113,7 +113,7 @@ public final class EmojiAnnotations {
     stripped.append(symbol, 0, i);
     for (int k = i + 1; k < length; k++) {
       final char c = symbol.charAt(k);
-      if (c != 0xFE0F) {
+      if (c != UnicodeEmojiSequences.VARIATION_SELECTOR_EMOJI) {
         stripped.append(c);
       }
     }

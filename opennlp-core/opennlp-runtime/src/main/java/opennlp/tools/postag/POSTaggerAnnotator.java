@@ -40,6 +40,9 @@ import opennlp.tools.util.ParamChecks;
  * sentence; the produced tag layer stays aligned with {@link Layers#TOKENS} by
  * position.</p>
  *
+ * <p>The adapter holds no per-call state; it is as thread-safe as the tagger it
+ * wraps.</p>
+ *
  * @since 3.0.0
  */
 public final class POSTaggerAnnotator implements DocumentAnnotator {

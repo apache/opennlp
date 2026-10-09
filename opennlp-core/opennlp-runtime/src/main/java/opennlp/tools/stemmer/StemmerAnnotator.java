@@ -36,6 +36,9 @@ import opennlp.tools.util.ParamChecks;
  * <p>Stemming operates on the token surface alone, so this annotator requires only the
  * token layer; no part-of-speech tags are involved.</p>
  *
+ * <p>The adapter holds no per-call state; it is as thread-safe as the stemmer it
+ * wraps.</p>
+ *
  * @since 3.0.0
  */
 public final class StemmerAnnotator implements DocumentAnnotator {

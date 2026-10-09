@@ -83,4 +83,9 @@ public class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer
       default -> null;
     };
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

@@ -54,4 +54,9 @@ public class BulletCharSequenceNormalizer implements OffsetAwareNormalizer {
   public AlignedText normalizeAligned(CharSequence text) {
     return BULLETS.normalizeAligned(text);
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

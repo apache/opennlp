@@ -87,7 +87,7 @@ public class WordBreakPropertyTest {
   @Test
   void testFromPropertyNameRejectsUnknown() {
     assertEquals(WordBreak.ALETTER, WordBreak.fromPropertyName("ALetter"));
-    org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> WordBreak.fromPropertyName("NotAValue"));
   }
 

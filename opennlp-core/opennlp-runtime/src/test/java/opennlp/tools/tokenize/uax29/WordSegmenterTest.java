@@ -23,14 +23,11 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WordSegmenterTest {
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   private static List<String> words(String text) {
     final List<String> out = new ArrayList<>();

@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,10 +36,6 @@ public class FullCaseFoldCharSequenceNormalizerTest {
 
   private static FullCaseFoldCharSequenceNormalizer norm() {
     return FullCaseFoldCharSequenceNormalizer.getInstance();
-  }
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
   }
 
   @Test

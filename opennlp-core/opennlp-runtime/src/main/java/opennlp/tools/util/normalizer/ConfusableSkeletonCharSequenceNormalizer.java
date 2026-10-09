@@ -48,4 +48,9 @@ public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNor
     ParamChecks.requireNonNullArg(text, "text");
     return Confusables.skeleton(text);
   }
+
+  /** {@return the shared instance, so deserialization keeps the singleton} */
+  private Object readResolve() {
+    return INSTANCE;
+  }
 }

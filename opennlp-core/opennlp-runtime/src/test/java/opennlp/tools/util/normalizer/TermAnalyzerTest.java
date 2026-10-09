@@ -36,6 +36,7 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
 import opennlp.tools.stemmer.snowball.SnowballStemmerFactory;
 import opennlp.tools.util.Span;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -43,10 +44,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TermAnalyzerTest {
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   @Test
   void testNoDimensionsLeavesTokenUnchanged() {
@@ -169,9 +166,7 @@ public class TermAnalyzerTest {
   @Test
   void testLemmatizerReturningNullFailsLoudlyInsteadOfOverflowing() {
     // A contract-violating Lemmatizer that returns a null lemma must surface as a clear
-    // IllegalStateException. Before this guard the null was cached under LEMMA, read as "absent"
-    // by Term.at's lazy cache, and recomputed through normalized() forever, surfacing as a
-    // StackOverflowError far from the cause.
+    // IllegalStateException.
     final Lemmatizer broken = new Lemmatizer() {
       @Override
       public String[] lemmatize(String[] tokens, String[] tags) {

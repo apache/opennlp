@@ -421,4 +421,9 @@ public class TermVectorAnnotatorTest {
     assertEquals(Set.of(Layers.TOKENS), annotator.requires());
     assertEquals(Set.of(TermVectorAnnotator.TERM_VECTORS), annotator.provides());
   }
+
+  @Test
+  void testToStringNamesTheAnnotator() {
+    assertEquals("TermVectorAnnotator", new TermVectorAnnotator().toString());
+  }
 }

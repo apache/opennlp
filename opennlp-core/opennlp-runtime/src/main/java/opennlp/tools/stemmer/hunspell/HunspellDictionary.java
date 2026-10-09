@@ -1145,21 +1145,11 @@ public final class HunspellDictionary {
    */
   static byte[] readBounded(InputStream in, int maxBytes, String label)
       throws IOException {
-    final byte[] chunk = new byte[8192];
-    byte[] buffer = new byte[Math.min(8192, maxBytes)];
-    int size = 0;
-    int n;
-    while ((n = in.read(chunk)) >= 0) {
-      if (size + n > maxBytes) {
-        throw new IOException(label + " size exceeds safe limit of " + maxBytes);
-      }
-      if (size + n > buffer.length) {
-        buffer = Arrays.copyOf(buffer, Math.min(maxBytes, Math.max(buffer.length * 2, size + n)));
-      }
-      System.arraycopy(chunk, 0, buffer, size, n);
-      size += n;
+    final byte[] bytes = in.readNBytes(maxBytes + 1);
+    if (bytes.length > maxBytes) {
+      throw new IOException(label + " size exceeds safe limit of " + maxBytes);
     }
-    return size == buffer.length ? buffer : Arrays.copyOf(buffer, size);
+    return bytes;
   }
 
   /**

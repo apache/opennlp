@@ -38,6 +38,9 @@ import opennlp.tools.util.Span;
  * is absent is the whole text tokenized at once. Either way, every token span refers to
  * the original document text.</p>
  *
+ * <p>The adapter holds no per-call state; it is as thread-safe as the tokenizer it
+ * wraps.</p>
+ *
  * @since 3.0.0
  */
 public final class TokenizerAnnotator implements DocumentAnnotator {
@@ -91,7 +94,7 @@ public final class TokenizerAnnotator implements DocumentAnnotator {
    */
   private void addTokens(List<Annotation<String>> tokens, String text, int offset) {
     for (final Span span : tokenizer.tokenizePos(text)) {
-      final Span shifted = new Span(span.getStart() + offset, span.getEnd() + offset);
+      final Span shifted = new Span(span, offset);
       tokens.add(new Annotation<>(shifted, span.getCoveredText(text).toString()));
     }
   }

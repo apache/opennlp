@@ -170,10 +170,7 @@ public class SocialMediaCharSequenceNormalizer implements CharSequenceNormalizer
 
   /** {@return whether {@code codePoint} is an ASCII letter, digit, or underscore} */
   private boolean isAsciiWord(int codePoint) {
-    return codePoint >= 'a' && codePoint <= 'z'
-        || codePoint >= 'A' && codePoint <= 'Z'
-        || codePoint >= '0' && codePoint <= '9'
-        || codePoint == '_';
+    return codePoint == '_' || AsciiChars.ALPHANUMERIC.contains(codePoint);
   }
 
   /**

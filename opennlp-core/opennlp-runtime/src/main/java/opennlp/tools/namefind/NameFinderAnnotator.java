@@ -46,6 +46,9 @@ import opennlp.tools.util.Span;
  * <p>Spans the finder returns without a type are recorded with the {@link #UNTYPED}
  * entity type.</p>
  *
+ * <p>The adapter holds no per-call state; it is as thread-safe as the name finder it
+ * wraps.</p>
+ *
  * @since 3.0.0
  */
 public final class NameFinderAnnotator implements DocumentAnnotator {
