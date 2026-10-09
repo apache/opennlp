@@ -282,8 +282,8 @@ public class NameSample implements Sample {
     if (START_TAG.equals(token)) {
       return true;
     }
-    if (!token.startsWith(START_TAG_PREFIX) || !token.endsWith(">")
-        || token.length() <= START_TAG_PREFIX.length()) {
+    if (!token.startsWith(START_TAG_PREFIX) || token.length() <= START_TAG_PREFIX.length()
+        || token.charAt(token.length() - 1) != TAG_END) {
       return false;
     }
     for (int i = START_TAG_PREFIX.length(); i < token.length() - 1; i++) {
