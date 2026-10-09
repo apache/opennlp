@@ -17,8 +17,12 @@
 package opennlp.dl;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -48,19 +52,17 @@ public class AbstractDLChunkingTest {
     assertEquals(List.of("a b c"), AbstractDL.whitespaceChunks("  a   b\tc  ", 100, 0));
   }
 
-  @Test
-  void testAppliesChunkSizeWithoutOverlap() {
-    assertEquals(List.of("a b", "c d"), AbstractDL.whitespaceChunks("a b c d", 2, 0));
+  private static Stream<Arguments> chunkCases() {
+    return Stream.of(
+        Arguments.of("a b c d", 2, 0, List.of("a b", "c d")),
+        Arguments.of("a b c d", 2, 1, List.of("a b", "b c", "c d")),
+        Arguments.of("", 100, 0, List.of()));
   }
 
-  @Test
-  void testAppliesChunkOverlap() {
-    assertEquals(List.of("a b", "b c", "c d"), AbstractDL.whitespaceChunks("a b c d", 2, 1));
-  }
-
-  @Test
-  void testEmptyTextYieldsNoChunks() {
-    assertEquals(List.of(), AbstractDL.whitespaceChunks("", 100, 0));
+  @ParameterizedTest
+  @MethodSource("chunkCases")
+  void testAppliesChunkSizeAndOverlap(String text, int size, int overlap, List<String> expected) {
+    assertEquals(expected, AbstractDL.whitespaceChunks(text, size, overlap));
   }
 
   @Test

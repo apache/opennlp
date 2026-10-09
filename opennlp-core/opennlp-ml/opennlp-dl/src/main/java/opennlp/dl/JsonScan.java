@@ -67,9 +67,9 @@ public final class JsonScan {
   private static final String SIMPLE_ESCAPES = "\"\\/bfnrt";
   /** The length of a two-character escape such as {@code \n}. */
   private static final int ESCAPE_LENGTH = 2;
-  /** The number of hexadecimal digits of a {@code \\u} escape. */
+  /** The number of hexadecimal digits of a <code>&#92;u</code> escape. */
   private static final int UNICODE_ESCAPE_DIGITS = 4;
-  /** The length of a {@code \\u} escape including the backslash and the {@code u}. */
+  /** The length of a <code>&#92;u</code> escape including the backslash and the {@code u}. */
   private static final int UNICODE_ESCAPE_LENGTH = ESCAPE_LENGTH + UNICODE_ESCAPE_DIGITS;
   /** The number of characters quoted in the message for malformed text. */
   private static final int MESSAGE_CONTEXT_LENGTH = 20;
@@ -362,7 +362,7 @@ public final class JsonScan {
 
   /**
    * Finds the closing quote of a string literal, checking each escape on the way: a backslash
-   * must be followed by one of the escape characters of RFC 8259, and {@code \\u} by four
+   * must be followed by one of the escape characters of RFC 8259, and <code>&#92;u</code> by four
    * hexadecimal digits.
    *
    * @param text The JSON text.

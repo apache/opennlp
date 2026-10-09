@@ -19,16 +19,14 @@ package opennlp.dl.namefinder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 import org.slf4j.Logger;
@@ -105,14 +103,27 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
 
   private final SentenceDetector sentenceDetector;
   private final Map<Integer, String> ids2Labels;
-  // Inference options are snapshotted into final fields at construction so a shared
-  // instance never reads the caller's mutable InferenceOptions during inference.
-  private final boolean includeAttentionMask;
-  private final boolean includeTokenTypeIds;
-  private final int documentSplitSize;
-  private final int splitOverlapSize;
-  private final boolean normalizeWhitespace;
-  private final boolean normalizeDashes;
+  private final InferenceSettings settings;
+
+  /**
+   * Test-only constructor that injects an already-built {@link OrtSession} (or {@code null}),
+   * bypassing model loading so inference paths can be exercised in unit tests.
+   *
+   * @param env The ONNX environment, or {@code null}.
+   * @param session The ONNX session, or {@code null}.
+   * @param vocab The vocabulary used by the tokenizer.
+   * @param ids2Labels The mapping of model output indices to BIO labels.
+   * @param inferenceOptions {@link InferenceOptions} to control the inference.
+   * @param sentenceDetector The {@link SentenceDetector} to be used.
+   */
+  NameFinderDL(OrtEnvironment env, OrtSession session, Map<String, Integer> vocab,
+               Map<Integer, String> ids2Labels, InferenceOptions inferenceOptions,
+               SentenceDetector sentenceDetector) {
+    super(env, session, vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
+    this.ids2Labels = Map.copyOf(ids2Labels);
+    this.settings = InferenceSettings.from(inferenceOptions);
+    this.sentenceDetector = sentenceDetector;
+  }
 
   /**
    * Instantiates a {@link opennlp.tools.namefind.TokenNameFinder name finder} using ONNX models.
@@ -129,8 +140,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
    *     is malformed, has an unsupported layout, or sets a lower casing that disagrees with
    *     the lower casing the component is configured with.
-   * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
-   *     the sentence detector is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary},
+   *     {@code ids2Labels} or {@code sentenceDetector} is {@code null}, or if the vocabulary
+   *     lacks the classification, separator or unknown token.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       SentenceDetector sentenceDetector) throws IOException, OrtException {
@@ -155,8 +167,10 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
    *     is malformed, has an unsupported layout, or sets a lower casing that disagrees with
    *     the lower casing the component is configured with.
-   * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
-   *     the sentence detector is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary},
+   *     {@code ids2Labels}, {@code inferenceOptions} or {@code sentenceDetector} is
+   *     {@code null}, if the split sizes of {@code inferenceOptions} are invalid, or if the
+   *     vocabulary lacks the classification, separator or unknown token.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       InferenceOptions inferenceOptions,
@@ -168,16 +182,20 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
         resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
 
     this.ids2Labels = Map.copyOf(ids2Labels);
-    this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
-    this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
-    this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
-    this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
-    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
-    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
+    this.settings = InferenceSettings.from(inferenceOptions);
     this.sentenceDetector = sentenceDetector;
 
   }
 
+  /**
+   * Checks the arguments of a public constructor that the base class does not check.
+   *
+   * @param inferenceOptions The inference options.
+   * @param ids2Labels The mapping of model output indices to BIO labels.
+   * @param sentenceDetector The sentence detector.
+   * @return {@code inferenceOptions}.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
+   */
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Map<Integer, String> ids2Labels,
       final SentenceDetector sentenceDetector) {
@@ -194,13 +212,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    * <p>Joins the provided tokens with spaces, sentence-splits the joined text, runs each sentence
    * through the ONNX token-classification model, decodes BIO labels into {@link Span spans}, and
    * resolves those spans to character offsets in the joined text <em>after</em> any optional input
-   * normalization.</p>
-   *
-   * <p>Note: this returns correct original offsets in every case except one. Whitespace folding is
-   * length-preserving, so it never moves offsets. Only dash folding can change the input length, and
-   * only for a non-BMP dash; so when {@code normalizeDashes} is enabled and the input contains a
-   * supplementary-plane dash, the returned spans are offsets into the normalized text rather than
-   * the original. For an exact original mapping in that case, use {@link #findInOriginal(String[])}.</p>
+   * normalization; use {@link #findInOriginal(String[])} for offsets in the original input.</p>
    *
    * @throws IllegalStateException Thrown if inference fails, if the model output shape is not
    *     the expected {@code float[batch][token][label]} form, if the model output contains
@@ -219,10 +231,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    * Finds names and returns their {@link Span spans} in coordinates of the original joined input
    * ({@code String.join(" ", input)}), regardless of any whitespace or dash normalization applied
    * before inference. Spans are mapped back through the normalization {@link Alignment}, so a fold
-   * that changes the input length (a supplementary dash shrinking, or an expansion) does not shift
-   * the reported offsets. This implements {@link OffsetMappingNameFinder}, so an interface-typed
-   * caller can reach the offset-correct path with
-   * {@code finder instanceof OffsetMappingNameFinder}.
+   * that changes the input length, such as a supplementary-plane dash, does not shift the reported
+   * offsets.
    *
    * @param input The tokens to search.
    * @return The detected spans, in original-input character coordinates.
@@ -266,7 +276,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
     final AlignedText normalized =
-        normalizeInputAligned(String.join(" ", input), normalizeWhitespace, normalizeDashes);
+        normalizeInputAligned(String.join(" ", input), settings.normalizeWhitespace(),
+            settings.normalizeDashes());
     final String text = normalized.normalizedString();
 
     // sentPosDetect (not sentDetect) so each sentence's offset in the full text is known.
@@ -317,17 +328,12 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    */
   static List<Span> mergeOverlappingSpans(final List<Span> spans) {
     if (spans.size() < 2) {
-      // Return a fresh list so the caller always owns the result, matching the >= 2 path below
-      // (which returns a new list); the input is never handed back aliased.
+      // Always return a new list, never the input.
       return new ArrayList<>(spans);
     }
     final List<Span> byDominance = new ArrayList<>(spans);
     byDominance.sort(BY_LENGTH_THEN_PROBABILITY);
-    // Kept spans never overlap each other, so they form a start-sorted partition. A candidate can
-    // only intersect the kept span that starts at or just before it (floor) or the next kept span
-    // that starts within it (ceiling); checking those two is O(log n) instead of scanning every kept
-    // span, making the whole longest-wins pass O(n log n) rather than O(n^2). Keyed by start, the map
-    // also yields the result already in document order.
+    // Kept spans are disjoint, so a candidate can only overlap its floor or ceiling entry by start.
     final TreeMap<Integer, Span> kept = new TreeMap<>();
     for (final Span candidate : byDominance) {
       final Map.Entry<Integer, Span> before = kept.floorEntry(candidate.getStart());
@@ -344,46 +350,16 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   }
 
   /**
-   * Runs the model on one token window and returns the per-token label score rows. A failure
-   * executing the model (an {@link OrtException} or any runtime fault) is surfaced as an
-   * {@link IllegalStateException} (cause preserved); an unexpected output shape is its own loud
-   * failure. This mirrors the fail-loud contract of the sibling {@code DocumentCategorizerDL}.
+   * Runs the model on one token window and returns the per-token label score rows.
    *
    * @param tokens The tokens for one chunk to run inference on.
    * @return The {@code [token][label]} score matrix for the chunk.
+   * @throws IllegalStateException Thrown if the model cannot be run, or if its output is not a
+   *     non-empty {@code float[batch][token][label]} array.
    */
   private float[][] infer(final Tokens tokens) {
 
-    // At most three inputs (ids, attention mask, token type ids), so size for exactly that.
-    final Map<String, OnnxTensor> inputs = HashMap.newHashMap(3);
-    final Object output;
-    try {
-      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
-          new long[] {1, tokens.ids().length}));
-
-      if (includeAttentionMask) {
-        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
-      }
-
-      if (includeTokenTypeIds) {
-        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
-      }
-
-      // getValue() copies the tensor into Java arrays, so the result can be closed safely.
-      try (OrtSession.Result result = session.run(inputs)) {
-        output = result.get(0).getValue();
-      }
-    } catch (OrtException ex) {
-      throw new IllegalStateException(
-          "Unable to perform name finder inference: " + ex.getMessage(), ex);
-    } catch (RuntimeException ex) {
-      throw new IllegalStateException(
-          "Unexpected runtime failure during name finder inference: " + ex.getMessage(), ex);
-    } finally {
-      inputs.values().forEach(OnnxTensor::close);
-    }
+    final Object output = runModel(tokens, settings);
 
     // The model returns one score row per token, batched: float[batch][token][label]. Any other
     // shape (or an empty batch) is a model-contract violation, surfaced on its own rather than as
@@ -430,9 +406,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    * @param tokens The WordPiece tokens produced for the text.
    * @param tokenLabelScores The per-token label scores returned by the model.
    * @param id2Labels The mapping from model output indexes to BIO labels.
-   * @param searchStart The character offset in {@code text} to begin locating spans from. Threading
-   *     a monotonic cursor across the chunks and sentences of a single {@link #find(String[])} call
-   *     keeps a repeated entity surface form from being emitted twice at the same first occurrence.
+   * @param searchStart The character offset in {@code text} to begin locating spans from; spans
+   *     are located between it and the end of {@code text}.
    * @return The decoded {@link Span spans}.
    */
   static List<Span> decodeSpans(String text, String[] tokens, float[][] tokenLabelScores,
@@ -448,10 +423,11 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    * @param tokens The WordPiece tokens produced for the text.
    * @param tokenLabelScores The per-token label scores returned by the model.
    * @param id2Labels The mapping from model output indexes to BIO labels.
-   * @param searchStart The first character offset in {@code text} to search.
+   * @param searchStart The first character offset in {@code text} to search. During
+   *     {@link #find(String[])}, this is the start of the chunk the tokens were encoded from.
    * @param searchEnd The exclusive upper bound for locating reconstructed spans. During
-   *     {@link #find(String[])}, this is the current sentence end so an entity from one sentence
-   *     cannot be resolved to an identical surface form in a later sentence.
+   *     {@link #find(String[])}, this is the end of that chunk, so an entity is located only
+   *     within the text its chunk covers.
    * @return The decoded {@link Span spans}.
    */
   static List<Span> decodeSpans(String text, String[] tokens, float[][] tokenLabelScores,
@@ -663,13 +639,10 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   /**
    * Locates reconstructed span text in a bounded region of the original input text.
    *
-   * <p>Matching is a single forward cursor scan, not a regular expression. Each space in the
-   * reconstructed span matches a run of zero or more Unicode whitespace characters in the source
-   * (so an entity whose WordPiece pieces were rejoined with spaces, such as {@code "AT & T"} for
-   * {@code "AT&T"}, is still located), and every other code point matches case-insensitively.
-   * Using a cursor avoids {@link java.util.regex.Pattern}/{@link java.util.regex.Matcher}
-   * allocation and the ReDoS surface of regular expressions, and recognizes Unicode whitespace
-   * that Java's {@code \s} does not.</p>
+   * <p>Each space in the reconstructed span matches a run of zero or more Unicode
+   * {@code White_Space} characters in the source (so an entity whose WordPiece pieces were
+   * rejoined with spaces, such as {@code "AT & T"} for {@code "AT&T"}, is still located), and
+   * every other code point matches case-insensitively.</p>
    *
    * @param text The original text.
    * @param span The reconstructed span text, with sub-tokens separated by single ASCII spaces.
@@ -758,7 +731,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
     // InferenceOptions before feeding each chunk into BERT, keeping each chunk's character span so
     // its decoded spans can be bounded to the region the chunk covers.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    final List<TextChunk> chunks = whitespaceChunkSpans(text, documentSplitSize, splitOverlapSize);
+    final List<TextChunk> chunks =
+        whitespaceChunkSpans(text, settings.documentSplitSize(), settings.splitOverlapSize());
     final List<ChunkTokens> t = new ArrayList<>(chunks.size());
     for (final TextChunk chunk : chunks) {
 

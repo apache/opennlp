@@ -65,11 +65,30 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
+  void testConstructorNamesTheNullCategoriesParameter() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
+        new DocumentCategorizerDL(new File("model.onnx"), new File("vocab.txt"),
+            (Map<Integer, String>) null, new AverageClassificationScoringStrategy(),
+            new InferenceOptions()));
+
+    assertEquals("categories must not be null", e.getMessage());
+  }
+
+  @Test
+  void testConstructorNamesTheNullConfigParameter() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
+        new DocumentCategorizerDL(new File("model.onnx"), new File("vocab.txt"),
+            (File) null, new AverageClassificationScoringStrategy(), new InferenceOptions()));
+
+    assertEquals("config must not be null", e.getMessage());
+  }
+
+  @Test
   void testCategorizeFailsLoudlyWhenInferenceFails() {
     final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
         categorizerWithoutSession().categorize(new String[] {"hello world"}));
 
-    assertTrue(e.getMessage().contains("document classification inference"));
+    assertTrue(e.getMessage().contains("Unable to run the ONNX model"), e.getMessage());
     assertTrue(e.getCause() instanceof RuntimeException);
   }
 
