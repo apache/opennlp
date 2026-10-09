@@ -170,7 +170,6 @@ final DocumentCategorizerDL myCategorizer = new DocumentCategorizerDL(
 double[] outcomes = myCategorizer.categorize(inputText);
 String category = myCategorizer.getBestCategory(outcomes);]]>
 				</programlisting>
-				For additional examples, refer to the <code>DocumentCategorizerDLEval</code> class.
 			</para>
 			<para>
 				The vocabulary file is either plain text with one token per line, as in
