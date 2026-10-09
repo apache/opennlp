@@ -48,6 +48,21 @@ public class Parse implements Cloneable, Comparable<Parse> {
   public static final String BRACKET_LSB = "[";
   public static final String BRACKET_RSB = "]";
 
+  /** Opens a constituent in the bracketed parse string. */
+  private static final char OPENING_BRACKET = BRACKET_LRB.charAt(0);
+
+  /** Closes a constituent in the bracketed parse string. */
+  private static final char CLOSING_BRACKET = BRACKET_RRB.charAt(0);
+
+  /** Separates a constituent label from its token. */
+  private static final char LABEL_SEPARATOR = ' ';
+
+  /** Separates a constituent type from its function tag, as in {@code NP-SBJ}. */
+  private static final char FUNCTION_TAG_SEPARATOR = '-';
+
+  /** Separates a constituent label from its co-index, as in {@code NP=2}. */
+  private static final char INDEX_SEPARATOR = '=';
+
   /**
    * The text string on which this parse is based.
    * This object is shared among all parses for the same sentence.
@@ -655,10 +670,10 @@ public class Parse implements Cloneable, Comparable<Parse> {
       int typeEnd = endOfLabel(rest, 0);
       if (typeEnd > 0) {
         String type = rest.substring(0, typeEnd);
-        if (useFunctionTags && typeEnd < rest.length() && rest.charAt(typeEnd) == '-') {
+        if (useFunctionTags && typeEnd < rest.length() && rest.charAt(typeEnd) == FUNCTION_TAG_SEPARATOR) {
           int ftagEnd = endOfLabel(rest, typeEnd + 1);
           if (ftagEnd > typeEnd + 1) {
-            type = type + "-" + rest.substring(typeEnd + 1, ftagEnd);
+            type = type + FUNCTION_TAG_SEPARATOR + rest.substring(typeEnd + 1, ftagEnd);
           }
         }
         return type;
@@ -680,7 +695,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     int i = from;
     while (i < text.length()) {
       char c = text.charAt(i);
-      if (c == ' ' || c == '=' || c == '-') {
+      if (c == LABEL_SEPARATOR || c == INDEX_SEPARATOR || c == FUNCTION_TAG_SEPARATOR) {
         break;
       }
       i++;
@@ -700,7 +715,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     int i = from;
     while (i < text.length()) {
       char c = text.charAt(i);
-      if (c == ' ' || c == '(' || c == ')') {
+      if (c == LABEL_SEPARATOR || c == OPENING_BRACKET || c == CLOSING_BRACKET) {
         break;
       }
       i++;
@@ -752,7 +767,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
   private static String getToken(String rest) {
     // Expected form: type, one space, token, optional ASCII whitespace, closing parenthesis.
     int typeEnd = endOfTokenText(rest, 0);
-    if (typeEnd == 0 || typeEnd == rest.length() || rest.charAt(typeEnd) != ' ') {
+    if (typeEnd == 0 || typeEnd == rest.length() || rest.charAt(typeEnd) != LABEL_SEPARATOR) {
       return null;
     }
     int tokenStart = typeEnd + 1;
@@ -764,7 +779,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     while (i < rest.length() && StringUtil.isAsciiWhitespace(rest.charAt(i))) {
       i++;
     }
-    if (i < rest.length() && rest.charAt(i) == ')') {
+    if (i < rest.length() && rest.charAt(i) == CLOSING_BRACKET) {
       return decodeToken(rest.substring(tokenStart, tokenEnd));
     }
     return null;

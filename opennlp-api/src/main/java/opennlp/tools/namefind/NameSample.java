@@ -43,6 +43,12 @@ public class NameSample implements Sample {
   public static final String START_TAG = "<START>";
   public static final String END_TAG = "<END>";
 
+  /** Separates {@code <START} from the name type in a start tag. */
+  private static final char TYPE_SEPARATOR = ':';
+
+  /** Ends a start tag. */
+  private static final char TAG_END = '>';
+
 
   private final String id;
   private final List<String> sentence;
@@ -282,7 +288,7 @@ public class NameSample implements Sample {
     }
     for (int i = START_TAG_PREFIX.length(); i < token.length() - 1; i++) {
       char c = token.charAt(i);
-      if (c == ':' || c == '>' || StringUtil.isAsciiWhitespace(c)) {
+      if (c == TYPE_SEPARATOR || c == TAG_END || StringUtil.isAsciiWhitespace(c)) {
         return false;
       }
     }

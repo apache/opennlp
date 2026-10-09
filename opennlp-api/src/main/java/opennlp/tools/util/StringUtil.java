@@ -31,6 +31,9 @@ public class StringUtil {
 
   private static final char BYTE_ORDER_MARK = '\uFEFF';
 
+  /** U+0009, the first of the contiguous ASCII whitespace controls U+0009 to U+000D. */
+  private static final int CHARACTER_TABULATION = 0x0009;
+
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
@@ -392,7 +395,8 @@ public class StringUtil {
    * @return {@code true} if {@code codePoint} is an ASCII whitespace character.
    */
   public static boolean isAsciiWhitespace(int codePoint) {
-    return codePoint == ' ' || (codePoint >= '\t' && codePoint <= '\r');
+    return codePoint == UnicodeWhitespace.SPACE
+        || (codePoint >= CHARACTER_TABULATION && codePoint <= UnicodeWhitespace.CARRIAGE_RETURN);
   }
 
   /**
