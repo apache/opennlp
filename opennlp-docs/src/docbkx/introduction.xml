@@ -318,18 +318,17 @@ Arguments description:
 	<section xml:id="intro.stream.resources">
 		<title>Closing and resetting input streams</title>
 		<para>
-			Close corpus streams after use, preferably with try-with-resources. Since 3.0.0,
+			Close corpus streams after use, preferably with try-with-resources.
 			<code>PlainTextByLineStream.reset()</code> closes the reader from the previous
 			pass before asking its <code>InputStreamFactory</code> for a new stream. The
-			factory must therefore provide a fresh, readable stream for each pass, rather
+			factory must therefore provide a new, readable stream for each pass, rather
 			than return the stream that has just been closed.
 		</para>
 		<para>
 			The markable file stream that the command line tools and the format converters open
 			for corpus files releases its file handle on close, including when closed through
 			a wrapping reader. The Leipzig language-sample reader also
-			closes the stream used to count source lines. These fixes prevent file handles
-			from accumulating during repeated reads and training passes.
+			closes the stream used to count source lines.
 		</para>
 	</section>
     <section xml:id="intro.sysprops">
@@ -355,38 +354,30 @@ Arguments description:
         <section xml:id="intro.sysprops.whitespace">
             <title>Whitespace Definition</title>
             <para>
-                What counts as whitespace is a common interoperability gap across programming
-                languages and libraries. The Unicode Character Database defines a binary
-                <code>White_Space</code> property. As documented on
-                <link xlink:href="https://en.wikipedia.org/wiki/Whitespace_character">Wikipedia's
-                whitespace character page</link>, Unicode defines exactly twenty-five characters
-                with <code>White_Space=yes</code> (<quote>WSpace=Y</quote> / <quote>WS</quote>),
-                including ordinary space and tab, the next-line control (<code>U+0085</code>),
-                no-break and typographic spaces such as <code>U+00A0</code> and
-                <code>U+2007</code>, and the line and paragraph separators
-                (<code>U+2028</code>/<code>U+2029</code>). That page also states the cross-language
-                weakness directly: <quote>Most languages only recognize whitespace characters that
-                have an ASCII code. They disallow most or all of the Unicode codes listed
-                above</quote>. Java is a concrete example of that mismatch:
+                The Unicode standard defines whitespace as the 25 code points with the binary
+                <code>White_Space</code> property
+                (<link xlink:href="https://www.unicode.org/Public/17.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
+                Unicode 17.0.0). The set includes space and tab, the next-line control
+                (<code>U+0085</code>), no-break and typographic spaces such as <code>U+00A0</code>
+                and <code>U+2007</code>, and the line and paragraph separators
+                (<code>U+2028</code>/<code>U+2029</code>). Java's
                 <code>Character.isWhitespace</code> omits the no-break spaces and
-                <code>U+0085</code> while including the information separators
-                <code>U+001C</code>..<code>U+001F</code>, and Java's default <code>\s</code> regex
-                class is likewise an ASCII-oriented subset unless Unicode character-class mode is
-                enabled. Text extracted from PDFs, HTML, and word processors regularly carries the
-                wider set, so a tokenizer that follows the JVM predicate and one that follows
-                Unicode will disagree on those documents.
+                <code>U+0085</code> but includes the information separators
+                <code>U+001C</code>..<code>U+001F</code>; Java's default <code>\s</code> regex
+                class matches ASCII whitespace only unless Unicode character-class mode is
+                enabled. Text extracted from PDFs, HTML, and word processors often contains the
+                wider set, on which the two definitions produce different tokens.
             </para>
             <para>
                 Tokenization, corpus format parsing, and feature generation therefore classify
                 whitespace using the Unicode <code>White_Space</code> property by default, via
                 <code>StringUtil.isWhitespace</code> and the related
                 <code>StringUtil.splitOnUnicodeWhitespace</code> /
-                <code>trimUnicodeWhitespace</code> helpers (code-point scans, not regular
-                expressions). Models trained with OpenNLP 1.x or 2.x used the legacy definition
+                <code>trimUnicodeWhitespace</code> helpers. Models trained with OpenNLP 1.x or
+                2.x, which include the models published by the project, used the legacy definition
                 (the union of <code>Character.isWhitespace</code> and the Unicode <code>Zs</code>
-                category). As of this release, that covers all published OpenNLP models, so set
-                the property below when decoding those models if you need byte-identical
-                tokenization at the few code points where the two definitions differ.
+                category). Set the property below when applying those models to reproduce their
+                tokenization at the code points where the two definitions differ.
             </para>
             <para>
                 Users may switch to the legacy definition by setting the following system

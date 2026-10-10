@@ -35,7 +35,9 @@
 				<para>
 					<emphasis role="bold">Standards-sourced.</emphasis> Membership sets come from the
 					Unicode Character Database (for example the <code>White_Space</code> and
-					<code>Dash</code> properties), not from the JVM's locale-dependent or quirky
+					<code>Dash</code> properties in
+					<link xlink:href="https://www.unicode.org/Public/17.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
+					Unicode 17.0.0), not from the JVM's locale-dependent or quirky
 					character predicates. The normalization engine never relies on
 					<code>Character.isWhitespace</code>, which disagrees with the Unicode standard.
 				</para>
@@ -158,7 +160,15 @@
 					<row>
 						<entry><code>CaseFoldCharSequenceNormalizer</code></entry>
 						<entry>Lower cases for case-insensitive matching, using
-							<code>Locale.ROOT</code>.</entry>
+							<code>Locale.ROOT</code> or a supplied locale. Does not apply full case
+							folding; U+00DF is unchanged.</entry>
+					</row>
+					<row>
+						<entry><code>FullCaseFoldCharSequenceNormalizer</code></entry>
+						<entry>Applies Unicode full case folding (<code>CaseFolding.txt</code>,
+							status <code>C</code> and <code>F</code>), including the expanding
+							folds such as U+00DF to <code>ss</code> and U+FB00 to <code>ff</code>.
+							The Turkic mappings are not applied. Expects NFC input.</entry>
 					</row>
 					<row>
 						<entry><code>AccentFoldCharSequenceNormalizer</code></entry>
@@ -298,9 +308,8 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 			<code>NameFinderDL</code> additionally locates reconstructed entity text in the original
 			input with a cursor-based matcher: a space in the reconstructed span matches zero or more
 			Unicode whitespace code points in the source, and every other code point is compared
-			case-insensitively. This replaces the previous regular-expression approach and correctly
-			handles spacing copied from PDFs, the web, or non-Latin sources when resolving
-			<code>Span#getCoveredText(...)</code>.
+			case-insensitively. This handles spacing copied from PDFs, the web, or non-Latin sources
+			when resolving <code>Span#getCoveredText(...)</code>.
 		</para>
 		<para>
 			Optional input folding is controlled through <code>InferenceOptions</code> and is
@@ -403,7 +412,7 @@ String[] tokens = ws.split("one two"); // ["one", "two"]  (offset-aware via spl
 dash.normalize("a—b");                // "a-b"]]>
 		</programlisting>
 		<para>
-			A class applies its replacement three ways, which differ in whether they collapse runs and
+			A class applies its replacement in four ways, which differ in whether they collapse runs and
 			whether they preserve character offsets:
 		</para>
 		<itemizedlist>
@@ -514,20 +523,20 @@ Term term = analyzer.analyze("Running").get(0);
 			unrequested dimension costs one transform. The character-level dimensions have built-in
 			defaults; <code>STEM</code> and <code>LEMMA</code> require a
 			<code>Stemmer</code> or <code>Lemmatizer</code> (and <code>LEMMA</code> a part-of-speech
-			tag), and fail loudly if requested without them. An analyzer is immutable and safe to share
-			across threads when its configured transforms are. The built-in character normalizers are
+			tag); requesting either without them throws an <code>IllegalStateException</code>.
+			An analyzer is immutable and safe to share across threads when its configured transforms are. The built-in character normalizers are
 			stateless and <code>SnowballStemmer</code> is thread-safe, so they can be shared as is. A
 			<code>Stemmer</code> passed to <code>stem(Stemmer)</code> is used directly, so a stateful one
 			such as <code>PorterStemmer</code> confines the analyzer to one thread. Passing a
 			<code>StemmerFactory</code> to <code>stem(StemmerFactory)</code> instead wraps it in a
 			<code>CachingStemmer</code> (see <xref linkend="tools.stemmer.sharing"/>), which gives each
-			thread its own stemmer and cache, so the analyzer is shareable even when the factory mints
+			thread its own stemmer and cache, so the analyzer is shareable even when the factory creates
 			stateful stemmers.
 		</para>
 		<para>
 			Each dimension's transform is configurable on the builder. Beyond the no-argument methods
-			that enable a dimension with its default, there are convenience methods for the common
-			knobs, and a general <code>transform(dimension, normalizer)</code> escape hatch for any
+			that enable a dimension with its default, there are convenience methods for common
+			options, and the general method <code>transform(dimension, normalizer)</code> for any
 			character-level dimension:
 		</para>
 		<programlisting language="java">
@@ -551,18 +560,15 @@ Term term = analyzer.analyze("Running").get(0);
 	<section xml:id="tools.normalizer.emojiannotations">
 		<title>Emoji annotations</title>
 		<para>
-			Beyond folding, a pictograph carries signal worth keeping: a name, a coarse sentiment, an
-			entity type, a document category, and for flags a region. <code>EmojiAnnotator</code> is the
-			opt-in surface for that signal. It assembles one <code>EmojiAnnotation</code> record per
-			symbol from three strictly separated layers: <emphasis>bundled facts</emphasis> from the
-			provenance-tagged, project-authored <code>emoji-annotations.txt</code> table,
-			<emphasis>derived facts</emphasis> computed from the code point sequence itself
-			(<code>EmojiFlags</code> decodes a regional indicator pair to its ISO 3166-1 alpha-2 code and
-			a subdivision tag sequence to its ISO 3166-2 code, with no data file), and optional
-			<emphasis>joined facts</emphasis> resolved at run time through an
-			<code>EmojiAnnotationJoin</code> hook against user-installed data such as a gazetteer.
-			Every attribute value carries its own provenance source, and gazetteer identifiers are never
-			baked into the bundled table.
+			<code>EmojiAnnotator</code> provides optional metadata for a pictograph: a name, a coarse
+			sentiment, an entity type, a document category and, for flags, a region. It assembles one
+			<code>EmojiAnnotation</code> record per symbol from three separate sources: the bundled,
+			project-authored <code>emoji-annotations.txt</code> table; values computed from the code
+			point sequence itself (<code>EmojiFlags</code> decodes a regional indicator pair to its
+			ISO 3166-1 alpha-2 code and a subdivision tag sequence to its ISO 3166-2 code, with no data
+			file); and optional values resolved at run time through an <code>EmojiAnnotationJoin</code>
+			hook against user-installed data such as a gazetteer. Every attribute value records its
+			source. The bundled table contains no gazetteer identifiers.
 		</para>
 		<programlisting language="java">
 <![CDATA[EmojiAnnotator annotator = new EmojiAnnotator();
@@ -581,31 +587,29 @@ for (Term term : analyzer.analyze(text)) {
 }]]>
 		</programlisting>
 		<para>
-			<code>EmojiAnnotatorUsageExampleTest</code> asserts the behavior shown here.
-			Annotations are per-symbol <emphasis>metadata</emphasis>, not text transforms, so they are a
-			parallel accessor surface beside <code>Term</code> rather than additional
-			<code>Dimension</code>s: <code>annotate(Term)</code> reads the token's original layer, which
-			is the symbol the author actually wrote even after a fold dimension has rewritten it to
-			ASCII. Annotation is total over arbitrary tokens (a non-emoji token is simply empty, and
-			degenerate flag-shaped text yields no region instead of an exception), while the strict
-			decoder <code>EmojiFlags.isoRegion()</code> fails loudly on malformed sequences for callers
-			that want the contract. The bundled table's sentiment scores are original project judgments
+			Annotations are per-symbol <emphasis>metadata</emphasis>, not text transforms, and are
+			therefore not <code>Dimension</code>s: <code>annotate(Term)</code> reads the token's original
+			layer, the symbol as written, even after a fold dimension has rewritten it. It accepts any
+			token: a non-emoji token yields an empty
+			result, and malformed flag-shaped text yields no region. The strict decoder
+			<code>EmojiFlags.isoRegion()</code> throws an <code>IllegalArgumentException</code> on
+			malformed flag sequences. The bundled table's sentiment scores are original project judgments
 			(tagged <code>UNSPECIFIED</code>); its names and its entity-type/category assignments derive
 			from the Unicode-licensed CLDR short names and <code>emoji-test.txt</code> group headers, and
 			no third-party sentiment data set is included.
 		</para>
 		<para>
-			The annotations are wired as strictly opt-in feature inputs to three components, each
-			through its existing extension seam so that default behavior and existing models are
-			unchanged: the name finder (and any consumer of feature generation descriptors) activates
+			The annotations are optional feature inputs to three components, each added through an
+			existing extension point, so default behavior and existing models are unchanged: the name
+			finder (and any consumer of feature generation descriptors) activates
 			<code>EmojiAnnotationFeatureGenerator</code> by naming
 			<code>EmojiAnnotationFeatureGeneratorFactory</code> in a descriptor, the document
 			categorizer takes <code>EmojiFeatureGenerator</code> alongside its defaults through the
 			<code>DoccatFactory</code> feature generator array, and sentiment analysis trains with
 			<code>EmojiSentimentFactory</code>, whose context generator adds the emoji evidence and is
-			re-created from the model manifest at prediction time. A flag token then carries
-			gazetteer-like evidence (<code>emojiType=FLAG</code>, <code>emojiRegion=DE</code>) with no
-			dictionary, and a heart or crying face contributes its coarse polarity directly.
+			re-created from the model manifest at prediction time. A flag token then yields the
+			features <code>emojiType=FLAG</code> and <code>emojiRegion=DE</code> without a dictionary,
+			and a heart or crying face contributes its coarse polarity directly.
 		</para>
 	</section>
 

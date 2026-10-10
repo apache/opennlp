@@ -240,11 +240,10 @@ boolean word = policy.test("Cafe\u0301");]]>
 			Use <code>WhitespaceTokenizer.newInstance(boolean keepNewLines)</code> when a
 			caller needs its own whitespace tokenizer configuration. Each call returns a
 			distinct instance. Changing it does not change
-			<code>WhitespaceTokenizer.INSTANCE</code>. Since 3.0.0,
-			<code>TokenizerME</code> uses private whitespace tokenizers and no longer changes
-			the shared instance when applying its <code>keepNewLines</code> setting.
-			The shared instance remains mutable; callers needing different settings should
-			use separate instances rather than reconfigure the singleton.
+			<code>WhitespaceTokenizer.INSTANCE</code>. <code>TokenizerME</code> uses its own
+			whitespace tokenizers and does not change the shared instance. The shared
+			instance is mutable; callers that need different settings should use separate
+			instances instead of reconfiguring it.
 		</para>
 	</section>
 	<section xml:id="tools.tokenizer.training">
@@ -525,8 +524,7 @@ DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations)
 <![CDATA[int[] boundaries = WordSegmenter.boundaries("The quick brown fox.");
 List<Span> segments = WordSegmenter.segments("The quick brown fox.");]]>
 				</programlisting>
-				For allocation-free processing of large inputs, stream the segments to a callback instead
-				of collecting them.
+				To process the segments without building a result list, stream them to a callback.
 				<programlisting language="java">
 <![CDATA[WordSegmenter.forEachSegment("The quick brown fox.", (start, end) -> {
   // handle the segment [start, end)
@@ -564,8 +562,7 @@ for (WordToken token : wordTokenizer.tokenizeTyped("OpenNLP 3.0")) {
 				<code>HANGUL</code>, <code>SOUTHEAST_ASIAN</code>, and <code>EMOJI</code>.
 			</para>
 			<para>
-				A streaming overload reports each token to a handler with no per-token allocation, which
-				is the fastest option when the tokens are consumed on the fly.
+				A streaming overload reports each token to a handler without building a result list.
 				<programlisting language="java">
 <![CDATA[WordTokenizer wordTokenizer = new WordTokenizer();
 wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
@@ -593,10 +590,6 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				expected SHA-256 or SHA-512 digest; an application-supplied opt-in catalog
 				(<code>installFromCatalog</code>) also needs
 				<code>-Dopennlp.download.remote=true</code>.
-				<code>matrix.def</code> must list a cost for every declared cell; matrix
-				dimensions plus lexicon size are bounded by the shared
-				<code>ResourceLimits.MAX_ENTRIES</code> limit and the matrix cell count
-				by <code>ResourceLimits.MAX_MATRIX_CELLS</code>.
 				Fetching, verification, and unpacking use <code>ResourceInstaller</code>,
 				described in the model loading chapter. Default limits are a 1 GiB
 				download, 4 GiB unpacked, and 100000 archive entries. Set higher limits at
@@ -607,25 +600,6 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				<code>opennlp.install.max.expansion.ratio</code> for larger dictionaries such as
 				UniDic. Installed files are flattened to their base names. Existing target
 				files are not replaced and must be removed before a refresh.
-					Dictionary loading rejects empty lexicon surfaces, duplicate
-					<code>matrix.def</code> entries, duplicate <code>char.def</code>
-					categories, costs outside the signed 16-bit range, malformed text in the
-					selected encoding, and <code>unk.def</code> templates for undefined
-					categories. MeCab-quoted CSV fields are accepted, with three documented
-					deviations from MeCab's reader: quotes open and close a quoted stretch
-					wherever they appear in a field, text after a closing quote joins the
-					field instead of being dropped, and an unterminated quoted field is
-					rejected with its file and line instead of being read silently to the
-					end of the line.
-					A <code>char.def</code> may define up to 17 categories, and category
-					lengths range from 0 through 15, matching the MeCab character-property
-					compiler.
-					If a <code>char.def</code> mapping lists multiple categories, the first
-					provides unknown-word settings. Grouping continues while successive
-					assignments overlap. Unknown words use their category's <code>unk.def</code>
-					template first, with <code>DEFAULT</code> used when no category template exists.
-				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and
-				lexicon flows shown here.
 				<programlisting language="java">
 <![CDATA[MecabDictionaryInstaller.install(archiveUri, dictionaryDirectory, sha512);
 LatticeTokenizer tokenizer =
@@ -639,6 +613,31 @@ List<Morpheme> morphemes = tokenizer.analyze(text);
 UnigramSegmenter segmenter = UnigramSegmenter.load(Path.of("chinese-words.txt"));
 String[] words = segmenter.tokenize("我来到北京清华大学");]]>
 				</programlisting>
+			</para>
+			<para>
+				<code>matrix.def</code> must list a cost for every declared cell; matrix
+				dimensions plus lexicon size are bounded by the shared
+				<code>ResourceLimits.MAX_ENTRIES</code> limit and the matrix cell count
+				by <code>ResourceLimits.MAX_MATRIX_CELLS</code>.
+				Dictionary loading rejects empty lexicon surfaces, duplicate
+				<code>matrix.def</code> entries, duplicate <code>char.def</code>
+				categories, costs outside the signed 16-bit range, malformed text in the
+				selected encoding, and <code>unk.def</code> templates for undefined
+				categories. MeCab-quoted CSV fields are accepted, with three
+				deviations from MeCab's reader: quotes open and close a quoted stretch
+				wherever they appear in a field, text after a closing quote joins the
+				field instead of being dropped, and an unterminated quoted field is
+				rejected with its file and line instead of being read silently to the
+				end of the line.
+			</para>
+			<para>
+				A <code>char.def</code> may define up to 17 categories, and category
+				lengths range from 0 through 15, matching the MeCab character-property
+				compiler.
+				If a <code>char.def</code> mapping lists multiple categories, the first
+				provides unknown-word settings. Grouping continues while successive
+				assignments overlap. Unknown words use their category's <code>unk.def</code>
+				template first, with <code>DEFAULT</code> used when no category template exists.
 			</para>
 		</section>
 	</section>

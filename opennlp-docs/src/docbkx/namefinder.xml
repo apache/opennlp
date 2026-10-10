@@ -185,7 +185,7 @@ Span[] spans = nameFinderDL.findInOriginal(tokens);]]>
 					<code>White_Space</code> set before WordPiece tokenization, so spacing such as a
 					no-break space or the CJK ideographic space is recognized as a delimiter. After
 					inference, reconstructed entity text is matched back to the caller's original input
-					with a Unicode-aware cursor scan (not a regular expression), so
+					with a Unicode-aware cursor scan, so
 					<code>Span#getCoveredText(...)</code> returns the source text even when WordPiece
 					rejoins sub-tokens with spaces or when the source uses non-ASCII whitespace between
 					tokens.

@@ -58,16 +58,17 @@ under the License.
 						<row>
 							<entry>UrlCharSequenceNormalizer</entry>
 							<entry>Replaces each http or https URL and each email address with a
-								blank space. Since 3.0.0 a URL is removed as a whole, up to the next
+								blank space. A URL is removed as a whole, up to the next
 								whitespace or delimiter, including a port, user information, percent
 								escapes and non-ASCII hosts; URLs with other schemes are kept. Models
-								trained with an earlier release saw only the leading ASCII part of a
+								trained with a release before 3.0.0 saw only the leading ASCII part of a
 								URL removed and get that output again under
 								<code>-Dopennlp.compat.mode=LEGACY</code> until they are retrained.</entry>
 						</row>
 						<row>
-							<entry>TwitterCharSequenceNormalizer</entry>
-							<entry>Replaces hashtags and Twitter usernames by blank spaces.</entry>
+							<entry>SocialMediaCharSequenceNormalizer</entry>
+							<entry>Replaces each hashtag, user handle, run of retweet markers and emoticon
+								with one space, and shrinks repeated laughter to two repetitions.</entry>
 						</row>
 						<row>
 							<entry>NumberCharSequenceNormalizer</entry>
@@ -82,8 +83,8 @@ under the License.
 			</table>
 		</para>
 		<para>
-			Since 3.0.0, EmojiCharSequenceNormalizer removes complete emoji only. Models trained with an earlier
-			release saw every hyphen, every character from U+E000 to U+FFFF and nearly every supplementary
+			EmojiCharSequenceNormalizer removes complete emoji only. Models trained with a release before
+			3.0.0 saw every hyphen, every character from U+E000 to U+FFFF and nearly every supplementary
 			character removed, emoji or not. They get that output again under
 			<code>-Dopennlp.compat.mode=LEGACY</code> until they are retrained.
 		</para>
