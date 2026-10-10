@@ -18,6 +18,8 @@
 package opennlp.tools.depparse;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +33,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.util.ObjectStreamUtils;
+
 import static opennlp.tools.depparse.DependencyTestSamples.SHE_EATS_FISH_TAGS;
 import static opennlp.tools.depparse.DependencyTestSamples.SHE_EATS_FISH_TOKENS;
 import static opennlp.tools.depparse.DependencyTestSamples.SHE_EATS_FISH_TREE;
@@ -40,14 +44,21 @@ import static opennlp.tools.depparse.DependencyTestSamples.THE_DOG_BARKS_TREE;
 import static opennlp.tools.depparse.DependencyTestSamples.corpus;
 import static opennlp.tools.depparse.DependencyTestSamples.nonProjectiveSample;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests parser boundaries, non-projective input, model persistence and thread sharing.
+ * Tests neural parser boundaries, non-projective training, persistence and thread sharing.
  */
-public class DependencyParserEdgeCaseTest {
+public class FeedforwardDependencyParserEdgeCaseTest {
+
+  /** The random seed making the feedforward training runs reproducible. */
+  private static final long SEED = FeedforwardDependencyTrainer.Settings.DEFAULT_SEED;
+
+  /**
+   * Single-epoch feedforward settings for tests that only inspect the trained inventory.
+   */
+  private static final FeedforwardDependencyTrainer.Settings SINGLE_EPOCH_SETTINGS =
+      new FeedforwardDependencyTrainer.Settings(8, 8, 1, 32, 0.05, 0.0, 0.0, 1, SEED);
 
   /** The number of threads parsing concurrently in the sharing test. */
   private static final int THREADS = 8;
@@ -55,26 +66,27 @@ public class DependencyParserEdgeCaseTest {
   /** The number of parses each thread performs in the sharing test. */
   private static final int ITERATIONS_PER_THREAD = 50;
 
-  private static DependencyModel model;
-  private static DependencyParserME parser;
+  private static FeedforwardDependencyModel model;
+  private static FeedforwardDependencyParser parser;
 
   /**
-   * Trains a model on the shared corpus.
+   * Trains a neural model with dropout disabled and a fixed random seed.
    *
    * @throws IOException Thrown if reading the in-memory samples fails.
    */
   @BeforeAll
   static void trainParser() throws IOException {
-    model = DependencyTestSamples.train(corpus());
-    parser = new DependencyParserME(model);
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 60, 32, 0.05, 0.0, 0.0, 1, SEED);
+    model = FeedforwardDependencyTrainer.train(
+        ObjectStreamUtils.createObjectStream(corpus()), settings);
+    parser = new FeedforwardDependencyParser(model);
   }
 
   @Test
   void testEmptySentenceIsRejected() {
     assertThrows(IllegalArgumentException.class,
         () -> parser.parse(new String[0], new String[0]));
-    // The transition system itself has no configuration for zero tokens either.
-    assertThrows(IllegalArgumentException.class, () -> new ArcStandardState(0));
   }
 
   @Test
@@ -86,58 +98,64 @@ public class DependencyParserEdgeCaseTest {
   }
 
   @Test
-  void testContextGeneratorRejectsMisalignedInput() {
-    final DependencyContextGenerator generator = new DependencyContextGenerator();
-    final ArcStandardState state = new ArcStandardState(2);
-    assertThrows(IllegalArgumentException.class,
-        () -> generator.getContext(state, new String[] {"one"}, new String[] {"NN"}));
-  }
-
-  @Test
   void testSingleTokenSentenceAttachesToTheRoot() {
     // A single token permits only the derivation shift then right-arc, so the head is
     // forced to the artificial root and the model only chooses the relation label.
-    final DependencyTree parsed =
+    final DependencyTree feedforwardParse =
         parser.parse(new String[] {"Run"}, new String[] {"VB"});
-    assertEquals(DependencyTree.of(new int[] {-1}, new String[] {"root"}), parsed);
+    assertEquals(DependencyTree.of(new int[] {-1}, new String[] {"root"}),
+        feedforwardParse);
   }
 
   @Test
-  void testNonProjectiveSamplesAreSkippedDuringTraining() throws IOException {
-    // One non-projective sample joins the corpus; it cannot yield events, so training
-    // proceeds on the remaining samples and still memorizes the projective sentences.
+  void testFeedforwardTrainingOmitsNonProjectiveLabels() throws IOException {
     final List<DependencySample> mixed = new ArrayList<>(corpus());
-    mixed.add(nonProjectiveSample());
-    final DependencyParserME mixedParser =
-        new DependencyParserME(DependencyTestSamples.train(mixed));
-    assertEquals(THE_DOG_BARKS_TREE,
-        mixedParser.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS));
-    assertEquals(SHE_EATS_FISH_TREE,
-        mixedParser.parse(SHE_EATS_FISH_TOKENS, SHE_EATS_FISH_TAGS));
+    mixed.add(nonProjectiveSample(new String[] {"a", "b", "c", "d"},
+        new String[] {"DT", "NN", "VBZ", "RB"},
+        new String[] {"det", "dislocated", "root", "obj"}));
+
+    final FeedforwardDependencyModel trained = FeedforwardDependencyTrainer.train(
+        ObjectStreamUtils.createObjectStream(mixed), SINGLE_EPOCH_SETTINGS);
+
+    assertEquals(0, List.of(trained.transitions()).stream()
+        .filter(transition -> transition.contains("dislocated")).count());
   }
 
   @Test
-  void testNonProjectiveGoldDecodesToAProjectiveTree() {
-    // The parser can only emit arc-standard derivations, so for a sentence whose gold
-    // tree is non-projective the prediction is necessarily a different, projective tree.
-    final DependencySample gold = nonProjectiveSample();
-    final DependencyTree parsed = parser.parse(gold.getTokens(), gold.getTags());
-    assertNotEquals(gold.getTree(), parsed);
-    assertTrue(ArcStandardOracle.isProjective(parsed), parsed.toString());
+  void testFeedforwardTrainingRejectsNoProjectiveSamples() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> FeedforwardDependencyTrainer.train(
+            ObjectStreamUtils.createObjectStream(List.of(nonProjectiveSample())),
+            SINGLE_EPOCH_SETTINGS));
+    assertEquals("no trainable examples in the samples", e.getMessage());
   }
 
   @Test
-  void testModelFileRoundTripParsesIdentically(@TempDir Path dir)
+  void testRefinementRejectsNoProjectiveSamples() {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, SEED);
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> FeedforwardDependencyTrainer.refine(model,
+            ObjectStreamUtils.createObjectStream(List.of(nonProjectiveSample())),
+            settings, 2));
+    assertEquals("no trainable samples for refinement", e.getMessage());
+  }
+
+  @Test
+  void testFeedforwardModelFileRoundTripParsesIdentically(@TempDir Path dir)
       throws IOException {
-    final Path file = dir.resolve("depparse.bin");
-    model.serialize(file);
-    final DependencyParserME reloaded = new DependencyParserME(new DependencyModel(file));
+    final Path file = dir.resolve("depparse-ff.bin");
+    try (OutputStream out = Files.newOutputStream(file)) {
+      model.serialize(out);
+    }
+    final FeedforwardDependencyParser reloaded =
+        new FeedforwardDependencyParser(FeedforwardDependencyModel.load(file));
     for (final DependencySample sample : corpus()) {
       assertEquals(parser.parse(sample.getTokens(), sample.getTags()),
           reloaded.parse(sample.getTokens(), sample.getTags()),
           Arrays.toString(sample.getTokens()));
     }
-    assertEquals(THE_DOG_BARKS_TREE, reloaded.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS));
+    assertEquals(SHE_EATS_FISH_TREE, reloaded.parse(SHE_EATS_FISH_TOKENS, SHE_EATS_FISH_TAGS));
   }
 
   @Test

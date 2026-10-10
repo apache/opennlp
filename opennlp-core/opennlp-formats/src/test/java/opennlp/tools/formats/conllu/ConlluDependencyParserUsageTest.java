@@ -19,7 +19,9 @@ package opennlp.tools.formats.conllu;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +33,15 @@ import org.junit.jupiter.api.io.TempDir;
 import opennlp.tools.depparse.DependencyArc;
 import opennlp.tools.depparse.DependencyEvaluator;
 import opennlp.tools.depparse.DependencyModel;
+import opennlp.tools.depparse.DependencyParser;
 import opennlp.tools.depparse.DependencyParserME;
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.depparse.DependencyTree;
+import opennlp.tools.depparse.FeedforwardDependencyModel;
+import opennlp.tools.depparse.FeedforwardDependencyParser;
+import opennlp.tools.depparse.FeedforwardDependencyTrainer;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
@@ -92,6 +99,9 @@ public class ConlluDependencyParserUsageTest {
   private static final DependencyTree ALICE_TREE = DependencyTree.of(
       new int[] {1, -1, 1, 4, 1, 1},
       new String[] {"nsubj", "root", "iobj", "det", "obj", "punct"});
+
+  /** The beam size of the feedforward example. */
+  private static final int BEAM_SIZE = 4;
 
   private static DependencyModel model;
   private static DependencyParserME parser;
@@ -210,5 +220,50 @@ public class ConlluDependencyParserUsageTest {
             new String[] {"nsubj", "root", "obj"}),
         reloaded.parse(new String[] {"she", "eats", "fish"},
             new String[] {"PRON", "VERB", "NOUN"}));
+  }
+
+  @Test
+  void testFeedforwardTrainSaveReloadAndParse(@TempDir Path dir) throws IOException {
+    // The manual's feedforward example: train from the CoNLL-U reader with the default
+    // settings, save the model, load it back, and parse with a beam of four. The parse
+    // of the reloaded model must equal the parse of the model in memory.
+    final Path treebank = dir.resolve("train.conllu");
+    Files.writeString(treebank, repeat(CONLLU, REPETITIONS), StandardCharsets.UTF_8);
+    final Path modelFile = dir.resolve("en-depparse-ff.bin");
+    final InputStreamFactory trainingData = () -> Files.newInputStream(treebank);
+
+    FeedforwardDependencyModel model;
+    try (ObjectStream<DependencySample> samples =
+        new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+      model = FeedforwardDependencyTrainer.train(
+          samples, FeedforwardDependencyTrainer.Settings.defaults());
+    }
+    try (OutputStream out = Files.newOutputStream(modelFile)) {
+      model.serialize(out);
+    }
+
+    DependencyParser reloaded = new FeedforwardDependencyParser(
+        FeedforwardDependencyModel.load(modelFile), BEAM_SIZE);
+    final DependencyTree expected =
+        new FeedforwardDependencyParser(model, BEAM_SIZE).parse(ALICE_TOKENS, ALICE_TAGS);
+    final DependencyTree parse = reloaded.parse(ALICE_TOKENS, ALICE_TAGS);
+    assertEquals(expected, parse);
+    assertEquals(ALICE_TOKENS.length, parse.size());
+    assertEquals(ALICE_TREE.root(), parse.root());
+  }
+
+  /**
+   * Repeats CoNLL-U content so a small fixture gives the trainers enough evidence.
+   *
+   * @param conllu The content to repeat; sentences are separated by a blank line.
+   * @param times How often to repeat it.
+   * @return The repeated content. Never {@code null}.
+   */
+  private static String repeat(String conllu, int times) {
+    final StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < times; i++) {
+      sb.append(conllu).append("\n\n");
+    }
+    return sb.toString();
   }
 }
