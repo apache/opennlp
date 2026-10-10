@@ -125,8 +125,7 @@ under the License.
 		is a context, optionally followed by <code>=</code> and its value after the last
 		<code>=</code>. Space, tab, carriage return, line feed and form feed separate fields; other
 		characters, including no-break spaces, stay inside feature names. A line with only an
-		outcome is an event without contexts, and a blank line is an error. Since 3.0, an
-		outcome-only line no longer ends a <code>RealBasicEventStream</code>. For example:
+		outcome is an event without contexts, and a blank line is an error. For example:
 		<screen>
 <![CDATA[other wc=ic=1.0 w&c=he,ic=2.0 n1wc=lc=3.0
 org-start wc=ic=1.0 w&c=apache,ic=2.0 p1wc=lc=3.0]]>
