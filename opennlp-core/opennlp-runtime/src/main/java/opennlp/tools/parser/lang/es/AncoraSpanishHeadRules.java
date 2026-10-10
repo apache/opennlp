@@ -37,6 +37,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
 import opennlp.tools.parser.HeadRules;
@@ -85,6 +86,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   private static class HeadRule {
     public final boolean leftToRight;
     public final String[] tags;
+    @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
     public final Pattern[] tagPatterns;
 
     public HeadRule(boolean l2r, String[] tags) {
@@ -119,21 +121,23 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     }
   }
 
-  // Tag patterns are regexes (e.g. "AQA.*", "GRUP\\.A"), not literals, so they must be
-  // matched with Pattern/matches() semantics - they are precompiled once here (and once
-  // per HeadRule, see HeadRule.tagPatterns) instead of via String.matches(), which would
-  // otherwise recompile the same regex on every single constituent comparison.
+  // Tags are regular expressions (e.g. "AQA.*", "GRUP\\.A") matched against the whole
+  // constituent type; they are compiled once, here and per HeadRule.
   private static final String[] TAGS1 =
       {"AQA.*", "AQC.*", "GRUP\\.A", "S\\.A", "NC.*S.*", "NP.*", "NC.*P.*", "GRUP\\.NOM"};
+  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
   private static final Pattern[] TAGS1_PATTERNS = compile(TAGS1);
 
   private static final String[] TAGS2 = {"\\$", "GRUP\\.A", "SA"};
+  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
   private static final Pattern[] TAGS2_PATTERNS = compile(TAGS2);
 
   private static final String[] TAGS3 =
       {"AQ0.*", "AQ[AC].*", "AO.*", "GRUP\\.A", "S\\.A", "RG", "RN", "GRUP\\.NOM"};
+  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
   private static final Pattern[] TAGS3_PATTERNS = compile(TAGS3);
 
+  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
   private static Pattern[] compile(String[] tags) {
     Pattern[] patterns = new Pattern[tags.length];
     for (int i = 0; i < tags.length; i++) {
@@ -170,6 +174,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   }
 
   @Override
+  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
   public Parse getHead(Parse[] constituents, String type) {
     if (Parser.TOK_NODE.equals(constituents[0].getType())) {
       return null;
