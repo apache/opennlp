@@ -35,8 +35,10 @@ import opennlp.dl.InferenceOptions;
 import static opennlp.dl.OnnxTestSupport.UNUSABLE_DEVICE_ID;
 import static opennlp.dl.OnnxTestSupport.gpu;
 import static opennlp.dl.vectors.TinyVectorModels.DELTA;
+import static opennlp.dl.vectors.TinyVectorModels.HELLO_WORLD;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_POOLED;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_VECTORS;
+import static opennlp.dl.vectors.TinyVectorModels.alternating;
 import static opennlp.dl.vectors.TinyVectorModels.gpuOrAbort;
 import static opennlp.dl.vectors.TinyVectorModels.model;
 import static opennlp.dl.vectors.TinyVectorModels.scale;
@@ -49,10 +51,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Tests the {@link SentenceVectorsDL} constructor that takes {@link InferenceOptions}.
  */
 class SentenceVectorsDLInferenceOptionsTest {
-
-  private static final String HELLO = "hello";
-
-  private static final String TEXT = "hello world";
 
   private static final String LONGER_TEXT = "world hello world";
 
@@ -83,12 +81,20 @@ class SentenceVectorsDLInferenceOptionsTest {
          SentenceVectorsDL cpu = new SentenceVectorsDL(model, vocab, true, pooling, normalize,
              SentenceVectorsDL.DEFAULT_MAX_LENGTH, new InferenceOptions())) {
       assertEquals(cpu.dimension(), gpu.dimension());
-      assertArrayEquals(cpu.embed(TEXT), gpu.embed(TEXT), DELTA);
-      final List<String> texts = List.of(TEXT, LONGER_TEXT, "");
+      assertArrayEquals(cpu.embed(HELLO_WORLD), gpu.embed(HELLO_WORLD), DELTA);
+      final List<String> texts = List.of(HELLO_WORLD, LONGER_TEXT, "");
       final float[][] cpuBatch = cpu.embedAll(texts);
       final float[][] gpuBatch = gpu.embedAll(texts);
       for (int i = 0; i < cpuBatch.length; i++) {
         assertArrayEquals(cpuBatch[i], gpuBatch[i], DELTA, "row " + i);
+      }
+      // Both length groups exceed the token position cap and are split.
+      final List<String> split = alternating(SentenceVectorsDL.MAX_BATCH_TOKEN_POSITIONS / 3 + 1);
+      final float[][] cpuSplit = cpu.embedAll(split);
+      final float[][] gpuSplit = gpu.embedAll(split);
+      assertEquals(split.size(), gpuSplit.length);
+      for (int i = 0; i < cpuSplit.length; i++) {
+        assertArrayEquals(cpuSplit[i], gpuSplit[i], DELTA, "split row " + i);
       }
     }
   }
@@ -170,7 +176,7 @@ class SentenceVectorsDLInferenceOptionsTest {
         SentenceVectorsDL.DEFAULT_MAX_LENGTH);
          SentenceVectorsDL withOptions = new SentenceVectorsDL(model, vocab, true, Pooling.MEAN,
              false, SentenceVectorsDL.DEFAULT_MAX_LENGTH, new InferenceOptions())) {
-      assertArrayEquals(plain.embed(TEXT), withOptions.embed(TEXT), DELTA);
+      assertArrayEquals(plain.embed(HELLO_WORLD), withOptions.embed(HELLO_WORLD), DELTA);
     }
   }
 
