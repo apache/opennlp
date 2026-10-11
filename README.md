@@ -141,6 +141,7 @@ The list below covers the changes most likely to affect existing code. It is not
 - CoNLL-U reader: a multiword token range whose word lines are missing from the sentence throws `InvalidFormatException`.
 - `PlainTextByLineStream.reset()` closes the previous reader, so its `InputStreamFactory` must return a new stream for each pass.
 - `RealBasicEventStream`: a line that contains only an outcome is read as an event without contexts and no longer ends the stream.
+- Parser: `ParserFactory.create` and the chunking and tree insert `Parser` constructors throw `IllegalArgumentException` for a beam size below 1 or an advance percentage outside (0, 1] ([GH-1476](https://github.com/apache/opennlp/issues/1476)).
 
 ### Thread safety
 

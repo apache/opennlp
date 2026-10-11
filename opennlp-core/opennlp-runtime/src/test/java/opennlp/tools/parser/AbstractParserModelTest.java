@@ -26,9 +26,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.chunker.Chunker;
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.parser.ParserTestUtil.CountingChunker;
+import opennlp.tools.parser.ParserTestUtil.CountingTagger;
+import opennlp.tools.postag.POSTagger;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
 
@@ -41,6 +48,110 @@ public abstract class AbstractParserModelTest {
    * @return Retrieves a valid {@link ParserModel}, either trained or loaded.
    */
   protected abstract ParserModel getModel();
+
+  /**
+   * Creates the parser under test through its constructor that takes a caller-supplied
+   * tagger and chunker.
+   *
+   * @param model The {@link ParserModel} to take the build, check and head rule artifacts from.
+   * @param tagger The {@link POSTagger} the parser shall use.
+   * @param chunker The {@link Chunker} the parser shall use.
+   * @param beamSize The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass advanced outcomes must represent.
+   * @return A parser that tags with {@code tagger} and chunks with {@code chunker}.
+   */
+  protected abstract Parser createParser(ParserModel model, POSTagger tagger, Chunker chunker,
+                                         int beamSize, double advancePercentage);
+
+  /**
+   * Verifies that a caller-supplied tagger and chunker drive the parse and that the
+   * model's own tagger and chunker are never constructed.
+   */
+  @Test
+  void testSuppliedTaggerAndChunkerAreUsed() {
+    CountingTagger tagger = new CountingTagger(new POSTaggerME(getModel().getParserTaggerModel()));
+    CountingChunker chunker = new CountingChunker(new ChunkerME(getModel().getParserChunkerModel()));
+    ParserModel guarded = ParserTestUtil.withInaccessibleComponentModels(getModel());
+
+    Parser parser = createParser(guarded, tagger, chunker,
+        AbstractBottomUpParser.defaultBeamSize, AbstractBottomUpParser.defaultAdvancePercentage);
+    Parse parsed = parser.parse(ParserTestUtil.createTestSentence());
+
+    Assertions.assertTrue(tagger.calls() > 0, "the supplied tagger was not used");
+    Assertions.assertTrue(chunker.calls() > 0, "the supplied chunker was not used");
+    Parse reference = ParserFactory.create(getModel()).parse(ParserTestUtil.createTestSentence());
+    Assertions.assertEquals(reference.toStringPennTreebank(), parsed.toStringPennTreebank());
+  }
+
+  /**
+   * Verifies that the model's own tagger and chunker, passed explicitly with the default
+   * beam size and advance percentage, give the same parse as the model-only constructor.
+   */
+  @Test
+  void testSuppliedComponentsMatchModelConstructor() {
+    Parser parser = createParser(getModel(), new POSTaggerME(getModel().getParserTaggerModel()),
+        new ChunkerME(getModel().getParserChunkerModel()),
+        AbstractBottomUpParser.defaultBeamSize, AbstractBottomUpParser.defaultAdvancePercentage);
+    Parse[] parses = parser.parse(ParserTestUtil.createTestSentence(), 2);
+    Parse[] reference = ParserFactory.create(getModel()).parse(ParserTestUtil.createTestSentence(), 2);
+    ParserTestUtil.assertSameParses(reference, parses);
+  }
+
+  /**
+   * Verifies that the constructor with a caller-supplied tagger and chunker rejects a
+   * {@code null} model, tagger or chunker.
+   *
+   * @param nullArgument The argument passed as {@code null}.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"model", "tagger", "chunker"})
+  void testConstructorRejectsNullArgument(String nullArgument) {
+    ParserModel model = "model".equals(nullArgument) ? null : getModel();
+    POSTagger tagger = "tagger".equals(nullArgument) ? null
+        : new POSTaggerME(getModel().getParserTaggerModel());
+    Chunker chunker = "chunker".equals(nullArgument) ? null
+        : new ChunkerME(getModel().getParserChunkerModel());
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> createParser(model, tagger, chunker, AbstractBottomUpParser.defaultBeamSize,
+            AbstractBottomUpParser.defaultAdvancePercentage));
+    Assertions.assertEquals(nullArgument + " must not be null", e.getMessage());
+  }
+
+  /**
+   * Verifies that the constructor rejects a beam size or an advance percentage outside its
+   * range. The ranges themselves are tested in {@code ParamChecksTest}.
+   *
+   * @param beamSize The beam size to pass.
+   * @param advancePercentage The advance percentage to pass.
+   * @param expected The expected exception message.
+   */
+  @ParameterizedTest
+  @CsvSource({
+      "0, 0.95, beamSize must be positive",
+      "20, 0.0, 'advancePercentage must be in (0, 1]'"
+  })
+  void testConstructorRejectsOutOfRangeArgument(int beamSize, double advancePercentage,
+                                                String expected) {
+    POSTagger tagger = new POSTaggerME(getModel().getParserTaggerModel());
+    Chunker chunker = new ChunkerME(getModel().getParserChunkerModel());
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> createParser(getModel(), tagger, chunker, beamSize, advancePercentage));
+    Assertions.assertEquals(expected, e.getMessage());
+  }
+
+  /**
+   * Verifies that the constructor accepts the boundaries of both ranges and parses with them.
+   *
+   * @param beamSize The beam size to pass.
+   * @param advancePercentage The advance percentage to pass.
+   */
+  @ParameterizedTest
+  @CsvSource({"1, 1.0", "1, 0.01", "20, 1.0"})
+  void testConstructorAcceptsRangeBoundaries(int beamSize, double advancePercentage) {
+    Parser parser = createParser(getModel(), new POSTaggerME(getModel().getParserTaggerModel()),
+        new ChunkerME(getModel().getParserChunkerModel()), beamSize, advancePercentage);
+    Assertions.assertNotNull(parser.parse(ParserTestUtil.createTestSentence()));
+  }
 
   /**
    * Verifies that serialization of {@link ParserModel} equals trained state.
