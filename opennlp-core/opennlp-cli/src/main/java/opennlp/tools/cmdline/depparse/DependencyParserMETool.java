@@ -26,6 +26,7 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.depparse.DependencyParser;
 import opennlp.tools.depparse.DependencyParserME;
 import opennlp.tools.depparse.DependencyTree;
 import opennlp.tools.postag.POSSample;
@@ -60,7 +61,17 @@ public class DependencyParserMETool extends BasicCmdLineTool {
     if (args.length != 1) {
       throw new TerminateToolException(1, getHelp());
     }
-    DependencyParserME parser = new DependencyParserME(new DependencyModelLoader().load(new File(args[0])));
+    parseTaggedSentences(new DependencyParserME(new DependencyModelLoader().load(new File(args[0]))));
+  }
+
+  /**
+   * Parses the POS-tagged sentences on standard input, one per line in the
+   * {@code token_TAG} format, and prints each tree in basic CoNLL-U followed by a blank
+   * line. Blank input lines are skipped.
+   *
+   * @param parser The parser to apply. Must not be {@code null}.
+   */
+  static void parseTaggedSentences(DependencyParser parser) {
     PrintWriter out = new PrintWriter(System.out, true);
     try (ObjectStream<String> lines = new PlainTextByLineStream(
         new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {

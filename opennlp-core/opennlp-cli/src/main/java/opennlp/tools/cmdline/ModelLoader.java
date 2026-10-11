@@ -65,6 +65,15 @@ public abstract class ModelLoader<T> {
     catch (InvalidFormatException e) {
       throw new TerminateToolException(-1, "Model has invalid format", e);
     }
+    catch (IllegalArgumentException e) {
+      // BaseModel reports a model of another component, whose manifest names a tool
+      // factory this model cannot use, as an IllegalArgumentException with the
+      // InvalidFormatException as its cause.
+      if (e.getCause() instanceof InvalidFormatException) {
+        throw new TerminateToolException(-1, "Model has invalid format", e);
+      }
+      throw e;
+    }
     catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while loading model file '" + modelFile + "'", e);
     }

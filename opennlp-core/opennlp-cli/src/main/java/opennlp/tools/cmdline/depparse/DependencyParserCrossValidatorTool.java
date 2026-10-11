@@ -31,6 +31,7 @@ import opennlp.tools.depparse.DependencyCrossValidator;
 import opennlp.tools.depparse.DependencyEvaluationMonitor;
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 
 /** Cross validates an arc-standard dependency parser on CoNLL-U samples. */
 public class DependencyParserCrossValidatorTool
@@ -57,7 +58,8 @@ public class DependencyParserCrossValidatorTool
   public void run(String format, String[] args) {
     super.run(format, args);
     try (ObjectStream<DependencySample> samples = sampleStream) {
-      mlParams = DependencyParserTrainerTool.loadTrainingParameters(params.getParams());
+      mlParams = DependencyParserTrainerTool.loadTrainingParameters(params.getParams(),
+          TrainingParameters.defaultParams());
       DependencyEvaluationMonitor errorListener = null;
       if (params.getMisclassified()) {
         errorListener = new DependencyEvaluationErrorListener();
