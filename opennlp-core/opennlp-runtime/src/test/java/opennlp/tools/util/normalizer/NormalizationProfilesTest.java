@@ -16,6 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.langdetect.Language;
@@ -33,6 +35,7 @@ import opennlp.tools.langdetect.LanguageDetector;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -234,5 +237,54 @@ public class NormalizationProfilesTest {
         task.get(30, java.util.concurrent.TimeUnit.SECONDS);
       }
     }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"eng", "deu", "swe", "tur"})
+  void testMatchingAnalyzerIsBuiltOncePerProfile(String language) {
+    final NormalizationProfile profile = NormalizationProfiles.forLanguage(language).orElseThrow();
+    assertSame(profile.matchingAnalyzer(), profile.matchingAnalyzer());
+  }
+
+  @Test
+  void testMatchingAnalyzerIsSharedAcrossThreads() throws Exception {
+    final NormalizationProfile profile =
+        new NormalizationProfile("eng", SnowballStemmer.ALGORITHM.ENGLISH, null);
+    try (ExecutorService pool = Executors.newFixedThreadPool(8)) {
+      final List<Future<TermAnalyzer>> tasks = new ArrayList<>();
+      for (int i = 0; i < 32; i++) {
+        tasks.add(pool.submit(profile::matchingAnalyzer));
+      }
+      final TermAnalyzer first = tasks.get(0).get(30, java.util.concurrent.TimeUnit.SECONDS);
+      for (final Future<TermAnalyzer> task : tasks) {
+        assertSame(first, task.get(30, java.util.concurrent.TimeUnit.SECONDS));
+      }
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource({"eng, Cats, cat", "eng, Running, run", "deu, Häuser, haus", "fra, Écoles, ecol"})
+  void testReusedMatchingAnalyzerStillMatches(String language, String word, String expected) {
+    final NormalizationProfile profile = NormalizationProfiles.forLanguage(language).orElseThrow();
+    final TermAnalyzer analyzer = profile.matchingAnalyzer();
+    final String first = analyzer.analyze(word).get(0).normalized();
+    analyzer.clearThreadLocalState();
+    assertEquals(first, profile.matchingAnalyzer().analyze(word).get(0).normalized());
+    assertEquals(expected, first);
+  }
+
+  @Test
+  void testProfilesAreEqualByComponents() {
+    final NormalizationProfile a = new NormalizationProfile("eng", SnowballStemmer.ALGORITHM.ENGLISH,
+        AccentFoldCharSequenceNormalizer.getInstance());
+    final NormalizationProfile b = new NormalizationProfile("eng", SnowballStemmer.ALGORITHM.ENGLISH,
+        AccentFoldCharSequenceNormalizer.getInstance());
+    a.matchingAnalyzer();
+    assertEquals(a, b);
+    assertEquals(a.hashCode(), b.hashCode());
+    assertEquals(a, NormalizationProfiles.forLanguage("eng").orElseThrow());
+    assertNotEquals(a, new NormalizationProfile("eng", SnowballStemmer.ALGORITHM.PORTER,
+        AccentFoldCharSequenceNormalizer.getInstance()));
+    assertNotEquals(a, new NormalizationProfile("eng", SnowballStemmer.ALGORITHM.ENGLISH, null));
   }
 }

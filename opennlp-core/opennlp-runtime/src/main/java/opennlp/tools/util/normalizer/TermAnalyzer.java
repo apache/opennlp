@@ -50,6 +50,10 @@ import opennlp.tools.util.Span;
  * the factory mints stateful stemmers, and repeated words resolve from a bounded per-thread cache
  * instead of being re-stemmed. A raw {@link Stemmer} passed to {@link Builder#stem(Stemmer)} is
  * only safe when that stemmer is itself thread-safe or the analyzer is confined to one thread.</p>
+ *
+ * <p>Long-running environments such as application containers should call
+ * {@link #clearThreadLocalState()} when a pooled thread no longer uses an analyzer whose stemmer is
+ * a {@link CachingStemmer}.</p>
  */
 public final class TermAnalyzer {
 
@@ -143,6 +147,21 @@ public final class TermAnalyzer {
    */
   public List<Dimension> dimensions() {
     return chain;
+  }
+
+  /**
+   * Removes the calling thread's state of the analyzer's stemmer to prevent classloader leaks in
+   * container environments. Call when the thread is returned to a pool or the analyzer is no
+   * longer needed. The state is held when the stemmer is a {@link CachingStemmer}, whether created
+   * by {@link Builder#stem(StemmerFactory)} or passed to {@link Builder#stem(Stemmer)}; for any
+   * other stemmer, or without one, this method has no effect.
+   *
+   * @see CachingStemmer#clearThreadLocalState()
+   */
+  public void clearThreadLocalState() {
+    if (stemmer instanceof CachingStemmer caching) {
+      caching.clearThreadLocalState();
+    }
   }
 
   /**
