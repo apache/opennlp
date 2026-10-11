@@ -175,10 +175,8 @@ for(ClassPathModelEntry entry : models) {
       <code>ClassgraphModelFinder</code> uses ClassGraph's own wildcard rules.
     </para>
     <para>
-      Since 3.0, custom subclasses of <code>AbstractClassPathModelFinder</code> call
-      <code>matchesWildcard(url, "*.bin")</code>. The protected <code>asRegex</code> and
-      <code>matchesPattern</code> methods were removed, so subclasses that used them must be
-      updated and recompiled.
+      Custom subclasses of <code>AbstractClassPathModelFinder</code> match model file names with
+      <code>matchesWildcard(url, "*.bin")</code>.
     </para>
   </section>
 
