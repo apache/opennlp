@@ -109,8 +109,9 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    *     unsupported layout, or sets a lower casing that disagrees with {@code inferenceOptions}.
    * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary},
    *     {@code categories}, {@code classificationScoringStrategy} or {@code inferenceOptions} is
-   *     {@code null}, if the split sizes of {@code inferenceOptions} are invalid, or if the
-   *     vocabulary lacks the classification, separator or unknown token.
+   *     {@code null}, if the split sizes of {@code inferenceOptions} are invalid, if it
+   *     requests a GPU with a negative device id, or if the vocabulary lacks the
+   *     classification, separator or unknown token.
    */
   public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -148,8 +149,9 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    *     keys to strings, or a key is not an integer.
    * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary}, {@code config},
    *     {@code classificationScoringStrategy} or {@code inferenceOptions} is {@code null}, if the
-   *     split sizes of {@code inferenceOptions} are invalid, or if the vocabulary lacks the
-   *     classification, separator or unknown token.
+   *     split sizes of {@code inferenceOptions} are invalid, if it requests a GPU with a
+   *     negative device id, or if the vocabulary lacks the classification, separator or unknown
+   *     token.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,

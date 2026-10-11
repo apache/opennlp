@@ -169,8 +169,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    *     the lower casing the component is configured with.
    * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary},
    *     {@code ids2Labels}, {@code inferenceOptions} or {@code sentenceDetector} is
-   *     {@code null}, if the split sizes of {@code inferenceOptions} are invalid, or if the
-   *     vocabulary lacks the classification, separator or unknown token.
+   *     {@code null}, if the split sizes of {@code inferenceOptions} are invalid, if it
+   *     requests a GPU with a negative device id, or if the vocabulary lacks the
+   *     classification, separator or unknown token.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       InferenceOptions inferenceOptions,
