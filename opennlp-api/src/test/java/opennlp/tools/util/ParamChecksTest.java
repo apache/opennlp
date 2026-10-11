@@ -177,6 +177,35 @@ public class ParamChecksTest {
   }
 
   @ParameterizedTest
+  @ValueSource(ints = {1, 2, Integer.MAX_VALUE})
+  void testPositiveIntIsReturnedUnchanged(int value) {
+    assertEquals(value, ParamChecks.requirePositive(value, "size"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, -1, Integer.MIN_VALUE})
+  void testNonPositiveIntIsRejected(int value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requirePositive(value, "size"));
+    assertEquals("size must be positive", e.getMessage());
+  }
+
+  /** Infinity passes, as in {@code requireNonNegative}; callers add {@code requireFinite}. */
+  @ParameterizedTest
+  @ValueSource(doubles = {Double.MIN_VALUE, 1.5, Double.MAX_VALUE, Double.POSITIVE_INFINITY})
+  void testPositiveDoubleIsReturnedUnchanged(double value) {
+    assertEquals(value, ParamChecks.requirePositive(value, "rate"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {0.0, -0.0, -1.0, Double.NEGATIVE_INFINITY, Double.NaN})
+  void testNonPositiveDoubleIsRejected(double value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requirePositive(value, "rate"));
+    assertEquals("rate must be positive", e.getMessage());
+  }
+
+  @ParameterizedTest
   @ValueSource(doubles = {0.0, -1.5, Double.MAX_VALUE, -Double.MAX_VALUE})
   void testFiniteDoubleIsReturnedUnchanged(double value) {
     assertEquals(value, ParamChecks.requireFinite(value, "weight"));

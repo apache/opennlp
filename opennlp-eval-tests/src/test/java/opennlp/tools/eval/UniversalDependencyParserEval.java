@@ -30,6 +30,9 @@ import opennlp.tools.depparse.DependencyEvaluator;
 import opennlp.tools.depparse.DependencyModel;
 import opennlp.tools.depparse.DependencyParser;
 import opennlp.tools.depparse.DependencyParserME;
+import opennlp.tools.depparse.FeedforwardDependencyModel;
+import opennlp.tools.depparse.FeedforwardDependencyParser;
+import opennlp.tools.depparse.FeedforwardDependencyTrainer;
 import opennlp.tools.formats.conllu.ConlluDependencySampleStream;
 import opennlp.tools.formats.conllu.ConlluTagset;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
@@ -37,7 +40,7 @@ import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Measures the accuracy of the dependency parser on Universal Dependencies 2.0
+ * Measures the accuracy of the dependency parsers on Universal Dependencies 2.0
  * treebanks and pins the exact scores.
  *
  * <p>Every test trains from scratch on a treebank's training split and scores the parser
@@ -50,9 +53,13 @@ import opennlp.tools.util.TrainingParameters;
  * and both again over the tokens that are not tagged {@code PUNCT}, the customary
  * reporting convention for Universal Dependencies.</p>
  *
- * <p>The parser is trained with a feature cutoff of {@value #FEATURE_CUTOFF} and
- * evaluated on English, German, Spanish, and French. The English cross validation uses
- * {@value #ENGLISH_FOLDS} folds of the training split.</p>
+ * <p>{@link DependencyParserME} is trained with a feature cutoff of
+ * {@value #FEATURE_CUTOFF} and evaluated on English, German, Spanish, and French. The
+ * English cross validation uses {@value #ENGLISH_FOLDS} folds of the training split.</p>
+ *
+ * <p>{@link FeedforwardDependencyParser} is trained with its default parameters and
+ * evaluated greedily and with a beam of {@value #FEEDFORWARD_BEAM_SIZE} on the English
+ * EWT and Spanish AnCora development splits.</p>
  */
 public class UniversalDependencyParserEval extends AbstractEvalTest {
 
@@ -61,6 +68,9 @@ public class UniversalDependencyParserEval extends AbstractEvalTest {
 
   /** The fold count of the English cross validation. */
   private static final int ENGLISH_FOLDS = 5;
+
+  /** The beam size of the beamed feedforward runs, as in the manual. */
+  private static final int FEEDFORWARD_BEAM_SIZE = 4;
 
   /**
    * One treebank: its language code and its training and development splits.
@@ -230,6 +240,44 @@ public class UniversalDependencyParserEval extends AbstractEvalTest {
   }
 
   /**
+   * Trains the feedforward parser with its default parameters on the English EWT
+   * training split and scores it greedily and with a beam on the development split.
+   *
+   * @throws IOException Thrown if reading or training fails.
+   */
+  @Test
+  void trainAndEvalFeedforwardParserEnglish() throws IOException {
+    final FeedforwardDependencyModel model = trainFeedforward(english);
+    final Scores greedy = evaluate(new FeedforwardDependencyParser(model), english.dev());
+    final Scores beam =
+        evaluate(new FeedforwardDependencyParser(model, FEEDFORWARD_BEAM_SIZE), english.dev());
+    Assertions.assertAll(
+        () -> assertScores(new Scores(25148, 22065, 0.8415380944806744d, 0.8174805153491331d,
+                0.8545660548379787d, 0.8276455925674144d), greedy),
+        () -> assertScores(new Scores(25148, 22065, 0.8488150151105456d, 0.8254334340703038d,
+                0.8599592114208022d, 0.833718558803535d), beam));
+  }
+
+  /**
+   * Trains the feedforward parser with its default parameters on the Spanish AnCora
+   * training split and scores it greedily and with a beam on the development split.
+   *
+   * @throws IOException Thrown if reading or training fails.
+   */
+  @Test
+  void trainAndEvalFeedforwardParserSpanishAncora() throws IOException {
+    final FeedforwardDependencyModel model = trainFeedforward(spanish);
+    final Scores greedy = evaluate(new FeedforwardDependencyParser(model), spanish.dev());
+    final Scores beam =
+        evaluate(new FeedforwardDependencyParser(model, FEEDFORWARD_BEAM_SIZE), spanish.dev());
+    Assertions.assertAll(
+        () -> assertScores(new Scores(52336, 46058, 0.8599625496789972d, 0.8278813818404158d,
+                0.8754613747883104d, 0.8390073385731035d), greedy),
+        () -> assertScores(new Scores(52336, 46058, 0.8671660042800367d, 0.8356389483338429d,
+                0.8816275131356116d, 0.8458031178079812d), beam));
+  }
+
+  /**
    * @return The training parameters of the parser. Never {@code null}.
    */
   private static TrainingParameters trainingParameters() {
@@ -270,21 +318,23 @@ public class UniversalDependencyParserEval extends AbstractEvalTest {
   }
 
   /**
-   * Asserts that the measured scores match the pinned ones.
+   * Asserts that the measured scores match the pinned ones. Every value is compared,
+   * and a failure reports all mismatches together with the measured scores.
    *
    * @param expected The pinned scores.
    * @param actual The measured scores.
    */
   private static void assertScores(Scores expected, Scores actual) {
-    Assertions.assertEquals(expected.words(), actual.words(), "words");
-    Assertions.assertEquals(expected.wordsExcludingPunctuation(),
-        actual.wordsExcludingPunctuation(), "words excluding punctuation");
-    Assertions.assertEquals(expected.uas(), actual.uas(), ACCURACY_DELTA, "UAS");
-    Assertions.assertEquals(expected.las(), actual.las(), ACCURACY_DELTA, "LAS");
-    Assertions.assertEquals(expected.uasExcludingPunctuation(),
-        actual.uasExcludingPunctuation(), ACCURACY_DELTA, "UAS excluding punctuation");
-    Assertions.assertEquals(expected.lasExcludingPunctuation(),
-        actual.lasExcludingPunctuation(), ACCURACY_DELTA, "LAS excluding punctuation");
+    Assertions.assertAll("measured " + actual,
+        () -> Assertions.assertEquals(expected.words(), actual.words(), "words"),
+        () -> Assertions.assertEquals(expected.wordsExcludingPunctuation(),
+            actual.wordsExcludingPunctuation(), "words excluding punctuation"),
+        () -> Assertions.assertEquals(expected.uas(), actual.uas(), ACCURACY_DELTA, "UAS"),
+        () -> Assertions.assertEquals(expected.las(), actual.las(), ACCURACY_DELTA, "LAS"),
+        () -> Assertions.assertEquals(expected.uasExcludingPunctuation(),
+            actual.uasExcludingPunctuation(), ACCURACY_DELTA, "UAS excluding punctuation"),
+        () -> Assertions.assertEquals(expected.lasExcludingPunctuation(),
+            actual.lasExcludingPunctuation(), ACCURACY_DELTA, "LAS excluding punctuation"));
   }
 
   /**
@@ -297,5 +347,21 @@ public class UniversalDependencyParserEval extends AbstractEvalTest {
   private static ConlluDependencySampleStream samples(File split) throws IOException {
     return new ConlluDependencySampleStream(new MarkableFileInputStreamFactory(split),
         ConlluTagset.U);
+  }
+
+  /**
+   * Trains the feedforward parser with its default parameters on a treebank's training
+   * split.
+   *
+   * @param treebank The treebank.
+   * @return The trained model. Never {@code null}.
+   * @throws IOException Thrown if reading or training fails.
+   */
+  private static FeedforwardDependencyModel trainFeedforward(Treebank treebank)
+      throws IOException {
+    try (ConlluDependencySampleStream train = samples(treebank.train())) {
+      return FeedforwardDependencyTrainer.train(treebank.language(), train,
+          new TrainingParameters());
+    }
   }
 }

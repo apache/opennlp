@@ -21,9 +21,13 @@
 		<title>Introduction</title>
 		<para>
 			Dependency parsing assigns each token a syntactic head and a relation label.
-			<code>DependencyParserME</code> accepts tokens with aligned part-of-speech tags
-			and returns a <code>DependencyTree</code>. A classifier picks the next
-			arc-standard transition for each parser state.
+			Two parsers implement <code>DependencyParser</code>: <code>DependencyParserME</code>
+			and <code>FeedforwardDependencyParser</code>. Both accept tokens with aligned
+			part-of-speech tags and return a <code>DependencyTree</code>. Both choose the next
+			arc-standard transition for each parser state: <code>DependencyParserME</code>
+			scores the transitions with a maximum entropy model and
+			<code>FeedforwardDependencyParser</code> with a feedforward network. The
+			command-line tools cover the <code>DependencyParserME</code> parser only.
 		</para>
 	</section>
 
@@ -91,6 +95,32 @@ opennlp DependencyParserME en-depparse.bin < tagged-sentences.txt]]>
 		</para>
 	</section>
 
+	<section xml:id="tools.dependency.feedforward">
+		<title>Feedforward parser</title>
+		<para>
+			<code>FeedforwardDependencyTrainer</code> trains a neural model from the same
+			samples and <code>TrainingParameters</code>; absent keys take the trainer's
+			defaults. This example trains, saves, and reloads a model and parses with a beam
+			of four:
+			<programlisting language="java">
+<![CDATA[FeedforwardDependencyModel model;
+try (ObjectStream<DependencySample> samples =
+    new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+  model = FeedforwardDependencyTrainer.train("eng", samples, new TrainingParameters());
+}
+model.serialize(Path.of("en-depparse-ff.bin"));
+
+DependencyParser parser = new FeedforwardDependencyParser(
+    new FeedforwardDependencyModel(Path.of("en-depparse-ff.bin")), 4);]]>
+			</programlisting>
+		</para>
+		<para>
+			A beam size of one decodes greedily; a larger beam keeps that many transition
+			sequences per step and scores each of them. One parser instance can be shared
+			between threads.
+		</para>
+	</section>
+
 	<section xml:id="tools.dependency.parsing">
 
 		<title>Parsing and evaluation</title>
@@ -123,13 +153,15 @@ double uas = validator.getUas();
 double lasExcludingPunctuation = validator.getLasExcludingPunctuation();]]>
 			</programlisting>
 			The provided treebank evaluation, <code>UniversalDependencyParserEval</code> in
-			<code>opennlp-eval-tests</code>, trains the parser from scratch on a Universal
+			<code>opennlp-eval-tests</code>, trains each parser from scratch on a Universal
 			Dependencies 2.0 training split and pins all four scores on data the parser has not
-			seen: the English, German, Spanish AnCora, and French development splits, and a
-			five-fold cross validation of the English training split. It uses gold sentence
-			boundaries, tokens, and tags, so it measures the dependency parser rather than a
-			complete text pipeline. Evaluation uses the existing <code>opennlp-data</code>
-			treebanks.
+			seen. <code>DependencyParserME</code> is scored on the English, German, Spanish
+			AnCora, and French development splits and a five-fold cross validation of the
+			English training split; <code>FeedforwardDependencyParser</code> is scored greedily
+			and with a beam of four on the English and Spanish AnCora development splits. It
+			uses gold sentence boundaries, tokens, and tags, so it measures the dependency
+			parser rather than a complete text pipeline. Evaluation uses the existing
+			<code>opennlp-data</code> treebanks.
 		</para>
 	</section>
 </chapter>
