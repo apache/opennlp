@@ -27,22 +27,21 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
-import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.chunking.Parser;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -60,7 +59,22 @@ import opennlp.tools.util.model.SerializableArtifact;
  * Now: return constituents[ci];
  * <p>
  * Other changes include removal of deprecated methods.
- *
+ * <p>
+ * A version 2 rules file starts with the line {@code # opennlp-ancora-head-rules 2}. Each
+ * following line is one rule: the number of fields, the constituent type, the direction
+ * ({@code 1} searches left to right, {@code 0} right to left) and the tag patterns in priority
+ * order. A tag pattern matches the complete constituent type and is built from:
+ * <ul>
+ *   <li>the literal characters {@code A-Z}, {@code 0-9}, {@code .} and {@code $}, matched
+ *       case-sensitively,</li>
+ *   <li>{@code *}, which matches zero or more characters (two in a row are rejected),</li>
+ *   <li>one of the character choices {@code [MAS]}, {@code [CS]}, {@code [IS]}, {@code [12]}
+ *       and {@code [AC]} of the AnCora tagset, which matches one of the listed characters.</li>
+ * </ul>
+ * A pattern has at most 62 elements. A file without the header line is
+ * read as the regular expression form of earlier releases, limited to {@code .*} and escaped
+ * {@code .} and {@code $} ({@code \.} or {@code \\.}), and converted to the patterns above;
+ * any other regular expression construct is rejected.
  */
 public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, SerializableArtifact {
 
@@ -69,16 +83,43 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   // 1000 gives 20x headroom over the real-world maximum and is not configurable
   // because tag counts are a linguistics constraint, not a deployment parameter.
   private static final int MAX_TAGS_PER_RULE = 1_000;
+  // One bit per pattern element in a long, plus the accept bit and the shift into the next
+  // state in TagPattern.matches, which must stay clear of the sign bit.
+  private static final int MAX_PATTERN_STATES = 62;
+  private static final String FORMAT_HEADER = "# opennlp-ancora-head-rules 2";
+  private static final Set<String> CHOICES =
+      Set.of("MAS", "CS", "IS", "12", "AC");
 
+  /**
+   * Reads and writes {@link AncoraSpanishHeadRules} as a model artifact, in UTF-8.
+   */
   public static class HeadRulesSerializer implements ArtifactSerializer<AncoraSpanishHeadRules> {
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Reads a version 2 rules file, or a file in the format of earlier releases.</p>
+     *
+     * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
+     */
+    @Override
     public AncoraSpanishHeadRules create(InputStream in) throws IOException {
+      ParamChecks.requireNonNullArg(in, "in");
       return new AncoraSpanishHeadRules(new BufferedReader(
           new InputStreamReader(in, StandardCharsets.UTF_8)));
     }
 
-    public void serialize(opennlp.tools.parser.lang.es.AncoraSpanishHeadRules artifact, OutputStream out)
-        throws IOException {
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Writes the version 2 format.</p>
+     *
+     * @throws IllegalArgumentException Thrown if {@code artifact} or {@code out} is {@code null}.
+     */
+    @Override
+    public void serialize(AncoraSpanishHeadRules artifact, OutputStream out) throws IOException {
+      ParamChecks.requireNonNullArg(artifact, "artifact");
+      ParamChecks.requireNonNullArg(out, "out");
       artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     }
   }
@@ -86,10 +127,9 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   private static class HeadRule {
     public final boolean leftToRight;
     public final String[] tags;
-    @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
-    public final Pattern[] tagPatterns;
+    public final TagPattern[] tagPatterns;
 
-    public HeadRule(boolean l2r, String[] tags) {
+    public HeadRule(boolean l2r, String[] tags, TagPattern[] tagPatterns) {
       leftToRight = l2r;
 
       for (String tag : tags) {
@@ -97,7 +137,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
       }
 
       this.tags = tags;
-      this.tagPatterns = compile(tags);
+      this.tagPatterns = tagPatterns;
     }
 
     @Override
@@ -121,27 +161,94 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     }
   }
 
-  // Tags are regular expressions (e.g. "AQA.*", "GRUP\\.A") matched against the whole
-  // constituent type; they are compiled once, here and per HeadRule.
-  private static final String[] TAGS1 =
-      {"AQA.*", "AQC.*", "GRUP\\.A", "S\\.A", "NC.*S.*", "NP.*", "NC.*P.*", "GRUP\\.NOM"};
-  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
-  private static final Pattern[] TAGS1_PATTERNS = compile(TAGS1);
+  private static final class TagPattern {
 
-  private static final String[] TAGS2 = {"\\$", "GRUP\\.A", "SA"};
-  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
-  private static final Pattern[] TAGS2_PATTERNS = compile(TAGS2);
+    private final long[] characterStates = new long[128];
+    private final long wildcardStates;
+    private final long acceptState;
 
-  private static final String[] TAGS3 =
-      {"AQ0.*", "AQ[AC].*", "AO.*", "GRUP\\.A", "S\\.A", "RG", "RN", "GRUP\\.NOM"};
-  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
-  private static final Pattern[] TAGS3_PATTERNS = compile(TAGS3);
+    /** Resolves each ASCII literal or bounded choice to its active-state bit mask. */
+    private TagPattern(String glob) {
+      long wildcards = 0;
+      int states = 0;
+      for (int i = 0; i < glob.length();) {
+        if (states == MAX_PATTERN_STATES) {
+          throw new IllegalArgumentException("pattern exceeds " + MAX_PATTERN_STATES + " states");
+        }
+        long state = 1L << states;
+        char c = glob.charAt(i);
+        if (c == '*') {
+          if (states > 0 && (wildcards & (state >>> 1)) != 0) {
+            throw new IllegalArgumentException("consecutive wildcards are not supported");
+          }
+          wildcards |= state;
+          i++;
+        } else if (c == '[') {
+          int end = glob.indexOf(']', i + 1);
+          if (end < 0) {
+            throw new IllegalArgumentException("unterminated character choice");
+          }
+          String choice = glob.substring(i + 1, end);
+          if (!CHOICES.contains(choice)) {
+            throw new IllegalArgumentException("unsupported character choice [" + choice + "]");
+          }
+          for (int j = 0; j < choice.length(); j++) {
+            characterStates[choice.charAt(j)] |= state;
+          }
+          i = end + 1;
+        } else {
+          if (!isLiteral(c)) {
+            throw new IllegalArgumentException("unsupported character '" + c + "'");
+          }
+          characterStates[c] |= state;
+          i++;
+        }
+        states++;
+      }
+      if (states == 0) {
+        throw new IllegalArgumentException("pattern must not be empty");
+      }
+      wildcardStates = wildcards;
+      acceptState = 1L << states;
+    }
 
-  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
-  private static Pattern[] compile(String[] tags) {
-    Pattern[] patterns = new Pattern[tags.length];
-    for (int i = 0; i < tags.length; i++) {
-      patterns[i] = Pattern.compile(tags[i]);
+    /** Advances all active states together, without backtracking or per-character allocation. */
+    private boolean matches(String tag) {
+      long states = epsilonClosure(1L);
+      for (int i = 0; i < tag.length(); i++) {
+        char c = tag.charAt(i);
+        long matching = c < characterStates.length ? characterStates[c] : 0;
+        long next = ((states & matching) << 1) | (states & wildcardStates);
+        states = epsilonClosure(next);
+        if (states == 0) {
+          return false;
+        }
+      }
+      return (epsilonClosure(states) & acceptState) != 0;
+    }
+
+    /** Skips empty wildcards; consecutive wildcards are rejected during construction. */
+    private long epsilonClosure(long states) {
+      return states | ((states & wildcardStates) << 1);
+    }
+
+    /** Accepts only literal characters used by Ancora tags. */
+    private static boolean isLiteral(char c) {
+      return c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '.' || c == '$';
+    }
+  }
+
+  private static final TagPattern[] TAGS1 = compileBuiltIns(
+      "AQA*", "AQC*", "GRUP.A", "S.A", "NC*S*", "NP*", "NC*P*", "GRUP.NOM");
+  private static final TagPattern[] TAGS2 = compileBuiltIns("$", "GRUP.A", "SA");
+  private static final TagPattern[] TAGS3 = compileBuiltIns(
+      "AQ0*", "AQ[AC]*", "AO*", "GRUP.A", "S.A", "RG", "RN", "GRUP.NOM");
+
+  /** Compiles the fixed noun-phrase tag rules once. */
+  private static TagPattern[] compileBuiltIns(String... globs) {
+    TagPattern[] patterns = new TagPattern[globs.length];
+    for (int i = 0; i < globs.length; i++) {
+      patterns[i] = new TagPattern(globs[i]);
     }
     return patterns;
   }
@@ -154,9 +261,11 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
    *
    * @param rulesReader A {@link Reader} for a head rules file.
    *
-   * @throws IOException Thrown  f the head rules reader can not be read.
+   * @throws IllegalArgumentException Thrown if {@code rulesReader} is {@code null}.
+   * @throws IOException Thrown if the head rules cannot be read or contain an unsupported rule.
    */
   public AncoraSpanishHeadRules(Reader rulesReader) throws IOException {
+    ParamChecks.requireNonNullArg(rulesReader, "rulesReader");
     BufferedReader in = new BufferedReader(rulesReader);
     readHeadRules(in);
 
@@ -174,16 +283,22 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   }
 
   @Override
-  @SuppressForbidden("head-rule tags are regular expressions from a user-supplied rules file")
   public Parse getHead(Parse[] constituents, String type) {
+    if (constituents == null || constituents.length == 0) {
+      throw new IllegalArgumentException("constituents must not be null or empty");
+    }
+    for (Parse constituent : constituents) {
+      ParamChecks.requireNonNullArg(constituent, "constituents element");
+    }
+    ParamChecks.requireNonNullArg(type, "type");
     if (Parser.TOK_NODE.equals(constituents[0].getType())) {
       return null;
     }
     HeadRule hr;
     if (type.equals("SN") || type.equals("GRUP.NOM")) {
       for (Parse constituent : constituents) {
-        for (int t = TAGS1_PATTERNS.length - 1; t >= 0; t--) {
-          if (TAGS1_PATTERNS[t].matcher(constituent.getType()).matches()) {
+        for (int t = TAGS1.length - 1; t >= 0; t--) {
+          if (TAGS1[t].matches(constituent.getType())) {
             return constituent;
           }
         }
@@ -194,15 +309,15 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
         }
       }
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
-        for (int ti = TAGS2_PATTERNS.length - 1; ti >= 0; ti--) {
-          if (TAGS2_PATTERNS[ti].matcher(constituents[ci].getType()).matches()) {
+        for (int ti = TAGS2.length - 1; ti >= 0; ti--) {
+          if (TAGS2[ti].matches(constituents[ci].getType())) {
             return constituents[ci];
           }
         }
       }
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
-        for (int ti = TAGS3_PATTERNS.length - 1; ti >= 0; ti--) {
-          if (TAGS3_PATTERNS[ti].matcher(constituents[ci].getType()).matches()) {
+        for (int ti = TAGS3.length - 1; ti >= 0; ti--) {
+          if (TAGS3[ti].matches(constituents[ci].getType())) {
             return constituents[ci];
           }
         }
@@ -210,12 +325,12 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
       return constituents[constituents.length - 1].getHead();
     }
     else if ((hr = headRules.get(type)) != null) {
-      Pattern[] tagPatterns = hr.tagPatterns;
+      TagPattern[] tagPatterns = hr.tagPatterns;
       int cl = constituents.length;
       if (hr.leftToRight) {
-        for (Pattern tagPattern : tagPatterns) {
+        for (TagPattern tagPattern : tagPatterns) {
           for (Parse constituent : constituents) {
-            if (tagPattern.matcher(constituent.getType()).matches()) {
+            if (tagPattern.matches(constituent.getType())) {
               return constituent;
             }
           }
@@ -223,9 +338,9 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
         return constituents[0].getHead();
       }
       else {
-        for (Pattern tagPattern : tagPatterns) {
+        for (TagPattern tagPattern : tagPatterns) {
           for (int ci = cl - 1; ci >= 0; ci--) {
-            if (tagPattern.matcher(constituents[ci].getType()).matches()) {
+            if (tagPattern.matches(constituents[ci].getType())) {
               return constituents[ci];
             }
           }
@@ -236,32 +351,145 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     return constituents[constituents.length - 1].getHead();
   }
 
+  /**
+   * Reads all rules, in the version 2 format if the first line is its header and in the format
+   * of earlier releases otherwise.
+   *
+   * @param str The reader positioned at the start of the rules file.
+   * @throws IOException Thrown if the rules cannot be read, the header is unknown, or a rule is
+   *     malformed.
+   */
   private void readHeadRules(BufferedReader str) throws IOException {
-    String line;
-    headRules = new HashMap<>(60);
-    while ((line = str.readLine()) != null) {
-      StringTokenizer st = new StringTokenizer(line);
-      String num = st.nextToken();
-      String type = st.nextToken();
-      String dir = st.nextToken();
-      int rawCount;
-      try {
-        rawCount = Integer.parseInt(num);
-      } catch (NumberFormatException e) {
-        throw new IOException("Invalid tag count in head rules: " + num, e);
-      }
-      int numTags = rawCount - 2;
-      if (numTags < 0 || numTags > MAX_TAGS_PER_RULE) {
-        throw new IOException("Invalid tag count in head rules: " + num);
-      }
-      String[] tags = new String[numTags];
-      int ti = 0;
-      while (st.hasMoreTokens()) {
-        tags[ti] = st.nextToken();
-        ti++;
-      }
-      headRules.put(type, new HeadRule(dir.equals("1"), tags));
+    headRules = new LinkedHashMap<>(60);
+    String line = str.readLine();
+    boolean versionTwo = FORMAT_HEADER.equals(line);
+    int lineNumber = 1;
+    if (line != null && line.startsWith("#") && !versionTwo) {
+      throw new IOException("Unsupported Ancora head rules header at line 1: " + line);
     }
+    if (line != null && !versionTwo) {
+      readHeadRule(line, lineNumber, true);
+    }
+    while ((line = str.readLine()) != null) {
+      readHeadRule(line, ++lineNumber, !versionTwo);
+    }
+  }
+
+  /**
+   * Validates one rule, compiles its tag patterns and adds it to the rules.
+   *
+   * @param line The rule line.
+   * @param lineNumber The 1-based line number, for error messages.
+   * @param legacy Whether the tags are regular expressions of the earlier format.
+   * @throws IOException Thrown if the rule is malformed or repeats a constituent type.
+   */
+  private void readHeadRule(String line, int lineNumber, boolean legacy) throws IOException {
+    StringTokenizer tokens = new StringTokenizer(line);
+    if (!tokens.hasMoreTokens()) {
+      throw ruleError(lineNumber, null, "blank lines are not supported");
+    }
+    String countToken = tokens.nextToken();
+    int count;
+    try {
+      count = Integer.parseInt(countToken);
+    } catch (NumberFormatException e) {
+      throw ruleError(lineNumber, null, "invalid field count '" + countToken + "'", e);
+    }
+    if (count < 2 || count - 2 > MAX_TAGS_PER_RULE || tokens.countTokens() != count) {
+      throw ruleError(lineNumber, null, "declared field count does not match the rule");
+    }
+    String type = tokens.nextToken();
+    String direction = tokens.nextToken();
+    if (!"0".equals(direction) && !"1".equals(direction)) {
+      throw ruleError(lineNumber, type, "direction must be 0 or 1");
+    }
+    if (headRules.containsKey(type)) {
+      throw ruleError(lineNumber, type, "duplicate constituent rule");
+    }
+    String[] tags = new String[count - 2];
+    TagPattern[] patterns = new TagPattern[tags.length];
+    for (int i = 0; i < tags.length; i++) {
+      String source = tokens.nextToken();
+      String glob = legacy ? convertLegacyPattern(source, lineNumber, type) : source;
+      try {
+        patterns[i] = new TagPattern(glob);
+      } catch (IllegalArgumentException e) {
+        throw ruleError(lineNumber, type, "unsupported tag pattern '" + source
+            + "': " + e.getMessage(), e);
+      }
+      tags[i] = glob;
+    }
+    headRules.put(type, new HeadRule("1".equals(direction), tags, patterns));
+  }
+
+  /**
+   * Converts a tag of the earlier regular expression format to a version 2 pattern.
+   *
+   * @param source The regular expression tag.
+   * @param lineNumber The 1-based line number, for error messages.
+   * @param type The constituent type of the rule, for error messages.
+   * @return The equivalent version 2 pattern.
+   * @throws IOException Thrown if {@code source} uses a construct other than {@code .*} and an
+   *     escaped {@code .} or {@code $}.
+   */
+  private String convertLegacyPattern(String source, int lineNumber, String type)
+      throws IOException {
+    // The bundled INC rule lists GRUP.ADV without an escape; read its dot as a literal.
+    if ("GRUP.ADV".equals(source)) {
+      return source;
+    }
+    StringBuilder glob = new StringBuilder(source.length());
+    for (int i = 0; i < source.length();) {
+      char c = source.charAt(i);
+      if (c == '.' && i + 1 < source.length() && source.charAt(i + 1) == '*') {
+        glob.append('*');
+        i += 2;
+      } else if (c == '\\') {
+        int escaped = i + 1;
+        if (escaped < source.length() && source.charAt(escaped) == '\\') {
+          escaped++;
+        }
+        if (escaped >= source.length()
+            || source.charAt(escaped) != '.' && source.charAt(escaped) != '$') {
+          throw ruleError(lineNumber, type, "unsupported legacy escape in '" + source + "'");
+        }
+        glob.append(source.charAt(escaped));
+        i = escaped + 1;
+      } else if (c == '.' || c == '$' || c == '*' || c == '+' || c == '|'
+          || c == '(' || c == ')' || c == '?' || c == '{' || c == '}' || c == '^') {
+        throw ruleError(lineNumber, type, "unsupported legacy regex construct in '"
+            + source + "'");
+      } else {
+        glob.append(c);
+        i++;
+      }
+    }
+    return glob.toString();
+  }
+
+  /**
+   * {@return the exception for a malformed rule, naming its line and constituent type}
+   *
+   * @param line The 1-based line number.
+   * @param type The constituent type, or {@code null} if it was not read yet.
+   * @param message The reason.
+   */
+  private IOException ruleError(int line, String type, String message) {
+    return ruleError(line, type, message, null);
+  }
+
+  /**
+   * {@return the exception for a malformed rule, naming its line and constituent type}
+   *
+   * @param line The 1-based line number.
+   * @param type The constituent type, or {@code null} if it was not read yet.
+   * @param message The reason.
+   * @param cause The underlying exception, or {@code null}.
+   */
+  private IOException ruleError(int line, String type, String message, Throwable cause) {
+    String context = type == null ? "" : " for rule " + type;
+    return new IOException("Invalid Ancora head rules at line " + line + context + ": " + message,
+        cause);
   }
 
   @Override
@@ -302,9 +530,14 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
    * The {@code writer} remains open after this method returns.
    *
    * @param writer The {@link Writer} to write the head rules to.
+   * @throws IllegalArgumentException Thrown if {@code writer} is {@code null}.
    * @throws IOException Thrown if IO errors occurred during write operation.
    */
   public void serialize(Writer writer) throws IOException {
+    ParamChecks.requireNonNullArg(writer, "writer");
+
+    writer.write(FORMAT_HEADER);
+    writer.write('\n');
 
     for (Entry<String, HeadRule> entry : headRules.entrySet()) {
       String type = entry.getKey();

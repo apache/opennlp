@@ -236,6 +236,24 @@ Arguments description:
 				<para>Save the ParseModel to a file</para>
 			</listitem>
 		</itemizedlist>
+		Spanish AnCora head-rule files use a small, versioned tag-pattern format. The first line
+		is <literal># opennlp-ancora-head-rules 2</literal>. Patterns contain case-sensitive
+		ASCII tag characters, <literal>*</literal> for zero or more characters, and the bounded
+		choices used by the AnCora tagset, such as <literal>V[MAS]*</literal>. Dots and dollar
+		signs are literals. A rule file without that header line is read as the regular expression
+		format of earlier releases, as long as it uses only <literal>.*</literal> and escaped dots
+		and dollar signs; other regular expression constructs, unknown character choices, a
+		direction other than 0 or 1, and a constituent type listed twice are rejected with the
+		line number. OpenNLP 2.x cannot read the version 2 format, so Spanish parser models
+		trained with this release do not load there. In models trained before 3.0 an escaped
+		dot such as <literal>GRUP\\.VERB</literal> matched no constituent type; it now
+		matches <literal>GRUP.VERB</literal>, so heads chosen at parse time differ from those
+		chosen in training; retrain such models. For example, this right-to-left rule first seeks
+		a noun tag and then an adjective tag:
+		<programlisting>
+<![CDATA[# opennlp-ancora-head-rules 2
+4 GRUP.A 0 NC* AQA*]]>
+		</programlisting>
 		The following code snippet shows how to instantiate the HeadRules:
 		<programlisting language="java">
 <![CDATA[static HeadRules createHeadRules(TrainerToolParams params) throws IOException {
