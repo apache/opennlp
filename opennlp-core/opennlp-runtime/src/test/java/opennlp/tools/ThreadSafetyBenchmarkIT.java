@@ -386,7 +386,7 @@ public class ThreadSafetyBenchmarkIT {
     TrainingParameters p = new TrainingParameters();
     p.put(Parameters.ITERATIONS_PARAM, 100);
     p.put(Parameters.CUTOFF_PARAM, 0);
-    return TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), p);
+    return TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true), p);
   }
 
   /** Trains a sentence model from bundled {@code Sentences.txt}. */

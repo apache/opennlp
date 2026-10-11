@@ -22,9 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.function.Predicate;
 
-import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.ArrayMath;
@@ -103,8 +102,10 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    */
   public static final String NO_SPLIT = "F";
 
-  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
-  private final Pattern alphanumeric;
+  /*
+   * The test that decides which tokens the alphanumeric optimization accepts.
+   */
+  private final Predicate<CharSequence> alphanumeric;
 
   /*
    * The maximum entropy model to use to evaluate contexts.
@@ -167,7 +168,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
     this.abbDict = abbDict;
     TokenizerFactory factory = model.getFactory();
     this.cg = factory.getContextGenerator();
-    this.alphanumeric = factory.getAlphaNumericPattern();
+    this.alphanumeric = factory.alphanumericTest();
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
   }
 
@@ -202,7 +203,6 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    * @return   A {@link Span} array containing individual tokens as elements.
    */
   @Override
-  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   public Span[] tokenizePos(String d) {
     Span[] tokens = (keepNewLines ? WHITESPACE_KEEPING_NEW_LINES : WHITESPACE).tokenizePos(d);
     List<Span> localTokens = new ArrayList<>();
@@ -213,7 +213,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
       if (tok.length() < 2) {
         localTokens.add(s);
         localProbs.add(1d);
-      } else if (useAlphaNumericOptimization() && alphanumeric.matcher(tok).matches()) {
+      } else if (useAlphaNumericOptimization() && alphanumeric.test(tok)) {
         localTokens.add(s);
         localProbs.add(1d);
       } else {
@@ -283,7 +283,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
 
     ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
         factory.isUseAlphaNumericOptimization(),
-        factory.getAlphaNumericPattern(), factory.getContextGenerator());
+        factory.alphanumericTest(), factory.getContextGenerator());
 
     EventTrainer<TrainingParameters> trainer = TrainerFactory.getEventTrainer(
         mlParams, manifestInfoEntries);

@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -37,16 +36,16 @@ public class DummyTokenizerFactory extends TokenizerFactory {
 
   public DummyTokenizerFactory(String languageCode,
       Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
-      Pattern alphaNumericPattern) {
+      TokenizerCharacterPolicy characterPolicy) {
     super(languageCode, abbreviationDictionary, useAlphaNumericOptimization,
-        alphaNumericPattern);
+        characterPolicy);
   }
 
   @Override
   protected void init(String languageCode, Dictionary abbreviationDictionary,
-      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
+      boolean useAlphaNumericOptimization, TokenizerCharacterPolicy characterPolicy) {
     super.init(languageCode, abbreviationDictionary, useAlphaNumericOptimization,
-        alphaNumericPattern);
+        characterPolicy);
     this.dict = new DummyDictionary(abbreviationDictionary);
   }
 
