@@ -58,7 +58,7 @@ public class DependencyParserTrainerTool extends AbstractTrainerTool<DependencyS
     super.run(format, args);
     try (ObjectStream<DependencySample> samples = sampleStream) {
       CmdLineUtil.checkOutputFile("dependency parser model", params.getModel());
-      mlParams = loadTrainingParameters(params.getParams());
+      mlParams = loadTrainingParameters(params.getParams(), TrainingParameters.defaultParams());
       DependencyModel model = DependencyParserME.train(params.getLang(), samples, mlParams);
       CmdLineUtil.writeModel("dependency parser", params.getModel(), model);
     } catch (IOException e) {
@@ -67,14 +67,16 @@ public class DependencyParserTrainerTool extends AbstractTrainerTool<DependencyS
   }
 
   /**
-   * Loads the training parameters file named on the command line, falling back to the
-   * default parameters when none is given.
+   * Loads the training parameters file named on the command line, falling back to
+   * {@code fallback} when none is given.
    *
    * @param paramsFile The parameters file name, or {@code null} if none was given.
+   * @param fallback The parameters to use without a file. Must not be {@code null}.
    * @return The training parameters. Never {@code null}.
    */
-  static TrainingParameters loadTrainingParameters(String paramsFile) {
+  static TrainingParameters loadTrainingParameters(String paramsFile,
+      TrainingParameters fallback) {
     TrainingParameters loaded = CmdLineUtil.loadTrainingParameters(paramsFile, false);
-    return loaded == null ? TrainingParameters.defaultParams() : loaded;
+    return loaded == null ? fallback : loaded;
   }
 }
