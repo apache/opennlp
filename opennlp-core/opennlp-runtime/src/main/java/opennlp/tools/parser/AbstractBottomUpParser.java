@@ -34,6 +34,7 @@ import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
@@ -153,13 +154,25 @@ public abstract class AbstractBottomUpParser implements Parser {
    */
   protected boolean createDerivationString = false;
 
+  /**
+   * Initializes a bottom-up parser with the components every subclass needs.
+   *
+   * @param tagger The {@link POSTagger} used to tag. Must not be {@code null}.
+   * @param chunker The {@link Chunker} used to chunk. Must not be {@code null}.
+   * @param headRules The {@link HeadRules} for head word percolation. Must not be {@code null}.
+   * @param beamSize The number of different parses kept during parsing. Must be at least {@code 1}.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Must be greater than {@code 0} and at most {@code 1}.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null} or out of range.
+   */
   public AbstractBottomUpParser(POSTagger tagger, Chunker chunker, HeadRules headRules,
       int beamSize, double advancePercentage) {
-    this.tagger = tagger;
-    this.chunker = chunker;
-    this.M = beamSize;
+    this.tagger = ParamChecks.requireNonNullArg(tagger, "tagger");
+    this.chunker = ParamChecks.requireNonNullArg(chunker, "chunker");
+    ParamChecks.requireNonNullArg(headRules, "headRules");
+    this.M = ParamChecks.requirePositive(beamSize, "beamSize");
     this.K = beamSize;
-    this.Q = advancePercentage;
+    this.Q = ParamChecks.requirePositiveFraction(advancePercentage, "advancePercentage");
     reportFailedParse = true;
     this.headRules = headRules;
     this.punctSet = headRules.getPunctuationTags();
