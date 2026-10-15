@@ -38,6 +38,7 @@ public final class ParamChecks {
   private static final String NOT_BLANK_SUFFIX = " must not be null or blank";
   private static final String NOT_NEGATIVE_SUFFIX = " must not be negative";
   private static final String FINITE_SUFFIX = " must be finite";
+  private static final String POSITIVE_SUFFIX = " must be positive";
 
   private ParamChecks() {
     // utility class
@@ -168,6 +169,41 @@ public final class ParamChecks {
   public static double requireNonNegative(double value, String name) {
     if (value < 0) {
       throw new IllegalArgumentException(name + NOT_NEGATIVE_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is greater than zero.
+   * <p>
+   * The message of a thrown exception is {@code "<name> must be positive"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @return {@code value}, always greater than zero.
+   * @throws IllegalArgumentException Thrown if {@code value} is zero or negative.
+   */
+  public static int requirePositive(int value, String name) {
+    if (value <= 0) {
+      throw new IllegalArgumentException(name + POSITIVE_SUFFIX);
+    }
+    return value;
+  }
+
+  /**
+   * Returns {@code value} if it is greater than zero. Positive infinity passes; call
+   * {@link #requireFinite(double, String)} first where it is not allowed. The message of a
+   * thrown exception is {@code "<name> must be positive"}.
+   *
+   * @param value The argument to check.
+   * @param name The parameter name used in the exception message.
+   * @return {@code value}, always greater than zero.
+   * @throws IllegalArgumentException Thrown if {@code value} is zero, negative, or
+   *     {@code NaN}.
+   */
+  public static double requirePositive(double value, String name) {
+    if (!(value > 0)) {
+      throw new IllegalArgumentException(name + POSITIVE_SUFFIX);
     }
     return value;
   }

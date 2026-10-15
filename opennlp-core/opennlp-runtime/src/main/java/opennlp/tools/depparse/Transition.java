@@ -17,6 +17,9 @@
 
 package opennlp.tools.depparse;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.StringUtil;
 
@@ -125,5 +128,39 @@ record Transition(Type type, String label) {
       throw new IllegalArgumentException("not a transition outcome: " + outcome, e);
     }
     return new Transition(type, outcome.substring(separator + 1));
+  }
+
+  /**
+   * Decodes a transition inventory: the outcomes of a parser model, in index order.
+   *
+   * @param outcomes The outcome strings. Must not be {@code null}.
+   * @return The decoded transitions, indexed like {@code outcomes}. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if an outcome is not a transition, a
+   *         transition repeats, or the inventory has no SHIFT or no RIGHT_ARC action.
+   */
+  static Transition[] decodeInventory(String[] outcomes) {
+    final Transition[] decoded = new Transition[outcomes.length];
+    final Set<Transition> seen = new HashSet<>();
+    boolean hasShift = false;
+    boolean hasRightArc = false;
+    for (int i = 0; i < outcomes.length; i++) {
+      try {
+        decoded[i] = decode(outcomes[i]);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("not a transition: " + outcomes[i], e);
+      }
+      if (!seen.add(decoded[i])) {
+        throw new IllegalArgumentException("duplicate transition: " + outcomes[i]);
+      }
+      hasShift |= decoded[i].type() == Type.SHIFT;
+      hasRightArc |= decoded[i].type() == Type.RIGHT_ARC;
+    }
+    if (!hasShift) {
+      throw new IllegalArgumentException("transition inventory has no SHIFT action");
+    }
+    if (!hasRightArc) {
+      throw new IllegalArgumentException("transition inventory has no RIGHT_ARC action");
+    }
+    return decoded;
   }
 }

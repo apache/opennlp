@@ -34,10 +34,10 @@ import opennlp.tools.util.ParamChecks;
 class DependencyContextGenerator {
 
   /** The feature value standing for the artificial root position. */
-  private static final String ROOT_VALUE = "*ROOT*";
+  static final String ROOT_VALUE = "*ROOT*";
 
   /** The feature value standing for a position that does not exist. */
-  private static final String NONE_VALUE = "*NULL*";
+  static final String NONE_VALUE = "*NULL*";
 
   /** Separates a word from the tag of the same position within one feature. */
   private static final char WORD_TAG_SEPARATOR = '/';

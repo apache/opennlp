@@ -19,9 +19,7 @@ package opennlp.tools.depparse;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.EventTrainer;
@@ -72,34 +70,17 @@ public class DependencyParserME implements DependencyParser {
    * @param model The transition classification model.
    * @return The transitions by outcome index. Never {@code null}.
    * @throws IllegalArgumentException Thrown if an outcome does not decode to a
-   *         transition, which means the model is not a dependency parser model.
+   *         transition, which means the model is not a dependency parser model, a
+   *         transition repeats, or the model has no SHIFT or no RIGHT_ARC action.
    */
   private Transition[] decodeOutcomes(MaxentModel model) {
-    final Transition[] decoded = new Transition[model.getNumOutcomes()];
-    final Set<Transition> seen = new HashSet<>();
-    boolean hasShift = false;
-    boolean hasRightArc = false;
-    for (int i = 0; i < decoded.length; i++) {
-      final String outcome = model.getOutcome(i);
-      try {
-        decoded[i] = Transition.decode(outcome);
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("model outcome is not a transition: " + outcome, e);
-      }
-      if (!seen.add(decoded[i])) {
-        throw new IllegalArgumentException("duplicate model transition: " + outcome);
-      }
-      hasShift |= decoded[i].type() == Transition.Type.SHIFT;
-      hasRightArc |= decoded[i].type() == Transition.Type.RIGHT_ARC;
+    final String[] outcomes = new String[model.getNumOutcomes()];
+    for (int i = 0; i < outcomes.length; i++) {
+      outcomes[i] = model.getOutcome(i);
     }
-    if (!hasShift) {
-      throw new IllegalArgumentException("model has no SHIFT action");
-    }
-    if (!hasRightArc) {
-      throw new IllegalArgumentException("model has no RIGHT_ARC action");
-    }
-    return decoded;
+    return Transition.decodeInventory(outcomes);
   }
+
 
   /**
    * {@inheritDoc}

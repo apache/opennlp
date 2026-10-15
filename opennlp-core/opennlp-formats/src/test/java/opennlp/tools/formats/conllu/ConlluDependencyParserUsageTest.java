@@ -20,6 +20,7 @@ package opennlp.tools.formats.conllu;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +32,15 @@ import org.junit.jupiter.api.io.TempDir;
 import opennlp.tools.depparse.DependencyArc;
 import opennlp.tools.depparse.DependencyEvaluator;
 import opennlp.tools.depparse.DependencyModel;
+import opennlp.tools.depparse.DependencyParser;
 import opennlp.tools.depparse.DependencyParserME;
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.depparse.DependencyTree;
+import opennlp.tools.depparse.FeedforwardDependencyModel;
+import opennlp.tools.depparse.FeedforwardDependencyParser;
+import opennlp.tools.depparse.FeedforwardDependencyTrainer;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
@@ -92,6 +98,9 @@ public class ConlluDependencyParserUsageTest {
   private static final DependencyTree ALICE_TREE = DependencyTree.of(
       new int[] {1, -1, 1, 4, 1, 1},
       new String[] {"nsubj", "root", "iobj", "det", "obj", "punct"});
+
+  /** The beam size of the feedforward example. */
+  private static final int BEAM_SIZE = 4;
 
   private static DependencyModel model;
   private static DependencyParserME parser;
@@ -210,5 +219,33 @@ public class ConlluDependencyParserUsageTest {
             new String[] {"nsubj", "root", "obj"}),
         reloaded.parse(new String[] {"she", "eats", "fish"},
             new String[] {"PRON", "VERB", "NOUN"}));
+  }
+
+  /**
+   * Checks the manual's feedforward example: train from the CoNLL-U reader with the
+   * default parameters, save the model, load it back, and parse the gold tree with a
+   * beam of four.
+   *
+   * @param dir The directory for the treebank and the model file.
+   * @throws IOException Thrown if writing, training, or loading fails.
+   */
+  @Test
+  void testFeedforwardTrainSaveReloadAndParse(@TempDir Path dir) throws IOException {
+    final Path treebank = dir.resolve("train.conllu");
+    Files.writeString(treebank, (CONLLU + "\n\n").repeat(REPETITIONS), StandardCharsets.UTF_8);
+    final Path modelFile = dir.resolve("en-depparse-ff.bin");
+    final InputStreamFactory trainingData = () -> Files.newInputStream(treebank);
+
+    final FeedforwardDependencyModel feedforwardModel;
+    try (ObjectStream<DependencySample> samples =
+        new ConlluDependencySampleStream(trainingData, ConlluTagset.U)) {
+      feedforwardModel = FeedforwardDependencyTrainer.train("eng", samples,
+          new TrainingParameters());
+    }
+    feedforwardModel.serialize(modelFile);
+
+    final DependencyParser reloaded = new FeedforwardDependencyParser(
+        new FeedforwardDependencyModel(modelFile), BEAM_SIZE);
+    assertEquals(ALICE_TREE, reloaded.parse(ALICE_TOKENS, ALICE_TAGS));
   }
 }

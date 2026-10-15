@@ -26,11 +26,16 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import static opennlp.tools.depparse.DependencyTestSamples.CACHE_BYTES;
 import static opennlp.tools.depparse.DependencyTestSamples.SHE_EATS_FISH_TAGS;
 import static opennlp.tools.depparse.DependencyTestSamples.SHE_EATS_FISH_TOKENS;
 import static opennlp.tools.depparse.DependencyTestSamples.SHE_EATS_FISH_TREE;
@@ -38,14 +43,16 @@ import static opennlp.tools.depparse.DependencyTestSamples.THE_DOG_BARKS_TAGS;
 import static opennlp.tools.depparse.DependencyTestSamples.THE_DOG_BARKS_TOKENS;
 import static opennlp.tools.depparse.DependencyTestSamples.THE_DOG_BARKS_TREE;
 import static opennlp.tools.depparse.DependencyTestSamples.corpus;
-import static opennlp.tools.depparse.DependencyTestSamples.sample;
+import static opennlp.tools.depparse.DependencyTestSamples.nonProjectiveSample;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests parser boundaries, non-projective input, model persistence and thread sharing.
+ * Tests the {@link DependencyParser} contract shared by {@link DependencyParserME} and
+ * {@link FeedforwardDependencyParser}: input boundaries, non-projective input, and
+ * thread sharing, plus the persistence of the maximum entropy model.
  */
 public class DependencyParserEdgeCaseTest {
 
@@ -55,48 +62,75 @@ public class DependencyParserEdgeCaseTest {
   /** The number of parses each thread performs in the sharing test. */
   private static final int ITERATIONS_PER_THREAD = 50;
 
+  /** The beam size of the beamed feedforward parser under test. */
+  private static final int BEAM_SIZE = 4;
+
   private static DependencyModel model;
   private static DependencyParserME parser;
+  private static FeedforwardDependencyModel feedforwardModel;
 
   /**
-   * Builds a four-token sample whose gold arcs (2,0) and (3,1) cross, so the tree is
-   * non-projective and has no arc-standard derivation.
-   *
-   * @return The non-projective sample. Never {@code null}.
-   */
-  private static DependencySample nonProjectiveSample() {
-    return sample(new String[] {"the", "dog", "barks", "today"},
-        new String[] {"DT", "NN", "VBZ", "RB"},
-        new int[] {2, 3, -1, 2}, new String[] {"det", "nsubj", "root", "advmod"});
-  }
-
-  /**
-   * Trains a model on the shared corpus.
+   * Trains both models on the shared corpus.
    *
    * @throws IOException Thrown if reading the in-memory samples fails.
    */
   @BeforeAll
-  static void trainParser() throws IOException {
+  static void trainParsers() throws IOException {
     model = DependencyTestSamples.train(corpus());
     parser = new DependencyParserME(model);
+    feedforwardModel = DependencyTestSamples.trainFeedforward();
   }
 
-  @Test
-  void testEmptySentenceIsRejected() {
+  /**
+   * @return One parser per implementation and decoding mode, each sharing the
+   *         contract under test. Never {@code null}.
+   */
+  private static Stream<Arguments> parsers() {
+    return Stream.of(
+        Arguments.of("DependencyParserME", parser),
+        Arguments.of("FeedforwardDependencyParser greedy",
+            new FeedforwardDependencyParser(feedforwardModel)),
+        Arguments.of("FeedforwardDependencyParser beam " + BEAM_SIZE,
+            new FeedforwardDependencyParser(feedforwardModel, BEAM_SIZE)),
+        Arguments.of("FeedforwardDependencyParser beam " + BEAM_SIZE + " with scoring cache",
+            new FeedforwardDependencyParser(feedforwardModel, BEAM_SIZE, CACHE_BYTES)));
+  }
+
+  /**
+   * Checks that an empty sentence is rejected before decoding.
+   *
+   * @param name The parser under test.
+   * @param parser The parser under test.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parsers")
+  void testEmptySentenceIsRejected(String name, DependencyParser parser) {
     assertThrows(IllegalArgumentException.class,
         () -> parser.parse(new String[0], new String[0]));
-    // The transition system itself has no configuration for zero tokens either.
+  }
+
+  /** Checks that the transition system itself has no configuration for zero tokens. */
+  @Test
+  void testStateRejectsZeroTokens() {
     assertThrows(IllegalArgumentException.class, () -> new ArcStandardState(0));
   }
 
-  @Test
-  void testNullTokenOrTagIsRejected() {
+  /**
+   * Checks that a {@code null} token or tag is rejected.
+   *
+   * @param name The parser under test.
+   * @param parser The parser under test.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parsers")
+  void testNullTokenOrTagIsRejected(String name, DependencyParser parser) {
     assertThrows(IllegalArgumentException.class,
         () -> parser.parse(new String[] {null}, new String[] {"NN"}));
     assertThrows(IllegalArgumentException.class,
         () -> parser.parse(new String[] {"word"}, new String[] {null}));
   }
 
+  /** Checks that the context generator rejects tags that do not align with the tokens. */
   @Test
   void testContextGeneratorRejectsMisalignedInput() {
     final DependencyContextGenerator generator = new DependencyContextGenerator();
@@ -105,19 +139,28 @@ public class DependencyParserEdgeCaseTest {
         () -> generator.getContext(state, new String[] {"one"}, new String[] {"NN"}));
   }
 
-  @Test
-  void testSingleTokenSentenceAttachesToTheRoot() {
-    // A single token permits only the derivation shift then right-arc, so the head is
-    // forced to the artificial root and the model only chooses the relation label.
-    final DependencyTree parsed =
-        parser.parse(new String[] {"Run"}, new String[] {"VB"});
+  /**
+   * Checks that a single token attaches to the artificial root: the only derivation is
+   * shift then right-arc, so the parser only chooses the relation label.
+   *
+   * @param name The parser under test.
+   * @param parser The parser under test.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parsers")
+  void testSingleTokenSentenceAttachesToTheRoot(String name, DependencyParser parser) {
+    final DependencyTree parsed = parser.parse(new String[] {"Run"}, new String[] {"VB"});
     assertEquals(DependencyTree.of(new int[] {-1}, new String[] {"root"}), parsed);
   }
 
+  /**
+   * Checks that a non-projective sample, which has no arc-standard derivation, is
+   * skipped and the maximum entropy parser still memorizes the projective sentences.
+   *
+   * @throws IOException Thrown if reading the in-memory samples fails.
+   */
   @Test
   void testNonProjectiveSamplesAreSkippedDuringTraining() throws IOException {
-    // One non-projective sample joins the corpus; it cannot yield events, so training
-    // proceeds on the remaining samples and still memorizes the projective sentences.
     final List<DependencySample> mixed = new ArrayList<>(corpus());
     mixed.add(nonProjectiveSample());
     final DependencyParserME mixedParser =
@@ -128,16 +171,29 @@ public class DependencyParserEdgeCaseTest {
         mixedParser.parse(SHE_EATS_FISH_TOKENS, SHE_EATS_FISH_TAGS));
   }
 
-  @Test
-  void testNonProjectiveGoldDecodesToAProjectiveTree() {
-    // The parser can only emit arc-standard derivations, so for a sentence whose gold
-    // tree is non-projective the prediction is necessarily a different, projective tree.
+  /**
+   * Checks that a sentence whose gold tree is non-projective decodes to a different,
+   * projective tree, since the parser can only emit arc-standard derivations.
+   *
+   * @param name The parser under test.
+   * @param parser The parser under test.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parsers")
+  void testNonProjectiveGoldDecodesToAProjectiveTree(String name, DependencyParser parser) {
     final DependencySample gold = nonProjectiveSample();
     final DependencyTree parsed = parser.parse(gold.getTokens(), gold.getTags());
     assertNotEquals(gold.getTree(), parsed);
     assertTrue(ArcStandardOracle.isProjective(parsed), parsed.toString());
   }
 
+  /**
+   * Checks that a saved and reloaded maximum entropy model parses every corpus sentence
+   * like the original.
+   *
+   * @param dir The directory for the model file.
+   * @throws IOException Thrown if writing or loading the model fails.
+   */
   @Test
   void testModelFileRoundTripParsesIdentically(@TempDir Path dir)
       throws IOException {
@@ -152,8 +208,17 @@ public class DependencyParserEdgeCaseTest {
     assertEquals(THE_DOG_BARKS_TREE, reloaded.parse(THE_DOG_BARKS_TOKENS, THE_DOG_BARKS_TAGS));
   }
 
-  @Test
-  void testParserInstancesCanBeSharedBetweenThreads() throws Exception {
+  /**
+   * Checks that one parser instance serves several threads at once.
+   *
+   * @param name The parser under test.
+   * @param parser The parser under test.
+   * @throws Exception Thrown if a worker fails.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parsers")
+  void testParserInstancesCanBeSharedBetweenThreads(String name, DependencyParser parser)
+      throws Exception {
     final List<Callable<Void>> tasks = new ArrayList<>();
     for (int task = 0; task < THREADS; task++) {
       tasks.add(() -> {
