@@ -141,6 +141,7 @@ The list below covers the changes most likely to affect existing code. It is not
 - CoNLL-U reader: a multiword token range whose word lines are missing from the sentence throws `InvalidFormatException`.
 - `PlainTextByLineStream.reset()` closes the previous reader, so its `InputStreamFactory` must return a new stream for each pass.
 - `RealBasicEventStream`: a line that contains only an outcome is read as an event without contexts and no longer ends the stream.
+- Tokenizer: the alphanumeric optimization is configured with a `TokenizerCharacterPolicy`. The `Pattern` variants of the `TokenizerFactory` constructor, `TokenizerFactory.create` and the `TokSpanEventStream` constructor, `TokenizerFactory.getAlphaNumericPattern()`, and `opennlp.tools.tokenize.lang.Factory.getAlphanumeric(String)` and `Factory.DEFAULT_ALPHANUMERIC` are deprecated for removal in 4.0. A call that passes a `null` literal as the pattern no longer compiles because it matches both variants; use the new overloads without that argument. Models with a custom `alphaNumericPattern` still load and use it ([GH-1479](https://github.com/apache/opennlp/issues/1479)).
 
 ### Thread safety
 
