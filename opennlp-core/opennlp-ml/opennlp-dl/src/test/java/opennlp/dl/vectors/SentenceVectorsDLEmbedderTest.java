@@ -19,14 +19,11 @@ package opennlp.dl.vectors;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -42,6 +39,17 @@ import static opennlp.dl.vectors.OnnxTextEmbedderProvider.MAX_LENGTH_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.NORMALIZE_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.POOLING_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.VOCABULARY_OPTION;
+import static opennlp.dl.vectors.TinyVectorModels.CLS_VECTOR;
+import static opennlp.dl.vectors.TinyVectorModels.DELTA;
+import static opennlp.dl.vectors.TinyVectorModels.HELLO_MEAN;
+import static opennlp.dl.vectors.TinyVectorModels.HELLO_WORLD_MEAN;
+import static opennlp.dl.vectors.TinyVectorModels.HELLO_WORLD_SUM;
+import static opennlp.dl.vectors.TinyVectorModels.TINY_POOLED;
+import static opennlp.dl.vectors.TinyVectorModels.TINY_VECTORS;
+import static opennlp.dl.vectors.TinyVectorModels.UNIT_VECTOR;
+import static opennlp.dl.vectors.TinyVectorModels.model;
+import static opennlp.dl.vectors.TinyVectorModels.scale;
+import static opennlp.dl.vectors.TinyVectorModels.vocab;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -60,48 +68,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class SentenceVectorsDLEmbedderTest {
 
-  private static final float DELTA = 1e-5f;
-
-  // W / |W|, the unit-length vector of every input of the tiny models.
-  private static final float[] UNIT_VECTOR = scale(1 / (float) Math.sqrt(5.25));
-
-  // "hello world" = [CLS]=7 hello=4 world=5 [SEP]=3
-  private static final float[] HELLO_WORLD_MEAN = scale(19 / 4f);
-  private static final float[] HELLO_WORLD_SUM = scale(19);
-
-  // "hello" = [CLS]=7 hello=4 [SEP]=3
-  private static final float[] HELLO_MEAN = scale(14 / 3f);
-
-  private static final float[] CLS_VECTOR = scale(7);
-
-  private static float[] scale(final float factor) {
-    return new float[] {0.5f * factor, -1f * factor, 2f * factor};
-  }
-
-  // Copy the model out of the classpath rather than resolving it in place: when this test runs
-  // from the opennlp-dl test-jar (as it does in opennlp-dl-gpu) the resource URI is inside a jar
-  // and is not hierarchical, so new File(uri) would fail.
-  private static File model(final Path dir, final String name) throws IOException {
-    final Path file = dir.resolve(name);
-    try (InputStream is = Objects.requireNonNull(SentenceVectorsDLEmbedderTest.class
-        .getResourceAsStream("/opennlp/dl/vectors/" + name))) {
-      Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
-    }
-    return file.toFile();
-  }
-
-  private static File model(final Path dir) throws IOException {
-    return model(dir, "tiny-vectors.onnx");
-  }
-
-  private static File vocab(final Path dir) throws IOException {
-    final Path file = dir.resolve("vocab.txt");
-    // Line number = id: [UNK]=2, [SEP]=3, hello=4, world=5, [CLS]=7.
-    Files.write(file, List.of("[PAD]", "unused1", "[UNK]", "[SEP]", "hello", "world",
-        "unused2", "[CLS]"));
-    return file.toFile();
-  }
-
   // The vocabulary above as a tokenizer.json of an uncased WordPiece model.
   private static File tokenizerJson(final Path dir, final boolean lowercase) throws IOException {
     final Path file = dir.resolve("tokenizer.json");
@@ -114,12 +80,12 @@ class SentenceVectorsDLEmbedderTest {
 
   private static SentenceVectorsDL meanVectors(final Path dir, final int maxLength)
       throws Exception {
-    return new SentenceVectorsDL(model(dir), vocab(dir), true, Pooling.MEAN, false, maxLength);
+    return new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir), true, Pooling.MEAN, false, maxLength);
   }
 
   @Test
   void testSelectedProviderPreservesInference(@TempDir final Path dir) throws Exception {
-    final Path graph = model(dir).toPath();
+    final Path graph = model(dir, TINY_VECTORS).toPath();
     vocab(dir);
     final Map<String, String> options = Map.of(VOCABULARY_OPTION, "vocab.txt");
     final ProviderSpec spec = ProviderSpec.of(graph, options);
@@ -157,7 +123,7 @@ class SentenceVectorsDLEmbedderTest {
 
   @Test
   void testEmbedderContractOverARealSession(@TempDir final Path dir) throws Exception {
-    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir))) {
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir))) {
 
       // The primary entry point, against which the adapter below is compared.
       assertArrayEquals(UNIT_VECTOR, vectors.getVectors("hello world"), DELTA);
@@ -192,7 +158,7 @@ class SentenceVectorsDLEmbedderTest {
   @Test
   void testPooling(@TempDir final Path dir) throws Exception {
     try (SentenceVectorsDL mean = meanVectors(dir, SentenceVectorsDL.DEFAULT_MAX_LENGTH);
-         SentenceVectorsDL cls = new SentenceVectorsDL(model(dir), vocab(dir), true,
+         SentenceVectorsDL cls = new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir), true,
              Pooling.CLS, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH)) {
       assertArrayEquals(HELLO_WORLD_MEAN, mean.embed("hello world"), DELTA);
       assertArrayEquals(HELLO_MEAN, mean.embed("hello"), DELTA);
@@ -213,26 +179,26 @@ class SentenceVectorsDLEmbedderTest {
       assertArrayEquals(three.embed("hello"), three.embedAll(List.of("hello world"))[0]);
     }
     assertThrows(IllegalArgumentException.class, () -> meanVectors(dir, 1));
-    assertThrows(IllegalArgumentException.class, () -> new SentenceVectorsDL(model(dir),
+    assertThrows(IllegalArgumentException.class, () -> new SentenceVectorsDL(model(dir, TINY_VECTORS),
         vocab(dir), true, null, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH));
   }
 
   @Test
   void testTokenizerJsonVocabularyMustAgreeWithLowerCase(@TempDir final Path dir)
       throws Exception {
-    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), tokenizerJson(dir, true),
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_VECTORS), tokenizerJson(dir, true),
              true, Pooling.MEAN, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH)) {
       assertArrayEquals(HELLO_WORLD_MEAN, vectors.embed("Hello World"), DELTA);
     }
     final InvalidFormatException e = assertThrows(InvalidFormatException.class,
-        () -> new SentenceVectorsDL(model(dir), tokenizerJson(dir, false), true));
+        () -> new SentenceVectorsDL(model(dir, TINY_VECTORS), tokenizerJson(dir, false), true));
     assertTrue(e.getMessage().contains("tokenizer.json"), e.getMessage());
     assertTrue(e.getMessage().contains("normalizer.lowercase"), e.getMessage());
   }
 
   @Test
   void testPooledOutputIsSelectedByName(@TempDir final Path dir) throws Exception {
-    final File pooledModel = model(dir, "tiny-pooled.onnx");
+    final File pooledModel = model(dir, TINY_POOLED);
     try (SentenceVectorsDL raw = new SentenceVectorsDL(pooledModel, vocab(dir), true,
              Pooling.CLS, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH);
          SentenceVectorsDL unit = new SentenceVectorsDL(pooledModel, vocab(dir))) {
@@ -247,7 +213,7 @@ class SentenceVectorsDLEmbedderTest {
 
   @Test
   void testEmbedAfterCloseThrows(@TempDir final Path dir) throws Exception {
-    final SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir));
+    final SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir));
     vectors.close();
     vectors.close();
     assertThrows(IllegalStateException.class, () -> vectors.embed("hello"));
@@ -280,7 +246,7 @@ class SentenceVectorsDLEmbedderTest {
    */
   @Test
   void testEmbedAllEdges(@TempDir final Path dir) throws Exception {
-    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir))) {
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir))) {
       assertEquals(0, vectors.embedAll(List.of()).length);
       assertEquals("texts[1] must not be null", assertThrows(IllegalArgumentException.class,
           () -> vectors.embedAll(Arrays.asList("hello", null))).getMessage());

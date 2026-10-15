@@ -19,13 +19,10 @@ package opennlp.dl;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -83,12 +80,7 @@ public class LoadVocabTest {
   private Path tempDir;
 
   private File getResource(String name) throws IOException {
-    try (InputStream is = Objects.requireNonNull(
-        getClass().getResourceAsStream("/opennlp/dl/" + name))) {
-      final Path file = tempDir.resolve(name);
-      Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
-      return file.toFile();
-    }
+    return OnnxTestSupport.copy(tempDir, "/opennlp/dl/" + name, name);
   }
 
   /**

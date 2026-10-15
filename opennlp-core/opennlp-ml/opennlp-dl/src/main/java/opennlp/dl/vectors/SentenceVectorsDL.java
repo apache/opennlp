@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import ai.onnxruntime.OrtSession;
 import ai.onnxruntime.TensorInfo;
 
 import opennlp.dl.AbstractDL;
+import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.EmbeddingException;
@@ -73,13 +75,23 @@ import opennlp.tools.util.ParamChecks;
  * {@code close()} with inference methods.</p>
  *
  * <p>{@link #embedAll(List)} runs one batched session per distinct tokenized length, so a batch
- * of same-length inputs costs one inference instead of one per input.</p>
+ * of same-length inputs costs one inference instead of one per input. A group larger than
+ * 16384 token positions is split into several inferences.</p>
  */
 @ThreadSafe
 public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
 
   /** The maximum number of tokens per input if none is given, the BERT position limit. */
   public static final int DEFAULT_MAX_LENGTH = 512;
+
+  /**
+   * The upper bound on the token positions of one inference, its row count times its row length.
+   * {@link #embedAll(List)} splits a larger group into consecutive inferences, so the tensors of
+   * one inference stay bounded however many texts a call has. A single input longer than the
+   * bound still runs on its own. The bound is 32 rows at the BERT length of
+   * {@value #DEFAULT_MAX_LENGTH}.
+   */
+  static final int MAX_BATCH_TOKEN_POSITIONS = 16384;
 
   private static final String SENTENCE_EMBEDDING = "sentence_embedding";
   private static final int POOLED_RANK = 2;
@@ -156,12 +168,56 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    *     {@code [batch, hidden]} or {@code [batch, tokens, hidden]}.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed, has an unsupported layout, or sets a lower casing that disagrees with
+   *     the lower casing the component is configured with.
    */
   public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase,
       final Pooling pooling, final boolean normalize, final int maxLength)
       throws OrtException, IOException {
 
-    super(model, vocabulary, new OrtSession.SessionOptions(), lowerCase);
+    this(model, vocabulary, lowerCase, pooling, normalize, maxLength, new InferenceOptions());
+
+  }
+
+  /**
+   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models and the
+   * given {@link InferenceOptions}, so the session can run on a GPU through
+   * {@code opennlp-dl-gpu}.
+   *
+   * @param model The file name of a sentence vectors ONNX model.
+   * @param vocabulary The file name of the vocabulary file for the model.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent
+   *     stripping during tokenization), {@code false} for cased models. A lower case setting in
+   *     {@code inferenceOptions} takes precedence.
+   * @param pooling How token vectors are pooled. Not used for a model with a
+   *     {@code sentence_embedding} output. Must not be {@code null}.
+   * @param normalize {@code true} to scale every vector to unit length.
+   * @param maxLength The maximum number of tokens per input, {@code [CLS]} and {@code [SEP]}
+   *     included; longer input is truncated. Must be at least {@code 2}.
+   * @param inferenceOptions The {@link InferenceOptions}, of which the GPU settings and the lower
+   *     case setting are used. Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if {@code pooling} or {@code inferenceOptions} is
+   *     {@code null}, if {@code inferenceOptions} holds invalid split options or requests a GPU
+   *     with a negative device id, if {@code maxLength} is less than {@code 2}, or if the model
+   *     has no output of shape {@code [batch, hidden]} or {@code [batch, tokens, hidden]}.
+   * @throws OrtException Thrown if the {@code model} cannot be loaded, or if a GPU was requested
+   *     and ONNX Runtime cannot provide it. ONNX Runtime does not fall back to the CPU.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed, has an unsupported layout, or sets a lower casing that disagrees with
+   *     the lower casing the component is configured with.
+   *
+   * @since 3.0.0
+   */
+  public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase,
+      final Pooling pooling, final boolean normalize, final int maxLength,
+      final InferenceOptions inferenceOptions)
+      throws OrtException, IOException {
+
+    super(model, vocabulary, sessionOptions(inferenceOptions),
+        resolveLowerCase(inferenceOptions, lowerCase));
     try {
       ParamChecks.requireNonNullArg(pooling, "pooling");
       if (maxLength < MIN_LENGTH) {
@@ -223,9 +279,9 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   /**
    * {@inheritDoc}
    *
-   * <p>The inputs are tokenized up front, grouped by tokenized length, and each group runs
-   * through the session once with shape {@code [group size, length]}. A batch never pads, so
-   * every row is computed from the tensors its single-input call would have used.</p>
+   * <p>The inputs are grouped by tokenized length, never padded, and each group runs in
+   * inferences of at most 16384 token positions. Every row is computed from the tensors its
+   * single-input call would have used.</p>
    */
   @Override
   public float[][] embedAll(final List<? extends CharSequence> texts) {
@@ -237,15 +293,13 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
         throw new IllegalArgumentException("texts[" + i + "] must not be null");
       }
     }
-    final Map<Integer, List<Integer>> byLength = new HashMap<>();
     final Tokens[] encoded = new Tokens[checked.length];
     for (int i = 0; i < checked.length; i++) {
       encoded[i] = encode(checked[i]);
-      byLength.computeIfAbsent(encoded[i].ids().length, length -> new ArrayList<>()).add(i);
     }
     final float[][] vectors = new float[checked.length][];
     try {
-      for (final List<Integer> group : byLength.values()) {
+      for (final List<Integer> group : batches(encoded)) {
         final Tokens[] batch = new Tokens[group.size()];
         for (int b = 0; b < batch.length; b++) {
           batch[b] = encoded[group.get(b)];
@@ -259,6 +313,32 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       throw new EmbeddingException("Sentence vector inference failed.", e);
     }
     return vectors;
+  }
+
+  /**
+   * Splits the indices of a call into the batches that run as single inferences. A batch contains
+   * indices of one tokenized length, in call order, and no more rows than fit in
+   * {@value #MAX_BATCH_TOKEN_POSITIONS} token positions, but always at least one, so a row
+   * wider than the bound runs alone.
+   *
+   * @param encoded The encodings of the call, in call order. An encoding contains at least
+   *     the start and end tokens, so no length is zero.
+   * @return The batches, each a list of indices into {@code encoded}.
+   */
+  static List<List<Integer>> batches(final Tokens[] encoded) {
+    final Map<Integer, List<Integer>> byLength = new LinkedHashMap<>();
+    for (int i = 0; i < encoded.length; i++) {
+      byLength.computeIfAbsent(encoded[i].ids().length, length -> new ArrayList<>()).add(i);
+    }
+    final List<List<Integer>> batches = new ArrayList<>();
+    for (final Map.Entry<Integer, List<Integer>> group : byLength.entrySet()) {
+      final int rows = Math.max(1, MAX_BATCH_TOKEN_POSITIONS / group.getKey());
+      final List<Integer> indices = group.getValue();
+      for (int from = 0; from < indices.size(); from += rows) {
+        batches.add(indices.subList(from, Math.min(from + rows, indices.size())));
+      }
+    }
+    return batches;
   }
 
   /**

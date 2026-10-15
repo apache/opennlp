@@ -157,7 +157,9 @@ org-start wc=ic=1.0 w&c=apache,ic=2.0 p1wc=lc=3.0]]>
 		<para>
 			An embedder is safe for concurrent use until it is closed. <code>embedAll</code> checks
 			every text before embedding any of them and forms its own batches, so it accepts a list
-			of any size. Inference failures are reported as <code>EmbeddingException</code>.
+			of any size. No inference of <code>SentenceVectorsDL</code> exceeds 16,384 token
+			positions, except that a single text whose encoding is longer runs as an inference of
+			its own. Inference failures are reported as <code>EmbeddingException</code>.
 		</para>
 		<programlisting language="java"><![CDATA[ProviderSpec spec = ProviderSpec.of(Path.of("model.onnx"),
     Map.of("vocabulary", "vocab.txt"));
@@ -183,5 +185,26 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			has no provider until another one is installed. Existing <code>SentenceVectorsDL</code>
 			constructors remain available.
 		</para>
+		<para>
+			To compute the vectors on a GPU, depend on <code>opennlp-dl-gpu</code> in place of
+			<code>opennlp-dl</code> and pass <code>InferenceOptions</code> to
+			<code>SentenceVectorsDL</code>. <code>opennlp-dl-gpu</code> supports NVIDIA GPUs on
+			linux-x64 and win-x64 only. On macOS, use <code>opennlp-dl</code>. The machine needs
+			the CUDA and cuDNN versions that the ONNX Runtime release requires, see the
+			<ulink url="https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements">CUDA
+			execution provider requirements</ulink>. The <code>onnx</code> provider spec has no device
+			option, so an embedder created through it runs on the CPU. If CUDA or the configured
+			device is not available, the constructor throws an <code>OrtException</code>; ONNX Runtime
+			does not fall back to the CPU. A negative device id is rejected with an
+			<code>IllegalArgumentException</code>. A lower case setting in the options takes
+			precedence over the <code>lowerCase</code> argument.
+		</para>
+		<programlisting language="java"><![CDATA[InferenceOptions options = new InferenceOptions();
+options.setGpu(true);
+options.setGpuDeviceId(0);
+try (SentenceVectorsDL vectors = new SentenceVectorsDL(model, vocab, true, Pooling.MEAN, true,
+    SentenceVectorsDL.DEFAULT_MAX_LENGTH, options)) {
+  float[] vector = vectors.embed("first sentence");
+}]]></programlisting>
 	</section>
 </chapter>
