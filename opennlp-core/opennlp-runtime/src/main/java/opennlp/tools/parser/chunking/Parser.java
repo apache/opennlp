@@ -88,9 +88,11 @@ public class Parser extends AbstractBottomUpParser {
    *
    * @param model             The {@link ParserModel} to use.
    * @param beamSize          The number of different parses kept during parsing.
+   *                          Must be at least {@code 1}.
    * @param advancePercentage The minimal amount of probability mass which advanced outcomes
    *                          must represent. Only outcomes which contribute to the top
    *                          {@code advancePercentage} will be explored.
+   *                          Must be greater than {@code 0} and at most {@code 1}.
    * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or
    *                                  a parameter is out of range.
    * @see ParserModel

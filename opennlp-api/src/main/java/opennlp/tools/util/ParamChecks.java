@@ -227,8 +227,7 @@ public final class ParamChecks {
   }
 
   /**
-   * Returns {@code value} if it is greater than zero and at most one, the range of a share
-   * such as a probability mass that must not be empty.
+   * Returns {@code value} if it is in (0, 1].
    * <p>
    * The message of a thrown exception is {@code "<name> must be in (0, 1]"}.
    *

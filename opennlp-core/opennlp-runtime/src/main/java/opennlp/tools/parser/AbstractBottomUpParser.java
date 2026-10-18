@@ -169,12 +169,11 @@ public abstract class AbstractBottomUpParser implements Parser {
       int beamSize, double advancePercentage) {
     this.tagger = ParamChecks.requireNonNullArg(tagger, "tagger");
     this.chunker = ParamChecks.requireNonNullArg(chunker, "chunker");
-    ParamChecks.requireNonNullArg(headRules, "headRules");
+    this.headRules = ParamChecks.requireNonNullArg(headRules, "headRules");
     this.M = ParamChecks.requirePositive(beamSize, "beamSize");
     this.K = beamSize;
     this.Q = ParamChecks.requirePositiveFraction(advancePercentage, "advancePercentage");
     reportFailedParse = true;
-    this.headRules = headRules;
     this.punctSet = headRules.getPunctuationTags();
     odh = new TreeSet<>();
     ndh = new TreeSet<>();
