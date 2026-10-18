@@ -216,17 +216,31 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param inferenceOptions The inference options to read the GPU configuration from.
    * @return The configured session options.
    *
-   * @throws OrtException Thrown if the CUDA execution provider cannot be added.
-   * @throws IllegalArgumentException Thrown if {@code inferenceOptions} is {@code null} or its
-   *     split sizes are invalid, see {@link #validateSplitOptions(int, int)}.
+   * @throws OrtException Thrown if the CUDA execution provider cannot be added: the ONNX Runtime
+   *     on the classpath has no CUDA support, its CUDA libraries cannot be loaded, or no device
+   *     answers to the configured device id. ONNX Runtime does not fall back to the CPU. The
+   *     session options created for the request are closed before the exception is thrown.
+   * @throws IllegalArgumentException Thrown if {@code inferenceOptions} is {@code null}, its
+   *     split sizes are invalid, see {@link #validateSplitOptions(int, int)}, or it requests a GPU
+   *     with a negative device id.
    */
   protected static OrtSession.SessionOptions sessionOptions(final InferenceOptions inferenceOptions)
       throws OrtException {
     ParamChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
     validateSplitOptions(inferenceOptions);
+    if (inferenceOptions.isGpu()) {
+      ParamChecks.requireNonNegative(inferenceOptions.getGpuDeviceId(), "gpuDeviceId");
+    }
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
     if (inferenceOptions.isGpu()) {
-      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+      try {
+        // addCUDA needs ONNX Runtime's default logger, which exists once an environment does.
+        OrtEnvironment.getEnvironment();
+        sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+      } catch (OrtException | RuntimeException e) {
+        sessionOptions.close();
+        throw e;
+      }
     }
     return sessionOptions;
   }
