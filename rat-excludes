@@ -58,3 +58,6 @@ src/test/resources/*.info
 
 <!-- other licence -->
 src/main/java/opennlp/tools/stemmer/snowball/*.java
+
+<!-- opennlp-dl tiny ONNX test model (project-generated binary, see gen_tiny_vectors_model.py next to it) -->
+src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx

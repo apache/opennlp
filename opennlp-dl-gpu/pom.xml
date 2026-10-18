@@ -69,6 +69,13 @@
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
+      <!-- Keep the CPU onnxruntime off the test classpath; this module uses onnxruntime_gpu. -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.microsoft.onnxruntime</groupId>
+          <artifactId>onnxruntime</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -86,7 +93,31 @@
     </plugins>
   </build>
 
+  <!-- onnxruntime_gpu ships native libraries for linux-x64 and win-x64 only, unlike the
+       CPU onnxruntime jar, which also covers macOS and Linux aarch64. The tests cannot run there. -->
   <profiles>
+    <profile>
+      <id>no-onnxruntime-gpu-on-mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
+    <profile>
+      <id>no-onnxruntime-gpu-on-aarch64</id>
+      <activation>
+        <os>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
     <profile>
       <id>eval-tests</id>
       <properties>
