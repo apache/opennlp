@@ -70,7 +70,8 @@ public class ClassgraphModelFinder extends AbstractClassPathModelFinder implemen
    */
   @Override
   protected Object getContext() {
-    return new ClassGraph().acceptJars(getJarModelPrefix()).disableDirScanning().scan();
+    return new ClassGraph().enableClasspath().acceptJars(getJarModelPrefix())
+        .disableDirScanning().scan();
   }
 
   /**
