@@ -219,6 +219,21 @@ public class ParamChecksTest {
     assertEquals("weight must be finite", e.getMessage());
   }
 
+  @ParameterizedTest
+  @ValueSource(doubles = {Double.MIN_VALUE, 0.5, 1.0})
+  void testPositiveFractionIsReturnedUnchanged(double value) {
+    assertEquals(value, ParamChecks.requirePositiveFraction(value, "share"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {0.0, -0.0, -0.5, 1.0000000000000002, Double.POSITIVE_INFINITY,
+      Double.NaN})
+  void testNonPositiveFractionIsRejected(double value) {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> ParamChecks.requirePositiveFraction(value, "share"));
+    assertEquals("share must be in (0, 1]", e.getMessage());
+  }
+
   /**
    * Supplies invalid parallel arrays, including inputs that violate several checks.
    *
