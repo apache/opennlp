@@ -58,7 +58,7 @@ public class DependencyParserCrossValidatorTool
   public void run(String format, String[] args) {
     super.run(format, args);
     try (ObjectStream<DependencySample> samples = sampleStream) {
-      mlParams = DependencyParserTrainerTool.loadTrainingParameters(params.getParams(),
+      mlParams = DependencyParserToolSupport.loadTrainingParameters(params.getParams(),
           TrainingParameters.defaultParams());
       DependencyEvaluationMonitor errorListener = null;
       if (params.getMisclassified()) {

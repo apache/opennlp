@@ -17,6 +17,11 @@
 
 package opennlp.tools.cmdline.depparse;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import ch.qos.logback.classic.Level;
@@ -27,7 +32,10 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.depparse.DependencyTree;
 
-/** The CoNLL-U data, expected output, and log capture shared by the dependency parser tool tests. */
+/**
+ * The CoNLL-U data, expected output, and output and log capture shared by the dependency
+ * parser tool tests.
+ */
 final class DependencyToolTestSupport {
 
   private DependencyToolTestSupport() {
@@ -99,5 +107,28 @@ final class DependencyToolTestSupport {
       logger.detachAppender(appender);
     }
     return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
+  }
+
+  /**
+   * Runs a tool with the given standard input while capturing its standard output.
+   *
+   * @param input The standard input, encoded as UTF-8.
+   * @param run Runs the tool.
+   * @return The standard output, with line breaks normalized to {@code \n}. Never
+   *         {@code null}.
+   */
+  static String outputOf(String input, Runnable run) {
+    final InputStream previousIn = System.in;
+    final PrintStream previousOut = System.out;
+    final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    try {
+      System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+      System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+      run.run();
+    } finally {
+      System.setIn(previousIn);
+      System.setOut(previousOut);
+    }
+    return output.toString(StandardCharsets.UTF_8).replace("\r\n", "\n");
   }
 }

@@ -24,6 +24,7 @@ import java.io.Serial;
 import java.nio.file.Path;
 import java.util.Map;
 
+import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -45,7 +46,7 @@ import opennlp.tools.util.model.BaseModel;
 public class FeedforwardDependencyModel extends BaseModel {
 
   @Serial
-  private static final long serialVersionUID = 2746091883120417596L;
+  private static final long serialVersionUID = -5262211380538922987L;
 
   /** The component name recorded in the model manifest. */
   private static final String COMPONENT_NAME = "FeedforwardDependencyParser";
@@ -55,6 +56,9 @@ public class FeedforwardDependencyModel extends BaseModel {
 
   /** The artifact extension the network serializer is registered under. */
   private static final String NETWORK_EXTENSION = "network";
+
+  /** The beam size of a model that was not refined with beam search. */
+  private static final int GREEDY_BEAM_SIZE = 1;
 
   /**
    * Initializes a {@link FeedforwardDependencyModel} from a trained network.
@@ -129,7 +133,8 @@ public class FeedforwardDependencyModel extends BaseModel {
    * {@inheritDoc}
    *
    * @throws InvalidFormatException Thrown if the network artifact is missing or not a
-   *         feedforward network.
+   *         feedforward network, or the manifest records a beam size that is not a
+   *         positive integer.
    */
   @Override
   protected void validateArtifactMap() throws InvalidFormatException {
@@ -137,6 +142,38 @@ public class FeedforwardDependencyModel extends BaseModel {
     if (!(artifactMap.get(NETWORK_ENTRY_NAME) instanceof FeedforwardNetwork)) {
       throw new InvalidFormatException("The " + NETWORK_ENTRY_NAME
           + " artifact is missing or not a feedforward network.");
+    }
+    final String beamSize = getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER);
+    if (beamSize != null && !isPositiveInteger(beamSize)) {
+      throw new InvalidFormatException("The manifest " + BeamSearch.BEAM_SIZE_PARAMETER
+          + " must be a positive integer: " + beamSize);
+    }
+  }
+
+  /**
+   * Returns the beam size a parser uses when none is given: the beam size the model was
+   * refined with, which the manifest records under
+   * {@value BeamSearch#BEAM_SIZE_PARAMETER}, or {@code 1} (greedy) for a model that was
+   * not refined.
+   *
+   * @return The beam size. Always positive.
+   */
+  public int getBeamSize() {
+    final String beamSize = getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER);
+    return beamSize == null ? GREEDY_BEAM_SIZE : Integer.parseInt(beamSize);
+  }
+
+  /**
+   * Tells whether a manifest value is a positive decimal integer.
+   *
+   * @param value The manifest value. Must not be {@code null}.
+   * @return {@code true} if {@code value} parses as an {@code int} above zero.
+   */
+  private static boolean isPositiveInteger(String value) {
+    try {
+      return Integer.parseInt(value) > 0;
+    } catch (NumberFormatException e) {
+      return false;
     }
   }
 

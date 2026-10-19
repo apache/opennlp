@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
@@ -114,6 +116,9 @@ public class FeedforwardDependencyParserTest {
   /** The hidden matrix rows that push the smallest network over the cell limit. */
   private static final int OVERSIZED_HIDDEN_ROWS = Math.min(ResourceLimits.MAX_ENTRIES,
       ResourceLimits.MAX_MATRIX_CELLS / FeedforwardContext.FEATURE_COUNT + 1);
+
+  /** The model package entry that holds the manifest. */
+  private static final String MANIFEST_ENTRY_NAME = "manifest.properties";
 
   /** A symbol of 70000 bytes, longer than an unsigned 16-bit length can hold. */
   private static final String LONG_SYMBOL = "x".repeat(70_000);
@@ -269,6 +274,83 @@ public class FeedforwardDependencyParserTest {
     assertArrayEquals(before, score(local.network(), features, null));
     assertFalse(Arrays.equals(before, score(refined.network(), features, null)));
     assertEquals(LANGUAGE, refined.getLanguage());
+  }
+
+  /** Checks that a model that was not refined records no beam size and parses greedily. */
+  @Test
+  void testUnrefinedModelParsesGreedilyByDefault() {
+    assertNull(model.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER));
+    assertEquals(1, model.getBeamSize());
+    assertEquals(1, parser.beamSize());
+  }
+
+  /**
+   * Checks that a parser created without a beam size uses the beam size the model was
+   * refined with, also after the model is serialized and loaded again.
+   */
+  @Test
+  void testRefinedModelParsesWithItsBeamSizeByDefault() throws IOException {
+    final TrainingParameters parameters = feedforwardParameters(1, 0.01);
+    parameters.put(BeamSearch.BEAM_SIZE_PARAMETER, 3);
+    final FeedforwardDependencyModel refined = FeedforwardDependencyTrainer.refine(
+        localFeedforward(), ObjectStreamUtils.createObjectStream(corpus()), parameters);
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    refined.serialize(out);
+    final FeedforwardDependencyModel reloaded =
+        new FeedforwardDependencyModel(new ByteArrayInputStream(out.toByteArray()));
+
+    assertEquals(3, refined.getBeamSize());
+    assertEquals(3, reloaded.getBeamSize());
+    assertEquals(3, new FeedforwardDependencyParser(reloaded).beamSize());
+    assertEquals(BEAM_SIZE, new FeedforwardDependencyParser(reloaded, BEAM_SIZE).beamSize());
+  }
+
+  /**
+   * Checks that a model whose manifest records a beam size that is not a positive
+   * integer is rejected when it is loaded.
+   *
+   * @param beamSize The recorded beam size.
+   * @throws IOException Thrown if writing the model package fails.
+   */
+  @ParameterizedTest(name = "recorded beam size {0}")
+  @ValueSource(strings = {"abc", "0", "-2", "2147483648"})
+  void testInvalidRecordedBeamSizeIsRejected(String beamSize) throws IOException {
+    final byte[] tampered = withChangedEntry(MANIFEST_ENTRY_NAME,
+        content -> (new String(content, StandardCharsets.UTF_8)
+            + BeamSearch.BEAM_SIZE_PARAMETER + "=" + beamSize + "\n")
+            .getBytes(StandardCharsets.UTF_8));
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new FeedforwardDependencyModel(new ByteArrayInputStream(tampered)));
+    final InvalidFormatException cause = assertInstanceOf(InvalidFormatException.class,
+        e.getCause());
+    assertEquals("The manifest " + BeamSearch.BEAM_SIZE_PARAMETER
+        + " must be a positive integer: " + beamSize, cause.getMessage());
+  }
+
+  /**
+   * Serializes the shared model and changes the content of one package entry.
+   *
+   * @param entryName The name of the entry to change.
+   * @param change Maps the entry content to its new content.
+   * @return The changed model package. Never {@code null}.
+   * @throws IOException Thrown if writing the model package fails.
+   */
+  private static byte[] withChangedEntry(String entryName, UnaryOperator<byte[]> change)
+      throws IOException {
+    final ByteArrayOutputStream valid = new ByteArrayOutputStream();
+    model.serialize(valid);
+    final ByteArrayOutputStream changed = new ByteArrayOutputStream();
+    try (ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(valid.toByteArray()));
+         ZipOutputStream out = new ZipOutputStream(changed)) {
+      ZipEntry entry;
+      while ((entry = in.getNextEntry()) != null) {
+        final byte[] content = in.readAllBytes();
+        out.putNextEntry(new ZipEntry(entry.getName()));
+        out.write(entryName.equals(entry.getName()) ? change.apply(content) : content);
+        out.closeEntry();
+      }
+    }
+    return changed.toByteArray();
   }
 
   /**
@@ -530,21 +612,10 @@ public class FeedforwardDependencyParserTest {
   /** Checks that a model package with a corrupt network entry is rejected. */
   @Test
   void testCorruptNetworkEntryIsRejected() throws IOException {
-    final ByteArrayOutputStream valid = new ByteArrayOutputStream();
-    model.serialize(valid);
-    final ByteArrayOutputStream corrupt = new ByteArrayOutputStream();
-    try (ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(valid.toByteArray()));
-         ZipOutputStream out = new ZipOutputStream(corrupt)) {
-      ZipEntry entry;
-      while ((entry = in.getNextEntry()) != null) {
-        out.putNextEntry(new ZipEntry(entry.getName()));
-        out.write(FeedforwardDependencyModel.NETWORK_ENTRY_NAME.equals(entry.getName())
-            ? "not a network".getBytes(StandardCharsets.UTF_8) : in.readAllBytes());
-        out.closeEntry();
-      }
-    }
+    final byte[] corrupt = withChangedEntry(FeedforwardDependencyModel.NETWORK_ENTRY_NAME,
+        content -> "not a network".getBytes(StandardCharsets.UTF_8));
     assertThrows(InvalidFormatException.class, () -> new FeedforwardDependencyModel(
-        new ByteArrayInputStream(corrupt.toByteArray())));
+        new ByteArrayInputStream(corrupt)));
   }
 
   /**

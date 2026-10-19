@@ -66,8 +66,8 @@ public class FeedforwardDependencyParserEvaluatorTool
   public void run(String format, String[] args) {
     super.run(format, args);
     try {
-      DependencyParserEvaluatorTool.evaluate(
-          () -> FeedforwardDependencyParserTool.createParser(
+      DependencyParserToolSupport.evaluate(
+          () -> DependencyParserToolSupport.createFeedforwardParser(
               new FeedforwardDependencyModelLoader().load(params.getModel()), params.getBeamSize()),
           sampleStream, params.getMisclassified(), logger);
     } catch (IOException e) {

@@ -116,17 +116,18 @@ DependencyParser parser = new FeedforwardDependencyParser(
 		</para>
 		<para>
 			A beam size of one decodes greedily; a larger beam keeps that many transition
-			sequences per step and scores each of them. One parser instance can be shared
-			between threads.
+			sequences per step and scores each of them. Without a beam size the parser uses
+			the beam size the model was refined with, or decodes greedily if the model was
+			not refined. One parser instance can be shared between threads.
 		</para>
 
 		<section xml:id="tools.dependency.feedforward.cli">
 			<title>Command-line tools</title>
 			<para>
 				As with the tools in <xref linkend="tools.dependency.cli"/>, the feedforward
-				trainer and evaluator read UTF-8 CoNLL-U with the <code>-tagset</code> option,
-				the parser reads <code>token_TAG</code> lines and writes CoNLL-U, and the
-				evaluator logs the same scores. The <code>-params</code> file holds
+				trainer and evaluator read CoNLL-U in UTF-8, and <code>-tagset</code> selects
+				the POS column. The parser reads <code>token_TAG</code> lines and writes
+				CoNLL-U, and the evaluator logs the same scores. The <code>-params</code> file holds
 				the <code>FeedforwardDependencyTrainer</code> keys, for example
 				<code>EmbeddingSize</code>, <code>HiddenSize</code>, <code>Iterations</code>, and
 				<code>Dropout</code>; absent keys, or a missing file, take the trainer's defaults.

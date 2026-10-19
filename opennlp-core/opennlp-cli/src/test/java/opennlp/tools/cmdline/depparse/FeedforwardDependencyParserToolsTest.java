@@ -17,11 +17,7 @@
 
 package opennlp.tools.cmdline.depparse;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,6 +55,7 @@ import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.REVERSED_
 import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.SENTENCE;
 import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.UTF_8_REQUIRED;
 import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.logOf;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.outputOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -129,19 +126,9 @@ public class FeedforwardDependencyParserToolsTest {
    * @return The standard output of the tool, with line breaks normalized to {@code \n}.
    */
   private static String parse(String input, String... args) {
-    final InputStream previousIn = System.in;
-    final PrintStream previousOut = System.out;
-    final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    try {
-      System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
-      System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
-      new FeedforwardDependencyParserTool().run(args);
-    } finally {
-      System.setIn(previousIn);
-      System.setOut(previousOut);
-    }
-    return output.toString(StandardCharsets.UTF_8).replace("\r\n", "\n");
+    return outputOf(input, () -> new FeedforwardDependencyParserTool().run(args));
   }
+
 
   /** The three feedforward tools are registered with the command line. */
   @Test
@@ -308,6 +295,8 @@ public class FeedforwardDependencyParserToolsTest {
   }
 
   /**
+   * Lists the argument lists the parser tool rejects with its help text.
+   *
    * @return Argument lists the parser tool does not accept.
    */
   static Stream<Arguments> wrongParserArguments() {
@@ -354,16 +343,11 @@ public class FeedforwardDependencyParserToolsTest {
     assertEquals("beamSize must be positive", exception.getMessage());
   }
 
-  /** Without {@code -beamSize} the tools parse with the beam a refined model records. */
+  /** Without {@code -beamSize} the parser tool parses a refined model with the beam it records. */
   @Test
-  void testDefaultBeamSizeComesFromTheModel() throws IOException {
-    train();
-    assertEquals(1, FeedforwardDependencyParserTool.beamSize(
-        new FeedforwardDependencyModel(model), null));
+  void testParserToolParsesARefinedModel() {
     train("-refineParams", refineParameters.toString());
-    final FeedforwardDependencyModel refined = new FeedforwardDependencyModel(model);
-    assertEquals(3, FeedforwardDependencyParserTool.beamSize(refined, null));
-    assertEquals(5, FeedforwardDependencyParserTool.beamSize(refined, 5));
+    assertEquals(PARSED_SENTENCE, parse("dogs_NOUN run_VERB\n", model.toString()));
   }
 
   /** The evaluator logs perfect greedy scores on the training data. */
@@ -555,7 +539,7 @@ public class FeedforwardDependencyParserToolsTest {
         "Tokens excluding punctuation: 0; UAS: 0.0; LAS: 0.0"), log);
   }
 
-  /** A model whose manifest records a beam size that is not an integer ends the parser tool. */
+  /** A model whose manifest records a beam size that is not an integer fails to load. */
   @Test
   void testParserToolRejectsInvalidRecordedBeamSize() throws IOException {
     train("-refineParams", refineParameters.toString());
@@ -564,7 +548,7 @@ public class FeedforwardDependencyParserToolsTest {
     final TerminateToolException exception = assertThrows(TerminateToolException.class,
         () -> parse("dogs_NOUN run_VERB\n", tampered.toString()));
     assertEquals(-1, exception.getCode());
-    assertEquals("The model records an invalid BeamSize: abc", exception.getMessage());
+    assertEquals("Model has invalid format", exception.getMessage());
   }
 
   /**

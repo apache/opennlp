@@ -18,30 +18,14 @@
 package opennlp.tools.cmdline.depparse;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.depparse.DependencyParser;
 import opennlp.tools.depparse.DependencyParserME;
-import opennlp.tools.depparse.DependencyTree;
-import opennlp.tools.postag.POSSample;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.StringUtil;
 
 /** Parses POS-tagged sentences from standard input and prints basic CoNLL-U trees. */
 public class DependencyParserMETool extends BasicCmdLineTool {
-
-  /** Separates the fields of a CoNLL-U token row. */
-  private static final String FIELD_SEPARATOR = "\t";
-
-  /** Fills a CoNLL-U field that the parser does not predict. */
-  private static final String EMPTY_FIELD = "_";
 
   /** {@inheritDoc} */
   @Override
@@ -61,40 +45,7 @@ public class DependencyParserMETool extends BasicCmdLineTool {
     if (args.length != 1) {
       throw new TerminateToolException(1, getHelp());
     }
-    parseTaggedSentences(new DependencyParserME(new DependencyModelLoader().load(new File(args[0]))));
-  }
-
-  /**
-   * Parses the POS-tagged sentences on standard input, one per line in the
-   * {@code token_TAG} format, and prints each tree in basic CoNLL-U followed by a blank
-   * line. Blank input lines are skipped.
-   *
-   * @param parser The parser to apply. Must not be {@code null}.
-   */
-  static void parseTaggedSentences(DependencyParser parser) {
-    PrintWriter out = new PrintWriter(System.out, true);
-    try (ObjectStream<String> lines = new PlainTextByLineStream(
-        new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
-      String line;
-      while ((line = lines.read()) != null) {
-        if (StringUtil.isBlank(line)) {
-          continue;
-        }
-        POSSample sample = POSSample.parse(line);
-        String[] tokens = sample.getSentence();
-        String[] tags = sample.getTags();
-        DependencyTree tree = parser.parse(tokens, tags);
-        for (int i = 0; i < tokens.length; i++) {
-          // Input tags may be UPOS or XPOS; retain them in XPOS without guessing a mapping.
-          out.println(String.join(FIELD_SEPARATOR, Integer.toString(i + 1), tokens[i],
-              EMPTY_FIELD, EMPTY_FIELD, tags[i], EMPTY_FIELD,
-              Integer.toString(tree.headOf(i) + 1), tree.relationOf(i),
-              EMPTY_FIELD, EMPTY_FIELD));
-        }
-        out.println();
-      }
-    } catch (IOException e) {
-      CmdLineUtil.handleStdinIoError(e);
-    }
+    DependencyParserToolSupport.parseTaggedSentences(
+        new DependencyParserME(new DependencyModelLoader().load(new File(args[0]))));
   }
 }

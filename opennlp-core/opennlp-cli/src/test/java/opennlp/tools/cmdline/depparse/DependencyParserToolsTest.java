@@ -17,11 +17,8 @@
 
 package opennlp.tools.cmdline.depparse;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,6 +51,7 @@ import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.REVERSED_
 import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.SENTENCE;
 import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.UTF_8_REQUIRED;
 import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.logOf;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.outputOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -137,19 +135,10 @@ public class DependencyParserToolsTest {
   @Test
   void testParserToolPrintsConllu() {
     train();
-    final InputStream previousIn = System.in;
-    final PrintStream previousOut = System.out;
-    final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    try {
-      System.setIn(new ByteArrayInputStream("dogs_NOUN run_VERB\n".getBytes(StandardCharsets.UTF_8)));
-      System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
-      new DependencyParserMETool().run(new String[] {model.toString()});
-    } finally {
-      System.setIn(previousIn);
-      System.setOut(previousOut);
-    }
-    assertEquals(PARSED_SENTENCE, output.toString(StandardCharsets.UTF_8).replace("\r\n", "\n"));
+    assertEquals(PARSED_SENTENCE, outputOf("dogs_NOUN run_VERB\n",
+        () -> new DependencyParserMETool().run(new String[] {model.toString()})));
   }
+
 
   @Test
   void testConlluFormatReadsTheSelectedTagset() throws IOException {
