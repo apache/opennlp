@@ -25,6 +25,9 @@ import opennlp.tools.util.model.BaseModel;
 /**
  * A default implementation of {@link ClassPathModelProvider} which by default relies on
  * {@link SimpleClassPathModelFinder} to scan for models in the current classpath.
+ * <p>
+ * An instance can be shared between threads if its {@link ClassPathModelFinder} is thread-safe,
+ * as the finders based on {@link AbstractClassPathModelFinder} are.
  *
  * @see ClassPathModelFinder
  * @see ClassPathModelLoader
