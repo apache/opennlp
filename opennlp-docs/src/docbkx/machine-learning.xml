@@ -176,10 +176,18 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			<code>lowerCase=false</code>, <code>pooling=mean</code> (default) or
 			<code>pooling=cls</code>, <code>normalize=true</code> (default) or
 			<code>normalize=false</code>, and <code>maxLength</code>, the maximum number of tokens
-			per input (512 by default); longer input is truncated. The defaults match
-			sentence-transformers models such as all-MiniLM-L6-v2. A model with a
-			<code>sentence_embedding</code> output is used as it is, without pooling. A spec with
-			another option is not supported. The key
+			per input (512 by default); longer input is truncated. The option <code>padding</code>
+			sets how <code>embedAll</code> batches texts of different lengths:
+			<code>exact_length</code> (default) does not pad and runs one inference per tokenized
+			length, <code>longest</code> pads each batch to its longest text, and
+			<code>max_length</code> pads every text to <code>maxLength</code>, single
+			<code>embed</code> calls included. The vectors match up to floating-point rounding
+			under every strategy, provided the model honors the attention mask; a
+			<code>sentence_embedding</code> output that ignores the mask changes with padding.
+			Padding needs a <code>[PAD]</code> token in the vocabulary, or <code>&lt;pad&gt;</code>
+			for a RoBERTa vocabulary. The defaults match sentence-transformers models such as
+			all-MiniLM-L6-v2. A model with a <code>sentence_embedding</code> output is used as it
+			is, without pooling. A spec with another option is not supported. The key
 			<code>opennlp.provider.opennlp.tools.embeddings.TextEmbedderProvider</code> selects a
 			provider by name. Without <code>opennlp-dl</code> or <code>opennlp-dl-gpu</code> the API
 			has no provider until another one is installed. Existing <code>SentenceVectorsDL</code>
@@ -197,7 +205,12 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			device is not available, the constructor throws an <code>OrtException</code>; ONNX Runtime
 			does not fall back to the CPU. A negative device id is rejected with an
 			<code>IllegalArgumentException</code>. A lower case setting in the options takes
-			precedence over the <code>lowerCase</code> argument.
+			precedence over the <code>lowerCase</code> argument. On a GPU, <code>embedAll</code> pads
+			each batch to its longest text by default, if the vocabulary has a padding token, because
+			one wide inference is faster there than many narrow ones; a model with a
+			<code>sentence_embedding</code> output is not padded by default, because it may ignore
+			the attention mask and then padding changes the vectors. The constructor that takes a
+			<code>PaddingStrategy</code> overrides this.
 		</para>
 		<programlisting language="java"><![CDATA[InferenceOptions options = new InferenceOptions();
 options.setGpu(true);
