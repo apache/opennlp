@@ -39,6 +39,7 @@ import static opennlp.dl.vectors.TinyVectorModels.HELLO_WORLD;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_POOLED;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_VECTORS;
 import static opennlp.dl.vectors.TinyVectorModels.alternating;
+import static opennlp.dl.vectors.TinyVectorModels.assertSameEmbeddings;
 import static opennlp.dl.vectors.TinyVectorModels.gpuOrAbort;
 import static opennlp.dl.vectors.TinyVectorModels.model;
 import static opennlp.dl.vectors.TinyVectorModels.scale;
@@ -82,20 +83,11 @@ class SentenceVectorsDLInferenceOptionsTest {
              SentenceVectorsDL.DEFAULT_MAX_LENGTH, new InferenceOptions())) {
       assertEquals(cpu.dimension(), gpu.dimension());
       assertArrayEquals(cpu.embed(HELLO_WORLD), gpu.embed(HELLO_WORLD), DELTA);
-      final List<String> texts = List.of(HELLO_WORLD, LONGER_TEXT, "");
-      final float[][] cpuBatch = cpu.embedAll(texts);
-      final float[][] gpuBatch = gpu.embedAll(texts);
-      for (int i = 0; i < cpuBatch.length; i++) {
-        assertArrayEquals(cpuBatch[i], gpuBatch[i], DELTA, "row " + i);
-      }
+      // The GPU session pads to the longest text by default, the CPU session does not pad.
+      assertSameEmbeddings(cpu, gpu, List.of(HELLO_WORLD, LONGER_TEXT, ""));
       // Both length groups exceed the token position cap and are split.
-      final List<String> split = alternating(SentenceVectorsDL.MAX_BATCH_TOKEN_POSITIONS / 3 + 1);
-      final float[][] cpuSplit = cpu.embedAll(split);
-      final float[][] gpuSplit = gpu.embedAll(split);
-      assertEquals(split.size(), gpuSplit.length);
-      for (int i = 0; i < cpuSplit.length; i++) {
-        assertArrayEquals(cpuSplit[i], gpuSplit[i], DELTA, "split row " + i);
-      }
+      assertSameEmbeddings(cpu, gpu,
+          alternating(SentenceVectorsDL.MAX_BATCH_TOKEN_POSITIONS / 3 + 1));
     }
   }
 

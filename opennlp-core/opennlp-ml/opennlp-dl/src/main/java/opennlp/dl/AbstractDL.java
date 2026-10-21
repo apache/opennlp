@@ -74,6 +74,10 @@ public abstract class AbstractDL implements AutoCloseable {
   private static final String WORDPIECE_SUBWORD_PREFIX = "##";
   /** The first non-whitespace character of a vocabulary file that is read as JSON. */
   private static final String JSON_OBJECT_START = "{";
+  /** The padding token of a BERT vocabulary. */
+  private static final String BERT_PAD_TOKEN = "[PAD]";
+  /** The padding token of a RoBERTa vocabulary. */
+  private static final String ROBERTA_PAD_TOKEN = "<pad>";
 
   protected final OrtEnvironment env;
   protected final OrtSession session;
@@ -418,13 +422,43 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * The classification, separator and unknown tokens a tokenizer adds or emits.
+   * {@return the vocabulary id of the padding token} The padding token is {@code <pad>} for a
+   * RoBERTa vocabulary and {@code [PAD]} otherwise.
+   *
+   * @throws IllegalArgumentException Thrown if the vocabulary has no padding token, or if it has
+   *     the RoBERTa classification and separator tokens but no unknown token.
+   */
+  @Internal(since = "3.0.0")
+  protected long padTokenId() {
+    final String padToken = specialTokens(vocab).pad();
+    final Integer id = vocab.get(padToken);
+    if (id == null) {
+      throw new IllegalArgumentException("Padding needs a " + padToken
+          + " token, but the vocabulary has none.");
+    }
+    return id;
+  }
+
+  /**
+   * {@return whether the vocabulary has the padding token that {@link #padTokenId()} reads}
+   *
+   * @throws IllegalArgumentException Thrown if the vocabulary has the RoBERTa classification and
+   *     separator tokens but no unknown token.
+   */
+  @Internal(since = "3.0.0")
+  protected boolean hasPadToken() {
+    return vocab.containsKey(specialTokens(vocab).pad());
+  }
+
+  /**
+   * The classification, separator, unknown and padding tokens of a vocabulary.
    *
    * @param cls The classification token.
    * @param sep The separator token.
    * @param unk The unknown token.
+   * @param pad The padding token.
    */
-  private record SpecialTokens(String cls, String sep, String unk) {
+  private record SpecialTokens(String cls, String sep, String unk, String pad) {
   }
 
   /**
@@ -440,10 +474,10 @@ public abstract class AbstractDL implements AutoCloseable {
     if (vocab.containsKey(WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
       return new SpecialTokens(WordpieceTokenizer.ROBERTA_CLS_TOKEN,
-          WordpieceTokenizer.ROBERTA_SEP_TOKEN, resolveUnknownToken(vocab));
+          WordpieceTokenizer.ROBERTA_SEP_TOKEN, resolveUnknownToken(vocab), ROBERTA_PAD_TOKEN);
     }
     return new SpecialTokens(WordpieceTokenizer.BERT_CLS_TOKEN,
-        WordpieceTokenizer.BERT_SEP_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN);
+        WordpieceTokenizer.BERT_SEP_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN, BERT_PAD_TOKEN);
   }
 
   /**
