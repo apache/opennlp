@@ -39,9 +39,14 @@ import static opennlp.dl.vectors.OnnxTextEmbedderProvider.MAX_LENGTH_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.NORMALIZE_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.POOLING_OPTION;
 import static opennlp.dl.vectors.OnnxTextEmbedderProvider.VOCABULARY_OPTION;
+import static opennlp.dl.vectors.TinyVectorModels.CLS_VECTOR;
 import static opennlp.dl.vectors.TinyVectorModels.DELTA;
+import static opennlp.dl.vectors.TinyVectorModels.HELLO_MEAN;
+import static opennlp.dl.vectors.TinyVectorModels.HELLO_WORLD_MEAN;
+import static opennlp.dl.vectors.TinyVectorModels.HELLO_WORLD_SUM;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_POOLED;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_VECTORS;
+import static opennlp.dl.vectors.TinyVectorModels.UNIT_VECTOR;
 import static opennlp.dl.vectors.TinyVectorModels.model;
 import static opennlp.dl.vectors.TinyVectorModels.scale;
 import static opennlp.dl.vectors.TinyVectorModels.vocab;
@@ -62,18 +67,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * the ids times {@code W}.
  */
 class SentenceVectorsDLEmbedderTest {
-
-  // W / |W|, the unit-length vector of every input of the tiny models.
-  private static final float[] UNIT_VECTOR = scale(1 / (float) Math.sqrt(5.25));
-
-  // "hello world" = [CLS]=7 hello=4 world=5 [SEP]=3
-  private static final float[] HELLO_WORLD_MEAN = scale(19 / 4f);
-  private static final float[] HELLO_WORLD_SUM = scale(19);
-
-  // "hello" = [CLS]=7 hello=4 [SEP]=3
-  private static final float[] HELLO_MEAN = scale(14 / 3f);
-
-  private static final float[] CLS_VECTOR = scale(7);
 
   // The vocabulary above as a tokenizer.json of an uncased WordPiece model.
   private static File tokenizerJson(final Path dir, final boolean lowercase) throws IOException {

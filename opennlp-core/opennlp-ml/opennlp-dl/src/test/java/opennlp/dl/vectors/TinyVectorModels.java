@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.onnxruntime.OrtException;
@@ -46,6 +47,30 @@ public final class TinyVectorModels {
 
   /** The tolerance for comparing vectors of the tiny models. */
   public static final float DELTA = 1e-5f;
+
+  /** A text that encodes to 3 tokens: {@code [CLS]=7 hello=4 [SEP]=3}. */
+  public static final String HELLO = "hello";
+
+  /** A text that encodes to 4 tokens: {@code [CLS]=7 hello=4 world=5 [SEP]=3}. */
+  public static final String HELLO_WORLD = "hello world";
+
+  /** {@code W / |W|}, the unit-length vector of every input. */
+  public static final float[] UNIT_VECTOR = scale(1 / (float) Math.sqrt(5.25));
+
+  /** The mean pooled vector of {@link #HELLO_WORLD}. */
+  public static final float[] HELLO_WORLD_MEAN = scale(19 / 4f);
+
+  /** The summed vector of {@link #HELLO_WORLD}, the {@code sentence_embedding} of the pooled model. */
+  public static final float[] HELLO_WORLD_SUM = scale(19);
+
+  /** The mean pooled vector of {@link #HELLO}. */
+  public static final float[] HELLO_MEAN = scale(14 / 3f);
+
+  /** The summed vector of {@link #HELLO}, the {@code sentence_embedding} of the pooled model. */
+  public static final float[] HELLO_SUM = scale(14);
+
+  /** The {@code [CLS]} pooled vector of every input. */
+  public static final float[] CLS_VECTOR = scale(7);
 
   private static final String VECTORS_RESOURCES = "/opennlp/dl/vectors/";
 
@@ -86,6 +111,21 @@ public final class TinyVectorModels {
    */
   public static float[] scale(final float factor) {
     return new float[] {0.5f * factor, -1f * factor, 2f * factor};
+  }
+
+  /**
+   * {@return {@code pairs} times {@link #HELLO_WORLD} followed by {@link #HELLO}, so the two
+   * lengths alternate}
+   *
+   * @param pairs The number of pairs.
+   */
+  public static List<String> alternating(final int pairs) {
+    final List<String> texts = new ArrayList<>(2 * pairs);
+    for (int i = 0; i < pairs; i++) {
+      texts.add(HELLO_WORLD);
+      texts.add(HELLO);
+    }
+    return texts;
   }
 
   /**
