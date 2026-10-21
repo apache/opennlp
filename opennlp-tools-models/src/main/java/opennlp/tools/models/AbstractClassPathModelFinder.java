@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * A base implementation of a {@link ClassPathModelFinder} for the detection of
  * OpenNLP models in the classpath. By default, {@link AbstractClassPathModelFinder} will scan for
@@ -41,15 +44,22 @@ import java.util.regex.Pattern;
  * This search mask can be adjusted by using the one argument
  * {@link AbstractClassPathModelFinder#AbstractClassPathModelFinder(String) constructor}.
  * Wildcard search is supported by using asterisk symbol.
+ * <p>
+ * {@link #findModels(boolean)} may be called from several threads. Concurrent first calls scan
+ * the classpath once, and every caller receives the complete, unmodifiable set of models.
+ * Subclasses must keep {@link #getContext()} and {@link #getMatchingURIs(String, Object)} free
+ * of shared mutable state.
  *
  * @see ClassPathModelFinder
  */
+@ThreadSafe
 public abstract class AbstractClassPathModelFinder implements ClassPathModelFinder {
 
   protected static final String JAR = "jar";
 
   private final String jarModelPrefix;
-  private Set<ClassPathModelEntry> models;
+  private final Object scanLock = new Object();
+  private volatile Set<ClassPathModelEntry> models;
 
   /**
    * By default, it scans for {@link #OPENNLP_MODEL_JAR_PREFIX}.
@@ -67,28 +77,50 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
     this.jarModelPrefix = jarModelPrefix;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The result is cached; concurrent first calls scan the classpath once. The returned set
+   * is unmodifiable and does not change when the cache is reloaded.</p>
+   */
   @Override
   public Set<ClassPathModelEntry> findModels(boolean reloadCache) {
-
-    if (this.models == null || reloadCache) {
-      final List<URI> classpathModels = getMatchingURIs("*.bin", getContext());
-      final List<URI> classPathProperties = getMatchingURIs("model.properties", getContext());
-
-      this.models = new HashSet<>();
-
-      for (URI model : classpathModels) {
-        URI m = null;
-        for (URI prop : classPathProperties) {
-          if (jarPathsMatch(model, prop)) {
-            m = prop;
-            break;
-          }
-        }
-        this.models.add(new ClassPathModelEntry(model, Optional.ofNullable(m)));
-
-      }
+    Set<ClassPathModelEntry> found = this.models;
+    if (found != null && !reloadCache) {
+      return found;
     }
-    return this.models;
+    synchronized (scanLock) {
+      found = this.models;
+      if (found == null || reloadCache) {
+        found = scanModels();
+        this.models = found;
+      }
+      return found;
+    }
+  }
+
+  /**
+   * Scans the classpath for models and pairs each model with the {@code model.properties} of
+   * its jar.
+   *
+   * @return The unmodifiable set of model entries. It may be empty.
+   */
+  private Set<ClassPathModelEntry> scanModels() {
+    final List<URI> classpathModels = getMatchingURIs("*.bin", getContext());
+    final List<URI> classPathProperties = getMatchingURIs("model.properties", getContext());
+
+    final Set<ClassPathModelEntry> found = new HashSet<>();
+    for (URI model : classpathModels) {
+      URI m = null;
+      for (URI prop : classPathProperties) {
+        if (jarPathsMatch(model, prop)) {
+          m = prop;
+          break;
+        }
+      }
+      found.add(new ClassPathModelEntry(model, Optional.ofNullable(m)));
+    }
+    return Collections.unmodifiableSet(found);
   }
 
   /**
