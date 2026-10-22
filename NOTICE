@@ -67,4 +67,7 @@ List of third-party dependencies grouped by their license type.
 
     The MIT License (MIT)
 
-        * ClassGraph (io.github.classgraph:classgraph:4.8.197 - https://github.com/classgraph/classgraph)
+        * ClassGraph (io.github.classgraph:classgraph:5.0.0 - https://github.com/classgraph/classgraph)
+        * ClassGraph base (io.github.classgraph:classgraph-base:5.0.0 - https://github.com/classgraph/classgraph)
+        * ClassGraph classpath finder (io.github.classgraph:classgraph-classpath:5.0.0 - https://github.com/classgraph/classgraph)
+        * ClassGraph virtual filesystem (io.github.classgraph:classgraph-vfs:5.0.0 - https://github.com/classgraph/classgraph)
