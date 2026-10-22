@@ -22,6 +22,8 @@ import java.util.Set;
  * Describes a scanner which detects OpenNLP specific model files in an applications's classpath.
  * If compatible models are present at runtime, each discovered element is made available
  * as {@link ClassPathModelEntry}.
+ * <p>
+ * Thread safety is implementation specific.
  */
 public interface ClassPathModelFinder {
 
