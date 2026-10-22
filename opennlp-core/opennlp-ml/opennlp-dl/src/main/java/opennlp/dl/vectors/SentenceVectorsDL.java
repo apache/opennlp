@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import ai.onnxruntime.NodeInfo;
 import ai.onnxruntime.OnnxJavaType;
@@ -72,14 +73,19 @@ import opennlp.tools.util.ParamChecks;
  * any embeddings persisted from the previous behavior are not
  * comparable with the corrected output and must be re-embedded.</p>
  *
- * <p>This class is thread-safe and may be shared across threads: the inference methods hold no
- * per-call instance state and the underlying {@link OrtSession} supports concurrent execution.
+ * <p>This class is thread-safe and may be shared across threads: an inference holds the spare
+ * direct buffer of the instance only while it runs, a concurrent inference allocates its own,
+ * and the underlying {@link OrtSession} supports concurrent execution.
  * This thread-safety guarantee applies until {@link #close()} is called; callers must not race
  * {@code close()} with inference methods.</p>
  *
  * <p>{@link #embedAll(List)} runs one batched session per distinct tokenized length, so a batch
  * of same-length inputs costs one inference instead of one per input. A group larger than
  * 16384 token positions is split into several inferences.</p>
+ *
+ * <p>The input and output tensors of an inference live in one direct buffer. The instance keeps
+ * the largest such buffer as its spare buffer until {@link #close()}, so repeated calls reuse it
+ * instead of allocating direct memory that is only freed after a garbage collection.</p>
  */
 @ThreadSafe
 public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
@@ -105,9 +111,9 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   private final boolean normalize;
   private final int maxLength;
   private final String outputName;
-  private final Set<String> outputNames;
   private final boolean pooledOutput;
   private final int dimension;
+  private final AtomicReference<ByteBuffer> spare = new AtomicReference<>();
 
   /**
    * Instantiates a {@link SentenceVectorsDL sentence vector generator} for an
@@ -232,12 +238,11 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       this.maxLength = maxLength;
       final Map<String, NodeInfo> outputs = session.getOutputInfo();
       this.outputName = selectOutput(outputs);
-      this.outputNames = Set.of(outputName);
       final long[] shape = ((TensorInfo) outputs.get(outputName).getInfo()).getShape();
       this.pooledOutput = shape.length == POOLED_RANK;
       final long declared = shape[shape.length - 1];
       this.dimension = declared > 0 && declared <= Integer.MAX_VALUE
-          ? (int) declared : run(new Tokens[] {encodeTokens("")})[0].length;
+          ? (int) declared : measureDimension();
     } catch (final OrtException | RuntimeException e) {
       try {
         super.close();
@@ -358,11 +363,12 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * Closes the ONNX session. An {@link OrtException} from the session is rethrown as the cause
-   * of an {@link UncheckedIOException}.
+   * Drops the spare direct buffer and closes the ONNX session. An {@link OrtException} from the
+   * session is rethrown as the cause of an {@link UncheckedIOException}.
    */
   @Override
   public void close() {
+    spare.set(null);
     try {
       super.close();
     } catch (final OrtException e) {
@@ -397,8 +403,10 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
 
   /**
    * Runs one inference over encodings of the same length and returns one sentence vector per
-   * encoding, in order. The input and output tensors live in direct buffers, which ONNX Runtime
-   * reads and writes in place, so no tensor is copied through the Java heap.
+   * encoding, in order. The input and output tensors share one direct buffer, which ONNX Runtime
+   * reads and writes in place, so no tensor is copied through the Java heap. The buffer is the
+   * spare buffer of this instance when it is free and large enough, and becomes the spare buffer
+   * again afterwards, so repeated calls allocate no new direct memory.
    *
    * @param batch The encodings, all of the same length.
    * @return The sentence vectors.
@@ -407,54 +415,116 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   private float[][] run(final Tokens[] batch) throws OrtException {
 
     final int length = batch[0].ids().length;
-    final LongBuffer ids = directLongs(batch.length * length);
-    final LongBuffer mask = directLongs(batch.length * length);
-    final LongBuffer types = directLongs(batch.length * length);
-    for (final Tokens tokens : batch) {
-      ids.put(tokens.ids());
-      mask.put(tokens.mask());
-      types.put(tokens.types());
-    }
-    ids.rewind();
-    mask.rewind();
-    types.rewind();
-
-    final Map<String, OnnxTensor> inputs = new HashMap<>();
-    final long[] shape = {batch.length, length};
-    OnnxTensor pinned = null;
-
+    final int inputBytes = batch.length * length * Long.BYTES;
+    final int outputBytes = (pooledOutput ? batch.length : batch.length * length)
+        * dimension * Float.BYTES;
+    final ByteBuffer buffer = takeBuffer(3 * inputBytes + outputBytes);
     try {
-      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, ids, shape));
-
-      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, mask, shape));
-
-      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, types, shape));
-
-      // dimension is 0 only while the constructor measures it; that first call reads the
-      // output tensor instead of a preallocated direct buffer.
-      if (dimension > 0) {
-        final int rows = pooledOutput ? batch.length : batch.length * length;
-        final FloatBuffer values = direct(rows * dimension * Float.BYTES).asFloatBuffer();
-        pinned = OnnxTensor.createTensor(env, values, pooledOutput
-            ? new long[] {batch.length, dimension} : new long[] {batch.length, length, dimension});
-        try (OrtSession.Result ignored = session.run(inputs, Map.of(outputName, pinned))) {
-          return vectors(batch, length, dimension, values);
-        }
+      final LongBuffer ids = slice(buffer, 0, inputBytes).asLongBuffer();
+      final LongBuffer mask = slice(buffer, inputBytes, inputBytes).asLongBuffer();
+      final LongBuffer types = slice(buffer, 2 * inputBytes, inputBytes).asLongBuffer();
+      for (final Tokens tokens : batch) {
+        ids.put(tokens.ids());
+        mask.put(tokens.mask());
+        types.put(tokens.types());
       }
-      try (OrtSession.Result result = session.run(inputs, outputNames)) {
-        final OnnxTensor output = (OnnxTensor) result.get(outputName).orElseThrow(
-            () -> new OrtException("The model returned no output named " + outputName));
-        final long[] outputShape = output.getInfo().getShape();
-        return vectors(batch, length, (int) outputShape[outputShape.length - 1],
-            output.getFloatBuffer());
+      ids.rewind();
+      mask.rewind();
+      types.rewind();
+      final FloatBuffer values = slice(buffer, 3 * inputBytes, outputBytes).asFloatBuffer();
+
+      final Map<String, OnnxTensor> inputs = inputs(ids, mask, types,
+          new long[] {batch.length, length});
+      try (OnnxTensor output = OnnxTensor.createTensor(env, values, pooledOutput
+              ? new long[] {batch.length, dimension} : new long[] {batch.length, length, dimension});
+           OrtSession.Result ignored = session.run(inputs, Map.of(outputName, output))) {
+        return vectors(batch, length, values);
+      } finally {
+        inputs.values().forEach(OnnxTensor::close);
       }
     } finally {
-      inputs.values().forEach(OnnxTensor::close);
-      if (pinned != null) {
-        pinned.close();
-      }
+      releaseBuffer(buffer);
     }
 
+  }
+
+  /**
+   * {@return the hidden dimension of the model, measured with one inference of the empty text}
+   * Used when the model metadata does not declare the dimension; ONNX Runtime allocates the
+   * output of this inference, since its size is not known yet.
+   *
+   * @throws OrtException Thrown if an error occurs during inference.
+   */
+  private int measureDimension() throws OrtException {
+    final Tokens tokens = encodeTokens("");
+    final Map<String, OnnxTensor> inputs = inputs(LongBuffer.wrap(tokens.ids()),
+        LongBuffer.wrap(tokens.mask()), LongBuffer.wrap(tokens.types()),
+        new long[] {1, tokens.ids().length});
+    try (OrtSession.Result result = session.run(inputs, Set.of(outputName))) {
+      final long[] shape = ((TensorInfo) result.get(0).getInfo()).getShape();
+      return (int) shape[shape.length - 1];
+    } finally {
+      inputs.values().forEach(OnnxTensor::close);
+    }
+  }
+
+  /**
+   * {@return the three input tensors of an inference over the given token ids, attention mask and
+   * token type ids}
+   *
+   * @param ids The token ids.
+   * @param mask The attention mask.
+   * @param types The token type ids.
+   * @param shape The shape of each input, {@code [rows, length]}.
+   * @throws OrtException Thrown if a tensor cannot be created; the tensors created before are
+   *     closed.
+   */
+  private Map<String, OnnxTensor> inputs(final LongBuffer ids, final LongBuffer mask,
+      final LongBuffer types, final long[] shape) throws OrtException {
+    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    try {
+      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, ids, shape));
+      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, mask, shape));
+      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, types, shape));
+      return inputs;
+    } catch (final OrtException | RuntimeException e) {
+      inputs.values().forEach(OnnxTensor::close);
+      throw e;
+    }
+  }
+
+  /**
+   * {@return the spare direct buffer if it holds at least {@code bytes} bytes, otherwise a new
+   * direct buffer of {@code bytes} bytes} The spare buffer is taken, so a concurrent inference
+   * does not get it too.
+   *
+   * @param bytes The number of bytes the inference needs.
+   */
+  private ByteBuffer takeBuffer(final int bytes) {
+    final ByteBuffer buffer = spare.getAndSet(null);
+    return buffer != null && buffer.capacity() >= bytes ? buffer : ByteBuffer.allocateDirect(bytes);
+  }
+
+  /**
+   * Keeps a buffer as the spare buffer unless the spare buffer is larger.
+   *
+   * @param buffer The buffer an inference is done with.
+   */
+  private void releaseBuffer(final ByteBuffer buffer) {
+    spare.accumulateAndGet(buffer, (kept, released) ->
+        kept == null || released.capacity() >= kept.capacity() ? released : kept);
+  }
+
+  /**
+   * {@return {@code bytes} bytes of {@code buffer} from {@code offset} on, in native byte order,
+   * the order ONNX Runtime reads and writes}
+   *
+   * @param buffer The buffer to slice.
+   * @param offset The index of the first byte.
+   * @param bytes The number of bytes.
+   */
+  private ByteBuffer slice(final ByteBuffer buffer, final int offset, final int bytes) {
+    return buffer.slice(offset, bytes).order(ByteOrder.nativeOrder());
   }
 
   /**
@@ -462,19 +532,17 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    *
    * @param batch The encodings of the inference.
    * @param length The row length of the inference.
-   * @param hidden The length of one vector.
    * @param values The output, row after row.
    * @return The sentence vectors.
    */
-  private float[][] vectors(final Tokens[] batch, final int length, final int hidden,
-      final FloatBuffer values) {
+  private float[][] vectors(final Tokens[] batch, final int length, final FloatBuffer values) {
     final float[][] vectors = new float[batch.length][];
     for (int b = 0; b < batch.length; b++) {
       if (pooledOutput) {
-        vectors[b] = new float[hidden];
-        values.get(b * hidden, vectors[b]);
+        vectors[b] = new float[dimension];
+        values.get(b * dimension, vectors[b]);
       } else {
-        vectors[b] = pool(values, b * length * hidden, hidden, batch[b].mask());
+        vectors[b] = pool(values, b * length * dimension, batch[b].mask());
       }
       if (normalize) {
         scaleToUnitLength(vectors[b]);
@@ -484,36 +552,15 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * {@return a direct buffer of {@code size} longs in native byte order}
-   *
-   * @param size The number of longs.
-   */
-  private static LongBuffer directLongs(final int size) {
-    return direct(size * Long.BYTES).asLongBuffer();
-  }
-
-  /**
-   * {@return a direct buffer of {@code bytes} bytes in native byte order, which ONNX Runtime uses
-   * without a copy}
-   *
-   * @param bytes The capacity in bytes.
-   */
-  private static ByteBuffer direct(final int bytes) {
-    return ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder());
-  }
-
-  /**
    * Pools the token vectors of one input into its sentence vector.
    *
    * @param values The token vectors of the whole batch, row after row.
    * @param offset The index of the first value of the input in {@code values}.
-   * @param hidden The length of one token vector.
    * @param mask The attention mask of the input.
    * @return A new array holding the sentence vector.
    */
-  private float[] pool(final FloatBuffer values, final int offset, final int hidden,
-      final long[] mask) {
-    final float[] sum = new float[hidden];
+  private float[] pool(final FloatBuffer values, final int offset, final long[] mask) {
+    final float[] sum = new float[dimension];
     if (pooling == Pooling.CLS) {
       values.get(offset, sum);
       return sum;
@@ -521,14 +568,14 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
     int count = 0;
     for (int t = 0; t < mask.length; t++) {
       if (mask[t] != 0) {
-        final int start = offset + t * hidden;
-        for (int d = 0; d < hidden; d++) {
+        final int start = offset + t * dimension;
+        for (int d = 0; d < dimension; d++) {
           sum[d] += values.get(start + d);
         }
         count++;
       }
     }
-    for (int d = 0; d < hidden; d++) {
+    for (int d = 0; d < dimension; d++) {
       sum[d] /= Math.max(count, 1);
     }
     return sum;

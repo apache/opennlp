@@ -17,12 +17,24 @@ limitations under the License.
 
 # Embedding Benchmarks
 
-`SentenceVectorsDLBenchmark` times `SentenceVectorsDL` on a real model: `embedEach` calls
+`SentenceVectorsDLBenchmark` times `SentenceVectorsDL` on real models: `embedEach` calls
 `embed` once per text, `embedAll` makes one call. A call holds `callSize` texts of 4 to 40
 words, drawn with a fixed seed, so tokenized lengths are mixed as in natural text.
 
-The model directory holds `model.onnx` and `vocab.txt` (for example all-MiniLM-L6-v2) and
-defaults to `~/.opennlp/onnx/sentence-transformers`; set it with `-p modelDir=<dir>`.
+## Models
+
+Each model is a directory with `model.onnx` and `vocab.txt` under `~/.opennlp/onnx` (set
+another root with `-p modelRoot=<dir>`). By default the benchmark runs a small and a large
+embedding dimension:
+
+| `model`            | Dimension | Layers |
+|--------------------|-----------|--------|
+| `all-MiniLM-L6-v2` | 384       | 6      |
+| `e5-large-v2`      | 1024      | 24     |
+
+Export them as shown in [README.md](README.md), with `model_id` set to
+`sentence-transformers/all-MiniLM-L6-v2` and `intfloat/e5-large-v2`. Pick other models with
+`-p model=<dir>,<dir>`.
 
 ## Building and running
 
@@ -34,17 +46,36 @@ mvn dependency:build-classpath -pl opennlp-core/opennlp-ml/opennlp-dl \
 
 CP="opennlp-core/opennlp-ml/opennlp-dl/target/classes:opennlp-core/opennlp-ml/opennlp-dl/target/test-classes:$(cat /tmp/cp.txt)"
 
-# CPU, with the bytes allocated per call
-java -cp "$CP" org.openjdk.jmh.Main SentenceVectorsDLBenchmark -prof gc
+java -cp "$CP" org.openjdk.jmh.Main SentenceVectorsDLBenchmark \
+    -prof gc -prof opennlp.dl.vectors.NativeMemoryProfiler
 ```
+
+The `jmh` profile is defined in the parent POM and compiles `src/jmh/java` of every module it is
+built with.
 
 For CUDA, replace the `onnxruntime` jar in `CP` with `onnxruntime_gpu` of the same version,
 put the CUDA and cuDNN libraries that release needs on `LD_LIBRARY_PATH`, and add
 `-p device=gpu`. Build only `opennlp-dl` with `-Pjmh`: the generated `*_jmhTest` classes land
 in its test-jar, which `opennlp-dl-gpu` scans for tests.
 
-## Allocation per call
+## What it reports
 
-Moving the inference inputs and outputs to direct buffers cut the allocation per call
-(`gc.alloc.rate.norm`) about threefold on the CPU and the GPU, without changing the average
-time per call. The measurements are in the pull request for GH-1471.
+| Result                    | Mode     | Meaning                                                   |
+|---------------------------|----------|-----------------------------------------------------------|
+| `embedAll`, `embedEach`   | `avgt`   | Average time per call                                     |
+| `:texts`, `:tokens`       | `avgt`   | Time per text and per token position; invert for texts/s and tokens/s |
+| `:p0.50` to `:p1.00`      | `sample` | Latency percentiles per call                              |
+| `:gc.alloc.rate.norm`     | both     | Heap bytes allocated per call (`-prof gc`)                |
+| `:direct.used`, `:direct.count` | both | Direct buffers held at the end of an iteration       |
+| `:rss`                    | both     | Resident set size on Linux, which includes ONNX Runtime's native memory |
+
+The memory results come from `-prof opennlp.dl.vectors.NativeMemoryProfiler`. A session keeps
+one direct buffer for its largest inference, so `direct.count` and `direct.used` stay flat over
+the iterations. To check that no direct memory piles up when explicit garbage collections are
+disabled, add `-jvmArgsAppend "-XX:+DisableExplicitGC -XX:MaxDirectMemorySize=128m"`.
+
+## Comparable CPU times
+
+ONNX Runtime uses one intra-op thread per physical core by default, so CPU times move with the
+machine's load and core count. Pin the benchmark JVM to a fixed set of cores, for example with
+`taskset -c 0-3 java ...` on Linux, and run nothing else on them.
