@@ -28,6 +28,8 @@ import opennlp.tools.util.model.BaseModel;
  * Providing models available in the classpath requires a {@link ClassPathModelFinder finder}
  * and a {@link ClassPathModelLoader} at runtime. Depending on the environment,
  * a custom {@code finder} can be used.
+ * <p>
+ * Thread safety is implementation specific.
  *
  * @see BaseModel
  * @see ClassPathModelFinder
