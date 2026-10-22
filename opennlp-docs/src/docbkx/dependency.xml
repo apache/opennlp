@@ -27,7 +27,7 @@
 			arc-standard transition for each parser state: <code>DependencyParserME</code>
 			scores the transitions with a maximum entropy model and
 			<code>FeedforwardDependencyParser</code> with a feedforward network. The
-			command-line tools cover the <code>DependencyParserME</code> parser only.
+			command-line tools cover both parsers.
 		</para>
 	</section>
 
@@ -116,9 +116,38 @@ DependencyParser parser = new FeedforwardDependencyParser(
 		</para>
 		<para>
 			A beam size of one decodes greedily; a larger beam keeps that many transition
-			sequences per step and scores each of them. One parser instance can be shared
-			between threads.
+			sequences per step and scores each of them. Without a beam size the parser uses
+			the beam size the model was refined with, or decodes greedily if the model was
+			not refined. One parser instance can be shared between threads.
 		</para>
+
+		<section xml:id="tools.dependency.feedforward.cli">
+			<title>Command-line tools</title>
+			<para>
+				As with the tools in <xref linkend="tools.dependency.cli"/>, the feedforward
+				trainer and evaluator read CoNLL-U in UTF-8, and <code>-tagset</code> selects
+				the POS column. The parser reads <code>token_TAG</code> lines and writes
+				CoNLL-U, and the evaluator logs the same scores. The <code>-params</code> file holds
+				the <code>FeedforwardDependencyTrainer</code> keys, for example
+				<code>EmbeddingSize</code>, <code>HiddenSize</code>, <code>Iterations</code>, and
+				<code>Dropout</code>; absent keys, or a missing file, take the trainer's defaults.
+				A <code>-refineParams</code> file refines the trained model with beam search, with
+				<code>BeamSize</code> (at least two) setting the beam. With <code>-baseModel</code>
+				the trainer refines an existing model instead of training a new one; its
+				<code>-lang</code> must match the model. For example:
+			</para>
+			<programlisting>
+<![CDATA[opennlp FeedforwardDependencyParserTrainer.conllu -lang eng -data train.conllu \
+    -model en-depparse-ff.bin -params ff.params -refineParams refine.params
+opennlp FeedforwardDependencyParserEvaluator.conllu -model en-depparse-ff.bin -data dev.conllu
+opennlp FeedforwardDependencyParser -beamSize 4 en-depparse-ff.bin < tagged-sentences.txt]]>
+			</programlisting>
+			<para>
+				The parser and evaluator take an optional <code>-beamSize</code>. Without it they
+				use the beam size a refined model records, and parse a model that was not refined
+				greedily. There is no feedforward cross-validation tool.
+			</para>
+		</section>
 	</section>
 
 	<section xml:id="tools.dependency.parsing">

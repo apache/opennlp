@@ -17,27 +17,19 @@
 
 package opennlp.tools.cmdline.depparse;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -48,6 +40,18 @@ import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.depparse.DependencyTree;
 import opennlp.tools.util.ObjectStream;
 
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.EXPECTED_REVERSED;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.GOLD;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.PARSED_SENTENCE;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.PERFECT_SCORES;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.PERFECT_SCORES_EXCLUDING_PUNCTUATION;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.PREDICTED_SENTENCE;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.REPETITIONS;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.REVERSED_SENTENCE;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.SENTENCE;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.UTF_8_REQUIRED;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.logOf;
+import static opennlp.tools.cmdline.depparse.DependencyToolTestSupport.outputOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,42 +59,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Exercises CLI registration, CoNLL-U input, training, persistence and inference. */
 public class DependencyParserToolsTest {
 
-  /** A two-token sentence in CoNLL-U; the tests repeat it to build a corpus. */
-  private static final String SENTENCE = """
-      1\tdogs\tdog\tNOUN\tNNS\t_\t2\tnsubj\t_\t_
-      2\trun\trun\tVERB\tVBP\t_\t0\troot\t_\t_
-
-      """;
-
-  /** How often {@link #SENTENCE} is repeated in the training data. */
-  private static final int REPETITIONS = 20;
-
-  /** The gold tree of {@link #SENTENCE}. */
-  private static final DependencyTree GOLD =
-      DependencyTree.of(new int[] {1, -1}, new String[] {"nsubj", "root"});
-
-  /** The sentence with the heads swapped, which a parser trained on {@link #SENTENCE} misparses. */
-  private static final String REVERSED_SENTENCE = """
-      1\tdogs\tdog\tNOUN\tNNS\t_\t0\troot\t_\t_
-      2\trun\trun\tVERB\tVBP\t_\t1\tobj\t_\t_
-
-      """;
-
-  /** The gold tree of {@link #REVERSED_SENTENCE}. */
+  /** The gold tree of {@link DependencyToolTestSupport#REVERSED_SENTENCE}. */
   private static final DependencyTree REVERSED =
       DependencyTree.of(new int[] {-1, 0}, new String[] {"root", "obj"});
 
-  /** The expected block the error listener prints for {@link #REVERSED_SENTENCE}. */
-  private static final String EXPECTED_REVERSED = "Expected: {\n"
-      + "1\tdogs\tNOUN\t0\troot" + System.lineSeparator()
-      + "2\trun\tVERB\t1\tobj" + System.lineSeparator() + "}";
-
-  /** The predicted block the error listener prints for the parse of {@link #SENTENCE}. */
-  private static final String PREDICTED_SENTENCE = "Predicted: {\n"
-      + "1\tdogs\tNOUN\t2\tnsubj" + System.lineSeparator()
-      + "2\trun\tVERB\t0\troot" + System.lineSeparator() + "}";
-
-  /** The sentence with the subject relabeled, so only a label differs from {@link #SENTENCE}. */
+  /**
+   * The sentence with the subject relabeled, so only a label differs from
+   * {@link DependencyToolTestSupport#SENTENCE}.
+   */
   private static final String RELABELED_SENTENCE = """
       1\tdogs\tdog\tNOUN\tNNS\t_\t2\tnmod\t_\t_
       2\trun\trun\tVERB\tVBP\t_\t0\troot\t_\t_
@@ -104,16 +80,6 @@ public class DependencyParserToolsTest {
 
   /** The message prefix of a tool ended by an unusable argument value. */
   private static final String INVALID_ARGUMENT = "Invalid argument: ";
-
-  /** The message of the CoNLL-U format for an encoding other than UTF-8. */
-  private static final String UTF_8_REQUIRED = "CoNLL-U data must use UTF-8";
-
-  /** The scores logged for a parser that reproduces all 40 tokens of the data. */
-  private static final String PERFECT_SCORES = "Tokens: 40; UAS: 1.0; LAS: 1.0";
-
-  /** The punctuation-free scores logged for the same parser; the data has no punctuation. */
-  private static final String PERFECT_SCORES_EXCLUDING_PUNCTUATION =
-      "Tokens excluding punctuation: 40; UAS: 1.0; LAS: 1.0";
 
   @TempDir
   private Path dir;
@@ -132,29 +98,6 @@ public class DependencyParserToolsTest {
   private void train() {
     new DependencyParserTrainerTool().run("conllu", new String[] {
         "-lang", "eng", "-data", data.toString(), "-model", model.toString()});
-  }
-
-  /**
-   * Runs a tool while capturing the INFO messages its logger emits.
-   *
-   * @param tool The tool class whose logger is captured.
-   * @param run Runs the tool.
-   * @return The formatted log messages, in order. Never {@code null}.
-   */
-  private static List<String> logOf(Class<?> tool, Runnable run) {
-    final Logger logger = (Logger) LoggerFactory.getLogger(tool);
-    final Level previous = logger.getLevel();
-    final ListAppender<ILoggingEvent> appender = new ListAppender<>();
-    appender.start();
-    logger.addAppender(appender);
-    logger.setLevel(Level.INFO);
-    try {
-      run.run();
-    } finally {
-      logger.setLevel(previous);
-      logger.detachAppender(appender);
-    }
-    return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
   }
 
   @Test
@@ -192,21 +135,10 @@ public class DependencyParserToolsTest {
   @Test
   void testParserToolPrintsConllu() {
     train();
-    final InputStream previousIn = System.in;
-    final PrintStream previousOut = System.out;
-    final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    try {
-      System.setIn(new ByteArrayInputStream("dogs_NOUN run_VERB\n".getBytes(StandardCharsets.UTF_8)));
-      System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
-      new DependencyParserMETool().run(new String[] {model.toString()});
-    } finally {
-      System.setIn(previousIn);
-      System.setOut(previousOut);
-    }
-    assertEquals("1\tdogs\t_\t_\tNOUN\t_\t2\tnsubj\t_\t_\n"
-        + "2\trun\t_\t_\tVERB\t_\t0\troot\t_\t_\n\n",
-        output.toString(StandardCharsets.UTF_8).replace("\r\n", "\n"));
+    assertEquals(PARSED_SENTENCE, outputOf("dogs_NOUN run_VERB\n",
+        () -> new DependencyParserMETool().run(new String[] {model.toString()})));
   }
+
 
   @Test
   void testConlluFormatReadsTheSelectedTagset() throws IOException {

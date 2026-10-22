@@ -24,11 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.params.EvaluatorParams;
-import opennlp.tools.depparse.DependencyEvaluationMonitor;
-import opennlp.tools.depparse.DependencyEvaluator;
 import opennlp.tools.depparse.DependencyParserME;
 import opennlp.tools.depparse.DependencySample;
-import opennlp.tools.util.ObjectStream;
 
 /** Reports labeled and unlabeled attachment scores against gold CoNLL-U trees. */
 public class DependencyParserEvaluatorTool
@@ -51,19 +48,10 @@ public class DependencyParserEvaluatorTool
   @Override
   public void run(String format, String[] args) {
     super.run(format, args);
-    try (ObjectStream<DependencySample> samples = sampleStream) {
-      DependencyEvaluationMonitor errorListener = null;
-      if (params.getMisclassified()) {
-        errorListener = new DependencyEvaluationErrorListener();
-      }
-      DependencyEvaluator evaluator = new DependencyEvaluator(new DependencyParserME(
-          new DependencyModelLoader().load(params.getModel())), errorListener);
-      evaluator.evaluate(samples);
-      logger.info("Tokens: {}; UAS: {}; LAS: {}", evaluator.getWordCount(),
-          evaluator.getUas(), evaluator.getLas());
-      logger.info("Tokens excluding punctuation: {}; UAS: {}; LAS: {}",
-          evaluator.getWordCountExcludingPunctuation(),
-          evaluator.getUasExcludingPunctuation(), evaluator.getLasExcludingPunctuation());
+    try {
+      DependencyParserToolSupport.evaluate(
+          () -> new DependencyParserME(new DependencyModelLoader().load(params.getModel())),
+          sampleStream, params.getMisclassified(), logger);
     } catch (IOException e) {
       throw createTerminationIOException(e);
     }

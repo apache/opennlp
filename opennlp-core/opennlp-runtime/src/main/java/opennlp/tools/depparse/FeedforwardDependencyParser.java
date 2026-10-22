@@ -24,8 +24,9 @@ import opennlp.tools.util.ParamChecks;
 
 /**
  * The neural {@link DependencyParser}: an arc-standard decoder over the
- * {@link FeedforwardDependencyModel}, greedy by default and beamed when constructed
- * with a beam size above one. It scores configurations with learned dense
+ * {@link FeedforwardDependencyModel}. By default it decodes with the beam size the
+ * model was refined with, or greedily for a model that was not refined; a beam size
+ * given to the constructor overrides that. It scores configurations with learned dense
  * representations instead of the sparse feature conjunctions of
  * {@link DependencyParserME}.
  *
@@ -56,13 +57,15 @@ public class FeedforwardDependencyParser implements DependencyParser {
   private final ContributionCache cache;
 
   /**
-   * Initializes a greedy {@link FeedforwardDependencyParser} without a scoring cache.
+   * Initializes a {@link FeedforwardDependencyParser} with the beam size of the model
+   * and without a scoring cache.
    *
    * @param model The model to parse with. Must not be {@code null}.
    * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
+   * @see FeedforwardDependencyModel#getBeamSize()
    */
   public FeedforwardDependencyParser(FeedforwardDependencyModel model) {
-    this(model, GREEDY_BEAM_SIZE);
+    this(model, ParamChecks.requireNonNullArg(model, "model").getBeamSize());
   }
 
   /**
@@ -180,6 +183,15 @@ public class FeedforwardDependencyParser implements DependencyParser {
       beam = ArcStandardBeam.advance(expansions, beamSize, transitions);
     }
     return beam.get(0).state.toTree();
+  }
+
+  /**
+   * Returns the number of transition sequences the parser retains.
+   *
+   * @return The beam size. Always positive; {@code 1} decodes greedily.
+   */
+  int beamSize() {
+    return beamSize;
   }
 
   /**
