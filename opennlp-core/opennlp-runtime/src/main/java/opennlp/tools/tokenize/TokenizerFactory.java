@@ -161,6 +161,7 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   @Override
+  @SuppressWarnings("removal")
   public Map<String, String> createManifestEntries() {
     Map<String, String> manifestEntries = super.createManifestEntries();
 
@@ -296,6 +297,7 @@ public class TokenizerFactory extends BaseToolFactory {
    */
   @Deprecated(since = "3.0.0", forRemoval = true)
   @SuppressForbidden("user-supplied alphanumeric pattern, kept for the deprecated API")
+  @SuppressWarnings("removal")
   public Pattern getAlphaNumericPattern() {
     resolve();
     if (this.alphaNumericPattern != null) {
@@ -390,6 +392,7 @@ public class TokenizerFactory extends BaseToolFactory {
    *         the alphanumeric pattern is not a valid regular expression.
    */
   @SuppressForbidden("user-supplied alphanumeric pattern, kept for the deprecated API")
+  @SuppressWarnings("removal")
   private void readManifest() {
     String text = this.artifactProvider.getManifestProperty(CHARACTER_POLICY);
     if (text != null) {
@@ -424,6 +427,7 @@ public class TokenizerFactory extends BaseToolFactory {
    * @param pattern The alphanumeric pattern, or {@code null} for the policy of the language.
    */
   @SuppressForbidden("user-supplied alphanumeric pattern, kept for the deprecated API")
+  @SuppressWarnings("removal")
   private void setAlphaNumericPattern(Pattern pattern) {
     if (pattern == null) {
       return;

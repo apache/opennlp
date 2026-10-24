@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.commons.SuppressForbidden;
 import opennlp.tools.tokenize.DefaultTokenContextGenerator;
 import opennlp.tools.tokenize.TokenContextGenerator;
@@ -151,8 +152,14 @@ public class Factory {
    * {@return the policy of the language whose alphanumeric expression of an earlier release is
    * {@code expression}, or {@code null} if there is none}
    *
+   * <p>
+   * <b>Note:</b> Internal use only, for the deprecated {@link Pattern} API.
+   *
    * @param expression An alphanumeric expression of an earlier release.
+   * @deprecated Serves only the deprecated {@link Pattern} API and will be removed with it in 4.0.
    */
+  @Internal
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static TokenizerCharacterPolicy policyOfLegacyExpression(String expression) {
     for (Map.Entry<TokenizerCharacterPolicy, String> entry : LEGACY_EXPRESSIONS.entrySet()) {
       if (entry.getValue().equals(expression)) {
@@ -166,8 +173,14 @@ public class Factory {
    * {@return the alphanumeric expression of an earlier release that accepts the same characters
    * as {@code policy}, or {@code null} if there is none}
    *
+   * <p>
+   * <b>Note:</b> Internal use only, for the deprecated {@link Pattern} API.
+   *
    * @param policy A character policy, or {@code null}.
+   * @deprecated Serves only the deprecated {@link Pattern} API and will be removed with it in 4.0.
    */
+  @Internal
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static String legacyExpressionOf(TokenizerCharacterPolicy policy) {
     return policy == null ? null : LEGACY_EXPRESSIONS.get(policy);
   }
