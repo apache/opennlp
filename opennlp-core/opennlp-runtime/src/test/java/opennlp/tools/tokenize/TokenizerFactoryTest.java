@@ -335,6 +335,41 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(pattern, LANGUAGE_FACTORY.getAlphanumeric(lang).pattern());
   }
 
+  /**
+   * A deprecated pattern that an earlier release wrote for a language is replaced by the policy
+   * of that language, so the factory takes the policy path instead of the regular expression.
+   */
+  @Test
+  @SuppressWarnings("removal")
+  void testKnownLegacyPatternIsReplacedByItsPolicy() throws InvalidFormatException {
+    TokenizerFactory byConstructor = new TokenizerFactory("eng", null, true,
+        Factory.DEFAULT_ALPHANUMERIC);
+    TokenizerFactory byCreate = TokenizerFactory.create(null, "eng", null, true,
+        Factory.DEFAULT_ALPHANUMERIC);
+
+    Assertions.assertEquals(TokenizerCharacterPolicy.ascii(), byConstructor.getCharacterPolicy());
+    Assertions.assertEquals(TokenizerCharacterPolicy.ascii(), byCreate.getCharacterPolicy());
+    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC.pattern(),
+        byConstructor.getAlphaNumericPattern().pattern());
+  }
+
+  /**
+   * The custom policy of the migration example, ASCII letters and digits plus two combining
+   * marks, is passed to the factory as the example shows, and it keeps the accented word whole.
+   */
+  @Test
+  void testDocumentedCustomPolicyIsPassedToTheFactory() throws InvalidFormatException {
+    TokenizerCharacterPolicy policy = TokenizerCharacterPolicy.of(
+        CodePointSet.ofRange('A', 'Z').union(CodePointSet.ofRange('a', 'z')),
+        CodePointSet.ofRange('0', '9'),
+        CodePointSet.of(0x0300, 0x0301));
+    TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);
+
+    Assertions.assertSame(policy, factory.getCharacterPolicy());
+    Assertions.assertTrue(policy.test("Cafe\u0301"));
+    Assertions.assertNotNull(TokenizerFactory.create(null, "eng", null, true));
+  }
+
   /** A deprecated create call with a {@code null} pattern uses the policy of the language. */
   @Test
   @SuppressWarnings("removal")

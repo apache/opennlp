@@ -16,7 +16,7 @@
 # forbiddenapis signatures for the forbidden-regex-main execution in the root pom.xml.
 # Production code scans text with code-point loops and the opennlp.tools.util.StringUtil
 # helpers instead of java.util.regex (OPENNLP-1935). A member with a public contract that is
-# a user-supplied pattern (for example RegexNameFinder) is marked with
+# a user-supplied pattern (RegexNameFinder, the tokenizer factories) is marked with
 # @opennlp.tools.commons.SuppressForbidden and is exempt. Only production classes are
 # checked; tests may use regular expressions.
 

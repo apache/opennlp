@@ -222,7 +222,10 @@ double[] tokenProbs = tokenizer.getTokenProbabilities();]]>
     CodePointSet.ofRange('0', '9'),
     CodePointSet.of(0x0300, 0x0301));
 
-boolean word = policy.test("Cafe\u0301");]]>
+boolean word = policy.test("Cafe\u0301");
+
+// Migrating from a custom 2.x alphaNumericPattern: pass the policy to the factory
+TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);]]>
 		</programlisting>
 		<para>
 			Use <code>TokenizerCharacterPolicy.ascii()</code> for the fixed ASCII letter and digit
@@ -359,7 +362,7 @@ ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
 TokenizerModel model;
 try {
   model = TokenizerME.train(sampleStream,
-  	TokenizerFactory.create(null, "eng", null, true, null), TrainingParameters.defaultParams());
+  	TokenizerFactory.create(null, "eng", null, true), TrainingParameters.defaultParams());
 }
 finally {
   sampleStream.close();

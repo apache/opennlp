@@ -18,7 +18,6 @@
 package opennlp.tools.tokenize;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -50,13 +49,6 @@ public class TokenizerFactory extends BaseToolFactory {
   private static final String USE_ALPHA_NUMERIC_OPTIMIZATION = "useAlphaNumericOptimization";
   private static final String CHARACTER_POLICY = "characterPolicy";
   private static final String ALPHA_NUMERIC_PATTERN = "alphaNumericPattern";
-
-  /**
-   * The language codes with a dedicated character policy, whose alphanumeric expressions releases
-   * before 3.0 wrote to the model manifest; {@code en} stands for the ASCII default.
-   */
-  private static final List<String> LEGACY_LANGUAGES =
-      List.of("en", "pt", "fr", "nl", "de", "pl", "it", "es", "ca");
 
   /**
    * Instantiates a {@link TokenizerFactory} that provides the default implementation
@@ -115,7 +107,7 @@ public class TokenizerFactory extends BaseToolFactory {
   public TokenizerFactory(String languageCode, Dictionary abbreviationDictionary,
                           boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this(languageCode, abbreviationDictionary, useAlphaNumericOptimization);
-    this.alphaNumericPattern = alphaNumericPattern;
+    setAlphaNumericPattern(alphaNumericPattern);
   }
 
   /**
@@ -180,7 +172,7 @@ public class TokenizerFactory extends BaseToolFactory {
     } else {
       manifestEntries.put(CHARACTER_POLICY, this.characterPolicy.toString());
       // Releases before 3.0 read only the pattern; give them the one with the same characters.
-      final String legacy = legacyExpression(this.characterPolicy);
+      final String legacy = Factory.legacyExpressionOf(this.characterPolicy);
       if (legacy != null) {
         manifestEntries.put(ALPHA_NUMERIC_PATTERN, legacy);
       }
@@ -190,13 +182,13 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Factory method the framework uses instantiate a new {@link TokenizerFactory}.
+   * Factory method the framework uses to instantiate a new {@link TokenizerFactory}.
    *
    * @param subclassName The name of the class implementing the {@link TokenizerFactory}.
    * @param languageCode The ISO language code the {@link Tokenizer} should use.
    * @param abbreviationDictionary An optional {@link Dictionary} containing abbreviations,
    *                               or {@code null} if not present.
-   * @param useAlphaNumericOptimization Whether the alphanumeric optimization is be enabled or not.
+   * @param useAlphaNumericOptimization Whether the alphanumeric optimization is enabled or not.
    * @param characterPolicy The {@link TokenizerCharacterPolicy} the alphanumeric optimization
    *                        should use, if enabled, or {@code null} for the language default.
    *
@@ -228,14 +220,14 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Factory method the framework uses instantiate a new {@link TokenizerFactory} with the
+   * Factory method the framework uses to instantiate a new {@link TokenizerFactory} with the
    * {@link TokenizerCharacterPolicy} of its language.
    *
    * @param subclassName The name of the class implementing the {@link TokenizerFactory}.
    * @param languageCode The ISO language code the {@link Tokenizer} should use.
    * @param abbreviationDictionary An optional {@link Dictionary} containing abbreviations,
    *                               or {@code null} if not present.
-   * @param useAlphaNumericOptimization Whether the alphanumeric optimization is be enabled or not.
+   * @param useAlphaNumericOptimization Whether the alphanumeric optimization is enabled or not.
    *
    * @return A valid {@link TokenizerFactory} instance.
    *
@@ -250,14 +242,14 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Factory method the framework uses instantiate a new {@link TokenizerFactory} whose
+   * Factory method the framework uses to instantiate a new {@link TokenizerFactory} whose
    * alphanumeric optimization tests candidate tokens with a regular expression.
    *
    * @param subclassName The name of the class implementing the {@link TokenizerFactory}.
    * @param languageCode The ISO language code the {@link Tokenizer} should use.
    * @param abbreviationDictionary An optional {@link Dictionary} containing abbreviations,
    *                               or {@code null} if not present.
-   * @param useAlphaNumericOptimization Whether the alphanumeric optimization is be enabled or not.
+   * @param useAlphaNumericOptimization Whether the alphanumeric optimization is enabled or not.
    * @param alphaNumericPattern {@code null} for the policy of {@code languageCode}, or a custom
    *                            alphanumeric {@link Pattern}.
    *
@@ -277,7 +269,7 @@ public class TokenizerFactory extends BaseToolFactory {
       throws InvalidFormatException {
     TokenizerFactory factory = create(subclassName, languageCode, abbreviationDictionary,
         useAlphaNumericOptimization);
-    factory.alphaNumericPattern = alphaNumericPattern;
+    factory.setAlphaNumericPattern(alphaNumericPattern);
     return factory;
   }
 
@@ -309,7 +301,7 @@ public class TokenizerFactory extends BaseToolFactory {
     if (this.alphaNumericPattern != null) {
       return this.alphaNumericPattern;
     }
-    final String legacy = legacyExpression(this.characterPolicy);
+    final String legacy = Factory.legacyExpressionOf(this.characterPolicy);
     return legacy == null ? null : Pattern.compile(legacy);
   }
 
@@ -413,7 +405,7 @@ public class TokenizerFactory extends BaseToolFactory {
     if (pattern == null) {
       return;
     }
-    this.characterPolicy = legacyPolicy(pattern);
+    this.characterPolicy = Factory.policyOfLegacyExpression(pattern);
     if (this.characterPolicy == null) {
       try {
         this.alphaNumericPattern = Pattern.compile(pattern);
@@ -425,39 +417,23 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * {@return the policy of the language whose expression of an earlier release is
-   * {@code expression}, or {@code null} if there is none}
+   * Keeps a deprecated alphanumeric pattern as the pattern of this factory, unless an earlier
+   * release wrote it for a language: then the policy of that language replaces it, so the
+   * alphanumeric optimization takes the policy path.
    *
-   * @param expression An alphanumeric expression from a model manifest.
+   * @param pattern The alphanumeric pattern, or {@code null} for the policy of the language.
    */
-  @SuppressWarnings("removal")
-  @SuppressForbidden("compares with the alphanumeric patterns of earlier releases")
-  private static TokenizerCharacterPolicy legacyPolicy(String expression) {
-    final Factory factory = new Factory();
-    for (String language : LEGACY_LANGUAGES) {
-      if (factory.getAlphanumeric(language).pattern().equals(expression)) {
-        return factory.getCharacterPolicy(language);
-      }
+  @SuppressForbidden("user-supplied alphanumeric pattern, kept for the deprecated API")
+  private void setAlphaNumericPattern(Pattern pattern) {
+    if (pattern == null) {
+      return;
     }
-    return null;
-  }
-
-  /**
-   * {@return the expression of an earlier release that accepts the same characters as
-   * {@code policy}, or {@code null} if there is none}
-   *
-   * @param policy A character policy.
-   */
-  @SuppressWarnings("removal")
-  @SuppressForbidden("compares with the alphanumeric patterns of earlier releases")
-  private static String legacyExpression(TokenizerCharacterPolicy policy) {
-    final Factory factory = new Factory();
-    for (String language : LEGACY_LANGUAGES) {
-      if (factory.getCharacterPolicy(language).equals(policy)) {
-        return factory.getAlphanumeric(language).pattern();
-      }
+    TokenizerCharacterPolicy known = Factory.policyOfLegacyExpression(patternText(pattern));
+    if (known != null) {
+      this.characterPolicy = known;
+    } else {
+      this.alphaNumericPattern = pattern;
     }
-    return null;
   }
 
   /**

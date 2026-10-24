@@ -52,9 +52,6 @@ public class Factory {
   @SuppressForbidden("alphanumeric pattern of earlier releases, kept for the deprecated API")
   public static final Pattern DEFAULT_ALPHANUMERIC = compile(ASCII_EXPRESSION);
 
-  private static final CodePointSet ASCII_LETTERS =
-      CodePointSet.ofRange('A', 'Z').union(CodePointSet.ofRange('a', 'z'));
-  private static final CodePointSet ASCII_DIGITS = CodePointSet.ofRange('0', '9');
   private static final CodePointSet NO_MARKS = CodePointSet.of();
 
   private static final TokenizerCharacterPolicy PORTUGUESE = latinPolicy("áãâàéêíóõôúüçÁÃÂÀÉÊÍÓÕÔÚÜÇ");
@@ -151,6 +148,31 @@ public class Factory {
   }
 
   /**
+   * {@return the policy of the language whose alphanumeric expression of an earlier release is
+   * {@code expression}, or {@code null} if there is none}
+   *
+   * @param expression An alphanumeric expression of an earlier release.
+   */
+  public static TokenizerCharacterPolicy policyOfLegacyExpression(String expression) {
+    for (Map.Entry<TokenizerCharacterPolicy, String> entry : LEGACY_EXPRESSIONS.entrySet()) {
+      if (entry.getValue().equals(expression)) {
+        return entry.getKey();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * {@return the alphanumeric expression of an earlier release that accepts the same characters
+   * as {@code policy}, or {@code null} if there is none}
+   *
+   * @param policy A character policy, or {@code null}.
+   */
+  public static String legacyExpressionOf(TokenizerCharacterPolicy policy) {
+    return policy == null ? null : LEGACY_EXPRESSIONS.get(policy);
+  }
+
+  /**
    * {@return the compiled alphanumeric expression of an earlier release}
    *
    * @param expression The expression.
@@ -177,12 +199,13 @@ public class Factory {
    * @return The policy.
    */
   private static TokenizerCharacterPolicy latinPolicy(String extraLetters) {
-    CodePointSet letters = ASCII_LETTERS;
+    CodePointSet letters = TokenizerCharacterPolicy.ascii().getLetters();
     for (int offset = 0; offset < extraLetters.length();) {
       final int codePoint = extraLetters.codePointAt(offset);
       letters = letters.union(CodePointSet.of(codePoint));
       offset += Character.charCount(codePoint);
     }
-    return TokenizerCharacterPolicy.of(letters, ASCII_DIGITS, NO_MARKS);
+    return TokenizerCharacterPolicy.of(letters, TokenizerCharacterPolicy.ascii().getDigits(),
+        NO_MARKS);
   }
 }
