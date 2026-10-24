@@ -24,6 +24,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.normalizer.CodePointSet;
@@ -32,6 +33,7 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,6 +43,7 @@ public class TokenizerCharacterPolicyTest {
   private static final int MUSICAL_MARK = 0x1D165;
   private static final int MATHEMATICAL_DIGIT = 0x1D7D8;
   private static final int ACUTE_ACCENT = 0x0301;
+  private static final String ASCII_TEXT = "letters=0041-005A,0061-007A;digits=0030-0039;marks=";
 
   private static final CodePointSet A = CodePointSet.of('a');
   private static final CodePointSet SEVEN = CodePointSet.of('7');
@@ -244,6 +247,136 @@ public class TokenizerCharacterPolicyTest {
       assertThrows(IllegalArgumentException.class,
           () -> TokenizerCharacterPolicy.of(A, SEVEN, CodePointSet.of(whitespace)));
     }
+  }
+
+  @Test
+  void testAsciiPresetHasAFixedTextForm() {
+    assertEquals(ASCII_TEXT, TokenizerCharacterPolicy.ascii().toString());
+  }
+
+  @Test
+  void testTextFormWritesSupplementaryCodePointsWithFiveDigits() {
+    TokenizerCharacterPolicy policy = TokenizerCharacterPolicy.of(
+        CodePointSet.of(DESERET_LETTER), EMPTY, CodePointSet.of(MUSICAL_MARK));
+
+    assertEquals("letters=10400;digits=;marks=1D165", policy.toString());
+  }
+
+  @Test
+  void testTextFormJoinsAdjacentCodePointsIntoRanges() {
+    TokenizerCharacterPolicy policy = TokenizerCharacterPolicy.of(
+        CodePointSet.of('a', 'b', 'c', 'e', 'g', 'h'), CodePointSet.of('7'), EMPTY);
+
+    assertEquals("letters=0061-0063,0065,0067-0068;digits=0037;marks=", policy.toString());
+  }
+
+  /**
+   * Supplies policies with different set shapes.
+   *
+   * @return Policies to write and read back.
+   */
+  static Stream<TokenizerCharacterPolicy> roundTripPolicies() {
+    return Stream.of(
+        TokenizerCharacterPolicy.ascii(),
+        GRAMMAR,
+        TokenizerCharacterPolicy.of(A, EMPTY, EMPTY),
+        TokenizerCharacterPolicy.of(EMPTY, SEVEN, EMPTY),
+        TokenizerCharacterPolicy.of(CodePointSet.of(DESERET_LETTER),
+            CodePointSet.of(MATHEMATICAL_DIGIT), CodePointSet.of(MUSICAL_MARK)),
+        TokenizerCharacterPolicy.of(CodePointSet.ofRange(0x21, 0x2F).union(CodePointSet.of('a')),
+            CodePointSet.ofRange(Character.MAX_SURROGATE + 1, Character.MAX_SURROGATE + 3),
+            CodePointSet.of(Character.MAX_CODE_POINT)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("roundTripPolicies")
+  void testParseReadsTheTextFormBack(TokenizerCharacterPolicy policy) {
+    TokenizerCharacterPolicy parsed = TokenizerCharacterPolicy.parse(policy.toString());
+
+    assertEquals(policy, parsed);
+    assertEquals(policy.hashCode(), parsed.hashCode());
+    assertEquals(policy.toString(), parsed.toString());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "letters=0061;digits=;marks=0301",
+      "letters=61;digits=;marks=301",
+      "letters=0061-0061;digits=;marks=0301-0301",
+      "letters=0000061;digits=;marks=0301"})
+  void testParseAcceptsShortLongAndSingletonRangeSpellings(String text) {
+    TokenizerCharacterPolicy expected = TokenizerCharacterPolicy.of(
+        A, EMPTY, CodePointSet.of(ACUTE_ACCENT));
+
+    assertEquals(expected, TokenizerCharacterPolicy.parse(text));
+  }
+
+  @Test
+  void testParseAcceptsLowerCaseHexDigits() {
+    TokenizerCharacterPolicy expected = TokenizerCharacterPolicy.of(
+        CodePointSet.of(DESERET_LETTER), EMPTY, CodePointSet.of(MUSICAL_MARK));
+
+    assertEquals(expected, TokenizerCharacterPolicy.parse("letters=10400;digits=;marks=1d165"));
+  }
+
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(strings = {
+      "",
+      "letters=;digits=;marks=",
+      "letters=0041-005A",
+      "letters=0041;digits=0030",
+      "digits=0030;letters=0041;marks=",
+      "letters=zz;digits=;marks=",
+      "letters=005A-0041;digits=;marks=",
+      "letters=0041;digits=0041;marks=",
+      "letters=D800;digits=;marks=",
+      "letters=0020;digits=;marks=",
+      "letters=0041,;digits=;marks=",
+      "letters=,0041;digits=;marks=",
+      "letters=0041-;digits=;marks=",
+      "letters=-0041;digits=;marks=",
+      "letters=0041-005A-0061;digits=;marks=",
+      "letters=110000;digits=;marks=",
+      "letters=0041;digits=;marks=;extra=",
+      "letters=0041;digits=;marks=0301;",
+      "letters 0041;digits=;marks=",
+      "LETTERS=0041;DIGITS=;MARKS=",
+      "letters=0x41;digits=;marks=",
+      "letters=U+0041;digits=;marks=",
+      "letters= 0041;digits=;marks=",
+      "letters=0041;digits=;marks=\n",
+      "^[A-Za-z0-9]+$"})
+  void testParseRejectsMalformedText(String text) {
+    assertThrows(IllegalArgumentException.class, () -> TokenizerCharacterPolicy.parse(text));
+  }
+
+  @Test
+  void testParseErrorNamesTheOffendingText() {
+    IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> TokenizerCharacterPolicy.parse("letters=zz;digits=;marks="));
+
+    assertTrue(e.getMessage().contains("zz"), e.getMessage());
+  }
+
+  @Test
+  void testEqualsComparesTheThreeSets() {
+    TokenizerCharacterPolicy ascii = TokenizerCharacterPolicy.of(
+        CodePointSet.ofRange('A', 'Z').union(CodePointSet.ofRange('a', 'z')),
+        CodePointSet.ofRange('0', '9'), EMPTY);
+    TokenizerCharacterPolicy swapped = TokenizerCharacterPolicy.of(
+        CodePointSet.ofRange('0', '9'),
+        CodePointSet.ofRange('A', 'Z').union(CodePointSet.ofRange('a', 'z')), EMPTY);
+    TokenizerCharacterPolicy marked = TokenizerCharacterPolicy.of(
+        CodePointSet.ofRange('A', 'Z').union(CodePointSet.ofRange('a', 'z')),
+        CodePointSet.ofRange('0', '9'), CodePointSet.of(ACUTE_ACCENT));
+
+    assertEquals(TokenizerCharacterPolicy.ascii(), ascii);
+    assertEquals(TokenizerCharacterPolicy.ascii().hashCode(), ascii.hashCode());
+    assertNotEquals(TokenizerCharacterPolicy.ascii(), swapped);
+    assertNotEquals(TokenizerCharacterPolicy.ascii(), marked);
+    assertNotEquals(TokenizerCharacterPolicy.ascii(), null);
+    assertNotEquals(TokenizerCharacterPolicy.ascii(), ASCII_TEXT);
   }
 
   private static String codePoints(int... codePoints) {

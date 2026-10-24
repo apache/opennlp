@@ -117,7 +117,7 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
     TokenizerCrossValidator validator;
 
     TokenizerFactory tokFactory = TokenizerFactory.create(null, LANG, null,
-        true, null);
+        true);
     validator = new opennlp.tools.tokenize.TokenizerCrossValidator(params,
         tokFactory);
 

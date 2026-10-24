@@ -143,6 +143,7 @@ The list below covers the changes most likely to affect existing code. It is not
 - `RealBasicEventStream`: a line that contains only an outcome is read as an event without contexts and no longer ends the stream.
 - Parser: `ParserFactory.create` and the chunking and tree insert `Parser` constructors throw `IllegalArgumentException` for a beam size below 1 or an advance percentage outside (0, 1] ([GH-1476](https://github.com/apache/opennlp/issues/1476)).
 - Model resolver: `AbstractClassPathModelFinder.findModels` returns an unmodifiable set, so the classpath finders and `DefaultClassPathModelProvider` can be shared between threads ([GH-1506](https://github.com/apache/opennlp/issues/1506)).
+- Tokenizer: the alphanumeric optimization is configured with a `TokenizerCharacterPolicy`. The `Pattern` variants of the `TokenizerFactory` constructor, `TokenizerFactory.create` and the `TokSpanEventStream` constructor, `TokenizerFactory.getAlphaNumericPattern()`, and `opennlp.tools.tokenize.lang.Factory.getAlphanumeric(String)` and `Factory.DEFAULT_ALPHANUMERIC` are deprecated for removal in 4.0. A call that passes a `null` literal as the pattern no longer compiles because it matches both variants; use the new overloads without that argument. Models with a custom `alphaNumericPattern` still load and use it. The protected `TokenizerFactory.init` now takes a `TokenizerCharacterPolicy` instead of a `Pattern`, so subclasses that override or call it must be updated ([GH-1479](https://github.com/apache/opennlp/issues/1479)).
 
 ### Thread safety
 

@@ -110,7 +110,7 @@ public class EnglishTokenSampleStreamEval extends AbstractEvalTest {
     final TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     final TokenizerModel model = TokenizerME.train(
         new CollectionObjectStream<>(samples(trainLines)),
-        TokenizerFactory.create(null, "eng", null, true, null), params);
+        TokenizerFactory.create(null, "eng", null, true), params);
     final TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
     evaluator.evaluate(new CollectionObjectStream<>(samples(testLines)));
     final double fMeasure = evaluator.getFMeasure().getFMeasure();

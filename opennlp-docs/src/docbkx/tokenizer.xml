@@ -213,7 +213,8 @@ double[] tokenProbs = tokenizer.getTokenProbabilities();]]>
 			not infer Unicode character categories, so callers choose the exact script
 			coverage. The predicate checks a complete candidate without finding token
 			boundaries or changing its text.
-			This policy does not yet configure tokenizer training or inference.
+			<code>TokenizerME</code> applies the policy of its model for the alphanumeric
+			optimization; the training section explains how a model selects one.
 		</para>
 		<programlisting language="java">
 <![CDATA[TokenizerCharacterPolicy policy = TokenizerCharacterPolicy.of(
@@ -221,7 +222,10 @@ double[] tokenProbs = tokenizer.getTokenProbabilities();]]>
     CodePointSet.ofRange('0', '9'),
     CodePointSet.of(0x0300, 0x0301));
 
-boolean word = policy.test("Cafe\u0301");]]>
+boolean word = policy.test("Cafe\u0301");
+
+// Migrating from a custom 2.x alphaNumericPattern: pass the policy to the factory
+TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);]]>
 		</programlisting>
 		<para>
 			Use <code>TokenizerCharacterPolicy.ascii()</code> for the fixed ASCII letter and digit
@@ -358,7 +362,7 @@ ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
 TokenizerModel model;
 try {
   model = TokenizerME.train(sampleStream,
-  	TokenizerFactory.create(null, "eng", null, true, null), TrainingParameters.defaultParams());
+  	TokenizerFactory.create(null, "eng", null, true), TrainingParameters.defaultParams());
 }
 finally {
   sampleStream.close();
@@ -373,6 +377,49 @@ try {
      modelOut.close();
 }]]>
 				</programlisting>
+			</para>
+			<para>
+				The last argument of <code>TokenizerFactory.create</code> is the
+				<code>TokenizerCharacterPolicy</code> that the alphanumeric optimization uses to
+				accept a candidate token without consulting the model. Leaving it out selects
+				the policy for the language code: ASCII letters and digits for most languages,
+				and ASCII plus the letters of the language for Catalan (ca), Dutch (nl),
+				French (fr), German (de), Italian (it), Polish (pl), Portuguese (pt) and
+				Spanish (es); the ISO 639-2 codes are accepted too. None of these presets has
+				marks, so a decomposed character such as <code>e</code> followed by U+0301 is
+				not accepted by them; supply a policy with the combining marks of your text to
+				accept it. The policy is written to the model manifest under the property
+				<code>characterPolicy</code> as comma separated hex code points and ranges, for
+				example <code>letters=0041-005A,0061-007A;digits=0030-0039;marks=</code> for the
+				ASCII preset, and read back from there when the model is loaded.
+				<code>TokenizerCharacterPolicy.toString()</code> produces this form and
+				<code>TokenizerCharacterPolicy.parse(String)</code> reads it. For a language
+				preset the manifest also gets the <code>alphaNumericPattern</code> that earlier
+				releases wrote for that language, so they tokenize the model the same way.
+			</para>
+			<para>
+				Models written by earlier releases carry the property
+				<code>alphaNumericPattern</code> with a regular expression instead. A model with
+				one of the expressions OpenNLP itself wrote for the languages above loads
+				unchanged and uses the policy with the same characters, so the released models
+				need no conversion. A model trained with a custom pattern loads too and tests
+				candidate tokens with that regular expression. This regular expression support,
+				with the <code>Pattern</code> arguments of the <code>TokenizerFactory</code>
+				constructor, <code>TokenizerFactory.create</code> and the
+				<code>TokSpanEventStream</code> constructor and
+				<code>TokenizerFactory.getAlphaNumericPattern()</code>, is deprecated and will be
+				removed in 4.0. To migrate such a model, express the letters, digits and marks of
+				its pattern as a <code>TokenizerCharacterPolicy</code>, then either train the
+				model again with that policy, or replace <code>alphaNumericPattern</code> in the
+				<code>manifest.properties</code> entry of the model file with
+				<code>characterPolicy</code> set to the text form of the policy and zip the model
+				again.
+			</para>
+			<para>
+				A model with no policy and no pattern in its manifest uses the policy for its language
+				code, as a new factory does. OpenNLP 2.x reads only
+				<code>alphaNumericPattern</code>, so it applies its default pattern to a model
+				written with a custom policy.
 			</para>
 		</section>
 	</section>
