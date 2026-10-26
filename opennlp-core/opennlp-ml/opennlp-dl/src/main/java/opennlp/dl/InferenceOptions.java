@@ -23,6 +23,8 @@ public class InferenceOptions {
   private boolean includeTokenTypeIds = true;
   private boolean gpu;
   private int gpuDeviceId = 0;
+  private int intraOpNumThreads = 0;
+  private int maxConcurrentInferences = 0;
   private int documentSplitSize = 250;
   private int splitOverlapSize = 50;
   private Boolean lowerCase;
@@ -59,6 +61,51 @@ public class InferenceOptions {
 
   public void setGpuDeviceId(int gpuDeviceId) {
     this.gpuDeviceId = gpuDeviceId;
+  }
+
+  /**
+   * {@return the number of threads ONNX Runtime may use to parallelize the execution within
+   * operators} The default of {@code 0} leaves the choice to ONNX Runtime, which uses one thread
+   * per physical core.
+   */
+  public int getIntraOpNumThreads() {
+    return intraOpNumThreads;
+  }
+
+  /**
+   * Sets the number of threads ONNX Runtime may use to parallelize the execution within
+   * operators. Fix the count to make CPU inference times comparable across machines, which
+   * otherwise differ in their core counts. The default of {@code 0} leaves the choice to ONNX
+   * Runtime.
+   *
+   * @param intraOpNumThreads The number of intra-op threads, or {@code 0} for the ONNX Runtime
+   *     default. Must not be negative.
+   */
+  public void setIntraOpNumThreads(int intraOpNumThreads) {
+    this.intraOpNumThreads = intraOpNumThreads;
+  }
+
+  /**
+   * {@return the number of inferences a {@link opennlp.dl.vectors.SentenceVectorsDL} instance
+   * runs at once} The default of {@code 0} stands for the number of available processors.
+   */
+  public int getMaxConcurrentInferences() {
+    return maxConcurrentInferences;
+  }
+
+  /**
+   * Sets the number of inferences a {@link opennlp.dl.vectors.SentenceVectorsDL} instance runs at
+   * once. Each running inference holds one direct buffer of the instance for its tensors, so this
+   * bounds the direct memory of the instance; a caller beyond the limit waits for a running
+   * inference to finish. A buffer grows to the largest inference it has held: about 67 MB for a
+   * token output at 16384 token positions with a hidden dimension of 1024. Other components
+   * ignore this setting.
+   *
+   * @param maxConcurrentInferences The number of concurrent inferences, or {@code 0} for the
+   *     number of available processors. Must not be negative.
+   */
+  public void setMaxConcurrentInferences(int maxConcurrentInferences) {
+    this.maxConcurrentInferences = maxConcurrentInferences;
   }
 
   public int getDocumentSplitSize() {

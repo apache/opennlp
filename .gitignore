@@ -12,4 +12,5 @@ nb-configuration.xml
 # Committed test fixtures, generated once by the scripts beside them, not build output.
 !opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx
 !opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-pooled.onnx
+!opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-wide.onnx
 vocab.txt

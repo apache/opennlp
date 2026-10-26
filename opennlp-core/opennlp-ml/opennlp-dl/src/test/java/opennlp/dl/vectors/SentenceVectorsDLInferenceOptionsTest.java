@@ -132,6 +132,40 @@ class SentenceVectorsDLInferenceOptionsTest {
   }
 
   /**
+   * Checks that a negative intra-op thread count is rejected before the session is created.
+   */
+  @ParameterizedTest
+  @ValueSource(ints = {-1, Integer.MIN_VALUE})
+  void testNegativeIntraOpThreadCountsAreRejected(final int threads, @TempDir final Path dir)
+      throws IOException {
+    final File model = model(dir, TINY_VECTORS);
+    final File vocab = vocab(dir);
+    final InferenceOptions options = new InferenceOptions();
+    options.setIntraOpNumThreads(threads);
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new SentenceVectorsDL(model, vocab, true, Pooling.MEAN, false,
+            SentenceVectorsDL.DEFAULT_MAX_LENGTH, options).close());
+    assertEquals("intraOpNumThreads must not be negative", e.getMessage());
+  }
+
+  /**
+   * Checks that a session with a fixed intra-op thread count computes the same vectors as the
+   * default session.
+   */
+  @Test
+  void testFixedIntraOpThreadCountMatchesTheDefaultSession(@TempDir final Path dir)
+      throws Exception {
+    final File model = model(dir, TINY_VECTORS);
+    final File vocab = vocab(dir);
+    final InferenceOptions options = new InferenceOptions();
+    options.setIntraOpNumThreads(1);
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model, vocab, true, Pooling.MEAN,
+        false, SentenceVectorsDL.DEFAULT_MAX_LENGTH, options)) {
+      assertArrayEquals(scale(19 / 4f), vectors.embed(HELLO_WORLD), DELTA);
+    }
+  }
+
+  /**
    * {@return the lower case in the options ({@code null} for unset), the argument, and the
    * expected lower casing}
    */
