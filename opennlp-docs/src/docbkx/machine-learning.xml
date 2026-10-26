@@ -188,15 +188,62 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 		<para>
 			To compute the vectors on a GPU, depend on <code>opennlp-dl-gpu</code> in place of
 			<code>opennlp-dl</code> and pass <code>InferenceOptions</code> to
-			<code>SentenceVectorsDL</code>. <code>opennlp-dl-gpu</code> supports NVIDIA GPUs on
-			linux-x64 and win-x64 only. On macOS, use <code>opennlp-dl</code>. The machine needs
-			the CUDA and cuDNN versions that the ONNX Runtime release requires, see the
-			<ulink url="https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements">CUDA
-			execution provider requirements</ulink>. The <code>onnx</code> provider spec has no device
-			option, so an embedder created through it runs on the CPU. If CUDA or the configured
-			device is not available, the constructor throws an <code>OrtException</code>; ONNX Runtime
-			does not fall back to the CPU. A negative device id is rejected with an
-			<code>IllegalArgumentException</code>. A lower case setting in the options takes
+			<code>SentenceVectorsDL</code>. The modules use ONNX Runtime 1.31.0, whose Java artifacts
+			bundle native libraries for these operating-system and architecture combinations:
+			<table xml:id="tools.ml.text-embeddings.onnx-platforms">
+				<title>ONNX Runtime platforms</title>
+				<tgroup cols="4">
+					<colspec colname="c1"/>
+					<colspec colname="c2"/>
+					<colspec colname="c3"/>
+					<colspec colname="c4"/>
+					<thead>
+						<row>
+							<entry>Operating system</entry>
+							<entry>Architecture</entry>
+							<entry><code>opennlp-dl</code></entry>
+							<entry><code>opennlp-dl-gpu</code></entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>Linux</entry>
+							<entry>x86-64</entry>
+							<entry>CPU</entry>
+							<entry>NVIDIA GPU</entry>
+						</row>
+						<row>
+							<entry>Linux</entry>
+							<entry>aarch64</entry>
+							<entry>CPU</entry>
+							<entry>Not packaged</entry>
+						</row>
+						<row>
+							<entry>macOS</entry>
+							<entry>aarch64</entry>
+							<entry>CPU</entry>
+							<entry>Not packaged</entry>
+						</row>
+						<row>
+							<entry>Windows</entry>
+							<entry>x86-64</entry>
+							<entry>CPU</entry>
+							<entry>NVIDIA GPU</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+		</para>
+		<para>
+			Other operating-system and architecture combinations are not bundled by these ONNX Runtime
+			artifacts. GPU inference requires the CUDA and cuDNN versions that the ONNX Runtime release
+			requires; see the <ulink
+			url="https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements">CUDA
+			execution provider requirements</ulink>. On platforms where the GPU artifact has no native
+			library, use <code>opennlp-dl</code> for CPU inference when its native library is available.
+			GPU inference does not fall back to the CPU. The <code>onnx</code> provider spec has no device
+			option, so an embedder created through it runs on the CPU. A negative device id is rejected
+			with an <code>IllegalArgumentException</code>. A lower case setting in the options takes
 			precedence over the <code>lowerCase</code> argument.
 		</para>
 		<programlisting language="java"><![CDATA[InferenceOptions options = new InferenceOptions();
