@@ -197,7 +197,17 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			device is not available, the constructor throws an <code>OrtException</code>; ONNX Runtime
 			does not fall back to the CPU. A negative device id is rejected with an
 			<code>IllegalArgumentException</code>. A lower case setting in the options takes
-			precedence over the <code>lowerCase</code> argument.
+			precedence over the <code>lowerCase</code> argument. On the CPU,
+			<code>InferenceOptions.setIntraOpNumThreads(int)</code> fixes the number of threads
+			ONNX Runtime uses within operators; the default of 0 uses one thread per physical
+			core. A negative thread count is rejected with an
+			<code>IllegalArgumentException</code>.
+			<code>InferenceOptions.setMaxConcurrentInferences(int)</code> limits how many inferences
+			one <code>SentenceVectorsDL</code> runs at once; the default of 0 allows one per
+			available processor. Each running inference holds one direct buffer for its tensors,
+			which the instance keeps for reuse until it is closed, so the limit bounds its direct
+			memory. A caller beyond the limit waits. A negative limit is rejected with an
+			<code>IllegalArgumentException</code>.
 		</para>
 		<programlisting language="java"><![CDATA[InferenceOptions options = new InferenceOptions();
 options.setGpu(true);

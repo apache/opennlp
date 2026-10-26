@@ -213,7 +213,7 @@ public abstract class AbstractDL implements AutoCloseable {
    * Builds ONNX session options from the given {@link InferenceOptions}, enabling the CUDA
    * execution provider on the configured device when GPU inference is requested.
    *
-   * @param inferenceOptions The inference options to read the GPU configuration from.
+   * @param inferenceOptions The inference options to read the GPU and thread configuration from.
    * @return The configured session options.
    *
    * @throws OrtException Thrown if the CUDA execution provider cannot be added: the ONNX Runtime
@@ -221,17 +221,21 @@ public abstract class AbstractDL implements AutoCloseable {
    *     answers to the configured device id. ONNX Runtime does not fall back to the CPU. The
    *     session options created for the request are closed before the exception is thrown.
    * @throws IllegalArgumentException Thrown if {@code inferenceOptions} is {@code null}, its
-   *     split sizes are invalid, see {@link #validateSplitOptions(int, int)}, or it requests a GPU
-   *     with a negative device id.
+   *     split sizes are invalid, see {@link #validateSplitOptions(int, int)}, it requests a GPU
+   *     with a negative device id, or its intra-op thread count is negative.
    */
   protected static OrtSession.SessionOptions sessionOptions(final InferenceOptions inferenceOptions)
       throws OrtException {
     ParamChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
     validateSplitOptions(inferenceOptions);
+    ParamChecks.requireNonNegative(inferenceOptions.getIntraOpNumThreads(), "intraOpNumThreads");
     if (inferenceOptions.isGpu()) {
       ParamChecks.requireNonNegative(inferenceOptions.getGpuDeviceId(), "gpuDeviceId");
     }
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
+    if (inferenceOptions.getIntraOpNumThreads() > 0) {
+      sessionOptions.setIntraOpNumThreads(inferenceOptions.getIntraOpNumThreads());
+    }
     if (inferenceOptions.isGpu()) {
       try {
         // addCUDA needs ONNX Runtime's default logger, which exists once an environment does.
