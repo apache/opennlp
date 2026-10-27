@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,6 +48,7 @@ import static opennlp.dl.vectors.TinyVectorModels.TINY_VECTORS;
 import static opennlp.dl.vectors.TinyVectorModels.UNIT_VECTOR;
 import static opennlp.dl.vectors.TinyVectorModels.alternating;
 import static opennlp.dl.vectors.TinyVectorModels.model;
+import static opennlp.dl.vectors.TinyVectorModels.tokens;
 import static opennlp.dl.vectors.TinyVectorModels.vocab;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,13 +79,28 @@ class SentenceVectorsDLBatchLimitTest {
         maxLength);
   }
 
+  /** The directory of the shared embedder. */
+  @TempDir
+  static Path shared;
+
+  /** An embedder that does not pad, whose batches the tests below check. */
+  private static SentenceVectorsDL exact;
+
   /**
-   * {@return an encoding of {@code length} tokens; only its length matters for batching}
+   * Opens the shared embedder.
    *
-   * @param length The number of tokens.
+   * @throws Exception Thrown if the model cannot be loaded.
    */
-  private static Tokens tokens(final int length) {
-    return new Tokens(new String[length], new long[length], new long[length], new long[length]);
+  @BeforeAll
+  static void openExact() throws Exception {
+    exact = vectors(shared, TINY_VECTORS, Pooling.MEAN, false,
+        SentenceVectorsDL.DEFAULT_MAX_LENGTH);
+  }
+
+  /** Closes the shared embedder. */
+  @AfterAll
+  static void closeExact() {
+    exact.close();
   }
 
   /**
@@ -93,11 +111,7 @@ class SentenceVectorsDLBatchLimitTest {
    */
   private static List<Integer> sizes(final int length, final int count) {
     final Tokens[] encoded = Collections.nCopies(count, tokens(length)).toArray(new Tokens[0]);
-    final List<Integer> sizes = new ArrayList<>();
-    for (final List<Integer> batch : SentenceVectorsDL.batches(encoded)) {
-      sizes.add(batch.size());
-    }
-    return sizes;
+    return TinyVectorModels.sizes(exact.batches(encoded));
   }
 
   /**
@@ -141,13 +155,13 @@ class SentenceVectorsDLBatchLimitTest {
   /** An empty call has no batches. */
   @Test
   void testEmptyCallHasNoBatches() {
-    assertTrue(SentenceVectorsDL.batches(new Tokens[0]).isEmpty());
+    assertTrue(exact.batches(new Tokens[0]).isEmpty());
   }
 
   /** Inputs of different lengths run one batch per length, in the order each length appears. */
   @Test
   void testGroupsByLengthInCallOrder() {
-    assertEquals(List.of(List.of(0, 3), List.of(1, 2, 4)), SentenceVectorsDL.batches(
+    assertEquals(List.of(List.of(0, 3), List.of(1, 2, 4)), exact.batches(
         new Tokens[] {tokens(4), tokens(3), tokens(3), tokens(4), tokens(3)}));
   }
 
@@ -161,7 +175,7 @@ class SentenceVectorsDLBatchLimitTest {
     Arrays.fill(encoded, tokens(4));
     encoded[1] = tokens(3);
     encoded[2] = tokens(3);
-    final List<List<Integer>> batches = SentenceVectorsDL.batches(encoded);
+    final List<List<Integer>> batches = exact.batches(encoded);
     assertEquals(3, batches.size());
     assertEquals(LIMIT / 4, batches.get(0).size());
     assertEquals(List.of(0, 3), batches.get(0).subList(0, 2));
