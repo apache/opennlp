@@ -74,7 +74,8 @@ class SentenceVectorsDLPaddingEdgesTest {
   private static SentenceVectorsDL embedder(final File model, final File vocabulary,
       final Pooling pooling, final boolean normalize, final int maxLength,
       final PaddingStrategy padding) throws Exception {
-    return new SentenceVectorsDL(model, vocabulary, true, pooling, normalize, maxLength, padding,
+    return new SentenceVectorsDL(model, vocabulary, true,
+        new SentenceVectorsOptions(pooling, normalize, maxLength, padding),
         new InferenceOptions());
   }
 

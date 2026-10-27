@@ -124,8 +124,9 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
     final PaddingStrategy padding = paddingOption(spec);
     final Path vocabularyPath = model.toAbsolutePath().getParent().resolve(vocabulary);
     try {
-      return new SentenceVectorsDL(model.toFile(), vocabularyPath.toFile(), lowerCase, pooling,
-          normalize, maxLength, padding, new InferenceOptions());
+      return new SentenceVectorsDL(model.toFile(), vocabularyPath.toFile(), lowerCase,
+          new SentenceVectorsOptions(pooling, normalize, maxLength, padding),
+          new InferenceOptions());
     } catch (final OrtException e) {
       throw new IOException("Cannot load the ONNX model " + model, e);
     } catch (final LinkageError e) {
