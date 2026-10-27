@@ -112,7 +112,6 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   private static final String SENTENCE_EMBEDDING = "sentence_embedding";
   private static final int POOLED_RANK = 2;
   private static final int TOKEN_RANK = 3;
-  private static final int MIN_LENGTH = 2;
 
   private final Pooling pooling;
   private final boolean normalize;
@@ -236,89 +235,52 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       final InferenceOptions inferenceOptions)
       throws OrtException, IOException {
 
-    this(model, vocabulary, lowerCase, pooling, normalize, maxLength, inferenceOptions, null);
+    this(model, vocabulary, lowerCase,
+        new SentenceVectorsOptions(pooling, normalize, maxLength, null), inferenceOptions);
 
   }
 
   /**
-   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models, with
-   * the {@link PaddingStrategy} that {@link #embedAll(List)} batches by and the
-   * {@link InferenceOptions} the session is built from.
+   * Instantiates a sentence vector generator with vector settings and ONNX session settings.
    *
    * @param model The file name of a sentence vectors ONNX model.
    * @param vocabulary The file name of the vocabulary file for the model.
-   * @param lowerCase {@code true} for uncased models (lower casing and accent
-   *     stripping during tokenization), {@code false} for cased models. A lower case setting in
-   *     {@code inferenceOptions} takes precedence.
-   * @param pooling How token vectors are pooled. Not used for a model with a
-   *     {@code sentence_embedding} output. Must not be {@code null}.
-   * @param normalize {@code true} to scale every vector to unit length.
-   * @param maxLength The maximum number of tokens per input, {@code [CLS]} and {@code [SEP]}
-   *     included; longer input is truncated. Must be at least {@code 2}.
-   * @param padding How {@link #embedAll(List)} batches texts of different lengths. Must not be
-   *     {@code null}. Every strategy but {@link PaddingStrategy#EXACT_LENGTH} needs a
-   *     {@code [PAD]} token in the vocabulary, or {@code <pad>} for a RoBERTa vocabulary.
-   * @param inferenceOptions The {@link InferenceOptions}, of which the GPU settings and the lower
-   *     case setting are used. Must not be {@code null}.
+   * @param lowerCase {@code true} for uncased models, {@code false} for cased models. A lower case
+   *     setting in {@code inferenceOptions} takes precedence.
+   * @param vectorOptions The pooling, normalization, truncation and padding settings. Must not
+   *     be {@code null}. A {@code null} padding strategy selects the device and model default.
+   * @param inferenceOptions The ONNX session settings. Must not be {@code null}.
    *
-   * @throws IllegalArgumentException Thrown if {@code pooling}, {@code padding} or
-   *     {@code inferenceOptions} is {@code null}, if {@code inferenceOptions} contains invalid
-   *     split options, if {@code maxLength} is less than {@code 2}, if the model has no output of
-   *     shape {@code [batch, hidden]} or {@code [batch, tokens, hidden]}, or if {@code padding}
-   *     pads and the vocabulary has no padding token.
-   * @throws OrtException Thrown if the {@code model} cannot be loaded, or if a GPU was requested
-   *     and ONNX Runtime cannot provide it. ONNX Runtime does not fall back to the CPU.
-   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if {@code vectorOptions} or {@code inferenceOptions}
+   *     is {@code null}, if the inference options contain invalid split settings or a negative
+   *     GPU device id, if the model has no output of shape {@code [batch, hidden]} or
+   *     {@code [batch, tokens, hidden]}, or if padding is requested without a vocabulary padding
+   *     token.
+   * @throws OrtException Thrown if the model cannot be loaded or the requested GPU is unavailable.
+   *     ONNX Runtime does not fall back to the CPU.
+   * @throws IOException Thrown if the model or vocabulary cannot be read.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON vocabulary is malformed,
+   *     has an unsupported layout, or disagrees with the configured lower casing.
    *
    * @since 3.0.0
    */
   public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase,
-      final Pooling pooling, final boolean normalize, final int maxLength,
-      final PaddingStrategy padding, final InferenceOptions inferenceOptions)
-      throws OrtException, IOException {
-
-    this(model, vocabulary, lowerCase, pooling, normalize, maxLength, inferenceOptions,
-        ParamChecks.requireNonNullArg(padding, "padding"));
-
-  }
-
-  /**
-   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models.
-   *
-   * @param model The file name of a sentence vectors ONNX model.
-   * @param vocabulary The file name of the vocabulary file for the model.
-   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
-   * @param pooling How token vectors are pooled. Must not be {@code null}.
-   * @param normalize {@code true} to scale every vector to unit length.
-   * @param maxLength The maximum number of tokens per input. Must be at least {@code 2}.
-   * @param inferenceOptions The {@link InferenceOptions}. Must not be {@code null}.
-   * @param padding The {@link PaddingStrategy}, or {@code null} for the one the device picks,
-   *     see {@link #devicePadding(boolean)}.
-   *
-   * @throws IllegalArgumentException Thrown if an argument is invalid.
-   * @throws OrtException Thrown if the {@code model} cannot be loaded or the GPU is unavailable.
-   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
-   */
-  private SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase,
-      final Pooling pooling, final boolean normalize, final int maxLength,
-      final InferenceOptions inferenceOptions, final PaddingStrategy padding)
+      final SentenceVectorsOptions vectorOptions, final InferenceOptions inferenceOptions)
       throws OrtException, IOException {
 
     super(model, vocabulary, sessionOptions(inferenceOptions),
         resolveLowerCase(inferenceOptions, lowerCase));
     try {
-      ParamChecks.requireNonNullArg(pooling, "pooling");
-      if (maxLength < MIN_LENGTH) {
-        throw new IllegalArgumentException("maxLength must be at least " + MIN_LENGTH);
-      }
-      this.pooling = pooling;
-      this.normalize = normalize;
-      this.maxLength = maxLength;
+      ParamChecks.requireNonNullArg(vectorOptions, "vectorOptions");
+      this.pooling = vectorOptions.pooling();
+      this.normalize = vectorOptions.normalize();
+      this.maxLength = vectorOptions.maxLength();
       final Map<String, NodeInfo> outputs = session.getOutputInfo();
       this.outputName = selectOutput(outputs);
       final long[] shape = ((TensorInfo) outputs.get(outputName).getInfo()).getShape();
       this.pooledOutput = shape.length == POOLED_RANK;
-      this.padding = padding != null ? padding : devicePadding(inferenceOptions.isGpu());
+      this.padding = vectorOptions.padding() != null ? vectorOptions.padding()
+          : devicePadding(inferenceOptions.isGpu());
       this.padTokenId = this.padding == PaddingStrategy.EXACT_LENGTH ? 0 : padTokenId();
       final long declared = shape[shape.length - 1];
       this.dimension = declared > 0 && declared <= Integer.MAX_VALUE

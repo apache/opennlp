@@ -209,14 +209,17 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			each batch to its longest text by default, if the vocabulary has a padding token, because
 			one wide inference is faster there than many narrow ones; a model with a
 			<code>sentence_embedding</code> output is not padded by default, because it may ignore
-			the attention mask and then padding changes the vectors. The constructor that takes a
-			<code>PaddingStrategy</code> overrides this.
+			the attention mask and then padding changes the vectors. Pass
+			<code>SentenceVectorsOptions</code> to select pooling, normalization, the maximum token
+			length and an explicit <code>PaddingStrategy</code>. A <code>null</code> padding strategy
+			keeps the device and model default. <code>InferenceOptions</code> supplies the session
+			settings separately.
 		</para>
 		<programlisting language="java"><![CDATA[InferenceOptions options = new InferenceOptions();
 options.setGpu(true);
 options.setGpuDeviceId(0);
-try (SentenceVectorsDL vectors = new SentenceVectorsDL(model, vocab, true, Pooling.MEAN, true,
-    SentenceVectorsDL.DEFAULT_MAX_LENGTH, options)) {
+SentenceVectorsOptions vectorOptions = new SentenceVectorsOptions();
+try (SentenceVectorsDL vectors = new SentenceVectorsDL(model, vocab, true, vectorOptions, options)) {
   float[] vector = vectors.embed("first sentence");
 }]]></programlisting>
 	</section>

@@ -237,7 +237,8 @@ public final class TinyVectorModels {
     try {
       return padding == null
           ? new SentenceVectorsDL(model, vocab, true, pooling, normalize, maxLength, gpu(0))
-          : new SentenceVectorsDL(model, vocab, true, pooling, normalize, maxLength, padding,
+          : new SentenceVectorsDL(model, vocab, true,
+              new SentenceVectorsOptions(pooling, normalize, maxLength, padding),
               gpu(0));
     } catch (OrtException e) {
       return abort("no usable CUDA device 0: " + e.getMessage());

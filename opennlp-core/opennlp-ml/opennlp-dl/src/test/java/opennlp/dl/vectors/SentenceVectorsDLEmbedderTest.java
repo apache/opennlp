@@ -100,8 +100,9 @@ class SentenceVectorsDLEmbedderTest {
 
   private static SentenceVectorsDL meanVectors(final Path dir, final int maxLength,
       final PaddingStrategy padding) throws Exception {
-    return new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir), true, Pooling.MEAN, false,
-        maxLength, padding, new InferenceOptions());
+    return new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir), true,
+        new SentenceVectorsOptions(Pooling.MEAN, false, maxLength, padding),
+        new InferenceOptions());
   }
 
   @Test
@@ -352,8 +353,8 @@ class SentenceVectorsDLEmbedderTest {
    */
   @Test
   void testPaddingIdIsReadFromTheVocabulary(@TempDir final Path dir) throws Exception {
-    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_POOLED),
-        vocabPad6(dir), true, Pooling.MEAN, false, 8, PaddingStrategy.LONGEST,
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_POOLED), vocabPad6(dir), true,
+        new SentenceVectorsOptions(Pooling.MEAN, false, 8, PaddingStrategy.LONGEST),
         new InferenceOptions())) {
       final float[][] batch = vectors.embedAll(List.of("hello world", "hello"));
       assertArrayEquals(HELLO_WORLD_SUM, batch[0], DELTA);
@@ -370,8 +371,9 @@ class SentenceVectorsDLEmbedderTest {
   @EnumSource(value = PaddingStrategy.class, names = {"LONGEST", "MAX_LENGTH"})
   void testPaddedPositionsAreMaskedOut(final PaddingStrategy padding, @TempDir final Path dir)
       throws Exception {
-    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_MASKED),
-        vocabPad6(dir), true, Pooling.MEAN, false, 8, padding, new InferenceOptions())) {
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_MASKED), vocabPad6(dir), true,
+        new SentenceVectorsOptions(Pooling.MEAN, false, 8, padding),
+        new InferenceOptions())) {
       final float[][] batch = vectors.embedAll(List.of("hello world", "hello"));
       assertArrayEquals(HELLO_WORLD_SUM, batch[0], DELTA);
       assertArrayEquals(scale(14), batch[1], DELTA);
@@ -387,24 +389,22 @@ class SentenceVectorsDLEmbedderTest {
       throws Exception {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new SentenceVectorsDL(model(dir, TINY_VECTORS), vocabNoPad(dir), true,
-            Pooling.MEAN, false, 8, padding, new InferenceOptions()), padding.name());
+            new SentenceVectorsOptions(Pooling.MEAN, false, 8, padding),
+            new InferenceOptions()), padding.name());
     assertEquals("Padding needs a [PAD] token, but the vocabulary has none.", e.getMessage(),
         padding.name());
   }
 
   /**
-   * Asserts that no padding does not need a padding token, and that a missing strategy is
-   * rejected.
+   * Asserts that no padding does not need a padding token.
    */
   @Test
   void testNoPaddingDoesNotRequireAPaddingToken(@TempDir final Path dir) throws Exception {
-    try (SentenceVectorsDL exact = new SentenceVectorsDL(model(dir, TINY_VECTORS),
-        vocabNoPad(dir), true, Pooling.MEAN, false, 8, PaddingStrategy.EXACT_LENGTH,
+    try (SentenceVectorsDL exact = new SentenceVectorsDL(model(dir, TINY_VECTORS), vocabNoPad(dir), true,
+        new SentenceVectorsOptions(Pooling.MEAN, false, 8, PaddingStrategy.EXACT_LENGTH),
         new InferenceOptions())) {
       assertArrayEquals(HELLO_MEAN, exact.embed("hello"), DELTA);
     }
-    assertEquals("padding must not be null", assertThrows(IllegalArgumentException.class,
-        () -> meanVectors(dir, 8, null)).getMessage());
   }
 
   /**
