@@ -356,8 +356,8 @@ Arguments description:
             <para>
                 The Unicode standard defines whitespace as the 25 code points with the binary
                 <code>White_Space</code> property
-                (<link xlink:href="https://www.unicode.org/Public/17.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
-                Unicode 17.0.0). The set includes space and tab, the next-line control
+                (<link xlink:href="https://www.unicode.org/Public/18.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
+                Unicode 18.0.0). The set includes space and tab, the next-line control
                 (<code>U+0085</code>), no-break and typographic spaces such as <code>U+00A0</code>
                 and <code>U+2007</code>, and the line and paragraph separators
                 (<code>U+2028</code>/<code>U+2029</code>). Java's

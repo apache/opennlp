@@ -23,7 +23,7 @@ import opennlp.tools.util.ParamChecks;
  * A {@link CharSequenceNormalizer} implementation that replaces each run of complete emoji with
  * one space.
  *
- * <p>An emoji is a fully-qualified or minimally-qualified sequence of Unicode Emoji 17.0 in the
+ * <p>An emoji is a fully-qualified or minimally-qualified sequence of Unicode Emoji 18.0 in the
  * sense of <a href="https://www.unicode.org/reports/tr51/">UTS #51</a>: a single emoji, an emoji
  * with U+FE0F, a flag, a keycap, a skin tone modifier sequence, a ZWJ sequence or a tag
  * sequence, as listed in {@code emoji-test.txt}. A minimally-qualified ZWJ sequence lacks U+FE0F

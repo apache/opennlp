@@ -35,11 +35,11 @@ import java.util.List;
  */
 public final class UnicodeEmojiSequenceGenerator {
 
-  /** Unicode Emoji 17.0, the version of the other bundled Unicode data files. */
-  private static final Release RELEASE = new Release("17.0", "2025",
-      "1d8a944f88d7952f7ef7c5167fef3c67995bcae24543949710231b03a201acda",
-      "2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b",
-      4973);
+  /** Unicode Emoji 18.0; emoji-test uses "# Version: 18.0", emoji-data uses "18.0.0". */
+  private static final Release RELEASE = new Release("18.0", "2026",
+      "8f3735cda1f92a779d78af67cf86066bb1f07143dc22f2ac29394d9bc57ab21a",
+      "80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1",
+      4992);
 
   private static final String OUTPUT_NAME = "EmojiSequences.txt";
   private static final String VERSION_LINE = "# Version: ";
@@ -249,9 +249,29 @@ public final class UnicodeEmojiSequenceGenerator {
   }
 
   /**
+   * Returns whether {@code lines} declare {@link #RELEASE}{@code version}. Accepts exactly
+   * {@code # Version: V} or {@code # Version: V.0} (the three-part UCD form with a single
+   * trailing {@code .0}). Does not accept other suffixes such as {@code V.0.9}.
+   *
+   * @param lines The source file lines.
+   * @return {@code true} if a matching version header is present.
+   */
+  private boolean hasExpectedVersion(List<String> lines) {
+    String exact = VERSION_LINE + RELEASE.version();
+    String withZeroPatch = exact + ".0";
+    for (String line : lines) {
+      if (line.equals(exact) || line.equals(withZeroPatch)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Reads a source file once and checks its SHA-256 and its {@code # Version:} header line
-   * against {@link #RELEASE}. Both emoji files use the two part form, for example
-   * {@code # Version: 17.0}.
+   * against {@link #RELEASE}. Emoji-test uses the two-part form (for example
+   * {@code # Version: 18.0}); some UCD emoji files use a three-part form with a trailing
+   * {@code .0} only (for example {@code # Version: 18.0.0}).
    *
    * @param source The file to read.
    * @param expectedSha256 The expected SHA-256 as lower case hex.
@@ -272,7 +292,7 @@ public final class UnicodeEmojiSequenceGenerator {
           + ", found " + actual);
     }
     List<String> lines = new String(bytes, StandardCharsets.UTF_8).lines().toList();
-    if (!lines.contains(VERSION_LINE + RELEASE.version())) {
+    if (!hasExpectedVersion(lines)) {
       throw new IOException(source + " is not Unicode Emoji version " + RELEASE.version());
     }
     return lines;

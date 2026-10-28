@@ -36,8 +36,8 @@
 					<emphasis role="bold">Standards-sourced.</emphasis> Membership sets come from the
 					Unicode Character Database (for example the <code>White_Space</code> and
 					<code>Dash</code> properties in
-					<link xlink:href="https://www.unicode.org/Public/17.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
-					Unicode 17.0.0), not from the JVM's locale-dependent or quirky
+					<link xlink:href="https://www.unicode.org/Public/18.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
+					Unicode 18.0.0), not from the JVM's locale-dependent or quirky
 					character predicates. The normalization engine never relies on
 					<code>Character.isWhitespace</code>, which disagrees with the Unicode standard.
 				</para>
