@@ -1,13 +1,26 @@
 # emoji-data.txt
-# Date: 2025-07-25, 17:54:31 GMT
-# © 2025 Unicode®, Inc.
+# Date: 2026-01-30, 22:30:17 GMT
+# © 2026 Unicode®, Inc.
 # Unicode and the Unicode Logo are registered trademarks of Unicode, Inc. in the U.S. and other countries.
 # For terms of use and license, see https://www.unicode.org/terms_of_use.html
 #
 # Emoji Data for UTS #51
-# Version: 17.0
+# Version: 18.0.0
 #
 # For documentation and usage, see https://www.unicode.org/reports/tr51
+#
+# Format: 
+# <codepoint(s)> ; <property> # <comments> 
+# Note: there is no guarantee as to the structure of whitespace or comments
+#
+# Characters and sequences are listed in code point order. Users should be shown a more natural order.
+# See the CLDR collation order for Emoji.
+
+
+# ================================================
+
+# All omitted code points have Emoji=No
+
 00A9          ; Extended_Pictographic# E0.6   [1] (©️)       copyright
 00AE          ; Extended_Pictographic# E0.6   [1] (®️)       registered
 203C          ; Extended_Pictographic# E0.6   [1] (‼️)       double exclamation mark
@@ -131,7 +144,7 @@
 1F17E..1F17F  ; Extended_Pictographic# E0.6   [2] (🅾️..🅿️)    O button (blood type)..P button
 1F18E         ; Extended_Pictographic# E0.6   [1] (🆎)       AB button (blood type)
 1F191..1F19A  ; Extended_Pictographic# E0.6  [10] (🆑..🆚)    CL button..VS button
-1F1AE..1F1E5  ; Extended_Pictographic# E0.0  [56] (🆮..🇥)    <reserved-1F1AE>..<reserved-1F1E5>
+1F1AF..1F1E5  ; Extended_Pictographic# E0.0  [55] (🆯..🇥)    <reserved-1F1AF>..<reserved-1F1E5>
 1F201..1F202  ; Extended_Pictographic# E0.6   [2] (🈁..🈂️)    Japanese “here” button..Japanese “service charge” button
 1F203..1F20F  ; Extended_Pictographic# E0.0  [13] (🈃..🈏)    <reserved-1F203>..<reserved-1F20F>
 1F21A         ; Extended_Pictographic# E0.6   [1] (🈚)       Japanese “free of charge” button
@@ -337,7 +350,8 @@
 1F6D5         ; Extended_Pictographic# E12.0  [1] (🛕)       hindu temple
 1F6D6..1F6D7  ; Extended_Pictographic# E13.0  [2] (🛖..🛗)    hut..elevator
 1F6D8         ; Extended_Pictographic# E17.0  [1] (🛘)       landslide
-1F6D9..1F6DB  ; Extended_Pictographic# E0.0   [3] (🛙..🛛)    <reserved-1F6D9>..<reserved-1F6DB>
+1F6D9         ; Extended_Pictographic# E18.0  [1] (🛙)       lighthouse
+1F6DA..1F6DB  ; Extended_Pictographic# E0.0   [2] (🛚..🛛)    <reserved-1F6DA>..<reserved-1F6DB>
 1F6DC         ; Extended_Pictographic# E15.0  [1] (🛜)       wireless
 1F6DD..1F6DF  ; Extended_Pictographic# E14.0  [3] (🛝..🛟)    playground slide..ring buoy
 1F6E0..1F6E5  ; Extended_Pictographic# E0.7   [6] (🛠️..🛥️)    hammer and wrench..motor boat
@@ -352,11 +366,10 @@
 1F6FA         ; Extended_Pictographic# E12.0  [1] (🛺)       auto rickshaw
 1F6FB..1F6FC  ; Extended_Pictographic# E13.0  [2] (🛻..🛼)    pickup truck..roller skate
 1F6FD..1F6FF  ; Extended_Pictographic# E0.0   [3] (🛽..🛿)    <reserved-1F6FD>..<reserved-1F6FF>
-1F7DA..1F7DF  ; Extended_Pictographic# E0.0   [6] (🟚..🟟)    <reserved-1F7DA>..<reserved-1F7DF>
+1F7DC..1F7DF  ; Extended_Pictographic# E0.0   [4] (🟜..🟟)    <reserved-1F7DC>..<reserved-1F7DF>
 1F7E0..1F7EB  ; Extended_Pictographic# E12.0 [12] (🟠..🟫)    orange circle..brown square
 1F7EC..1F7EF  ; Extended_Pictographic# E0.0   [4] (🟬..🟯)    <reserved-1F7EC>..<reserved-1F7EF>
 1F7F0         ; Extended_Pictographic# E14.0  [1] (🟰)       heavy equals sign
-1F7F1..1F7FF  ; Extended_Pictographic# E0.0  [15] (🟱..🟿)    <reserved-1F7F1>..<reserved-1F7FF>
 1F80C..1F80F  ; Extended_Pictographic# E0.0   [4] (🠌..🠏)    <reserved-1F80C>..<reserved-1F80F>
 1F848..1F84F  ; Extended_Pictographic# E0.0   [8] (🡈..🡏)    <reserved-1F848>..<reserved-1F84F>
 1F85A..1F85F  ; Extended_Pictographic# E0.0   [6] (🡚..🡟)    <reserved-1F85A>..<reserved-1F85F>
@@ -423,7 +436,7 @@
 1FA87..1FA88  ; Extended_Pictographic# E15.0  [2] (🪇..🪈)    maracas..flute
 1FA89         ; Extended_Pictographic# E16.0  [1] (🪉)       harp
 1FA8A         ; Extended_Pictographic# E17.0  [1] (🪊)       trombone
-1FA8B..1FA8D  ; Extended_Pictographic# E0.0   [3] (🪋..🪍)    <reserved-1FA8B>..<reserved-1FA8D>
+1FA8B..1FA8D  ; Extended_Pictographic# E18.0  [3] (🪋..🪍)    meteor..net with handle
 1FA8E         ; Extended_Pictographic# E17.0  [1] (🪎)       treasure chest
 1FA8F         ; Extended_Pictographic# E16.0  [1] (🪏)       shovel
 1FA90..1FA95  ; Extended_Pictographic# E12.0  [6] (🪐..🪕)    ringed planet..banjo
@@ -440,22 +453,26 @@
 1FAC6         ; Extended_Pictographic# E16.0  [1] (🫆)       fingerprint
 1FAC7         ; Extended_Pictographic# E0.0   [1] (🫇)       <reserved-1FAC7>
 1FAC8         ; Extended_Pictographic# E17.0  [1] (🫈)       hairy creature
-1FAC9..1FACC  ; Extended_Pictographic# E0.0   [4] (🫉..🫌)    <reserved-1FAC9>..<reserved-1FACC>
+1FAC9..1FACB  ; Extended_Pictographic# E0.0   [3] (🫉..🫋)    <reserved-1FAC9>..<reserved-1FACB>
+1FACC         ; Extended_Pictographic# E18.0  [1] (🫌)       monarch butterfly
 1FACD         ; Extended_Pictographic# E17.0  [1] (🫍)       orca
 1FACE..1FACF  ; Extended_Pictographic# E15.0  [2] (🫎..🫏)    moose..donkey
 1FAD0..1FAD6  ; Extended_Pictographic# E13.0  [7] (🫐..🫖)    blueberries..teapot
 1FAD7..1FAD9  ; Extended_Pictographic# E14.0  [3] (🫗..🫙)    pouring liquid..jar
 1FADA..1FADB  ; Extended_Pictographic# E15.0  [2] (🫚..🫛)    ginger root..pea pod
 1FADC         ; Extended_Pictographic# E16.0  [1] (🫜)       root vegetable
-1FADD..1FADE  ; Extended_Pictographic# E0.0   [2] (🫝..🫞)    <reserved-1FADD>..<reserved-1FADE>
+1FADD         ; Extended_Pictographic# E18.0  [1] (🫝)       pickle
+1FADE         ; Extended_Pictographic# E0.0   [1] (🫞)       <reserved-1FADE>
 1FADF         ; Extended_Pictographic# E16.0  [1] (🫟)       splatter
 1FAE0..1FAE7  ; Extended_Pictographic# E14.0  [8] (🫠..🫧)    melting face..bubbles
 1FAE8         ; Extended_Pictographic# E15.0  [1] (🫨)       shaking face
 1FAE9         ; Extended_Pictographic# E16.0  [1] (🫩)       face with bags under eyes
 1FAEA         ; Extended_Pictographic# E17.0  [1] (🫪)       distorted face
-1FAEB..1FAEE  ; Extended_Pictographic# E0.0   [4] (🫫..🫮)    <reserved-1FAEB>..<reserved-1FAEE>
+1FAEB         ; Extended_Pictographic# E18.0  [1] (🫫)       cracking face
+1FAEC..1FAEE  ; Extended_Pictographic# E0.0   [3] (🫬..🫮)    <reserved-1FAEC>..<reserved-1FAEE>
 1FAEF         ; Extended_Pictographic# E17.0  [1] (🫯)       fight cloud
 1FAF0..1FAF6  ; Extended_Pictographic# E14.0  [7] (🫰..🫶)    hand with index finger and thumb crossed..heart hands
 1FAF7..1FAF8  ; Extended_Pictographic# E15.0  [2] (🫷..🫸)    leftwards pushing hand..rightwards pushing hand
-1FAF9..1FAFF  ; Extended_Pictographic# E0.0   [7] (🫹..🫿)    <reserved-1FAF9>..<reserved-1FAFF>
+1FAF9..1FAFA  ; Extended_Pictographic# E18.0  [2] (🫹..🫺)    leftwards thumb sign..rightwards thumb sign
+1FAFB..1FAFF  ; Extended_Pictographic# E0.0   [5] (🫻..🫿)    <reserved-1FAFB>..<reserved-1FAFF>
 1FC00..1FFFD  ; Extended_Pictographic# E0.0[1022] (🰀..🿽)    <reserved-1FC00>..<reserved-1FFFD>

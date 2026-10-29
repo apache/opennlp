@@ -95,24 +95,24 @@ SOFTWARE.
 ============================================================================
 
 This product bundles Unicode Character Database (UCD), Unicode Security
-Mechanisms and Unicode Emoji data in the versions listed below, published
-by Unicode, Inc. (https://www.unicode.org/Public/).
+Mechanisms and Unicode Emoji data, version 18.0, published by Unicode, Inc.
+(https://www.unicode.org/Public/).
 
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
-    is the upstream WordBreakProperty-17.0.0.txt, unmodified except for the
+    is the upstream WordBreakProperty-18.0.0.txt, unmodified except for the
     file name.
   * opennlp-core/opennlp-runtime/src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
-    is the upstream WordBreakTest-17.0.0.txt, unmodified except for the file
+    is the upstream WordBreakTest-18.0.0.txt, unmodified except for the file
     name.
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/confusables.txt
     is the upstream confusables.txt from the Unicode Security Mechanisms
-    (UTS #39), unmodified.
+    (UTS #39), version 18.0.0, unmodified.
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/CaseFolding.txt
-    is the upstream CaseFolding.txt (version 17.0.0) from the Unicode Character
+    is the upstream CaseFolding.txt (version 18.0.0) from the Unicode Character
     Database (UCD), unmodified.
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
     is derived from the upstream emoji-data.txt (Emoji Data for UTS #51,
-    version 17.0): it keeps only the lines that assign the
+    version 18.0): it keeps only the lines that assign the
     Extended_Pictographic property and is renamed accordingly. It is a
     filtered subset; the upstream file additionally carries the Emoji,
     Emoji_Presentation, Emoji_Modifier, Emoji_Modifier_Base, and
@@ -120,7 +120,7 @@ by Unicode, Inc. (https://www.unicode.org/Public/).
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/EmojiSequences.txt
     is a generated inventory of fully-qualified and minimally-qualified emoji
     sequences from emoji-test.txt and Emoji_Component ranges from
-    emoji-data.txt, both Unicode Emoji version 17.0.
+    emoji-data.txt, both Unicode Emoji version 18.0.
 
 The original Unicode copyright and license header is preserved verbatim at the
 top of each copied or filtered data file. Generated inventories identify their
@@ -130,14 +130,16 @@ in the LICENSE file accompanying this distribution.
 
 The project-authored annotation table
 opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/emoji-annotations.txt
-is licensed under the Apache License 2.0, but its name values (the CLDR short
-names) and its entity-type/category derivations are transcribed from the
-upstream emoji-test.txt (Emoji Keyboard/Display Test Data for UTS #51,
-version 17.0), distributed under the Unicode License V3 reproduced in the
-LICENSE file. Its sentiment scores are original project judgments; no
-third-party sentiment data set is included.
+is licensed under the Apache License 2.0. It is an independent project comment
+table (not a full Unicode Emoji inventory): coverage is limited to pictographs
+folded by emoji-emoticons.txt plus the Unicode Emoji 18.0 additions needed for
+parity with the bundled sequences. Its CLDR short names and entity-type/category
+derivations were transcribed from upstream emoji-test.txt (Emoji Keyboard/Display
+Test Data for UTS #51, version 18.0); that provenance is also recorded in the
+file header and per-row notes. Its sentiment scores are original project
+judgments; no third-party sentiment data set is included.
 
-Copyright (c) 1991-2025 Unicode, Inc. All rights reserved.
+Copyright (c) 1991-2026 Unicode, Inc. All rights reserved.
 
 ============================================================================
 

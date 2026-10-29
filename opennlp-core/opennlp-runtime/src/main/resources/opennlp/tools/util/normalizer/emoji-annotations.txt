@@ -23,13 +23,14 @@
 #
 # Attributes and their provenance:
 #   name        The CLDR short name as printed in the upstream emoji-test.txt (Emoji
-#               Keyboard/Display Test Data for UTS #51, version 17.0); source CLDR:annotation.
+#               Keyboard/Display Test Data for UTS #51, version 18.0); source CLDR:annotation.
 #   sentiment   A project-authored coarse polarity score, an integer in -2..2; source UNSPECIFIED,
 #               the marker for a project judgment. No third-party sentiment data set is copied
 #               here; in particular the Emoji Sentiment Ranking (CC BY-SA) is NOT used in any form.
 #   entityType  A coarse entity type (an EmojiEntityType constant), assigned by this project from
 #               the subgroup header of the upstream emoji-test.txt; source UCD:emoji-test, the
-#               subgroup is cited in the notes.
+#               subgroup is cited in the notes. An entity type that departs from the subgroup is
+#               a project judgment, source UNSPECIFIED, with the subgroup still cited in the notes.
 #   category    A document-category hint (an EmojiCategory constant), the group header of the
 #               upstream emoji-test.txt; source UCD:emoji-test, the group is cited in the notes.
 #
@@ -38,7 +39,8 @@
 # every record carries all four attributes. Flag emoji have no rows: their region is derived from
 # the code point sequence (see EmojiFlags), not bundled.
 #
-# Code points, names, and group/subgroup headers checked against emoji-test.txt version 17.0.
+# Code points, names, and group/subgroup headers checked against emoji-test.txt version 18.0;
+# the notes column records which emoji-test.txt version a name was transcribed from.
 #
 # A line starting with '#' is a comment; data rows carry no inline comments. The notes column is
 # the fifth and final field, so it may contain ';'.
@@ -172,6 +174,60 @@
 1F494 ; sentiment ; -2 ; UNSPECIFIED ; project judgment
 1F494 ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
 1F494 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1FAEB ; name ; cracking face ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAEB ; sentiment ; -1 ; UNSPECIFIED ; project judgment
+1FAEB ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1FAEB ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+#
+# People & Body
+1FAF9 ; name ; leftwards thumb sign ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAF9 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAF9 ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAF9 ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAF9 1F3FB ; name ; leftwards thumb sign: light skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAF9 1F3FB ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAF9 1F3FB ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAF9 1F3FB ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAF9 1F3FC ; name ; leftwards thumb sign: medium-light skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAF9 1F3FC ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAF9 1F3FC ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAF9 1F3FC ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAF9 1F3FD ; name ; leftwards thumb sign: medium skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAF9 1F3FD ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAF9 1F3FD ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAF9 1F3FD ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAF9 1F3FE ; name ; leftwards thumb sign: medium-dark skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAF9 1F3FE ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAF9 1F3FE ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAF9 1F3FE ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAF9 1F3FF ; name ; leftwards thumb sign: dark skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAF9 1F3FF ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAF9 1F3FF ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAF9 1F3FF ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAFA ; name ; rightwards thumb sign ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAFA ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAFA ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAFA ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAFA 1F3FB ; name ; rightwards thumb sign: light skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAFA 1F3FB ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAFA 1F3FB ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAFA 1F3FB ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAFA 1F3FC ; name ; rightwards thumb sign: medium-light skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAFA 1F3FC ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAFA 1F3FC ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAFA 1F3FC ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAFA 1F3FD ; name ; rightwards thumb sign: medium skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAFA 1F3FD ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAFA 1F3FD ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAFA 1F3FD ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAFA 1F3FE ; name ; rightwards thumb sign: medium-dark skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAFA 1F3FE ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAFA 1F3FE ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAFA 1F3FE ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
+1FAFA 1F3FF ; name ; rightwards thumb sign: dark skin tone ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FAFA 1F3FF ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FAFA 1F3FF ; entityType ; HAND ; UCD:emoji-test ; subgroup hand-fingers-closed
+1FAFA 1F3FF ; category ; PEOPLE_AND_BODY ; UCD:emoji-test ; group People & Body
 #
 # Animals & Nature
 1F436 ; name ; dog face ; CLDR:annotation ; emoji-test.txt v17.0 short name
@@ -182,6 +238,10 @@
 1F431 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
 1F431 ; entityType ; ANIMAL ; UCD:emoji-test ; subgroup animal-mammal
 1F431 ; category ; ANIMALS_AND_NATURE ; UCD:emoji-test ; group Animals & Nature
+1FACC ; name ; monarch butterfly ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FACC ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FACC ; entityType ; ANIMAL ; UCD:emoji-test ; subgroup animal-bug
+1FACC ; category ; ANIMALS_AND_NATURE ; UCD:emoji-test ; group Animals & Nature
 #
 # Food & Drink
 1F355 ; name ; pizza ; CLDR:annotation ; emoji-test.txt v17.0 short name
@@ -192,6 +252,10 @@
 1F34E ; sentiment ; 0 ; UNSPECIFIED ; project judgment
 1F34E ; entityType ; FOOD ; UCD:emoji-test ; subgroup food-fruit
 1F34E ; category ; FOOD_AND_DRINK ; UCD:emoji-test ; group Food & Drink
+1FADD ; name ; pickle ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FADD ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FADD ; entityType ; FOOD ; UCD:emoji-test ; subgroup food-vegetable
+1FADD ; category ; FOOD_AND_DRINK ; UCD:emoji-test ; group Food & Drink
 #
 # Travel & Places
 1F697 ; name ; automobile ; CLDR:annotation ; emoji-test.txt v17.0 short name
@@ -210,3 +274,21 @@
 1F5FC ; sentiment ; 0 ; UNSPECIFIED ; project judgment
 1F5FC ; entityType ; LANDMARK ; UCD:emoji-test ; subgroup place-building
 1F5FC ; category ; TRAVEL_AND_PLACES ; UCD:emoji-test ; group Travel & Places
+1F6D9 ; name ; lighthouse ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1F6D9 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F6D9 ; entityType ; LANDMARK ; UNSPECIFIED ; project judgment, UCD subgroup transport-water
+1F6D9 ; category ; TRAVEL_AND_PLACES ; UCD:emoji-test ; group Travel & Places
+1FA8B ; name ; meteor ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FA8B ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FA8B ; entityType ; SKY_AND_WEATHER ; UCD:emoji-test ; subgroup sky & weather
+1FA8B ; category ; TRAVEL_AND_PLACES ; UCD:emoji-test ; group Travel & Places
+#
+# Objects
+1FA8C ; name ; eraser ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FA8C ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FA8C ; entityType ; TOOL ; UCD:emoji-test ; subgroup writing
+1FA8C ; category ; OBJECTS ; UCD:emoji-test ; group Objects
+1FA8D ; name ; net with handle ; CLDR:annotation ; emoji-test.txt v18.0 short name
+1FA8D ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1FA8D ; entityType ; TOOL ; UCD:emoji-test ; subgroup tool
+1FA8D ; category ; OBJECTS ; UCD:emoji-test ; group Objects

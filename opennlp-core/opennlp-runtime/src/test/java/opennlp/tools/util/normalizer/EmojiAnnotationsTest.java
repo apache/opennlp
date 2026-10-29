@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
@@ -69,7 +70,9 @@ public class EmojiAnnotationsTest {
     // The licensing audit: names come from the CLDR short names, entity type and category from
     // the emoji-test.txt group/subgroup headers, and sentiment is ALWAYS a project judgment
     // (UNSPECIFIED). A sentiment row with any other source would mean third-party sentiment data
-    // (for example the CC BY-SA Emoji Sentiment Ranking) leaked into the bundled file.
+    // (for example the CC BY-SA Emoji Sentiment Ranking) leaked into the bundled file. An entity
+    // type that departs from the subgroup is a project judgment too, and its notes must still
+    // cite the UCD subgroup it departs from.
     final Map<String, String> expectedSource = Map.of(
         EmojiAnnotation.NAME, "CLDR:annotation",
         EmojiAnnotation.SENTIMENT, "UNSPECIFIED",
@@ -79,6 +82,12 @@ public class EmojiAnnotationsTest {
       for (final Map.Entry<String, EmojiAnnotation.Value> entry :
           annotation.attributes().entrySet()) {
         final EmojiAnnotation.Value value = entry.getValue();
+        if (EmojiAnnotation.ENTITY_TYPE.equals(entry.getKey())
+            && "UNSPECIFIED".equals(value.source())) {
+          assertTrue(value.notes().contains("UCD subgroup "),
+              "Project-judged entity type without its UCD subgroup: " + annotation.symbol());
+          continue;
+        }
         assertEquals(expectedSource.get(entry.getKey()), value.source(),
             "Unexpected source for " + annotation.symbol() + " " + entry.getKey());
         assertFalse(value.notes().isEmpty(),
@@ -111,12 +120,60 @@ public class EmojiAnnotationsTest {
     // Locks the bundled counts so a data edit trips this test for a conscious bump, the same
     // discipline as the emoji-emoticons.txt and CaseFolding.txt audits.
     final Map<String, EmojiAnnotation> annotations = bundled();
-    assertEquals(40, annotations.size());
+    assertEquals(59, annotations.size());
     int rowCount = 0;
     for (final EmojiAnnotation annotation : annotations.values()) {
       rowCount += annotation.attributes().size();
     }
-    assertEquals(160, rowCount);
+    assertEquals(236, rowCount);
+  }
+
+  /**
+   * The nine pictographs and ten skin tone sequences that Emoji 18.0 added, with the short names
+   * printed in the 18.0 emoji-test.txt, each bundled as its own record.
+   */
+  private static Stream<Arguments> emoji18Additions() {
+    return Stream.of(
+        Arguments.of(cp(0x1FAEB), "cracking face", EmojiCategory.SMILEYS_AND_EMOTION),
+        Arguments.of(cp(0x1FAF9), "leftwards thumb sign", EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAF9, 0x1F3FB), "leftwards thumb sign: light skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAF9, 0x1F3FC), "leftwards thumb sign: medium-light skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAF9, 0x1F3FD), "leftwards thumb sign: medium skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAF9, 0x1F3FE), "leftwards thumb sign: medium-dark skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAF9, 0x1F3FF), "leftwards thumb sign: dark skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAFA), "rightwards thumb sign", EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAFA, 0x1F3FB), "rightwards thumb sign: light skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAFA, 0x1F3FC), "rightwards thumb sign: medium-light skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAFA, 0x1F3FD), "rightwards thumb sign: medium skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAFA, 0x1F3FE), "rightwards thumb sign: medium-dark skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FAFA, 0x1F3FF), "rightwards thumb sign: dark skin tone",
+            EmojiCategory.PEOPLE_AND_BODY),
+        Arguments.of(cp(0x1FACC), "monarch butterfly", EmojiCategory.ANIMALS_AND_NATURE),
+        Arguments.of(cp(0x1FADD), "pickle", EmojiCategory.FOOD_AND_DRINK),
+        Arguments.of(cp(0x1F6D9), "lighthouse", EmojiCategory.TRAVEL_AND_PLACES),
+        Arguments.of(cp(0x1FA8B), "meteor", EmojiCategory.TRAVEL_AND_PLACES),
+        Arguments.of(cp(0x1FA8C), "eraser", EmojiCategory.OBJECTS),
+        Arguments.of(cp(0x1FA8D), "net with handle", EmojiCategory.OBJECTS));
+  }
+
+  @ParameterizedTest(name = "{1}")
+  @MethodSource("emoji18Additions")
+  void everyEmoji18AdditionIsAnnotated(String symbol, String name, EmojiCategory category) {
+    final EmojiAnnotation annotation = EmojiAnnotations.lookup(symbol).orElseThrow(
+        () -> new AssertionError("No annotation record for Emoji 18.0 addition: " + name));
+    assertEquals(name, annotation.name().orElseThrow());
+    assertEquals(category, annotation.category().orElseThrow());
+    annotation.sentiment().orElseThrow();
+    annotation.entityType().orElseThrow();
   }
 
   @Test

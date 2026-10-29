@@ -45,6 +45,23 @@ public class ExtendedPictographicTest {
     assertFalse(ExtendedPictographic.is(codePoint));
   }
 
+  /**
+   * Unicode Emoji 18.0 dropped these code points from Extended_Pictographic (they were
+   * reserved ranges in 17.0). Word-break must treat them as non-pictographic.
+   */
+  @ParameterizedTest
+  @ValueSource(ints = {
+      0x1F1AE,
+      0x1F7DA, 0x1F7DB,
+      0x1F7F1, 0x1F7F2, 0x1F7F8, 0x1F7FF
+  })
+  void testCodePointsDroppedFromExtendedPictographicInEmoji18(int codePoint) {
+    assertFalse(ExtendedPictographic.is(codePoint),
+        () -> String.format(
+            "U+%04X must not be Extended_Pictographic after the Unicode 18.0 data bump",
+            codePoint));
+  }
+
   @ParameterizedTest
   @ValueSource(ints = {-1, Integer.MIN_VALUE, Character.MAX_CODE_POINT + 1, Integer.MAX_VALUE})
   void testOutOfRangeIsFalseAndSafe(int codePoint) {
