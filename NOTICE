@@ -120,7 +120,7 @@ by Unicode, Inc. (https://www.unicode.org/Public/).
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/EmojiSequences.txt
     is a generated inventory of fully-qualified and minimally-qualified emoji
     sequences from emoji-test.txt and Emoji_Component ranges from
-    emoji-data.txt, both Unicode Emoji version 17.0.
+    emoji-data.txt, both Unicode Emoji version 18.0.
 
 The original Unicode copyright and license header is preserved verbatim at the
 top of each copied or filtered data file. Generated inventories identify their
@@ -133,11 +133,11 @@ opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/em
 is licensed under the Apache License 2.0, but its name values (the CLDR short
 names) and its entity-type/category derivations are transcribed from the
 upstream emoji-test.txt (Emoji Keyboard/Display Test Data for UTS #51,
-version 17.0), distributed under the Unicode License V3 reproduced in the
+version 18.0), distributed under the Unicode License V3 reproduced in the
 LICENSE file. Its sentiment scores are original project judgments; no
 third-party sentiment data set is included.
 
-Copyright (c) 1991-2025 Unicode, Inc. All rights reserved.
+Copyright (c) 1991-2026 Unicode, Inc. All rights reserved.
 
 ============================================================================
 

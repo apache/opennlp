@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UnicodeEmojiSequencesParseTest {
 
   private static final String WELL_FORMED = "# EmojiSequences.txt\n"
-      + "# Version: 17.0\n"
+      + "# Version: 18.0\n"
       + "S;1F600\n"
       + "S;1F44D 1F3FD\n"
       + "\n"

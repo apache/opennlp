@@ -49,8 +49,17 @@ public enum EmojiEntityType {
   /** A vehicle, from the {@code transport-*} subgroups. */
   VEHICLE,
 
-  /** A landmark or building, from the {@code place-*} subgroups. */
+  /** A landmark or building, from the {@code place-*} subgroups and the lighthouse. */
   LANDMARK,
+
+  /** A hand gesture, from the {@code hand-*} subgroups. */
+  HAND,
+
+  /** A sky or weather phenomenon, from the {@code sky & weather} subgroup. */
+  SKY_AND_WEATHER,
+
+  /** A hand tool or writing implement, from the {@code tool} and {@code writing} subgroups. */
+  TOOL,
 
   /** A flag; assigned by the derived layer from the code point sequence itself. */
   FLAG

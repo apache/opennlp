@@ -19,18 +19,21 @@ limitations under the License.
 
 `UnicodeEmojiSequenceGenerator.java` derives the bundled
 `opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/EmojiSequences.txt`
-from these official Unicode Emoji 17.0 files:
+from these official Unicode Emoji 18.0 files:
 
-* `https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt`
-  (`1d8a944f88d7952f7ef7c5167fef3c67995bcae24543949710231b03a201acda`)
-* `https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt`
-  (`2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b`)
+* `https://www.unicode.org/Public/18.0.0/emoji/emoji-test.txt`
+  (`8f3735cda1f92a779d78af67cf86066bb1f07143dc22f2ac29394d9bc57ab21a`)
+* `https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt`
+  (`80d00f8e616a0ef27fd6b8de3b758c06383b5d917e2977709578e68baf733bf1`)
 
-The generator verifies both SHA-256 checksums and both `# Version:` headers against the release
-pinned in its `RELEASE` table, so a version bump changes that table, the data file and the NOTICE
-files. It keeps the exact `fully-qualified` and `minimally-qualified` sequences from
-`emoji-test.txt` (the `S;` records) and the `Emoji_Component` ranges from `emoji-data.txt` (the `C;` records). The component ranges only
-tell the normalizer which stray joiners, modifiers, selectors and tags belong to a neighboring
+The generator verifies both SHA-256 checksums and both `# Version:` headers (`18.0`, or `18.0.0`
+as emoji-data.txt writes it) against the release pinned in its `RELEASE` table, so a version bump
+changes that table, the data file and the NOTICE files. The other bundled Unicode tables
+(WordBreakProperty.txt, CaseFolding.txt, confusables.txt, ExtendedPictographic.txt) are separate
+copies of Unicode 17.0 files and are not touched by this generator. It keeps the exact
+`fully-qualified` and `minimally-qualified` sequences from `emoji-test.txt` (the `S;` records)
+and the `Emoji_Component` ranges from `emoji-data.txt` (the `C;` records). The component ranges
+only tell the normalizer which stray joiners, modifiers, selectors and tags belong to a neighboring
 emoji; a component on its own is never treated as an emoji.
 
 Run the generator from the repository root:

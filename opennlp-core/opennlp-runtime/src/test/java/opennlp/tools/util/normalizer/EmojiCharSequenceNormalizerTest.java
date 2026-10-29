@@ -42,10 +42,10 @@ public class EmojiCharSequenceNormalizerTest {
       EmojiCharSequenceNormalizer.getInstance();
 
   /**
-   * The number of fully-qualified and minimally-qualified sequences in the Emoji 17.0
+   * The number of fully-qualified and minimally-qualified sequences in the Emoji 18.0
    * emoji-test.txt, the same number dev/UnicodeEmojiSequenceGenerator.java pins for that release.
    */
-  private static final int EMOJI_17_SEQUENCE_COUNT = 4973;
+  private static final int EMOJI_18_SEQUENCE_COUNT = 4992;
 
   private static Stream<Arguments> emojiSequences() {
     return Stream.of(
@@ -68,11 +68,11 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   /**
-   * The nine code points and ten modifier sequences that Emoji 18.0 added on top of 17.0. The
-   * bundled inventory is Emoji 17.0, the same version as the other bundled Unicode data, so
-   * these are not emoji to this normalizer yet.
+   * The nine code points and ten modifier sequences that Emoji 18.0 added on top of 17.0, the
+   * difference between the qualified lines of the two emoji-test.txt files. The bundled
+   * inventory is Emoji 18.0, so each of them is one complete emoji to this normalizer.
    */
-  private static Stream<String> emoji18OnlySequences() {
+  private static Stream<String> emoji18AddedSequences() {
     return Stream.of(cp(0x1FAEB), cp(0x1FACC), cp(0x1FADD), cp(0x1F6D9), cp(0x1FA8B),
         cp(0x1FA8C), cp(0x1FA8D), cp(0x1FAF9), cp(0x1FAFA),
         cp(0x1FAF9, 0x1F3FB), cp(0x1FAF9, 0x1F3FC), cp(0x1FAF9, 0x1F3FD),
@@ -82,9 +82,9 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   @ParameterizedTest
-  @MethodSource("emoji18OnlySequences")
-  void normalizeKeepsSequencesAddedAfterEmoji17(String sequence) {
-    Assertions.assertEquals("a" + sequence + "b", NORMALIZER.normalize("a" + sequence + "b"));
+  @MethodSource("emoji18AddedSequences")
+  void normalizeRemovesSequencesAddedInEmoji18(String sequence) {
+    Assertions.assertEquals("a b", NORMALIZER.normalize("a" + sequence + "b"));
   }
 
   @Test
@@ -244,11 +244,12 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   /**
-   * Known Emoji 17.0 sequences, one or two per emoji-test.txt group, written down from the
-   * published list rather than read from the bundled file, so a wrong or truncated inventory
-   * fails here. The last seven are new in 17.0.
+   * Known emoji sequences up to Emoji 17.0, one or two per emoji-test.txt group, written down
+   * from the published list rather than read from the bundled file, so a wrong or truncated
+   * inventory fails here. The last seven are new in 17.0; {@link #emoji18AddedSequences()}
+   * covers the 18.0 additions.
    */
-  private static Stream<Arguments> knownEmoji17Sequences() {
+  private static Stream<Arguments> knownEmojiSequences() {
     return Stream.of(
         Arguments.of(cp(0x1F600), "Smileys & Emotion: grinning face"),
         Arguments.of(cp(0x1F636, 0x200D, 0x1F32B, 0xFE0F), "Smileys & Emotion: face in clouds"),
@@ -280,14 +281,14 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   @ParameterizedTest(name = "{1}")
-  @MethodSource("knownEmoji17Sequences")
-  void normalizeRemovesKnownEmoji17Sequences(String emoji, String description) {
+  @MethodSource("knownEmojiSequences")
+  void normalizeRemovesKnownEmojiSequences(String emoji, String description) {
     Assertions.assertEquals("a b", NORMALIZER.normalize("a" + emoji + "b"));
   }
 
   @Test
-  void bundledInventoryHoldsTheEmoji17SequenceCount() {
-    Assertions.assertEquals(EMOJI_17_SEQUENCE_COUNT,
+  void bundledInventoryHoldsTheEmoji18SequenceCount() {
+    Assertions.assertEquals(EMOJI_18_SEQUENCE_COUNT,
         UnicodeEmojiSequences.getInstance().sequenceCount());
   }
 
@@ -309,7 +310,7 @@ public class EmojiCharSequenceNormalizerTest {
         count++;
       }
     }
-    Assertions.assertEquals(EMOJI_17_SEQUENCE_COUNT, count);
+    Assertions.assertEquals(EMOJI_18_SEQUENCE_COUNT, count);
   }
 
   @Test
