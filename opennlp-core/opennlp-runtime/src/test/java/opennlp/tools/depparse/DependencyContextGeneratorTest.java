@@ -28,6 +28,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -165,9 +166,10 @@ public class DependencyContextGeneratorTest {
 
   /**
    * Two-token sentences whose values contain a feature separator, paired so that a
-   * combined feature reads the same although the positions hold different values.
+   * combined feature would read the same if the separators were left unescaped although
+   * the positions hold different values.
    *
-   * @return The two sentences and the index of the colliding feature.
+   * @return The two sentences and the index of the feature that must now tell them apart.
    */
   static Stream<Arguments> collidingSentences() {
     return Stream.of(
@@ -183,19 +185,46 @@ public class DependencyContextGeneratorTest {
   }
 
   /**
-   * Pins that separators are not escaped: a value containing {@code |} or {@code /} makes
-   * one combined feature of two different sentences read the same, while the single-position
-   * features still tell them apart.
+   * A value containing {@code |} or {@code /} no longer makes a combined feature of two
+   * different sentences read the same: escaping the separators keeps the feature that used
+   * to collide, and every feature, distinct.
    */
   @ParameterizedTest(name = "{0}")
   @MethodSource("collidingSentences")
-  void testUnescapedSeparatorsCollideInCombinedFeatures(String description, String[] tokensA,
+  void testEscapedSeparatorsDoNotCollideInCombinedFeatures(String description, String[] tokensA,
       String[] tagsA, String[] tokensB, String[] tagsB, int feature) {
     final DependencyContextGenerator generator = new DependencyContextGenerator();
     final String[] a = generator.getContext(stackOfTwo(), tokensA, tagsA);
     final String[] b = generator.getContext(stackOfTwo(), tokensB, tagsB);
-    assertEquals(a[feature], b[feature]);
-    assertFalse(Arrays.equals(a, b), "the single-position features differ");
+    assertNotEquals(a[feature], b[feature]);
+    assertFalse(Arrays.equals(a, b));
+  }
+
+  /**
+   * Pins the escaped combined features: a separator and the escape character in a value are
+   * each prefixed with the escape character, so the feature keeps the position boundary.
+   */
+  @Test
+  void testSeparatorsAndEscapeCharacterAreEscapedInCombinedFeatures() {
+    final String[] features = new DependencyContextGenerator().getContext(stackOfTwo(),
+        new String[] {"a|b", "c/d"}, new String[] {"e\\f", "g"});
+    // s1wt (word-tag of the second stack position) joins word "a|b" and tag "e\f".
+    assertEquals("s1wt=a\\|b/e\\\\f", features[11]);
+    // s1t,s0t joins the second stack tag "e\f" and the stack top tag "g".
+    assertEquals("s1t,s0t=e\\\\f|g", features[18]);
+    // s1w,s0t joins the second stack word "a|b" and the stack top tag "g".
+    assertEquals("s1w,s0t=a\\|b|g", features[20]);
+  }
+
+  /**
+   * Single-position features carry one value, so a separator in that value cannot split
+   * the feature into two positions and the value is left as is.
+   */
+  @Test
+  void testSingleValueFeaturesAreNotEscaped() {
+    final String[] features = new DependencyContextGenerator().getContext(stackOfTwo(),
+        new String[] {"x", "a|b/c"}, new String[] {"X", "T"});
+    assertEquals("s0w=a|b/c", features[0]);
   }
 
   /**
