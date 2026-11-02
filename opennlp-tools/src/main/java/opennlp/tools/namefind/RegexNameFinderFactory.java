@@ -176,9 +176,17 @@ public class RegexNameFinderFactory {
       @Override
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
-        p[0] = Pattern.compile("([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*\\d{1,2}['|\\u2019|\\s])" +
-            "?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[N|n|S|s]?)(\\s*|,|,\\s*)([-|\\+]?\\d{1,3}[d|D|\\u00B0|" +
-            "\\s](\\s*\\d{1,2}['|\\u2019|\\s])?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[E|e|W|w]?)",
+        // Every whitespace run is consumed possessively (\s*+), so a long run of whitespace
+        // is scanned once instead of being re-partitioned between adjacent \s* quantifiers,
+        // and matching stays linear in the input length. This finds exactly the same spans
+        // as the greedy form: giving whitespace back never helps, because each \s*+ is
+        // followed by a digit, by the optional tail of the pattern, or by an optional
+        // hemisphere letter and a separator whose own \s*+ would re-consume the given-back
+        // whitespace and reach a state that was already tried.
+        p[0] = Pattern.compile("([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*+\\d{1,2}['|\\u2019|\\s])" +
+            "?(\\s*+\\d{1,2}[\\\"|\\u201d])?\\s*+[N|n|S|s]?)(\\s*+|,|,\\s*+)([-|\\+]?\\d{1,3}" +
+            "[d|D|\\u00B0|\\s](\\s*+\\d{1,2}['|\\u2019|\\s])?(\\s*+\\d{1,2}[\\\"|\\u201d])?" +
+            "\\s*+[E|e|W|w]?)",
             Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
