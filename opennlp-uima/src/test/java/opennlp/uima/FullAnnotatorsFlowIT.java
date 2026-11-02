@@ -35,7 +35,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Test for initialization of the opennlp.uima Annotators classes.
  */
-@EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+@EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+    path = "/project/opennlp/models-1.5/en-token.bin")
 public class FullAnnotatorsFlowIT extends AbstractIT {
 
   private static final String DOCUMENT_TEXT =

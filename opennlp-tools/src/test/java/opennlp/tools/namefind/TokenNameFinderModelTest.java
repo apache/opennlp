@@ -111,7 +111,8 @@ public class TokenNameFinderModelTest extends AbstractNameFinderTest {
   /*
    * OPENNLP-1369
    */
-  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  @EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+      path = "/project/opennlp/models-1.5/en-token.bin")
   @Test
   void testNERWithPOSModelV15() throws IOException, URISyntaxException {
 

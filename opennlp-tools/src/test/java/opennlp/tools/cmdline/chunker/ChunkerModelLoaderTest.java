@@ -31,7 +31,8 @@ import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.chunker.ChunkerModel;
 
-@EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+@EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+    path = "/project/opennlp/models-1.5/en-token.bin")
 public class ChunkerModelLoaderTest extends AbstractModelLoaderTest {
 
   // SUT
