@@ -35,6 +35,8 @@ the required interface and have a public no-argument constructor.
     Extension classes are loaded by <code>ExtensionLoader</code> via reflection. Only classes
     whose fully-qualified name starts with a registered package prefix are permitted.
     The default prefix is <code>opennlp.</code>, covering all built-in factories and serializers.
+    The same check applies to the model reader and writer classes that
+    <code>GenericModelReader</code> and <code>GenericModelWriter</code> load for a model type.
     </para>
     <para>
     To use a custom class outside <code>opennlp.</code>, register its package before loading

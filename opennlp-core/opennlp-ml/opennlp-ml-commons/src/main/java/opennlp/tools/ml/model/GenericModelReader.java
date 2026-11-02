@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import opennlp.tools.ml.AlgorithmType;
+import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
  * An generic {@link AbstractModelReader} implementation.
@@ -56,10 +57,22 @@ public class GenericModelReader extends AbstractModelReader {
     this.delegateModelReader = fromType(AlgorithmType.fromModelType(readUTF()));
   }
 
+  /**
+   * Creates the delegate reader for the given {@link AlgorithmType}. The reader class is
+   * resolved via {@link ExtensionLoader#loadExtensionClass(Class, String)}, so it has to
+   * reside in a package permitted by the {@link ExtensionLoader}.
+   *
+   * @param type The {@link AlgorithmType} to create a reader for.
+   * @return The delegate {@link AbstractModelReader}.
+   * @throws opennlp.tools.util.ext.ExtensionNotLoadedException Thrown if the reader class is
+   *         not in an allowed package or is not an {@link AbstractModelReader}.
+   * @throws RuntimeException Thrown if the reader class is not available or could not be
+   *         instantiated.
+   */
   private AbstractModelReader fromType(AlgorithmType type) {
     try {
-      final Class<? extends AbstractModelReader> readerClass
-          = (Class<? extends AbstractModelReader>) Class.forName(type.getReaderClazz());
+      final Class<? extends AbstractModelReader> readerClass =
+          ExtensionLoader.loadExtensionClass(AbstractModelReader.class, type.getReaderClazz());
 
       return readerClass.getDeclaredConstructor(DataReader.class).newInstance(this.dataReader);
 

@@ -123,6 +123,70 @@ public class ExtensionLoader {
   }
 
   /**
+   * Resolves the class with the given name as a subtype of {@code clazz} without
+   * instantiating it.
+   * <p>
+   * The class name is checked against the allowed package prefixes before the class
+   * is looked up. The class is located without being initialized, so its static
+   * initializers only run once the caller creates an instance of it.
+   * This allows callers that need a constructor with arguments to apply the same
+   * package check as {@link #instantiateExtension(Class, String)}.
+   * <p>
+   * Like {@link #instantiateExtension(Class, String)}, the class is resolved through
+   * the class loader that loaded {@link ExtensionLoader}, so it must be visible to that
+   * loader.
+   *
+   * @param clazz A reference to the expected super type {@link Class<T>}.
+   *              Must not be {@code null}.
+   * @param extensionClassName The (fully-qualified) name of the class to resolve.
+   * @param <T> The expected super type.
+   *
+   * @return The resolved class, typed as a subclass of {@code clazz}.
+   *
+   * @throws ExtensionNotLoadedException Thrown if {@code extensionClassName} is {@code null},
+   *         is not in an allowed package, or does not denote a subtype of {@code clazz}.
+   * @throws ClassNotFoundException Thrown if the class is in an allowed package but
+   *         could not be located on the class path.
+   * @throws IllegalArgumentException Thrown if {@code clazz} is {@code null}.
+   *
+   * @since 3.0.0
+   */
+  public static <T> Class<? extends T> loadExtensionClass(Class<T> clazz, String extensionClassName)
+      throws ClassNotFoundException {
+    ParamChecks.requireNonNullArg(clazz, "clazz");
+    if (extensionClassName == null) {
+      throw new ExtensionNotLoadedException("extensionClassName must not be null");
+    }
+
+    // Validate BEFORE Class.forName(), see instantiateExtension(Class, String).
+    checkAllowedPackage(extensionClassName);
+
+    final Class<?> extClazz = Class.forName(extensionClassName, false,
+        ExtensionLoader.class.getClassLoader());
+    if (!clazz.isAssignableFrom(extClazz)) {
+      throw new ExtensionNotLoadedException("Extension class '" + extClazz.getName() +
+          "' needs to have type: " + clazz.getName());
+    }
+    return extClazz.asSubclass(clazz);
+  }
+
+  /**
+   * Checks that {@code className} starts with one of the allowed package prefixes.
+   *
+   * @param className The (fully-qualified) class name to check. Must not be {@code null}.
+   * @throws ExtensionNotLoadedException Thrown if the class is not in an allowed package.
+   */
+  private static void checkAllowedPackage(String className) {
+    boolean allowed = ALLOWED_PREFIXES.stream().anyMatch(className::startsWith);
+    if (!allowed) {
+      throw new ExtensionNotLoadedException(
+          "Class '" + className + "' is not in an allowed package. " +
+          "Register the package via ExtensionLoader.registerAllowedPackage() or set " +
+          "the system property " + ALLOWED_PACKAGES_PROPERTY + " at JVM startup.");
+    }
+  }
+
+  /**
    * Instantiates a user provided extension to OpenNLP.
    * <p>
    * The extension is loaded from the class path.
@@ -150,13 +214,7 @@ public class ExtensionLoader {
 
     // Validate BEFORE Class.forName() — Class.forName() executes static initializers
     // (CWE-470), which must not run for untrusted class names.
-    boolean allowed = ALLOWED_PREFIXES.stream().anyMatch(extensionClassName::startsWith);
-    if (!allowed) {
-      throw new ExtensionNotLoadedException(
-          "Class '" + extensionClassName + "' is not in an allowed package. " +
-          "Register the package via ExtensionLoader.registerAllowedPackage() or set " +
-          "the system property " + ALLOWED_PACKAGES_PROPERTY + " at JVM startup.");
-    }
+    checkAllowedPackage(extensionClassName);
 
     // First try to load extension and instantiate extension from class path
     try {

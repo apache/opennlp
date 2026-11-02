@@ -17,11 +17,17 @@
 
 package opennlp.tools.util.ext;
 
+import org.example.extension.StaticInitMarker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class ExtensionLoaderTest {
+
+  private static final String PROBE_PACKAGE = "org.example.extension";
+  private static final String PROBE_CLASS = PROBE_PACKAGE + ".StaticInitProbe";
 
   interface TestStringGenerator {
     String generateTestString();
@@ -40,6 +46,7 @@ public class ExtensionLoaderTest {
     ExtensionLoader.unregisterAllowedPackage("com.acme");
     ExtensionLoader.unregisterAllowedPackage("com.example.nlp");
     ExtensionLoader.unregisterAllowedPackage("java.lang");
+    ExtensionLoader.unregisterAllowedPackage(PROBE_PACKAGE);
   }
 
   // --- existing test ---
@@ -223,5 +230,85 @@ public class ExtensionLoaderTest {
         () -> ExtensionLoader.instantiateExtension(
             TestStringGenerator.class,
             "com.acmeevil.Exploit"));
+  }
+
+  // --- loadExtensionClass tests ---
+
+  @Test
+  void testLoadExtensionClassResolvesAllowedClass() throws ClassNotFoundException {
+    Class<? extends TestStringGenerator> c = ExtensionLoader.loadExtensionClass(
+        TestStringGenerator.class, TestStringGeneratorImpl.class.getName());
+    Assertions.assertEquals(TestStringGeneratorImpl.class, c);
+  }
+
+  /**
+   * A class outside the allowed packages is rejected before it is looked up,
+   * so its static initializer never runs.
+   */
+  @Test
+  void testLoadExtensionClassRejectsDisallowedPackageWithoutInitializing() {
+    ExtensionNotLoadedException ex = Assertions.assertThrows(ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.loadExtensionClass(Object.class, PROBE_CLASS));
+
+    Assertions.assertTrue(ex.getMessage().contains("not in an allowed package"),
+        "unexpected message: " + ex.getMessage());
+    Assertions.assertFalse(StaticInitMarker.INITIALIZED.get(),
+        "static initializer of " + PROBE_CLASS + " must not have run");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "org.example.extension.DoesNotExist",
+      "com.acmeother.Fake",
+      "opennlpx.tools.Fake",
+      "java.lang.Runtime",
+      ""
+  })
+  void testLoadExtensionClassRejectsNamesOutsideAllowedPackages(String className) {
+    ExtensionNotLoadedException ex = Assertions.assertThrows(ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.loadExtensionClass(Object.class, className));
+    Assertions.assertTrue(ex.getMessage().contains("not in an allowed package"),
+        "unexpected message: " + ex.getMessage());
+  }
+
+  /**
+   * A registered package prefix is honored. The class is resolved but not initialized.
+   */
+  @Test
+  void testLoadExtensionClassHonorsRegisteredPackage() throws ClassNotFoundException {
+    ExtensionLoader.registerAllowedPackage(PROBE_PACKAGE);
+
+    Class<?> c = ExtensionLoader.loadExtensionClass(Object.class, PROBE_CLASS);
+
+    Assertions.assertEquals(PROBE_CLASS, c.getName());
+    Assertions.assertFalse(StaticInitMarker.INITIALIZED.get(),
+        "resolving the class must not run its static initializer");
+  }
+
+  @Test
+  void testLoadExtensionClassRejectsWrongType() {
+    ExtensionLoader.registerAllowedPackage(PROBE_PACKAGE);
+
+    ExtensionNotLoadedException ex = Assertions.assertThrows(ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.loadExtensionClass(TestStringGenerator.class, PROBE_CLASS));
+
+    Assertions.assertTrue(ex.getMessage().contains("needs to have type"),
+        "unexpected message: " + ex.getMessage());
+    Assertions.assertFalse(StaticInitMarker.INITIALIZED.get(),
+        "static initializer of " + PROBE_CLASS + " must not have run");
+  }
+
+  @Test
+  void testLoadExtensionClassMissingClassInAllowedPackage() {
+    Assertions.assertThrows(ClassNotFoundException.class,
+        () -> ExtensionLoader.loadExtensionClass(Object.class, "opennlp.tools.DoesNotExist"));
+  }
+
+  @Test
+  void testLoadExtensionClassRejectsNullArguments() {
+    Assertions.assertThrows(ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.loadExtensionClass(Object.class, null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> ExtensionLoader.loadExtensionClass(null, TestStringGeneratorImpl.class.getName()));
   }
 }
