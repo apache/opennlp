@@ -40,7 +40,6 @@ import static opennlp.dl.vectors.TinyVectorModels.vocab;
 import static opennlp.dl.vectors.TinyVectorModels.vocabPad6;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -54,7 +53,7 @@ class SentenceVectorsOptionsTest {
     assertEquals(Pooling.MEAN, options.pooling());
     assertTrue(options.normalize());
     assertEquals(SentenceVectorsDL.DEFAULT_MAX_LENGTH, options.maxLength());
-    assertNull(options.padding());
+    assertEquals("AUTO", String.valueOf(options.padding()));
     final File graph = model(dir, TINY_VECTORS);
     final File vocabulary = vocab(dir);
     try (SentenceVectorsDL legacy = new SentenceVectorsDL(graph, vocabulary);
@@ -115,6 +114,13 @@ class SentenceVectorsOptionsTest {
   void testNullPooling() {
     assertEquals("pooling must not be null", assertThrows(IllegalArgumentException.class,
         () -> new SentenceVectorsOptions(null, true, 8, null)).getMessage());
+  }
+
+  /** A missing padding strategy is rejected instead of selecting an implicit default. */
+  @Test
+  void testNullPadding() {
+    assertEquals("padding must not be null", assertThrows(IllegalArgumentException.class,
+        () -> new SentenceVectorsOptions(Pooling.MEAN, true, 8, null)).getMessage());
   }
 
   /** The length includes both wrapper tokens, so it must be at least two. */

@@ -137,7 +137,7 @@ class SentenceVectorsDLEmbedderTest {
         Map.entry(NORMALIZE_OPTION, "yes"), Map.entry(POOLING_OPTION, "max"),
         Map.entry(POOLING_OPTION, "MEAN"), Map.entry(MAX_LENGTH_OPTION, "1"),
         Map.entry(MAX_LENGTH_OPTION, "many"), Map.entry(PADDING_OPTION, "none"),
-        Map.entry(PADDING_OPTION, "LONGEST"), Map.entry("typo", "true"))) {
+        Map.entry("typo", "true"))) {
       assertThrows(IllegalArgumentException.class, () -> provider.create(ProviderSpec.of(graph,
           Map.of(VOCABULARY_OPTION, "vocab.txt", invalid.getKey(), invalid.getValue()))),
           invalid.toString());
@@ -149,7 +149,8 @@ class SentenceVectorsDLEmbedderTest {
    * the single-input vector of each row.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"exact_length", "longest", "max_length"})
+  @ValueSource(strings = {"auto", "AUTO", "Auto", "exact_length", "EXACT_LENGTH", "Exact_Length",
+      "longest", "LONGEST", "Longest", "max_length", "MAX_LENGTH", "Max_Length"})
   void testProviderPaddingOption(final String padding, @TempDir final Path dir) throws Exception {
     final Path graph = model(dir, TINY_VECTORS).toPath();
     vocab(dir);
