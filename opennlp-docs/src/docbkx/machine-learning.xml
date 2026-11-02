@@ -177,11 +177,15 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			<code>pooling=cls</code>, <code>normalize=true</code> (default) or
 			<code>normalize=false</code>, and <code>maxLength</code>, the maximum number of tokens
 			per input (512 by default); longer input is truncated. The option <code>padding</code>
-			sets how <code>embedAll</code> batches texts of different lengths:
-			<code>exact_length</code> (default) does not pad and runs one inference per tokenized
+			sets how <code>embedAll</code> batches texts of different lengths. Values are accepted
+			in any letter case. <code>auto</code> (default) selects the device and model default;
+			the provider uses a CPU session, so it selects <code>exact_length</code>.
+			<code>exact_length</code> does not pad and runs one inference per tokenized
 			length, <code>longest</code> pads each batch to its longest text, and
 			<code>max_length</code> pads every text to <code>maxLength</code>, single
-			<code>embed</code> calls included. The vectors match up to floating-point rounding
+			<code>embed</code> calls included. If the output dimension is unknown, the constructor
+			also probes at <code>maxLength</code>, which must fit the model's position limit.
+			The vectors match up to floating-point rounding
 			under every strategy, provided the model honors the attention mask; a
 			<code>sentence_embedding</code> output that ignores the mask changes with padding.
 			Padding needs a <code>[PAD]</code> token in the vocabulary, or <code>&lt;pad&gt;</code>
@@ -211,9 +215,11 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			<code>sentence_embedding</code> output is not padded by default, because it may ignore
 			the attention mask and then padding changes the vectors. Pass
 			<code>SentenceVectorsOptions</code> to select pooling, normalization, the maximum token
-			length and an explicit <code>PaddingStrategy</code>. A <code>null</code> padding strategy
-			keeps the device and model default. <code>InferenceOptions</code> supplies the session
-			settings separately.
+			length and an explicit <code>PaddingStrategy</code>. <code>PaddingStrategy.AUTO</code>
+			selects the device and model default; <code>null</code> is rejected.
+			Padded batches can introduce small floating-point differences when the model honors
+			the attention mask. Select <code>PaddingStrategy.EXACT_LENGTH</code> to retain unpadded
+			batches on a GPU. <code>InferenceOptions</code> supplies the session settings separately.
 		</para>
 		<programlisting language="java"><![CDATA[InferenceOptions options = new InferenceOptions();
 options.setGpu(true);

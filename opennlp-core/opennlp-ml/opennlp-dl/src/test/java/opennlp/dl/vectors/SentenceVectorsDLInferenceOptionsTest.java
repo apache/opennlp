@@ -79,8 +79,9 @@ class SentenceVectorsDLInferenceOptionsTest {
     final File model = model(dir, modelName);
     final File vocab = vocab(dir);
     try (SentenceVectorsDL gpu = gpuOrAbort(model, vocab, pooling, normalize);
-         SentenceVectorsDL cpu = new SentenceVectorsDL(model, vocab, true, pooling, normalize,
-             SentenceVectorsDL.DEFAULT_MAX_LENGTH, new InferenceOptions())) {
+         SentenceVectorsDL cpu = new SentenceVectorsDL(model, vocab, true,
+             new SentenceVectorsOptions(pooling, normalize, SentenceVectorsDL.DEFAULT_MAX_LENGTH,
+                 PaddingStrategy.AUTO), new InferenceOptions())) {
       assertEquals(cpu.dimension(), gpu.dimension());
       assertArrayEquals(cpu.embed(HELLO_WORLD), gpu.embed(HELLO_WORLD), DELTA);
       // The GPU session pads to the longest text by default, the CPU session does not pad.
@@ -103,8 +104,7 @@ class SentenceVectorsDLInferenceOptionsTest {
     final File vocab = vocab(dir);
     final InferenceOptions options = gpu(deviceId);
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> new SentenceVectorsDL(model, vocab, true, Pooling.MEAN, false,
-            SentenceVectorsDL.DEFAULT_MAX_LENGTH, options).close());
+        () -> new SentenceVectorsDL(model, vocab, true, new SentenceVectorsOptions(), options).close());
     assertEquals("gpuDeviceId must not be negative", e.getMessage());
   }
 
@@ -119,8 +119,8 @@ class SentenceVectorsDLInferenceOptionsTest {
     final File model = model(dir, TINY_VECTORS);
     final File vocab = vocab(dir);
     final InferenceOptions options = gpu(deviceId);
-    assertThrows(OrtException.class, () -> new SentenceVectorsDL(model, vocab, true, Pooling.MEAN,
-        false, SentenceVectorsDL.DEFAULT_MAX_LENGTH, options).close());
+    assertThrows(OrtException.class, () -> new SentenceVectorsDL(model, vocab, true,
+        new SentenceVectorsOptions(), options).close());
   }
 
   /**
@@ -151,7 +151,8 @@ class SentenceVectorsDLInferenceOptionsTest {
       options.setLowerCase(inOptions);
     }
     try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir),
-        argument, Pooling.MEAN, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH, options)) {
+        argument, new SentenceVectorsOptions(Pooling.MEAN, false,
+            SentenceVectorsDL.DEFAULT_MAX_LENGTH, PaddingStrategy.AUTO), options)) {
       assertArrayEquals(scale(expectedLowerCase ? 14 / 3f : 4f), vectors.embed("HELLO"), DELTA);
     }
   }
@@ -166,8 +167,9 @@ class SentenceVectorsDLInferenceOptionsTest {
     final File vocab = vocab(dir);
     try (SentenceVectorsDL plain = new SentenceVectorsDL(model, vocab, true, Pooling.MEAN, false,
         SentenceVectorsDL.DEFAULT_MAX_LENGTH);
-         SentenceVectorsDL withOptions = new SentenceVectorsDL(model, vocab, true, Pooling.MEAN,
-             false, SentenceVectorsDL.DEFAULT_MAX_LENGTH, new InferenceOptions())) {
+         SentenceVectorsDL withOptions = new SentenceVectorsDL(model, vocab, true,
+             new SentenceVectorsOptions(Pooling.MEAN, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH,
+                 PaddingStrategy.AUTO), new InferenceOptions())) {
       assertArrayEquals(plain.embed(HELLO_WORLD), withOptions.embed(HELLO_WORLD), DELTA);
     }
   }
@@ -180,8 +182,7 @@ class SentenceVectorsDLInferenceOptionsTest {
     final File model = model(dir, TINY_VECTORS);
     final File vocab = vocab(dir);
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> new SentenceVectorsDL(model, vocab, true, Pooling.MEAN, false,
-            SentenceVectorsDL.DEFAULT_MAX_LENGTH, null).close());
+        () -> new SentenceVectorsDL(model, vocab, true, new SentenceVectorsOptions(), null).close());
     assertEquals("inferenceOptions must not be null", e.getMessage());
   }
 }

@@ -24,7 +24,7 @@ import java.util.List;
  * of a call differ in tokenized length.
  *
  * <p>A padded position is {@code 0} in the attention mask and {@link Pooling} reads only the
- * positions a row's own mask covers, so the vectors of all three strategies match up to
+ * positions a row's own mask covers, so the vectors of the strategies match up to
  * floating-point rounding, provided the model honors the attention mask. A
  * {@code sentence_embedding} output that ignores the mask changes with padding. The strategies
  * differ in tensor shape and in how many times the session runs.</p>
@@ -32,6 +32,12 @@ import java.util.List;
  * @since 3.0.0
  */
 public enum PaddingStrategy {
+
+  /**
+   * Selects {@link #LONGEST} on a GPU for a model with token output and a padding token in its
+   * vocabulary, {@link #EXACT_LENGTH} otherwise. Resolved when the embedder is constructed.
+   */
+  AUTO,
 
   /**
    * No padding. Texts are grouped by their exact tokenized length and each group runs on its own.
@@ -48,11 +54,12 @@ public enum PaddingStrategy {
   LONGEST,
 
   /**
-   * Every row is padded to the maximum length, so every inference has the same shape. Single
-   * calls such as {@link SentenceVectorsDL#embed(CharSequence)} and
+   * Every row is padded to the maximum length, so every inference has the same sequence length.
+   * Single calls such as {@link SentenceVectorsDL#embed(CharSequence)} and
    * {@link SentenceVectorsDL#getVectors(String)} pad to the maximum length as well. Useful for a
    * model or accelerator that needs a fixed sequence length. Requires a padding token in the
-   * vocabulary.
+   * vocabulary. If the output dimension must be probed during construction, that inference also
+   * uses the maximum length and can fail if it exceeds the model's position limit.
    */
   MAX_LENGTH
 }

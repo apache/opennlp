@@ -49,6 +49,16 @@ public class InferenceOptions {
     return gpu;
   }
 
+  /**
+   * Selects GPU inference. For {@link opennlp.dl.vectors.SentenceVectorsDL}, automatic padding
+   * selects {@link opennlp.dl.vectors.PaddingStrategy#LONGEST} on a GPU when the model has token
+   * output and the vocabulary has a padding token. Other models retain exact-length batching.
+   * Padded batches can introduce small floating-point differences when the model honors the
+   * attention mask. Set {@link opennlp.dl.vectors.PaddingStrategy#EXACT_LENGTH} through
+   * {@link opennlp.dl.vectors.SentenceVectorsOptions} to keep unpadded batches.
+   *
+   * @param gpu Whether to use GPU inference.
+   */
   public void setGpu(boolean gpu) {
     this.gpu = gpu;
   }

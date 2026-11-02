@@ -214,7 +214,7 @@ public final class TinyVectorModels {
   public static SentenceVectorsDL gpuOrAbort(final File model, final File vocab,
       final Pooling pooling, final boolean normalize) throws IOException {
     return gpuOrAbort(model, vocab, pooling, normalize, SentenceVectorsDL.DEFAULT_MAX_LENGTH,
-        null);
+        PaddingStrategy.AUTO);
   }
 
   /**
@@ -226,7 +226,7 @@ public final class TinyVectorModels {
    * @param pooling The pooling.
    * @param normalize {@code true} to scale every vector to unit length.
    * @param maxLength The maximum number of tokens per input.
-   * @param padding The padding strategy, or {@code null} for the one the device picks.
+   * @param padding The padding strategy, including {@link PaddingStrategy#AUTO}.
    * @return The session on the GPU.
    * @throws IOException Thrown if the model or vocabulary cannot be read.
    */
@@ -235,11 +235,8 @@ public final class TinyVectorModels {
       final PaddingStrategy padding) throws IOException {
     assumeTrue(hasCudaProvider(), "the ONNX Runtime on the classpath has no CUDA execution provider");
     try {
-      return padding == null
-          ? new SentenceVectorsDL(model, vocab, true, pooling, normalize, maxLength, gpu(0))
-          : new SentenceVectorsDL(model, vocab, true,
-              new SentenceVectorsOptions(pooling, normalize, maxLength, padding),
-              gpu(0));
+      return new SentenceVectorsDL(model, vocab, true,
+          new SentenceVectorsOptions(pooling, normalize, maxLength, padding), gpu(0));
     } catch (OrtException e) {
       return abort("no usable CUDA device 0: " + e.getMessage());
     }

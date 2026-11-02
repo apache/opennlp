@@ -33,10 +33,12 @@ import static opennlp.dl.vectors.TinyVectorModels.DELTA;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_POOLED;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_VECTORS;
 import static opennlp.dl.vectors.TinyVectorModels.UNIT_VECTOR;
+import static opennlp.dl.vectors.TinyVectorModels.gpuOrAbort;
 import static opennlp.dl.vectors.TinyVectorModels.model;
 import static opennlp.dl.vectors.TinyVectorModels.scale;
 import static opennlp.dl.vectors.TinyVectorModels.tokens;
 import static opennlp.dl.vectors.TinyVectorModels.vocab;
+import static opennlp.dl.vectors.TinyVectorModels.vocabNoPad;
 import static opennlp.dl.vectors.TinyVectorModels.vocabPad6;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,7 +55,7 @@ class SentenceVectorsOptionsTest {
     assertEquals(Pooling.MEAN, options.pooling());
     assertTrue(options.normalize());
     assertEquals(SentenceVectorsDL.DEFAULT_MAX_LENGTH, options.maxLength());
-    assertEquals("AUTO", String.valueOf(options.padding()));
+    assertEquals(PaddingStrategy.AUTO, options.padding());
     final File graph = model(dir, TINY_VECTORS);
     final File vocabulary = vocab(dir);
     try (SentenceVectorsDL legacy = new SentenceVectorsDL(graph, vocabulary);
@@ -70,9 +72,10 @@ class SentenceVectorsOptionsTest {
     final File graph = model(dir, TINY_VECTORS);
     final File vocabulary = vocab(dir);
     try (SentenceVectorsDL cls = new SentenceVectorsDL(graph, vocabulary, true,
-        new SentenceVectorsOptions(Pooling.CLS, false, 8, null), new InferenceOptions());
+        new SentenceVectorsOptions(Pooling.CLS, false, 8, PaddingStrategy.AUTO), new InferenceOptions());
          SentenceVectorsDL truncated = new SentenceVectorsDL(graph, vocabulary, true,
-             new SentenceVectorsOptions(Pooling.MEAN, false, 3, null), new InferenceOptions())) {
+             new SentenceVectorsOptions(Pooling.MEAN, false, 3, PaddingStrategy.AUTO),
+             new InferenceOptions())) {
       assertArrayEquals(scale(7), cls.embed("hello world"), DELTA);
       assertArrayEquals(scale(14.0f / 3), truncated.embed("hello world"), DELTA);
     }
@@ -98,6 +101,22 @@ class SentenceVectorsOptionsTest {
     }
   }
 
+  /** Automatic padding retains unpadded batches without a padding token on either device. */
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testAutomaticPaddingWithoutPadToken(final boolean gpu, @TempDir final Path dir)
+      throws Exception {
+    final File graph = model(dir, TINY_VECTORS);
+    final File vocabulary = vocabNoPad(dir);
+    try (SentenceVectorsDL vectors = gpu
+        ? gpuOrAbort(graph, vocabulary, Pooling.MEAN, false)
+        : new SentenceVectorsDL(graph, vocabulary, true, new SentenceVectorsOptions(),
+            new InferenceOptions())) {
+      assertEquals(List.of(List.of(0), List.of(1)),
+          vectors.batches(new Tokens[] {tokens(4), tokens(3)}));
+    }
+  }
+
   /** The session's lower-case override still takes precedence over the constructor argument. */
   @Test
   void testInferenceLowerCaseOverride(@TempDir final Path dir) throws Exception {
@@ -113,7 +132,7 @@ class SentenceVectorsOptionsTest {
   @Test
   void testNullPooling() {
     assertEquals("pooling must not be null", assertThrows(IllegalArgumentException.class,
-        () -> new SentenceVectorsOptions(null, true, 8, null)).getMessage());
+        () -> new SentenceVectorsOptions(null, true, 8, PaddingStrategy.AUTO)).getMessage());
   }
 
   /** A missing padding strategy is rejected instead of selecting an implicit default. */
@@ -128,14 +147,16 @@ class SentenceVectorsOptionsTest {
   @ValueSource(ints = {Integer.MIN_VALUE, -1, 0, 1})
   void testInvalidLength(final int length) {
     assertEquals("maxLength must be at least 2", assertThrows(IllegalArgumentException.class,
-        () -> new SentenceVectorsOptions(Pooling.MEAN, true, length, null)).getMessage());
+        () -> new SentenceVectorsOptions(Pooling.MEAN, true, length, PaddingStrategy.AUTO))
+        .getMessage());
   }
 
   /** The minimum length retains the classification and separator tokens. */
   @Test
   void testMinimumLength(@TempDir final Path dir) throws Exception {
     try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir, TINY_VECTORS), vocab(dir),
-        true, new SentenceVectorsOptions(Pooling.MEAN, false, 2, null), new InferenceOptions())) {
+        true, new SentenceVectorsOptions(Pooling.MEAN, false, 2, PaddingStrategy.AUTO),
+        new InferenceOptions())) {
       assertArrayEquals(scale(5), vectors.embed("hello world"), DELTA);
     }
   }

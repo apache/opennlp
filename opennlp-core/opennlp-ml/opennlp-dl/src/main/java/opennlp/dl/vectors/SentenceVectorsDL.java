@@ -193,62 +193,23 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       final Pooling pooling, final boolean normalize, final int maxLength)
       throws OrtException, IOException {
 
-    this(model, vocabulary, lowerCase, pooling, normalize, maxLength, new InferenceOptions());
-
-  }
-
-  /**
-   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models and the
-   * given {@link InferenceOptions}, so the session can run on a GPU through
-   * {@code opennlp-dl-gpu}.
-   *
-   * @param model The file name of a sentence vectors ONNX model.
-   * @param vocabulary The file name of the vocabulary file for the model.
-   * @param lowerCase {@code true} for uncased models (lower casing and accent
-   *     stripping during tokenization), {@code false} for cased models. A lower case setting in
-   *     {@code inferenceOptions} takes precedence.
-   * @param pooling How token vectors are pooled. Not used for a model with a
-   *     {@code sentence_embedding} output. Must not be {@code null}.
-   * @param normalize {@code true} to scale every vector to unit length.
-   * @param maxLength The maximum number of tokens per input, {@code [CLS]} and {@code [SEP]}
-   *     included; longer input is truncated. Must be at least {@code 2}.
-   * @param inferenceOptions The {@link InferenceOptions}, of which the GPU settings and the lower
-   *     case setting are used. Must not be {@code null}. {@link #embedAll(List)} batches by
-   *     {@link #DEFAULT_CPU_PADDING}, or by {@link #DEFAULT_GPU_PADDING} on a GPU for a model
-   *     without a pooled output if the vocabulary has a padding token.
-   *
-   * @throws IllegalArgumentException Thrown if {@code pooling} or {@code inferenceOptions} is
-   *     {@code null}, if {@code inferenceOptions} holds invalid split options or requests a GPU
-   *     with a negative device id, if {@code maxLength} is less than {@code 2}, or if the model
-   *     has no output of shape {@code [batch, hidden]} or {@code [batch, tokens, hidden]}.
-   * @throws OrtException Thrown if the {@code model} cannot be loaded, or if a GPU was requested
-   *     and ONNX Runtime cannot provide it. ONNX Runtime does not fall back to the CPU.
-   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
-   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
-   *     is malformed, has an unsupported layout, or sets a lower casing that disagrees with
-   *     the lower casing the component is configured with.
-   *
-   * @since 3.0.0
-   */
-  public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase,
-      final Pooling pooling, final boolean normalize, final int maxLength,
-      final InferenceOptions inferenceOptions)
-      throws OrtException, IOException {
-
     this(model, vocabulary, lowerCase,
-        new SentenceVectorsOptions(pooling, normalize, maxLength, null), inferenceOptions);
+        new SentenceVectorsOptions(pooling, normalize, maxLength, PaddingStrategy.AUTO),
+        new InferenceOptions());
 
   }
 
   /**
    * Instantiates a sentence vector generator with vector settings and ONNX session settings.
+   * With {@link PaddingStrategy#MAX_LENGTH}, a probe for an unknown output dimension also runs
+   * at the configured maximum length and can fail if it exceeds the model's position limit.
    *
    * @param model The file name of a sentence vectors ONNX model.
    * @param vocabulary The file name of the vocabulary file for the model.
    * @param lowerCase {@code true} for uncased models, {@code false} for cased models. A lower case
    *     setting in {@code inferenceOptions} takes precedence.
    * @param vectorOptions The pooling, normalization, truncation and padding settings. Must not
-   *     be {@code null}. A {@code null} padding strategy selects the device and model default.
+   *     be {@code null}. {@link PaddingStrategy#AUTO} selects the device and model default.
    * @param inferenceOptions The ONNX session settings. Must not be {@code null}.
    *
    * @throws IllegalArgumentException Thrown if {@code vectorOptions} or {@code inferenceOptions}
@@ -256,8 +217,8 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    *     GPU device id, if the model has no output of shape {@code [batch, hidden]} or
    *     {@code [batch, tokens, hidden]}, or if padding is requested without a vocabulary padding
    *     token.
-   * @throws OrtException Thrown if the model cannot be loaded or the requested GPU is unavailable.
-   *     ONNX Runtime does not fall back to the CPU.
+   * @throws OrtException Thrown if the model cannot be loaded, the output dimension probe fails,
+   *     or the requested GPU is unavailable. ONNX Runtime does not fall back to the CPU.
    * @throws IOException Thrown if the model or vocabulary cannot be read.
    * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON vocabulary is malformed,
    *     has an unsupported layout, or disagrees with the configured lower casing.
@@ -279,8 +240,8 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       this.outputName = selectOutput(outputs);
       final long[] shape = ((TensorInfo) outputs.get(outputName).getInfo()).getShape();
       this.pooledOutput = shape.length == POOLED_RANK;
-      this.padding = vectorOptions.padding() != null ? vectorOptions.padding()
-          : devicePadding(inferenceOptions.isGpu());
+      this.padding = vectorOptions.padding() == PaddingStrategy.AUTO
+          ? devicePadding(inferenceOptions.isGpu()) : vectorOptions.padding();
       this.padTokenId = this.padding == PaddingStrategy.EXACT_LENGTH ? 0 : padTokenId();
       final long declared = shape[shape.length - 1];
       this.dimension = declared > 0 && declared <= Integer.MAX_VALUE
@@ -297,7 +258,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * {@return the padding of a session built without a padding strategy:
+   * {@return the padding selected by {@link PaddingStrategy#AUTO}:
    * {@link #DEFAULT_GPU_PADDING} on a GPU for a token output if the vocabulary has a padding
    * token, {@link #DEFAULT_CPU_PADDING} otherwise} A model with a pooled output is not padded by
    * default because it may ignore the attention mask, in which case padding changes the vectors.

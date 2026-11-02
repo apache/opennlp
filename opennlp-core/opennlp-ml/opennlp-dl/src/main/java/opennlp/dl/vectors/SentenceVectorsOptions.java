@@ -27,7 +27,8 @@ import opennlp.tools.util.ParamChecks;
  * @param normalize {@code true} to scale every vector to unit length.
  * @param maxLength The maximum number of tokens per input, including the classification and
  *     separator tokens. Longer input is truncated. Must be at least {@code 2}.
- * @param padding The padding strategy, or {@code null} for the device and model default:
+ * @param padding The padding strategy. Must not be {@code null}. {@link PaddingStrategy#AUTO}
+ *     selects the device and model default:
  *     {@link SentenceVectorsDL#DEFAULT_GPU_PADDING} on a GPU for a token output if the
  *     vocabulary has a padding token, {@link SentenceVectorsDL#DEFAULT_CPU_PADDING} otherwise.
  *     An explicit padded strategy requires a padding token in the vocabulary.
@@ -37,16 +38,19 @@ import opennlp.tools.util.ParamChecks;
 public record SentenceVectorsOptions(Pooling pooling, boolean normalize, int maxLength,
                                     PaddingStrategy padding) {
 
+  private static final int MIN_LENGTH = 2;
+
   /**
-   * Creates vector settings after validating the pooling mode and maximum length.
+   * Creates vector settings after validating the pooling mode, maximum length and padding strategy.
    *
-   * @throws IllegalArgumentException Thrown if {@code pooling} is {@code null} or
+   * @throws IllegalArgumentException Thrown if {@code pooling} or {@code padding} is {@code null}, or
    *     {@code maxLength} is less than {@code 2}.
    */
   public SentenceVectorsOptions {
     ParamChecks.requireNonNullArg(pooling, "pooling");
-    if (maxLength < 2) {
-      throw new IllegalArgumentException("maxLength must be at least 2");
+    ParamChecks.requireNonNullArg(padding, "padding");
+    if (maxLength < MIN_LENGTH) {
+      throw new IllegalArgumentException("maxLength must be at least " + MIN_LENGTH);
     }
   }
 
@@ -55,6 +59,6 @@ public record SentenceVectorsOptions(Pooling pooling, boolean normalize, int max
    * {@value SentenceVectorsDL#DEFAULT_MAX_LENGTH} tokens and the device and model padding default.
    */
   public SentenceVectorsOptions() {
-    this(Pooling.MEAN, true, SentenceVectorsDL.DEFAULT_MAX_LENGTH, null);
+    this(Pooling.MEAN, true, SentenceVectorsDL.DEFAULT_MAX_LENGTH, PaddingStrategy.AUTO);
   }
 }

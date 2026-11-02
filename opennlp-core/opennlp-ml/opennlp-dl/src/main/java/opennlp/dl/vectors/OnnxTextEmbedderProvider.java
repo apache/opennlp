@@ -68,8 +68,8 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
   public static final String MAX_LENGTH_OPTION = "maxLength";
 
   /**
-   * The option that selects the {@link PaddingStrategy}: {@code exact_length} by default,
-   * {@code longest} or {@code max_length}.
+   * The option that selects the {@link PaddingStrategy}: {@code auto} by default,
+   * {@code exact_length}, {@code longest} or {@code max_length}, in any letter case.
    */
   public static final String PADDING_OPTION = "padding";
 
@@ -174,15 +174,16 @@ public final class OnnxTextEmbedderProvider implements TextEmbedderProvider {
    * Reads the {@value #PADDING_OPTION} option.
    *
    * @param spec The spec to read.
-   * @return The padding strategy, {@link PaddingStrategy#EXACT_LENGTH} if the option is not set.
-   * @throws IllegalArgumentException Thrown if the value is not the lower case name of a
+   * @return The padding strategy, {@link PaddingStrategy#AUTO} if the option is not set.
+   * @throws IllegalArgumentException Thrown if the value is not the name of a
    *     {@link PaddingStrategy}.
    */
   private PaddingStrategy paddingOption(final ProviderSpec spec) {
-    final String value = spec.option(PADDING_OPTION, null);
-    if (value == null) {
-      return SentenceVectorsDL.DEFAULT_CPU_PADDING;
+    final String option = spec.option(PADDING_OPTION, null);
+    if (option == null) {
+      return PaddingStrategy.AUTO;
     }
+    final String value = StringUtil.toLowerCase(option);
     final List<String> names = new ArrayList<>();
     for (final PaddingStrategy padding : PaddingStrategy.values()) {
       final String name = StringUtil.toLowerCase(padding.name());
