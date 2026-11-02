@@ -97,7 +97,8 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   }
 
   @Test
-  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  @EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+      path = "/project/opennlp/models-1.5/en-token.bin")
   void testPOSTaggerLegacyPerceptronPennToUD() throws IOException {
     final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "ADP", "DET", "NOUN", "PUNCT"};
     //convert PENN to UD on the fly.
@@ -106,7 +107,8 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   }
 
   @Test
-  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  @EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+      path = "/project/opennlp/models-1.5/en-token.bin")
   void testPOSTaggerLegacyPerceptronPenn() throws IOException {
     final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "IN", "DT", "NN", "."};
     //convert PENN to UD on the fly.
@@ -115,7 +117,8 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   }
 
   @Test
-  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  @EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+      path = "/project/opennlp/models-1.5/en-token.bin")
   void testPOSTaggerLegacyMaxentPennToUD() throws IOException {
     final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "ADP", "DET", "NOUN", "PUNCT"};
     //convert PENN to UD on the fly.
@@ -124,7 +127,8 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   }
 
   @Test
-  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  @EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+      path = "/project/opennlp/models-1.5/en-token.bin")
   void testPOSTaggerLegacyMaxentPenn() throws IOException {
     final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "IN", "DT", "NN", "."};
     //convert PENN to UD on the fly.
