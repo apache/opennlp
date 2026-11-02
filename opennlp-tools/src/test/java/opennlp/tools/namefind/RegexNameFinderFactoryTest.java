@@ -18,17 +18,23 @@
 package opennlp.tools.namefind;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
@@ -102,9 +108,8 @@ public class RegexNameFinderFactoryTest {
    * The hardened patterns must finish quickly regardless of input length.
    * <p>
    * Each attack runs as its own test so a regression names the exact input that
-   * got slow. Each case does one warmup run outside the timed section, so the
-   * budget measures the match itself rather than JVM cold start on throttled
-   * machines.
+   * got slow. Each case uses a generous timeout for warmup before checking a
+   * tighter match budget, allowing for JVM cold start on throttled machines.
    */
   private static Stream<Arguments> reDoSAttacks() {
     return Stream.of(
@@ -121,11 +126,209 @@ public class RegexNameFinderFactoryTest {
   @MethodSource("reDoSAttacks")
   void testBuiltinPatternsAreNotVulnerableToReDoS(String attack) {
     String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(attack);
-    // Warmup: JIT-compile the pattern engine before the timed run.
-    regexNameFinder.find(tokens);
+    assertCompletesQuickly(() -> regexNameFinder.find(tokens));
+    assertCompletesQuickly(() -> regexNameFinder.find(attack));
+  }
 
-    Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2),
-        () -> regexNameFinder.find(tokens));
+  /**
+   * Long whitespace runs after a digit, the shape of a degrees/minutes/seconds
+   * coordinate whose remainder never arrives. Matched on the raw text (the
+   * whitespace-tokenized form collapses the runs), every built-in pattern must
+   * finish in time linear in the run length.
+   */
+  private static Stream<Arguments> whitespaceRunInputs() {
+    final int n = 32_000;
+    final String spaces = " ".repeat(n);
+    final List<Named<String>> inputs = List.of(
+        Named.of("digitThenSpaces", "1" + spaces),
+        Named.of("degreeMarkThenSpaces", "1d" + spaces),
+        Named.of("degreeSignThenSpaces", "1°" + spaces),
+        Named.of("digitSpacesDigitSpaces", "1" + spaces + "1" + spaces),
+        Named.of("minutesThenSpaces", "1 22'" + spaces),
+        Named.of("hemisphereThenSpaces", "1 N" + spaces),
+        Named.of("commaThenSpaces", "1 ," + spaces),
+        Named.of("digitThenTabs", "1" + "\t".repeat(n)),
+        Named.of("digitThenMixedWhitespace", "1" + " \t\n\r".repeat(n / 4)),
+        Named.of("mgrsWithSpaces", "11S" + spaces + "KU" + spaces + "1" + spaces));
+    final List<Arguments> cases = new ArrayList<>();
+    for (RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER def
+        : RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.values()) {
+      for (Named<String> input : inputs) {
+        cases.add(Arguments.of(def, input));
+      }
+    }
+    return cases.stream();
+  }
+
+  @ParameterizedTest(name = "{0} {1}")
+  @MethodSource("whitespaceRunInputs")
+  void testBuiltinPatternsMatchWhitespaceRunsInLinearTime(
+      RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER def, String input) {
+    RegexNameFinder finder = RegexNameFinderFactory.getDefaultRegexNameFinders(def);
+    String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(input);
+    assertCompletesQuickly(() -> finder.find(input));
+    assertCompletesQuickly(() -> finder.find(tokens));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {1000, 2000, 4000})
+  void testDegreesPatternRejectsWhitespaceWithinLinearReadBudget(int whitespaceLength) {
+    var def = RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON;
+    Pattern pattern = def.getRegexMap().get(def.getType())[0];
+    CharSequence input = new ReadLimitedCharSequence("1" + " ".repeat(whitespaceLength));
+    Assertions.assertFalse(pattern.matcher(input).find());
+  }
+
+  /**
+   * Limits character reads to a constant multiple of the input length, so excessive
+   * backtracking fails without depending on machine speed or thread interruption.
+   */
+  private static final class ReadLimitedCharSequence implements CharSequence {
+    private final String text;
+    private final long readLimit;
+    private long reads;
+
+    /**
+     * Wraps the input with a generous linear budget for regex engine character reads.
+     *
+     * @param text The input to match.
+     */
+    private ReadLimitedCharSequence(String text) {
+      this.text = text;
+      this.readLimit = 8L * text.length();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int length() {
+      return text.length();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public char charAt(int index) {
+      if (++reads > readLimit) {
+        Assertions.fail("Character reads exceeded linear budget of " + readLimit
+            + " for input length " + text.length());
+      }
+      return text.charAt(index);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return text.subSequence(start, end);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return text;
+    }
+  }
+
+  /**
+   * Runs {@code find} once with a generous warmup timeout, then asserts that a
+   * second run finishes within the tighter match budget.
+   */
+  private static void assertCompletesQuickly(Executable find) {
+    Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), find);
+    Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2), find);
+  }
+
+  /**
+   * The {@code DEGREES_MIN_SEC_LAT_LON} pattern with greedy whitespace quantifiers,
+   * kept verbatim as the reference the built-in pattern must agree with.
+   */
+  private static final Pattern REFERENCE_DEGREES_MIN_SEC_LAT_LON = Pattern.compile(
+      "([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*\\d{1,2}['|\\u2019|\\s])" +
+      "?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[N|n|S|s]?)(\\s*|,|,\\s*)([-|\\+]?\\d{1,3}[d|D|\\u00B0|" +
+      "\\s](\\s*\\d{1,2}['|\\u2019|\\s])?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[E|e|W|w]?)",
+      Pattern.CASE_INSENSITIVE);
+
+  /**
+   * Asserts that the built-in pattern finds the same spans as the reference pattern.
+   *
+   * @return The number of spans found.
+   */
+  private static int assertSameDegreesSpans(String input) {
+    final String type =
+        RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON.getType();
+    RegexNameFinder reference = new RegexNameFinder(
+        Map.of(type, new Pattern[] {REFERENCE_DEGREES_MIN_SEC_LAT_LON}));
+    RegexNameFinder actual = RegexNameFinderFactory.getDefaultRegexNameFinders(
+        RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON);
+    Span[] expected = reference.find(input);
+    Assertions.assertArrayEquals(expected, actual.find(input),
+        () -> "spans differ for input: \"" + input + "\"");
+    return expected.length;
+  }
+
+  private static Stream<String> realisticCoordinates() {
+    return Stream.of(
+        "40°26'46\"N 79°58'56\"W",
+        "40° 26' 46\" N, 79° 58' 56\" W",
+        "40°26’46”N 79°58’56”W",
+        "40 26 46 N, 79 58 56 W",
+        "40 26 46 N 79 58 56 W",
+        "40 26 46 N",
+        "79 58 56 W",
+        "-12.5",
+        "-12.5, 130.8",
+        "+45.1234, -123.12",
+        "45.1234N 123.12W",
+        "45N 123W",
+        "45 30 N 50 30 W",
+        "40d 26' 46\" N, 79d 58' 56\" W",
+        "40D 26' 46\" S, 79D 58' 56\" E",
+        "40d26'46\"n,79d58'56\"e",
+        "40d\t26'\t46\"\tN,\t79d\t58'\t56\"\tW",
+        "40d   26'   46\"   N   ,   79d   58'   56\"   W",
+        "40d 26' 46\" N,\n79d 58' 56\" W",
+        "40 26 46\nN\n79 58 56\nW",
+        "40°, -79°",
+        "40° N   , \t  79° W",
+        "lat 40 lon 79",
+        "at 12 34 56 S and 123 45 6 E today",
+        "between 1 2 and 3 4, then 5d 6' 7\" N 8d 9' 10\" W.",
+        "1, 2, 3, 4, 5",
+        "1234 5678",
+        "|40|26|N|79|58|W",
+        "1" + " ".repeat(200),
+        "1d" + " ".repeat(100) + "2" + " ".repeat(100) + "N");
+  }
+
+  @ParameterizedTest
+  @MethodSource("realisticCoordinates")
+  void testDegreesPatternMatchesReferenceOnCoordinates(String input) {
+    assertSameDegreesSpans(input);
+  }
+
+  @Test
+  void testDegreesPatternMatchesReferenceOnFuzzCorpus() {
+    final char[] alphabet = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', ' ', ' ',
+        '\t', '\n', 'd', 'D', '°', '\'', '’', '"', '”', 'N', 'n', 'S', 's',
+        'E', 'e', 'W', 'w', ',', '-', '+', '|', 'x'};
+    // Coordinate-shaped fragments, so a good share of the corpus reaches deep into the pattern.
+    final String[] fragments = {"4", "40", "179", "-12", "+5", "40d", "179°", "40 ", "26'",
+        "26’", "46\"", "46”", " ", "  ", "\t", "\n", "d", "N", "s", "E", "w", ",", ", ",
+        "x", "|"};
+    final Random random = new Random(20261102L);
+    int spans = 0;
+    for (int i = 0; i < 6000; i++) {
+      final int length = 1 + random.nextInt(40);
+      final StringBuilder sb = new StringBuilder(length);
+      while (sb.length() < length) {
+        if (i % 2 == 0) {
+          sb.append(alphabet[random.nextInt(alphabet.length)]);
+        } else {
+          sb.append(fragments[random.nextInt(fragments.length)]);
+        }
+      }
+      spans += assertSameDegreesSpans(sb.toString());
+    }
+    // Guards against a corpus that rarely matches and so compares little.
+    Assertions.assertTrue(spans > 1000, "fuzz corpus produced only " + spans + " spans");
   }
 
   /**
