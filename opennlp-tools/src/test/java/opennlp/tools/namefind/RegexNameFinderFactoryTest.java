@@ -34,6 +34,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
@@ -107,9 +108,8 @@ public class RegexNameFinderFactoryTest {
    * The hardened patterns must finish quickly regardless of input length.
    * <p>
    * Each attack runs as its own test so a regression names the exact input that
-   * got slow. Each case does one warmup run outside the timed section, so the
-   * budget measures the match itself rather than JVM cold start on throttled
-   * machines.
+   * got slow. Each case uses a generous timeout for warmup before checking a
+   * tighter match budget, allowing for JVM cold start on throttled machines.
    */
   private static Stream<Arguments> reDoSAttacks() {
     return Stream.of(
@@ -170,13 +170,69 @@ public class RegexNameFinderFactoryTest {
     assertCompletesQuickly(() -> finder.find(tokens));
   }
 
+  @ParameterizedTest
+  @ValueSource(ints = {1000, 2000, 4000})
+  void testDegreesPatternRejectsWhitespaceWithinLinearReadBudget(int whitespaceLength) {
+    var def = RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON;
+    Pattern pattern = def.getRegexMap().get(def.getType())[0];
+    CharSequence input = new ReadLimitedCharSequence("1" + " ".repeat(whitespaceLength));
+    Assertions.assertFalse(pattern.matcher(input).find());
+  }
+
   /**
-   * Runs {@code find} once as a warmup outside the timed section, so the budget
-   * measures the match itself rather than JVM cold start on throttled machines,
-   * then asserts that a second run finishes within the budget.
+   * Limits character reads to a constant multiple of the input length, so excessive
+   * backtracking fails without depending on machine speed or thread interruption.
+   */
+  private static final class ReadLimitedCharSequence implements CharSequence {
+    private final String text;
+    private final long readLimit;
+    private long reads;
+
+    /**
+     * Wraps the input with a generous linear budget for regex engine character reads.
+     *
+     * @param text The input to match.
+     */
+    private ReadLimitedCharSequence(String text) {
+      this.text = text;
+      this.readLimit = 8L * text.length();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int length() {
+      return text.length();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public char charAt(int index) {
+      if (++reads > readLimit) {
+        Assertions.fail("Character reads exceeded linear budget of " + readLimit
+            + " for input length " + text.length());
+      }
+      return text.charAt(index);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return text.subSequence(start, end);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return text;
+    }
+  }
+
+  /**
+   * Runs {@code find} once with a generous warmup timeout, then asserts that a
+   * second run finishes within the tighter match budget.
    */
   private static void assertCompletesQuickly(Executable find) {
-    Assertions.assertDoesNotThrow(find);
+    Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), find);
     Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2), find);
   }
 
