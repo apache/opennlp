@@ -55,7 +55,7 @@ abstract class AbstractIT extends AbstractUimaTest {
 
   protected static final String BIN = ".bin";
 
-  private static final String BASE_URL_MODELS_V15 = System.getProperty("opennlp.model.v15.base.url", "https://opennlp.sourceforge.net/models-1.5/");
+  private static final String BASE_URL_MODELS_V15 = System.getProperty("opennlp.model.v15.base.url", "https://downloads.sourceforge.net/project/opennlp/models-1.5/");
  
   @BeforeAll
   public static void initEnv() throws IOException {

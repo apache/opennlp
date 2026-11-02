@@ -31,7 +31,8 @@ import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.namefind.TokenNameFinderModel;
 
-@EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+@EnabledWhenCDNAvailable(hostname = "downloads.sourceforge.net",
+    path = "/project/opennlp/models-1.5/en-token.bin")
 public class TokenNameFinderModelLoaderTest extends AbstractModelLoaderTest {
 
   // SUT
