@@ -43,6 +43,12 @@ public @interface EnabledWhenCDNAvailable {
 
   String hostname();
 
+  /**
+   * The path of a resource on {@link #hostname()} that must be reachable, starting with
+   * {@code /}. Empty to check the root of the host.
+   */
+  String path() default "";
+
   int TIMEOUT_MS = 2000;
 
   // JUnit5 execution condition to decide whether tests can assume CDN downloads are possible (= online).
@@ -59,10 +65,11 @@ public @interface EnabledWhenCDNAvailable {
           socket.connect(new InetSocketAddress(host, 443), TIMEOUT_MS);
 
           // Then, try to check the HTTP status by making an HTTPS request
-          final URL url = new URI("https://" + host).toURL();
+          final URL url = new URI("https://" + host + annotation.path()).toURL();
           final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
           connection.setConnectTimeout(TIMEOUT_MS);
           connection.setReadTimeout(TIMEOUT_MS);
+          connection.setRequestMethod("HEAD");
           int statusCode = connection.getResponseCode();
 
           // If the HTTP status code indicates success (2xx range), return enabled
