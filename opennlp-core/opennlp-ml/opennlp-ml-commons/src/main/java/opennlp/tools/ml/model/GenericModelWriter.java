@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.zip.GZIPOutputStream;
 
 import opennlp.tools.ml.AlgorithmType;
+import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
  * An generic {@link AbstractModelWriter} implementation.
@@ -74,12 +75,26 @@ public class GenericModelWriter extends AbstractModelWriter {
     this.delegateWriter = fromType(model.getModelType(), model, dos);
   }
 
+  /**
+   * Creates the delegate writer for the given {@link AlgorithmType}. The writer class is
+   * resolved via {@link ExtensionLoader#loadExtensionClass(Class, String)}, so it has to
+   * reside in a package permitted by the {@link ExtensionLoader}.
+   *
+   * @param type The {@link AlgorithmType} to create a writer for.
+   * @param model The {@link AbstractModel model} to write out.
+   * @param dos The {@link DataOutputStream} that used to be written to.
+   * @return The delegate {@link AbstractModelWriter}.
+   * @throws opennlp.tools.util.ext.ExtensionNotLoadedException Thrown if the writer class is
+   *         not in an allowed package or is not an {@link AbstractModelWriter}.
+   * @throws RuntimeException Thrown if the writer class is not available or could not be
+   *         instantiated.
+   */
   private AbstractModelWriter fromType(AlgorithmType type, AbstractModel model, DataOutputStream dos) {
     try {
-      final Class<? extends AbstractModelWriter> readerClass
-          = (Class<? extends AbstractModelWriter>) Class.forName(type.getWriterClazz());
+      final Class<? extends AbstractModelWriter> writerClass =
+          ExtensionLoader.loadExtensionClass(AbstractModelWriter.class, type.getWriterClazz());
 
-      return readerClass
+      return writerClass
           .getDeclaredConstructor(AbstractModel.class, DataOutputStream.class)
           .newInstance(model, dos);
 
