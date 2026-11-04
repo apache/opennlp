@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
@@ -153,6 +154,8 @@ public abstract class AbstractDL implements AutoCloseable {
    *     sets {@code normalizer.lowercase} must agree with it.
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
+   * @throws UnsatisfiedLinkError Thrown if ONNX Runtime's native library cannot be loaded; the
+   *     message includes the detected operating system and architecture and platform guidance.
    * @throws IOException Thrown if the {@code model} or {@code vocabulary} cannot be read.
    * @throws InvalidFormatException Thrown if a JSON {@code vocabulary} is malformed, has an
    *     unsupported layout, or sets {@code normalizer.lowercase} to the other value than
@@ -167,9 +170,10 @@ public abstract class AbstractDL implements AutoCloseable {
     ParamChecks.requireNonNullArg(model, "model");
     ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
     ParamChecks.requireNonNullArg(sessionOptions, "sessionOptions");
-    this.env = OrtEnvironment.getEnvironment();
-    // try-with-resources closes the session options once the session has consumed them.
+    // try-with-resources closes the session options after ONNX Runtime has consumed them, or
+    // if its native library cannot be loaded.
     try (sessionOptions) {
+      this.env = initializeNative(OrtEnvironment::getEnvironment);
       final OrtSession createdSession = env.createSession(model.getPath(), sessionOptions);
       try {
         final Vocabulary loaded = readVocabFile(vocabulary);
@@ -223,6 +227,8 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws IllegalArgumentException Thrown if {@code inferenceOptions} is {@code null}, its
    *     split sizes are invalid, see {@link #validateSplitOptions(int, int)}, or it requests a GPU
    *     with a negative device id.
+   * @throws UnsatisfiedLinkError Thrown if ONNX Runtime's native library cannot be loaded; the
+   *     message includes the detected operating system and architecture and platform guidance.
    */
   protected static OrtSession.SessionOptions sessionOptions(final InferenceOptions inferenceOptions)
       throws OrtException {
@@ -231,18 +237,48 @@ public abstract class AbstractDL implements AutoCloseable {
     if (inferenceOptions.isGpu()) {
       ParamChecks.requireNonNegative(inferenceOptions.getGpuDeviceId(), "gpuDeviceId");
     }
-    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
+    final OrtSession.SessionOptions sessionOptions =
+        initializeNative(OrtSession.SessionOptions::new);
     if (inferenceOptions.isGpu()) {
       try {
         // addCUDA needs ONNX Runtime's default logger, which exists once an environment does.
         OrtEnvironment.getEnvironment();
         sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+      } catch (UnsatisfiedLinkError e) {
+        sessionOptions.close();
+        throw nativeLibraryError(e, System.getProperty("os.name"), System.getProperty("os.arch"));
       } catch (OrtException | RuntimeException e) {
         sessionOptions.close();
         throw e;
       }
     }
     return sessionOptions;
+  }
+
+  private static <T> T initializeNative(final Supplier<T> nativeOperation) {
+    return initializeNative(nativeOperation,
+        System.getProperty("os.name"), System.getProperty("os.arch"));
+  }
+
+  static <T> T initializeNative(final Supplier<T> nativeOperation, final String osName,
+                                final String architecture) {
+    try {
+      return nativeOperation.get();
+    } catch (UnsatisfiedLinkError e) {
+      throw nativeLibraryError(e, osName, architecture);
+    }
+  }
+
+  private static UnsatisfiedLinkError nativeLibraryError(final UnsatisfiedLinkError cause,
+                                                          final String osName,
+                                                          final String architecture) {
+    final UnsatisfiedLinkError error = new UnsatisfiedLinkError(
+        "Could not load ONNX Runtime native library for " + osName + "/" + architecture
+            + ". opennlp-dl-gpu bundles native libraries only for linux-x64 and win-x64; "
+            + "opennlp-dl provides CPU inference for linux-x64, linux-aarch64, osx-aarch64, "
+            + "and win-x64.");
+    error.initCause(cause);
+    return error;
   }
 
   /**
