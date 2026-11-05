@@ -19,11 +19,11 @@ package opennlp.tools.util.normalizer;
 /**
  * The coarse entity type of an annotated emoji, a small project-authored taxonomy assigned from
  * the subgroup headers of the upstream Unicode {@code emoji-test.txt} (Emoji Keyboard/Display Test
- * Data for <a href="https://www.unicode.org/reports/tr51/">UTS&#160;#51</a>): for example the
- * {@code face-smiling} and {@code face-concerned} subgroups map to {@link #FACE} and
- * {@code transport-ground} maps to {@link #VEHICLE}. The subgroup a bundled record was derived
- * from is cited in the notes column of {@code emoji-annotations.txt}, provenance-tagged
- * {@code UCD:emoji-test}.
+ * Data for <a href="https://www.unicode.org/reports/tr51/">UTS&#160;#51</a>), with documented
+ * exceptions: for example the {@code face-smiling} and {@code face-concerned} subgroups map to
+ * {@link #FACE} and {@code transport-ground} maps to {@link #VEHICLE}. The subgroup a bundled
+ * record was derived from is cited in the notes column of {@code emoji-annotations.txt},
+ * provenance-tagged {@code UCD:emoji-test}.
  *
  * <p>The set is deliberately coarse and grows with the bundled data; a new constant is a
  * compatible addition. {@link #FLAG} is assigned by the derived layer (regional-indicator and tag
@@ -49,8 +49,22 @@ public enum EmojiEntityType {
   /** A vehicle, from the {@code transport-*} subgroups. */
   VEHICLE,
 
-  /** A landmark or building, from the {@code place-*} subgroups. */
+  /**
+   * A landmark or building, derived from the {@code place-*}
+   * subgroups, with a documented exception: U+1F6D9 LIGHTHOUSE
+   * is tagged {@code LANDMARK} by this project (upstream
+   * emoji-test.txt subgroup is {@code transport-water}).
+   */
   LANDMARK,
+
+  /** A hand gesture, from the {@code hand-*} subgroups. */
+  HAND,
+
+  /** A sky or weather phenomenon, from the {@code sky & weather} subgroup. */
+  SKY_AND_WEATHER,
+
+  /** A hand tool or writing implement, from the {@code tool} and {@code writing} subgroups. */
+  TOOL,
 
   /** A flag; assigned by the derived layer from the code point sequence itself. */
   FLAG

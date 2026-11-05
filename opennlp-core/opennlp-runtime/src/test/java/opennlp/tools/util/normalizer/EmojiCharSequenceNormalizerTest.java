@@ -42,10 +42,10 @@ public class EmojiCharSequenceNormalizerTest {
       EmojiCharSequenceNormalizer.getInstance();
 
   /**
-   * The number of fully-qualified and minimally-qualified sequences in the Emoji 17.0
+   * The number of fully-qualified and minimally-qualified sequences in the Emoji 18.0
    * emoji-test.txt, the same number dev/UnicodeEmojiSequenceGenerator.java pins for that release.
    */
-  private static final int EMOJI_17_SEQUENCE_COUNT = 4973;
+  private static final int EMOJI_18_SEQUENCE_COUNT = 4992;
 
   private static Stream<Arguments> emojiSequences() {
     return Stream.of(
@@ -68,9 +68,8 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   /**
-   * The nine code points and ten modifier sequences that Emoji 18.0 added on top of 17.0. The
-   * bundled inventory is Emoji 17.0, the same version as the other bundled Unicode data, so
-   * these are not emoji to this normalizer yet.
+   * The nine code points and ten modifier sequences that Emoji 18.0 added on top of 17.0.
+   * With the bundled inventory at 18.0, the normalizer must treat them as complete emoji.
    */
   private static Stream<String> emoji18OnlySequences() {
     return Stream.of(cp(0x1FAEB), cp(0x1FACC), cp(0x1FADD), cp(0x1F6D9), cp(0x1FA8B),
@@ -83,8 +82,8 @@ public class EmojiCharSequenceNormalizerTest {
 
   @ParameterizedTest
   @MethodSource("emoji18OnlySequences")
-  void normalizeKeepsSequencesAddedAfterEmoji17(String sequence) {
-    Assertions.assertEquals("a" + sequence + "b", NORMALIZER.normalize("a" + sequence + "b"));
+  void normalizeRemovesSequencesAddedInEmoji18(String sequence) {
+    Assertions.assertEquals("a b", NORMALIZER.normalize("a" + sequence + "b"));
   }
 
   @Test
@@ -286,8 +285,8 @@ public class EmojiCharSequenceNormalizerTest {
   }
 
   @Test
-  void bundledInventoryHoldsTheEmoji17SequenceCount() {
-    Assertions.assertEquals(EMOJI_17_SEQUENCE_COUNT,
+  void bundledInventoryHoldsTheEmoji18SequenceCount() {
+    Assertions.assertEquals(EMOJI_18_SEQUENCE_COUNT,
         UnicodeEmojiSequences.getInstance().sequenceCount());
   }
 
@@ -309,7 +308,7 @@ public class EmojiCharSequenceNormalizerTest {
         count++;
       }
     }
-    Assertions.assertEquals(EMOJI_17_SEQUENCE_COUNT, count);
+    Assertions.assertEquals(EMOJI_18_SEQUENCE_COUNT, count);
   }
 
   @Test
