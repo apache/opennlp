@@ -89,6 +89,17 @@ public class WordSegmenterTest {
   }
 
   @Test
+  void testDroppedExtendedPictographicDoesNotGlueAcrossZwj() {
+    // U+1F7F1 was Extended_Pictographic in Unicode 17.0 and is not in 18.0, so WB3c
+    // no longer keeps X ZWJ X as a single emoji sequence. ZWJ still attaches to the
+    // preceding character (WB4); the second X is a separate word.
+    final String zwj = cp(0x200D);
+    final String x = cp(0x1F7F1);
+    final String seq = x + zwj + x;
+    assertEquals(List.of(x + zwj, x), words(seq));
+  }
+
+  @Test
   void testRegionalIndicatorFlagIsOneToken() {
     final String flag = cp(0x1F1FA) + cp(0x1F1F8);          // regional indicators U + S
     assertEquals(List.of(flag), words(flag));              // WB15/WB16
