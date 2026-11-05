@@ -19,9 +19,13 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -30,6 +34,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.normalizer.CodePointSet;
 
 /**
  * Tests for the {@link TokenizerME} class.
@@ -41,6 +46,8 @@ import opennlp.tools.util.TrainingParameters;
  * @see TokenizerME
  */
 public class TokenizerMETest {
+
+  private static final String CONTRACTION = "it's";
 
   @Test
   void testTokenizerSimpleModel() throws IOException {
@@ -75,6 +82,60 @@ public class TokenizerMETest {
     Assertions.assertEquals("!", tokens[8]);
   }
 
+  /**
+   * Supplies sentences with the tokens the model trained from token.train produces for them.
+   *
+   * @return Sentence and token array pairs.
+   */
+  static Stream<Arguments> pinnedSentences() {
+    return Stream.of(
+        Arguments.of("Sounds like it's not properly thought through!",
+            new String[] {"Sounds", "like", "it", "'s", "not", "properly", "thought", "through", "!"}),
+        Arguments.of("Mr. Vinken is chairman of Elsevier N.V., the Dutch publishing group.",
+            new String[] {"Mr", ".", "Vinken", "is", "chairman", "of", "Elsevier", "N", ".V", ".", ",",
+                "the", "Dutch", "publishing", "group", "."}),
+        Arguments.of("The cat wasn't in the house, and the dog wasn't either.",
+            new String[] {"The", "cat", "wasn", "'t", "in", "the", "house", ",", "and", "the", "dog",
+                "wasn", "'t", "either", "."}),
+        Arguments.of("Pierre Vinken, 61 years old, will join the board as a nonexecutive director Nov. 29.",
+            new String[] {"Pierre", "Vinken", ",", "61", "years", "old", ",", "will", "join", "the",
+                "board", "as", "a", "nonexecutive", "director", "Nov", ".", "29", "."}),
+        Arguments.of("Call me at 555-1234 (anytime).",
+            new String[] {"Call", "me", "at", "555-1234", "(anytime)", "."}),
+        Arguments.of("It's a 3.5\" disk; don't lose it!",
+            new String[] {"It", "'s", "a", "3.5", "\"", "disk;", "don", "'t", "lose", "it!"}));
+  }
+
+  /**
+   * Pins the output of a model trained with and one trained without the alphanumeric
+   * optimization: on these sentences the policy only skips tokens the model would not split.
+   */
+  @ParameterizedTest
+  @MethodSource("pinnedSentences")
+  void testTokenizationWithAndWithoutAlphaNumericOptimization(String sentence, String[] expected)
+      throws IOException {
+    TokenizerME optimized = new TokenizerME(TokenizerTestUtil.createMaxentTokenModel(true));
+    TokenizerME plain = new TokenizerME(TokenizerTestUtil.createMaxentTokenModel(false));
+
+    Assertions.assertTrue(optimized.useAlphaNumericOptimization());
+    Assertions.assertFalse(plain.useAlphaNumericOptimization());
+    Assertions.assertArrayEquals(expected, optimized.tokenize(sentence));
+    Assertions.assertArrayEquals(expected, plain.tokenize(sentence));
+  }
+
+  @Test
+  void testCharacterPolicyDecidesWhichTokensStayWhole() throws IOException {
+    TokenizerCharacterPolicy ascii = TokenizerCharacterPolicy.ascii();
+    TokenizerCharacterPolicy withApostrophe = TokenizerCharacterPolicy.of(
+        ascii.getLetters().union(CodePointSet.of('\'')), ascii.getDigits(), ascii.getMarks());
+    TokenizerME tokenizer = new TokenizerME(TokenizerTestUtil.createMaxentTokenModel(
+        new TokenizerFactory("eng", null, true, withApostrophe)));
+
+    Assertions.assertArrayEquals(new String[] {CONTRACTION}, tokenizer.tokenize(CONTRACTION));
+    Assertions.assertArrayEquals(new String[] {"it", "'s"},
+        new TokenizerME(TokenizerTestUtil.createMaxentTokenModel(true)).tokenize(CONTRACTION));
+  }
+
   @Test
   void testInsufficientData() {
 
@@ -90,7 +151,7 @@ public class TokenizerMETest {
       mlParams.put(Parameters.ITERATIONS_PARAM, 100);
       mlParams.put(Parameters.CUTOFF_PARAM, 5);
 
-      TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
+      TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true), mlParams);
 
     });
 

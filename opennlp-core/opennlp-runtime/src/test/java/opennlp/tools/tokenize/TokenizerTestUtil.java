@@ -59,10 +59,20 @@ public class TokenizerTestUtil {
     mlParams.put(Parameters.CUTOFF_PARAM, 0);
 
     return TokenizerME.train(new CollectionObjectStream<>(samples),
-      TokenizerFactory.create(null, "eng", null, true, null), mlParams);
+      TokenizerFactory.create(null, "eng", null, true), mlParams);
   }
 
   static TokenizerModel createMaxentTokenModel() throws IOException {
+    return createMaxentTokenModel(true);
+  }
+
+  static TokenizerModel createMaxentTokenModel(boolean useAlphaNumericOptimization)
+      throws IOException {
+    return createMaxentTokenModel(
+        TokenizerFactory.create(null, "eng", null, useAlphaNumericOptimization));
+  }
+
+  static TokenizerModel createMaxentTokenModel(TokenizerFactory factory) throws IOException {
 
     InputStreamFactory trainDataIn = new ResourceAsStreamFactory(
         TokenizerModel.class, "/opennlp/tools/tokenize/token.train");
@@ -74,7 +84,7 @@ public class TokenizerTestUtil {
     mlParams.put(Parameters.ITERATIONS_PARAM, 100);
     mlParams.put(Parameters.CUTOFF_PARAM, 0);
 
-    return TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
+    return TokenizerME.train(samples, factory, mlParams);
   }
 
 }

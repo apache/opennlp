@@ -31,6 +31,7 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.Span;
 
 /**
@@ -45,30 +46,76 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
   private final boolean skipAlphaNumerics;
 
-  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
-  private final Pattern alphaNumeric;
+  private final AlphanumericCheck alphanumeric;
 
   /**
    * Initializes a new event stream based on the data stream using a {@link TokenContextGenerator}.
    *
    * @param tokenSamples The {@link ObjectStream data stream} for this event stream.
    * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
-   * @param alphaNumeric A custom alphanumeric {@link Pattern} or {@code null}.
-   *                     Default is: {@code "^[A-Za-z0-9]+$"}, provided by
-   *                     {@link Factory#DEFAULT_ALPHANUMERIC}.
+   * @param characterPolicy The {@link TokenizerCharacterPolicy} that decides which candidate
+   *                        tokens count as alphanumeric. Must not be {@code null}.
    * @param cg A {@link TokenContextGenerator} which should be used for the event stream {@code d}.
+   * @throws IllegalArgumentException Thrown if {@code characterPolicy} is {@code null}.
    */
-  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
+  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
+                            TokenizerCharacterPolicy characterPolicy, TokenContextGenerator cg) {
+    this(tokenSamples, skipAlphaNumerics,
+        ParamChecks.requireNonNullArg(characterPolicy, "characterPolicy")::test, cg);
+  }
+
+  /**
+   * Initializes a new event stream that decides which candidate tokens count as alphanumeric
+   * with a regular expression.
+   *
+   * @param tokenSamples The {@link ObjectStream data stream} for this event stream.
+   * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
+   * @param alphaNumeric A custom alphanumeric {@link Pattern}, or {@code null} for
+   *                     {@link Factory#DEFAULT_CHARACTER_POLICY}.
+   * @param cg A {@link TokenContextGenerator} which should be used for the event stream {@code d}.
+   * @deprecated Use
+   *     {@link #TokSpanEventStream(ObjectStream, boolean, TokenizerCharacterPolicy, TokenContextGenerator)}.
+   *     This constructor will be removed in 4.0.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
+  @SuppressForbidden("user-supplied alphanumeric pattern, kept for the deprecated API")
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
                             Pattern alphaNumeric, TokenContextGenerator cg) {
+    this(tokenSamples, skipAlphaNumerics, checkOf(alphaNumeric), cg);
+  }
+
+  /**
+   * {@return the check for a deprecated alphanumeric pattern}
+   *
+   * @param alphaNumeric A custom alphanumeric {@link Pattern}, or {@code null} for
+   *                     {@link Factory#DEFAULT_CHARACTER_POLICY}.
+   */
+  @SuppressForbidden("user-supplied alphanumeric pattern, kept for the deprecated API")
+  private static AlphanumericCheck checkOf(Pattern alphaNumeric) {
+    return alphaNumeric == null
+        ? Factory.DEFAULT_CHARACTER_POLICY::test : new TokenizerFactory.PatternCheck(alphaNumeric);
+  }
+
+  /**
+   * Initializes a new event stream with the check that decides which candidate tokens count as
+   * alphanumeric.
+   *
+   * @param tokenSamples The {@link ObjectStream data stream} for this event stream.
+   * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
+   * @param alphanumeric The check for alphanumeric candidate tokens. Must not be {@code null}.
+   * @param cg A {@link TokenContextGenerator} which should be used for the event stream {@code d}.
+   */
+  TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
+                     AlphanumericCheck alphanumeric, TokenContextGenerator cg) {
     super(tokenSamples);
-    this.alphaNumeric = alphaNumeric;
+    this.alphanumeric = alphanumeric;
     this.skipAlphaNumerics = skipAlphaNumerics;
     this.cg = cg;
   }
 
   /**
-   * Initializes a new event stream based on the data stream using a {@link TokenContextGenerator}.
+   * Initializes a new event stream based on the data stream using a {@link TokenContextGenerator}
+   * and {@link Factory#DEFAULT_CHARACTER_POLICY}.
    *
    * @param tokenSamples The {@link ObjectStream data stream} for this event stream.
    * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
@@ -76,7 +123,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    */
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
                             TokenContextGenerator cg) {
-    this(tokenSamples, skipAlphaNumerics, new Factory().getAlphanumeric(null), cg );
+    this(tokenSamples, skipAlphaNumerics, Factory.DEFAULT_CHARACTER_POLICY, cg);
   }
 
   /**
@@ -98,7 +145,6 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @return An {@link Iterator} for text {@link Event events} representing the {@code tokenSample}.
    */
   @Override
-  @SuppressForbidden("user-supplied alphanumeric pattern stored in the tokenizer model")
   protected Iterator<Event> createEvents(TokenSample tokenSample) {
 
     List<Event> events = new ArrayList<>(50);
@@ -123,7 +169,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
         //adjust cSpan to text offsets
         cSpan = new Span(cSpan.getStart() + start, cSpan.getEnd() + start);
         //should we skip this token
-        if (ctok.length() > 1 && (!skipAlphaNumerics || !alphaNumeric.matcher(ctok).matches())) {
+        if (ctok.length() > 1 && (!skipAlphaNumerics || !alphanumeric.check(ctok))) {
 
           //find offsets of annotated tokens inside of candidate tokens
           boolean foundTrainingTokens = false;

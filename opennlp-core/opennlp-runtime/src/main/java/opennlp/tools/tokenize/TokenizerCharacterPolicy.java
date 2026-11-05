@@ -16,6 +16,8 @@
  */
 package opennlp.tools.tokenize;
 
+import java.util.HexFormat;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import opennlp.tools.util.ParamChecks;
@@ -32,10 +34,20 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace;
  *
  * <p>This predicate tests a complete candidate without finding token boundaries or changing
  * its text.</p>
+ *
+ * @since 3.0.0
  */
 public final class TokenizerCharacterPolicy implements Predicate<CharSequence> {
 
   private static final String CODE_POINT_FORMAT = "U+%04X";
+  private static final String LETTERS_FIELD = "letters=";
+  private static final String DIGITS_FIELD = ";digits=";
+  private static final String MARKS_FIELD = ";marks=";
+  private static final char RANGE_SEPARATOR = ',';
+  private static final char RANGE_DASH = '-';
+  private static final HexFormat UPPER_HEX = HexFormat.of().withUpperCase();
+  private static final int MIN_HEX_DIGITS = 4;
+  private static final int BITS_PER_HEX_DIGIT = 4;
 
   private static final TokenizerCharacterPolicy ASCII = new TokenizerCharacterPolicy(
       CodePointSet.ofRange('A', 'Z').union(CodePointSet.ofRange('a', 'z')),
@@ -84,6 +96,30 @@ public final class TokenizerCharacterPolicy implements Predicate<CharSequence> {
   /** {@return a policy for ASCII letters and digits, with no marks} */
   public static TokenizerCharacterPolicy ascii() {
     return ASCII;
+  }
+
+  /**
+   * Parses the text form written by {@link #toString()}: the three fields
+   * {@code letters=}, {@code ;digits=} and {@code ;marks=} in that order, each followed by
+   * zero or more comma separated hex code points ({@code 0041}) or inclusive ranges
+   * ({@code 0041-005A}). Hex digits may use either case; no prefix or whitespace is accepted.
+   *
+   * @param text The text form to read.
+   * @return The policy the text describes.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null} or not of that
+   *     form, or if the sets it describes are rejected by
+   *     {@link #of(CodePointSet, CodePointSet, CodePointSet)}.
+   */
+  public static TokenizerCharacterPolicy parse(String text) {
+    ParamChecks.requireNonNullArg(text, "text");
+    final int digitsAt = text.indexOf(DIGITS_FIELD);
+    final int marksAt = digitsAt < 0 ? -1 : text.indexOf(MARKS_FIELD, digitsAt + DIGITS_FIELD.length());
+    if (!text.startsWith(LETTERS_FIELD) || digitsAt < 0 || marksAt < 0) {
+      throw malformed(text, "expected the fields " + LETTERS_FIELD + DIGITS_FIELD + MARKS_FIELD);
+    }
+    return of(parseRanges(text, LETTERS_FIELD.length(), digitsAt),
+        parseRanges(text, digitsAt + DIGITS_FIELD.length(), marksAt),
+        parseRanges(text, marksAt + MARKS_FIELD.length(), text.length()));
   }
 
   /**
@@ -139,6 +175,132 @@ public final class TokenizerCharacterPolicy implements Predicate<CharSequence> {
   /** {@return the immutable mark set} */
   public CodePointSet getMarks() {
     return marks;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Two policies are equal if their letter, digit and mark sets are equal.</p>
+   */
+  @Override
+  public boolean equals(Object o) {
+    return o instanceof TokenizerCharacterPolicy other && letters.equals(other.letters)
+        && digits.equals(other.digits) && marks.equals(other.marks);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Consistent with {@link #equals(Object)}: computed from the letter, digit and mark sets.</p>
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(letters, digits, marks);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Writes the text form read by {@link #parse(String)}, for example
+   * {@code letters=0041-005A,0061-007A;digits=0030-0039;marks=} for {@link #ascii()}: runs of
+   * adjacent code points become ranges, and each code point is written with at least four
+   * upper-case hex digits.</p>
+   */
+  @Override
+  public String toString() {
+    final StringBuilder text = new StringBuilder();
+    appendRanges(text.append(LETTERS_FIELD), letters);
+    appendRanges(text.append(DIGITS_FIELD), digits);
+    appendRanges(text.append(MARKS_FIELD), marks);
+    return text.toString();
+  }
+
+  /** Appends the members of {@code set} as comma separated code points and ranges. */
+  private static void appendRanges(StringBuilder text, CodePointSet set) {
+    final int[] members = set.toArray();
+    int first = 0;
+    while (first < members.length) {
+      int last = first;
+      while (last + 1 < members.length && members[last + 1] == members[last] + 1) {
+        last++;
+      }
+      if (first > 0) {
+        text.append(RANGE_SEPARATOR);
+      }
+      appendHex(text, members[first]);
+      if (last > first) {
+        appendHex(text.append(RANGE_DASH), members[last]);
+      }
+      first = last + 1;
+    }
+  }
+
+  /** Appends {@code codePoint} as upper-case hex with at least {@link #MIN_HEX_DIGITS} digits. */
+  private static void appendHex(StringBuilder text, int codePoint) {
+    final String hex = UPPER_HEX.toHexDigits(codePoint);
+    int start = 0;
+    while (start < hex.length() - MIN_HEX_DIGITS && hex.charAt(start) == '0') {
+      start++;
+    }
+    text.append(hex, start, hex.length());
+  }
+
+  /** Reads the comma separated code points and ranges in {@code text[from, to)}. */
+  private static CodePointSet parseRanges(String text, int from, int to) {
+    CodePointSet members = CodePointSet.of();
+    if (from == to) {
+      return members;
+    }
+    int offset = from;
+    while (true) {
+      int separator = text.indexOf(RANGE_SEPARATOR, offset);
+      if (separator < 0 || separator > to) {
+        separator = to;
+      }
+      members = members.union(parseRange(text, offset, separator));
+      if (separator == to) {
+        return members;
+      }
+      offset = separator + 1;
+    }
+  }
+
+  /** Reads one code point or one inclusive range in {@code text[from, to)}. */
+  private static CodePointSet parseRange(String text, int from, int to) {
+    final int dash = text.indexOf(RANGE_DASH, from);
+    if (dash < 0 || dash >= to) {
+      return CodePointSet.of(parseHex(text, from, to));
+    }
+    final int low = parseHex(text, from, dash);
+    final int high = parseHex(text, dash + 1, to);
+    if (low > high) {
+      throw malformed(text, "descending range '" + text.substring(from, to) + "'");
+    }
+    return CodePointSet.ofRange(low, high);
+  }
+
+  /** Reads the hex code point in {@code text[from, to)}. */
+  private static int parseHex(String text, int from, int to) {
+    if (from >= to) {
+      throw malformed(text, "empty code point at offset " + from);
+    }
+    int value = 0;
+    for (int i = from; i < to; i++) {
+      final char c = text.charAt(i);
+      if (!HexFormat.isHexDigit(c)) {
+        throw malformed(text, "'" + text.substring(from, to) + "' is not a hex code point");
+      }
+      value = value << BITS_PER_HEX_DIGIT | HexFormat.fromHexDigit(c);
+      if (value > Character.MAX_CODE_POINT) {
+        throw malformed(text, "'" + text.substring(from, to) + "' is beyond U+10FFFF");
+      }
+    }
+    return value;
+  }
+
+  /** {@return the exception for a text form that cannot be read} */
+  private static IllegalArgumentException malformed(String text, String detail) {
+    return new IllegalArgumentException("Malformed character policy '" + text + "': " + detail);
   }
 
   /** Throws if {@code set} contains a surrogate code point or {@link UnicodeWhitespace} member. */

@@ -100,7 +100,7 @@ public final class TokenizerTrainerTool
 
       TokenizerFactory tokFactory = TokenizerFactory.create(
           params.getFactory(), params.getLang(), dict,
-          params.getAlphaNumOpt(), null);
+          params.getAlphaNumOpt());
       model = opennlp.tools.tokenize.TokenizerME.train(sampleStream,
           tokFactory, mlParams);
 

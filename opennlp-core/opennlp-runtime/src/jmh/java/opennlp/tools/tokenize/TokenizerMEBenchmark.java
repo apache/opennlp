@@ -82,7 +82,7 @@ public class TokenizerMEBenchmark {
       p.put(Parameters.CUTOFF_PARAM, 0);
       model = TokenizerME.train(samples,
           TokenizerFactory.create(
-              null, "eng", null, true, null), p);
+              null, "eng", null, true), p);
     }
   }
 
