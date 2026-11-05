@@ -19,9 +19,12 @@ package opennlp.tools.tokenize.uax29;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +46,27 @@ public class ExtendedPictographicTest {
   void testNonPictographicCodePoints(int codePoint) {
     // 0x1F1E6 (regional indicator A) is a supplementary code point that is NOT pictographic.
     assertFalse(ExtendedPictographic.is(codePoint));
+  }
+
+  /**
+   * Unicode Emoji 18.0 dropped these 18 reserved code points from Extended_Pictographic
+   * (U+1F1AE, U+1F7DA..U+1F7DB, U+1F7F1..U+1F7FF). Word-break must treat them as
+   * non-pictographic.
+   */
+  static Stream<Integer> codePointsDroppedFromExtendedPictographicInEmoji18() {
+    return Stream.concat(
+        Stream.of(0x1F1AE),
+        IntStream.concat(IntStream.of(0x1F7DA, 0x1F7DB), IntStream.rangeClosed(0x1F7F1, 0x1F7FF))
+            .boxed());
+  }
+
+  @ParameterizedTest
+  @MethodSource("codePointsDroppedFromExtendedPictographicInEmoji18")
+  void testCodePointsDroppedFromExtendedPictographicInEmoji18(int codePoint) {
+    assertFalse(ExtendedPictographic.is(codePoint),
+        () -> String.format(
+            "U+%04X must not be Extended_Pictographic after the Unicode 18.0 data bump",
+            codePoint));
   }
 
   @ParameterizedTest

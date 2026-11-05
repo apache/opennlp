@@ -143,6 +143,8 @@ The list below covers the changes most likely to affect existing code. It is not
 - `RealBasicEventStream`: a line that contains only an outcome is read as an event without contexts and no longer ends the stream.
 - Parser: `ParserFactory.create` and the chunking and tree insert `Parser` constructors throw `IllegalArgumentException` for a beam size below 1 or an advance percentage outside (0, 1] ([GH-1476](https://github.com/apache/opennlp/issues/1476)).
 - Model resolver: `AbstractClassPathModelFinder.findModels` returns an unmodifiable set, so the classpath finders and `DefaultClassPathModelProvider` can be shared between threads ([GH-1506](https://github.com/apache/opennlp/issues/1506)).
+- `EmojiEntityType` gains `HAND`, `SKY_AND_WEATHER` and `TOOL` (Unicode Emoji 18.0 subgroups `hand-*`, `sky & weather`, `tool`, `writing`). Existing constants are unchanged; switch statements over the enum need new arms ([GH-1347](https://github.com/apache/opennlp/issues/1347)).
+- Confusable skeletons follow UTS #39 18.0.0. Versus the previously bundled 17.0.0 table, 1,069 mappings were removed and 1,216 added. Verified example: OGONEK (U+02DB) no longer maps to Latin `i`, so `Confusables.skeleton` / `ConfusableSkeletonCharSequenceNormalizer` leave it as itself. Latin `Ç` (U+00C7) is also no longer a mapping *source*, but NFD still yields `C` + combining cedilla, so it is not a clean API-level skeleton change ([GH-1347](https://github.com/apache/opennlp/issues/1347)).
 
 ### Thread safety
 

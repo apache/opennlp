@@ -30,7 +30,7 @@ import opennlp.tools.util.normalizer.HexCodePoints;
  * <p>This is the one extra property the word boundary algorithm needs (rule WB3c), to keep emoji
  * zero-width-joiner sequences together. The data is loaded on first use from the bundled
  * {@code ExtendedPictographic.txt} resource, the {@code Extended_Pictographic} lines extracted
- * from the Unicode 17.0 {@code emoji-data.txt}, and stored in a {@link BitSet}, so membership is
+ * from the Unicode 18.0 {@code emoji-data.txt}, and stored in a {@link BitSet}, so membership is
  * an O(1) bit check.</p>
  */
 public final class ExtendedPictographic {

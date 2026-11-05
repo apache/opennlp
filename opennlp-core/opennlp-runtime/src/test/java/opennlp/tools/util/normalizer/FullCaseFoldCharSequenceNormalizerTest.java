@@ -182,14 +182,14 @@ public class FullCaseFoldCharSequenceNormalizerTest {
 
   @Test
   void tableLoadsEveryCommonAndFullFolding() throws Exception {
-    // Completeness audit against the bundled CaseFolding.txt 17.0.0: the C (common) and F (full)
+    // Completeness audit against the bundled CaseFolding.txt 18.0.0: the C (common) and F (full)
     // rows, so a data update that adds, drops, or changes a fold trips this test for a conscious bump.
     final Map<Integer, String> table;
     try (InputStream in =
              FullCaseFoldCharSequenceNormalizer.class.getResourceAsStream("CaseFolding.txt")) {
       table = FullCaseFoldCharSequenceNormalizer.parse(in);
     }
-    assertEquals(1585, table.size()); // 1481 common + 104 full
+    assertEquals(1606, table.size()); // 1501 common + 105 full
     assertEquals("a", table.get(0x0041));
     assertEquals("ss", table.get(0x00DF));
     assertEquals("ff", table.get(0xFB00));

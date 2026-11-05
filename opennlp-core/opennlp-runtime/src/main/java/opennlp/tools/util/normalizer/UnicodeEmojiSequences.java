@@ -26,7 +26,7 @@ import java.util.BitSet;
 import java.util.List;
 
 /**
- * Finds complete emoji at a position of a text, from the bundled inventory of Unicode Emoji 17.0
+ * Finds complete emoji at a position of a text, from the bundled inventory of Unicode Emoji 18.0
  * sequences.
  *
  * <p>A sequence is <em>fully-qualified</em> in the sense of

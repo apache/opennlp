@@ -36,8 +36,8 @@
 					<emphasis role="bold">Standards-sourced.</emphasis> Membership sets come from the
 					Unicode Character Database (for example the <code>White_Space</code> and
 					<code>Dash</code> properties in
-					<link xlink:href="https://www.unicode.org/Public/17.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
-					Unicode 17.0.0), not from the JVM's locale-dependent or quirky
+					<link xlink:href="https://www.unicode.org/Public/18.0.0/ucd/PropList.txt"><code>PropList.txt</code></link>,
+					Unicode 18.0.0), not from the JVM's locale-dependent or quirky
 					character predicates. The normalization engine never relies on
 					<code>Character.isWhitespace</code>, which disagrees with the Unicode standard.
 				</para>
@@ -569,6 +569,10 @@ Term term = analyzer.analyze("Running").get(0);
 			file); and optional values resolved at run time through an <code>EmojiAnnotationJoin</code>
 			hook against user-installed data such as a gazetteer. Every attribute value records its
 			source. The bundled table contains no gazetteer identifiers.
+			<code>EmojiEntityType</code> includes <code>HAND</code>, <code>SKY_AND_WEATHER</code> and
+			<code>TOOL</code> for Unicode Emoji 18.0 subgroups; U+1F6D9 lighthouse is tagged
+			<code>LANDMARK</code> as a documented exception to the upstream
+			<code>transport-water</code> subgroup.
 		</para>
 		<programlisting language="java">
 <![CDATA[EmojiAnnotator annotator = new EmojiAnnotator();

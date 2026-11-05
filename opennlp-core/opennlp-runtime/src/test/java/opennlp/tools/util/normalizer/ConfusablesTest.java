@@ -16,6 +16,9 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.io.InputStream;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
 import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
@@ -124,4 +127,27 @@ public class ConfusablesTest {
     assertThrows(IllegalArgumentException.class, () -> Confusables.confusable(null, "a"));
     assertThrows(IllegalArgumentException.class, () -> Confusables.confusable("a", null));
   }
+
+  @Test
+  void tableLoadsEveryMapping() throws Exception {
+    // Completeness audit against bundled UTS #39 confusables.txt 18.0.0, like the CaseFolding
+    // C+F count: a data update that adds or drops a mapping trips this for a conscious bump.
+    final Map<Integer, String> table;
+    try (InputStream in = Confusables.class.getResourceAsStream("confusables.txt")) {
+      table = Confusables.parse(in);
+    }
+    assertEquals(6712, table.size());
+    assertEquals("a", table.get(0x0430)); // CYRILLIC SMALL LETTER A
+    assertEquals(null, table.get(0x00C7)); // LATIN CAPITAL LETTER C WITH CEDILLA unmapped in 18.0
+  }
+
+  @Test
+  void ogonekNoLongerSkeletonsToLatinI() {
+    // Unicode 18.0 removed the OGONEK (U+02DB) → LATIN SMALL LETTER I mapping that 17.0 had.
+    // Combined with NFD, 17.0 skeletons treated ogonek as "i"; 18.0 leaves it as itself.
+    final String ogonek = cp(0x02DB);
+    assertFalse(Confusables.confusable(ogonek, "i"));
+    assertEquals(ogonek, Confusables.skeleton(ogonek));
+  }
+
 }
