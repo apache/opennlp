@@ -219,7 +219,29 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 			selects the device and model default; <code>null</code> is rejected.
 			Padded batches can introduce small floating-point differences when the model honors
 			the attention mask. Select <code>PaddingStrategy.EXACT_LENGTH</code> to retain unpadded
-			batches on a GPU. <code>InferenceOptions</code> supplies the session settings separately.
+			batches on a GPU. On the CPU,
+			<code>InferenceOptions.setIntraOpNumThreads(int)</code> fixes the number of threads
+			ONNX Runtime uses within operators; the default of 0 uses one thread per physical
+			core. A negative thread count is rejected with an
+			<code>IllegalArgumentException</code>.
+			<code>InferenceOptions.setMaxConcurrentInferences(int)</code> limits how many inferences
+			one <code>SentenceVectorsDL</code> runs at once; the default of 0 allows one per
+			available processor. Each running inference holds one direct buffer for its tensors,
+			which the instance keeps for reuse until it is closed, so the limit bounds its direct
+			memory once the buffers have grown to fit the workload. A caller beyond the limit waits;
+			interrupting that wait throws an <code>EmbeddingException</code> and restores the thread's
+			interrupt flag. A negative limit is rejected with an
+			<code>IllegalArgumentException</code>.
+		</para>
+		<para>
+			The default concurrency limit does not account for the direct memory budget. A token
+			output at 16384 positions and 1024 dimensions needs about 67 MB per buffer, so 64
+			concurrent inferences can retain about 4 GiB until the instance is closed. Set
+			<code>setMaxConcurrentInferences(int)</code> explicitly on machines with many processors
+			or a small <code>-XX:MaxDirectMemorySize</code>. Allow room for other direct buffers
+			and for both old and new buffers while a slot grows; replaced buffers are reclaimed
+			by garbage collection. Exceeding the direct memory budget can cause an
+			<code>OutOfMemoryError</code>.
 		</para>
 		<programlisting language="java"><![CDATA[InferenceOptions options = new InferenceOptions();
 options.setGpu(true);

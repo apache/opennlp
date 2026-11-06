@@ -13,4 +13,6 @@ nb-configuration.xml
 !opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx
 !opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-pooled.onnx
 !opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-masked.onnx
+!opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-wide.onnx
+!opennlp-core/opennlp-ml/opennlp-dl/src/test/resources/opennlp/dl/vectors/tiny-fixed.onnx
 vocab.txt
