@@ -134,7 +134,7 @@ public class MascTokenSampleStreamTest extends AbstractMascSampleStreamTest {
       trainingParameters.put(Parameters.ITERATIONS_PARAM, 20);
 
       TokenizerModel model = TokenizerME.train(trainTokens, new TokenizerFactory(
-              "en", null, false, null), trainingParameters);
+              "en", null, false), trainingParameters);
 
       ObjectStream<TokenSample> testTokens = new MascTokenSampleStream(
           new MascDocumentStream(directory, true, fileFilter));
