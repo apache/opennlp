@@ -149,7 +149,7 @@ List of third-party dependencies grouped by their license type.
         * Apache Commons Secure XML (org.apache.commons:commons-secure-xml:1.1.0 - https://commons.apache.org/proper/commons-secure-xml/)
         * Apache Log4j API (org.apache.logging.log4j:log4j-api:2.26.1 - https://logging.apache.org/log4j/2.x/)
         * Apache Log4j Core (org.apache.logging.log4j:log4j-core:2.26.1 - https://logging.apache.org/log4j/2.x/)
-        * Apache UIMA Base: uimaj-core (org.apache.uima:uimaj-core:3.6.1 - https://uima.apache.org)
+        * Apache UIMA Base: uimaj-core (org.apache.uima:uimaj-core:3.7.0 - https://uima.apache.org)
         * HPPC Collections (com.carrotsearch:hppc:0.7.2 - http://labs.carrotsearch.com/hppc.html/hppc)
         * jcommander (com.beust:jcommander:1.78 - https://jcommander.org)
         * SLF4J 2 Provider for Log4j API (org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1 - https://logging.apache.org/log4j/2.x/)
@@ -175,7 +175,7 @@ List of third-party dependencies grouped by their license type.
 
     The MIT License (MIT)
 
-        * ClassGraph (io.github.classgraph:classgraph:5.0.0 - https://github.com/classgraph/classgraph)
-        * ClassGraph base (io.github.classgraph:classgraph-base:5.0.0 - https://github.com/classgraph/classgraph)
-        * ClassGraph classpath finder (io.github.classgraph:classgraph-classpath:5.0.0 - https://github.com/classgraph/classgraph)
-        * ClassGraph virtual filesystem (io.github.classgraph:classgraph-vfs:5.0.0 - https://github.com/classgraph/classgraph)
+        * ClassGraph (io.github.classgraph:classgraph:5.0.1 - https://github.com/classgraph/classgraph)
+        * ClassGraph base (io.github.classgraph:classgraph-base:5.0.1 - https://github.com/classgraph/classgraph)
+        * ClassGraph classpath finder (io.github.classgraph:classgraph-classpath:5.0.1 - https://github.com/classgraph/classgraph)
+        * ClassGraph virtual filesystem (io.github.classgraph:classgraph-vfs:5.0.1 - https://github.com/classgraph/classgraph)
