@@ -75,12 +75,15 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if the document split options of
+   *     {@code inferenceOptions} are invalid.
    */
   public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
 
+    validateSplitOptions(inferenceOptions);
     this.env = OrtEnvironment.getEnvironment();
 
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
@@ -110,12 +113,15 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if the document split options of
+   *     {@code inferenceOptions} are invalid.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
 
+    validateSplitOptions(inferenceOptions);
     this.env = OrtEnvironment.getEnvironment();
 
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
@@ -189,7 +195,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       return classificationScoringStrategy.score(scores);
 
     } catch (Exception ex) {
-      logger.error("Unload to perform document classification inference", ex);
+      logger.error("Unable to perform document classification inference", ex);
     }
 
     return new double[] {};
@@ -279,6 +285,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   private List<Tokens> tokenize(final String text) {
 
+    validateSplitOptions(inferenceOptions);
+
     final List<Tokens> t = new LinkedList<>();
 
     // In this article as the paper suggests, we are going to segment the input into smaller text and feed
@@ -352,18 +360,25 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   }
 
   /**
-   * Applies softmax to an array of values.
+   * Applies the softmax function to an array of logits. The maximum logit is subtracted
+   * before exponentiation, so that large logits do not overflow. Each probability is
+   * rounded to {@code float} precision.
    *
-   * @param input An array of values.
-   * @return The output array.
+   * @param input An array of logits.
+   * @return The probabilities, in the order of {@code input}.
    */
-  private double[] softmax(final float[] input) {
+  static double[] softmax(final float[] input) {
+
+    float max = Float.NEGATIVE_INFINITY;
+    for (final float value : input) {
+      max = Math.max(max, value);
+    }
 
     final double[] t = new double[input.length];
     double sum = 0.0;
 
     for (int x = 0; x < input.length; x++) {
-      double val = Math.exp(input[x]);
+      double val = Math.exp((double) input[x] - max);
       sum += val;
       t[x] = val;
     }
@@ -376,6 +391,29 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     return output;
 
+  }
+
+  /**
+   * Validates the document split options of {@link InferenceOptions}.
+   *
+   * @param inferenceOptions The {@link InferenceOptions} to validate.
+   * @throws IllegalArgumentException Thrown if the document split size is not positive, the
+   *     split overlap size is negative, or the split overlap size is not less than the
+   *     document split size.
+   */
+  private static void validateSplitOptions(final InferenceOptions inferenceOptions) {
+    final int splitSize = inferenceOptions.getDocumentSplitSize();
+    final int overlapSize = inferenceOptions.getSplitOverlapSize();
+    if (splitSize <= 0) {
+      throw new IllegalArgumentException("documentSplitSize must be positive: " + splitSize);
+    }
+    if (overlapSize < 0) {
+      throw new IllegalArgumentException("splitOverlapSize must not be negative: " + overlapSize);
+    }
+    if (overlapSize >= splitSize) {
+      throw new IllegalArgumentException("splitOverlapSize (" + overlapSize
+          + ") must be less than documentSplitSize (" + splitSize + ")");
+    }
   }
 
   private int maxIndex(double[] arr) {
