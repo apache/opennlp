@@ -30,11 +30,17 @@ import opennlp.tools.postag.TagDictionary;
 
 /**
  * A {@link TagDictionary} implementation based on Morfologik binary
- * dictionaries
+ * dictionaries.
+ * <p>
+ * This implementation is thread-safe: the immutable {@link Dictionary} is shared
+ * and each thread looks words up through its own {@link DictionaryLookup}, held in
+ * a {@link ThreadLocal}, as {@link DictionaryLookup} instances are stateful and must
+ * not be used concurrently. Call {@link #clearThreadLocalState()} to release the
+ * lookup of the current thread.
  */
 public class MorfologikTagDictionary implements TagDictionary {
 
-  private final IStemmer dictLookup;
+  private final ThreadLocal<IStemmer> dictLookup;
   private final boolean isCaseSensitive;
 
   /**
@@ -58,7 +64,10 @@ public class MorfologikTagDictionary implements TagDictionary {
    */
   public MorfologikTagDictionary(Dictionary dict, boolean caseSensitive)
       throws IllegalArgumentException {
-    this.dictLookup = new DictionaryLookup(dict);
+    // Creates the first lookup now, so an unusable dictionary fails here.
+    final IStemmer initialLookup = new DictionaryLookup(dict);
+    this.dictLookup = ThreadLocal.withInitial(() -> new DictionaryLookup(dict));
+    this.dictLookup.set(initialLookup);
     this.isCaseSensitive = caseSensitive;
   }
 
@@ -68,15 +77,18 @@ public class MorfologikTagDictionary implements TagDictionary {
       word = word.toLowerCase(Locale.ROOT);
     }
 
-    List<WordData> data = dictLookup.lookup(word);
-    if (data != null && data.size() > 0) {
+    List<WordData> data = dictLookup.get().lookup(word);
+    if (data != null && !data.isEmpty()) {
       List<String> tags = new ArrayList<>(data.size());
       for (WordData aData : data) {
-        tags.add(aData.getTag().toString());
+        CharSequence tag = aData.getTag();
+        if (tag != null) {
+          tags.add(tag.toString());
+        }
       }
-      if (tags.size() > 0)
+      if (!tags.isEmpty()) {
         return tags.toArray(new String[0]);
-      return null;
+      }
     }
     return null;
   }
@@ -84,5 +96,14 @@ public class MorfologikTagDictionary implements TagDictionary {
   @Override
   public boolean isCaseSensitive() {
     return isCaseSensitive;
+  }
+
+  /**
+   * Removes the {@link DictionaryLookup} of the current thread to prevent classloader
+   * leaks in container environments. Call when the thread is returned to a pool or the
+   * dictionary is no longer needed; a later lookup on the same thread creates a new one.
+   */
+  public void clearThreadLocalState() {
+    dictLookup.remove();
   }
 }

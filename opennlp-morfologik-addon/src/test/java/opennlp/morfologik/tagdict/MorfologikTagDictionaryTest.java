@@ -78,6 +78,45 @@ public class MorfologikTagDictionaryTest extends AbstractMorfologikTest {
 
   }
 
+  /**
+   * Verifies that a two-column Morfologik dictionary (lemma, inflected form, no tag)
+   * reports {@code null} for {@link TagDictionary#getTags(String)} rather than throwing
+   * when {@code WordData#getTag()} is null.
+   */
+  @Test
+  public void testTaglessDictionaryReturnsNull() throws Exception {
+    final Path output = createMorfologikDictionary("dictionaryTagless");
+    output.toFile().deleteOnExit();
+    final TagDictionary dict = new MorfologikTagDictionary(Dictionary.read(output), true);
+
+    final String[] tags = Assertions.assertDoesNotThrow(() -> dict.getTags("carro"));
+    Assertions.assertNull(tags);
+  }
+
+  /**
+   * Verifies that a thread can release its lookup and keeps getting the same tags afterwards,
+   * on the thread that created the dictionary and on another one.
+   */
+  @Test
+  public void testClearThreadLocalStateKeepsLookupsWorking() throws Exception {
+    final MorfologikTagDictionary dict = createDictionary(false);
+    final String[] expected = dict.getTags("casa");
+
+    dict.clearThreadLocalState();
+    Assertions.assertArrayEquals(expected, dict.getTags("casa"));
+
+    final String[][] fromWorker = new String[2][];
+    final Thread worker = new Thread(() -> {
+      fromWorker[0] = dict.getTags("casa");
+      dict.clearThreadLocalState();
+      fromWorker[1] = dict.getTags("casa");
+    });
+    worker.start();
+    worker.join();
+    Assertions.assertArrayEquals(expected, fromWorker[0]);
+    Assertions.assertArrayEquals(expected, fromWorker[1]);
+  }
+
   private MorfologikTagDictionary createDictionary(boolean caseSensitive)
       throws Exception {
     return this.createDictionary(caseSensitive, null);
