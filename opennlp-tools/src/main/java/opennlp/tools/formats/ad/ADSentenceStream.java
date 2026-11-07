@@ -477,6 +477,14 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
   }
 
 
+  /**
+   * Reads the next sentence.
+   *
+   * @return The next {@link Sentence}, or {@code null} at the end of the input. A sentence cut
+   *         off before the closing tag is returned with the lines read so far; an opening tag
+   *         with no lines after it at the end of the input yields no sentence.
+   * @throws IOException Thrown if the line stream cannot be read.
+   */
   @Override
   public Sentence read() throws IOException {
 
@@ -518,14 +526,10 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         }
 
       } else {
-        // handle end of file
-        if (sentenceStarted) {
-          if (sentence.length() > 0) {
-            return parser.parse(sentence.toString(), paraID, isTitle, isBox);
-          }
-        } else {
-          return null;
+        if (sentenceStarted && sentence.length() > 0) {
+          return parser.parse(sentence.toString(), paraID, isTitle, isBox);
         }
+        return null;
       }
     }
   }
