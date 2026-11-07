@@ -137,4 +137,38 @@ public class TokenizerMETest {
         tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
   }
 
+  @Test
+  void testKeepNewLinesLeavesTheSharedWhitespaceTokenizerAlone() throws IOException {
+    TokenizerME tokenizer = new TokenizerME(TokenizerTestUtil.createMaxentTokenModel());
+    tokenizer.setKeepNewLines(true);
+    Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, tokenizer.tokenize("a\nb"));
+
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        WhitespaceTokenizer.INSTANCE.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        WhitespaceTokenizer.INSTANCE.tokenize("a\r\nb"));
+  }
+
+  @Test
+  void testTokenizersWithDifferentNewLineSettingsKeepTheirOwn() throws IOException {
+    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+    TokenizerME keeping = new TokenizerME(model);
+    keeping.setKeepNewLines(true);
+    TokenizerME dropping = new TokenizerME(model);
+
+    Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, keeping.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, keeping.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize("a\nb"));
+  }
+
+  @Test
+  void testKeepNewLinesCanBeSwitchedOffAgain() throws IOException {
+    TokenizerME tokenizer = new TokenizerME(TokenizerTestUtil.createMaxentTokenModel());
+    tokenizer.setKeepNewLines(true);
+    Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, tokenizer.tokenize("a\nb"));
+    tokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, tokenizer.tokenize("a\nb"));
+  }
+
 }

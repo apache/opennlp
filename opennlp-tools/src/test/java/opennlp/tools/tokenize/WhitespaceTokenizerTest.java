@@ -62,8 +62,7 @@ public class WhitespaceTokenizerTest {
 
   @Test
   void testTokenizationOfStringWithUnixNewLineTokens() {
-    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-    tokenizer.setKeepNewLines(true);
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.newInstance(true);
 
     Assertions.assertEquals(2, tokenizer.tokenize("a\n").length);
     Assertions.assertArrayEquals(new String[] {"a", "\n"}, tokenizer.tokenize("a\n"));
@@ -81,8 +80,7 @@ public class WhitespaceTokenizerTest {
 
   @Test
   void testTokenizationOfStringWithWindowsNewLineTokens() {
-    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-    tokenizer.setKeepNewLines(true);
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.newInstance(true);
 
     Assertions.assertEquals(3, tokenizer.tokenize("a\r\n").length);
     Assertions.assertArrayEquals(new String[] {"a", "\r", "\n"}, tokenizer.tokenize("a\r\n"));
@@ -97,5 +95,17 @@ public class WhitespaceTokenizerTest {
     Assertions.assertEquals(11, tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c").length);
     Assertions.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b", "\r", "\n", "\r", "\n", "c"},
         tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
+  }
+
+  @Test
+  void testNewInstanceIsNotTheSharedInstance() {
+    WhitespaceTokenizer keeping = WhitespaceTokenizer.newInstance(true);
+    WhitespaceTokenizer dropping = WhitespaceTokenizer.newInstance(false);
+    Assertions.assertNotSame(WhitespaceTokenizer.INSTANCE, keeping);
+    Assertions.assertNotSame(WhitespaceTokenizer.INSTANCE, dropping);
+    Assertions.assertNotSame(keeping, dropping);
+    Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, keeping.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize("a\nb"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, WhitespaceTokenizer.INSTANCE.tokenize("a\nb"));
   }
 }
