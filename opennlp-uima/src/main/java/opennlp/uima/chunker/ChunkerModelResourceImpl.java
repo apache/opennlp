@@ -23,6 +23,9 @@ import java.io.InputStream;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.uima.util.AbstractModelResource;
 
+/**
+ * A default implementation of {@link ChunkerModelResource}.
+ */
 public class ChunkerModelResourceImpl extends AbstractModelResource<ChunkerModel>
     implements ChunkerModelResource {
 

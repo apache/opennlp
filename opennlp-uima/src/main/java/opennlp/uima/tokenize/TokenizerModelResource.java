@@ -17,20 +17,16 @@
 
 package opennlp.uima.tokenize;
 
-import org.apache.uima.analysis_engine.AnalysisEngine;
-
 import opennlp.tools.tokenize.TokenizerModel;
 
 /**
- * A {@link TokenizerModel} which can be shared between {@link AnalysisEngine}s
- * and loaded via the UIMA resource model.
+ * A resource encapsulating an OpenNLP {@link TokenizerModel} which can be shared between
+ * <i>analysis engines</i> and loaded via the UIMA resource model.
  */
 public interface TokenizerModelResource {
 
   /**
-   * Retrieves the shared model instance.
-   *
-   * @return the shared model instance
+   * @return Retrieves the shared model instance.
    */
   TokenizerModel getModel();
 }

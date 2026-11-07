@@ -19,6 +19,11 @@ package opennlp.uima.namefind;
 
 import opennlp.tools.namefind.TokenNameFinderModel;
 
+/**
+ * A resource encapsulating an OpenNLP {@link TokenNameFinderModel} which can be shared between
+ * <i>analysis engines</i> and loaded via the UIMA resource model.
+ */
 public interface TokenNameFinderModelResource {
+  
   TokenNameFinderModel getModel();
 }

@@ -45,25 +45,43 @@ import opennlp.uima.util.UimaUtil;
 /**
  * OpenNLP Part Of Speech annotator.
  * <p>
- * Mandatory parameters
+ * Mandatory parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.POSFeature</td> <td>The name of the token pos feature,
- * the feature must be of type String</td></tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.ModelName}</td>
+ *  <td>The name of the model file</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.SentenceType}</td>
+ *  <td>The full name of the sentence type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.TokenType}</td>
+ *  <td>The full name of the token type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.POSFeature}</td>
+ *  <td>The name of the token pos feature, the feature must be of type String</td>
+ * </tr>
  * </table>
  * <p>
- * Optional parameters
+ * Optional parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td>
- * <td>The name of the double probability feature (not set by default)</td></tr>
- * <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.DictionaryName</td> <td>The name of the dictionary file</td></tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.ProbabilityFeature}</td>
+ *  <td>The name of the double probability feature (not set by default)</td>
+ * </tr>
+ * <tr><td>Integer</td>
+ *  <td>{@code opennlp.uima.BeamSize}</td>
+ *  </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.DictionaryName}</td>
+ *  <td>The name of the dictionary file</td>
+ * </tr>
  * </table>
  */
 public final class POSTagger extends CasAnnotator_ImplBase {
@@ -134,7 +152,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
   }
 
   /**
-   * Initializes the type system.
+   * Initializes the {@link TypeSystem type system}.
    */
   @Override
   public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
@@ -156,7 +174,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
   }
 
   /**
-   * Performs pos-tagging on the given tcas object.
+   * Performs pos-tagging on the given {@link CAS tcas} object.
    */
   @Override
   public void process(CAS tcas) {
@@ -167,13 +185,11 @@ public final class POSTagger extends CasAnnotator_ImplBase {
     for (AnnotationIteratorPair annotationIteratorPair : comboIterator) {
 
       final List<AnnotationFS> sentenceTokenAnnotationList = new LinkedList<>();
-
       final List<String> sentenceTokenList = new LinkedList<>();
 
       for (AnnotationFS tokenAnnotation : annotationIteratorPair.getSubIterator()) {
 
         sentenceTokenAnnotationList.add(tokenAnnotation);
-
         sentenceTokenList.add(tokenAnnotation.getCoveredText());
       }
 

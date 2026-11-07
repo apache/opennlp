@@ -75,7 +75,7 @@ public abstract class AbstractSampleStreamFactory<T,P> implements ObjectStreamFa
    * {@link BasicFormatParams}.
    *
    * @implNote Additional checks for the basic {@code -data} argument are conducted, that is
-   * wether the file exists or not.
+   * whether the file exists or not.
    *
    * @param args A set of command line arguments.
    * @return The parsed (basic format) parameter instance.

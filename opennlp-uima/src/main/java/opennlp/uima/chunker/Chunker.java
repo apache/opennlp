@@ -38,25 +38,34 @@ import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
 
 /**
- * OpenNLP Chunker annotator.
+ * An OpenNLP-based Chunker annotator.
  * <p>
- * Mandatory parameters
+ * Mandatory parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.POSFeature</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.ChunkType</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.ChunkTagFeature</td></tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.ModelName}</td>
+ *  <td>The name of the model file</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.SentenceType}</td>
+ *  <td>The full name of the sentence type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.TokenType}</td>
+ *  <td>The full name of the token type</td>
+ * </tr>
+ * <tr><td>String</td> <td>{@code opennlp.uima.POSFeature}</td></tr>
+ * <tr><td>String</td> <td>{@code opennlp.uima.ChunkType}</td></tr>
+ * <tr><td>String</td> <td>{@code opennlp.uima.ChunkTagFeature}</td></tr>
  * </table>
  * <p>
- * Optional parameters
+ * Optional parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
+ * <tr><td>Integer</td> <td>{@code opennlp.uima.BeamSize}</td></tr>
  * </table>
  */
 public final class Chunker extends CasAnnotator_ImplBase {
@@ -70,8 +79,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
   /**
    * The chunk tag feature parameter
    */
-  public static final String CHUNK_TAG_FEATURE_PARAMETER =
-      "opennlp.uima.ChunkTagFeature";
+  public static final String CHUNK_TAG_FEATURE_PARAMETER = "opennlp.uima.ChunkTagFeature";
 
   private Type mTokenType;
 
@@ -100,9 +108,8 @@ public final class Chunker extends CasAnnotator_ImplBase {
    * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
-  public void initialize(UimaContext context)
-      throws ResourceInitializationException {
-
+  @Override
+  public void initialize(UimaContext context) throws ResourceInitializationException {
     super.initialize(context);
 
     this.context = context;
@@ -128,10 +135,10 @@ public final class Chunker extends CasAnnotator_ImplBase {
   }
 
   /**
-   * Initializes the type system.
+   * Initializes the {@link TypeSystem type system}.
    */
-  public void typeSystemInit(TypeSystem typeSystem)
-      throws AnalysisEngineProcessException {
+  @Override
+  public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
 
     // chunk type
     mChunkType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
@@ -177,13 +184,10 @@ public final class Chunker extends CasAnnotator_ImplBase {
     int index = 0;
 
     for (AnnotationFS tokenAnnotation : tokenAnnotationIndex) {
-
       tokenAnnotations[index] = tokenAnnotation;
-
       tokens[index] = tokenAnnotation.getCoveredText();
 
-      pos[index++] = tokenAnnotation.getFeatureValueAsString(
-          mPosFeature);
+      pos[index++] = tokenAnnotation.getFeatureValueAsString(mPosFeature);
     }
 
     String[] result = mChunker.chunk(tokens, pos);

@@ -19,6 +19,11 @@ package opennlp.uima.parser;
 
 import opennlp.tools.parser.ParserModel;
 
+/**
+ * A resource encapsulating an OpenNLP {@link ParserModel} which can be shared between
+ *  * <i>analysis engines</i> and loaded via the UIMA resource model.
+ *  */
 public interface ParserModelResource {
+  
   ParserModel getModel();
 }

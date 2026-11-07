@@ -19,6 +19,10 @@ package opennlp.uima.sentdetect;
 
 import opennlp.tools.sentdetect.SentenceModel;
 
+/**
+ * A resource encapsulating an OpenNLP {@link SentenceModel} which can be shared between
+ * <i>analysis engines</i> and loaded via the UIMA resource model.
+ */
 public interface SentenceModelResource {
 
   SentenceModel getModel();

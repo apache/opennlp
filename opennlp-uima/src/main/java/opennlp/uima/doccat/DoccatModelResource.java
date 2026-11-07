@@ -19,6 +19,11 @@ package opennlp.uima.doccat;
 
 import opennlp.tools.doccat.DoccatModel;
 
+/**
+ * A resource encapsulating an OpenNLP {@link DoccatModel} which can be shared between
+ * <i>analysis engines</i> and loaded via the UIMA resource model.
+ */
 public interface DoccatModelResource {
+
   DoccatModel getModel();
 }
