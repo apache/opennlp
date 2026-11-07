@@ -247,7 +247,8 @@ public abstract class AbstractDL implements AutoCloseable {
       } catch (UnsatisfiedLinkError e) {
         sessionOptions.close();
         final UnsatisfiedLinkError error = new UnsatisfiedLinkError(
-            "Could not load the ONNX Runtime CUDA provider; check CUDA and cuDNN installation and compatibility.");
+            "Could not load the ONNX Runtime CUDA provider; "
+                + "check CUDA and cuDNN installation and compatibility.");
         error.initCause(e);
         throw error;
       } catch (OrtException | RuntimeException e) {
@@ -288,7 +289,8 @@ public abstract class AbstractDL implements AutoCloseable {
     } catch (UnsatisfiedLinkError e) {
       throw nativeLibraryError(e, osName, architecture);
     } catch (NoClassDefFoundError e) {
-      if (e.getMessage() == null || !e.getMessage().startsWith("Could not initialize class ai.onnxruntime.")) {
+      if (e.getMessage() == null
+          || !e.getMessage().startsWith("Could not initialize class ai.onnxruntime.")) {
         throw e;
       }
       final NoClassDefFoundError error = new NoClassDefFoundError(
