@@ -90,4 +90,14 @@ class MarkableFileInputStream extends InputStream {
   public int read(byte[] b, int off, int len) throws IOException {
     return in.read(b, off, len);
   }
+
+  /**
+   * Closes the file this stream opened. Closing an already closed stream has no effect.
+   *
+   * @throws IOException Thrown if the file cannot be closed.
+   */
+  @Override
+  public void close() throws IOException {
+    in.close();
+  }
 }
