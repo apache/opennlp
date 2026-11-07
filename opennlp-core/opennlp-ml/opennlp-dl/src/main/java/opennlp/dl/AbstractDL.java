@@ -246,7 +246,10 @@ public abstract class AbstractDL implements AutoCloseable {
         sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
       } catch (UnsatisfiedLinkError e) {
         sessionOptions.close();
-        throw nativeLibraryError(e, System.getProperty("os.name"), System.getProperty("os.arch"));
+        final UnsatisfiedLinkError error = new UnsatisfiedLinkError(
+            "Could not load the ONNX Runtime CUDA provider; check CUDA and cuDNN installation and compatibility.");
+        error.initCause(e);
+        throw error;
       } catch (OrtException | RuntimeException e) {
         sessionOptions.close();
         throw e;
@@ -255,30 +258,72 @@ public abstract class AbstractDL implements AutoCloseable {
     return sessionOptions;
   }
 
+  /**
+   * Initializes an ONNX native operation with platform-specific failure guidance.
+   * @param nativeOperation operation to run
+   * @param <T> result type
+   * @return operation result
+   * @throws UnsatisfiedLinkError if the runtime native library cannot be loaded
+   * @throws NoClassDefFoundError if a prior ONNX class initialization failed
+   */
   private static <T> T initializeNative(final Supplier<T> nativeOperation) {
     return initializeNative(nativeOperation,
         System.getProperty("os.name"), System.getProperty("os.arch"));
   }
 
+  /**
+   * Initializes an ONNX native operation using the supplied platform for diagnostics.
+   * @param nativeOperation operation to run
+   * @param osName operating system name
+   * @param architecture processor architecture
+   * @param <T> result type
+   * @return operation result
+   * @throws UnsatisfiedLinkError if the runtime native library cannot be loaded
+   * @throws NoClassDefFoundError if a prior ONNX class initialization failed
+   */
   static <T> T initializeNative(final Supplier<T> nativeOperation, final String osName,
                                 final String architecture) {
     try {
       return nativeOperation.get();
     } catch (UnsatisfiedLinkError e) {
       throw nativeLibraryError(e, osName, architecture);
+    } catch (NoClassDefFoundError e) {
+      if (e.getMessage() == null || !e.getMessage().startsWith("Could not initialize class ai.onnxruntime.")) {
+        throw e;
+      }
+      final NoClassDefFoundError error = new NoClassDefFoundError(
+          nativeLibraryMessage(osName, architecture));
+      error.initCause(e);
+      throw error;
     }
   }
 
+  /**
+   * Wraps a native loader error with platform guidance.
+   * @param cause original loader error
+   * @param osName operating system name
+   * @param architecture processor architecture
+   * @return an error retaining the original cause
+   */
   private static UnsatisfiedLinkError nativeLibraryError(final UnsatisfiedLinkError cause,
                                                           final String osName,
                                                           final String architecture) {
-    final UnsatisfiedLinkError error = new UnsatisfiedLinkError(
-        "Could not load ONNX Runtime native library for " + osName + "/" + architecture
-            + ". opennlp-dl-gpu bundles native libraries only for linux-x64 and win-x64; "
-            + "opennlp-dl provides CPU inference for linux-x64, linux-aarch64, osx-aarch64, "
-            + "and win-x64.");
+    final UnsatisfiedLinkError error = new UnsatisfiedLinkError(nativeLibraryMessage(osName, architecture));
     error.initCause(cause);
     return error;
+  }
+
+  /**
+   * Builds native runtime loading guidance for a platform.
+   * @param osName operating system name
+   * @param architecture processor architecture
+   * @return diagnostic message
+   */
+  private static String nativeLibraryMessage(final String osName, final String architecture) {
+    return "Could not load ONNX Runtime native library for " + osName + "/" + architecture
+            + ". opennlp-dl-gpu bundles native libraries only for linux-x64 and win-x64; "
+            + "opennlp-dl provides CPU inference for linux-x64, linux-aarch64, osx-aarch64, "
+            + "and win-x64.";
   }
 
   /**

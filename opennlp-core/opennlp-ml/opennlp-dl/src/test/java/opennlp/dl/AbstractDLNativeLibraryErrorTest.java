@@ -20,6 +20,7 @@ package opennlp.dl;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,10 +35,27 @@ class AbstractDLNativeLibraryErrorTest {
           throw original;
         }, "macOS", "aarch64"));
 
-    assertTrue(wrapped.getMessage().contains("macOS/aarch64"));
-    assertTrue(wrapped.getMessage().contains("opennlp-dl-gpu"));
-    assertTrue(wrapped.getMessage().contains("opennlp-dl"));
-    assertTrue(wrapped.getMessage().contains("osx-aarch64"));
+    assertEquals("Could not load ONNX Runtime native library for macOS/aarch64"
+        + ". opennlp-dl-gpu bundles native libraries only for linux-x64 and win-x64; "
+        + "opennlp-dl provides CPU inference for linux-x64, linux-aarch64, osx-aarch64, "
+        + "and win-x64.", wrapped.getMessage());
     assertSame(original, wrapped.getCause());
+  }
+
+  @Test
+  void preservesGuidanceAfterOnnxClassInitializationFails() {
+    final NoClassDefFoundError original = new NoClassDefFoundError(
+        "Could not initialize class ai.onnxruntime.OrtEnvironment");
+    final NoClassDefFoundError wrapped = assertThrows(NoClassDefFoundError.class,
+        () -> AbstractDL.initializeNative(() -> { throw original; }, "linux", "x86_64"));
+    assertTrue(wrapped.getMessage().contains("linux/x86_64"));
+    assertSame(original, wrapped.getCause());
+  }
+
+  @Test
+  void doesNotMaskUnrelatedMissingClasses() {
+    final NoClassDefFoundError original = new NoClassDefFoundError("other/Dependency");
+    assertSame(original, assertThrows(NoClassDefFoundError.class,
+        () -> AbstractDL.initializeNative(() -> { throw original; }, "linux", "x86_64")));
   }
 }

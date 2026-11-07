@@ -188,7 +188,7 @@ try (TextEmbedder embedder = providers.select(spec).create(spec)) {
 		<para>
 			To compute the vectors on a GPU, depend on <code>opennlp-dl-gpu</code> in place of
 			<code>opennlp-dl</code> and pass <code>InferenceOptions</code> to
-			<code>SentenceVectorsDL</code>. The modules use ONNX Runtime 1.31.0, whose Java artifacts
+			<code>SentenceVectorsDL</code>. The modules use ONNX Runtime, whose Java artifacts
 			bundle native libraries for these operating-system and architecture combinations:
 			<table xml:id="tools.ml.text-embeddings.onnx-platforms">
 				<title>ONNX Runtime platforms</title>
