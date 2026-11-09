@@ -94,8 +94,13 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     }
 
     this.session = env.createSession(model.getPath(), sessionOptions);
-    this.vocab = loadVocab(vocabulary);
-    this.tokenizer = createTokenizer(vocab);
+    try {
+      this.vocab = loadVocab(vocabulary);
+      this.tokenizer = createTokenizer(vocab);
+    } catch (IOException | RuntimeException e) {
+      closeAfterFailure(session, e);
+      throw e;
+    }
     this.categories = categories;
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.inferenceOptions = inferenceOptions;
@@ -127,21 +132,23 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
 
-    validateSplitOptions(inferenceOptions);
-    this.env = OrtEnvironment.getEnvironment();
+    this(model, vocabulary, readCategories(config), classificationScoringStrategy,
+        inferenceOptions);
+  }
 
-    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
-    if (inferenceOptions.isGpu()) {
-      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+  /**
+   * Closes the session of a constructor that failed after creating it. A failure to close is
+   * added to {@code failure} as a suppressed exception.
+   *
+   * @param session The session to close.
+   * @param failure The exception that made the constructor fail.
+   */
+  private static void closeAfterFailure(OrtSession session, Exception failure) {
+    try {
+      session.close();
+    } catch (OrtException | RuntimeException e) {
+      failure.addSuppressed(e);
     }
-
-    this.session = env.createSession(model.getPath(), sessionOptions);
-    this.vocab = loadVocab(vocabulary);
-    this.tokenizer = createTokenizer(vocab);
-    this.categories = readCategories(config);
-    this.classificationScoringStrategy = classificationScoringStrategy;
-    this.inferenceOptions = inferenceOptions;
-
   }
 
   @Override
