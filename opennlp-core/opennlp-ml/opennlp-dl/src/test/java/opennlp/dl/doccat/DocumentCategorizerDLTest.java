@@ -83,6 +83,21 @@ public class DocumentCategorizerDLTest {
     assertEquals("config must not be null", e.getMessage());
   }
 
+  /**
+   * The config is read before the model is loaded, so a malformed config fails without
+   * creating an ONNX session. The model file does not exist, which would fail with an
+   * {@link ai.onnxruntime.OrtException} if the session were created first.
+   */
+  @Test
+  void testMalformedConfigFailsBeforeTheModelIsLoaded(@TempDir Path dir) throws IOException {
+    final Path config = Files.writeString(dir.resolve("config.json"), "{\"id2label\": ");
+
+    assertThrows(InvalidFormatException.class, () ->
+        new DocumentCategorizerDL(dir.resolve("missing.onnx").toFile(),
+            dir.resolve("missing-vocab.txt").toFile(), config.toFile(),
+            new AverageClassificationScoringStrategy(), new InferenceOptions()));
+  }
+
   @Test
   void testCategorizeFailsLoudlyWhenInferenceFails() {
     final IllegalStateException e = assertThrows(IllegalStateException.class, () ->

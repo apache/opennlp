@@ -158,15 +158,29 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
 
-    super(model, vocabulary,
-        sessionOptions(validateConstructorArguments(
-            inferenceOptions, config, "config", classificationScoringStrategy)),
-        resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
+    this(model, vocabulary,
+        readCategories(inferenceOptions, config, classificationScoringStrategy),
+        classificationScoringStrategy, inferenceOptions);
+  }
 
-    this.categories = Map.copyOf(readCategories(config));
-    this.classificationScoringStrategy = classificationScoringStrategy;
-    this.settings = InferenceSettings.from(inferenceOptions);
-
+  /**
+   * Checks the arguments of the config constructor and reads its categories, before the
+   * model is loaded, so that a config that cannot be read does not leave an ONNX session open.
+   *
+   * @param inferenceOptions The inference options.
+   * @param config The model's config file.
+   * @param classificationScoringStrategy The scoring strategy.
+   * @return The categories by output index.
+   * @throws IOException Thrown if the file cannot be read.
+   * @throws InvalidFormatException Thrown if the file is not well-formed JSON, its
+   *     {@code id2label} member does not map keys to strings, or a key is not an integer.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}.
+   */
+  private static Map<Integer, String> readCategories(
+      final InferenceOptions inferenceOptions, final File config,
+      final ClassificationScoringStrategy classificationScoringStrategy) throws IOException {
+    validateConstructorArguments(inferenceOptions, config, "config", classificationScoringStrategy);
+    return readCategories(config);
   }
 
   /**
