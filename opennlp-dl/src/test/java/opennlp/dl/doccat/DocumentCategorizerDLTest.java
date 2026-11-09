@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,5 +57,39 @@ public class DocumentCategorizerDLTest {
 
     assertTrue(e.getMessage().contains("missing"),
         "the error message should name the missing token: " + e.getMessage());
+  }
+
+  @Test
+  void testSoftmaxIsFiniteForLargeLogits() {
+    assertArrayEquals(new double[] {(float) (1.0 / 3), (float) (1.0 / 3), (float) (1.0 / 3)},
+        DocumentCategorizerDL.softmax(new float[] {1000f, 1000f, 1000f}));
+    assertArrayEquals(new double[] {1.0, 0.0},
+        DocumentCategorizerDL.softmax(new float[] {1000f, -1000f}));
+    assertArrayEquals(new double[] {0.5, 0.5},
+        DocumentCategorizerDL.softmax(new float[] {Float.MAX_VALUE, Float.MAX_VALUE}));
+  }
+
+  @Test
+  void testSoftmaxMatchesReferenceDistribution() {
+    // softmax([1, 2, 3]) = [0.09003057, 0.24472847, 0.66524096]
+    final double[] out = DocumentCategorizerDL.softmax(new float[] {1f, 2f, 3f});
+
+    assertEquals(0.09003057, out[0], 1e-7);
+    assertEquals(0.24472847, out[1], 1e-7);
+    assertEquals(0.66524096, out[2], 1e-7);
+  }
+
+  @Test
+  void testSoftmaxMatchesUnshiftedFormForModerateLogits() {
+    final float[] logits = {-4.25f, 0.5f, 3.75f, 1.125f, -0.5f};
+
+    double sum = 0.0;
+    for (final float logit : logits) {
+      sum += Math.exp(logit);
+    }
+    final double[] out = DocumentCategorizerDL.softmax(logits);
+    for (int x = 0; x < logits.length; x++) {
+      assertEquals((float) (Math.exp(logits[x]) / sum), out[x], Math.ulp((float) out[x]));
+    }
   }
 }

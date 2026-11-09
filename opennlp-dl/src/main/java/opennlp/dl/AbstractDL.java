@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +50,8 @@ public abstract class AbstractDL implements AutoCloseable {
   protected OrtSession session;
   protected Tokenizer tokenizer;
   protected Map<String, Integer> vocab;
+
+  private final AtomicBoolean closed = new AtomicBoolean();
 
   private static final Pattern JSON_ENTRY_PATTERN =
       Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"\\s*:\\s*(\\d+)");
@@ -142,18 +145,21 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Closes this resource, relinquishing any underlying resources.
+   * Closes the {@link OrtSession} owned by this instance.
+   *
+   * <p>The {@link OrtEnvironment} is not closed: {@link OrtEnvironment#getEnvironment()}
+   * returns a process-wide instance shared by all deep-learning components.</p>
+   *
+   * <p>This method is idempotent: the session is closed on the first call only, and
+   * subsequent calls have no effect.</p>
    *
    * @throws OrtException Thrown if it failed to close Ort resources.
-   * @throws IllegalStateException Thrown if the underlying resources were already closed.
+   * @throws IllegalStateException Thrown if the session was already closed outside this method.
    */
   @Override
   public void close() throws OrtException, IllegalStateException {
-    if (session != null) {
+    if (closed.compareAndSet(false, true) && session != null) {
       session.close();
-    }
-    if (env != null) {
-      env.close();
     }
   }
 

@@ -22,8 +22,8 @@ package opennlp.dl;
  * 
  * @param tokens The tokens themselves.
  * @param ids    The token IDs as retrieved from the vocabulary.
- * @param mask   The token mask. (Typically all 1.)
- * @param types  The token types. (Typically all 1.)
+ * @param mask   The attention mask, all 1.
+ * @param types  The segment IDs, all 0 for a single input segment.
  */
 public record Tokens(String[] tokens, long[] ids, long[] mask, long[] types) {
 

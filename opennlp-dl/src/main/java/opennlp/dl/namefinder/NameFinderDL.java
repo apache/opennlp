@@ -69,6 +69,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if the document split options of
+   *     {@code inferenceOptions} are invalid.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       SentenceDetector sentenceDetector) throws IOException, OrtException {
@@ -88,11 +90,14 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if the document split options of
+   *     {@code inferenceOptions} are invalid.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       InferenceOptions inferenceOptions,
                       SentenceDetector sentenceDetector) throws IOException, OrtException {
 
+    validateSplitOptions(inferenceOptions);
     this.env = OrtEnvironment.getEnvironment();
 
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
@@ -356,6 +361,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
   private List<Tokens> tokenize(final String text) {
 
+    validateSplitOptions(inferenceOptions);
+
     final List<Tokens> t = new LinkedList<>();
 
     // In this article as the paper suggests, we are going to segment the input into smaller text and feed
@@ -426,6 +433,29 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
     return ids;
 
+  }
+
+  /**
+   * Validates the document split options of {@link InferenceOptions}.
+   *
+   * @param inferenceOptions The {@link InferenceOptions} to validate.
+   * @throws IllegalArgumentException Thrown if the document split size is not positive, the
+   *     split overlap size is negative, or the split overlap size is not less than the
+   *     document split size.
+   */
+  private static void validateSplitOptions(final InferenceOptions inferenceOptions) {
+    final int splitSize = inferenceOptions.getDocumentSplitSize();
+    final int overlapSize = inferenceOptions.getSplitOverlapSize();
+    if (splitSize <= 0) {
+      throw new IllegalArgumentException("documentSplitSize must be positive: " + splitSize);
+    }
+    if (overlapSize < 0) {
+      throw new IllegalArgumentException("splitOverlapSize must not be negative: " + overlapSize);
+    }
+    if (overlapSize >= splitSize) {
+      throw new IllegalArgumentException("splitOverlapSize (" + overlapSize
+          + ") must be less than documentSplitSize (" + splitSize + ")");
+    }
   }
 
 }
