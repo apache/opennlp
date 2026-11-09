@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,6 +61,9 @@ public class DownloadUtil {
   private static final String MODEL_URI_PATH =
           System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.3/");
   private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
+  private static final String CHECKSUM_EXTENSION = ".sha512";
+  private static final String INDEX_EXTENSION = ".index.html";
+  private static final String TEMP_EXTENSION = ".tmp";
 
   private static Map<String, Map<ModelType, String>> availableModels;
 
@@ -86,7 +90,7 @@ public class DownloadUtil {
         boolean exists;
         if (Files.exists(localFile)) {
           // if this does not throw the requested model is valid!
-          validateModel(new URL(url + ".sha512"), localFile);
+          validateCachedModel(new URL(url + CHECKSUM_EXTENSION), localFile);
           exists = true;
         } else {
           exists = false;
@@ -127,7 +131,8 @@ public class DownloadUtil {
    * The model is saved to an {@code .opennlp/} directory
    * located in the user's home directory. This directory will be created
    * if it does not already exist. If a model to be downloaded already
-   * exists in that directory, the model will not be re-downloaded.
+   * exists in that directory, the model will not be re-downloaded, but it is
+   * verified against its SHA-512 checksum before it is loaded.
    *
    * @param url  The model's {@link URL}.
    * @param type The class of the resulting model {@link T}.
@@ -156,10 +161,11 @@ public class DownloadUtil {
       try (final InputStream in = url.openStream()) {
         Files.copy(in, localFile, StandardCopyOption.REPLACE_EXISTING);
       }
-      validateModel(new URL(url + ".sha512"), localFile);
+      validateModel(new URL(url + CHECKSUM_EXTENSION), localFile);
       logger.debug("Download complete.");
     } else {
       logger.debug("Model file '{}' already exists. Skipping download.", filename);
+      validateCachedModel(new URL(url + CHECKSUM_EXTENSION), localFile);
     }
 
     try {
@@ -169,10 +175,24 @@ public class DownloadUtil {
     }
   }
 
+  /**
+   * Lists the models published in the model index. A copy of the last index read is kept in
+   * the download directory and used when the index cannot be read. An empty result is not
+   * kept, so the next call reads the index again.
+   *
+   * @return The model URLs per language and {@link ModelType}. Empty if neither the index nor
+   *     its local copy lists models.
+   */
   public static Map<String, Map<ModelType, String>> getAvailableModels() {
     if (availableModels == null) {
       try {
-        availableModels = new DownloadParser(new URL(BASE_URL + MODEL_URI_PATH)).getAvailableModels();
+        final DownloadParser p = new DownloadParser(new URL(BASE_URL + MODEL_URI_PATH),
+            getDownloadHome().resolve(indexFileName(MODEL_URI_PATH)));
+        final Map<String, Map<ModelType, String>> models = p.getAvailableModels();
+        if (models.isEmpty()) {
+          return Collections.emptyMap();
+        }
+        availableModels = models;
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }
@@ -181,29 +201,110 @@ public class DownloadUtil {
   }
 
   /**
-   * Validates a downloaded model via the specified {@link Path downloadedModel path}.
+   * Validates a downloaded model against its published SHA-512 checksum and stores the
+   * checksum file next to the model, so that later loads of the cached model can be verified
+   * without network access.
    *
-   * @param sha512          the url to get the sha512 hash
-   * @param downloadedModel the model file to check
-   * @throws IOException thrown if the checksum could not be computed
+   * @param sha512          The {@link URL} of the published checksum file.
+   * @param downloadedModel The model file to check.
+   * @throws IOException Thrown if the checksum could not be retrieved or computed, or if it
+   *     does not match.
    */
   private static void validateModel(URL sha512, Path downloadedModel) throws IOException {
-    // Download SHA512 checksum file
-    String expectedChecksum;
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(sha512.openStream()))) {
-      expectedChecksum = reader.readLine();
+    final String checksumFile = downloadChecksumFile(sha512);
+    verifyChecksum(downloadedModel, parseChecksum(checksumFile));
+    storeChecksumFile(downloadedModel, checksumFile);
+  }
 
-      if (expectedChecksum != null) {
-        expectedChecksum = expectedChecksum.split("\\s")[0].trim();
-      }
+  /**
+   * Validates a model that is already present in the download directory.
+   * <p>
+   * The checksum file stored by a previous download is used, so no network access is required.
+   * If no checksum file is stored, the published checksum is retrieved, verified and stored.
+   * If it cannot be retrieved, the model is accepted without verification and a warning is
+   * logged.
+   *
+   * @param sha512      The {@link URL} of the published checksum file.
+   * @param cachedModel The cached model file to check.
+   * @throws IOException Thrown if the checksum could not be computed or does not match.
+   */
+  private static void validateCachedModel(URL sha512, Path cachedModel) throws IOException {
+    final Path checksumFile = checksumPathFor(cachedModel);
+
+    if (Files.exists(checksumFile)) {
+      verifyChecksum(cachedModel,
+          parseChecksum(Files.readString(checksumFile, StandardCharsets.UTF_8)));
+      return;
     }
 
-    // Validate SHA512 checksum
-    final String actualChecksum = calculateSHA512(downloadedModel);
+    final String publishedChecksumFile;
+    try {
+      publishedChecksumFile = downloadChecksumFile(sha512);
+    } catch (IOException e) {
+      logger.warn("Could not retrieve the expected checksum for cached model '{}'. "
+          + "Its integrity has not been verified.", cachedModel.getFileName(), e);
+      return;
+    }
+
+    verifyChecksum(cachedModel, parseChecksum(publishedChecksumFile));
+    storeChecksumFile(cachedModel, publishedChecksumFile);
+  }
+
+  /**
+   * Retrieves the first line of the published checksum file without modification.
+   *
+   * @param sha512 The {@link URL} of the published checksum file.
+   * @return The first line, or {@code null} if the file is empty.
+   * @throws IOException Thrown if the file could not be read.
+   */
+  private static String downloadChecksumFile(URL sha512) throws IOException {
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(sha512.openStream(), StandardCharsets.UTF_8))) {
+      return reader.readLine();
+    }
+  }
+
+  /**
+   * Extracts the hash from the content of a checksum file, which holds the hash followed by
+   * the name of the file it applies to.
+   *
+   * @param checksumFileContent The content of the checksum file, may be {@code null}.
+   * @return The hash, or {@code null} if the content holds none.
+   */
+  private static String parseChecksum(String checksumFileContent) {
+    if (checksumFileContent == null) {
+      return null;
+    }
+    final String trimmed = checksumFileContent.trim();
+    return trimmed.isEmpty() ? null : trimmed.split("\\s")[0];
+  }
+
+  private static void verifyChecksum(Path model, String expectedChecksum) throws IOException {
+    final String actualChecksum = calculateSHA512(model);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
-      throw new IOException("SHA512 checksum validation failed for " + downloadedModel.getFileName() +
+      throw new IOException("SHA512 checksum validation failed for " + model.getFileName() +
               ". Expected: " + expectedChecksum + ", but got: " + actualChecksum);
     }
+  }
+
+  /**
+   * Stores the checksum file next to the model. A failure is only logged; the next load then
+   * retrieves the published checksum again.
+   *
+   * @param model               The model file.
+   * @param checksumFileContent The content of the checksum file.
+   */
+  private static void storeChecksumFile(Path model, String checksumFileContent) {
+    final Path checksumFile = checksumPathFor(model);
+    try {
+      Files.writeString(checksumFile, checksumFileContent, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      logger.warn("Could not store the expected checksum at {}.", checksumFile, e);
+    }
+  }
+
+  private static Path checksumPathFor(Path model) {
+    return model.resolveSibling(model.getFileName() + CHECKSUM_EXTENSION);
   }
 
   private static String calculateSHA512(Path file) throws IOException {
@@ -232,6 +333,22 @@ public class DownloadUtil {
     }
   }
 
+  /**
+   * Names the local copy of the model index after the last segment of the model path, for
+   * example {@code ud-models-1.3.index.html} for {@code models/ud-models-1.3/}. The base URL
+   * is not part of the name, so hosts that serve the same model path share the copy.
+   *
+   * @param modelPath The model path, with or without trailing slashes.
+   * @return The file name.
+   */
+  static String indexFileName(String modelPath) {
+    String path = modelPath;
+    while (path.endsWith("/")) {
+      path = path.substring(0, path.length() - 1);
+    }
+    return path.substring(path.lastIndexOf('/') + 1) + INDEX_EXTENSION;
+  }
+
   private static Path getDownloadHome() {
     return Paths.get(System.getProperty(OPENNLP_DOWNLOAD_HOME,
             System.getProperty("user.home"))).resolve(".opennlp");
@@ -242,21 +359,110 @@ public class DownloadUtil {
 
     private static final Pattern LINK_PATTERN = Pattern.compile("<a href=\\\"(.*?)\\\">(.*?)</a>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     private final URL indexUrl;
+    private final Path localIndex;
 
+    /**
+     * Initializes a parser that keeps no copy of the index page.
+     *
+     * @param indexUrl The index page.
+     * @throws NullPointerException Thrown if {@code indexUrl} is {@code null}.
+     */
     DownloadParser(URL indexUrl) {
-      Objects.requireNonNull(indexUrl);
-      this.indexUrl = indexUrl;
+      this(indexUrl, null);
     }
 
-    Map<String, Map<ModelType, String>> getAvailableModels() {
-      final Matcher matcher = LINK_PATTERN.matcher(fetchPageIndex());
+    /**
+     * Initializes a parser that keeps a copy of the index page.
+     *
+     * @param indexUrl   The index page.
+     * @param localIndex The file that keeps a copy of the index page, or {@code null} to
+     *     keep no copy.
+     * @throws NullPointerException Thrown if {@code indexUrl} is {@code null}.
+     */
+    DownloadParser(URL indexUrl, Path localIndex) {
+      this.indexUrl = Objects.requireNonNull(indexUrl);
+      this.localIndex = localIndex;
+    }
 
+    /**
+     * Lists the models of the index page. If the page lists models, it is stored as the
+     * local copy. Otherwise, for example if the page cannot be read, the local copy is used.
+     *
+     * @return The model URLs per language and {@link ModelType}. Empty if neither the page
+     *     nor the local copy lists models.
+     */
+    Map<String, Map<ModelType, String>> getAvailableModels() {
+      final String page = fetchPageIndex();
+      if (page != null) {
+        final Map<String, Map<ModelType, String>> models = toMap(extractLinks(page));
+        if (!models.isEmpty()) {
+          storeLocalIndex(page);
+          return models;
+        }
+      }
+      final String local = readLocalIndex();
+      if (local == null) {
+        return new HashMap<>();
+      }
+      logger.info("Using the local copy of the model index at {}.", localIndex);
+      return toMap(extractLinks(local));
+    }
+
+    private List<String> extractLinks(String page) {
+      final Matcher matcher = LINK_PATTERN.matcher(page);
       final List<String> links = new ArrayList<>();
       while (matcher.find()) {
         links.add(matcher.group(1));
       }
+      return links;
+    }
 
-      return toMap(links);
+    /**
+     * Reads the local copy of the index page.
+     *
+     * @return The page content, or {@code null} if there is no readable copy.
+     */
+    private String readLocalIndex() {
+      if (localIndex == null || !Files.isRegularFile(localIndex)) {
+        return null;
+      }
+      try {
+        return Files.readString(localIndex, StandardCharsets.UTF_8);
+      } catch (IOException e) {
+        logger.warn("Could not read the local copy of the model index at {}.", localIndex, e);
+        return null;
+      }
+    }
+
+    /**
+     * Stores the index page as the local copy. The page is written to a temporary file that
+     * then replaces the copy, so a reader never sees a partly written copy. A failure is only
+     * logged.
+     *
+     * @param page The page content.
+     */
+    private void storeLocalIndex(String page) {
+      if (localIndex == null) {
+        return;
+      }
+      try {
+        final Path directory = localIndex.toAbsolutePath().getParent();
+        Files.createDirectories(directory);
+        final Path temporary =
+            Files.createTempFile(directory, localIndex.getFileName().toString(), TEMP_EXTENSION);
+        try {
+          Files.writeString(temporary, page, StandardCharsets.UTF_8);
+          try {
+            Files.move(temporary, localIndex, StandardCopyOption.ATOMIC_MOVE);
+          } catch (AtomicMoveNotSupportedException e) {
+            Files.move(temporary, localIndex, StandardCopyOption.REPLACE_EXISTING);
+          }
+        } finally {
+          Files.deleteIfExists(temporary);
+        }
+      } catch (IOException e) {
+        logger.warn("Could not store the local copy of the model index at {}.", localIndex, e);
+      }
     }
 
     private Map<String, Map<ModelType, String>> toMap(List<String> links) {
@@ -358,6 +564,11 @@ public class DownloadUtil {
       result.putIfAbsent(locale, models);
     }
 
+    /**
+     * Reads the index page from its URL, joining its lines.
+     *
+     * @return The page content, or {@code null} if the page could not be read completely.
+     */
     private String fetchPageIndex() {
       final StringBuilder html = new StringBuilder();
       try (BufferedReader br = new BufferedReader(
@@ -367,7 +578,8 @@ public class DownloadUtil {
           html.append(line);
         }
       } catch (IOException e) {
-        logger.error("Could not read page index from {}", indexUrl, e);
+        logger.warn("Could not read the model index from {}: {}", indexUrl, e.getMessage());
+        return null;
       }
 
       return html.toString();
