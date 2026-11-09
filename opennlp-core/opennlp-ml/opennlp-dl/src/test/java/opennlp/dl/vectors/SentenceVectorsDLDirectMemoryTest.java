@@ -275,18 +275,25 @@ class SentenceVectorsDLDirectMemoryTest {
     }
   }
 
-  /** Checks that a negative concurrency limit is rejected. */
+  /**
+   * Checks that a negative concurrency limit and {@code null} vector options are rejected before
+   * the model is loaded.
+   */
   @Test
-  void negativeConcurrencyLimitIsRejected(@TempDir final Path dir) throws Exception {
-    final File model = model(dir, TINY_VECTORS);
-    final File vocab = vocab(dir);
+  void negativeConcurrencyLimitIsRejected(@TempDir final Path dir) {
+    final File missingModel = dir.resolve("missing.onnx").toFile();
+    final File missingVocab = dir.resolve("missing-vocab.txt").toFile();
     final InferenceOptions options = new InferenceOptions();
     options.setMaxConcurrentInferences(-1);
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> new SentenceVectorsDL(model, vocab, true, new SentenceVectorsOptions(Pooling.MEAN,
-            false, SentenceVectorsDL.DEFAULT_MAX_LENGTH, PaddingStrategy.EXACT_LENGTH),
-            options).close());
+        () -> new SentenceVectorsDL(missingModel, missingVocab, true,
+            new SentenceVectorsOptions(Pooling.MEAN, false, SentenceVectorsDL.DEFAULT_MAX_LENGTH,
+                PaddingStrategy.EXACT_LENGTH), options).close());
     assertEquals("maxConcurrentInferences must not be negative", e.getMessage());
+    final IllegalArgumentException nullVectorOptions = assertThrows(IllegalArgumentException.class,
+        () -> new SentenceVectorsDL(missingModel, missingVocab, true, null,
+            new InferenceOptions()).close());
+    assertEquals("vectorOptions must not be null", nullVectorOptions.getMessage());
   }
 
   /** A model that does not declare its hidden dimension gets it measured, and pools with it. */

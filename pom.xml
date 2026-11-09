@@ -748,7 +748,7 @@ org.xml.sax.helpers.XMLReaderFactory#createXMLReader(**)
 						<configuration>
 							<excludes combine.children="append">
 								<exclude>**/*_jmhTest.class</exclude>
-								</excludes>
+							</excludes>
 						</configuration>
 					</plugin>
 					<plugin>
