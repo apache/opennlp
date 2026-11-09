@@ -58,6 +58,8 @@ public class SentenceVectorsDL extends AbstractDL {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    */
   public SentenceVectorsDL(final File model, final File vocabulary)
       throws OrtException, IOException {
@@ -76,6 +78,8 @@ public class SentenceVectorsDL extends AbstractDL {
    * @throws OrtException Thrown if the {@code model} cannot be loaded, or if a GPU is requested
    *     and the CUDA execution provider or the device is not available.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    */
   public SentenceVectorsDL(final File model, final File vocabulary,
       final InferenceOptions inferenceOptions) throws OrtException, IOException {

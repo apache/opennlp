@@ -23,12 +23,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
@@ -36,6 +34,7 @@ import ai.onnxruntime.OrtSession;
 
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Base class for OpenNLP deep-learning classes using ONNX Runtime.
@@ -53,32 +52,38 @@ public abstract class AbstractDL implements AutoCloseable {
 
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  private static final Pattern JSON_ENTRY_PATTERN =
-      Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"\\s*:\\s*(\\d+)");
+  private static final char BYTE_ORDER_MARK = '\uFEFF';
 
   /**
-   * Loads a vocabulary {@link File} from disk.
-   * Supports both plain text files (one token per
-   * line) and JSON files mapping tokens to integer
-   * IDs.
+   * Loads a vocabulary {@link File} from disk. A file with an opening brace as its first
+   * non-whitespace character is read as JSON: one object that maps each token to a non-negative
+   * integer ID, as in {@code vocab.json}. Any other file is read as plain text with one token
+   * per line, the line number being the ID, as in {@code vocab.txt}. A byte order mark at the
+   * start of the file is not content in either format.
    *
    * @param vocabFile The vocabulary file.
    * @return A map of vocabulary words to IDs.
-   * @throws IOException Thrown if the vocabulary
-   *     file cannot be opened or read.
+   * @throws IOException Thrown if the vocabulary file cannot be opened or read.
+   * @throws InvalidFormatException Thrown if a JSON vocabulary is malformed, has a layout that
+   *     is not supported, or contains a value that is not a non-negative integer. The message
+   *     names the file and the offset or the token.
    */
   public Map<String, Integer> loadVocab(
       final File vocabFile) throws IOException {
 
-    final Path vocabPath =
-        Path.of(vocabFile.getPath());
-    final String content = Files.readString(
-        vocabPath, StandardCharsets.UTF_8);
+    final String read = Files.readString(Path.of(vocabFile.getPath()), StandardCharsets.UTF_8);
+    final String content = !read.isEmpty() && read.charAt(0) == BYTE_ORDER_MARK
+        ? read.substring(1) : read;
     final String trimmed = content.trim();
 
     // Detect JSON format by leading brace
     if (trimmed.startsWith("{")) {
-      return loadJsonVocab(trimmed);
+      try {
+        return loadJsonVocab(trimmed);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidFormatException(
+            "Vocabulary file " + vocabFile.getName() + ": " + e.getMessage(), e);
+      }
     }
 
     final Map<String, Integer> vocab =
@@ -86,12 +91,9 @@ public abstract class AbstractDL implements AutoCloseable {
     final AtomicInteger counter =
         new AtomicInteger(0);
 
-    try (Stream<String> lines = Files.lines(
-        vocabPath, StandardCharsets.UTF_8)) {
-      lines.forEach(line ->
-          vocab.put(line, counter.getAndIncrement())
-      );
-    }
+    content.lines().forEach(line ->
+        vocab.put(line, counter.getAndIncrement())
+    );
 
     return vocab;
   }
@@ -125,22 +127,29 @@ public abstract class AbstractDL implements AutoCloseable {
     return new WordpieceTokenizer(vocab.keySet());
   }
 
-  private Map<String, Integer> loadJsonVocab(final String json) {
-
+  /**
+   * Reads a JSON vocabulary as one object mapping tokens to non-negative integer IDs, as in
+   * {@code vocab.json}. Keys are decoded from their escapes, and a later entry for the same
+   * token overwrites an earlier one.
+   *
+   * @param json The JSON text of the vocabulary.
+   * @return A map of vocabulary tokens to IDs.
+   * @throws IllegalArgumentException Thrown if the text is not a single well-formed JSON object,
+   *     or if a value of the vocabulary object is not a non-negative integer that fits into an
+   *     {@code int}. The message names the offset or the token.
+   */
+  static Map<String, Integer> loadJsonVocab(final String json) {
+    final List<JsonScan.Member> document = JsonScan.document(json);
     final Map<String, Integer> vocab = new HashMap<>();
-    final Matcher matcher = JSON_ENTRY_PATTERN.matcher(json);
-
-    while (matcher.find()) {
-      final String token = matcher.group(1)
-          .replace("\\\"", "\"")
-          .replace("\\\\", "\\")
-          .replace("\\/", "/")
-          .replace("\\n", "\n")
-          .replace("\\t", "\t");
-      final int id = Integer.parseInt(matcher.group(2));
-      vocab.put(token, id);
+    for (JsonScan.Member member : document) {
+      try {
+        vocab.put(member.key(), JsonScan.nonNegativeIntValue(json, member));
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(
+            "Expected one object mapping tokens to integer ids, as in vocab.json: "
+                + e.getMessage(), e);
+      }
     }
-
     return vocab;
   }
 
