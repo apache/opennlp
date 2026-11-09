@@ -247,10 +247,10 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    * @param inferenceOptions The ONNX session settings. Must not be {@code null}.
    *
    * @throws IllegalArgumentException Thrown if {@code vectorOptions} or {@code inferenceOptions}
-   *     is {@code null}, if the inference options contain invalid split settings or a negative
-   *     GPU device id, if the model has no output of shape {@code [batch, hidden]} or
-   *     {@code [batch, tokens, hidden]}, or if padding is requested without a vocabulary padding
-   *     token.
+   *     is {@code null}, if the inference options contain invalid split settings, a negative GPU
+   *     device id, a negative intra-op thread count, or a negative concurrency limit, if the
+   *     model has no output of shape {@code [batch, hidden]} or {@code [batch, tokens, hidden]},
+   *     or if padding is requested without a vocabulary padding token.
    * @throws OrtException Thrown if the model cannot be loaded, the output dimension probe fails,
    *     or the requested GPU is unavailable. ONNX Runtime does not fall back to the CPU.
    * @throws IOException Thrown if the model or vocabulary cannot be read.
@@ -263,12 +263,10 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       final SentenceVectorsOptions vectorOptions, final InferenceOptions inferenceOptions)
       throws OrtException, IOException {
 
-    super(model, vocabulary, sessionOptions(inferenceOptions),
+    super(model, vocabulary,
+        sessionOptions(validateConstructorArguments(inferenceOptions, vectorOptions)),
         resolveLowerCase(inferenceOptions, lowerCase));
     try {
-      ParamChecks.requireNonNullArg(vectorOptions, "vectorOptions");
-      ParamChecks.requireNonNegative(inferenceOptions.getMaxConcurrentInferences(),
-          "maxConcurrentInferences");
       final int concurrency = inferenceOptions.getMaxConcurrentInferences() > 0
           ? inferenceOptions.getMaxConcurrentInferences()
           : Runtime.getRuntime().availableProcessors();
@@ -299,6 +297,24 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
+   * Checks the arguments of a public constructor that the base class does not check.
+   *
+   * @param inferenceOptions The inference options.
+   * @param vectorOptions The vector options.
+   * @return {@code inferenceOptions}.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null} or the concurrency
+   *     limit is negative.
+   */
+  private static InferenceOptions validateConstructorArguments(
+      final InferenceOptions inferenceOptions, final SentenceVectorsOptions vectorOptions) {
+    ParamChecks.requireNonNullArg(vectorOptions, "vectorOptions");
+    ParamChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
+    ParamChecks.requireNonNegative(inferenceOptions.getMaxConcurrentInferences(),
+        "maxConcurrentInferences");
+    return inferenceOptions;
+  }
+
+  /**
    * {@return the padding selected by {@link PaddingStrategy#AUTO}:
    * {@link #DEFAULT_GPU_PADDING} on a GPU for a token output if the vocabulary has a padding
    * token, {@link #DEFAULT_CPU_PADDING} otherwise} A model with a pooled output is not padded by
@@ -316,7 +332,8 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    * @param sentence The input sentence.
    * @return The sentence vector.
    *
-   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null} or if the
+   *     inference does not fit in one direct buffer.
    * @throws EmbeddingException Thrown if interrupted while waiting for an inference permit.
    * @throws OrtException Thrown if an error occurs during inference.
    */
