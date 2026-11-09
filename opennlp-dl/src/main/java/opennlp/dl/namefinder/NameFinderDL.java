@@ -69,6 +69,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    * @throws IllegalArgumentException Thrown if the document split options of
    *     {@code inferenceOptions} are invalid.
    */
@@ -90,6 +92,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws opennlp.tools.util.InvalidFormatException Thrown if a JSON {@code vocabulary}
+   *     is malformed.
    * @throws IllegalArgumentException Thrown if the document split options of
    *     {@code inferenceOptions} are invalid.
    */

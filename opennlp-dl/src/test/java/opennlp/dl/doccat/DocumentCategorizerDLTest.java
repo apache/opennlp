@@ -17,12 +17,19 @@
 
 package opennlp.dl.doccat;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.dl.InferenceOptions;
+import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +46,21 @@ public class DocumentCategorizerDLTest {
     vocab.put("hello", 3);
     vocab.put("world", 4);
     return vocab;
+  }
+
+  /**
+   * The config is read before the model is loaded, so a malformed config fails without
+   * creating an ONNX session. The model file does not exist, which would fail with an
+   * {@link ai.onnxruntime.OrtException} if the session were created first.
+   */
+  @Test
+  void testMalformedConfigFailsBeforeTheModelIsLoaded(@TempDir Path dir) throws IOException {
+    final Path config = Files.writeString(dir.resolve("config.json"), "{\"id2label\": ");
+
+    assertThrows(InvalidFormatException.class, () ->
+        new DocumentCategorizerDL(dir.resolve("missing.onnx").toFile(),
+            dir.resolve("missing-vocab.txt").toFile(), config.toFile(),
+            new AverageClassificationScoringStrategy(), new InferenceOptions()));
   }
 
   @Test
