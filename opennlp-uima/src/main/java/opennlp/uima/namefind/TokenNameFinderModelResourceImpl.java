@@ -23,6 +23,9 @@ import java.io.InputStream;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.uima.util.AbstractModelResource;
 
+/**
+ * A default implementation of {@link TokenNameFinderModelResource}.
+ */
 public class TokenNameFinderModelResourceImpl extends AbstractModelResource<TokenNameFinderModel>
     implements TokenNameFinderModelResource {
 

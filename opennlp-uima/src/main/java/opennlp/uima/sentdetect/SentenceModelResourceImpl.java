@@ -23,6 +23,9 @@ import java.io.InputStream;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.uima.util.AbstractModelResource;
 
+/**
+ * A default implementation of {@link SentenceModelResource}.
+ */
 public class SentenceModelResourceImpl extends AbstractModelResource<SentenceModel>
     implements SentenceModelResource {
 

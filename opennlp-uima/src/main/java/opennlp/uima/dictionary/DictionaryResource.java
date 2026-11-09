@@ -19,6 +19,11 @@ package opennlp.uima.dictionary;
 
 import opennlp.tools.dictionary.Dictionary;
 
+/**
+ * A resource encapsulating an OpenNLP {@link Dictionary} which can be shared between
+ * <i>analysis engines</i> and loaded via the UIMA resource model.
+ */
 public interface DictionaryResource {
+  
   Dictionary getDictionary();
 }
