@@ -110,8 +110,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary},
    *     {@code categories}, {@code classificationScoringStrategy} or {@code inferenceOptions} is
    *     {@code null}, if the split sizes of {@code inferenceOptions} are invalid, if it
-   *     requests a GPU with a negative device id, or if the vocabulary lacks the
-   *     classification, separator or unknown token.
+   *     requests a GPU with a negative device id or a negative intra-op thread count, or if the
+   *     vocabulary lacks the classification, separator or unknown token.
    */
   public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -150,8 +150,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @throws IllegalArgumentException Thrown if {@code model}, {@code vocabulary}, {@code config},
    *     {@code classificationScoringStrategy} or {@code inferenceOptions} is {@code null}, if the
    *     split sizes of {@code inferenceOptions} are invalid, if it requests a GPU with a
-   *     negative device id, or if the vocabulary lacks the classification, separator or unknown
-   *     token.
+   *     negative device id or a negative intra-op thread count, or if the vocabulary lacks the
+   *     classification, separator or unknown token.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,
