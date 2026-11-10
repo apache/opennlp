@@ -45,6 +45,12 @@ class DependencyContextGenerator {
   /** Separates the parts of a feature combining several positions. */
   private static final char POSITION_SEPARATOR = '|';
 
+  /**
+   * Prefixes a separator or another escape character in a value, so that a combined
+   * feature of several positions cannot read the same as one built from other values.
+   */
+  private static final char ESCAPE = '\\';
+
   /** The number of features {@link #getContext(ArcStandardState, String[], String[])} emits. */
   private static final int FEATURE_COUNT = 37;
 
@@ -226,23 +232,24 @@ class DependencyContextGenerator {
     features[f++] = B1_WORD + b1w;
     features[f++] = B1_TAG + b1t;
     features[f++] = B2_TAG + b2t;
-    features[f++] = S0_WORD_TAG + s0w + WORD_TAG_SEPARATOR + s0t;
-    features[f++] = S1_WORD_TAG + s1w + WORD_TAG_SEPARATOR + s1t;
-    features[f++] = B0_WORD_TAG + b0w + WORD_TAG_SEPARATOR + b0t;
-    features[f++] = S0_WORD_B0_WORD + s0w + POSITION_SEPARATOR + b0w;
-    features[f++] = S0_TAG_B0_TAG + s0t + POSITION_SEPARATOR + b0t;
-    features[f++] = S0_WORD_B0_TAG + s0w + POSITION_SEPARATOR + b0t;
-    features[f++] = S0_TAG_B0_WORD + s0t + POSITION_SEPARATOR + b0w;
-    features[f++] = S0_WORD_TAG_B0_TAG + s0w + WORD_TAG_SEPARATOR + s0t + POSITION_SEPARATOR + b0t;
-    features[f++] = S1_TAG_S0_TAG + s1t + POSITION_SEPARATOR + s0t;
-    features[f++] = S1_TAG_S0_WORD + s1t + POSITION_SEPARATOR + s0w;
-    features[f++] = S1_WORD_S0_TAG + s1w + POSITION_SEPARATOR + s0t;
+    features[f++] = S0_WORD_TAG + escape(s0w) + WORD_TAG_SEPARATOR + escape(s0t);
+    features[f++] = S1_WORD_TAG + escape(s1w) + WORD_TAG_SEPARATOR + escape(s1t);
+    features[f++] = B0_WORD_TAG + escape(b0w) + WORD_TAG_SEPARATOR + escape(b0t);
+    features[f++] = S0_WORD_B0_WORD + escape(s0w) + POSITION_SEPARATOR + escape(b0w);
+    features[f++] = S0_TAG_B0_TAG + escape(s0t) + POSITION_SEPARATOR + escape(b0t);
+    features[f++] = S0_WORD_B0_TAG + escape(s0w) + POSITION_SEPARATOR + escape(b0t);
+    features[f++] = S0_TAG_B0_WORD + escape(s0t) + POSITION_SEPARATOR + escape(b0w);
+    features[f++] = S0_WORD_TAG_B0_TAG
+        + escape(s0w) + WORD_TAG_SEPARATOR + escape(s0t) + POSITION_SEPARATOR + escape(b0t);
+    features[f++] = S1_TAG_S0_TAG + escape(s1t) + POSITION_SEPARATOR + escape(s0t);
+    features[f++] = S1_TAG_S0_WORD + escape(s1t) + POSITION_SEPARATOR + escape(s0w);
+    features[f++] = S1_WORD_S0_TAG + escape(s1w) + POSITION_SEPARATOR + escape(s0t);
     features[f++] = S1_TAG_S0_TAG_B0_TAG
-        + s1t + POSITION_SEPARATOR + s0t + POSITION_SEPARATOR + b0t;
+        + escape(s1t) + POSITION_SEPARATOR + escape(s0t) + POSITION_SEPARATOR + escape(b0t);
     features[f++] = S0_TAG_B0_TAG_B1_TAG
-        + s0t + POSITION_SEPARATOR + b0t + POSITION_SEPARATOR + b1t;
+        + escape(s0t) + POSITION_SEPARATOR + escape(b0t) + POSITION_SEPARATOR + escape(b1t);
     features[f++] = S2_TAG_S1_TAG_S0_TAG
-        + s2t + POSITION_SEPARATOR + s1t + POSITION_SEPARATOR + s0t;
+        + escape(s2t) + POSITION_SEPARATOR + escape(s1t) + POSITION_SEPARATOR + escape(s0t);
     features[f++] = S0_LEFT_DEPENDENT_TAG + s0lct;
     features[f++] = S0_RIGHT_DEPENDENT_TAG + s0rct;
     features[f++] = S1_LEFT_DEPENDENT_TAG + s1lct;
@@ -251,14 +258,14 @@ class DependencyContextGenerator {
     features[f++] = S0_RIGHT_DEPENDENT_RELATION + s0rcl;
     features[f++] = S1_RIGHT_DEPENDENT_RELATION + s1rcl;
     features[f++] = S1_TAG_S1_RIGHT_DEPENDENT_TAG_S0_TAG
-        + s1t + POSITION_SEPARATOR + s1rct + POSITION_SEPARATOR + s0t;
+        + escape(s1t) + POSITION_SEPARATOR + escape(s1rct) + POSITION_SEPARATOR + escape(s0t);
     features[f++] = S0_TAG_S0_LEFT_DEPENDENT_TAG_B0_TAG
-        + s0t + POSITION_SEPARATOR + s0lct + POSITION_SEPARATOR + b0t;
+        + escape(s0t) + POSITION_SEPARATOR + escape(s0lct) + POSITION_SEPARATOR + escape(b0t);
     features[f++] = S0_DEPENDENTS + dependents(state, s0);
     features[f++] = S1_DEPENDENTS + dependents(state, s1);
     features[f++] = DISTANCE + distance;
     features[f++] = DISTANCE_S0_TAG_B0_TAG
-        + distance + POSITION_SEPARATOR + s0t + POSITION_SEPARATOR + b0t;
+        + distance + POSITION_SEPARATOR + escape(s0t) + POSITION_SEPARATOR + escape(b0t);
     return features;
   }
 
@@ -274,6 +281,34 @@ class DependencyContextGenerator {
       return ROOT_VALUE;
     }
     return index == ArcStandardState.NONE ? NONE_VALUE : values[index];
+  }
+
+  /**
+   * Prefixes every {@link #ESCAPE}, {@link #WORD_TAG_SEPARATOR}, and
+   * {@link #POSITION_SEPARATOR} in a value with {@link #ESCAPE}, so that a combined
+   * feature of several positions is read back unambiguously and cannot collide with the
+   * same feature built from other values. The common case, a value with none of these
+   * characters, returns the value unchanged.
+   *
+   * @param value The value to escape. Must not be {@code null}.
+   * @return The escaped value, or {@code value} if it has nothing to escape.
+   */
+  private static String escape(String value) {
+    for (int i = 0; i < value.length(); i++) {
+      final char c = value.charAt(i);
+      if (c == ESCAPE || c == WORD_TAG_SEPARATOR || c == POSITION_SEPARATOR) {
+        final StringBuilder escaped = new StringBuilder(value.length() + 4).append(value, 0, i);
+        for (int j = i; j < value.length(); j++) {
+          final char d = value.charAt(j);
+          if (d == ESCAPE || d == WORD_TAG_SEPARATOR || d == POSITION_SEPARATOR) {
+            escaped.append(ESCAPE);
+          }
+          escaped.append(d);
+        }
+        return escaped.toString();
+      }
+    }
+    return value;
   }
 
   /**
