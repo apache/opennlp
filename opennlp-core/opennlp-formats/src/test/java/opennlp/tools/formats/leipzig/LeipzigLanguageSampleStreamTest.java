@@ -21,10 +21,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,17 +41,24 @@ import opennlp.tools.util.InvalidFormatException;
 
 public class LeipzigLanguageSampleStreamTest {
 
-  private static final String testDataPath = LeipzigLanguageSampleStreamTest.class
-      .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
-
   @TempDir
   File emptyTempDir;
+
+  @TempDir
+  Path samplesDir;
+
+  private Path hiddenFile;
+
+  @BeforeEach
+  void setUp() throws IOException {
+    hiddenFile = LeipzigTestSamples.copyWithHiddenFile(samplesDir);
+  }
 
   @Test
   void testReadSentenceFiles() {
     int samplesPerLanguage = 2;
     int sentencesPerSample = 1;
-    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(samplesDir.toFile(),
             sentencesPerSample, samplesPerLanguage)) {
       
       int count = 0;
@@ -65,12 +74,27 @@ public class LeipzigLanguageSampleStreamTest {
   }
 
   @Test
+  void testHiddenFileIsSkipped() throws IOException {
+    Assertions.assertTrue(hiddenFile.toFile().isHidden());
+    List<String> languages = new ArrayList<>();
+    try (LeipzigLanguageSampleStream stream =
+             new LeipzigLanguageSampleStream(samplesDir.toFile(), 1, 2)) {
+      LanguageSample sample;
+      while ((sample = stream.read()) != null) {
+        Assertions.assertFalse(sample.context().toString().contains("hidden"));
+        languages.add(sample.language().getLang());
+      }
+    }
+    Assertions.assertEquals(List.of("dan", "dan", "eng", "eng"), languages.stream().sorted().toList());
+  }
+
+  @Test
   void testReadSentenceFilesTwice() throws IOException {
     Assertions.assertEquals(countSamples(), countSamples());
   }
 
   private int countSamples() throws IOException {
-    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(samplesDir.toFile(),
             1, 2)) {
       int count = 0;
       while (stream.read() != null) {
@@ -87,7 +111,7 @@ public class LeipzigLanguageSampleStreamTest {
       int sentencesPerSample = 2;
 
       try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(
-              new File(testDataPath), sentencesPerSample, samplesPerLanguage)) {
+              samplesDir.toFile(), sentencesPerSample, samplesPerLanguage)) {
 
         while (stream.read() != null) ;
       }
