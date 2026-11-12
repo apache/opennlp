@@ -18,10 +18,12 @@
 package opennlp.tools.formats.leipzig;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.cmdline.ObjectStreamFactory;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -42,6 +44,9 @@ public class LeipzigLanguageSampleStreamFactoryTest extends
   // SUT
   private LeipzigLanguageSampleStreamFactory factory;
 
+  @TempDir
+  Path samplesDir;
+
   private String sampleFileFullPath;
 
   @Override
@@ -61,13 +66,14 @@ public class LeipzigLanguageSampleStreamFactoryTest extends
   }
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     ObjectStreamFactory<LanguageSample, LeipzigLanguageSampleStreamFactory.Parameters> f =
             StreamFactoryRegistry.getFactory(LanguageSample.class, "leipzig");
     assertInstanceOf(LeipzigLanguageSampleStreamFactory.class, f);
     factory = (LeipzigLanguageSampleStreamFactory) f;
     assertEquals(LeipzigLanguageSampleStreamFactory.Parameters.class, factory.getParameters());
-    sampleFileFullPath = getResourceWithoutPrefix(FORMAT_SAMPLE_DIR + "leipzig/samples").getPath();
+    LeipzigTestSamples.copyWithHiddenFile(samplesDir);
+    sampleFileFullPath = samplesDir.toString();
   }
 
   @Test
