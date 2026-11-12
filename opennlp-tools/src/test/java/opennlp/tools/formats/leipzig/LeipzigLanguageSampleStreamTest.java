@@ -19,24 +19,68 @@ package opennlp.tools.formats.leipzig;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.langdetect.LanguageSample;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Tests for the {@link LeipzigLanguageSampleStream} class.
  */
-
 public class LeipzigLanguageSampleStreamTest {
 
-  private static final String testDataPath = LeipzigLanguageSampleStreamTest.class
-      .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
+  private static final String HIDDEN_FILE = ".hidden";
 
   @TempDir
   File emptyTempDir;
+
+  @TempDir
+  Path samplesDir;
+
+  private String testDataPath;
+
+  @BeforeEach
+  void setUp() throws IOException, URISyntaxException {
+    copySamples(samplesDir);
+    testDataPath = samplesDir.toString();
+  }
+
+  /**
+   * Copies the Leipzig samples to {@code target} and adds a hidden file with valid sentences,
+   * which the stream must skip. The hidden file is created here because source releases
+   * do not contain dotfiles.
+   */
+  static void copySamples(Path target) throws IOException, URISyntaxException {
+    Path source = Paths.get(Objects.requireNonNull(LeipzigLanguageSampleStreamTest.class
+        .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples")).toURI());
+    try (Stream<Path> paths = Files.walk(source)) {
+      for (Path path : (Iterable<Path>) paths::iterator) {
+        Path copy = target.resolve(source.relativize(path).toString());
+        if (Files.isDirectory(path)) {
+          Files.createDirectories(copy);
+        } else {
+          Files.copy(path, copy);
+        }
+      }
+    }
+    Path hidden = Files.writeString(target.resolve(HIDDEN_FILE),
+        "1\tThis hidden file must not be read.\n2\tNeither must this sentence.\n",
+        StandardCharsets.UTF_8);
+    Assertions.assertTrue(Files.isHidden(hidden));
+  }
 
   @Test
   void testReadSentenceFiles() {
@@ -55,6 +99,20 @@ public class LeipzigLanguageSampleStreamTest {
     } catch (IOException e) {
       Assertions.fail();
     }
+  }
+
+  @Test
+  void testSkipHiddenFiles() throws IOException {
+    Set<String> languages = new TreeSet<>();
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
+            1, 2)) {
+      LanguageSample sample;
+      while ((sample = stream.read()) != null) {
+        languages.add(sample.language().getLang());
+      }
+    }
+    Assertions.assertTrue(Files.exists(samplesDir.resolve(HIDDEN_FILE)));
+    Assertions.assertEquals(Set.of("dan", "eng"), languages);
   }
 
   @Test
