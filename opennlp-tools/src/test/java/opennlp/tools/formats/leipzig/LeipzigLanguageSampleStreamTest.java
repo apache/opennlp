@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.DosFileAttributeView;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -79,6 +80,11 @@ public class LeipzigLanguageSampleStreamTest {
     Path hidden = Files.writeString(target.resolve(HIDDEN_FILE),
         "1\tThis hidden file must not be read.\n2\tNeither must this sentence.\n",
         StandardCharsets.UTF_8);
+    // A dotfile is hidden on Unix; Windows needs the DOS hidden attribute.
+    DosFileAttributeView dos = Files.getFileAttributeView(hidden, DosFileAttributeView.class);
+    if (dos != null) {
+      dos.setHidden(true);
+    }
     Assertions.assertTrue(Files.isHidden(hidden));
   }
 
