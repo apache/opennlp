@@ -121,32 +121,13 @@ For more details please check our [documentation](https://opennlp.apache.org/doc
 ## Migrating from 2.x to 3.x
 
 The 3.x release line of Apache OpenNLP modularizes the project for better usage as a library and to support future extensibility.
-The core API remains stable and compatible with 2.x, but the project structure has been reorganized into multiple modules.
+The core API remains stable and mostly compatible with 2.x, but the project structure has been reorganized into multiple modules.
 
 That means, that you can continue to use the previous `opennlp-tools` artifact as a dependency. However, we strongly recommend to switch to the new modular structure 
 and import only the components you need, which will result in a smaller dependency footprint.
 
 Only `opennlp-runtime` needs to be added as a dependency, and you can add additional modules (e.g. `opennlp-ml-maxent`, `opennlp-model-resolver`, etc.) as required by your project.
 For users of the traditional CLI toolkit, nothing changes with the 3.x release line. CLI usage remains stable as described in the [project's dev manual](https://opennlp.apache.org/docs/).
-
-### Breaking changes
-
-The list below covers the changes most likely to affect existing code. It is not exhaustive; the release notes and the [issue tracker](https://github.com/apache/opennlp/issues) record all changes.
-
-- Sentence vectors: GPU sessions now use `LONGEST` padding by default for models with token output and a padding token in the vocabulary. This batches mixed-length texts together and can introduce small floating-point differences when the model honors the attention mask. CPU sessions, models with pooled output, and vocabularies without a padding token retain `EXACT_LENGTH`. Set `PaddingStrategy.EXACT_LENGTH` in `SentenceVectorsOptions` to retain unpadded GPU batches ([GH-1392](https://github.com/apache/opennlp/issues/1392)).
-- Whitespace: tokenization, corpus format parsing and feature generation classify whitespace by the Unicode `White_Space` property. Set `-Dopennlp.whitespace.mode=LEGACY` to reproduce 2.x tokenization exactly, for example with models trained by 1.x or 2.x.
-- `AbstractClassPathModelFinder`: the protected `asRegex` and `matchesPattern` methods were removed. Custom model finders call `matchesWildcard(url, "*.bin")` instead ([OPENNLP-1932](https://issues.apache.org/jira/browse/OPENNLP-1932)).
-- `BasicContextGenerator(String)`: the separator is taken literally instead of as a regular expression, and a separator containing a backslash throws `IllegalArgumentException`. Empty predicates are no longer returned, and the default constructor splits on runs of Unicode whitespace ([OPENNLP-1929](https://issues.apache.org/jira/browse/OPENNLP-1929)).
-- AD reader: a self-closing markup line such as `<s/>`, `<s />` or `<s id="1"/>` no longer opens a sentence, paragraph, title, box or text. A tag whose name only starts with `s`, `p`, `t`, `caixa` or `ext`, such as `<sx>`, is no longer read as that tag, and attributes must be separated from the tag name by Unicode whitespace ([GH-1447](https://github.com/apache/opennlp/issues/1447)).
-- MASC reader: region offsets must be written with ASCII digits only and no sign. A document with a signed or non-ASCII offset is skipped ([OPENNLP-1990](https://issues.apache.org/jira/browse/OPENNLP-1990)).
-- CoNLL-U reader: a multiword token range whose word lines are missing from the sentence throws `InvalidFormatException`.
-- `PlainTextByLineStream.reset()` closes the previous reader, so its `InputStreamFactory` must return a new stream for each pass.
-- `RealBasicEventStream`: a line that contains only an outcome is read as an event without contexts and no longer ends the stream.
-- Parser: `ParserFactory.create` and the chunking and tree insert `Parser` constructors throw `IllegalArgumentException` for a beam size below 1 or an advance percentage outside (0, 1] ([GH-1476](https://github.com/apache/opennlp/issues/1476)).
-- Model resolver: `AbstractClassPathModelFinder.findModels` returns an unmodifiable set, so the classpath finders and `DefaultClassPathModelProvider` can be shared between threads ([GH-1506](https://github.com/apache/opennlp/issues/1506)).
-- Tokenizer: the alphanumeric optimization is configured with a `TokenizerCharacterPolicy`. The `Pattern` variants of the `TokenizerFactory` constructor, `TokenizerFactory.create` and the `TokSpanEventStream` constructor, `TokenizerFactory.getAlphaNumericPattern()`, and `opennlp.tools.tokenize.lang.Factory.getAlphanumeric(String)` and `Factory.DEFAULT_ALPHANUMERIC` are deprecated for removal in 4.0. A call that passes a `null` literal as the pattern no longer compiles because it matches both variants; use the new overloads without that argument. Models with a custom `alphaNumericPattern` still load and use it. The protected `TokenizerFactory.init` now takes a `TokenizerCharacterPolicy` instead of a `Pattern`, so subclasses that override or call it must be updated. Subclasses that override `getAlphaNumericPattern()` still compile, but `TokenizerME` and the model manifest no longer use the override; pass a `TokenizerCharacterPolicy` instead. A model whose custom `alphaNumericPattern` is not a valid regular expression now fails to load with an `InvalidFormatException`, instead of a `PatternSyntaxException` when the `TokenizerME` is created ([GH-1479](https://github.com/apache/opennlp/issues/1479)).
-- `EmojiEntityType` gains `HAND`, `SKY_AND_WEATHER` and `TOOL` (Unicode Emoji 18.0 subgroups `hand-*`, `sky & weather`, `tool`, `writing`). Existing constants are unchanged; switch statements over the enum need new arms ([GH-1347](https://github.com/apache/opennlp/issues/1347)).
-- Confusable skeletons follow UTS #39 18.0.0. Versus the previously bundled 17.0.0 table, 1,069 mappings were removed and 1,216 added. Verified example: OGONEK (U+02DB) no longer maps to Latin `i`, so `Confusables.skeleton` / `ConfusableSkeletonCharSequenceNormalizer` leave it as itself. Latin `Ç` (U+00C7) is also no longer a mapping *source*, but NFD still yields `C` + combining cedilla, so it is not a clean API-level skeleton change ([GH-1347](https://github.com/apache/opennlp/issues/1347)).
 
 ### Thread safety
 
