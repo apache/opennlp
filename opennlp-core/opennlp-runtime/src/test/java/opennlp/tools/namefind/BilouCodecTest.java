@@ -20,9 +20,13 @@ package opennlp.tools.namefind;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.util.Span;
 
@@ -208,6 +212,27 @@ public class BilouCodecTest {
         new Span(5, 7, B_TYPE), new Span(8, 9, C_TYPE)};
     Span[] actual = codec.decode(encoded);
     Assertions.assertArrayEquals(expected, actual);
+  }
+
+  /**
+   * An Other tag closes a span that was started but not yet ended by a Last tag,
+   * so the span never covers the Other token.
+   */
+  @ParameterizedTest
+  @MethodSource("spansClosedByOther")
+  void testDecodeOtherClosesOpenSpan(List<String> encoded, Span[] expected) {
+    Assertions.assertArrayEquals(expected, codec.decode(encoded));
+  }
+
+  private static Stream<Arguments> spansClosedByOther() {
+    return Stream.of(
+        // Start, Continue, Other, Last: the Last has no open span left to close
+        Arguments.of(Arrays.asList(A_START, A_CONTINUE, OTHER, A_LAST),
+            new Span[] {new Span(0, 2, A_TYPE)}),
+        // Start, Other, Start, Last: the next span is decoded as usual
+        Arguments.of(Arrays.asList(A_START, OTHER, B_START, B_LAST),
+            new Span[] {new Span(0, 1, A_TYPE), new Span(2, 4, B_TYPE)})
+    );
   }
 
 
@@ -828,13 +853,14 @@ public class BilouCodecTest {
   }
 
   /**
-   * Decode with START but no LAST should produce no spans.
+   * Decode with START but no LAST: the OTHER tag ends the span before it, as in {@link BioCodec}.
    */
   @Test
   void testDecodeStartWithoutLast() {
     List<String> encoded = Arrays.asList(A_START, A_CONTINUE, OTHER);
+    Span[] expected = new Span[] {new Span(0, 2, A_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assertions.assertEquals(0, actual.length, "START without LAST should produce no spans");
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   /**
