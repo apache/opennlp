@@ -43,4 +43,13 @@ public class DefaultEndOfSentenceScannerTest {
     Assertions.assertEquals(36, eosPositions.get(4).intValue());
   }
 
+  @Test
+  void testEOSCharactersAreUnmodifiable() {
+    EndOfSentenceScanner scanner = new DefaultEndOfSentenceScanner(
+        new char[] {'.', '!', '?'});
+
+    Assertions.assertThrows(UnsupportedOperationException.class,
+        () -> scanner.getEOSCharacters().add(';'));
+  }
+
 }

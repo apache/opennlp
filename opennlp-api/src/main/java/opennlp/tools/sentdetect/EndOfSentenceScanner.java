@@ -32,7 +32,8 @@ import java.util.Set;
 public interface EndOfSentenceScanner {
 
   /**
-   * @return a set of {@link Character characters} which can indicate the end of a sentence.
+   * @return an unmodifiable set of {@link Character characters} which can indicate the end of a
+   *     sentence.
    */
   Set<Character> getEOSCharacters();
 
