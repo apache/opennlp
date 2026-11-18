@@ -34,6 +34,7 @@ import opennlp.tools.monitoring.IterDeltaAccuracyUnderTolerance;
 import opennlp.tools.monitoring.StopCriteria;
 import opennlp.tools.monitoring.TrainingMeasure;
 import opennlp.tools.monitoring.TrainingProgressMonitor;
+import opennlp.tools.util.ParamChecks;
 import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 
@@ -185,17 +186,12 @@ public class PerceptronTrainer extends AbstractEventTrainer<TrainingParameters> 
    * multiplied by {@code 1 - decrease} in every iteration.
    *
    * @param decrease The step size decrease as a fraction, for example {@code 0.06}
-   *                 for 6 percent. Must be between 0 and 1 (inclusive).
+   *                 for 6 percent. Must be in {@code (0, 1]}.
    * @throws IllegalArgumentException Thrown if parameters are invalid.
    */
   public void setStepSizeDecrease(double decrease) {
 
-    if (decrease < 0 || decrease > 1) {
-      throw new
-          IllegalArgumentException("decrease must be between 0 and 1 but is " + decrease + "!");
-    }
-
-    stepSizeDecrease = decrease;
+    stepSizeDecrease = ParamChecks.requirePositiveFraction(decrease, "decrease");
   }
 
   /**
