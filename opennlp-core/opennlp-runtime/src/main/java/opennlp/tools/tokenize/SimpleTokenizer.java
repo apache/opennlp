@@ -22,8 +22,6 @@ import java.util.List;
 
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
-import opennlp.tools.util.normalizer.CodePointSet;
-import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 /**
  * A basic {@link Tokenizer} implementation which performs tokenization
@@ -33,8 +31,6 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace;
  * {@link #INSTANCE} field.
  */
 public class SimpleTokenizer extends AbstractTokenizer {
-
-  private static final CodePointSet LINE_BREAKS = UnicodeWhitespace.lineBreakCodePointSet();
 
   static class CharacterEnum {
     static final CharacterEnum WHITESPACE = new CharacterEnum("whitespace");
@@ -97,7 +93,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
           start = ci;
         }
       }
-      if (keepNewLines && charType == CharacterEnum.WHITESPACE && isLineSeparator(c)) {
+      if (keepNewLines && StringUtil.isLineBreak(c)) {
         tokens.add(new Span(start, start + 1));
         start = start + 1;
       }
@@ -108,10 +104,6 @@ public class SimpleTokenizer extends AbstractTokenizer {
       tokens.add(new Span(start, sl));
     }
     return tokens.toArray(new Span[0]);
-  }
-
-  private boolean isLineSeparator(char character) {
-    return LINE_BREAKS.contains(character);
   }
 
 }

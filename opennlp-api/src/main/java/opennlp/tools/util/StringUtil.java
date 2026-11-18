@@ -26,6 +26,7 @@ import java.util.function.IntPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.normalizer.CodePointSet;
 import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 public class StringUtil {
@@ -34,6 +35,9 @@ public class StringUtil {
 
   /** U+0009, the first of the contiguous ASCII whitespace controls U+0009 to U+000D. */
   private static final int CHARACTER_TABULATION = 0x0009;
+
+  private static final CodePointSet UNICODE_LINE_BREAKS =
+      UnicodeWhitespace.lineBreakCodePointSet();
 
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
@@ -89,6 +93,24 @@ public class StringUtil {
   private static boolean isLegacyWhitespace(int charCode) {
     return Character.isWhitespace(charCode) ||
         Character.getType(charCode) == Character.SPACE_SEPARATOR;
+  }
+
+  /**
+   * Determines if the specified {@link Character} is a line break under the active
+   * {@link WhitespaceMode}: the seven Unicode line breaks
+   * ({@link UnicodeWhitespace#lineBreakCodePointSet()}: {@code LF}, {@code VT}, {@code FF},
+   * {@code CR}, {@code NEL}, {@code U+2028}, {@code U+2029}) by default, or {@code '\n'} and
+   * {@code '\r'} when {@link WhitespaceMode#LEGACY} is active.
+   *
+   * @param charCode The character to check.
+   *
+   * @return {@code true} if {@code charCode} is a line break under the active
+   *     {@link WhitespaceMode}, {@code false} otherwise.
+   */
+  public static boolean isLineBreak(char charCode) {
+    return WhitespaceMode.current() == WhitespaceMode.LEGACY
+        ? charCode == '\n' || charCode == '\r'
+        : UNICODE_LINE_BREAKS.contains(charCode);
   }
 
   /**

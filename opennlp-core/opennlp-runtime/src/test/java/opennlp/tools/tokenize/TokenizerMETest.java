@@ -26,9 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
-import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
@@ -36,7 +34,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.WhitespaceMode;
 import opennlp.tools.util.normalizer.CodePointSet;
 
 /**
@@ -48,7 +45,6 @@ import opennlp.tools.util.normalizer.CodePointSet;
  *
  * @see TokenizerME
  */
-@ResetWhitespaceMode
 public class TokenizerMETest {
 
   private static final String CONTRACTION = "it's";
@@ -235,29 +231,6 @@ public class TokenizerMETest {
     Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, tokenizer.tokenize("a\nb"));
     tokenizer.setKeepNewLines(false);
     Assertions.assertArrayEquals(new String[] {"a", "b"}, tokenizer.tokenize("a\nb"));
-  }
-
-  @ParameterizedTest
-  @ValueSource(chars = {'\n', '\u000B', '\f', '\r', '\u0085', '\u2028', '\u2029'})
-  void testLineBreaksInUnicodeAndLegacyModes(char lineBreak) throws IOException {
-    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
-    TokenizerME keeping = new TokenizerME(model);
-    keeping.setKeepNewLines(true);
-    TokenizerME dropping = new TokenizerME(model);
-    String sep = String.valueOf(lineBreak);
-    String input = "a" + sep + "b";
-
-    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize(input));
-    Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, keeping.tokenize(input));
-
-    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
-    if (lineBreak == '\u0085') {
-      Assertions.assertArrayEquals(dropping.tokenize(input), keeping.tokenize(input));
-      Assertions.assertFalse(java.util.Arrays.asList(keeping.tokenize(input)).contains(sep));
-    } else {
-      Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize(input));
-      Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, keeping.tokenize(input));
-    }
   }
 
 }

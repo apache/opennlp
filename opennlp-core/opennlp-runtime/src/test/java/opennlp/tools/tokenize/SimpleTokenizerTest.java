@@ -17,11 +17,14 @@
 
 package opennlp.tools.tokenize;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.WhitespaceMode;
@@ -193,9 +196,21 @@ public class SimpleTokenizerTest {
         mTokenizer.tokenize("a" + nextLine + "b"));
   }
 
+  static Stream<Arguments> lineBreaks() {
+    return Stream.of(
+        Arguments.of('\n', new String[] {"a", "b"}, new String[] {"a", "\n", "b"}),
+        Arguments.of('\u000B', new String[] {"a", "b"}, new String[] {"a", "b"}),
+        Arguments.of('\f', new String[] {"a", "b"}, new String[] {"a", "b"}),
+        Arguments.of('\r', new String[] {"a", "b"}, new String[] {"a", "\r", "b"}),
+        Arguments.of('\u0085', new String[] {"a", "\u0085", "b"}, new String[] {"a", "\u0085", "b"}),
+        Arguments.of('\u2028', new String[] {"a", "b"}, new String[] {"a", "b"}),
+        Arguments.of('\u2029', new String[] {"a", "b"}, new String[] {"a", "b"}));
+  }
+
   @ParameterizedTest
-  @ValueSource(chars = {'\n', '\u000B', '\f', '\r', '\u0085', '\u2028', '\u2029'})
-  void testLineBreaksInUnicodeAndLegacyModes(char lineBreak) {
+  @MethodSource("lineBreaks")
+  void testLineBreaksInUnicodeAndLegacyModes(
+      char lineBreak, String[] legacyDropping, String[] legacyKeeping) {
     String sep = String.valueOf(lineBreak);
     String input = "a" + sep + "b";
 
@@ -206,12 +221,8 @@ public class SimpleTokenizerTest {
 
     WhitespaceMode.setActive(WhitespaceMode.LEGACY);
     mTokenizer.setKeepNewLines(false);
-    if (lineBreak == '\u0085') {
-      Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, mTokenizer.tokenize(input));
-    } else {
-      Assertions.assertArrayEquals(new String[] {"a", "b"}, mTokenizer.tokenize(input));
-    }
+    Assertions.assertArrayEquals(legacyDropping, mTokenizer.tokenize(input));
     mTokenizer.setKeepNewLines(true);
-    Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, mTokenizer.tokenize(input));
+    Assertions.assertArrayEquals(legacyKeeping, mTokenizer.tokenize(input));
   }
 }

@@ -30,6 +30,15 @@ abstract class AbstractTokenizer implements Tokenizer {
 
   /**
    * Switches whether to keep new lines or not.
+   * <p>
+   * Under {@link opennlp.tools.util.WhitespaceMode#UNICODE} (the default), the kept line breaks
+   * are the seven characters in
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#lineBreakCodePointSet()}:
+   * {@code LF} ({@code U+000A}), {@code VT} ({@code U+000B}), {@code FF} ({@code U+000C}),
+   * {@code CR} ({@code U+000D}), {@code NEL} ({@code U+0085}), {@code LINE SEPARATOR}
+   * ({@code U+2028}), and {@code PARAGRAPH SEPARATOR} ({@code U+2029}). Under
+   * {@link opennlp.tools.util.WhitespaceMode#LEGACY}, only {@code LF} ({@code '\n'}) and
+   * {@code CR} ({@code '\r'}) are kept.
    *
    * @param keepNewLines {@code True} if new lines are kept, {@code false} otherwise.
    */
