@@ -100,7 +100,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
   }
 
   private boolean isLineSeparator(char character) {
-    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
+    return character == '\n' || character == '\r';
   }
 
 }

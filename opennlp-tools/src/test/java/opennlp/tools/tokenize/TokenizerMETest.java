@@ -19,9 +19,13 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -169,6 +173,27 @@ public class TokenizerMETest {
     Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, tokenizer.tokenize("a\nb"));
     tokenizer.setKeepNewLines(false);
     Assertions.assertArrayEquals(new String[] {"a", "b"}, tokenizer.tokenize("a\nb"));
+  }
+
+  static Stream<Arguments> lineSeparators() {
+    return Stream.of(
+        Arguments.of('\n', new String[] {"a", "\n", "b"}),
+        Arguments.of('\r', new String[] {"a", "\r", "b"}),
+        Arguments.of('\u2028', new String[] {"a", "b"}),
+        Arguments.of('\u2029', new String[] {"a", "b"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("lineSeparators")
+  void testLineSeparators(char lineBreak, String[] expectedWithKeepNewLines) throws IOException {
+    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+    TokenizerME keeping = new TokenizerME(model);
+    keeping.setKeepNewLines(true);
+    TokenizerME dropping = new TokenizerME(model);
+    String input = "a" + lineBreak + "b";
+
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize(input));
+    Assertions.assertArrayEquals(expectedWithKeepNewLines, keeping.tokenize(input));
   }
 
 }

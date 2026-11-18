@@ -17,8 +17,14 @@
 
 package opennlp.tools.tokenize;
 
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests for the {@link SimpleTokenizer} class.
@@ -27,6 +33,11 @@ public class SimpleTokenizerTest {
 
   // The SimpleTokenizer is thread safe
   private final SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
+
+  @AfterEach
+  void resetKeepNewLines() {
+    mTokenizer.setKeepNewLines(false);
+  }
 
   /**
    * Tests if it can tokenize whitespace separated tokens.
@@ -145,5 +156,24 @@ public class SimpleTokenizerTest {
     Assertions.assertEquals("المشروع", tokenizedText[2]);
     Assertions.assertEquals("بنجاح", tokenizedText[3]);
     Assertions.assertEquals(".", tokenizedText[4]);
+  }
+
+  static Stream<Arguments> lineSeparators() {
+    return Stream.of(
+        Arguments.of('\n', new String[] {"a", "\n", "b"}),
+        Arguments.of('\r', new String[] {"a", "\r", "b"}),
+        Arguments.of('\u2028', new String[] {"a", "b"}),
+        Arguments.of('\u2029', new String[] {"a", "b"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("lineSeparators")
+  void testLineSeparators(char lineBreak, String[] expectedWithKeepNewLines) {
+    String input = "a" + lineBreak + "b";
+
+    mTokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, mTokenizer.tokenize(input));
+    mTokenizer.setKeepNewLines(true);
+    Assertions.assertArrayEquals(expectedWithKeepNewLines, mTokenizer.tokenize(input));
   }
 }
