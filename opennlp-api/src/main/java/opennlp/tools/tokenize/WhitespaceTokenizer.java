@@ -22,6 +22,8 @@ import java.util.List;
 
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.normalizer.CodePointSet;
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 /**
  * A basic {@link Tokenizer} implementation which performs tokenization
@@ -32,6 +34,8 @@ import opennlp.tools.util.StringUtil;
  * non-default {@link #setKeepNewLines(boolean)} setting.
  */
 public class WhitespaceTokenizer extends AbstractTokenizer {
+
+  private static final CodePointSet LINE_BREAKS = UnicodeWhitespace.lineBreakCodePointSet();
 
   /**
    * Use this static reference to retrieve an instance of the
@@ -100,7 +104,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
   }
 
   private boolean isLineSeparator(char character) {
-    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
+    return LINE_BREAKS.contains(character);
   }
 
 }

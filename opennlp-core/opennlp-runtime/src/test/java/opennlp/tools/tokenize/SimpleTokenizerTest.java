@@ -17,8 +17,11 @@
 
 package opennlp.tools.tokenize;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.WhitespaceMode;
@@ -31,6 +34,11 @@ public class SimpleTokenizerTest {
 
   // The SimpleTokenizer is thread safe
   private final SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
+
+  @AfterEach
+  void resetKeepNewLines() {
+    mTokenizer.setKeepNewLines(false);
+  }
 
   /**
    * Tests if it can tokenize whitespace separated tokens.
@@ -183,5 +191,27 @@ public class SimpleTokenizerTest {
     char nextLine = (char) 0x0085;
     Assertions.assertArrayEquals(new String[] {"a", String.valueOf(nextLine), "b"},
         mTokenizer.tokenize("a" + nextLine + "b"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(chars = {'\n', '\u000B', '\f', '\r', '\u0085', '\u2028', '\u2029'})
+  void testLineBreaksInUnicodeAndLegacyModes(char lineBreak) {
+    String sep = String.valueOf(lineBreak);
+    String input = "a" + sep + "b";
+
+    mTokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, mTokenizer.tokenize(input));
+    mTokenizer.setKeepNewLines(true);
+    Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, mTokenizer.tokenize(input));
+
+    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
+    mTokenizer.setKeepNewLines(false);
+    if (lineBreak == '\u0085') {
+      Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, mTokenizer.tokenize(input));
+    } else {
+      Assertions.assertArrayEquals(new String[] {"a", "b"}, mTokenizer.tokenize(input));
+    }
+    mTokenizer.setKeepNewLines(true);
+    Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, mTokenizer.tokenize(input));
   }
 }

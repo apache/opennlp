@@ -19,6 +19,8 @@ package opennlp.tools.tokenize;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.WhitespaceMode;
@@ -145,5 +147,26 @@ public class WhitespaceTokenizerTest {
     Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, keeping.tokenize("a\nb"));
     Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize("a\nb"));
     Assertions.assertArrayEquals(new String[] {"a", "b"}, WhitespaceTokenizer.INSTANCE.tokenize("a\nb"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(chars = {'\n', '\u000B', '\f', '\r', '\u0085', '\u2028', '\u2029'})
+  void testLineBreaksInUnicodeAndLegacyModes(char lineBreak) {
+    WhitespaceTokenizer keeping = WhitespaceTokenizer.newInstance(true);
+    WhitespaceTokenizer dropping = WhitespaceTokenizer.newInstance(false);
+    String sep = String.valueOf(lineBreak);
+    String input = "a" + sep + "b";
+
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize(input));
+    Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, keeping.tokenize(input));
+
+    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
+    if (lineBreak == '\u0085') {
+      Assertions.assertArrayEquals(new String[] {input}, dropping.tokenize(input));
+      Assertions.assertArrayEquals(new String[] {input}, keeping.tokenize(input));
+    } else {
+      Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize(input));
+      Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, keeping.tokenize(input));
+    }
   }
 }
