@@ -20,7 +20,6 @@ package opennlp.tools.ml.perceptron;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -33,33 +32,38 @@ import opennlp.tools.util.TrainingParameters;
 
 public class PerceptronTrainerTest {
 
+  private static final String MESSAGE = "decrease must be in [0, 1)";
+
   @ParameterizedTest
-  @ValueSource(doubles = {-0.01, 0, 1.01, 6, 100, Double.NaN})
-  void testSetStepSizeDecreaseRejectsValuesOutsideZeroExclusiveToOne(double decrease) {
+  @ValueSource(doubles = {-0.01, 1, 1.01, 6, 100, Double.NaN,
+      Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY})
+  void testSetStepSizeDecreaseRejectsValuesOutsideZeroToOneExclusive(double decrease) {
     IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new PerceptronTrainer().setStepSizeDecrease(decrease));
-    Assertions.assertEquals("decrease must be in (0, 1]", e.getMessage());
+    Assertions.assertEquals(MESSAGE, e.getMessage());
   }
 
   @ParameterizedTest
-  @ValueSource(doubles = {0.06, 1})
+  @ValueSource(doubles = {0, 0.06, 0.99})
   void testSetStepSizeDecreaseAcceptsFractions(double decrease) {
     Assertions.assertDoesNotThrow(() -> new PerceptronTrainer().setStepSizeDecrease(decrease));
   }
 
-  @Test
-  void testTrainingParametersRejectPercentStepSizeDecrease() throws IOException {
+  @ParameterizedTest
+  @ValueSource(doubles = {-0.01, 1, 6, Double.NaN,
+      Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY})
+  void testTrainingParametersRejectInvalidStepSizeDecrease(double decrease) throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(Parameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(Parameters.CUTOFF_PARAM, 1);
-    trainParams.put("StepSizeDecrease", 6d);
+    trainParams.put("StepSizeDecrease", decrease);
 
     EventTrainer<TrainingParameters> trainer = new PerceptronTrainer();
     trainer.init(trainParams, null);
     try (ObjectStream<Event> events = PrepAttachDataUtil.createTrainingStream()) {
       IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
           () -> trainer.train(events));
-      Assertions.assertEquals("decrease must be in (0, 1]", e.getMessage());
+      Assertions.assertEquals(MESSAGE, e.getMessage());
     }
   }
 }
