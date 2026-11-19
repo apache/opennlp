@@ -30,8 +30,6 @@ github:
       required_status_checks:
         contexts:
           - asf-allowlist-check
-  autolink_jira:
-    - OPENNLP
   custom_subjects:
     new_pr: "[PR] {title} ({repository})"
     close_pr: "Re: [PR] {title} ({repository})"
