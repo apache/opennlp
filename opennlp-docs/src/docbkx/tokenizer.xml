@@ -249,6 +249,13 @@ TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);]]>
 			instance is mutable; callers that need different settings should use separate
 			instances instead of reconfiguring it.
 		</para>
+		<para>
+			With <code>keepNewLines</code> enabled, <code>SimpleTokenizer</code> and
+			<code>WhitespaceTokenizer</code> return each retained <code>CR</code> or
+			<code>LF</code> as a separate token. <code>tokenizePos</code> reports its
+			original character position, including at the start of input or after
+			other whitespace. A <code>CRLF</code> pair produces two line-break tokens.
+		</para>
 	</section>
 	<section xml:id="tools.tokenizer.training">
 		<title>Tokenizer Training</title>

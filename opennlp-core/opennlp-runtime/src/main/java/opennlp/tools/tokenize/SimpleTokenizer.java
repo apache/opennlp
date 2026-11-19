@@ -94,8 +94,8 @@ public class SimpleTokenizer extends AbstractTokenizer {
         }
       }
       if (keepNewLines && isLineSeparator(c)) {
-        tokens.add(new Span(start, start + 1));
-        start = start + 1;
+        tokens.add(new Span(ci, ci + 1));
+        start = ci + 1;
       }
       state = charType;
       pc = c;
