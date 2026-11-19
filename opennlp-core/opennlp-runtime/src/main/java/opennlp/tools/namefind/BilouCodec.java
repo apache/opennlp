@@ -52,6 +52,13 @@ public class BilouCodec implements SequenceCodec<String> {
   public static final String UNIT = "unit";
   public static final String OTHER = "other";
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * A tag that is neither a continue nor a last tag ends an open span before the token it
+   * labels, and so does the end of the input, so an incomplete {@code BILOU} sequence still
+   * decodes to the span it started.
+   */
   @Override
   public Span[] decode(List<String> c) {
     int start = -1;
@@ -60,6 +67,9 @@ public class BilouCodec implements SequenceCodec<String> {
     for (int li = 0; li < c.size(); li++) {
       String chunkTag = c.get(li);
       if (chunkTag.endsWith(BilouCodec.START)) {
+        if (start != -1) {
+          addSpan(spans, start, end, c.get(li - 1));
+        }
         start = li;
         end = li + 1;
       }
@@ -68,25 +78,45 @@ public class BilouCodec implements SequenceCodec<String> {
       }
       else if (chunkTag.endsWith(LAST)) {
         if (start != -1) {
-          spans.add(new Span(start, end + 1, BioCodec.extractNameType(c.get(li - 1))));
+          addSpan(spans, start, end + 1, c.get(li - 1));
           start = -1;
           end = -1;
         }
       }
       else if (chunkTag.endsWith(UNIT)) {
-        spans.add(new Span(li, li + 1, BioCodec.extractNameType(c.get(li))));
-      }
-      else if (chunkTag.endsWith(BilouCodec.OTHER)) {
-        // A span that was started but not ended by a last tag ends before this token
         if (start != -1) {
-          spans.add(new Span(start, end, BioCodec.extractNameType(c.get(li - 1))));
+          addSpan(spans, start, end, c.get(li - 1));
           start = -1;
           end = -1;
         }
+        addSpan(spans, li, li + 1, chunkTag);
+      }
+      else if (start != -1) {
+        addSpan(spans, start, end, c.get(li - 1));
+        start = -1;
+        end = -1;
       }
     }
 
+    if (start != -1) {
+      addSpan(spans, start, end, c.get(c.size() - 1));
+    }
+
     return spans.toArray(new Span[0]);
+  }
+
+  /**
+   * Adds a {@link Span} covering the tokens from {@code start} up to but not including
+   * {@code end}, taking its name type from the tag of the span's last token.
+   *
+   * @param spans The {@link List} of {@link Span spans} to add to. Must not be {@code null}.
+   * @param start The index of the span's first token.
+   * @param end The index one past the span's last token.
+   * @param lastSpanTag The tag of the span's last token, which carries the name type.
+   *                    Must not be {@code null}.
+   */
+  private void addSpan(List<Span> spans, int start, int end, String lastSpanTag) {
+    spans.add(new Span(start, end, BioCodec.extractNameType(lastSpanTag)));
   }
 
   @Override

@@ -411,4 +411,18 @@ public class BilouNameFinderSequenceValidatorTest {
     Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, UNIT_A));
   }
 
+  /**
+   * Start, Continue at the last token of a sentence => Valid
+   * <p>
+   * The validator judges one candidate outcome at a time and never learns that a token is the
+   * last one, so it cannot reject a sequence that ends on a Continue. The span such a sequence
+   * leaves open is closed by {@link BilouCodec#decode(java.util.List)} instead.
+   */
+  @Test
+  void testContinueAsLastLabelOfSentence() {
+    String[] inputSequence = new String[] {"TypeA", "TypeA"};
+    String[] outcomesSequence = new String[] {START_A};
+    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, CONTINUE_A));
+  }
+
 }
