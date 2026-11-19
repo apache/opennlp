@@ -210,6 +210,30 @@ public class BilouCodecTest {
     Assertions.assertArrayEquals(expected, actual);
   }
 
+  @Test
+  void testDecodeStartClosesPreviousSpan() {
+    List<String> encoded = Arrays.asList(A_START, B_START, B_LAST);
+    Span[] expected = new Span[] {new Span(0, 1, A_TYPE), new Span(1, 3, B_TYPE)};
+
+    Assertions.assertArrayEquals(expected, codec.decode(encoded));
+  }
+
+  @Test
+  void testDecodeUnitClosesPreviousSpan() {
+    List<String> encoded = Arrays.asList(A_START, A_CONTINUE, B_UNIT, A_LAST);
+    Span[] expected = new Span[] {new Span(0, 2, A_TYPE), new Span(2, 3, B_TYPE)};
+
+    Assertions.assertArrayEquals(expected, codec.decode(encoded));
+  }
+
+  @Test
+  void testDecodeEmitsOpenSpanAtEndOfInput() {
+    List<String> encoded = Arrays.asList(A_START, A_CONTINUE);
+    Span[] expected = new Span[] {new Span(0, 2, A_TYPE)};
+
+    Assertions.assertArrayEquals(expected, codec.decode(encoded));
+  }
+
 
   @Test
   void testCompatibilityEmpty() {
@@ -828,13 +852,14 @@ public class BilouCodecTest {
   }
 
   /**
-   * Decode with START but no LAST should produce no spans.
+   * Decode with START and CONTINUE followed by OTHER closes the open span.
    */
   @Test
-  void testDecodeStartWithoutLast() {
+  void testDecodeOtherClosesOpenSpan() {
     List<String> encoded = Arrays.asList(A_START, A_CONTINUE, OTHER);
-    Span[] actual = codec.decode(encoded);
-    Assertions.assertEquals(0, actual.length, "START without LAST should produce no spans");
+    Span[] expected = new Span[] {new Span(0, 2, A_TYPE)};
+
+    Assertions.assertArrayEquals(expected, codec.decode(encoded));
   }
 
   /**

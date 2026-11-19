@@ -60,6 +60,9 @@ public class BilouCodec implements SequenceCodec<String> {
     for (int li = 0; li < c.size(); li++) {
       String chunkTag = c.get(li);
       if (chunkTag.endsWith(BilouCodec.START)) {
+        if (start != -1) {
+          addOpenSpan(spans, start, end, c.get(li - 1));
+        }
         start = li;
         end = li + 1;
       }
@@ -68,17 +71,35 @@ public class BilouCodec implements SequenceCodec<String> {
       }
       else if (chunkTag.endsWith(LAST)) {
         if (start != -1) {
-          spans.add(new Span(start, end + 1, BioCodec.extractNameType(c.get(li - 1))));
+          addOpenSpan(spans, start, end + 1, c.get(li - 1));
           start = -1;
           end = -1;
         }
       }
       else if (chunkTag.endsWith(UNIT)) {
+        if (start != -1) {
+          addOpenSpan(spans, start, end, c.get(li - 1));
+          start = -1;
+          end = -1;
+        }
         spans.add(new Span(li, li + 1, BioCodec.extractNameType(c.get(li))));
+      }
+      else if (start != -1) {
+        addOpenSpan(spans, start, end, c.get(li - 1));
+        start = -1;
+        end = -1;
       }
     }
 
+    if (start != -1) {
+      addOpenSpan(spans, start, end, c.get(c.size() - 1));
+    }
+
     return spans.toArray(new Span[0]);
+  }
+
+  private static void addOpenSpan(List<Span> spans, int start, int end, String endTag) {
+    spans.add(new Span(start, end, BioCodec.extractNameType(endTag)));
   }
 
   @Override
