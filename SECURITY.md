@@ -114,16 +114,21 @@ in real deployments they do not always come from where an operator assumes. So:
   file. Do not build a system whose security depends on that.
 - We **do strive for it**, and we harden these paths continuously.
 - We **do welcome reports** about them. Findings in this area are treated as
-  security hardening improvements, and where the impact warrants it we have
-  requested CVEs and will continue to — CVE-2026-42440 (unbounded allocation in
-  the binary model reader) and CVE-2026-43825 (unsafe Java deserialization in the
-  LIBSVM document categorizer model) were both handled this way.
+  security hardening improvements. CVEs were requested for CVE-2026-42440
+  (unbounded allocation in the binary model reader) and CVE-2026-43825 (unsafe
+  Java deserialization in the LIBSVM document categorizer model). Resource
+  exhaustion from a crafted model archive, including the decompression of its
+  entries, is handled as hardening and does not receive a CVE.
 
 Existing hardening in this area includes:
 
 - **Bounded count fields.** `AbstractModelReader` validates outcome, predicate,
   and pattern counts against an upper bound before allocating, defaulting to
   10,000,000 and configurable at JVM startup via `-DOPENNLP_MAX_ENTRIES=<n>`.
+- **Bounded decompression.** `BaseModel` stops reading a model package with an
+  `InvalidFormatException` once it inflates to more than 2 GiB, or to more than
+  100 times the bytes read from it, configurable at JVM startup via
+  `-Dopennlp.max.decompressed.bytes=<n>` and `-Dopennlp.max.compression.ratio=<n>`.
 - **Filtered Java deserialization.** `BaseModel` installs an `ObjectInputFilter`
   allowlist that rejects any class outside `opennlp.tools`, including the
   top-level object, so foreign payloads are rejected before they are
@@ -227,8 +232,8 @@ designed:
 1. **Loading a model file the reporter crafted.** See
    [Model artifacts](#model-artifacts-and-dictionaries). We harden this and accept
    hardening reports, but "I crafted a model and it broke" is not on its own a
-   vulnerability, and unbounded resource consumption from a model file is not one
-   once the documented bounds are in place.
+   vulnerability. Resource exhaustion from a crafted model archive, including
+   decompression, is handled as hardening without a CVE.
 2. **Java deserialization reachable only through a model artifact.** Filtered as
    defense in depth; still not a supported way to accept untrusted input.
 3. **Resource consumption proportionate to input size.** Large input uses
