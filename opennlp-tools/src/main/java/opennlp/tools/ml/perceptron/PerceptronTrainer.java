@@ -152,8 +152,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     this.setSkippedAveraging(useSkippedAveraging);
 
-    if (stepSizeDecrease > 0)
-      this.setStepSizeDecrease(stepSizeDecrease);
+    this.setStepSizeDecrease(stepSizeDecrease);
 
     this.setTolerance(tolerance);
 
@@ -182,19 +181,17 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   /**
    * Enables and sets step size decrease. The step size is
-   * decreased every iteration by the specified value.
+   * multiplied by {@code 1 - decrease} in every iteration.
    *
-   * @param decrease The step size decrease in percent.
-   *                 Must not be negative.
+   * @param decrease The step size decrease as a fraction, for example {@code 0.06}
+   *                 for 6 percent. Must be in {@code [0, 1)}; zero disables decay.
    * @throws IllegalArgumentException Thrown if parameters are invalid.
    */
   public void setStepSizeDecrease(double decrease) {
 
-    if (decrease < 0 || decrease > 100) {
-      throw new
-          IllegalArgumentException("decrease must be between 0 and 100 but is " + decrease + "!");
+    if (!(decrease >= 0 && decrease < 1)) {
+      throw new IllegalArgumentException("decrease must be in [0, 1)");
     }
-
     stepSizeDecrease = decrease;
   }
 
