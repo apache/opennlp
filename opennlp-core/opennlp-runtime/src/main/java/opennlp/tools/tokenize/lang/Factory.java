@@ -78,7 +78,8 @@ public class Factory {
   private static final TokenizerCharacterPolicy SPANISH = latinPolicy("áéíóúüýñÁÉÍÓÚÝÑ");
 
   // From: https://en.wikipedia.org/wiki/Catalan_orthography#Spelling_patterns
-  private static final TokenizerCharacterPolicy CATALAN = latinPolicy("àèéíïòóúüçÀÈÉÍÏÒÓÚÜÇ");
+  // U+00B7 MIDDLE DOT (punt volat) used in the geminated L (l·l) is treated as a mark.
+  private static final TokenizerCharacterPolicy CATALAN = catalanPolicy();
 
   /**
    * The alphanumeric expressions of releases before 3.0, keyed by the policy that accepts the same
@@ -260,4 +261,17 @@ public class Factory {
     return TokenizerCharacterPolicy.of(letters, TokenizerCharacterPolicy.ascii().getDigits(),
         NO_MARKS);
   }
+
+  /**
+   * Builds the Catalan policy: the Latin script letters, ASCII digits, and U+00B7 MIDDLE DOT
+   * (punt volat) as a mark so that geminated-L words such as {@code cel·la} are single tokens.
+   *
+   * @return The policy.
+   */
+  private static TokenizerCharacterPolicy catalanPolicy() {
+    TokenizerCharacterPolicy base = latinPolicy("àèéíïòóúüçÀÈÉÍÏÒÓÚÜÇ");
+    return TokenizerCharacterPolicy.of(base.getLetters(), base.getDigits(),
+        CodePointSet.of('·'));
+  }
 }
+

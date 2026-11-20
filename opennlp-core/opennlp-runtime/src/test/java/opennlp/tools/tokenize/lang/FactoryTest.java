@@ -112,7 +112,12 @@ public class FactoryTest {
     for (int digit = '0'; digit <= '9'; digit++) {
       assertTrue(policy.getDigits().contains(digit), languageCode);
     }
-    assertTrue(policy.getMarks().isEmpty(), languageCode);
+    if ("ca".equals(languageCode)) {
+      assertEquals(1, policy.getMarks().size(), languageCode);
+      assertTrue(policy.getMarks().contains('·'), languageCode);
+    } else {
+      assertTrue(policy.getMarks().isEmpty(), languageCode);
+    }
   }
 
   @ParameterizedTest
@@ -181,5 +186,24 @@ public class FactoryTest {
   void testLegacyPatternOfTheDefaultPolicyIsTheDefaultConstant() {
     assertSame(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphanumeric(null));
     assertSame(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphanumeric("en"));
+  }
+
+  /**
+   * Words with the Catalan geminated L (l·l) must be accepted as single tokens.
+   * The middle dot U+00B7 is a mark in the Catalan policy: it may follow a letter but
+   * cannot open a token.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"cel·la", "goril·la", "instal·lar", "cancel·lar", "col·legi"})
+  void testCatalanMiddleDotWordIsAccepted(String word) {
+    TokenizerCharacterPolicy policy = factory.getCharacterPolicy("ca");
+    assertTrue(policy.test(word), word);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"·la", "·cel·la", "·"})
+  void testCatalanMiddleDotCannotStartToken(String input) {
+    TokenizerCharacterPolicy policy = factory.getCharacterPolicy("ca");
+    assertFalse(policy.test(input), input);
   }
 }
