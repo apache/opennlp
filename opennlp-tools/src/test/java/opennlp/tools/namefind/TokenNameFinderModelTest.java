@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -106,6 +107,33 @@ public class TokenNameFinderModelTest extends AbstractNameFinderTest {
         FileUtil.deleteDirectory(resourcesFolder.toFile());
       }
     }
+  }
+
+  @Test
+  void testNERWithBrownClusterFeatureGenerator() throws IOException, URISyntaxException {
+    URL featureGeneratorUrl = getClass().getResource("ner-brown-cluster-features.xml");
+    Assertions.assertNotNull(featureGeneratorUrl);
+
+    Path featureGeneratorPath = Path.of(featureGeneratorUrl.toURI());
+    Map<String, Object> resources = TokenNameFinderTrainerTool.loadResources(
+        featureGeneratorPath.getParent().toFile(), featureGeneratorPath.toFile());
+
+    TokenNameFinderFactory factory = TokenNameFinderFactory.create(null,
+        Files.readAllBytes(featureGeneratorPath), resources, new BioCodec());
+
+    String[] defaultContext = new TokenNameFinderFactory().createContextGenerator()
+        .getContext(0, new String[] {"Canberra"}, null, null);
+    String[] knownTokenContext = factory.createContextGenerator()
+        .getContext(0, new String[] {"Canberra"}, null, null);
+    String[] unknownTokenContext = factory.createContextGenerator()
+        .getContext(0, new String[] {"Unknown"}, null, null);
+
+    Assertions.assertFalse(Arrays.stream(defaultContext)
+        .anyMatch(feature -> feature.startsWith("browncluster=")));
+    Assertions.assertTrue(Arrays.asList(knownTokenContext).contains("browncluster=0101"),
+        Arrays.toString(knownTokenContext));
+    Assertions.assertFalse(Arrays.stream(unknownTokenContext)
+        .anyMatch(feature -> feature.startsWith("browncluster=")));
   }
 
   /*
