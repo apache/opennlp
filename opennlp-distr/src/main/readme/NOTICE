@@ -151,7 +151,7 @@ List of third-party dependencies grouped by their license type.
 
     Apache License, Version 2.0
 
-        * Apache Commons Secure XML (org.apache.commons:commons-secure-xml:1.1.0 - https://commons.apache.org/proper/commons-secure-xml/)
+        * Apache Commons Secure XML (org.apache.commons:commons-secure-xml:1.1.1 - https://commons.apache.org/proper/commons-secure-xml/)
         * Apache Log4j API (org.apache.logging.log4j:log4j-api:2.26.1 - https://logging.apache.org/log4j/2.x/)
         * Apache Log4j Core (org.apache.logging.log4j:log4j-core:2.26.1 - https://logging.apache.org/log4j/2.x/)
         * Apache UIMA Base: uimaj-core (org.apache.uima:uimaj-core:3.7.0 - https://uima.apache.org)
@@ -174,8 +174,8 @@ List of third-party dependencies grouped by their license type.
 
     MIT License
 
-        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime_gpu:1.31.1 - https://microsoft.github.io/onnxruntime/)
-        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime:1.31.1 - https://microsoft.github.io/onnxruntime/)
+        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime_gpu:1.32.0 - https://microsoft.github.io/onnxruntime/)
+        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime:1.32.0 - https://microsoft.github.io/onnxruntime/)
         * SLF4J API Module (org.slf4j:slf4j-api:2.0.20 - http://www.slf4j.org)
 
     The MIT License (MIT)
