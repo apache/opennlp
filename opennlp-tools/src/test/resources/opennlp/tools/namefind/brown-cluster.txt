@@ -1,0 +1,2 @@
+010101	Canberra	6
+111000	Sydney	7
