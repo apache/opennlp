@@ -17,8 +17,13 @@
 
 package opennlp.tools.tokenize;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.WhitespaceMode;
@@ -145,5 +150,33 @@ public class WhitespaceTokenizerTest {
     Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, keeping.tokenize("a\nb"));
     Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize("a\nb"));
     Assertions.assertArrayEquals(new String[] {"a", "b"}, WhitespaceTokenizer.INSTANCE.tokenize("a\nb"));
+  }
+
+  static Stream<Arguments> lineBreaks() {
+    return Stream.of(
+        Arguments.of('\n', new String[] {"a", "b"}, new String[] {"a", "\n", "b"}),
+        Arguments.of('\u000B', new String[] {"a", "b"}, new String[] {"a", "b"}),
+        Arguments.of('\f', new String[] {"a", "b"}, new String[] {"a", "b"}),
+        Arguments.of('\r', new String[] {"a", "b"}, new String[] {"a", "\r", "b"}),
+        Arguments.of('\u0085', new String[] {"a\u0085b"}, new String[] {"a\u0085b"}),
+        Arguments.of('\u2028', new String[] {"a", "b"}, new String[] {"a", "b"}),
+        Arguments.of('\u2029', new String[] {"a", "b"}, new String[] {"a", "b"}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("lineBreaks")
+  void testLineBreaksInUnicodeAndLegacyModes(
+      char lineBreak, String[] legacyDropping, String[] legacyKeeping) {
+    WhitespaceTokenizer keeping = WhitespaceTokenizer.newInstance(true);
+    WhitespaceTokenizer dropping = WhitespaceTokenizer.newInstance(false);
+    String sep = String.valueOf(lineBreak);
+    String input = "a" + sep + "b";
+
+    Assertions.assertArrayEquals(new String[] {"a", "b"}, dropping.tokenize(input));
+    Assertions.assertArrayEquals(new String[] {"a", sep, "b"}, keeping.tokenize(input));
+
+    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
+    Assertions.assertArrayEquals(legacyDropping, dropping.tokenize(input));
+    Assertions.assertArrayEquals(legacyKeeping, keeping.tokenize(input));
   }
 }

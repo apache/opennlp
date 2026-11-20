@@ -54,6 +54,13 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
    * Creates a tokenizer that is not shared with {@link #INSTANCE}, for a caller
    * that sets {@link #setKeepNewLines(boolean)} without touching other users of the shared
    * instance.
+   * <p>
+   * When {@code keepNewLines} is {@code true}, the kept line breaks are the seven characters in
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#lineBreakCodePointSet()}
+   * ({@code LF}, {@code VT}, {@code FF}, {@code CR}, {@code NEL}, {@code U+2028}, and
+   * {@code U+2029}) under {@link opennlp.tools.util.WhitespaceMode#UNICODE}, or {@code LF}
+   * ({@code '\n'}) and {@code CR} ({@code '\r'}) under
+   * {@link opennlp.tools.util.WhitespaceMode#LEGACY}.
    *
    * @param keepNewLines {@code true} if line separators are returned as tokens.
    * @return A new {@link WhitespaceTokenizer} with that setting.
@@ -79,7 +86,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
           inTok = false;
           tokStart = -1;
         }
-        if (keepNewLines && isLineSeparator(d.charAt(i))) {
+        if (keepNewLines && StringUtil.isLineBreak(d.charAt(i))) {
           tokStart = i;
           tokens.add(new Span(tokStart, tokStart + 1));
           tokStart = -1;
@@ -97,10 +104,6 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     }
 
     return tokens.toArray(new Span[0]);
-  }
-
-  private boolean isLineSeparator(char character) {
-    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
   }
 
 }

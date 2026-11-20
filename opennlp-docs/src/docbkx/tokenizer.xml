@@ -249,6 +249,18 @@ TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);]]>
 			instance is mutable; callers that need different settings should use separate
 			instances instead of reconfiguring it.
 		</para>
+		<para>
+			When <code>keepNewLines</code> is enabled (via
+			<code>WhitespaceTokenizer.newInstance(true)</code> or
+			<code>setKeepNewLines(true)</code>), the default <code>UNICODE</code> whitespace mode
+			keeps all seven Unicode line breaks (<code>LF</code> <code>U+000A</code>,
+			<code>VT</code> <code>U+000B</code>, <code>FF</code> <code>U+000C</code>,
+			<code>CR</code> <code>U+000D</code>, <code>NEL</code> <code>U+0085</code>,
+			<code>LINE SEPARATOR</code> <code>U+2028</code>, and
+			<code>PARAGRAPH SEPARATOR</code> <code>U+2029</code>) as tokens. Under
+			<code>LEGACY</code> mode, only <code>LF</code> (<code>\n</code>) and
+			<code>CR</code> (<code>\r</code>) are kept as line break tokens.
+		</para>
 	</section>
 	<section xml:id="tools.tokenizer.training">
 		<title>Tokenizer Training</title>
