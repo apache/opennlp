@@ -19,12 +19,12 @@ package opennlp.tools.tokenize;
 
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.ResetWhitespaceMode;
 import opennlp.tools.util.WhitespaceMode;
@@ -35,12 +35,33 @@ import opennlp.tools.util.WhitespaceMode;
 @ResetWhitespaceMode
 public class SimpleTokenizerTest {
 
-  // The SimpleTokenizer is thread safe
-  private final SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
+  private final SimpleTokenizer mTokenizer = SimpleTokenizer.newInstance(false);
 
-  @AfterEach
-  void resetKeepNewLines() {
-    mTokenizer.setKeepNewLines(false);
+  /**
+   * Checks that independently configured tokenizers leave other instances unchanged.
+   *
+   * @param keep Whether the first tokenizer retains line breaks.
+   */
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testIndependentInstances(boolean keep) {
+    SimpleTokenizer first = SimpleTokenizer.newInstance(keep);
+    SimpleTokenizer second = SimpleTokenizer.newInstance(keep);
+    String input = "a\nb";
+    String[] expected = keep ? new String[] {"a", "\n", "b"} : new String[] {"a", "b"};
+    String[] sharedBefore = SimpleTokenizer.INSTANCE.tokenize(input);
+
+    Assertions.assertNotSame(SimpleTokenizer.INSTANCE, first);
+    Assertions.assertNotSame(SimpleTokenizer.INSTANCE, second);
+    Assertions.assertNotSame(first, second);
+    Assertions.assertArrayEquals(expected, first.tokenize(input));
+    Assertions.assertArrayEquals(expected, second.tokenize(input));
+
+    first.setKeepNewLines(!keep);
+    Assertions.assertArrayEquals(keep ? new String[] {"a", "b"} : new String[] {"a", "\n", "b"},
+        first.tokenize(input));
+    Assertions.assertArrayEquals(expected, second.tokenize(input));
+    Assertions.assertArrayEquals(sharedBefore, SimpleTokenizer.INSTANCE.tokenize(input));
   }
 
   /**
@@ -107,8 +128,7 @@ public class SimpleTokenizerTest {
 
   @Test
   void testTokenizationOfStringWithUnixNewLineTokens() {
-    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-    tokenizer.setKeepNewLines(true);
+    SimpleTokenizer tokenizer = SimpleTokenizer.newInstance(true);
 
     Assertions.assertEquals(2, tokenizer.tokenize("a\n").length);
     Assertions.assertArrayEquals(new String[] {"a", "\n"}, tokenizer.tokenize("a\n"));
@@ -126,8 +146,7 @@ public class SimpleTokenizerTest {
 
   @Test
   void testTokenizationOfStringWithWindowsNewLineTokens() {
-    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-    tokenizer.setKeepNewLines(true);
+    SimpleTokenizer tokenizer = SimpleTokenizer.newInstance(true);
 
     Assertions.assertEquals(3, tokenizer.tokenize("a\r\n").length);
     Assertions.assertArrayEquals(new String[] {"a", "\r", "\n"}, tokenizer.tokenize("a\r\n"));

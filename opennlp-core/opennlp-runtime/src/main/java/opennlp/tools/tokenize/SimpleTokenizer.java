@@ -28,7 +28,8 @@ import opennlp.tools.util.StringUtil;
  * using character classes.
  * <p>
  * To obtain an instance of this tokenizer use the static final
- * {@link #INSTANCE} field.
+ * {@link #INSTANCE} field. Use {@link #newInstance(boolean)} for a tokenizer with a
+ * non-default {@link #setKeepNewLines(boolean)} setting.
  */
 public class SimpleTokenizer extends AbstractTokenizer {
 
@@ -53,10 +54,31 @@ public class SimpleTokenizer extends AbstractTokenizer {
   /**
    * Use this static reference to retrieve an instance of the
    * {@link SimpleTokenizer}.
+   * <p>
+   * This instance is shared by every caller in the process and must not be reconfigured.
+   * Use {@link #newInstance(boolean)} for a tokenizer with a different setting.
    */
   public static final SimpleTokenizer INSTANCE = new SimpleTokenizer();
 
   private SimpleTokenizer() {
+  }
+
+  /**
+   * Creates a tokenizer with its own line-break setting, independent of {@link #INSTANCE}.
+   * <p>
+   * When {@code keepNewLines} is {@code true}, the tokenizer retains all seven Unicode
+   * line breaks under {@link opennlp.tools.util.WhitespaceMode#UNICODE}, or only CR/LF
+   * under {@link opennlp.tools.util.WhitespaceMode#LEGACY}, as defined by
+   * {@link StringUtil#isLineBreak(char)}.
+   *
+   * @param keepNewLines {@code true} if line separators are returned as tokens.
+   * @return A new {@link SimpleTokenizer} with that setting.
+   * @since 3.0.1
+   */
+  public static SimpleTokenizer newInstance(boolean keepNewLines) {
+    SimpleTokenizer tokenizer = new SimpleTokenizer();
+    tokenizer.setKeepNewLines(keepNewLines);
+    return tokenizer;
   }
 
   @Override
@@ -94,8 +116,8 @@ public class SimpleTokenizer extends AbstractTokenizer {
         }
       }
       if (keepNewLines && StringUtil.isLineBreak(c)) {
-        tokens.add(new Span(start, start + 1));
-        start = start + 1;
+        tokens.add(new Span(ci, ci + 1));
+        start = ci + 1;
       }
       state = charType;
       pc = c;
