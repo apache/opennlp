@@ -24,10 +24,14 @@ import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkSampleStream;
@@ -35,6 +39,7 @@ import opennlp.tools.chunker.ChunkerFactory;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -100,5 +105,30 @@ public class BaseModelTest {
       bytecode = new String(in.readAllBytes(), StandardCharsets.ISO_8859_1);
     }
     Assertions.assertFalse(bytecode.contains("java/io/ObjectInputFilter"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"manifest.properties", "payload.txt"})
+  void testLoadRejectsAnArtifactThatInflatesFarBeyondItsArchive(String entryName)
+      throws IOException {
+    final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+    try (ZipOutputStream zip = new ZipOutputStream(bytesOut)) {
+      if (!"manifest.properties".equals(entryName)) {
+        zip.putNextEntry(new ZipEntry("manifest.properties"));
+        zip.write("Manifest-Version=1.0\nLanguage=en\n".getBytes(StandardCharsets.UTF_8));
+        zip.closeEntry();
+      }
+      zip.putNextEntry(new ZipEntry(entryName));
+      final byte[] zeros = new byte[1024 * 1024];
+      for (int i = 0; i < 32; i++) {
+        zip.write(zeros);
+      }
+      zip.closeEntry();
+    }
+    final byte[] archive = bytesOut.toByteArray();
+
+    final InvalidFormatException e = Assertions.assertThrows(InvalidFormatException.class,
+        () -> new ChunkerModel(new ByteArrayInputStream(archive)));
+    Assertions.assertTrue(e.getMessage().contains("compression ratio"), e.getMessage());
   }
 }

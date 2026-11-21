@@ -239,7 +239,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     int MODEL_BUFFER_SIZE_LIMIT = Integer.MAX_VALUE;
     in.mark(MODEL_BUFFER_SIZE_LIMIT);
 
-    try (final ZipInputStream zip = new ZipInputStream(in)) {
+    try (final ZipInputStream zip = new BoundedZipInputStream(in)) {
 
       // The model package can contain artifacts which are serialized with 3rd party
       // serializers which are configured in the manifest file. To be able to load
@@ -320,7 +320,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   private void finishLoadingArtifacts(InputStream in)
       throws IOException {
 
-    try (final ZipInputStream zip = new ZipInputStream(in)) {
+    try (final ZipInputStream zip = new BoundedZipInputStream(in)) {
       Map<String, Object> artifactMap = new HashMap<>();
 
       ZipEntry entry;
