@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ResourceLimits;
 
 /**
@@ -144,6 +145,7 @@ public abstract class AbstractModelReader {
   /**
    * @return Reads and retrieves the {@code outcome patterns} from the model.
    * @throws IOException Thrown if IO errors occurred.
+   * @throws InvalidFormatException Thrown if an outcome pattern contains a non-numeric value.
    * @throws IllegalArgumentException Thrown if the outcome pattern count is negative or
    *     exceeds {@link ResourceLimits#MAX_ENTRIES}.
    */
@@ -155,7 +157,12 @@ public abstract class AbstractModelReader {
       StringTokenizer tok = new StringTokenizer(readUTF(), " ");
       int[] infoInts = new int[tok.countTokens()];
       for (int j = 0; tok.hasMoreTokens(); j++) {
-        infoInts[j] = Integer.parseInt(tok.nextToken());
+        String value = tok.nextToken();
+        try {
+          infoInts[j] = Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+          throw new InvalidFormatException("Invalid outcome pattern value: " + value, e);
+        }
       }
       outcomePatterns[i] = infoInts;
     }
@@ -185,18 +192,31 @@ public abstract class AbstractModelReader {
    *     second index specifies the number of contexts which use this pattern at index {@code 0},
    *     and the index of each outcome which make up this pattern in indices {@code 1-n}.
    * @return An array of {@link Context} objects.
-   * @throws IOException Thrown when the model file does not match the outcome patterns or can not be read.
+   * @throws InvalidFormatException Thrown if an outcome pattern count is invalid or the total
+   *     does not match the predicate count.
+   * @throws IOException Thrown if the model file can not be read.
    */
   protected Context[] getParameters(int[][] outcomePatterns) throws IOException {
     Context[] params = new Context[NUM_PREDS];
     int pid = 0;
     for (int[] pattern : outcomePatterns) {
+      if (pattern.length == 0) {
+        throw new InvalidFormatException("Outcome pattern is empty");
+      }
+      int count = pattern[0];
+      if (count < 0) {
+        throw new InvalidFormatException("Outcome pattern count is negative: " + count);
+      }
+      if (count > NUM_PREDS - pid) {
+        throw new InvalidFormatException("Outcome pattern count exceeds remaining predicates: " + count);
+      }
+
       //construct outcome pattern
       int[] outcomePattern = new int[pattern.length - 1];
       System.arraycopy(pattern, 1, outcomePattern, 0, pattern.length - 1);
 
       //populate parameters for each context which uses this outcome pattern.
-      for (int j = 0; j < pattern[0]; j++) {
+      for (int j = 0; j < count; j++) {
         double[] contextParameters = new double[pattern.length - 1];
         for (int k = 1; k < pattern.length; k++) {
           contextParameters[k - 1] = readDouble();
@@ -204,6 +224,10 @@ public abstract class AbstractModelReader {
         params[pid] = new Context(outcomePattern, contextParameters);
         pid++;
       }
+    }
+    if (pid != NUM_PREDS) {
+      throw new InvalidFormatException("Outcome pattern counts do not match predicate count: " + pid
+          + " != " + NUM_PREDS);
     }
     return params;
   }
