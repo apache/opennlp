@@ -158,6 +158,35 @@ public class ArgumentParserTest {
   }
 
   @Test
+  void testUnrecognizedParameterIsNamedWithoutItsValue() {
+    String[] args = "-encoding UTF-8 -cutof 5".split(" ");
+    Assertions.assertEquals("Unrecognized parameters encountered: [-cutof]",
+        ArgumentParser.validateArgumentsLoudly(args, SimpleArguments.class));
+  }
+
+  @Test
+  void testMisspelledMandatoryParameterIsNamed() {
+    String[] args = "-encodng UTF-8 -iterations 10".split(" ");
+    Assertions.assertEquals(
+        "Missing mandatory parameter: -encoding, unrecognized parameters encountered: [-encodng]",
+        ArgumentParser.validateArgumentsLoudly(args, SimpleArguments.class));
+  }
+
+  @Test
+  void testMissingMandatoryParameterWithoutUnknownParameters() {
+    String[] args = "-iterations 10".split(" ");
+    Assertions.assertEquals("Missing mandatory parameter: -encoding",
+        ArgumentParser.validateArgumentsLoudly(args, SimpleArguments.class));
+  }
+
+  @Test
+  void testUnknownParametersAcrossSeveralInterfaces() {
+    String[] args = "-encoding UTF-8 -corpusWordCount 7 -lang en".split(" ");
+    Assertions.assertEquals("Unrecognized parameters encountered: [-lang]",
+        ArgumentParser.validateArgumentsLoudly(args, SimpleArguments.class, LongArgument.class));
+  }
+
+  @Test
   void testSimpleArgumentsUsage() {
 
     String[] arguments = new String[] {"-encoding charset",

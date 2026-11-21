@@ -414,6 +414,7 @@ public class ArgumentParser {
 
     int argumentCount = 0;
     List<String> parameters = new ArrayList<>(Arrays.asList(args));
+    List<String> unknownParameters = findUnknownParameters(args, argProxyInterfaces);
 
     for (Class<?> argProxyInterface : argProxyInterfaces) {
       for (Method method : argProxyInterface.getMethods()) {
@@ -427,7 +428,12 @@ public class ArgumentParser {
             if (-1 < paramIndex) {
               return "Missing mandatory parameter value: " + paramName;
             } else {
-              return "Missing mandatory parameter: " + paramName;
+              // a misspelled parameter is often the reason a mandatory one is missing
+              String message = "Missing mandatory parameter: " + paramName;
+              if (!unknownParameters.isEmpty()) {
+                message += ", unrecognized parameters encountered: " + unknownParameters;
+              }
+              return message;
             }
           } else {
             parameters.remove("-" + paramName);
@@ -441,11 +447,37 @@ public class ArgumentParser {
       }
     }
 
+    if (!unknownParameters.isEmpty()) {
+      return "Unrecognized parameters encountered: " + unknownParameters;
+    }
+
     if (args.length / 2 > argumentCount) {
       return "Unrecognized parameters encountered: " + parameters;
     }
 
     return null;
+  }
+
+  /**
+   * Collects the parameter names in {@code args} which none of the
+   * {@code argProxyInterfaces} declare, in the order they were passed.
+   * Parameter names are at the even positions, each followed by its value.
+   */
+  private static List<String> findUnknownParameters(String[] args, Class<?>... argProxyInterfaces) {
+    Set<String> knownParameters = new HashSet<>();
+    for (Class<?> argProxyInterface : argProxyInterfaces) {
+      for (Method method : argProxyInterface.getMethods()) {
+        knownParameters.add(methodNameToParameter(method.getName()));
+      }
+    }
+
+    List<String> unknownParameters = new ArrayList<>();
+    for (int i = 0; i < args.length; i += 2) {
+      if (!knownParameters.contains(args[i])) {
+        unknownParameters.add(args[i]);
+      }
+    }
+    return unknownParameters;
   }
 
   /**
