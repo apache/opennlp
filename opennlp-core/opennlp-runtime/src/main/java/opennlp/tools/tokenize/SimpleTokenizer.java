@@ -93,7 +93,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
           start = ci;
         }
       }
-      if (keepNewLines && isLineSeparator(c)) {
+      if (keepNewLines && StringUtil.isLineBreak(c)) {
         tokens.add(new Span(start, start + 1));
         start = start + 1;
       }
@@ -104,10 +104,6 @@ public class SimpleTokenizer extends AbstractTokenizer {
       tokens.add(new Span(start, sl));
     }
     return tokens.toArray(new Span[0]);
-  }
-
-  private boolean isLineSeparator(char character) {
-    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
   }
 
 }
