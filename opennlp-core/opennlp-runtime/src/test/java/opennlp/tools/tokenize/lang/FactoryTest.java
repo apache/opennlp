@@ -103,20 +103,41 @@ public class FactoryTest {
     }
   }
 
+  /**
+   * Supplies one language code per shipped policy with its expected mark characters.
+   * An empty string means no marks are expected.
+   *
+   * @return Language code and expected-marks pairs.
+   */
+  static Stream<Arguments> shippedPoliciesWithExpectedMarks() {
+    return Stream.of(
+        Arguments.of("en", ""),
+        Arguments.of("pt", ""),
+        Arguments.of("fr", ""),
+        Arguments.of("nl", ""),
+        Arguments.of("de", ""),
+        Arguments.of("pl", ""),
+        Arguments.of("it", ""),
+        Arguments.of("es", ""),
+        Arguments.of("ca", "·"));
+  }
+
   @ParameterizedTest
-  @MethodSource("shippedPolicies")
-  void testShippedPoliciesHaveAsciiDigitsAndNoMarks(String languageCode, String regex) {
+  @MethodSource("shippedPoliciesWithExpectedMarks")
+  void testShippedPoliciesHaveAsciiDigitsAndExpectedMarks(String languageCode, String expectedMarks) {
     TokenizerCharacterPolicy policy = factory.getCharacterPolicy(languageCode);
 
     assertEquals(DIGIT_COUNT, policy.getDigits().size(), languageCode);
     for (int digit = '0'; digit <= '9'; digit++) {
       assertTrue(policy.getDigits().contains(digit), languageCode);
     }
-    if ("ca".equals(languageCode)) {
-      assertEquals(1, policy.getMarks().size(), languageCode);
-      assertTrue(policy.getMarks().contains('·'), languageCode);
-    } else {
-      assertTrue(policy.getMarks().isEmpty(), languageCode);
+    assertEquals(expectedMarks.codePointCount(0, expectedMarks.length()), policy.getMarks().size(),
+        languageCode);
+    for (int offset = 0; offset < expectedMarks.length();) {
+      final int codePoint = expectedMarks.codePointAt(offset);
+      assertTrue(policy.getMarks().contains(codePoint),
+          languageCode + " mark U+" + Integer.toHexString(codePoint));
+      offset += Character.charCount(codePoint);
     }
   }
 
@@ -197,13 +218,17 @@ public class FactoryTest {
   @ValueSource(strings = {"cel·la", "goril·la", "instal·lar", "cancel·lar", "col·legi"})
   void testCatalanMiddleDotWordIsAccepted(String word) {
     TokenizerCharacterPolicy policy = factory.getCharacterPolicy("ca");
+    Pattern regex = Pattern.compile(LegacyAlphaNumericPatterns.CATALAN_NEW);
     assertTrue(policy.test(word), word);
+    assertTrue(regex.matcher(word).matches(), "regex: " + word);
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"·la", "·cel·la", "·"})
   void testCatalanMiddleDotCannotStartToken(String input) {
     TokenizerCharacterPolicy policy = factory.getCharacterPolicy("ca");
+    Pattern regex = Pattern.compile(LegacyAlphaNumericPatterns.CATALAN_NEW);
     assertFalse(policy.test(input), input);
+    assertFalse(regex.matcher(input).matches(), "regex: " + input);
   }
 }
