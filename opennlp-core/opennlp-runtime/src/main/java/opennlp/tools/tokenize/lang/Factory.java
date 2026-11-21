@@ -78,7 +78,9 @@ public class Factory {
   private static final TokenizerCharacterPolicy SPANISH = latinPolicy("áéíóúüýñÁÉÍÓÚÝÑ");
 
   // From: https://en.wikipedia.org/wiki/Catalan_orthography#Spelling_patterns
-  private static final TokenizerCharacterPolicy CATALAN = latinPolicy("àèéíïòóúüçÀÈÉÍÏÒÓÚÜÇ");
+  private static final TokenizerCharacterPolicy CATALAN_LEGACY = latinPolicy("àèéíïòóúüçÀÈÉÍÏÒÓÚÜÇ");
+  // U+00B7 MIDDLE DOT (punt volat) used in the geminated L (l·l) is treated as a mark.
+  private static final TokenizerCharacterPolicy CATALAN = latinPolicy("àèéíïòóúüçÀÈÉÍÏÒÓÚÜÇ", '·');
 
   /**
    * The alphanumeric expressions of releases before 3.0, keyed by the policy that accepts the same
@@ -93,7 +95,8 @@ public class Factory {
       POLISH, "^[A-Za-z0-9żźćńółęąśŻŹĆĄŚĘŁÓŃ]+$",
       ITALIAN, "^[0-9a-zàèéìîíòóùüA-ZÀÈÉÌÎÍÒÓÙÜ]+$",
       SPANISH, "^[0-9a-záéíóúüýñA-ZÁÉÍÓÚÝÑ]+$",
-      CATALAN, "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$");
+      CATALAN_LEGACY, "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$",
+      CATALAN, "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ][0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ·]*$");
 
   /**
    * The compiled {@link #LEGACY_EXPRESSIONS}, keyed by the same policies. The default policy maps
@@ -245,12 +248,14 @@ public class Factory {
   }
 
   /**
-   * Builds a policy of the ASCII letters plus {@code extraLetters}, the ASCII digits, and no marks.
+   * Builds a policy of the ASCII letters plus {@code extraLetters}, the ASCII digits, and the
+   * given {@code marks}.
    *
    * @param extraLetters The letters of a Latin script language beyond ASCII.
+   * @param marks The mark code points to include, if any.
    * @return The policy.
    */
-  private static TokenizerCharacterPolicy latinPolicy(String extraLetters) {
+  private static TokenizerCharacterPolicy latinPolicy(String extraLetters, int... marks) {
     CodePointSet letters = TokenizerCharacterPolicy.ascii().getLetters();
     for (int offset = 0; offset < extraLetters.length();) {
       final int codePoint = extraLetters.codePointAt(offset);
@@ -258,6 +263,6 @@ public class Factory {
       offset += Character.charCount(codePoint);
     }
     return TokenizerCharacterPolicy.of(letters, TokenizerCharacterPolicy.ascii().getDigits(),
-        NO_MARKS);
+        marks.length == 0 ? NO_MARKS : CodePointSet.of(marks));
   }
 }

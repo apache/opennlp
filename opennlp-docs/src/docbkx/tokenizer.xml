@@ -397,8 +397,10 @@ try {
 				the policy for the language code: ASCII letters and digits for most languages,
 				and ASCII plus the letters of the language for Catalan (ca), Dutch (nl),
 				French (fr), German (de), Italian (it), Polish (pl), Portuguese (pt) and
-				Spanish (es); the ISO 639-2 codes are accepted too. None of these presets has
-				marks, so a decomposed character such as <code>e</code> followed by U+0301 is
+				Spanish (es); the ISO 639-2 codes are accepted too. The Catalan preset
+				additionally includes U+00B7 MIDDLE DOT (punt volat) as a mark so that
+				geminated-L words such as <code>cel·la</code> are single tokens. The other
+				presets have no marks, so a decomposed character such as <code>e</code> followed by U+0301 is
 				not accepted by them; supply a policy with the combining marks of your text to
 				accept it. The policy is written to the model manifest under the property
 				<code>characterPolicy</code> as comma separated hex code points and ranges, for

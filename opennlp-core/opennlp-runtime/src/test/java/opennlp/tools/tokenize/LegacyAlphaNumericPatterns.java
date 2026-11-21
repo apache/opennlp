@@ -35,6 +35,8 @@ public final class LegacyAlphaNumericPatterns {
   public static final String ITALIAN = "^[0-9a-zàèéìîíòóùüA-ZÀÈÉÌÎÍÒÓÙÜ]+$";
   public static final String SPANISH = "^[0-9a-záéíóúüýñA-ZÁÉÍÓÚÝÑ]+$";
   public static final String CATALAN = "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$";
+  public static final String CATALAN_NEW =
+      "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ][0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ·]*$";
 
   /**
    * Each language code with the regular expression its policy replaces.
@@ -48,7 +50,7 @@ public final class LegacyAlphaNumericPatterns {
       "pl", POLISH,
       "it", ITALIAN,
       "es", SPANISH,
-      "ca", CATALAN);
+      "ca", CATALAN_NEW);
 
   private LegacyAlphaNumericPatterns() {
   }
