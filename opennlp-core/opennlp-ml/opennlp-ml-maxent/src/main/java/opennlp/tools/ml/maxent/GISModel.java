@@ -193,9 +193,14 @@ public final class GISModel extends AbstractModel {
 
     ArrayMath.sumFeatures(context, values, prior);
 
+    double max = Double.NEGATIVE_INFINITY;
+    for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
+      max = StrictMath.max(max, prior[oid]);
+    }
+
     double normal = 0.0;
     for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-      prior[oid] = StrictMath.exp(prior[oid]);
+      prior[oid] = StrictMath.exp(prior[oid] - max);
       normal += prior[oid];
     }
 
