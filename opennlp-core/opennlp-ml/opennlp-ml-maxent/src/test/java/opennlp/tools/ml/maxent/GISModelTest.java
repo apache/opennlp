@@ -43,6 +43,41 @@ class GISModelTest {
   }
 
   @ParameterizedTest
+  @ValueSource(doubles = {-744, 0, 700})
+  void testFinitePositiveSumPreservesLegacyProbabilityBits(double offset) {
+    double[] weights = {1 + offset, 3 + offset, 2 + offset};
+    Context[] params = {new Context(new int[] {0, 1, 2}, weights)};
+    GISModel model = new GISModel(params, new String[] {"feature"},
+        new String[] {"first", "second", "third"});
+
+    double[] probabilities = model.eval(new String[] {"feature"});
+
+    // Include the default UniformPrior and preserve the order of the legacy operations.
+    double logPrior = StrictMath.log(1.0 / weights.length);
+    double[] exponentials = new double[weights.length];
+    double sum = 0.0;
+    for (int i = 0; i < weights.length; i++) {
+      exponentials[i] = StrictMath.exp(logPrior + weights[i]);
+      sum += exponentials[i];
+    }
+
+    Assertions.assertTrue(sum > 0.0 && Double.isFinite(sum));
+    for (int i = 0; i < weights.length; i++) {
+      Assertions.assertEquals(Double.doubleToRawLongBits(exponentials[i] / sum),
+          Double.doubleToRawLongBits(probabilities[i]));
+    }
+  }
+
+  @Test
+  void testFiniteExponentialsWithOverflowingSum() {
+    // Each exp(710 + log(0.5)) is finite, but their sum overflows.
+    Context[] params = {new Context(new int[] {0, 1}, new double[] {710, 710})};
+    GISModel model = new GISModel(params, new String[] {"feature"}, new String[] {"first", "second"});
+
+    Assertions.assertArrayEquals(new double[] {0.5, 0.5}, model.eval(new String[] {"feature"}));
+  }
+
+  @ParameterizedTest
   @ValueSource(doubles = {-1000, 1000})
   void testEqualLargeScoresGiveUniformDistribution(double score) {
     Context[] params = {new Context(new int[] {0, 1}, new double[] {score, score})};
