@@ -76,6 +76,14 @@ public class BilouCodec implements SequenceCodec<String> {
       else if (chunkTag.endsWith(UNIT)) {
         spans.add(new Span(li, li + 1, BioCodec.extractNameType(c.get(li))));
       }
+      else if (chunkTag.endsWith(BilouCodec.OTHER)) {
+        // A span that was started but not ended by a last tag ends before this token
+        if (start != -1) {
+          spans.add(new Span(start, end, BioCodec.extractNameType(c.get(li - 1))));
+          start = -1;
+          end = -1;
+        }
+      }
     }
 
     return spans.toArray(new Span[0]);
