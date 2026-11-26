@@ -193,9 +193,28 @@ public final class GISModel extends AbstractModel {
 
     ArrayMath.sumFeatures(context, values, prior);
 
+    double max = Double.NEGATIVE_INFINITY;
+    for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
+      max = StrictMath.max(max, prior[oid]);
+    }
+
+    double shift = 0.0;
+    // In this range the largest exponential is positive and even Integer.MAX_VALUE
+    // terms of exp(680) cannot overflow. Else check the actual legacy sum before
+    // overwriting the scores, which the fallback would need.
+    if (!(max >= -700.0 && max <= 680.0)) {
+      double legacySum = 0.0;
+      for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
+        legacySum += StrictMath.exp(prior[oid]);
+      }
+      if (!(legacySum > 0.0 && Double.isFinite(legacySum))) {
+        shift = max;
+      }
+    }
+
     double normal = 0.0;
     for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-      prior[oid] = StrictMath.exp(prior[oid]);
+      prior[oid] = StrictMath.exp(prior[oid] - shift);
       normal += prior[oid];
     }
 
