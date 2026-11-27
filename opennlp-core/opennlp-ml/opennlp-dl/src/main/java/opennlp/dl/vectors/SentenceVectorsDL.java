@@ -20,6 +20,9 @@ package opennlp.dl.vectors;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,11 +31,15 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ai.onnxruntime.NodeInfo;
 import ai.onnxruntime.OnnxJavaType;
 import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OnnxValue;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 import ai.onnxruntime.TensorInfo;
@@ -71,8 +78,11 @@ import opennlp.tools.util.ParamChecks;
  * any embeddings persisted from the previous behavior are not
  * comparable with the corrected output and must be re-embedded.</p>
  *
- * <p>This class is thread-safe and may be shared across threads: the inference methods hold no
- * per-call instance state and the underlying {@link OrtSession} supports concurrent execution.
+ * <p>This class is thread-safe and may be shared across threads: up to
+ * {@link InferenceOptions#getMaxConcurrentInferences()} inferences run at once, each holding a
+ * buffer of the pool only while it runs, a caller beyond the limit waits for one to finish, and
+ * the underlying {@link OrtSession} supports concurrent execution. Interrupting a waiting caller
+ * throws an {@link EmbeddingException} with the interrupt flag restored.
  * This thread-safety guarantee applies until {@link #close()} is called; callers must not race
  * {@code close()} with inference methods.</p>
  *
@@ -83,6 +93,18 @@ import opennlp.tools.util.ParamChecks;
  * not padded by default because such a model may ignore the attention mask. No inference exceeds
  * 16384 token positions, except that a single text whose encoding is wider runs as an inference
  * of its own.</p>
+ *
+ * <p>The input and output tensors of an inference live in one direct buffer. The instance keeps
+ * one such buffer per concurrent inference for reuse until {@link #close()}. A buffer is
+ * allocated when more inferences overlap than before or when a slot needs to grow, and stays
+ * as large as the largest inference it has held. The pool can therefore hold the concurrency
+ * limit times the largest inference's direct memory: a token output at the
+ * {@value #MAX_BATCH_TOKEN_POSITIONS} token
+ * position bound with a hidden dimension of 1024 amounts to about 67 MB per buffer. With the
+ * default of one inference per available processor, 64 concurrent inferences can retain about
+ * 4 GiB. Set {@link InferenceOptions#setMaxConcurrentInferences(int)} to fit the direct memory
+ * budget; the default does not account for {@code -XX:MaxDirectMemorySize}. Replaced buffers
+ * await garbage collection, so growing a slot temporarily needs memory for both buffers.</p>
  */
 @ThreadSafe
 public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
@@ -121,6 +143,18 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   private final int dimension;
   private final PaddingStrategy padding;
   private final long padTokenId;
+
+  /**
+   * The permits of the inferences that may run at once. An inference holds a permit while it
+   * holds a buffer, so the pool never holds more buffers than there are permits.
+   */
+  private final Semaphore inferencePermits;
+
+  /** The direct buffers an inference may reuse, one per permit at most. Emptied on {@link #close()}. */
+  private final BlockingQueue<ByteBuffer> spareBuffers;
+
+  /** The direct buffers this instance has allocated, for tests. */
+  private final AtomicInteger allocatedBuffers = new AtomicInteger();
 
   /**
    * Instantiates a {@link SentenceVectorsDL sentence vector generator} for an
@@ -213,10 +247,10 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    * @param inferenceOptions The ONNX session settings. Must not be {@code null}.
    *
    * @throws IllegalArgumentException Thrown if {@code vectorOptions} or {@code inferenceOptions}
-   *     is {@code null}, if the inference options contain invalid split settings or a negative
-   *     GPU device id, if the model has no output of shape {@code [batch, hidden]} or
-   *     {@code [batch, tokens, hidden]}, or if padding is requested without a vocabulary padding
-   *     token.
+   *     is {@code null}, if the inference options contain invalid split settings, a negative GPU
+   *     device id, a negative intra-op thread count, or a negative concurrency limit, if the
+   *     model has no output of shape {@code [batch, hidden]} or {@code [batch, tokens, hidden]},
+   *     or if padding is requested without a vocabulary padding token.
    * @throws OrtException Thrown if the model cannot be loaded, the output dimension probe fails,
    *     or the requested GPU is unavailable. ONNX Runtime does not fall back to the CPU.
    * @throws IOException Thrown if the model or vocabulary cannot be read.
@@ -229,10 +263,15 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       final SentenceVectorsOptions vectorOptions, final InferenceOptions inferenceOptions)
       throws OrtException, IOException {
 
-    super(model, vocabulary, sessionOptions(inferenceOptions),
+    super(model, vocabulary,
+        sessionOptions(validateConstructorArguments(inferenceOptions, vectorOptions)),
         resolveLowerCase(inferenceOptions, lowerCase));
     try {
-      ParamChecks.requireNonNullArg(vectorOptions, "vectorOptions");
+      final int concurrency = inferenceOptions.getMaxConcurrentInferences() > 0
+          ? inferenceOptions.getMaxConcurrentInferences()
+          : Runtime.getRuntime().availableProcessors();
+      this.inferencePermits = new Semaphore(concurrency);
+      this.spareBuffers = new ArrayBlockingQueue<>(concurrency);
       this.pooling = vectorOptions.pooling();
       this.normalize = vectorOptions.normalize();
       this.maxLength = vectorOptions.maxLength();
@@ -245,7 +284,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       this.padTokenId = this.padding == PaddingStrategy.EXACT_LENGTH ? 0 : padTokenId();
       final long declared = shape[shape.length - 1];
       this.dimension = declared > 0 && declared <= Integer.MAX_VALUE
-          ? (int) declared : run(new Tokens[] {encodeTokens("")})[0].length;
+          ? (int) declared : measureDimension();
     } catch (final OrtException | RuntimeException e) {
       try {
         super.close();
@@ -255,6 +294,24 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       throw e;
     }
 
+  }
+
+  /**
+   * Checks the arguments of a public constructor that the base class does not check.
+   *
+   * @param inferenceOptions The inference options.
+   * @param vectorOptions The vector options.
+   * @return {@code inferenceOptions}.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null} or the concurrency
+   *     limit is negative.
+   */
+  private static InferenceOptions validateConstructorArguments(
+      final InferenceOptions inferenceOptions, final SentenceVectorsOptions vectorOptions) {
+    ParamChecks.requireNonNullArg(vectorOptions, "vectorOptions");
+    ParamChecks.requireNonNullArg(inferenceOptions, "inferenceOptions");
+    ParamChecks.requireNonNegative(inferenceOptions.getMaxConcurrentInferences(),
+        "maxConcurrentInferences");
+    return inferenceOptions;
   }
 
   /**
@@ -275,7 +332,9 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    * @param sentence The input sentence.
    * @return The sentence vector.
    *
-   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code sentence} is {@code null} or if the
+   *     inference does not fit in one direct buffer.
+   * @throws EmbeddingException Thrown if interrupted while waiting for an inference permit.
    * @throws OrtException Thrown if an error occurs during inference.
    */
   public float[] getVectors(final String sentence) throws OrtException {
@@ -423,11 +482,12 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * Closes the ONNX session. An {@link OrtException} from the session is rethrown as the cause
-   * of an {@link UncheckedIOException}.
+   * Drops the pooled direct buffers and closes the ONNX session. An {@link OrtException} from the
+   * session is rethrown as the cause of an {@link UncheckedIOException}.
    */
   @Override
   public void close() {
+    spareBuffers.clear();
     try {
       super.close();
     } catch (final OrtException e) {
@@ -463,54 +523,34 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   /**
    * Runs one inference over a batch of encodings and returns one sentence vector per encoding, in
    * order. Rows shorter than the batch width are padded: {@code input_ids} with the padding
-   * token id, {@code attention_mask} and {@code token_type_ids} with {@code 0}.
+   * token id, {@code attention_mask} and {@code token_type_ids} with {@code 0}. The input and
+   * output tensors share one direct buffer, which ONNX Runtime reads and writes in place, so no
+   * tensor is copied through the Java heap. The buffer comes from the pool of this instance when
+   * one is big enough and returns to the pool afterwards, so calls that fit the available slots
+   * allocate no new direct memory. When the concurrency limit is reached, a further call waits
+   * for a running inference to finish.
    *
    * @param batch The encodings, of any lengths.
    * @return The sentence vectors.
+   * @throws IllegalArgumentException Thrown if the inference needs more direct buffer memory than
+   *     one buffer can hold.
    * @throws OrtException Thrown if an error occurs during inference.
+   * @throws EmbeddingException Thrown if interrupted while waiting for an inference permit.
    */
   private float[][] run(final Tokens[] batch) throws OrtException {
 
     final int length = width(batch);
-    final long[] ids = new long[batch.length * length];
-    final long[] mask = new long[batch.length * length];
-    final long[] types = new long[batch.length * length];
-    for (int b = 0; b < batch.length; b++) {
-      final int rowLength = batch[b].ids().length;
-      System.arraycopy(batch[b].ids(), 0, ids, b * length, rowLength);
-      System.arraycopy(batch[b].mask(), 0, mask, b * length, rowLength);
-      System.arraycopy(batch[b].types(), 0, types, b * length, rowLength);
-      // mask and types stay 0 past the row; only the ids need the padding token id.
-      Arrays.fill(ids, b * length + rowLength, (b + 1) * length, padTokenId);
-    }
-
-    final Map<String, OnnxTensor> inputs = new HashMap<>();
-    final long[] shape = {batch.length, length};
-
+    final int bytes = bufferBytes(batch.length, length, dimension, pooledOutput);
     try {
-      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(ids), shape));
-
-      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, LongBuffer.wrap(mask), shape));
-
-      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(types), shape));
-
-      try (OrtSession.Result result = session.run(inputs)) {
-        final OnnxValue output = result.get(outputName).orElseThrow(() -> new OrtException(
-            "The model returned no output named " + outputName));
-        // getValue() copies the tensor into Java arrays, so the result can be closed safely.
-        final Object value = output.getValue();
-        final float[][] vectors = new float[batch.length][];
-        for (int b = 0; b < batch.length; b++) {
-          vectors[b] = pooledOutput ? ((float[][]) value)[b]
-              : pool(((float[][][]) value)[b], batch[b].mask());
-          if (normalize) {
-            scaleToUnitLength(vectors[b]);
-          }
-        }
-        return vectors;
-      }
+      inferencePermits.acquire();
+    } catch (final InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new EmbeddingException("Interrupted while waiting for an inference permit.", e);
+    }
+    try {
+      return run(batch, length, bytes);
     } finally {
-      inputs.values().forEach(OnnxTensor::close);
+      inferencePermits.release();
     }
 
   }
@@ -533,29 +573,238 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * Pools the token vectors of one input into its sentence vector. Only the first
-   * {@code mask.length} positions are read, so padding after the row is ignored.
+   * Runs one inference while holding a permit, in a buffer taken from the pool.
    *
-   * @param tokenVectors The vectors of the input's tokens, at least as many as {@code mask} is
-   *     long.
-   * @param mask The attention mask of the input, without padding.
+   * @param batch The encodings of the inference, of any lengths.
+   * @param length The row width of the inference.
+   * @param bytes The direct buffer bytes of the inference.
+   * @return The sentence vectors.
+   * @throws OrtException Thrown if an error occurs during inference.
+   */
+  private float[][] run(final Tokens[] batch, final int length, final int bytes)
+      throws OrtException {
+
+    final ByteBuffer buffer = takeBuffer(bytes);
+    final int inputBytes = batch.length * length * Long.BYTES;
+    final int outputBytes = bytes - 3 * inputBytes;
+    try {
+      final LongBuffer ids = slice(buffer, 0, inputBytes).asLongBuffer();
+      final LongBuffer mask = slice(buffer, inputBytes, inputBytes).asLongBuffer();
+      final LongBuffer types = slice(buffer, 2 * inputBytes, inputBytes).asLongBuffer();
+      for (final Tokens tokens : batch) {
+        final int rowLength = tokens.ids().length;
+        ids.put(tokens.ids());
+        mask.put(tokens.mask());
+        types.put(tokens.types());
+        // The buffer is reused, so the padding positions are written, not left over.
+        for (int i = rowLength; i < length; i++) {
+          ids.put(padTokenId);
+          mask.put(0L);
+          types.put(0L);
+        }
+      }
+      ids.rewind();
+      mask.rewind();
+      types.rewind();
+      final FloatBuffer values = slice(buffer, 3 * inputBytes, outputBytes).asFloatBuffer();
+
+      final Map<String, OnnxTensor> inputs = inputs(ids, mask, types,
+          new long[] {batch.length, length});
+      try (OnnxTensor output = OnnxTensor.createTensor(env, values, pooledOutput
+              ? new long[] {batch.length, dimension} : new long[] {batch.length, length, dimension});
+           OrtSession.Result ignored = session.run(inputs, Map.of(outputName, output))) {
+        return vectors(batch, length, values);
+      } finally {
+        inputs.values().forEach(OnnxTensor::close);
+      }
+    } finally {
+      releaseBuffer(buffer);
+    }
+
+  }
+
+  /**
+   * {@return the hidden dimension of the model, measured with one inference of the empty text}
+   * Used when the model metadata does not declare the dimension; ONNX Runtime allocates the
+   * output of this inference, since its size is not known yet. The probe runs at the width
+   * {@link #width(Tokens[])} gives the encoding, as an inference of {@link #run(Tokens[])} does.
+   *
+   * @throws OrtException Thrown if an error occurs during inference.
+   */
+  private int measureDimension() throws OrtException {
+    final Tokens tokens = encodeTokens("");
+    final int length = width(new Tokens[] {tokens});
+    final long[] ids = new long[length];
+    final long[] mask = new long[length];
+    final long[] types = new long[length];
+    final int rowLength = tokens.ids().length;
+    System.arraycopy(tokens.ids(), 0, ids, 0, rowLength);
+    System.arraycopy(tokens.mask(), 0, mask, 0, rowLength);
+    System.arraycopy(tokens.types(), 0, types, 0, rowLength);
+    // mask and types stay 0 past the row; only the ids need the padding token id.
+    Arrays.fill(ids, rowLength, length, padTokenId);
+    final Map<String, OnnxTensor> inputs = inputs(LongBuffer.wrap(ids),
+        LongBuffer.wrap(mask), LongBuffer.wrap(types), new long[] {1, length});
+    try (OrtSession.Result result = session.run(inputs, Set.of(outputName))) {
+      final long[] shape = ((TensorInfo) result.get(0).getInfo()).getShape();
+      return (int) shape[shape.length - 1];
+    } finally {
+      inputs.values().forEach(OnnxTensor::close);
+    }
+  }
+
+  /**
+   * {@return the three input tensors of an inference over the given token ids, attention mask and
+   * token type ids}
+   *
+   * @param ids The token ids.
+   * @param mask The attention mask.
+   * @param types The token type ids.
+   * @param shape The shape of each input, {@code [rows, length]}.
+   * @throws OrtException Thrown if a tensor cannot be created; the tensors created before are
+   *     closed.
+   */
+  private Map<String, OnnxTensor> inputs(final LongBuffer ids, final LongBuffer mask,
+      final LongBuffer types, final long[] shape) throws OrtException {
+    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    try {
+      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, ids, shape));
+      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, mask, shape));
+      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, types, shape));
+      return inputs;
+    } catch (final OrtException | RuntimeException e) {
+      inputs.values().forEach(OnnxTensor::close);
+      throw e;
+    }
+  }
+
+  /** {@return the number of direct buffers this instance has allocated} */
+  int allocatedBuffers() {
+    return allocatedBuffers.get();
+  }
+
+  /**
+   * {@return the direct buffer bytes of one inference over {@code rows} encodings of the given
+   * tokenized length} The buffer holds the three inputs of {@code rows * length} longs each and
+   * the output, which holds {@code rows} vectors of the hidden dimension, or
+   * {@code rows * length} of them for a token output.
+   *
+   * @param rows The number of encodings in the inference.
+   * @param length The tokenized length of every encoding.
+   * @param dimension The hidden dimension of the model.
+   * @param pooledOutput Whether the model output is pooled to one vector per encoding.
+   * @throws IllegalArgumentException Thrown if the bytes exceed the capacity of one direct buffer.
+   */
+  static int bufferBytes(final int rows, final int length, final int dimension,
+      final boolean pooledOutput) {
+    final long positions = (long) rows * length;
+    final long bytes;
+    try {
+      final long inputBytes = Math.multiplyExact(Math.multiplyExact(positions, 3), Long.BYTES);
+      final long outputPositions = pooledOutput ? rows : positions;
+      final long outputBytes = Math.multiplyExact(
+          Math.multiplyExact(outputPositions, dimension), (long) Float.BYTES);
+      bytes = Math.addExact(inputBytes, outputBytes);
+    } catch (final ArithmeticException e) {
+      // The true size exceeds long, so it certainly exceeds one direct buffer.
+      throw new IllegalArgumentException("The inference needs more direct buffer memory than the "
+          + Integer.MAX_VALUE + " bytes of one buffer hold. Reduce maxLength.", e);
+    }
+    if (bytes > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("The inference needs " + bytes
+          + " bytes of direct buffer memory, which exceeds the " + Integer.MAX_VALUE
+          + " bytes of one buffer. Reduce maxLength.");
+    }
+    return (int) bytes;
+  }
+
+  /**
+   * {@return a direct buffer that holds at least {@code bytes} bytes} The caller holds an
+   * inference permit. One buffer is taken from the pool and replaced if too small. The other
+   * slots remain available for reuse. An empty pool requires a new buffer.
+   *
+   * @param bytes The number of bytes the inference needs.
+   */
+  private ByteBuffer takeBuffer(final int bytes) {
+    final ByteBuffer buffer = spareBuffers.poll();
+    if (buffer != null && buffer.capacity() >= bytes) {
+      return buffer;
+    }
+    allocatedBuffers.incrementAndGet();
+    return ByteBuffer.allocateDirect(bytes);
+  }
+
+  /**
+   * Returns a buffer to the pool of this instance. The pool has room, since it holds no more
+   * buffers than there are permits.
+   *
+   * @param buffer The buffer an inference is done with.
+   */
+  private void releaseBuffer(final ByteBuffer buffer) {
+    spareBuffers.offer(buffer);
+  }
+
+  /**
+   * {@return {@code bytes} bytes of {@code buffer} from {@code offset} on, in native byte order,
+   * the order ONNX Runtime reads and writes}
+   *
+   * @param buffer The buffer to slice.
+   * @param offset The index of the first byte.
+   * @param bytes The number of bytes.
+   */
+  private ByteBuffer slice(final ByteBuffer buffer, final int offset, final int bytes) {
+    return buffer.slice(offset, bytes).order(ByteOrder.nativeOrder());
+  }
+
+  /**
+   * Reads one sentence vector per encoding from the output of an inference.
+   *
+   * @param batch The encodings of the inference.
+   * @param length The row length of the inference.
+   * @param values The output, row after row.
+   * @return The sentence vectors.
+   */
+  private float[][] vectors(final Tokens[] batch, final int length, final FloatBuffer values) {
+    final float[][] vectors = new float[batch.length][];
+    for (int b = 0; b < batch.length; b++) {
+      if (pooledOutput) {
+        vectors[b] = new float[dimension];
+        values.get(b * dimension, vectors[b]);
+      } else {
+        vectors[b] = pool(values, b * length * dimension, batch[b].mask());
+      }
+      if (normalize) {
+        scaleToUnitLength(vectors[b]);
+      }
+    }
+    return vectors;
+  }
+
+  /**
+   * Pools the token vectors of one input into its sentence vector.
+   *
+   * @param values The token vectors of the whole batch, row after row.
+   * @param offset The index of the first value of the input in {@code values}.
+   * @param mask The attention mask of the input.
    * @return A new array holding the sentence vector.
    */
-  private float[] pool(final float[][] tokenVectors, final long[] mask) {
+  private float[] pool(final FloatBuffer values, final int offset, final long[] mask) {
+    final float[] sum = new float[dimension];
     if (pooling == Pooling.CLS) {
-      return tokenVectors[0].clone();
+      values.get(offset, sum);
+      return sum;
     }
-    final float[] sum = new float[tokenVectors[0].length];
     int count = 0;
     for (int t = 0; t < mask.length; t++) {
       if (mask[t] != 0) {
-        for (int d = 0; d < sum.length; d++) {
-          sum[d] += tokenVectors[t][d];
+        final int start = offset + t * dimension;
+        for (int d = 0; d < dimension; d++) {
+          sum[d] += values.get(start + d);
         }
         count++;
       }
     }
-    for (int d = 0; d < sum.length; d++) {
+    for (int d = 0; d < dimension; d++) {
       sum[d] /= Math.max(count, 1);
     }
     return sum;
