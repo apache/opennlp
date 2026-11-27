@@ -239,12 +239,13 @@ TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);]]>
 	</section>
 
 	<section xml:id="tools.tokenizer.whitespace.instances">
-		<title>Independent whitespace tokenizers</title>
+		<title>Independent tokenizers</title>
 		<para>
-			Use <code>WhitespaceTokenizer.newInstance(boolean keepNewLines)</code> when a
-			caller needs its own whitespace tokenizer configuration. Each call returns a
-			distinct instance. Changing it does not change
-			<code>WhitespaceTokenizer.INSTANCE</code>. <code>TokenizerME</code> uses its own
+			Use <code>WhitespaceTokenizer.newInstance(boolean keepNewLines)</code> or
+			<code>SimpleTokenizer.newInstance(boolean keepNewLines)</code> when a caller
+			needs its own tokenizer configuration. Each call returns a distinct instance.
+			Changing it does not change the corresponding <code>INSTANCE</code>.
+			<code>TokenizerME</code> uses its own
 			whitespace tokenizers and does not change the shared instance. The shared
 			instance is mutable; callers that need different settings should use separate
 			instances instead of reconfiguring it.
@@ -252,7 +253,7 @@ TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);]]>
 		<para>
 			When <code>keepNewLines</code> is enabled (via
 			<code>WhitespaceTokenizer.newInstance(true)</code> or
-			<code>setKeepNewLines(true)</code>), the default <code>UNICODE</code> whitespace mode
+			<code>SimpleTokenizer.newInstance(true)</code>), the default <code>UNICODE</code> whitespace mode
 			keeps all seven Unicode line breaks (<code>LF</code> <code>U+000A</code>,
 			<code>VT</code> <code>U+000B</code>, <code>FF</code> <code>U+000C</code>,
 			<code>CR</code> <code>U+000D</code>, <code>NEL</code> <code>U+0085</code>,
@@ -260,6 +261,9 @@ TokenizerFactory factory = new TokenizerFactory("en", null, true, policy);]]>
 			<code>PARAGRAPH SEPARATOR</code> <code>U+2029</code>) as tokens. Under
 			<code>LEGACY</code> mode, only <code>LF</code> (<code>\n</code>) and
 			<code>CR</code> (<code>\r</code>) are kept as line break tokens.
+			Each retained line break has a one-character span at its actual UTF-16 offset,
+			including leading breaks and breaks after spaces or tabs. A CRLF pair produces
+			two adjacent tokens, one for CR and one for LF.
 		</para>
 	</section>
 	<section xml:id="tools.tokenizer.training">
