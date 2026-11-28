@@ -130,4 +130,11 @@ public class TokenSampleStreamTest {
     sample = stream("Room 101 .\n").next();
     Assertions.assertEquals("Room 101.", sample.getText());
   }
+
+  @Test
+  void testReadsUtf8RegardlessOfTheDefaultCharset() throws IOException {
+    byte[] utf8 = "Ñandú in München".getBytes(StandardCharsets.UTF_8);
+    TokenSampleStream stream = new TokenSampleStream(new ByteArrayInputStream(utf8));
+    Assertions.assertEquals("Ñandú in München", stream.next().getText());
+  }
 }

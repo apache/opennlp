@@ -19,9 +19,13 @@ package opennlp.tools.ml.model;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -95,4 +99,14 @@ public class FileEventStreamTest extends AbstractEventStreamTest {
     }
   }
 
+  @Test
+  void testFileNameWithoutEncodingIsReadAsUtf8(@TempDir Path dir) throws IOException {
+    Path file = dir.resolve("events.txt");
+    Files.writeString(file, "Ñandú stadt=München\n", StandardCharsets.UTF_8);
+    try (FileEventStream stream = new FileEventStream(file.toString(), null)) {
+      Event event = stream.read();
+      Assertions.assertEquals("Ñandú", event.getOutcome());
+      Assertions.assertArrayEquals(new String[] {"stadt=München"}, event.getContext());
+    }
+  }
 }

@@ -18,6 +18,7 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -62,7 +63,7 @@ public class TwentyNewsgroupSampleStream implements ObjectStream<DocumentSample>
     if (catFileTupleIterator.hasNext()) {
       Map.Entry<Path, String> catFileTuple = catFileTupleIterator.next();
 
-      String text = new String(Files.readAllBytes(catFileTuple.getKey()));
+      String text = Files.readString(catFileTuple.getKey(), StandardCharsets.UTF_8);
       return new DocumentSample(catFileTuple.getValue(), tokenizer.tokenize(text));
     }
 

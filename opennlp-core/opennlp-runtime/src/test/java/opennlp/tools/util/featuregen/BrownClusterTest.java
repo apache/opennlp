@@ -18,6 +18,7 @@
 package opennlp.tools.util.featuregen;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -88,5 +89,15 @@ public class BrownClusterTest {
     Assertions.assertEquals("0101", cluster.lookupToken("the"));
     Assertions.assertEquals("0111", cluster.lookupToken("dog"));
     Assertions.assertEquals("0110", cluster.lookupToken("cat"));
+  }
+
+  @Test
+  void testSerializeWritesUtf8() throws IOException {
+    BrownCluster cluster = cluster("München\t0101\n");
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    cluster.serialize(out);
+
+    BrownCluster read = new BrownCluster(new ByteArrayInputStream(out.toByteArray()));
+    Assertions.assertEquals("0101", read.lookupToken("München"));
   }
 }

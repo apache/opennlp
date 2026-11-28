@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -45,10 +46,11 @@ public class PlainTextFileDataReader implements DataReader {
   public PlainTextFileDataReader(File f) throws IOException {
     if (f.getName().endsWith(".gz")) {
       input = new BufferedReader(new InputStreamReader(new BufferedInputStream(
-          new GZIPInputStream(new BufferedInputStream(new FileInputStream(f))))));
+          new GZIPInputStream(new BufferedInputStream(new FileInputStream(f)))), StandardCharsets.UTF_8));
     }
     else {
-      input = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(f))));
+      input = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(f)),
+          StandardCharsets.UTF_8));
     }
   }
 
@@ -58,7 +60,7 @@ public class PlainTextFileDataReader implements DataReader {
    * @param in The {@link InputStream} that references the file to be read.
    */
   public PlainTextFileDataReader(InputStream in) {
-    input = new BufferedReader(new InputStreamReader(in));
+    input = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
   }
 
   /**
