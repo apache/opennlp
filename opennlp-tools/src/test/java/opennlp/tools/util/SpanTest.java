@@ -17,8 +17,13 @@
 
 package opennlp.tools.util;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests for the {@link Span} class.
@@ -327,5 +332,23 @@ public class SpanTest {
   @Test
   void testStartLargerThanEnd() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> new Span(100, 50));
+  }
+
+  private static Stream<Arguments> spansWithEmptyOnes() {
+    return Stream.of(
+        Arguments.of(new Span[] {new Span(0, 0)}, new String[] {""}),
+        Arguments.of(new Span[] {new Span(3, 3)}, new String[] {""}),
+        Arguments.of(new Span[] {new Span(0, 2), new Span(2, 2), new Span(2, 3)},
+            new String[] {"Once upon", "", "a"}));
+  }
+
+  /**
+   * Test that an empty span gives an empty string, as with the {@link CharSequence} variant.
+   */
+  @ParameterizedTest
+  @MethodSource("spansWithEmptyOnes")
+  void testSpansToStringsWithEmptySpan(Span[] spans, String[] expected) {
+    String[] tokens = {"Once", "upon", "a"};
+    Assertions.assertArrayEquals(expected, Span.spansToStrings(spans, tokens));
   }
 }
