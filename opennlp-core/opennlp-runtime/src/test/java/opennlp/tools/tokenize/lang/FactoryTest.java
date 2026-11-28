@@ -103,16 +103,42 @@ public class FactoryTest {
     }
   }
 
+  /**
+   * Supplies one language code per shipped policy with its expected mark characters.
+   * An empty string means no marks are expected.
+   *
+   * @return Language code and expected-marks pairs.
+   */
+  static Stream<Arguments> shippedPoliciesWithExpectedMarks() {
+    return Stream.of(
+        Arguments.of("en", ""),
+        Arguments.of("pt", ""),
+        Arguments.of("fr", ""),
+        Arguments.of("nl", ""),
+        Arguments.of("de", ""),
+        Arguments.of("pl", ""),
+        Arguments.of("it", ""),
+        Arguments.of("es", ""),
+        Arguments.of("ca", "\u00B7"));
+  }
+
   @ParameterizedTest
-  @MethodSource("shippedPolicies")
-  void testShippedPoliciesHaveAsciiDigitsAndNoMarks(String languageCode, String regex) {
+  @MethodSource("shippedPoliciesWithExpectedMarks")
+  void testShippedPoliciesHaveAsciiDigitsAndExpectedMarks(String languageCode, String expectedMarks) {
     TokenizerCharacterPolicy policy = factory.getCharacterPolicy(languageCode);
 
     assertEquals(DIGIT_COUNT, policy.getDigits().size(), languageCode);
     for (int digit = '0'; digit <= '9'; digit++) {
       assertTrue(policy.getDigits().contains(digit), languageCode);
     }
-    assertTrue(policy.getMarks().isEmpty(), languageCode);
+    assertEquals(expectedMarks.codePointCount(0, expectedMarks.length()), policy.getMarks().size(),
+        languageCode);
+    for (int offset = 0; offset < expectedMarks.length();) {
+      final int codePoint = expectedMarks.codePointAt(offset);
+      assertTrue(policy.getMarks().contains(codePoint),
+          languageCode + " mark U+" + Integer.toHexString(codePoint));
+      offset += Character.charCount(codePoint);
+    }
   }
 
   @ParameterizedTest
@@ -181,5 +207,29 @@ public class FactoryTest {
   void testLegacyPatternOfTheDefaultPolicyIsTheDefaultConstant() {
     assertSame(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphanumeric(null));
     assertSame(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphanumeric("en"));
+  }
+
+  /**
+   * Words with the Catalan geminated L (l·l) must be accepted as single tokens.
+   * The middle dot U+00B7 is a mark in the Catalan policy: it may follow a letter but
+   * cannot open a token.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"cel\u00B7la", "goril\u00B7la", "instal\u00B7lar",
+      "cancel\u00B7lar", "col\u00B7legi"})
+  void testCatalanMiddleDotWordIsAccepted(String word) {
+    TokenizerCharacterPolicy policy = factory.getCharacterPolicy("ca");
+    Pattern regex = Pattern.compile(LegacyAlphaNumericPatterns.CATALAN);
+    assertTrue(policy.test(word), word);
+    assertTrue(regex.matcher(word).matches(), "regex: " + word);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\u00B7la", "\u00B7cel\u00B7la", "\u00B7"})
+  void testCatalanMiddleDotCannotStartToken(String input) {
+    TokenizerCharacterPolicy policy = factory.getCharacterPolicy("ca");
+    Pattern regex = Pattern.compile(LegacyAlphaNumericPatterns.CATALAN);
+    assertFalse(policy.test(input), input);
+    assertFalse(regex.matcher(input).matches(), "regex: " + input);
   }
 }

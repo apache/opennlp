@@ -265,6 +265,26 @@ public class TokenizerFactoryTest {
   }
 
   /**
+   * A model from an earlier release carries the Catalan regex without the middle dot. It must
+   * load with the legacy Catalan policy, so geminated-L words such as {@code cel·la} are split
+   * as before and not kept whole by the new policy.
+   */
+  @Test
+  void testOldCatalanPatternInTheManifestLoadsTheLegacyPolicy() throws IOException {
+    byte[] legacy = rewriteManifest(engModel,
+        Map.of(LEGACY_PATTERN_KEY, LegacyAlphaNumericPatterns.CATALAN_LEGACY), CHARACTER_POLICY_KEY);
+
+    TokenizerModel loaded = new TokenizerModel(new ByteArrayInputStream(legacy));
+
+    TokenizerCharacterPolicy policy = loaded.getFactory().getCharacterPolicy();
+    Assertions.assertNotNull(policy);
+    Assertions.assertNotEquals(LANGUAGE_FACTORY.getCharacterPolicy("ca"), policy);
+    Assertions.assertTrue(policy.getMarks().isEmpty());
+    Assertions.assertFalse(policy.test("cel\u00B7la"));
+    Assertions.assertTrue(policy.test("cella"));
+  }
+
+  /**
    * A model whose manifest has a custom pattern loads, and its alphanumeric optimization tests
    * candidate tokens with that pattern: "it's" stays one token only because the pattern accepts
    * the apostrophe; the English model splits it otherwise.
