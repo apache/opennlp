@@ -40,6 +40,7 @@ public interface SequenceCodec<T> {
 
   /**
    * Encodes {@link Span} objects into a sequence of {@link T objects}.
+   * An empty span covers no elements and adds nothing to the sequence.
    *
    * @param names A list of {@link Span elements} to encode.
    * @param length The length to respect.

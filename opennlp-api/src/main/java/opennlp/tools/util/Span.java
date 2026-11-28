@@ -381,7 +381,7 @@ public class Span implements Comparable<Span>, Serializable {
       for (int ti = spans[si].getStart(); ti < spans[si].getEnd(); ti++) {
         cb.append(tokens[ti]).append(" ");
       }
-      chunks[si] = cb.substring(0, cb.length() - 1);
+      chunks[si] = cb.isEmpty() ? "" : cb.substring(0, cb.length() - 1);
     }
     return chunks;
   }

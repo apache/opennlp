@@ -125,6 +125,9 @@ public class BioCodec implements SequenceCodec<String> {
     String[] outcomes = new String[length];
     Arrays.fill(outcomes, BioCodec.OTHER);
     for (Span name : names) {
+      if (name.length() == 0) {
+        continue;
+      }
       if (name.getType() == null) {
         outcomes[name.getStart()] = DEFAULT_PREFIX + BioCodec.START;
       }

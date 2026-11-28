@@ -988,4 +988,24 @@ public class BilouCodecTest {
         "Three types with one CONTINUE missing START should be incompatible");
   }
 
+  private static Stream<Arguments> emptySpans() {
+    return Stream.of(
+        Arguments.of(new Span[] {new Span(0, 0, A_TYPE)},
+            new String[] {OTHER, OTHER, OTHER, OTHER}),
+        Arguments.of(new Span[] {new Span(2, 2, A_TYPE)},
+            new String[] {OTHER, OTHER, OTHER, OTHER}),
+        Arguments.of(new Span[] {new Span(4, 4, A_TYPE)},
+            new String[] {OTHER, OTHER, OTHER, OTHER}),
+        Arguments.of(new Span[] {new Span(1, 2, A_TYPE), new Span(2, 2, B_TYPE)},
+            new String[] {OTHER, A_UNIT, OTHER, OTHER}),
+        Arguments.of(new Span[] {new Span(3, 3, B_TYPE), new Span(3, 4, A_TYPE)},
+            new String[] {OTHER, OTHER, OTHER, A_UNIT}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("emptySpans")
+  void testEncodeEmptySpan(Span[] names, String[] expected) {
+    Assertions.assertArrayEquals(expected, codec.encode(names, 4),
+        "An empty span covers no tokens, so it must not add an outcome.");
+  }
 }

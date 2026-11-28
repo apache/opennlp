@@ -96,6 +96,9 @@ public class BilouCodec implements SequenceCodec<String> {
 
     for (Span name : names) {
 
+      if (name.length() == 0) {
+        continue;
+      }
       if (name.length() > 1) {
         if (name.getType() == null) {
           outcomes[name.getStart()] = DEFAULT_PREFIX + BilouCodec.START;
