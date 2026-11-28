@@ -423,8 +423,9 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * Closes the ONNX session. An {@link OrtException} from the session is rethrown as the cause
-   * of an {@link UncheckedIOException}.
+   * Closes the ONNX session and the session options it was created with. An
+   * {@link OrtException} from the session is rethrown as the cause of an
+   * {@link UncheckedIOException}.
    */
   @Override
   public void close() {

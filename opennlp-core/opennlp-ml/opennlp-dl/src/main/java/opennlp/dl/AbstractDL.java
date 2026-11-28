@@ -84,6 +84,7 @@ public abstract class AbstractDL implements AutoCloseable {
   protected final SubwordTokenizer tokenizer;
   protected final Map<String, Integer> vocab;
 
+  private final OrtSession.SessionOptions ownedSessionOptions;
   private final AtomicBoolean closed = new AtomicBoolean();
 
   /**
@@ -152,6 +153,9 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param vocabulary The vocabulary file matching the model.
    * @param sessionOptions The session options (e.g. CUDA execution provider); build with
    *     {@link #sessionOptions(InferenceOptions)} when honoring {@link InferenceOptions}.
+   *     This instance owns them: they stay open until {@link #close()} closes the session
+   *     and then the options. The caller must not close or reuse them. If construction fails,
+   *     the options are closed before the exception is thrown.
    * @param lowerCase {@code true} for uncased models (lower casing and accent stripping
    *     during tokenization), {@code false} for cased models. A {@code tokenizer.json} that
    *     sets {@code normalizer.lowercase} must agree with it.
@@ -168,12 +172,12 @@ public abstract class AbstractDL implements AutoCloseable {
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
       throws IOException, OrtException {
-    ParamChecks.requireNonNullArg(model, "model");
-    ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
     ParamChecks.requireNonNullArg(sessionOptions, "sessionOptions");
-    this.env = OrtEnvironment.getEnvironment();
-    // try-with-resources closes the session options once the session has consumed them.
-    try (sessionOptions) {
+    this.ownedSessionOptions = sessionOptions;
+    try {
+      ParamChecks.requireNonNullArg(model, "model");
+      ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
+      this.env = OrtEnvironment.getEnvironment();
       final OrtSession createdSession = env.createSession(model.getPath(), sessionOptions);
       try {
         final Vocabulary loaded = readVocabFile(vocabulary);
@@ -191,6 +195,14 @@ public abstract class AbstractDL implements AutoCloseable {
         throw e;
       }
       this.session = createdSession;
+    } catch (IOException | RuntimeException | OrtException e) {
+      // This instance is never returned, so close() will not run.
+      try {
+        ownedSessionOptions.close();
+      } catch (RuntimeException suppressed) {
+        e.addSuppressed(suppressed);
+      }
+      throw e;
     }
   }
 
@@ -202,6 +214,7 @@ public abstract class AbstractDL implements AutoCloseable {
    *
    * @param env The ONNX environment, or {@code null} in tests.
    * @param session The ONNX session, or {@code null} in tests that do not run inference.
+   *     No session options are owned.
    * @param vocab The vocabulary used by the tokenizer.
    * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
    */
@@ -209,6 +222,7 @@ public abstract class AbstractDL implements AutoCloseable {
                        final Map<String, Integer> vocab, final boolean lowerCase) {
     this.env = env;
     this.session = session;
+    this.ownedSessionOptions = null;
     this.vocab = vocab;
     this.tokenizer = createWordpieceEncoder(vocab, lowerCase);
   }
@@ -942,7 +956,8 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Closes the ONNX {@link OrtSession} owned by this instance.
+   * Closes the ONNX {@link OrtSession} owned by this instance, then the
+   * {@link OrtSession.SessionOptions} that session was created with.
    *
    * <p>The {@link OrtEnvironment} is deliberately <b>not</b> closed:
    * {@link OrtEnvironment#getEnvironment()} returns a process-wide singleton shared by
@@ -950,15 +965,60 @@ public abstract class AbstractDL implements AutoCloseable {
    * other live components still depend on.</p>
    *
    * <p>This method is idempotent: calling {@code close()} more than once, or calling it on
-   * a never-used but successfully constructed instance, is a no-op after the first successful
-   * close attempt. The underlying {@link OrtSession#close()} is only invoked once.</p>
+   * a never-used but successfully constructed instance, is a no-op after the first
+   * close attempt. {@link OrtSession#close()} and {@link OrtSession.SessionOptions#close()}
+   * are only invoked once, the session first. ONNX Runtime requires the options to stay
+   * open until every session created with them is closed.</p>
    *
-   * @throws OrtException Thrown if the close attempt fails in the native layer.
+   * @throws OrtException Thrown if closing the session fails in the native layer. Closing
+   *     the session options is still attempted. If that also fails, the options exception
+   *     is attached with {@link Throwable#addSuppressed(Throwable)}.
+   * @throws RuntimeException Thrown if closing the session options fails and closing the
+   *     session did not.
    */
   @Override
   public void close() throws OrtException {
-    if (closed.compareAndSet(false, true) && session != null) {
+    if (!closed.compareAndSet(false, true)) {
+      return;
+    }
+    Exception sessionFailure = null;
+    try {
+      closeOwnedSession();
+    } catch (OrtException | RuntimeException failure) {
+      sessionFailure = failure;
+    }
+    try {
+      closeOwnedSessionOptions();
+    } catch (RuntimeException optionsFailure) {
+      if (sessionFailure != null) {
+        sessionFailure.addSuppressed(optionsFailure);
+      } else {
+        sessionFailure = optionsFailure;
+      }
+    }
+    if (sessionFailure instanceof OrtException ortException) {
+      throw ortException;
+    }
+    if (sessionFailure instanceof RuntimeException runtimeException) {
+      throw runtimeException;
+    }
+  }
+
+  /**
+   * Closes the ONNX session owned by this instance.
+   *
+   * @throws OrtException Thrown if closing the session fails in the native layer.
+   */
+  private void closeOwnedSession() throws OrtException {
+    if (session != null) {
       session.close();
+    }
+  }
+
+  /** Closes the session options owned by this instance. */
+  private void closeOwnedSessionOptions() {
+    if (ownedSessionOptions != null) {
+      ownedSessionOptions.close();
     }
   }
 
