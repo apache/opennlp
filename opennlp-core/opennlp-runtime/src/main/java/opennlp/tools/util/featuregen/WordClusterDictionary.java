@@ -76,7 +76,7 @@ public class WordClusterDictionary implements SerializableArtifact {
   }
 
   public void serialize(OutputStream out) throws IOException {
-    try (Writer writer = new BufferedWriter(new OutputStreamWriter(out))) {
+    try (Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
       for (Map.Entry<String, String> entry : tokenToClusterMap.entrySet()) {
         writer.write(entry.getKey() + " " + entry.getValue() + "\n");
       }

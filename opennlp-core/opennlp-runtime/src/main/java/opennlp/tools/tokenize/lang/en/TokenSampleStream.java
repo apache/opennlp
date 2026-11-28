@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -75,8 +76,14 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   private String line;
   private boolean evenq = true;
 
+  /**
+   * Initializes a {@link TokenSampleStream} that reads the samples as UTF-8 text.
+   *
+   * @param is The {@link InputStream} to read the samples from.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public TokenSampleStream(InputStream is) throws IOException {
-    this.in = new BufferedReader(new InputStreamReader(is));
+    this.in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
     line = in.readLine();
   }
 

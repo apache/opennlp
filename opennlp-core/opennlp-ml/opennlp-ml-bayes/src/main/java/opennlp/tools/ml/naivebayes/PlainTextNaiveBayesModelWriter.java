@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPOutputStream;
 
 import opennlp.tools.ml.model.AbstractModel;
@@ -51,9 +52,9 @@ public class PlainTextNaiveBayesModelWriter extends NaiveBayesModelWriter {
     super(model);
     if (f.getName().endsWith(".gz")) {
       output = new BufferedWriter(new OutputStreamWriter(
-          new GZIPOutputStream(new FileOutputStream(f))));
+          new GZIPOutputStream(new FileOutputStream(f)), StandardCharsets.UTF_8));
     } else {
-      output = new BufferedWriter(new FileWriter(f));
+      output = new BufferedWriter(new FileWriter(f, StandardCharsets.UTF_8));
     }
   }
 

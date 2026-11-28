@@ -48,13 +48,15 @@ public class FileEventStream implements ObjectStream<Event> {
    * Instantiates a {@link FileEventStream} from the specified file name.
    * 
    * @param fileName The name fo the file containing the events.
-   * @param encoding The name of the {@link java.nio.charset.Charset character encoding}.
+   * @param encoding The name of the {@link java.nio.charset.Charset character encoding},
+   *                 or {@code null} for UTF-8.
    *
    * @throws IOException Thrown if the specified file can not be read.
    */
   public FileEventStream(String fileName, String encoding) throws IOException {
     this(encoding == null ?
-      new FileReader(fileName) : new InputStreamReader(new FileInputStream(fileName), encoding));
+      new FileReader(fileName, StandardCharsets.UTF_8) :
+      new InputStreamReader(new FileInputStream(fileName), encoding));
   }
 
   /**
