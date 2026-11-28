@@ -34,7 +34,9 @@ public final class LegacyAlphaNumericPatterns {
   public static final String POLISH = "^[A-Za-z0-9żźćńółęąśŻŹĆĄŚĘŁÓŃ]+$";
   public static final String ITALIAN = "^[0-9a-zàèéìîíòóùüA-ZÀÈÉÌÎÍÒÓÙÜ]+$";
   public static final String SPANISH = "^[0-9a-záéíóúüýñA-ZÁÉÍÓÚÝÑ]+$";
-  public static final String CATALAN = "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$";
+  public static final String CATALAN_LEGACY = "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$";
+  public static final String CATALAN =
+      "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ][0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ\u00B7]*$";
 
   /**
    * Each language code with the regular expression its policy replaces.

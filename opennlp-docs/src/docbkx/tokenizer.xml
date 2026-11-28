@@ -397,13 +397,16 @@ try {
 				the policy for the language code: ASCII letters and digits for most languages,
 				and ASCII plus the letters of the language for Catalan (ca), Dutch (nl),
 				French (fr), German (de), Italian (it), Polish (pl), Portuguese (pt) and
-				Spanish (es); the ISO 639-2 codes are accepted too. None of these presets has
-				marks, so a decomposed character such as <code>e</code> followed by U+0301 is
-				not accepted by them; supply a policy with the combining marks of your text to
-				accept it. The policy is written to the model manifest under the property
-				<code>characterPolicy</code> as comma separated hex code points and ranges, for
-				example <code>letters=0041-005A,0061-007A;digits=0030-0039;marks=</code> for the
-				ASCII preset, and read back from there when the model is loaded.
+				Spanish (es); the ISO 639-2 codes are accepted too. The Catalan preset
+				additionally includes U+00B7 MIDDLE DOT (punt volat) as a mark so that
+				geminated-L words such as <code>cel·la</code> are single tokens. The other
+				presets have no marks, so a decomposed character such as <code>e</code>
+				followed by U+0301 is not accepted by them; supply a policy with the combining
+				marks of your text to accept it. The policy is written to the model manifest
+				under the property <code>characterPolicy</code> as comma separated hex code
+				points and ranges, for example
+				<code>letters=0041-005A,0061-007A;digits=0030-0039;marks=</code> for the ASCII
+				preset, and read back from there when the model is loaded.
 				<code>TokenizerCharacterPolicy.toString()</code> produces this form and
 				<code>TokenizerCharacterPolicy.parse(String)</code> reads it.
 			</para>
