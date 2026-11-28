@@ -154,8 +154,8 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param sessionOptions The session options (e.g. CUDA execution provider); build with
    *     {@link #sessionOptions(InferenceOptions)} when honoring {@link InferenceOptions}.
    *     This instance owns them: they stay open until {@link #close()} closes the session
-   *     and then the options. The caller must not close them. If construction fails, the
-   *     options are closed before the exception is thrown.
+   *     and then the options. The caller must not close or reuse them. If construction fails,
+   *     the options are closed before the exception is thrown.
    * @param lowerCase {@code true} for uncased models (lower casing and accent stripping
    *     during tokenization), {@code false} for cased models. A {@code tokenizer.json} that
    *     sets {@code normalizer.lowercase} must agree with it.
@@ -172,12 +172,12 @@ public abstract class AbstractDL implements AutoCloseable {
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
       throws IOException, OrtException {
-    ParamChecks.requireNonNullArg(model, "model");
-    ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
     ParamChecks.requireNonNullArg(sessionOptions, "sessionOptions");
-    this.env = OrtEnvironment.getEnvironment();
     this.ownedSessionOptions = sessionOptions;
     try {
+      ParamChecks.requireNonNullArg(model, "model");
+      ParamChecks.requireNonNullArg(vocabulary, "vocabulary");
+      this.env = OrtEnvironment.getEnvironment();
       final OrtSession createdSession = env.createSession(model.getPath(), sessionOptions);
       try {
         final Vocabulary loaded = readVocabFile(vocabulary);
@@ -973,21 +973,23 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws OrtException Thrown if closing the session fails in the native layer. Closing
    *     the session options is still attempted. If that also fails, the options exception
    *     is attached with {@link Throwable#addSuppressed(Throwable)}.
+   * @throws RuntimeException Thrown if closing the session options fails and closing the
+   *     session did not.
    */
   @Override
   public void close() throws OrtException {
     if (!closed.compareAndSet(false, true)) {
       return;
     }
-    Throwable sessionFailure = null;
+    Exception sessionFailure = null;
     try {
       closeOwnedSession();
-    } catch (Throwable failure) {
+    } catch (OrtException | RuntimeException failure) {
       sessionFailure = failure;
     }
     try {
       closeOwnedSessionOptions();
-    } catch (Throwable optionsFailure) {
+    } catch (RuntimeException optionsFailure) {
       if (sessionFailure != null) {
         sessionFailure.addSuppressed(optionsFailure);
       } else {
@@ -1000,9 +1002,6 @@ public abstract class AbstractDL implements AutoCloseable {
     if (sessionFailure instanceof RuntimeException runtimeException) {
       throw runtimeException;
     }
-    if (sessionFailure instanceof Error error) {
-      throw error;
-    }
   }
 
   /**
@@ -1010,14 +1009,14 @@ public abstract class AbstractDL implements AutoCloseable {
    *
    * @throws OrtException Thrown if closing the session fails in the native layer.
    */
-  void closeOwnedSession() throws OrtException {
+  private void closeOwnedSession() throws OrtException {
     if (session != null) {
       session.close();
     }
   }
 
   /** Closes the session options owned by this instance. */
-  void closeOwnedSessionOptions() {
+  private void closeOwnedSessionOptions() {
     if (ownedSessionOptions != null) {
       ownedSessionOptions.close();
     }

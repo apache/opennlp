@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import ai.onnxruntime.OrtException;
@@ -35,6 +33,7 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
 import static opennlp.dl.vectors.TinyVectorModels.TINY_VECTORS;
 import static opennlp.dl.vectors.TinyVectorModels.model;
 import static opennlp.dl.vectors.TinyVectorModels.vocab;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -49,6 +48,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * fails too.
  */
 class AbstractDLSessionOptionsTest {
+
+  /** Special tokens a model-free encoder needs, and nothing else. */
+  private static final Map<String, Integer> TOKENIZER_VOCAB =
+      Map.of("[CLS]", 0, "[SEP]", 1, "[UNK]", 2);
 
   /**
    * The options remain usable after the session has been created, and {@link AbstractDL#close()}
@@ -73,6 +76,7 @@ class AbstractDLSessionOptionsTest {
 
     owner.close();
     assertOptionsClosed(options);
+    assertEquals(1, options.closes());
   }
 
   /**
@@ -109,36 +113,54 @@ class AbstractDLSessionOptionsTest {
   }
 
   /**
-   * When closing the session and the options both fail, {@link AbstractDL#close()} throws the
-   * session failure and attaches the options failure with
-   * {@link Throwable#addSuppressed(Throwable)}. A second {@code close()} does not close either
-   * again.
+   * A null model is rejected before a session exists, and the options passed to the constructor
+   * are still closed.
    */
   @Test
-  void testOptionsCloseFailureIsSuppressedWhenSessionCloseFails() throws OrtException {
-    final OrtException sessionFailure = new OrtException("session close failed");
+  void testNullModelClosesOptions(@TempDir final Path dir) throws IOException {
+    final TrackingOptions options = new TrackingOptions();
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new OptionsOwner(null, vocab(dir), options));
+
+    assertEquals("model must not be null", e.getMessage());
+    assertTrue(options.wasClosed());
+    assertEquals(1, options.closes());
+    assertOptionsClosed(options);
+  }
+
+  /**
+   * When the session is already closed and closing the options also fails,
+   * {@link AbstractDL#close()} throws the session failure and attaches the options failure
+   * with {@link Throwable#addSuppressed(Throwable)}. A second {@code close()} does neither again.
+   */
+  @Test
+  void testOptionsCloseFailureIsSuppressedWhenSessionCloseFails(@TempDir final Path dir)
+      throws IOException, OrtException {
     final IllegalStateException optionsFailure = new IllegalStateException("options close failed");
-    final BothFailOnClose model = new BothFailOnClose(sessionFailure, optionsFailure);
+    final FailingOptions options = new FailingOptions(optionsFailure);
+    final OptionsOwner owner = new OptionsOwner(model(dir, TINY_VECTORS), vocab(dir), options);
+    owner.session().close();
 
-    final OrtException thrown = assertThrows(OrtException.class, model::close);
+    final IllegalStateException thrown = assertThrows(IllegalStateException.class, owner::close);
 
-    assertSame(sessionFailure, thrown);
-    assertEquals(List.of("session", "options"), model.calls());
+    assertEquals("Trying to close an already closed OrtSession.", thrown.getMessage());
     assertEquals(1, thrown.getSuppressed().length);
     assertSame(optionsFailure, thrown.getSuppressed()[0]);
+    assertEquals(1, options.closes());
+    assertOptionsClosed(options);
 
-    model.close();
-    assertEquals(List.of("session", "options"), model.calls());
+    assertDoesNotThrow(owner::close);
+    assertEquals(1, options.closes());
   }
 
   /** The test constructor owns neither a session nor options, so closing it does nothing. */
   @Test
-  void testCloseWithoutSessionOrOptionsIsIdempotent() throws OrtException {
-    final ModelFreeDL model = new ModelFreeDL(
-        Map.of("[CLS]", 0, "[SEP]", 1, "[UNK]", 2), true);
+  void testCloseWithoutSessionOrOptionsIsIdempotent() {
+    final ModelFreeDL model = new ModelFreeDL(TOKENIZER_VOCAB, true);
 
-    model.close();
-    model.close();
+    assertDoesNotThrow(model::close);
+    assertDoesNotThrow(model::close);
   }
 
   private static void assertOptionsClosed(final OrtSession.SessionOptions options) {
@@ -161,45 +183,15 @@ class AbstractDLSessionOptionsTest {
   }
 
   /**
-   * Fails both close steps so {@link AbstractDL#close()} can be checked without a native session.
-   */
-  private static final class BothFailOnClose extends AbstractDL {
-
-    private final OrtException sessionFailure;
-    private final RuntimeException optionsFailure;
-    private final List<String> calls = new ArrayList<>();
-
-    BothFailOnClose(final OrtException sessionFailure, final RuntimeException optionsFailure) {
-      super(null, null, Map.of("[CLS]", 0, "[SEP]", 1, "[UNK]", 2), true);
-      this.sessionFailure = sessionFailure;
-      this.optionsFailure = optionsFailure;
-    }
-
-    List<String> calls() {
-      return calls;
-    }
-
-    @Override
-    void closeOwnedSession() throws OrtException {
-      calls.add("session");
-      throw sessionFailure;
-    }
-
-    @Override
-    void closeOwnedSessionOptions() {
-      calls.add("options");
-      throw optionsFailure;
-    }
-  }
-
-  /**
-   * Records whether {@link #close()} ran, and whether the watched session was already closed.
+   * Records whether {@link #close()} ran, how many times, and whether the watched session was
+   * already closed.
    */
   private static final class TrackingOptions extends OrtSession.SessionOptions {
 
     private OrtSession session;
     private boolean closed;
     private boolean sessionClosedFirst;
+    private int closes;
 
     void watch(final OrtSession session) {
       this.session = session;
@@ -213,8 +205,13 @@ class AbstractDLSessionOptionsTest {
       return sessionClosedFirst;
     }
 
+    int closes() {
+      return closes;
+    }
+
     @Override
     public void close() {
+      closes++;
       if (session != null) {
         try {
           session.getInputInfo();
@@ -228,6 +225,31 @@ class AbstractDLSessionOptionsTest {
       }
       super.close();
       closed = true;
+    }
+  }
+
+  /**
+   * Closes the native options, then fails, so a session close failure can keep this failure
+   * as a suppressed exception.
+   */
+  private static final class FailingOptions extends OrtSession.SessionOptions {
+
+    private final RuntimeException failure;
+    private int closes;
+
+    FailingOptions(final RuntimeException failure) {
+      this.failure = failure;
+    }
+
+    int closes() {
+      return closes;
+    }
+
+    @Override
+    public void close() {
+      closes++;
+      super.close();
+      throw failure;
     }
   }
 }
