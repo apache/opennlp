@@ -235,6 +235,45 @@ public class BilouCodecTest {
     );
   }
 
+  /**
+   * Any tag that is neither a Continue nor a Last, and the end of the input, close a span that
+   * no Last tag ended, so an incomplete sequence still yields the span it started.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("incompleteSequences")
+  void testDecodeRecoversIncompleteSpan(String name, List<String> encoded, Span[] expected) {
+    Assertions.assertArrayEquals(expected, codec.decode(encoded));
+  }
+
+  private static Stream<Arguments> incompleteSequences() {
+    return Stream.of(
+        Arguments.of("a Start closes the span before it",
+            Arrays.asList(A_START, B_START, B_LAST),
+            new Span[] {new Span(0, 1, A_TYPE), new Span(1, 3, B_TYPE)}),
+        Arguments.of("a Unit closes the span before it",
+            Arrays.asList(A_START, A_CONTINUE, B_UNIT, A_LAST),
+            new Span[] {new Span(0, 2, A_TYPE), new Span(2, 3, B_TYPE)}),
+        Arguments.of("a Unit then an Other closes the span before it",
+            Arrays.asList(A_START, A_CONTINUE, B_UNIT, OTHER),
+            new Span[] {new Span(0, 2, A_TYPE), new Span(2, 3, B_TYPE)}),
+        Arguments.of("the end of the input closes an open span",
+            Arrays.asList(A_START, A_CONTINUE),
+            new Span[] {new Span(0, 2, A_TYPE)}),
+        Arguments.of("a lone Start is a span of one token",
+            List.of(A_START),
+            new Span[] {new Span(0, 1, A_TYPE)}),
+        Arguments.of("a second Other closes nothing",
+            Arrays.asList(A_START, A_CONTINUE, OTHER, OTHER),
+            new Span[] {new Span(0, 2, A_TYPE)}),
+        Arguments.of("a Continue after an Other starts no span",
+            Arrays.asList(OTHER, A_CONTINUE),
+            new Span[] {}),
+        Arguments.of("a Last after an Other closes no span",
+            Arrays.asList(OTHER, A_LAST),
+            new Span[] {})
+    );
+  }
+
 
   @Test
   void testCompatibilityEmpty() {
